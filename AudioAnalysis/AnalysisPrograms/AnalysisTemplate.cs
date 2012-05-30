@@ -157,10 +157,12 @@ namespace AnalysisPrograms
             //READ PARAMETER VALUES FROM INI FILE
             var configuration = new Configuration(configPath);
             Dictionary<string, string> configDict = configuration.GetTable();
+            string outputDir = Path.GetDirectoryName(outputPath);
             DirectoryInfo diOutputDir = new DirectoryInfo(outputDir);
-            string tempFileName = "temp.wav";
-            DataTable dt = Analysis(fiSourceFile, configDict, diOutputDir, tempFileName);
-            DataTableTools.DataTable2CSV(dt, outputPath);
+            int iteration = 1;
+            //string tempFileName = "temp.wav";
+            DataTable dt = AnalysisReturnsDataTable(iteration, fiSourceFile, configDict, diOutputDir);
+            CsvTools.DataTable2CSV(dt, outputPath);
         }
 
 
@@ -334,8 +336,8 @@ namespace AnalysisPrograms
             int callSpan = (int)Math.Round(callDuration * framesPerSecond);
 
             //#############################################################################################################################################
-            //ii: DETECT HARMONICS
-            var results = DoSomeAnalysis(subMatrix, decibelThreshold, callSpan);
+            //ii: DO SOME ANALYSIS e.g. SEARCH FOR HARMONICS
+            var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold, callSpan);
             double[] dBArray = results.Item1;
             double[] intensity = results.Item2;     //an array of periodicity scores
             double[] periodicity = results.Item3;
@@ -505,11 +507,15 @@ namespace AnalysisPrograms
 
             dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
             //OTHER PROCESSING e.g. normalising column values
-            //DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, headers2Display.ToList());
+            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, headers2Display.ToList());
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
+        private static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers)
+        {
+            DataTable table2Display = dt;
+            return table2Display;
+        }
 
 
     } //end class AnalysisTemplate
