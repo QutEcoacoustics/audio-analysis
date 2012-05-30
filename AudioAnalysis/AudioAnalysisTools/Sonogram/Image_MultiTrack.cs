@@ -19,6 +19,7 @@ namespace AudioAnalysisTools
         public IEnumerable<Image_Track> Tracks { get { return tracks; } }
         public List<AcousticEvent> eventList { get; set; }
         double[,] SuperimposedMatrix { get; set; }
+        double[,] SuperimposedRedTransparency { get; set; }
         private double superImposedMaxScore;
         private int[] FreqHits;
         private int nyquistFreq;
@@ -52,6 +53,11 @@ namespace AudioAnalysisTools
         {
             this.SuperimposedMatrix = m;
             this.superImposedMaxScore = maxScore;
+        }
+
+        public void AddSuperimposedTransparency(Double[,] m)
+        {
+            this.SuperimposedRedTransparency = m;
         }
 
         public void AddFreqHitValues(int[] f, int nyquist)
@@ -99,6 +105,7 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
 
+                if (this.SuperimposedRedTransparency != null) DrawSuperimposedRedTransparency(g, (Bitmap)this.SonoImage);
                 if (this.SuperimposedMatrix != null) DrawSuperimposedMatrix(g);
                 if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
@@ -129,7 +136,7 @@ namespace AudioAnalysisTools
 
         void DrawEvents(Graphics g)
         {
-            Pen p1 = new Pen(Color.Red);
+            Pen p1 = new Pen(Color.Crimson);
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
@@ -150,10 +157,10 @@ namespace AudioAnalysisTools
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
-                //g.DrawLine(p2, x, y1, x, y2);
+                //g.FillRectangle(Brush, p2, t1, y1, t1+2, y2);
                 g.DrawLine(p2, t1 + 1, y1, t1 + 1, y2);
                 g.DrawLine(p2, t1 + 2, y1, t1 + 2, y2);
-                g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
+                //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
                 g.DrawString(e.Name, new Font("Tahoma", 10), Brushes.Black, new PointF(t1, y - 1));
             }
         }
@@ -179,6 +186,30 @@ namespace AudioAnalysisTools
         /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
         /// <param name="g"></param>
+        void DrawSuperimposedRedTransparency(Graphics g, Bitmap bmp)
+        {
+            int rows = this.SuperimposedRedTransparency.GetLength(0);
+            int cols = this.SuperimposedRedTransparency.GetLength(1);
+            int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedRedTransparency), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
+
+            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    if (this.SuperimposedRedTransparency[r, c] == 0.0) continue;
+                    Color pixel = bmp.GetPixel(r, imageHt - c);
+                    if(pixel.R == 255) continue; //white
+                    g.DrawLine(new Pen(Color.FromArgb(255, pixel.G, pixel.B)), r, imageHt - c, r + 1, imageHt - c);
+                }
+            }
+        } //DrawSuperimposedRedTransparency()
+
+        ///// <summary>
+        ///// superimposes a matrix of scores on top of a sonogram.
+        ///// Only draws lines on every second row so that the underling sonogram can be discerned
+        ///// </summary>
+        ///// <param name="g"></param>
         void DrawSuperimposedMatrix(Graphics g)
         {
             int paletteSize = 256;
@@ -197,13 +228,11 @@ namespace AudioAnalysisTools
                     double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
                     int penID = (int)(paletteSize * normScore);
                     if (penID >= paletteSize) penID = paletteSize - 1;
-                    Pen pen = pens[penID];
-                    g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
+                    g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
                 }
                 c++; //only draw on every second row.
             }
-        } //Superimpose()
-
+        } //DrawSuperimposedMatrix()
 
         #region IDisposable Members
 
