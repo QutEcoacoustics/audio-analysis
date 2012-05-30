@@ -1069,8 +1069,8 @@ namespace AnalysisPrograms
                 DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
             }
 
-            DataTable processedtable = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
-            return System.Tuple.Create(dt, processedtable);
+            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+            return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
 
