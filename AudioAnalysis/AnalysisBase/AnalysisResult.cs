@@ -15,6 +15,7 @@
         public AnalysisResult()
         {
             this.DisplayItems = new Dictionary<int, string>();
+            this.OutputFiles = new Dictionary<string, FileInfo>();
         }
 
         #region string identifiers
@@ -121,6 +122,6 @@
         /// <summary>
         /// Gets or sets OutputFiles.
         /// </summary>
-        public Dictionary<string, FileInfo> OutputFiles { get; set; }
+        public Dictionary<string, FileInfo> OutputFiles { get; private set; }
     }
 }

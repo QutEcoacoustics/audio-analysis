@@ -12,6 +12,7 @@ using TowseyLib;
 using AudioAnalysisTools;
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
+using AnalysisBase;
 
 
 
@@ -25,7 +26,7 @@ namespace AnalysisPrograms
 
     ///
     ///This class is to be used as a template for future analysers
-    public class AnalysisTemplate
+    public class AnalysisTemplate : IAnalysis
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -518,5 +519,25 @@ namespace AnalysisPrograms
         }
 
 
+
+        public string DisplayName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string Identifier
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public AnalysisSettings DefaultSettings
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        {
+            throw new NotImplementedException();
+        }
     } //end class AnalysisTemplate
 }

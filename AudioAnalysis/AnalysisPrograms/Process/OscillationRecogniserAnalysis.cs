@@ -56,8 +56,7 @@
                     SegmentMaxDuration = TimeSpan.FromMinutes(1),
                     SegmentOverlapDuration = TimeSpan.Zero,
                     SegmentTargetSampleRate = 22050,
-                    SegmentMediaType = MediaTypes.MediaTypeWav,
-                    ConfigStringInput = string.Empty
+                    SegmentMediaType = MediaTypes.MediaTypeWav
                 };
             }
         }

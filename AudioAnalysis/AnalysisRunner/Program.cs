@@ -35,6 +35,7 @@
             var preparer = new LocalSourcePreparer();
             var coord = new AnalysisCoordinator(preparer);
             coord.IsParallel = true;
+            coord.SubFoldersUnique = false;
 
             var pluginBaseDirs = keyValueStore.GetValueAsStrings("PluginDirectories", ",").Select(this.GetRelativeOrAbsolute).ToList();
             pluginBaseDirs.Add(new DirectoryInfo(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)));
@@ -71,6 +72,9 @@
 
             var runsBaseDir = this.GetRelativeOrAbsolute(keyValueStore.GetValueAsString("BaseAnalysisRunsDir"));
             settings.AnalysisBaseDirectory = runsBaseDir;
+
+            settings.ConfigFile = keyValueStore.GetValueAsFile("ConfigFile");
+            settings.AnalysisRunMode = AnalysisMode.Efficient;
 
             var files = keyValueStore.GetValueAsFiles("Files", ",");
             var results = coord.Run(files.Select(f => new FileSegment { OriginalFile = f }), matchingPlugin, settings);

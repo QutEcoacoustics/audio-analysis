@@ -20,6 +20,7 @@ namespace AudioAnalysisTools
         public List<AcousticEvent> eventList { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         double[,] SuperimposedRedTransparency { get; set; }
+        double[,] SuperimposedRainbowTransparency { get; set; }
         private double superImposedMaxScore;
         private int[] FreqHits;
         private int nyquistFreq;
@@ -55,10 +56,15 @@ namespace AudioAnalysisTools
             this.superImposedMaxScore = maxScore;
         }
 
-        public void AddSuperimposedTransparency(Double[,] m)
+        public void OverlayRedTransparency(Double[,] m)
         {
             this.SuperimposedRedTransparency = m;
         }
+        public void OverlayRainbowTransparency(Double[,] m)
+        {
+            this.SuperimposedRainbowTransparency = m;
+        }
+
 
         public void AddFreqHitValues(int[] f, int nyquist)
         {
@@ -105,8 +111,9 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
 
-                if (this.SuperimposedRedTransparency != null) DrawSuperimposedRedTransparency(g, (Bitmap)this.SonoImage);
-                if (this.SuperimposedMatrix != null) DrawSuperimposedMatrix(g);
+                if (this.SuperimposedRedTransparency != null)     OverlayRedTransparency(g, (Bitmap)this.SonoImage);
+                if (this.SuperimposedMatrix != null)              OverlayMatrix(g);
+                if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.SonoImage);
                 if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
             }
@@ -183,10 +190,9 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
-        /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
         /// <param name="g"></param>
-        void DrawSuperimposedRedTransparency(Graphics g, Bitmap bmp)
+        void OverlayRedTransparency(Graphics g, Bitmap bmp)
         {
             int rows = this.SuperimposedRedTransparency.GetLength(0);
             int cols = this.SuperimposedRedTransparency.GetLength(1);
@@ -203,14 +209,44 @@ namespace AudioAnalysisTools
                     g.DrawLine(new Pen(Color.FromArgb(255, pixel.G, pixel.B)), r, imageHt - c, r + 1, imageHt - c);
                 }
             }
-        } //DrawSuperimposedRedTransparency()
+        } //OverlayRedTransparency()
+
+        /// <summary>
+        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
+        /// ASSUME MATRIX NORMALIZED IN [0,1]
+        /// </summary>
+        /// <param name="g"></param>
+        void OverlayRainbowTransparency(Graphics g, Bitmap bmp)
+        {
+            Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Beige, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet };
+            int rows = this.SuperimposedRainbowTransparency.GetLength(0);
+            int cols = this.SuperimposedRainbowTransparency.GetLength(1);
+            int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
+
+            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    if (this.SuperimposedRainbowTransparency[r, c] == 0.0) continue; //nothing to show
+                    int index = (int)Math.Floor((this.SuperimposedRainbowTransparency[r, c] * 10));//get index into pallette
+                    Color newColor = palette[index];
+                    Color pixel = bmp.GetPixel(r, imageHt - c);
+                    if (pixel.R == 255) continue; //by-pass white
+                    double factor = pixel.R / (double)(255 * 1.6);  //1.6 is for color intensity adjustment
+                    int red = (int)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
+                    int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
+                    int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
+                    g.DrawLine(new Pen(Color.FromArgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
+                }
+            }
+        } //OverlayRainbowTransparency()
 
         ///// <summary>
         ///// superimposes a matrix of scores on top of a sonogram.
         ///// Only draws lines on every second row so that the underling sonogram can be discerned
         ///// </summary>
         ///// <param name="g"></param>
-        void DrawSuperimposedMatrix(Graphics g)
+        void OverlayMatrix(Graphics g)
         {
             int paletteSize = 256;
             var pens = ImageTools.GetRedGradientPalette(); //size = 256

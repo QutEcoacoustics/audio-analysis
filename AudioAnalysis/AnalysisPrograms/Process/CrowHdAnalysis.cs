@@ -60,40 +60,7 @@ namespace AnalysisPrograms.Process
                     SegmentMaxDuration = TimeSpan.FromMinutes(1),
                     SegmentOverlapDuration = TimeSpan.Zero,
                     SegmentTargetSampleRate = 22050,
-                    SegmentMediaType = MediaTypes.MediaTypeWav,
-                    ConfigStringInput = @"
-ANALYSIS_NAME=Crow
-
-#segment duration in minutes.
-
-SEGMENT_DURATION=1.0
-
-# min and max of the freq band to search
-
-MIN_HZ=900          
-
-#MAX_HZ=2000
-
-#min and max gap between formants - Herz.
-
-MIN_FORMANT_GAP=250
-
-MAX_FORMANT_GAP=420
-
-CALL_DURATION=0.4
-
-# Next two thresholds used to adjust FP / FN trade-off for events.
-
-DECIBEL_THRESHOLD=1.4
-
-HARMONIC_INTENSITY_THRESHOLD=0.1
-
-# save a sonogram for each recording that contained a hit 
-
-DRAW_SONOGRAMS=2
-
-
-"
+                    SegmentMediaType = MediaTypes.MediaTypeWav
                 };
             }
         }
