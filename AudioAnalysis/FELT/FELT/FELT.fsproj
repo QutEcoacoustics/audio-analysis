@@ -168,7 +168,6 @@
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="zlib.net" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">

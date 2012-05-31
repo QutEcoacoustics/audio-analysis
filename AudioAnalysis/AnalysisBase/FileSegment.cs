@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -34,6 +35,7 @@
         /// <returns>
         /// True if properties are valid, otherwise false.
         /// </returns>
+        [Pure]
         public bool Validate()
         {
             if (this.OriginalFile == null ||

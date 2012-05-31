@@ -185,13 +185,6 @@
         public string SegmentMediaType { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration string. 
-        /// Before an analysis is run, the user may be given the chance to modify the configuration.
-        /// This should be set to an initial value by an analysis.
-        /// </summary>
-        //public string ConfigStringInput { get; set; }
-
-        /// <summary>
         /// Gets or sets the configuration file to use to run the analysis.
         /// Analysis implementations must not set this. Use ConfigStringInput to set the content of the file instead.
         /// </summary>
