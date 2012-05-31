@@ -147,28 +147,21 @@ namespace AudioAnalysisTools
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
-                //double start = e.StartTime;
-                //double duration = e.Duration;
-                //int minF = e.MinFreq;
-                //int maxF = e.MaxFreq;
-                int fBin1 = (int)(this.freqBinCount * (e.MinFreq / (double)this.nyquistFreq));
-                int fBin2 = (int)(this.freqBinCount * (e.MaxFreq / (double)this.nyquistFreq));
-                int height = fBin2 - fBin1 + 1;
+                int minFreqBin = (int)(e.MinFreq / e.FreqBinWidth);
+                int maxFreqBin = (int)(e.MaxFreq / e.FreqBinWidth);
+                int height = maxFreqBin - minFreqBin + 1;
                 int t1 = e.oblong.r1; //temporal start of event
-                //int y = e.FreqBinCount - e.oblong.c2;
-                int y = this.freqBinCount - fBin2;
+                int y = this.SonoImage.Height - maxFreqBin;
                 int tWidth = e.oblong.r2 - t1 + 1;
-                //int height = e.oblong.c2 - e.oblong.c1 + 1;
                 g.DrawRectangle(p1, t1, y, tWidth, height);
                 //draw the score bar to indicate relative score
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
-                //g.FillRectangle(Brush, p2, t1, y1, t1+2, y2);
                 g.DrawLine(p2, t1 + 1, y1, t1 + 1, y2);
                 g.DrawLine(p2, t1 + 2, y1, t1 + 2, y2);
                 //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
-                g.DrawString(e.Name, new Font("Tahoma", 10), Brushes.Black, new PointF(t1, y - 1));
+                g.DrawString(e.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
             }
         }
 
