@@ -36,7 +36,6 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -236,5 +235,4 @@ xcopy "$(ProjectDir)..\..\Extra Assemblies\mp3splt" "$(TargetDir)audio-utils\mp3
 xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
 xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>
