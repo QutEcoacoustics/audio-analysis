@@ -217,10 +217,13 @@
 
             settings.AnalysisRunDirectory = thisAnalysisWorkingDirectory;
 
+            // config file path is already set before AnalysisCoordinator is used.
+            /*
             var configFile = new FileInfo(Path.Combine(thisAnalysisWorkingDirectory.FullName, Path.GetRandomFileName() + ".txt"));
             File.WriteAllText(configFile.FullName, settings.ConfigStringInput);
 
             settings.ConfigFile = configFile;
+            */
 
             return settings;
         }

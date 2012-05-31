@@ -35,8 +35,7 @@ namespace AnalysisPrograms.Process
                     SegmentMaxDuration = TimeSpan.FromMinutes(1),
                     SegmentOverlapDuration = TimeSpan.Zero,
                     SegmentTargetSampleRate = 17640,
-                    SegmentMediaType = MediaTypes.MediaTypeWav,
-                    ConfigStringInput = string.Empty
+                    SegmentMediaType = MediaTypes.MediaTypeWav
                 };
             }
         }

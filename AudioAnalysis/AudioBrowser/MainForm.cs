@@ -111,7 +111,14 @@
                 //MessageBox.Show(ex.ToString());
             }
 
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer());
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            {
+                DeleteFinished = false,
+                IsParallel = true,
+                SubFoldersUnique = false
+            };
+
+            //var results = this.analysisCoordinator.Run(files,analysis from dropdown,settings using config file);
 
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };

@@ -10,6 +10,7 @@ namespace AnalysisRunner
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
+using Acoustics.Tools;
 
     /// <summary>
     /// Local source file preparer.
@@ -42,36 +43,7 @@ namespace AnalysisRunner
         /// </returns>
         public FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
-            var audioUtility = this.GetNewAudioUtility(targetSampleRateHz);
-
-            var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
-
-            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
-
-            outputFileName = string.Format(
-                "{0}_{1}_{2}.{3}",
-                outputFileName,
-                startOffset.TotalMilliseconds,
-                endOffset.TotalMilliseconds,
-                MediaTypes.GetExtension(outputMediaType));
-
-            if (!Directory.Exists(outputDirectory.FullName))
-            {
-                Directory.CreateDirectory(outputDirectory.FullName);
-            }
-
-            var output = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-            var outputMimeType = MediaTypes.GetMediaType(output.Extension);
-
-            audioUtility.Segment(
-                source,
-                sourceMimeType,
-                output,
-                outputMimeType,
-                startOffset,
-                endOffset);
-
-            return output;
+            return AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, startOffset, endOffset, targetSampleRateHz);
         }
 
         /// <summary>
@@ -115,6 +87,7 @@ namespace AnalysisRunner
                 var analysisSegmentsForMaxSize = Math.Ceiling(fileSegmentDuration / analysisSegmentMaxDuration);
 
                 // get the segment durations
+                // TODO: assumption is for 1 minute chunks.
                 var segments = DivideEvenly(Convert.ToInt64(fileSegmentDuration), Convert.ToInt64(analysisSegmentsForMaxSize)).ToList();
 
                 long aggregate = 0;
@@ -150,14 +123,6 @@ namespace AnalysisRunner
                 yield return i < rem ? div + 1 : div;
             }
         }
-
-
-        private IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
-        {
-            var audioUtility = new MasterAudioUtility(targetSampleRateHz, SoxAudioUtility.SoxResampleQuality.VeryHigh);
-            return audioUtility;
-        }
-
 
         /// <summary>
         /// Get the source files based on analysis <paramref name="analysisSettings"/>.
@@ -256,5 +221,10 @@ namespace AnalysisRunner
             }
         }
 
+        private IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
+        {
+            var audioUtility = new MasterAudioUtility(targetSampleRateHz, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            return audioUtility;
+        }
     }
 }

@@ -12,6 +12,8 @@ using TowseyLib;
 using AudioAnalysisTools;
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
+using AnalysisBase;
+using Acoustics.Tools;
 
 
 
@@ -22,7 +24,7 @@ using Acoustics.Tools.Audio;
 
 namespace AnalysisPrograms
 {
-    public class Human2
+    public class Human2 : IAnalysis
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -47,12 +49,12 @@ namespace AnalysisPrograms
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         //KEYS TO OUTPUT INDICES
-        public static string key_COUNT     = "count";
+        public static string key_COUNT = "count";
         public static string key_START_ABS = "EvStartAbs";
         public static string key_START_MIN = "EvStartMin";
         public static string key_START_SEC = "EvStartSec";
         public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CALL_SCORE   = "CallScore";
+        public static string key_CALL_SCORE = "CallScore";
 
         //INITIALISE OUTPUT TABLE OF EVENTS
         private const int EVENT_COL_NUMBER = 6;
@@ -100,8 +102,8 @@ namespace AnalysisPrograms
             string configPath = @"C:\SensorNetworks\Output\Human\Human.cfg";
             string outputDir = @"C:\SensorNetworks\Output\Human\";
 
-            string opFName       = ANALYSIS_NAME + ".txt";
-            string opPath        = outputDir + opFName;
+            string opFName = ANALYSIS_NAME + ".txt";
+            string opPath = outputDir + opFName;
             string audioFileName = Path.GetFileName(recordingPath);
             Log.Verbosity = 1;
 
@@ -119,8 +121,10 @@ namespace AnalysisPrograms
             Dictionary<string, string>.KeyCollection keys = configDict.Keys;
 
             int startMinute = 5; //dummy value
-            var fiSegmentOfSourceFile = new FileInfo(recordingPath);
             var diOutputDir = new DirectoryInfo(outputDir);
+
+            var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, RESAMPLE_RATE);
+            //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
 
             //#############################################################################################################################################
             DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
@@ -144,9 +148,8 @@ namespace AnalysisPrograms
 
         public static DataTable AnalysisReturnsDataTable(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
-            string opFileName = "temp.wav";
             //######################################################################
-            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir);
             //######################################################################
             if (results == null)
             {
@@ -196,6 +199,8 @@ namespace AnalysisPrograms
                 image.Save(imagePath, ImageFormat.Png);
             }
 
+            //DataTableTools.WriteTable(dataTable);
+
             return dataTable;
         }
 
@@ -205,14 +210,14 @@ namespace AnalysisPrograms
             double segmentStartMinute = segmentDuration * iter;
             string newFileNameWithoutExtention = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.FullName) + "_" + (int)segmentStartMinute + "min";
             string opFileName = newFileNameWithoutExtention + ".wav";
-            if (! fiSegmentOfSourceFile.Exists)
+            if (!fiSegmentOfSourceFile.Exists)
             {
                 Console.WriteLine("The source file does not exist:" + fiSegmentOfSourceFile.FullName);
                 return null;
             }
 
             //######################################################################
-            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir);
             //######################################################################
             if (results == null)
             {
@@ -231,7 +236,7 @@ namespace AnalysisPrograms
             Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
             string imagePath = Path.Combine(diOutputDir.FullName, newFileNameWithoutExtention + ".png");
             image.Save(imagePath, ImageFormat.Png);
-            return image; 
+            return image;
         }
 
         /// <summary>
@@ -242,8 +247,8 @@ namespace AnalysisPrograms
         /// <param name="iter"></param>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> 
-                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
             //set default values
             int frameSize = 1024;
@@ -257,13 +262,13 @@ namespace AnalysisPrograms
             double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
             double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
 
-            AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
+            AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
             {
                 Console.WriteLine("AudioRecording return null. Analysis not possible.");
                 return null;
             }
-            
+
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
@@ -319,7 +324,7 @@ namespace AnalysisPrograms
                 if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
 
                 //set up the hits matrix
-                double relativePeriod = periodicity[r] / colCount / 2;
+                double relativePeriod = herzPeriod / (double)380;
                 for (int c = minBin; c < maxbin; c++) hits[r, c] = relativePeriod;
 
                 //set scoreArray[r]  - ignore locations with low intensity
@@ -348,7 +353,8 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-            if (hits != null) image.AddSuperimposedTransparency(hits);
+            //if (hits != null) image.OverlayRedTransparency(hits);
+            if (hits != null) image.OverlayRainbowTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
             return image.GetImage();
         } //DrawSonogram()
@@ -368,12 +374,12 @@ namespace AnalysisPrograms
                 int eventStartSec = eventStartAbsoluteSec % 60;
 
                 DataRow row = dataTable.NewRow();
-                row[key_START_ABS]    = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
-                row[key_START_MIN]    = eventStartMin;           //EvStartMin
-                row[key_START_SEC]    = eventStartSec;           //EvStartSec
+                row[key_START_ABS] = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
+                row[key_START_MIN] = eventStartMin;           //EvStartMin
+                row[key_START_SEC] = eventStartSec;           //EvStartSec
                 row[key_SEGMENT_DURATION] = tsSegmentDuration.TotalSeconds; //segment Duration in seconds
                 row[key_CALL_DENSITY] = predictedEvents.Count;   //Density
-                row[key_CALL_SCORE]   = ev.Score;                //Score
+                row[key_CALL_SCORE] = ev.Score;                //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -389,7 +395,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static DataTable ConvertEvents2Indices(DataTable dt)
         {
-            dt = DataTableTools.SortTable(dt, key_START_ABS+ " ASC"); //must ensure a sort
+            dt = DataTableTools.SortTable(dt, key_START_ABS + " ASC"); //must ensure a sort
 
             double scoreThreshold = 0.25;
             int timeScale = 60; //i.e. 60 seconds per output row.
@@ -438,5 +444,87 @@ namespace AnalysisPrograms
 
 
 
+
+        public string DisplayName
+        {
+            get { return "Human Speech"; }
+        }
+
+        public string Identifier
+        {
+            get { return "Towsey.Human2"; }
+        }
+
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings
+                {
+                    AnalysisRunMode = AnalysisMode.Everything,
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = Human2.RESAMPLE_RATE
+                };
+            }
+        }
+
+        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        {
+            var configuration = new Configuration(analysisSettings.ConfigFile.FullName);
+            Dictionary<string, string> configDict = configuration.GetTable();
+
+            var result = new AnalysisResult
+           {
+               AnalysisIdentifier = this.Identifier,
+               SettingsUsed = analysisSettings
+           };
+
+            switch (analysisSettings.AnalysisRunMode)
+            {
+                case AnalysisMode.Display:
+                    configDict[key_DRAW_SONOGRAMS] = "2";
+                    break;
+                case AnalysisMode.Everything:
+                    configDict[key_DRAW_SONOGRAMS] = "2";
+                    break;
+                case AnalysisMode.None:
+                case AnalysisMode.Efficient:
+                default:
+                    configDict[key_DRAW_SONOGRAMS] = "0";
+                    break;
+            }
+
+            result.Data = Human2.AnalysisReturnsDataTable(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
+
+            return result;
+
+            // examples
+            /*
+            switch (analysisSettings.AnalysisRunMode)
+            {
+                case AnalysisMode.Display:
+                    // TODO
+                    break;
+                case AnalysisMode.Everything:
+                    // TODO
+                    break;
+                case AnalysisMode.None:
+                case AnalysisMode.Efficient:
+                default:
+                    result.Data = Human2.AnalysisReturnsDataTable(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
+                    break;
+            }
+            */
+
+
+
+            //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
+            //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
+
+            
+        }
     } //end class Human2
 }

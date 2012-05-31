@@ -4,6 +4,13 @@
     using System.Collections.Generic;
     using System.IO;
 
+    public enum AnalysisMode {
+        None = 0,
+        Efficient = 1, // data table only
+        Display = 2, // image only
+        Everything = 3 // everything!
+    }
+
     /// <summary>
     /// The analysis settings for processing one audio file.
     /// </summary>
@@ -145,7 +152,7 @@
         public FileInfo AudioFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration for segments to overlap..
+        /// Gets or sets the duration for segments to overlap.
         /// This should be set to an initial value by an analysis.
         /// </summary>
         public TimeSpan SegmentOverlapDuration { get; set; }
@@ -154,6 +161,7 @@
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
+        /// TODO: a chunk of audio without the overlap is a 'segmentstep'.
         /// </summary>
         public TimeSpan? SegmentMinDuration { get; set; }
 
@@ -181,12 +189,17 @@
         /// Before an analysis is run, the user may be given the chance to modify the configuration.
         /// This should be set to an initial value by an analysis.
         /// </summary>
-        public string ConfigStringInput { get; set; }
+        //public string ConfigStringInput { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration file to use to run the analysis.
         /// Analysis implementations must not set this. Use ConfigStringInput to set the content of the file instead.
         /// </summary>
         public FileInfo ConfigFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets analysis mode (this is just a hint).
+        /// </summary>
+        public AnalysisMode AnalysisRunMode { get; set; }
     }
 }
