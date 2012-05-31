@@ -8,12 +8,13 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-using TowseyLib;
-using AudioAnalysisTools;
 using Acoustics.Shared;
+using Acoustics.Tools;
 using Acoustics.Tools.Audio;
 using AnalysisBase;
-using Acoustics.Tools;
+
+using TowseyLib;
+using AudioAnalysisTools;
 
 
 
@@ -93,14 +94,15 @@ namespace AnalysisPrograms
         //public const int RESAMPLE_RATE = 22050;
 
 
+
         public static void Dev(string[] args)
         {
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\Software\WavFiles\Human\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
             string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            string configPath = @"C:\SensorNetworks\Output\Human\Human.cfg";
-            string outputDir = @"C:\SensorNetworks\Output\Human\";
+            string configPath    = @"C:\SensorNetworks\Output\Human\Human.cfg";
+            string outputDir     = @"C:\SensorNetworks\Output\Human\";
 
             string opFName = ANALYSIS_NAME + ".txt";
             string opPath = outputDir + opFName;
@@ -118,15 +120,22 @@ namespace AnalysisPrograms
             //READ PARAMETER VALUES FROM INI FILE
             var configuration = new Configuration(configPath);
             Dictionary<string, string> configDict = configuration.GetTable();
-            Dictionary<string, string>.KeyCollection keys = configDict.Keys;
+            //Dictionary<string, string>.KeyCollection keys = configDict.Keys;
 
             int startMinute = 5; //dummy value
             var diOutputDir = new DirectoryInfo(outputDir);
 
+            //use the next line to process entire file and the on eafter to process a segment.
             var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, RESAMPLE_RATE);
             //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
 
+
             //#############################################################################################################################################
+
+            IAnalysis analyser = new Human2();
+            AnalysisSettings analysisSettings = new AnalysisSettings();
+            analyser.Analyse(analysisSettings);
+            
             DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
             //#############################################################################################################################################
             if (dt == null)
@@ -144,6 +153,7 @@ namespace AnalysisPrograms
             Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
+
 
 
         public static DataTable AnalysisReturnsDataTable(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
@@ -343,7 +353,9 @@ namespace AnalysisPrograms
         {
             //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            int maxFreq = sonogram.NyquistFrequency / 2;
+            //Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
 
 
             //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
@@ -471,6 +483,16 @@ namespace AnalysisPrograms
             }
         }
 
+
+        public string DefaultConfiguration
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
+
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
             var configuration = new Configuration(analysisSettings.ConfigFile.FullName);
@@ -482,34 +504,29 @@ namespace AnalysisPrograms
                SettingsUsed = analysisSettings
            };
 
-            switch (analysisSettings.AnalysisRunMode)
-            {
-                case AnalysisMode.Display:
-                    configDict[key_DRAW_SONOGRAMS] = "2";
-                    break;
-                case AnalysisMode.Everything:
-                    configDict[key_DRAW_SONOGRAMS] = "2";
-                    break;
-                case AnalysisMode.None:
-                case AnalysisMode.Efficient:
-                default:
-                    configDict[key_DRAW_SONOGRAMS] = "0";
-                    break;
-            }
-
-            result.Data = Human2.AnalysisReturnsDataTable(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
-
-            return result;
+           // switch (analysisSettings.AnalysisRunMode)
+           // {
+           //     case AnalysisMode.Display:
+           //         configDict[key_DRAW_SONOGRAMS] = "2";
+           //         break;
+           //     case AnalysisMode.Everything:
+           //         configDict[key_DRAW_SONOGRAMS] = "2";
+           //         break;
+           //     case AnalysisMode.None:
+           //     case AnalysisMode.Efficient:
+           //     default:
+           //         configDict[key_DRAW_SONOGRAMS] = "0";
+           //         break;
+           // }
 
             // examples
-            /*
             switch (analysisSettings.AnalysisRunMode)
             {
                 case AnalysisMode.Display:
-                    // TODO
+                    //result.Data = Human2.AnalysisReturnsSonogram(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
                     break;
                 case AnalysisMode.Everything:
-                    // TODO
+                    result.Data = Human2.AnalysisReturnsDataTable(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
                     break;
                 case AnalysisMode.None:
                 case AnalysisMode.Efficient:
@@ -517,14 +534,10 @@ namespace AnalysisPrograms
                     result.Data = Human2.AnalysisReturnsDataTable(0, analysisSettings.AudioFile, configDict, analysisSettings.AnalysisRunDirectory);
                     break;
             }
-            */
-
-
 
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
-
-            
+            return result;
         }
     } //end class Human2
 }

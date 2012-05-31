@@ -310,14 +310,14 @@
 
         public Image GetImage()
         {
-            return GetImage(1, false, false);
+            return GetImage(this.NyquistFrequency, 1, false, false);
         }
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
         {
             // Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
             // Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
-            return GetImage(1, doHighlightSubband, add1kHzLines);
+            return GetImage(this.NyquistFrequency, 1, doHighlightSubband, add1kHzLines);
         }
 
         /// <summary>
@@ -348,11 +348,13 @@
             return System.Tuple.Create(Mt, min, max);
         }
 
-        protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
+        public virtual Image GetImage(int maxFrequency, int binHeight, bool doHighlightSubband, bool add1kHzLines)
         {
             int width = this.Data.GetLength(0); // Number of spectra in sonogram
             int fftBins = this.Data.GetLength(1);
-            int imageHeight = fftBins * binHeight; // image ht = sonogram ht. Later include grid and score scales
+            int maxBin = (int)Math.Floor(fftBins * maxFrequency / (double)this.NyquistFrequency);
+
+            int imageHeight = maxBin * binHeight; // image ht = sonogram ht. Later include grid and score scales
 
             //set up min, max, range for normalising of dB values
             double min; double max;
@@ -380,7 +382,7 @@
 
             Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
             int yOffset = imageHeight;
-            for (int y = 0; y < fftBins; y++) //over all freq bins
+            for (int y = 0; y < maxBin; y++) //over all freq bins
             {
                 for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
                 {
@@ -558,22 +560,27 @@
         private void Draw1kHzLines(Bitmap bmp)
         {
             const int kHz = 1000;
+            double kHzBinWidth = kHz / this.FBinWidth;
             int width = bmp.Width;
             int height = bmp.Height;
 
-            //calculate height of the sonogram
-            int sHeight = height;
-            int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
-            if (this.Configuration.DoMelScale) vScale = CreateMelYaxis(kHz, sHeight);
-
-            for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
+            int bandCount = (int)Math.Floor(height / kHzBinWidth);
+            int[] gridLineLocations = new int[bandCount];
+            for (int b = 0; b < bandCount; b++)
             {
-                if (vScale[p] == 0) continue;
-                int y = sHeight - p;
+                gridLineLocations[b] = (int)(height - ((b + 1) * kHzBinWidth));
+            }
+
+            //get melscale locations
+            if (this.Configuration.DoMelScale) gridLineLocations = CreateMelYaxis(kHz, height);//WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
+
+            for (int b = 0; b < bandCount; b++) //over each band
+            {
+                int y = gridLineLocations[b];
                 for (int x = 1; x < width; x++)
                 {
                     bmp.SetPixel(x - 1, y, Color.White);
-                    bmp.SetPixel(x, y, Color.Black);
+                    bmp.SetPixel(x, y,     Color.Black);
                     x++;
                 }
             }

@@ -10,7 +10,6 @@
     using System.Linq;
 
     using Acoustics.Shared;
-
     using AnalysisBase;
 
     public class Program
