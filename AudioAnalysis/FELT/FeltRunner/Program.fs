@@ -74,6 +74,7 @@
         let exportFrn = bool.Parse(config.["ExportFrn"])
         let exportFrd = bool.Parse(config.["ExportFrd"])
         let allAnalyses = bool.Parse(config.["CrossAnalyseAllFeatures"])
+        let allAnalysesLimit = System.Int32.Parse(config.["CrossAnalyseAllFeatures_Limit"])
 
 
         // ANALYSIS RUN SETTINGS
@@ -152,7 +153,13 @@
                 let powerset = 
                     if (allAnalyses) then
                         // fst element of powerset is empty... skip
-                        Set.powerset keys |> Seq.skip 1 |> Seq.toArray |> Array.rev
+                        let fSets = Set.powerset keys |> Seq.skip 1 |> Seq.toArray |> Array.rev
+
+                        if allAnalysesLimit > 0 && fSets.Length > allAnalysesLimit then
+                            Warnf "MAXIMUM NUMBER OF FEATURE COMBINATIONS PRODUCED. %i was capped to %i. This means there will be %i runs instead if %i" fSets.Length allAnalysesLimit (fSets.Length * analyses.Length) (allAnalysesLimit * analyses.Length)
+                            Array.sub fSets 0 allAnalysesLimit
+                        else
+                            fSets
                      else
                         [| keys |]
 
@@ -160,7 +167,7 @@
                 powerset |> Array.collect (fun s -> Array.map (fun (x,y) -> (x,y,s)) analyses), powerset.Length
 
             if allAnalyses then
-                Warnf "All selected analyses will be run with EVERY combination of features! %i features, %i combinations, %i analyses, %i runs." trData.Instances .Count combinations analyses.Length analyses'.Length
+                Warnf "All selected analyses will be run with EVERY combination of features! %i features, %i combinations, %i analyses, %i runs." trData.Instances.Count combinations analyses.Length analyses'.Length
             else
                 Infof "All selected analyses will be run with all features! %i features, %i analyses, %i runs." trData.Instances.Count combinations analyses'.Length
                 
