@@ -851,7 +851,7 @@ namespace AudioAnalysisTools
         /// The method uses the passed scoreThreshold in order to calculate a normalised score.
         /// Max possible score := threshold * 5
         /// normalised score := score / maxPossibleScore.
-        /// Some analysis techniques (e.g. OD) have there own methods for extracting events from score arrays.
+        /// Some analysis techniques (e.g. OD) have their own methods for extracting events from score arrays.
         /// </summary>
         /// <param name="scores">the array of scores</param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
@@ -899,6 +899,7 @@ namespace AudioAnalysisTools
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
                         ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
+                        if (ev.ScoreNormalised > 1.0) ev.ScoreNormalised = 1.0;
                         ev.Score_MaxPossible = maxPossibleScore;
 
                         //find max score and its time
