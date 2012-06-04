@@ -119,6 +119,38 @@ namespace TowseyLib
             return sm;
         }
 
+        /// <summary>
+        /// Returns an array of row averages in the submatrix of passed matrix.
+        /// This method combines two methods, Submatrix() & GetRowAverages(), for efficiency
+        /// Assume that r1 < r2, c1 < c2. 
+        /// Row, column indices start at 0
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="r1"></param>
+        /// <param name="c1"></param>
+        /// <param name="r2"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public static double[] GetRowAveragesOfSubmatrix(double[,] M, int r1, int c1, int r2, int c2)
+        {
+            int subRowCount = r2 - r1 + 1;
+            int subColCount = c2 - c1 + 1;
+
+            double[] array = new double[subRowCount];
+
+            for (int i = 0; i < subRowCount; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j < subColCount; j++)
+                {
+                    sum += M[r1 + i, c1 + j];
+                    array[i] = sum / (double)subColCount;
+                }
+            }
+            return array;
+        }
+
+
 
         public static double[,] ConvertList2Matrix(List<double[]> list)
         {

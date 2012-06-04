@@ -73,7 +73,7 @@ namespace TowseyLib
          public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader)
          {
              string[] csvRows = System.IO.File.ReadAllLines(filePath);
-
+             if (csvRows.Length == 0) return null;
              //convert rows 1-11 toList of strings so can deduce their types.
              var listOfStringArrays = ConvertCSVRowsToListOfStringArrays(csvRows, 1, 30);
              Type[] types = DataTools.GetArrayTypes(listOfStringArrays);
@@ -112,7 +112,7 @@ namespace TowseyLib
          }
         /// <summary>
         /// this method is called by the previous method when reading in a CSV file.
-        /// It is used only to get csv data into a format that the data type for each field can be determined.
+        /// It is used only to get csv data into a column format so that the data type for each field can be determined.
         /// </summary>
         /// <param name="csvRows"></param>
         /// <param name="rowStart"></param>
@@ -120,7 +120,7 @@ namespace TowseyLib
         /// <returns></returns>
         public static List<string[]> ConvertCSVRowsToListOfStringArrays(string[] csvRows, int rowStart, int rowEnd)
         {
-             if (rowEnd > csvRows.Length) rowEnd = csvRows.Length;
+             if (rowEnd > csvRows.Length) rowEnd = csvRows.Length-1;
              List<string[]> listOfStringArrays = new List<string[]>();
              int fieldCount  = csvRows[0].Split(',').Length;
              int arrayLength = rowEnd - rowStart + 1;

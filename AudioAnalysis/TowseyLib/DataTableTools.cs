@@ -309,7 +309,6 @@ namespace TowseyLib
             string name = col.ColumnName;
             Type type = col.GetType();
             if (!dt.Columns.Contains(name)) dt.Columns.Add(name, type);
-            int index = 0;
 
             for (int r = 0; r < rowCount; r++)
             {
@@ -448,6 +447,7 @@ namespace TowseyLib
 
        public static void WriteTable(DataTable dt)
        {
+           if (dt == null) return;
            string[] headers = DataTableTools.GetColumnNames(dt);
            foreach(string name in headers) Console.Write(" {0,-10}", name);
            Console.WriteLine();
