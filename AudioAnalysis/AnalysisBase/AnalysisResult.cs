@@ -3,6 +3,9 @@
     using System.Data;
     using System.Collections.Generic;
     using System.IO;
+    using System.Text;
+    using System;
+
 
     /// <summary>
     /// Analysis Results.
@@ -123,5 +126,27 @@
         /// Gets or sets OutputFiles.
         /// </summary>
         public Dictionary<string, FileInfo> OutputFiles { get; private set; }
+
+
+        /// <summary>
+        /// Gets or sets the location of the events file for this analysis.
+        /// </summary>
+        public FileInfo EventsFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location of the indices file for this analysis.
+        /// </summary>
+        public FileInfo IndicesFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the debug image file for this analysis.
+        /// </summary>
+        public FileInfo ImageFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the debug image file for this analysis.
+        /// </summary>
+        public TimeSpan AudioDuration { get; set; }
+
     }
 }
