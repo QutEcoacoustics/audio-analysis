@@ -204,6 +204,8 @@ namespace TowseyLib
         //WRITE A CSV FILE FROM A TABLE
          public static void DataTable2CSV(DataTable dt, string strFilePath)
         {
+            if (dt == null) return;
+
             // Create the CSV file to which grid data will be exported.
             StreamWriter sw = new StreamWriter(strFilePath, false);
 

@@ -368,7 +368,7 @@
                             DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
                             CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
                         }
-                    if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //AcousticIndices
+                    if (this.CurrentSourceFileAnalysisType.Equals(Human2.ANALYSIS_NAME)) //AcousticIndices
                     {
                         reportfilePath = Path.Combine(opDir, fName + reportFileExt);
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
@@ -445,7 +445,7 @@
                     outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                 }
                 else
-                    if (analysisName == Human.ANALYSIS_NAME) //Human speech Recogniser
+                    if (analysisName == Human2.ANALYSIS_NAME) //Human speech Recogniser
                     {
                         //var parameters = Human.InitOutputTableColumns();
                         //outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);

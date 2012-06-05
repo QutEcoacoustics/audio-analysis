@@ -307,7 +307,8 @@ namespace AnalysisPrograms
                 double periodicity = item[key_PERIODICITY];
 
                 double[] subarray = DataTools.Subarray(avAbsolute, minRow, maxRow - minRow + 1);
-                int[] bounds = DataTools.Peaks_FirstAndLast(subarray);
+                double severity = 0.1;
+                int[] bounds = DataTools.Peaks_CropToFirstAndLast(subarray, severity);
                 minRow = minRow + bounds[0];
                 maxRow = minRow + bounds[1];
                 if (maxRow >= rowCount) maxRow = rowCount-1;

@@ -131,20 +131,19 @@
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
+    <Compile Include="Harmonics.cs" />
     <Compile Include="HTKRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Human.cs" />
     <Compile Include="Human2.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="KiwiRecogniser.cs" />
+    <Compile Include="LewinsRail3.cs" />
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="Process\AcousticIndicesAnalysis.cs" />
     <Compile Include="Process\AnalysisHelpers.cs" />
     <Compile Include="Process\CaneToadOdAnalysis.cs" />
-    <Compile Include="Process\CrowHdAnalysis.cs" />
     <Compile Include="Process\HarmonicRecogniserAnalysis.cs" />
-    <Compile Include="Process\HumanSpeechAnalysis.cs" />
     <Compile Include="Process\LSKiwiAnalysis.cs" />
     <Compile Include="Process\OscillationRecogniserAnalysis.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />

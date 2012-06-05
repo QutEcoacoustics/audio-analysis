@@ -365,6 +365,8 @@ namespace TowseyLib
   /// <returns></returns>
   public static double[,] AddMatrices(double[,] m1, double[,] m2)
   {
+      if (m1 == null) return m2;
+      if (m2 == null) return m1;
       int m1Rows = m1.GetLength(0);
       int m1Cols = m1.GetLength(1);
       int m2Rows = m2.GetLength(0);
