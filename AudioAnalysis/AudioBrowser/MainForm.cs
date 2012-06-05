@@ -96,6 +96,11 @@
             }
             catch (Exception ex)
             {
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();                    
+                }
+
                 MessageBox.Show("WARNING: CANNOT LOCATE BROWSER CONFIG FILE! ");
                 MessageBox.Show(ex.ToString());
             }

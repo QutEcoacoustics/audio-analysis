@@ -18,7 +18,7 @@
     [TestClass]
     public class MathTest
     {
-        public const double minDeltaForDoubleTests = 0.00000000005;
+        public const double MinDeltaForDoubleTests = 0.00000000005;
 
         /// <summary>
         /// Gets or sets the test context which provides
@@ -134,7 +134,7 @@
             double expected = 1151.53640411409;
             double actual;
             actual = Math.euclideanDist(vectorP, vectorQ);
-            Assert.AreEqual(expected, actual, minDeltaForDoubleTests);
+            Assert.AreEqual(expected, actual, MinDeltaForDoubleTests);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@
             const double Expected = 8.68181818181818;
 
             var mine = Math.Array.mean(input);
-            Assert.AreEqual(Expected, mine, minDeltaForDoubleTests);
+            Assert.AreEqual(Expected, mine, MinDeltaForDoubleTests);
    
         }
     }
