@@ -303,6 +303,7 @@ namespace TowseyLib
         /// <param name="col"></param>
         public static void AddColumn2Table(DataTable dt, DataColumn col)
         {
+            if (dt == null) return;
             if ((col == null) || (col.Container == null) || (col.Container.Components == null)) return;
             int rowCount = col.Container.Components.Count;
             if (rowCount == 0) return;
@@ -320,6 +321,7 @@ namespace TowseyLib
 
         public static List<int> Column2ListOfInt(DataTable dt, string colName)
         {
+            if (dt == null) return null;
             var list = new List<int>();
             foreach (DataRow row in dt.Rows)
             {
@@ -344,6 +346,7 @@ namespace TowseyLib
 
         public static List<double> Column2ListOfDouble(DataTable dt, string colName)
         {
+            if (dt == null) return null;
             var list = new List<double>();
             var colType = dt.Columns[colName].DataType;
 
@@ -375,6 +378,7 @@ namespace TowseyLib
 
         public static List<double[]> ListOfColumnValues(DataTable dt)
         {
+            if (dt == null) return null;
             var list = new List<double[]>();
             foreach (DataColumn col in dt.Columns)
             {
@@ -387,6 +391,7 @@ namespace TowseyLib
 
         public static string[] GetColumnNames(DataTable dt)
         {
+            if(dt == null) return null;
             var names = new List<string>();
             foreach (DataColumn col in dt.Columns) names.Add(col.ColumnName);
             return names.ToArray();
@@ -395,6 +400,7 @@ namespace TowseyLib
 
         public static Type[] GetColumnTypes(DataTable dt)
         {
+            if (dt == null) return null;
             var types = new List<Type>();
             foreach (DataColumn col in dt.Columns) types.Add(col.DataType);
             return types.ToArray();
@@ -409,6 +415,7 @@ namespace TowseyLib
         /// <returns></returns>
         public static DataTable NormaliseColumnValues(DataTable dt)
         {
+            if (dt == null) return null;
             List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
             List<double[]> newList = new List<double[]>(); 
             for (int i = 0; i < columns.Count; i++)
@@ -433,6 +440,7 @@ namespace TowseyLib
 
         public static void RemoveTableColumns(DataTable dt, bool[] retainColumn)
         {
+            if (dt == null) return;
             int colCount = dt.Columns.Count;
             string[] names = GetColumnNames(dt);
             for (int i = 0; i < colCount; i++)

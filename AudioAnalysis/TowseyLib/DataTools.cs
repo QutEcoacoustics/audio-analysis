@@ -3131,10 +3131,20 @@ namespace TowseyLib
   }
 
   //=============================================================================
-  
 
 
+          public static List<string> FilterKeysInDictionary(Dictionary<string, string> dict, string filter)
+          {
+              List<string> keys = dict.Keys.ToList();
+
+              var list = new List<string>();
+              foreach (string key in keys)
+              {
+                  if(key.StartsWith(filter)) list.Add(key);
+              }
+              return list;
+          }
 
 
-    }
+    }//class dataTools()
 }

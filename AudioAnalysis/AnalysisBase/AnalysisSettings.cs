@@ -4,12 +4,12 @@
     using System.Collections.Generic;
     using System.IO;
 
-    public enum AnalysisMode {
-        None = 0,
-        Efficient = 1, // data table only
-        Display = 2, // image only
-        Everything = 3 // everything!
-    }
+    //public enum AnalysisMode {
+    //    None = 0,
+    //    Efficient = 1, // data table only
+    //    Display = 2, // image only
+    //    Everything = 3 // everything!
+    //}
 
     /// <summary>
     /// The analysis settings for processing one audio file.
@@ -152,6 +152,22 @@
         public FileInfo AudioFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the events file for the analysis.
+        /// </summary>
+        public FileInfo EventsFile { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the indices file for the analysis.
+        /// </summary>
+        public FileInfo IndicesFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio file for the analysis.
+        /// Analysis implementations must not set this.
+        /// </summary>
+        public FileInfo ImageFile { get; set; }
+
+        /// <summary>
         /// Gets or sets the duration for segments to overlap.
         /// This should be set to an initial value by an analysis.
         /// </summary>
@@ -185,14 +201,20 @@
         public string SegmentMediaType { get; set; }
 
         /// <summary>
+        /// Gets or sets the configuration string. 
+        /// Before an analysis is run, the user may be given the chance to modify the configuration.
+        /// This should be set to an initial value by an analysis.
+        /// </summary>
+        //public string ConfigStringInput { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration file to use to run the analysis.
-        /// Analysis implementations must not set this. Use ConfigStringInput to set the content of the file instead.
         /// </summary>
         public FileInfo ConfigFile { get; set; }
 
         /// <summary>
         /// Gets or sets analysis mode (this is just a hint).
         /// </summary>
-        public AnalysisMode AnalysisRunMode { get; set; }
+        //public AnalysisMode AnalysisRunMode { get; set; }
     }
 }

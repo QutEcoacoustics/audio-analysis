@@ -98,6 +98,47 @@ namespace Acoustics.Tools
             return output;
         }
 
+        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, int targetSampleRateHz)
+        {
+            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
+
+            var sourceMimeType = MediaTypes.GetMediaType(sourceF.Extension);
+            var outputMimeType = MediaTypes.GetMediaType(outputF.Extension);
+            string outputDirectory = Path.GetDirectoryName(outputF.FullName);
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            audioUtility.Convert(
+                sourceF,
+                sourceMimeType,
+                outputF,
+                outputMimeType);
+        }
+
+        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, int targetSampleRateHz, TimeSpan startOffset, TimeSpan endOffset)
+        {
+            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
+
+            var sourceMimeType = MediaTypes.GetMediaType(sourceF.Extension);
+            var outputMimeType = MediaTypes.GetMediaType(outputF.Extension);
+            string outputDirectory = Path.GetDirectoryName(outputF.FullName);
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            audioUtility.Segment(
+                sourceF,
+                sourceMimeType,
+                outputF,
+                outputMimeType,
+                startOffset,
+                endOffset);
+        }
+
 
         private static IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
         {

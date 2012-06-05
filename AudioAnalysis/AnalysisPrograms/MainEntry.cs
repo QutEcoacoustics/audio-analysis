@@ -57,6 +57,9 @@ namespace AnalysisPrograms
                     //case "grids":  // grid recognition
                     //    BarsAndStripes.Dev(restOfArgs);
                     //    break;
+                    case "harmonics":   // general harmonics recogniser
+                        Harmonics.Dev(restOfArgs);
+                        break;
                     case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(restOfArgs);
                         break;
@@ -65,6 +68,9 @@ namespace AnalysisPrograms
                         break;
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
                         LSKiwi.Dev();
+                        break;
+                    case "LewinsRail":  //LewinsRail3
+                        LewinsRail3.Dev(restOfArgs);
                         break;
                     case "machines":     // recognises Planes, Trains And Automobiles 
                         PlanesTrainsAndAutomobiles.Dev(restOfArgs);
