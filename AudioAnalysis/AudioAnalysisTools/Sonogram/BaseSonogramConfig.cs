@@ -134,7 +134,7 @@ namespace AudioAnalysisTools
             DoSnr = true; // set false if only want to 
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
             NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
-            NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
+            //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
 
             //FREQ BAND PARAMETERS
             DoFullBandwidth = false; // set true if only want to 

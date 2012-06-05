@@ -67,7 +67,7 @@ namespace AnalysisPrograms
                         Human2.Dev(restOfArgs);
                         break;
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwi.Dev();
+                        LSKiwi2.Dev(restOfArgs);
                         break;
                     case "LewinsRail":  //LewinsRail3
                         LewinsRail3.Dev(restOfArgs);

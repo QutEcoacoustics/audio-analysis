@@ -139,6 +139,7 @@
     <Compile Include="KoalaMale.cs" />
     <Compile Include="KiwiRecogniser.cs" />
     <Compile Include="LewinsRail3.cs" />
+    <Compile Include="LSKiwi2.cs" />
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="Process\AcousticIndicesAnalysis.cs" />
     <Compile Include="Process\AnalysisHelpers.cs" />

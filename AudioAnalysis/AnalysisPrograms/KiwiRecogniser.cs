@@ -422,6 +422,15 @@ namespace AnalysisPrograms
             // Merge the male and female hit matrices. Each hit matrix shows where there is an oscillation of sufficient amplitude in the correct range.
             // Values in the matrix are the oscillation rate. i.e. if OR = 2.0 = 2 oscillations per second. </param>
             Double[,] hits = DataTools.AddMatrices(maleHits, femaleHits);
+            //normalise the hit values
+            double delta = 2.5; //range of the oscilation rate i.e. 1-3 oscillations per second
+            for (int i = 0; i < hits.GetLength(0); i++)
+            {
+                for (int j = 0; j < hits.GetLength(1); j++)
+                {
+                    hits[i, j] /= delta;
+                }
+            }
             //merge the two score arrays
             for (int i = 0; i < maleScores.Length; i++) if (femaleScores[i] > maleScores[i]) maleScores[i] = femaleScores[i];
 

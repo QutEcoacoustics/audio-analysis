@@ -183,7 +183,12 @@ namespace TowseyLib
 
             //if (Double.TryParse(str, out d))     dic.Add(key, str); // if done, then is a number
             
-            if (! dict.ContainsKey(key)) return -Double.NaN;
+            if (! dict.ContainsKey(key))
+            {
+                Log.WriteLine("ERROR READING PROPERTIES FILE");
+                System.Console.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
+                return -Double.NaN;
+            }
             string value = dict[key].ToString();
             if (value == null) return -Double.NaN;
             try
