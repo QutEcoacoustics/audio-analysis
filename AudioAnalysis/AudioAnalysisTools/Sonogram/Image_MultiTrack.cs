@@ -147,6 +147,7 @@ namespace AudioAnalysisTools
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
+                if(e.oblong == null) continue;
                 int minFreqBin = (int)(e.MinFreq / e.FreqBinWidth);
                 int maxFreqBin = (int)(e.MaxFreq / e.FreqBinWidth);
                 int height = maxFreqBin - minFreqBin + 1;
@@ -222,6 +223,7 @@ namespace AudioAnalysisTools
                 {
                     if (this.SuperimposedRainbowTransparency[r, c] == 0.0) continue; //nothing to show
                     int index = (int)Math.Floor((this.SuperimposedRainbowTransparency[r, c] * 10));//get index into pallette
+                    if(index > 9) index = 9; 
                     Color newColor = palette[index];
                     Color pixel = bmp.GetPixel(r, imageHt - c);
                     if (pixel.R == 255) continue; //by-pass white

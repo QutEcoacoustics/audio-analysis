@@ -440,7 +440,34 @@ out double[] r)
 
 
 
+         public static System.Tuple<double[], double[]> DetectXcorrelationInTwoArrays(double[] array1, double[] array2, int step, int sampleLength, double minPeriod, double maxPeriod)
+         {
+            int length = array1.Length;
+            int stepCount = length / step;
+            double[] intensity   = new double[length];
+            double[] periodicity = new double[length]; 
 
+            for (int i = 0; i < stepCount; i++)
+            {
+                int start = step * i;
+                double[] lowerSubarray = DataTools.Subarray(array1, start, sampleLength);
+                double[] upperSubarray = DataTools.Subarray(array2, start, sampleLength);
+                if ((lowerSubarray == null) || (upperSubarray == null)) break;
+                var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
+                int zeroCount = 3;
+                for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                spectrum = DataTools.NormaliseArea(spectrum);
+                int maxId = DataTools.GetMaxIndex(spectrum);
+                double period = 2 * sampleLength / (double)maxId; //convert maxID to period in frames
+                if ((period < minPeriod) || (period > maxPeriod)) continue;
+                for (int j = 0; j < sampleLength; j++) //lay down score for sample length
+                {
+                    if (intensity[start + j] < spectrum[maxId]) intensity[start + j] = spectrum[maxId];
+                    periodicity[start + j] = period;
+                }
+            }
+            return Tuple.Create(intensity, periodicity);
+        }  //DetectXcorrelationInTwoArrays()
 
     } //class
 } //AnalysisPrograms
