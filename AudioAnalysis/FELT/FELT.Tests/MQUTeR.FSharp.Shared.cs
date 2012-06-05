@@ -41,7 +41,7 @@ namespace FELT.Tests
 
             DataType dataType = CSV.guessType(fSharpList);
 
-            Assert.AreEqual(dataType, DataType.Date);
+            Assert.AreEqual(DataType.Date, dataType);
         }
 
 
@@ -54,7 +54,31 @@ namespace FELT.Tests
 
             DataType dataType = CSV.guessType(fSharpList);
 
-            Assert.AreEqual(dataType, DataType.Number);
+            Assert.AreEqual(DataType.Number, dataType);
+        }
+
+        [TestMethod]
+        public void GuessTypes_bits()
+        {
+            string[] test = new[] { "0.0", "1", "0", "1.0" };
+
+            var fSharpList = ListModule.OfSeq(test);
+
+            DataType dataType = CSV.guessType(fSharpList);
+
+            Assert.AreEqual(DataType.Bit, dataType);
+        }
+
+        [TestMethod]
+        public void GuessTypes_numbersNotBits()
+        {
+            string[] test = new[] { "0.0", "1.0", "0.0000000000000000001" };
+
+            var fSharpList = ListModule.OfSeq(test);
+
+            DataType dataType = CSV.guessType(fSharpList);
+
+            Assert.AreEqual(DataType.Number, dataType);
         }
 
 

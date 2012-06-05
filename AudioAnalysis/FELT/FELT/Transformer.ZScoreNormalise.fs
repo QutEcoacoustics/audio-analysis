@@ -1,4 +1,5 @@
 ﻿namespace FELT.Transformers
+    open FELT
     open FELT.Transformers
     open System
     open Microsoft.FSharp.Collections
@@ -20,7 +21,10 @@
         override this.Transform (trainingData: Data)  (testData: Data):  Data * Data =
             
             // do standard feature check
-            FELT.Helpers.headersMatch trainingData testData
+            Helpers.headersMatch trainingData testData
+            if not (Helpers.IsTestData testData && Helpers.IsTrainingData trainingData) then
+                invalidArg "trainingData, testData" "Input of data must be the correct way round"
+
 
             // scan headers for features that are numbers
             let subFeatures = Map.filter (fun featureName dataType -> dataType = DataType.Number) trainingData.Headers |> Map.keys

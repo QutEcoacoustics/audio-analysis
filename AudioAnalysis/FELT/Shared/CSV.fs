@@ -15,7 +15,7 @@ namespace MQUTeR.FSharp.Shared
     open System.Diagnostics
 
     module CSV =
-        let CsvColumnLinesTypeCheck = 5
+        let CsvColumnLinesTypeCheck = 20
         let quotation = "\""
 
         //:rowToList "Hello, this is  a,test,\"hell,lo\", to see,, what happen, soooo, \"\"\"we need a value\"\", said bree\", something else " ',';;
@@ -62,8 +62,12 @@ namespace MQUTeR.FSharp.Shared
         /// resulting in either a string, float, or DateTime
         let guessType (instances: string list) = 
             let dataType input =
-                if Double.TryParse(input,  ref 0.0 ) then
-                    DataType.Number
+                let num = ref 0.0
+                if Double.TryParse(input,  num ) then
+                    if (!num = 0.0 || !num = 1.0) then
+                        DataType.Bit
+                    else
+                        DataType.Number
                 elif DateTimeOffset.TryParse(input, ref (new DateTimeOffset())) then
                     DataType.Date
                 else
@@ -75,7 +79,10 @@ namespace MQUTeR.FSharp.Shared
             if List.forall (fun x -> first = x) dts then
                 first
             else
-                DataType.Text
+                if List.forall (fun x -> x = DataType.Number || x = DataType.Bit) dts then
+                    DataType.Number
+                else
+                    DataType.Text
 
 
         let csvToData (features: ResizeArray<string> ) (text: string array)  =
@@ -99,7 +106,7 @@ namespace MQUTeR.FSharp.Shared
                     
                     let finalHeaders =  Array.fold (fun state (typ, index) -> Map.add headers.[index] typ state) Map.empty<ColumnHeader, DataType> filteredTypes
 
-                    // storge
+                    // storage
                     let populateColumn (map:Map<ColumnHeader, Value array>) (datatype, columnIndex) =
                         let convert rowIndex = 
                             let row = cells.[rowIndex]
@@ -109,6 +116,7 @@ namespace MQUTeR.FSharp.Shared
                                     | DataType.Date -> upcast new Date(DateTimeOffset.Parse(cell))
                                     | DataType.Number ->upcast new Number(Double.Parse(cell))
                                     | DataType.Text -> upcast new Text(cell)
+                                    | DataType.Bit -> upcast new FuzzyBit(Double.Parse(cell))
                                     | _ -> failwith "Invalid data type"
                             v
 

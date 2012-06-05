@@ -166,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EuclideanClassifierTest.cs" />
+    <Compile Include="ZScoreGlobalTransformerTest.cs" />
     <Compile Include="FindEventsLikeThisTest.cs" />
     <Compile Include="GroupTrainerTest.cs" />
     <Compile Include="MathTest.cs" />
