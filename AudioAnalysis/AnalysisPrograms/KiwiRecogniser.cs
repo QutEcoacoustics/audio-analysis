@@ -488,18 +488,13 @@ namespace AnalysisPrograms
  
                 //6: DERIVE A WEIGHTED COMBINATION SCORE
                 double comboScore = /*(hitScore * 0.00) +*/ (snrScore * 0.1) + (sdPeakScore * 0.1) + (gapScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                //if (Double.IsNaN(comboScore))
-                //{
-                //    Console.WriteLine("comboscore is Nan");
-                //    Console.ReadLine();
-                //}
 
                 //7 add score values to acoustic event
                 ae.kiwi_durationScore  = durationScore;
                 ae.kiwi_hitScore       = hitScore;
                 ae.kiwi_snrScore       = snrScore;
                 ae.kiwi_sdPeakScore    = sdPeakScore;
-                ae.kiwi_gapScore       = gapScore;
+                ae.kiwi_intensityScore       = gapScore;
                 ae.kiwi_bandWidthScore = bandWidthScore;
                 ae.Score               = comboScore;
                 ae.ScoreNormalised     = comboScore;
@@ -829,7 +824,7 @@ namespace AnalysisPrograms
                 row[HEADERS[9]] = kiwiEvent.kiwi_hitScore;        //HitScore
                 row[HEADERS[10]] = kiwiEvent.kiwi_snrScore;        //SnrScore
                 row[HEADERS[11]] = kiwiEvent.kiwi_sdPeakScore;     //sdScore
-                row[HEADERS[12]] = kiwiEvent.kiwi_gapScore;        //GapScore
+                row[HEADERS[12]] = kiwiEvent.kiwi_intensityScore;        //GapScore
                 row[HEADERS[13]] = kiwiEvent.kiwi_bandWidthScore;  //BWScore
                 row[HEADERS[14]] = kiwiEvent.ScoreNormalised;      //Weighted combination Score
                 dataTable.Rows.Add(row);
