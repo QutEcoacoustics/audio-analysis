@@ -462,8 +462,11 @@ out double[] r)
                 if ((period < minPeriod) || (period > maxPeriod)) continue;
                 for (int j = 0; j < sampleLength; j++) //lay down score for sample length
                 {
-                    if (intensity[start + j] < spectrum[maxId]) intensity[start + j] = spectrum[maxId];
-                    periodicity[start + j] = period;
+                    if (intensity[start + j] < spectrum[maxId])
+                    {
+                        intensity[start + j]   = spectrum[maxId];
+                        periodicity[start + j] = period;
+                    }
                 }
             }
             return Tuple.Create(intensity, periodicity);
