@@ -45,7 +45,7 @@ namespace Acoustics.Shared
         /// <code>
         /// AccuracyLimit
         /// </code>
-        /// constant. Choices for calid values can be found: http://en.wikipedia.org/wiki/Decimal_degrees.
+        /// constant. Choices for valid values can be found: http://en.wikipedia.org/wiki/Decimal_degrees.
         /// </summary>
         /// <param name="latitude">
         /// The latitude. 
@@ -182,12 +182,12 @@ namespace Acoustics.Shared
 
         private double Obsfucate(double bearing)
         {
-            // rather than round to the corder of the bounding box,
+            // rather than round to the corner of the bounding box,
             // add half of the smallest accuracy to get a point in the middle
             var mid = accuracySmallest / 2.0;
             double p = Math.Round(bearing, AccuracyLimit, MidpointRounding.AwayFromZero);
 
-            // if it was rounded up, subtract to get back in same grid square
+            // if it was rounded up, subtract to get back into the same grid square
             if (p > bearing)
             {
                 return p - mid;
