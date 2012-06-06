@@ -147,12 +147,13 @@ namespace AudioAnalysisTools
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
-                if(e.oblong == null) continue;
+                if (e.oblong == null) continue;
                 int minFreqBin = (int)(e.MinFreq / e.FreqBinWidth);
                 int maxFreqBin = (int)(e.MaxFreq / e.FreqBinWidth);
                 int height = maxFreqBin - minFreqBin + 1;
                 int t1 = e.oblong.r1; //temporal start of event
                 int y = this.SonoImage.Height - maxFreqBin;
+                //int tWidth = (int)Math.Round(e.Duration / e.FrameDuration);
                 int tWidth = e.oblong.r2 - t1 + 1;
                 g.DrawRectangle(p1, t1, y, tWidth, height);
                 //draw the score bar to indicate relative score
@@ -212,22 +213,23 @@ namespace AudioAnalysisTools
         /// <param name="g"></param>
         void OverlayRainbowTransparency(Graphics g, Bitmap bmp)
         {
-            Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Beige, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet };
+            Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet, Color.Purple };
             int rows = this.SuperimposedRainbowTransparency.GetLength(0);
             int cols = this.SuperimposedRainbowTransparency.GetLength(1);
             int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
 
-            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+            for (int r = 0; r < rows; r++)
             {
-                for (int r = 0; r < rows; r++)
+                for (int c = 1; c < cols; c++)//traverse columns - skip DC column
                 {
-                    if (this.SuperimposedRainbowTransparency[r, c] == 0.0) continue; //nothing to show
-                    int index = (int)Math.Floor((this.SuperimposedRainbowTransparency[r, c] * 10));//get index into pallette
-                    if(index > 9) index = 9; 
-                    Color newColor = palette[index];
+                    double value = this.SuperimposedRainbowTransparency[r, c];
+                    if (value <= 0.0) continue; //nothing to show
                     Color pixel = bmp.GetPixel(r, imageHt - c);
-                    if (pixel.R == 255) continue; //by-pass white
-                    double factor = pixel.R / (double)(255 * 1.6);  //1.6 is for color intensity adjustment
+                    if (pixel.R > 250) continue; //by-pass white
+                    int index = (int)Math.Floor((value * 9));//get index into pallette
+                    if (index > 9) index = 9;
+                    Color newColor = palette[index];
+                    double factor = pixel.R / (double)(255 * 1.2);  //1.2 is a color intensity adjustment
                     int red = (int)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
                     int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
                     int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
