@@ -64,7 +64,7 @@ namespace AudioAnalysisTools
         double I3Var;       // variance of intensity of pixels in the event.
 
         //SIX KIWI SCORES
-        public double kiwi_durationScore, kiwi_hitScore, kiwi_snrScore, kiwi_sdPeakScore, kiwi_gapScore, kiwi_bandWidthScore;
+        public double kiwi_durationScore, kiwi_hitScore, kiwi_snrScore, kiwi_sdPeakScore, kiwi_intensityScore, kiwi_bandWidthScore, kiwi_deltaPeriodScore;
 
 
 
