@@ -99,24 +99,24 @@ namespace AnalysisPrograms
             // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
             // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+            string configPath = @"C:\SensorNetworks\Output\LSKiwi2\lskiwi2.cfg";
+
+            //string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500_40m0s.wav";
             string outputDir     = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
-            string configPath    = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\lskiwi2.cfg";
-            string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav";
-            //string outputDir     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\";
-            //string configPath    = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\lskiwi_Params.txt";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2-20100219-202900_Airplane.mp3";
+            //string outputDir     = @"C:\SensorNetworks\Output\Kiwi\KAPITI2_20100219_202900\";
             //string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\KAPITI2_20100219_202900_ANDREWS_SELECTIONS.csv";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
-            //string outputDir     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\";
-            //string configPath    = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\lskiwi_Params.txt";
+            //string outputDir     = @"C:\SensorNetworks\Output\Kiwi\TUITCE_20091215_220004\";
             //string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\TUITCE_20091215_220004_ANDREWS_SELECTIONS.csv";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_210000.wav";
-            //string outputDir     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\";
-            //string configPath    = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\lskiwi_Params.txt";
+            //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi2\TuiTce_20091215_210000\";
             //string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
 
             string title = "# FOR DETECTION OF THE LITTLE SPOTTED KIWI - version 2 - started June 2012";
@@ -128,8 +128,8 @@ namespace AnalysisPrograms
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
-            int startMinute = 40;
-            int durationSeconds = 300; //set zero to get entire recording
+            int startMinute = 55;
+            int durationSeconds = 0; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
@@ -413,7 +413,7 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static System.Tuple<BaseSonogram, Double[,], List<double[]>, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> config)
         {
             int minHzMale = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
@@ -429,8 +429,6 @@ namespace AnalysisPrograms
             double eventThreshold = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
             double minDuration = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
             double maxDuration = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
-            //double segmentDuration = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, config);
-            //double segmentStartMinute = segmentDuration * iter;
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -441,87 +439,43 @@ namespace AnalysisPrograms
             TimeSpan tsRecordingtDuration = recording.Duration();
 
             //i: MAKE SONOGRAM
-            //Log.WriteLine("Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //DO NOT DO NOISE REMOVAL BECAUSE CAN LOSE SOME KIWI INFO
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MUST DO NOISE REMOVAL
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             
+            //DETECT MALE KIWI
+            var resultsMale = DetectKiwi(sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold,  minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
+            var scoresM = resultsMale.Item1;
+            var hitsM = resultsMale.Item2;
+            var predictedEventsM = resultsMale.Item3;
+            //DETECT FEMALE KIWI
+            var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
+            var scoresF = resultsFemale.Item1;
+            var hitsF = resultsFemale.Item2;
+            var predictedEventsF = resultsFemale.Item3;
+            hitsM = MatrixTools.AddMatrices(hitsM, hitsF);
+            foreach (AcousticEvent ev in predictedEventsF) predictedEventsM.Add(ev);
+            foreach (double[] array in scoresF) scoresM.Add(array);
 
-            //var results = LSKiwi.Execute_KiwiDetect(recording, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
-            //                                        minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
-
-            var results = DetectKiwi(sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold,  minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
-            var intensity = results.Item1;  //lowerArray, intensity, hits, events
-            var scores    = results.Item2;
-            var hits      = results.Item3;
-            var predictedEvents = results.Item4; 
-
-
-            //i: MAKE SONOGRAM
-            //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            //sonoConfig.SourceFName = recording.FileName;
-            //sonoConfig.WindowSize = frameSize;
-            //sonoConfig.WindowOverlap = windowOverlap;
-            ////sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            //int sr = recording.SampleRate;
-            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-            //double framesPerSecond = freqBinWidth;
-
-
-
-            //#############################################################################################################################################
-            //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-            // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-            // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-            // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-
-            //the Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
-            //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
-            //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
-            //int numberOfBins = 64;
-            //int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            //int maxbin = minBin + numberOfBins - 1;
-            //int maxHz = (int)Math.Round(minHz + (numberOfBins * freqBinWidth));
-
-            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //int rowCount = sonogram.Data.GetLength(0);
-            //int colCount = sonogram.Data.GetLength(1);
-            //recording.Dispose();
-            //double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
-
-            //ALTERNATIVE IS TO USE THE AMPLITUDE SPECTRUM
-            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            //double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            ////double[] envelope = results2.Item2;
-            //double windowPower = results2.Item4;
-
-
-            //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray1, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
-            //                                                                             intensityThreshold, minDuration, maxDuration);
-            return System.Tuple.Create(sonogram, hits, scores, predictedEvents, tsRecordingtDuration);
+            return System.Tuple.Create(sonogram, hitsM, scoresM, predictedEventsM, tsRecordingtDuration);
         } //Analysis()
 
-        public static System.Tuple<double[], double[], double[,], List<AcousticEvent>> DetectKiwi(BaseSonogram sonogram, int minHz, int maxHz, 
+        public static System.Tuple<List<double[]>, double[,], List<AcousticEvent>> DetectKiwi(BaseSonogram sonogram, int minHz, int maxHz, 
                                     double dctDuration, double dctThreshold, double minPeriod, double maxPeriod, double eventThreshold, double minDuration, double maxDuration)
         {
+            int step = (int)Math.Round(sonogram.FramesPerSecond); //take one second steps
+            int sampleLength = 32; //32 frames = 1.85 seconds.   64 frames (i.e. 3.7 seconds) is to long a sample - require stationarity.
+
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
             double minFramePeriod = minPeriod * sonogram.FramesPerSecond;
             double maxFramePeriod = maxPeriod * sonogram.FramesPerSecond;
 
             int minBin = (int)(minHz / sonogram.FBinWidth);
-            //int maxBin = (int)(maxHz / sonogram.FBinWidth);
-            double[] fullArray  = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), minBin + 30);
-
-            double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin,    (rowCount - 1), minBin+10);
-            double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin+21, (rowCount - 1), minBin+30);
-            //int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
 
 
             //#############################################################################################################################################
@@ -529,20 +483,87 @@ namespace AnalysisPrograms
             // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
             // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
             // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-            int step = (int)Math.Round(sonogram.FramesPerSecond); //take one second steps
-            int sampleLength = 32; //64 frames = 3.7 seconds. Suitable for Lewins Rail.
-            var result = CrossCorrelation.DetectXcorrelationInTwoArrays(lowerArray, upperArray, step, sampleLength, minFramePeriod, maxFramePeriod);
-            double[] intensity   = result.Item1;
-            double[] periodicity = result.Item2;
+            double[] fullArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), minBin + 130);
+            var result1 = CrossCorrelation.DetectXcorrelationInTwoArrays(fullArray, fullArray, step, sampleLength, minFramePeriod, maxFramePeriod);
+            double[] intensity1 = result1.Item1;
+            double[] periodicity1 = result1.Item2;
+            intensity1 = DataTools.filterMovingAverage(intensity1, 11);
 
+            //#############################################################################################################################################
+            //double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), minBin + 65);
+            //double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin+66, (rowCount - 1), minBin+130);
+            //int actualMaxHz     = (int)Math.Round((minBin+130) * sonogram.FBinWidth);
+            //var result2 = CrossCorrelation.DetectXcorrelationInTwoArrays(lowerArray, upperArray, step, sampleLength, minFramePeriod, maxFramePeriod);
+            //double[] intensity2   = result2.Item1;
+            //double[] periodicity2 = result2.Item2;
+            //intensity2 = DataTools.filterMovingAverage(intensity2, 5);
+
+            //#############################################################################################################################################
+            //minFramePeriod = 4;  
+            //maxFramePeriod = 14;
+            //var return3 = Gratings.ScanArrayForGratingPattern(fullArray, (int)minFramePeriod, (int)maxFramePeriod, 4, step);
+            //var return3 = Gratings.ScanArrayForGratingPattern(fullArray, step, 4, 4);
+            //var return4 = Gratings.ScanArrayForGratingPattern(fullArray, step, 4, 5);
+            //var return5 = Gratings.ScanArrayForGratingPattern(fullArray, step, 4, 8);
+            //var return6 = Gratings.ScanArrayForGratingPattern(fullArray, step, 4, 10);
+            //var return7 = Gratings.ScanArrayForGratingPattern(fullArray, step, 4, 12);
+
+            //#############################################################################################################################################
+            //bool normaliseDCT = true;
+            //Double[,] maleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
+            //double[] maleScores;                      //predefinition of score array
+            //double[] maleOscRate;
+            //List<AcousticEvent> predictedMaleEvents;
+            //double minOscilFreq = 1 / maxPeriod;  //convert max period (seconds) to oscilation rate (Herz).
+            //double maxOscilFreq = 1 / minPeriod;  //convert min period (seconds) to oscilation rate (Herz).
+            //OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
+            //                             minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
+            //                             out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
+
+            
+            
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            intensity = DataTools.filterMovingAverage(intensity, 5);
-            List<AcousticEvent> events = AcousticEvent.ConvertScoreArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+            List<AcousticEvent> events = AcousticEvent.ConvertScoreArray2Events(intensity1, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                                                          eventThreshold, minDuration, maxDuration);
-            CropEvents(events, lowerArray);
-            var hits = new double[rowCount, colCount];
 
-            return System.Tuple.Create(intensity, fullArray, hits, events);
+            CropEvents(events, fullArray);
+            CalculateAvIntensityScore(events, intensity1);
+            CalculateDeltaPeriodScore(events, periodicity1, minFramePeriod, maxFramePeriod);
+            CalculateBandWidthScore(events, sonogram.Data);
+            CalculatePeaksScore(events, fullArray);
+            double bwThreshold = 0.2;
+            FilterEventsOnBandwidthScore(events, bwThreshold);
+            CalculateWeightedEventScore(events);
+
+            // PREPARE HITS MATRIX
+            var hits = new double[rowCount, colCount];
+            double range = maxFramePeriod - minFramePeriod;
+            for (int r = 0; r < rowCount; r++)
+            {
+                if (intensity1[r] > eventThreshold)
+                for (int c = minBin; c < maxBin; c++)
+                {
+                    hits[r, c] = (periodicity1[r] - minFramePeriod) / range; //normalisation
+                }
+            }
+
+            periodicity1 = CropArrayToEvents(events, periodicity1); //for display only
+
+            var scores = new List<double[]>();
+            scores.Add(DataTools.normalise(fullArray));
+            //scores.Add(DataTools.normalise(upperArray));
+            //scores.Add(DataTools.normalise(lowerArray));
+            scores.Add(DataTools.normalise(intensity1));
+            scores.Add(DataTools.normalise(periodicity1));
+            //scores.Add(DataTools.normalise(intensity2));
+            //scores.Add(DataTools.normalise(return3));
+            //scores.Add(DataTools.normalise(return4));
+            //scores.Add(DataTools.normalise(return5));
+            //scores.Add(DataTools.normalise(return6));
+            //scores.Add(DataTools.normalise(return7));
+            //scores.Add(DataTools.normalise(maleScores));
+            //scores.Add(DataTools.normalise(maleOscRate));
+            return System.Tuple.Create(scores, hits, events);
         }
 
         public static void CropEvents(List<AcousticEvent> events, double[] intensity)
@@ -555,14 +576,6 @@ namespace AnalysisPrograms
                 int start = ev.oblong.r1;
                 int end = ev.oblong.r2;
                 double[] subArray = DataTools.Subarray(intensity, start, end - start + 1);
-                //DataTools.writeArray(subArray, "f2");
-                //DataTools.writeBarGraph(subArray);
-                int maxID = DataTools.GetMaxIndex(subArray);
-                if (subArray[maxID] < 3.0) //< 5dB
-                {
-                    ev.oblong = null;
-                    continue;
-                }
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
                 int newMinRow = start + bounds[0];
@@ -576,21 +589,187 @@ namespace AnalysisPrograms
             }
         }
 
+        public static double[] CropArrayToEvents(List<AcousticEvent> events, double[] array)
+        {
+            int length = array.Length;
+            double[] returnArray = new double[length];
+            foreach (AcousticEvent ev in events)
+            {
+                int start = ev.oblong.r1;
+                int end = ev.oblong.r2;
+                for (int i = start; i < end; i++) returnArray[i] = array[i];
+            }
+            return returnArray;
+        }
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        public static void CalculateAvIntensityScore(List<AcousticEvent> events, double[] intensity)
+        {
+            //periodicity score is the average intensity response to the periodicity - i.e. amplitude of the FFT
+            foreach (AcousticEvent ev in events)
+            {
+                int start = ev.oblong.r1;
+                int end = ev.oblong.r2;
+                int length = end - start + 1;
+                double avIntensity = 0.0;
+                for (int i = start; i <= end; i++) avIntensity += intensity[i];
+                ev.kiwi_intensityScore = avIntensity / (double)length;
+            }
+
+        }
+
+        public static void CalculateDeltaPeriodScore(List<AcousticEvent> events, double[] periodicity, double  minFramePeriod, double maxFramePeriod)
+        {
+            double halfPeriodicityRange = (maxFramePeriod - minFramePeriod) / 2;
+
+            foreach (AcousticEvent ev in events)
+            {
+                int start = ev.oblong.r1;
+                int end = ev.oblong.r2;
+                int halfEventLength = (end - start + 1) / 2;
+                double[] subArray = DataTools.Subarray(periodicity, start, halfEventLength);
+                double startAv = 0.0;
+                for(int i = 0; i < 5; i++) startAv += subArray[i];
+                double endAv   = 0.0;
+                for (int i = subArray.Length-5; i < subArray.Length; i++) endAv += subArray[i];
+                double delta = (endAv - startAv) / (double)5; //get the average of 5 values
+                ev.kiwi_deltaPeriodScore = delta / halfPeriodicityRange; //normalisation;
+            }
+        }
+
+
+        public static void CalculateBandWidthScore(List<AcousticEvent> events, double[,] sonogramMatrix)
+        {
+            foreach (AcousticEvent ev in events)
+            {
+                ev.kiwi_bandWidthScore = CalculateKiwiBandWidthScore(ev, sonogramMatrix);
+            }
+        }
+
+
+        /// <summary>
+        /// Checks that the passed acoustic event does not have acoustic activity that spills outside the kiwi bandwidth.
+        /// </summary>
+        /// <param name="ae"></param>
+        /// <param name="sonogramMatrix"></param>
+        /// <returns></returns>
+        public static double CalculateKiwiBandWidthScore(AcousticEvent ae, double[,] sonogramMatrix)
+        {
+            int eventLength = (int)Math.Round(ae.Duration * ae.FramesPerSecond);
+            double[] event_dB = new double[eventLength]; //dB profile for event
+            double[] upper_dB = new double[eventLength]; //dB profile for bandwidth above event
+            double[] lower_dB = new double[eventLength]; //dB profile for bandwidth below event
+            int eventHt = ae.oblong.ColWidth;
+            int halfHt = eventHt / 2;
+            int buffer = 20; //avoid this margin around the event
+            //get acoustic activity within the event bandwidth and above it.
+            for (int r = 0; r < eventLength; r++)
+            {
+                for (int c = 0; c < eventHt; c++) event_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]; //event dB profile
+                for (int c = 0; c < halfHt; c++)  upper_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + buffer];
+                for (int c = 0; c < halfHt; c++)  lower_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - buffer + c];
+                //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]     = 20.0; //mark matrix
+                //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + 5 + c] = 40.0; //mark matrix
+            }
+            for (int r = 0; r < eventLength; r++) event_dB[r] /= eventHt; //calculate average.
+            for (int r = 0; r < eventLength; r++) upper_dB[r] /= halfHt;
+            for (int r = 0; r < eventLength; r++) lower_dB[r] /= halfHt;
+
+            //event_dB = DataTools.normalise(event_dB);
+            //upper_dB = DataTools.normalise(upper_dB);
+
+            double upperCC = DataTools.CorrelationCoefficient(event_dB, upper_dB);
+            double lowerCC = DataTools.CorrelationCoefficient(event_dB, lower_dB);
+            if (upperCC < 0.0) upperCC = 0.0;
+            if (lowerCC < 0.0) lowerCC = 0.0;
+            double CCscore = upperCC + lowerCC;
+            if (CCscore > 1.0) CCscore = 1.0;
+            return 1 - CCscore;
+        }
+
+        public static void FilterEventsOnBandwidthScore(List<AcousticEvent> events, double bwThreshold)
+        {
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                AcousticEvent ev = events[i];
+                if (ev.kiwi_bandWidthScore < bwThreshold) events.Remove(ev);
+            }
+        }
+
+        public static void CalculatePeaksScore(List<AcousticEvent> events, double[] dBArray)
+        {
+            foreach (AcousticEvent ev in events)
+            {
+                int start = ev.oblong.r1;
+                int end = ev.oblong.r2;
+                int eventLength = end - start + 1;
+                double[] subArray = DataTools.Subarray(dBArray, start, eventLength);
+                var tuple = KiwiPeakAnalysis(ev, subArray);
+                double snrScore = tuple.Item1 / 20.0;  //snrScore - 20.0dB is normalisation factor
+                if (snrScore > 1.0) snrScore = 1.0;
+                ev.kiwi_snrScore = snrScore;  //snrScore - 20.0dB is normalisation factor
+                double sdPeakScore = tuple.Item1 / tuple.Item2 / 20.0; //sdPeakScore = av/sd / 20.0.   20=normalisation factor
+                if (sdPeakScore > 1.0) sdPeakScore = 1.0;
+                ev.kiwi_sdPeakScore = sdPeakScore;  
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="ae">an acoustic event</param>
+        /// <param name="dbArray">The sequence of frame dB over the event</param>
+        /// <returns></returns>
+        public static System.Tuple<double, double> KiwiPeakAnalysis(AcousticEvent ae, double[] dbArray)
+        {
+
+            //dbArray = DataTools.filterMovingAverage(dbArray, 3);
+            bool[] peaks = DataTools.GetPeaks(dbArray);  //locate the peaks
+            double[] peakValues = new double[dbArray.Length];
+            for (int i = 0; i < dbArray.Length; i++)
+            {
+                if(peaks[i])  peakValues[i] = dbArray[i];
+            }
+
+            //take the top N peaks
+            int N = 5;
+            double[] topNValues = new double[N];
+            for (int p = 0; p < N; p++)
+            {
+                int maxID = DataTools.GetMaxIndex(peakValues);
+                topNValues[p] = peakValues[maxID];
+                peakValues[maxID] = 0.0;
+            }        
+            //PROCESS PEAK DECIBELS
+            double avPeakDB, sdPeakDB;
+            NormalDist.AverageAndSD(topNValues, out avPeakDB, out sdPeakDB);
+            return System.Tuple.Create(avPeakDB, sdPeakDB);
+        }
+
+
+
+        public static void CalculateWeightedEventScore(List<AcousticEvent> events)
+        {
+            foreach (AcousticEvent ev in events)
+            {
+                //double comboScore = (snrScore * 0.1)        +   (sdPeakScore * 0.1)         + (ev.kiwi_intensityScore * 0.1) + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
+                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.1) + (ev.kiwi_sdPeakScore * 0.3) + (ev.kiwi_intensityScore * 0.3) + (ev.kiwi_deltaPeriodScore * 0.3); 
+            }
+        }
+
+
+
+
+
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<double[]> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency / 2;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
-
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 0.5, eventThreshold));
-            //if (hits != null) image.OverlayRedTransparency(hits);
+            if (scores != null)
+            {
+                foreach(double[] array in scores) image.AddTrack(Image_Track.GetScoreTrack(array, 0.0, 1.0, eventThreshold));
+            }
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
             return image.GetImage();

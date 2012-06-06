@@ -105,7 +105,7 @@ namespace AnalysisPrograms
             cmdLineArgs.Add("-tmpwav:" + segmentFName);
             cmdLineArgs.Add("-events:" + eventsFname);
             cmdLineArgs.Add("-indices:" + indicesFname);
-            cmdLineArgs.Add("-sgram:" + sonogramFname);
+            //cmdLineArgs.Add("-sgram:" + sonogramFname);
             cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
             cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
 
@@ -382,8 +382,10 @@ namespace AnalysisPrograms
 
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
-            double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
-            double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
+            //double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
+            //double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
+            double minDuration = 0.0;
+            double maxDuration = 0.0;
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
