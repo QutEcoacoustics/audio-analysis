@@ -42,9 +42,6 @@ namespace AnalysisPrograms
                     case "aed":      // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
-					case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
-                        Create_MFCC_OD_Template.Dev(restOfArgs);
-                        break;
                     case "crow":     // recognises uhman speech but not word recognition
                         Crow.Dev(restOfArgs);
                         break;
@@ -84,10 +81,16 @@ namespace AnalysisPrograms
                     case "snr":      // signal to noise ratio
                         SnrAnalysis.Dev(restOfArgs);
                         break;
+                    case "test":      //
+                        AnalysisTemplate.Dev(restOfArgs);
+                        break;
 
 
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
+                    case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
+                        Create_MFCC_OD_Template.Dev(restOfArgs);
+                        break;
                     //case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
                     //    BarsAndStripes.Dev(restOfArgs);
                     //    break;                       
@@ -122,14 +125,6 @@ namespace AnalysisPrograms
                         break;
                     case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
                         EPR.Dev(restOfArgs);
-                        break;
-
-					// Use at own risk - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
-                    case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
-                        MFCC_OD.Dev(restOfArgs);
-                        break;
-                    case "htk":     // run an HTK template over a recording
-                        HTKRecogniser.Dev(restOfArgs);
                         break;
 
                     // Analysis runs - FOR MARK'S USE ONLY
