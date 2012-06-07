@@ -22,18 +22,20 @@ namespace AnalysisPrograms
 {
     public class AnalysisTemplate : IAnalysis
     {
+        //TASK IDENTIFIERS
+        public const string task_ANALYSE  = "analysis";
+        public const string task_LOAD_CSV = "loadCsv";
+
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
         public static string key_CALL_DURATION = "CALL_DURATION";
         public static string key_DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
+        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
-        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string key_FRAME_LENGTH = "FRAME_LENGTH";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
         public static string key_MIN_HZ = "MIN_HZ";
         public static string key_MAX_HZ = "MAX_HZ";
         public static string key_MIN_GAP = "MIN_GAP";
@@ -41,11 +43,15 @@ namespace AnalysisPrograms
         public static string key_MIN_AMPLITUDE = "MIN_AMPLITUDE";
         public static string key_MIN_DURATION = "MIN_DURATION";
         public static string key_MAX_DURATION = "MAX_DURATION";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
+        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
+        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
 
         //KEYS TO OUTPUT EVENTS and INDICES
         public static string key_COUNT     = "count";
         public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
+        public static string key_AV_AMPLITUDE = "avAmp-dB";
         public static string key_START_ABS = "EvStartAbs";
         public static string key_START_MIN = "EvStartMin";
         public static string key_START_SEC = "EvStartSec";
@@ -76,8 +82,9 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            string configPath    = @"C:\SensorNetworks\Output\Human\Human.cfg";
-            string outputDir     = @"C:\SensorNetworks\Output\Human\";
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Template.cfg";
+            string outputDir  = @"C:\SensorNetworks\Output\Test\";
+            string csvPath = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
 
             string title = "# FOR DETECTION OF ############ using TECHNIQUE ########";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -89,7 +96,7 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
             int startMinute = 0;
-            int durationSeconds = 60; //set zero to get entire recording
+            int durationSeconds = 0; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
@@ -99,15 +106,28 @@ namespace AnalysisPrograms
             var indicesFname = string.Format("{0}_Indices{1}min.csv", segmentFileStem, startMinute);
 
             var cmdLineArgs = new List<string>();
-            cmdLineArgs.Add(recordingPath);
-            cmdLineArgs.Add(configPath);
-            cmdLineArgs.Add(outputDir);
-            cmdLineArgs.Add("-tmpwav:" + segmentFName);
-            cmdLineArgs.Add("-events:" + eventsFname);
-            cmdLineArgs.Add("-indices:" + indicesFname);
-            //cmdLineArgs.Add("-sgram:" + sonogramFname);
-            cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-            cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+            if (true)
+            {
+                cmdLineArgs.Add(task_ANALYSE);
+                cmdLineArgs.Add(task_LOAD_CSV);
+                cmdLineArgs.Add(recordingPath);
+                cmdLineArgs.Add(configPath);
+                cmdLineArgs.Add(outputDir);
+                cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                cmdLineArgs.Add("-events:" + eventsFname);
+                cmdLineArgs.Add("-indices:" + indicesFname);
+                //cmdLineArgs.Add("-sgram:" + sonogramFname);
+                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+            }
+            if (false)
+            {
+                //string indicesImagePath = "some path or another";
+                //cmdLineArgs.Add(task_LOAD_CSV);
+                //cmdLineArgs.Add(csvPath);
+                //cmdLineArgs.Add(configPath);
+                //cmdLineArgs.Add(indicesImagePath);
+            }
 
             //#############################################################################################################################################
             int status = Execute(cmdLineArgs.ToArray());
@@ -155,7 +175,43 @@ namespace AnalysisPrograms
             Console.ReadLine();
         } //Dev()
 
-
+        /// <summary>
+        /// Directs task to the appropriate method based on the first argument in the command line string.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static int Execute(string[] args)
+        {
+            int status = 0;
+            if (args.Length < 2)
+            {
+                Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
+                Console.WriteLine("Require at least 2 command line arguments.");
+                status = 1;
+                return status;
+            }
+            else
+            {
+                string[] restOfArgs = args.Skip(1).ToArray();
+                switch (args[0])
+                {
+                    case task_ANALYSE:      // perform the analysis task
+                        ExecuteAnalysis(restOfArgs);
+                        break;
+                    case task_LOAD_CSV:     // loads a csv file for visualisation
+                        var fiCsvFile    = new FileInfo(restOfArgs[0]);
+                        var fiConfigFile = new FileInfo(restOfArgs[1]);
+                        var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
+                        var dataTables = ProcessCsvFile(fiCsvFile, fiConfigFile);
+                        //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
+                        break;
+                    default:
+                        Console.WriteLine("Task unrecognised>>>" + args[0]);
+                        return 999;
+                } //switch
+            } //if-else
+            return status;
+        } //Execute()
 
 
         /// <summary>
@@ -165,7 +221,7 @@ namespace AnalysisPrograms
         /// <param name="sourcePath"></param>
         /// <param name="configPath"></param>
         /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static int ExecuteAnalysis(string[] args)
         {
             int status = 0;
             if (args.Length < 4)
@@ -589,6 +645,89 @@ namespace AnalysisPrograms
         }
 
 
+
+
+        public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+        {
+            var configuration = new Configuration(fiConfigFile.FullName);
+            Dictionary<string, string> configDict = configuration.GetTable();
+            List<string> displayHeaders = configDict[key_DISPLAY_COLUMNS].Split(',').ToList();
+
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+            dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
+
+            //bool addColumnOfweightedIndices = true;
+            //if (addColumnOfweightedIndices)
+            //{
+            //    AcousticIndices.InitOutputTableColumns();
+            //    double[] weightedIndices = null;
+            //    weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+            //    string colName = "WeightedIndex";
+            //    displayHeaders.Add(colName);
+            //    DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+            //}
+
+            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+            return System.Tuple.Create(dt, table2Display);
+        } // ProcessCsvFile()
+
+        /// <summary>
+        /// takes a data table of indices and normalises column values to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+        {
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            List<string> originalHeaderList = headers.ToList();
+            List<string> newHeaders = new List<string>();
+
+            List<double[]> newColumns = new List<double[]>();
+            // double[] processedColumn = null;
+
+            for (int i = 0; i < headers2Display.Count; i++)
+            {
+                string header = headers2Display[i];
+                if (!originalHeaderList.Contains(header)) continue;
+
+                List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
+                if ((values == null) || (values.Count == 0)) continue;
+
+                double min = 0;
+                double max = 1;
+                if (header.Equals(key_COUNT))
+                {
+                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                    newHeaders.Add(header);
+                }
+                else if (header.Equals(key_AV_AMPLITUDE))
+                {
+                    min = -50;
+                    max = -5;
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
+                    newHeaders.Add(header + "  (-50..-5dB)");
+                }
+                else //default is to normalise in [0,1]
+                {
+                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                    newHeaders.Add(header);
+                }
+            }
+
+            //convert type int to type double due to normalisation
+            Type[] types = new Type[newHeaders.Count];
+            for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
+
+            return processedtable;
+        }
+
+
+
+
+
+
         public string DefaultConfiguration
         {
             get
@@ -596,6 +735,8 @@ namespace AnalysisPrograms
                 return string.Empty;
             }
         }
+
+
 
     } //end class AnalysisTemplate
 }

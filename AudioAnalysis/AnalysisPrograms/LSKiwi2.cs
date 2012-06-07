@@ -22,7 +22,13 @@ namespace AnalysisPrograms
 {
     public class LSKiwi2 : IAnalysis
     {
+        //TASK IDENTIFIERS
+        public const string task_ANALYSE = "analysis";
+        public const string task_LOAD_CSV = "loadCsv";
+
         //KEYS TO PARAMETERS IN CONFIG FILE
+        public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
+        public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
         public static string key_FRAME_LENGTH = "FRAME_LENGTH";
@@ -39,8 +45,6 @@ namespace AnalysisPrograms
         public static string key_MAX_DURATION = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
 
-        public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
-        //public static string key_CALL_DURATION = "CALL_DURATION";
         //public static string key_DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
         //public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         //public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
@@ -49,25 +53,29 @@ namespace AnalysisPrograms
         //public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
         //public static string key_FRAME_LENGTH = "FRAME_LENGTH";
         //public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        //public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
         //public static string key_MIN_HZ = "MIN_HZ";
         //public static string key_MAX_HZ = "MAX_HZ";
-        //public static string key_MIN_GAP = "MIN_GAP";
-        //public static string key_MAX_GAP = "MAX_GAP";
-        //public static string key_MIN_AMPLITUDE = "MIN_AMPLITUDE";
         //public static string key_MIN_DURATION = "MIN_DURATION";
         //public static string key_MAX_DURATION = "MAX_DURATION";
-        //public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         //KEYS TO OUTPUT EVENTS and INDICES
         public static string key_COUNT     = "count";
         public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
+        public static string key_AV_AMPLITUDE = "avAmp-dB";
         public static string key_START_ABS = "EvStartAbs";
         public static string key_START_MIN = "EvStartMin";
         public static string key_START_SEC = "EvStartSec";
         public static string key_CALL_DENSITY = "CallDensity";
         public static string key_CALL_SCORE = "CallScore";
         public static string key_EVENT_TOTAL= "# events";
+
+        public static string[] defaultRules = {
+                                           "EXCLUDE_RULE1=feature1<0.45",
+                                           "EXCLUDE_RULE2=feature1<0.45",
+                                           "WEIGHT_feature1=0.45",
+                                           "WEIGHT_feature2=0.45",
+                                           "WEIGHT_feature3=0.45"
+        };
 
 
         //OTHER CONSTANTS
@@ -102,8 +110,8 @@ namespace AnalysisPrograms
             string configPath = @"C:\SensorNetworks\Output\LSKiwi2\lskiwi2.cfg";
 
             //string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500_40m0s.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500_40m0s.wav";
             string outputDir     = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav";
@@ -129,7 +137,7 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
             int startMinute = 55;
-            int durationSeconds = 0; //set zero to get entire recording
+            int durationSeconds = 300; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
@@ -139,6 +147,7 @@ namespace AnalysisPrograms
             var indicesFname = string.Format("{0}_Indices{1}min.csv", segmentFileStem, startMinute);
 
             var cmdLineArgs = new List<string>();
+            cmdLineArgs.Add(task_ANALYSE);
             cmdLineArgs.Add(recordingPath);
             cmdLineArgs.Add(configPath);
             cmdLineArgs.Add(outputDir);
@@ -196,6 +205,41 @@ namespace AnalysisPrograms
         } //Dev()
 
 
+        /// <summary>
+        /// Directs task to the appropriate method based on the first argument in the command line string.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static int Execute(string[] args)
+        {
+            int status = 0;
+            if (args.Length < 4)
+            {
+                Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
+                Console.WriteLine("Require at least 4 command line arguments.");
+                status = 1;
+                return status;
+            }
+            else
+            {
+                string[] restOfArgs = args.Skip(1).ToArray();
+                switch (args[0])
+                {
+                    case task_ANALYSE:      // perform the analysis task
+                        ExecuteAnalysis(restOfArgs);
+                        break;
+                    case task_LOAD_CSV:     // loads a csv file for visualisation
+                        var fiCsvFile    = new FileInfo(restOfArgs[0]);
+                        var fiConfigFile = new FileInfo(restOfArgs[1]);
+                        ProcessCsvFile(fiCsvFile, fiConfigFile); //returns a datatable which has no relevance at this level.
+                        break;
+                    default:
+                        Console.WriteLine("Task unrecognised>>>" + args[0]);
+                        return 999;
+                } //switch
+            } //if-else
+            return status;
+        } //Execute()
 
 
         /// <summary>
@@ -205,7 +249,7 @@ namespace AnalysisPrograms
         /// <param name="sourcePath"></param>
         /// <param name="configPath"></param>
         /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static int ExecuteAnalysis(string[] args)
         {
             int status = 0;
             if (args.Length < 4)
@@ -451,11 +495,15 @@ namespace AnalysisPrograms
             var scoresM = resultsMale.Item1;
             var hitsM = resultsMale.Item2;
             var predictedEventsM = resultsMale.Item3;
+            foreach (AcousticEvent ev in predictedEventsM) ev.Name = "LSK(m)";
             //DETECT FEMALE KIWI
             var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
             var scoresF = resultsFemale.Item1;
             var hitsF = resultsFemale.Item2;
             var predictedEventsF = resultsFemale.Item3;
+            foreach (AcousticEvent ev in predictedEventsF) ev.Name = "LSK(f)";
+
+            //combine the male and female results
             hitsM = MatrixTools.AddMatrices(hitsM, hitsF);
             foreach (AcousticEvent ev in predictedEventsF) predictedEventsM.Add(ev);
             foreach (double[] array in scoresF) scoresM.Add(array);
@@ -752,7 +800,7 @@ namespace AnalysisPrograms
             foreach (AcousticEvent ev in events)
             {
                 //double comboScore = (snrScore * 0.1)        +   (sdPeakScore * 0.1)         + (ev.kiwi_intensityScore * 0.1) + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.1) + (ev.kiwi_sdPeakScore * 0.3) + (ev.kiwi_intensityScore * 0.3) + (ev.kiwi_deltaPeriodScore * 0.3); 
+                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.05) + (ev.kiwi_sdPeakScore * 0.25) + (ev.kiwi_intensityScore * 0.3) + (ev.kiwi_deltaPeriodScore * 0.3) + (ev.kiwi_bandWidthScore * 0.1); 
             }
         }
 
@@ -871,6 +919,86 @@ namespace AnalysisPrograms
          }
 
          return augmentedTable;
+     }
+
+
+
+     public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+     {
+         var configuration = new Configuration(fiConfigFile.FullName);
+         Dictionary<string, string> configDict = configuration.GetTable();
+         List<string> displayHeaders = configDict[key_DISPLAY_COLUMNS].Split(',').ToList();
+
+         DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+         if ((dt == null) || (dt.Rows.Count == 0)) return null;
+         dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
+
+         //bool addColumnOfweightedIndices = true;
+         //if (addColumnOfweightedIndices)
+         //{
+         //    AcousticIndices.InitOutputTableColumns();
+         //    double[] weightedIndices = null;
+         //    weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+         //    string colName = "WeightedIndex";
+         //    displayHeaders.Add(colName);
+         //    DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+         //}
+
+         DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+         return System.Tuple.Create(dt, table2Display);
+     } // ProcessCsvFile()
+
+
+
+     /// <summary>
+     /// takes a data table of indices and normalises column values to values in [0,1].
+     /// </summary>
+     /// <param name="dt"></param>
+     /// <returns></returns>
+     public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+     {
+         string[] headers = DataTableTools.GetColumnNames(dt);
+         List<string> originalHeaderList = headers.ToList();
+         List<string> newHeaders = new List<string>();
+
+         List<double[]> newColumns = new List<double[]>();
+         // double[] processedColumn = null;
+
+         for (int i = 0; i < headers2Display.Count; i++)
+         {
+             string header = headers2Display[i];
+             if (!originalHeaderList.Contains(header)) continue;
+
+             List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
+             if ((values == null) || (values.Count == 0)) continue;
+
+             double min = 0;
+             double max = 1;
+             if (header.Equals(key_COUNT))
+             {
+                 newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                 newHeaders.Add(header);
+             }
+             else if (header.Equals(key_AV_AMPLITUDE))
+             {
+                 min = -50;
+                 max = -5;
+                 newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
+                 newHeaders.Add(header + "  (-50..-5dB)");
+             }
+             else //default is to normalise in [0,1]
+             {
+                 newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                 newHeaders.Add(header);
+             }
+         }
+
+         //convert type int to type double due to normalisation
+         Type[] types = new Type[newHeaders.Count];
+         for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
+         var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
+
+         return processedtable;
      }
 
 
