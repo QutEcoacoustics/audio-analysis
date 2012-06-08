@@ -69,6 +69,7 @@
     <Compile Include="Cleaner.fs" />
     <Compile Include="Transformer.Base.fs" />
     <Compile Include="Transformer.TimeOfDay.fs" />
+    <Compile Include="Transformer.RemoveFeature.fs" />
     <Compile Include="Transformer.ZScoreNormalise.fs" />
     <Compile Include="Selector.Base.fs" />
     <Compile Include="Selector.OneForOne.fs" />
