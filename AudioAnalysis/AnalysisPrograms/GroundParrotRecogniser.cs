@@ -212,7 +212,7 @@ namespace AnalysisPrograms
         /// </param>
         internal static void GetEprParametersFromConfigFileOrDefaults(string iniPath, out double normalisedMinScore)
         {
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             int propertyUsageCount = 0;
 

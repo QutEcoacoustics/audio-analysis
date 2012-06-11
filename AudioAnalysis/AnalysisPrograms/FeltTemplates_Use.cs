@@ -127,7 +127,7 @@ namespace AnalysisPrograms
                 Log.WriteIfVerbose("################################################### "+id+" ########################################################");
                 
                 //ii: READ PARAMETER VALUES FROM INI FILE
-                var config = new Configuration(paramsPath);
+                var config = new ConfigDictionary(paramsPath);
                 Dictionary<string, string> dict = config.GetTable();
                 //Dictionary<string, string>.KeyCollection keys = dict.Keys;
                 //int DRAW_SONOGRAMS = Int32.Parse(dict[FeltTemplate_Create.key_DRAW_SONOGRAMS]);          //options to draw sonogram

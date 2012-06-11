@@ -129,7 +129,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string indicesPath = Path.Combine(outputDir, indicesFname);
             FileInfo fiCsvIndices = new FileInfo(indicesPath);
@@ -141,7 +141,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string imagePath = Path.Combine(outputDir, sonogramFname);
             FileInfo fiImage = new FileInfo(imagePath);
@@ -267,7 +267,7 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new Configuration(analysisSettings.ConfigFile.FullName);
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF    = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
@@ -527,7 +527,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
         {
             double units = timeDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);
@@ -596,6 +596,85 @@ namespace AnalysisPrograms
 
          return augmentedTable;
      }
+
+
+
+     public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+     {
+         var configuration = new ConfigDictionary(fiConfigFile.FullName);
+         Dictionary<string, string> configDict = configuration.GetTable();
+         List<string> displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+
+         DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+         if ((dt == null) || (dt.Rows.Count == 0)) return null;
+         dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
+
+         //bool addColumnOfweightedIndices = true;
+         //if (addColumnOfweightedIndices)
+         //{
+         //    AcousticIndices.InitOutputTableColumns();
+         //    double[] weightedIndices = null;
+         //    weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+         //    string colName = "WeightedIndex";
+         //    displayHeaders.Add(colName);
+         //    DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+         //}
+
+         DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+         return System.Tuple.Create(dt, table2Display);
+     } // ProcessCsvFile()
+
+     /// <summary>
+     /// takes a data table of indices and normalises column values to values in [0,1].
+     /// </summary>
+     /// <param name="dt"></param>
+     /// <returns></returns>
+     public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+     {
+         string[] headers = DataTableTools.GetColumnNames(dt);
+         List<string> originalHeaderList = headers.ToList();
+         List<string> newHeaders = new List<string>();
+
+         List<double[]> newColumns = new List<double[]>();
+         // double[] processedColumn = null;
+
+         for (int i = 0; i < headers2Display.Count; i++)
+         {
+             string header = headers2Display[i];
+             if (!originalHeaderList.Contains(header)) continue;
+
+             List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
+             if ((values == null) || (values.Count == 0)) continue;
+
+             double min = 0;
+             double max = 1;
+             if (header.Equals(key_COUNT))
+             {
+                 newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                 newHeaders.Add(header);
+             }
+             else if (header.Equals(Keys.AV_AMPLITUDE))
+             {
+                 min = -50;
+                 max = -5;
+                 newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
+                 newHeaders.Add(header + "  (-50..-5dB)");
+             }
+             else //default is to normalise in [0,1]
+             {
+                 newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                 newHeaders.Add(header);
+             }
+         }
+
+         //convert type int to type double due to normalisation
+         Type[] types = new Type[newHeaders.Count];
+         for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
+         var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
+
+         return processedtable;
+     }
+
 
         public AnalysisSettings DefaultSettings
         {

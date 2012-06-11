@@ -178,7 +178,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string indicesPath = Path.Combine(outputDir, indicesFname);
             FileInfo fiCsvIndices = new FileInfo(indicesPath);
@@ -190,7 +190,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string imagePath = Path.Combine(outputDir, sonogramFname);
             FileInfo fiImage = new FileInfo(imagePath);
@@ -231,7 +231,8 @@ namespace AnalysisPrograms
                     case task_LOAD_CSV:     // loads a csv file for visualisation
                         var fiCsvFile    = new FileInfo(restOfArgs[0]);
                         var fiConfigFile = new FileInfo(restOfArgs[1]);
-                        ProcessCsvFile(fiCsvFile, fiConfigFile); //returns a datatable which has no relevance at this level.
+                        IAnalysis analyser = new LSKiwi2();
+                        analyser.ProcessCsvFile(fiCsvFile, fiConfigFile); //returns a datatable which has no relevance at this level.
                         break;
                     default:
                         Console.WriteLine("Task unrecognised>>>" + args[0]);
@@ -377,7 +378,7 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new Configuration(analysisSettings.ConfigFile.FullName);
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF    = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
@@ -460,19 +461,19 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, Double[,], List<double[]>, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> config)
         {
-            int minHzMale = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
-            int maxHzMale = Configuration.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
-            int minHzFemale = Configuration.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale = Configuration.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
-            int frameLength = Configuration.GetInt(LSKiwi.key_FRAME_LENGTH, config);
-            double frameOverlap = Configuration.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
-            double dctDuration = Configuration.GetDouble(LSKiwi.key_DCT_DURATION, config);
-            double dctThreshold = Configuration.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
-            double minPeriod = Configuration.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
-            double maxPeriod = Configuration.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
-            double minDuration = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            int minHzMale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
+            int maxHzMale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
+            int minHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
+            int frameLength = ConfigDictionary.GetInt(LSKiwi.key_FRAME_LENGTH, config);
+            double frameOverlap = ConfigDictionary.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
+            double dctDuration = ConfigDictionary.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
+            double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
+            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -852,7 +853,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
         {
             double units = timeDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);
@@ -923,9 +924,9 @@ namespace AnalysisPrograms
 
 
 
-     public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+     public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
      {
-         var configuration = new Configuration(fiConfigFile.FullName);
+         var configuration = new ConfigDictionary(fiConfigFile.FullName);
          Dictionary<string, string> configDict = configuration.GetTable();
          List<string> displayHeaders = configDict[key_DISPLAY_COLUMNS].Split(',').ToList();
 

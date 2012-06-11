@@ -60,7 +60,7 @@ namespace AudioAnalysisTools
             }
             else
             {
-                Configuration config = new Configuration(configFile);
+                ConfigDictionary config = new ConfigDictionary(configFile);
                 if (config.GetInt("VERBOSITY") > 0)
                 {
                     Log.Verbosity = 1;
@@ -77,7 +77,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public SonogramConfig()
         {
-            Configuration config = new Configuration();
+            ConfigDictionary config = new ConfigDictionary();
 
             config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize,    DEFAULT_WINDOW_SIZE.ToString());
@@ -108,7 +108,7 @@ namespace AudioAnalysisTools
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="config"></param>
-		public SonogramConfig(Configuration config)
+		public SonogramConfig(ConfigDictionary config)
 		{
             Initialize(config);
 		}
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools
         /// DoFullBandwidth = false;
         /// </summary>
         /// <param name="config"></param>
-        private void Initialize(Configuration config)
+        private void Initialize(ConfigDictionary config)
         {
             CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
             SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
@@ -134,7 +134,7 @@ namespace AudioAnalysisTools
             DoSnr = true; // set false if only want to 
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
             NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
-            //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
+            //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_);
 
             //FREQ BAND PARAMETERS
             DoFullBandwidth = false; // set true if only want to 

@@ -135,7 +135,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
-            var configuration = new Configuration(configPath);
+            var configuration = new ConfigDictionary(configPath);
             Dictionary<string, string> configDict = configuration.GetTable();
             Dictionary<string, string>.KeyCollection keys = configDict.Keys;
 
@@ -153,7 +153,7 @@ namespace AnalysisPrograms
             {
                 //Console.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
                 Console.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
 
             Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));

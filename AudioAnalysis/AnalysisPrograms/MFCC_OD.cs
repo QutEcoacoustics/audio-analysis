@@ -90,7 +90,7 @@ namespace AnalysisPrograms
             double[] fv = FileTools.ReadDoubles2Vector(fvPath);
 
             //C: SET UP CONFIGURATION
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 

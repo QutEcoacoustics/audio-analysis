@@ -160,7 +160,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string indicesPath = Path.Combine(outputDir, indicesFname);
             FileInfo fiCsvIndices = new FileInfo(indicesPath);
@@ -172,7 +172,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable(dt);
+                DataTableTools.WriteTable2Console(dt);
             }
             string imagePath = Path.Combine(outputDir, sonogramFname);
             FileInfo fiImage = new FileInfo(imagePath);
@@ -323,7 +323,7 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new Configuration(analysisSettings.ConfigFile.FullName);
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
@@ -373,7 +373,7 @@ namespace AnalysisPrograms
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = AnalysisTemplate.ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
+                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
 
@@ -566,45 +566,120 @@ namespace AnalysisPrograms
         } //DrawSonogram()
 
 
-        //public static Tuple<DataTable, DataTable, bool[]> ProcessCsvFile(FileInfo fiCsvFile)
-        //{
-        //    AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
-        //    DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
-        //    if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
-        //    dt = DataTableTools.SortTable(dt, "count ASC");
-        //    List<bool> columns2Display = MachineColumns2Display().ToList();
-        //    DataTable processedtable = ProcessDataTableForDisplayOfColumnValues(dt);
-        //    return System.Tuple.Create(dt, processedtable, columns2Display.ToArray());
-        //} // ProcessCsvFile()
 
+        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+        {
+            var configuration = new ConfigDictionary(fiConfigFile.FullName);
+            Dictionary<string, string> configDict = configuration.GetTable();
+            List<string> displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+            dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
+
+            //bool addColumnOfweightedIndices = true;
+            //if (addColumnOfweightedIndices)
+            //{
+            //    AcousticIndices.InitOutputTableColumns();
+            //    double[] weightedIndices = null;
+            //    weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+            //    string colName = "WeightedIndex";
+            //    displayHeaders.Add(colName);
+            //    DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+            //}
+
+            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+            return System.Tuple.Create(dt, table2Display);
+        } // ProcessCsvFile()
 
         /// <summary>
-        /// takes a data table of indices and converts column values to values in [0,1].
+        /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt)
+        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
         {
-            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
-            List<double[]> newColumns = new List<double[]>();
-            for (int i = 0; i < columns.Count; i++)
-            {
-                double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
-                newColumns.Add(processedColumn);
-            }
             string[] headers = DataTableTools.GetColumnNames(dt);
-            Type[] types = DataTableTools.GetColumnTypes(dt);
-            for (int i = 0; i < columns.Count; i++)
+            List<string> originalHeaderList = headers.ToList();
+            List<string> newHeaders = new List<string>();
+
+            List<double[]> newColumns = new List<double[]>();
+            // double[] processedColumn = null;
+
+            for (int i = 0; i < headers2Display.Count; i++)
             {
-                if (types[i] == typeof(int)) types[i] = typeof(double);
-                else
-                    if (types[i] == typeof(Int32)) types[i] = typeof(double);
+                string header = headers2Display[i];
+                if (!originalHeaderList.Contains(header)) continue;
+
+                List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
+                if ((values == null) || (values.Count == 0)) continue;
+
+                double min = 0;
+                double max = 1;
+                if (header.Equals(key_COUNT))
+                {
+                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                    newHeaders.Add(header);
+                }
+                else if (header.Equals(Keys.AV_AMPLITUDE))
+                {
+                    min = -50;
+                    max = -5;
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
+                    newHeaders.Add(header + "  (-50..-5dB)");
+                }
+                else //default is to normalise in [0,1]
+                {
+                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                    newHeaders.Add(header);
+                }
             }
-            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
+
+            //convert type int to type double due to normalisation
+            Type[] types = new Type[newHeaders.Count];
+            for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
 
             return processedtable;
         }
+
+
+
+        /// <summary>
+        /// Converts a DataTable of events to a datatable where one row = one minute of indices
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        {
+            double units = timeDuration.TotalSeconds / unitTime.TotalSeconds;
+            int unitCount = (int)(units / 1);
+            if (units % 1 > 0.0) unitCount += 1;
+            int[] eventsPerMinute = new int[unitCount]; //to store event counts
+            int[] bigEvsPerMinute = new int[unitCount]; //to store counts of high scoring events
+
+            foreach (DataRow ev in dt.Rows)
+            {
+                double eventStart = (double)ev[key_START_SEC];
+                double eventScore = (double)ev[key_CALL_SCORE];
+                int timeUnit = (int)(eventStart / timeDuration.TotalSeconds);
+                eventsPerMinute[timeUnit]++;
+                if (eventScore > scoreThreshold) bigEvsPerMinute[timeUnit]++;
+            }
+
+            string[] headers = { key_START_MIN, key_EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            Type[] types = { typeof(int), typeof(int), typeof(int) };
+            var newtable = DataTableTools.CreateTable(headers, types);
+
+            for (int i = 0; i < eventsPerMinute.Length; i++)
+            {
+                newtable.Rows.Add(i, eventsPerMinute[i], bigEvsPerMinute[i]);
+            }
+            return newtable;
+        }
+
+
 
         public AnalysisSettings DefaultSettings
         {

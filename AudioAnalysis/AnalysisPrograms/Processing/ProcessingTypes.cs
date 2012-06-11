@@ -128,7 +128,7 @@ namespace AnalysisPrograms.Processing
                     Segment.key_THRESHOLD
                 };
 
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
             ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
@@ -197,7 +197,7 @@ namespace AnalysisPrograms.Processing
                     SnrAnalysis.key_WINDOW_FUNCTION
                 };
 
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
             ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
@@ -347,7 +347,7 @@ namespace AnalysisPrograms.Processing
                 };
 
             // settings
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
             ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
@@ -490,7 +490,7 @@ namespace AnalysisPrograms.Processing
                 };
 
             // settings
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
             ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
@@ -615,7 +615,7 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunHd(FileInfo settingsFile, FileInfo audioFile)
         {
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = config.GetTable();
 
             var callName = dict[HarmonicRecogniser.key_CALL_NAME];
@@ -724,7 +724,7 @@ namespace AnalysisPrograms.Processing
             File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
 
             // settings
-            var config = new Configuration(settingsFile.FullName);
+            var config = new ConfigDictionary(settingsFile.FullName);
             var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
             ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
@@ -801,65 +801,65 @@ namespace AnalysisPrograms.Processing
         /// <returns>
         /// Processing results.
         /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
-        {
-            // upzip resources file into new folder in working dir.
-            const string ZipFolderName = "UnzipedResources";
-            var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
-            if (!Directory.Exists(unzipDir))
-            {
-                Directory.CreateDirectory(unzipDir);
-            }
+        //internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
+        //{
+        //    // upzip resources file into new folder in working dir.
+        //    const string ZipFolderName = "UnzipedResources";
+        //    var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
+        //    if (!Directory.Exists(unzipDir))
+        //    {
+        //        Directory.CreateDirectory(unzipDir);
+        //    }
 
-            ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
+        //    ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
 
-            // ini file
-            var iniFile = Path.Combine(unzipDir, "segmentation.ini");
+        //    // ini file
+        //    var iniFile = Path.Combine(unzipDir, "segmentation.ini");
 
-            // append to settings file
-            File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
+        //    // append to settings file
+        //    File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
 
-            // htk config
-            // need to change some of the properties for cluster.
-            var htkConfig = new HTKConfig(settingsFile.FullName)
-                {
-                    ConfigDir = unzipDir,
-                    WorkingDir = runDir.FullName,
-                    HTKDir = Path.Combine(unzipDir, "HTK"),
-                    DataDir = Path.Combine(runDir.FullName, "data"),
-                    ResultsDir = Path.Combine(runDir.FullName, "results")
-                };
+        //    // htk config
+        //    // need to change some of the properties for cluster.
+        //    var htkConfig = new HTKConfig(settingsFile.FullName)
+        //        {
+        //            ConfigDir = unzipDir,
+        //            WorkingDir = runDir.FullName,
+        //            HTKDir = Path.Combine(unzipDir, "HTK"),
+        //            DataDir = Path.Combine(runDir.FullName, "data"),
+        //            ResultsDir = Path.Combine(runDir.FullName, "results")
+        //        };
 
-            // delete and recreate data dir if it exists
-            if (Directory.Exists(htkConfig.DataDir))
-            {
-                Directory.Delete(htkConfig.DataDir, true);
-            }
+        //    // delete and recreate data dir if it exists
+        //    if (Directory.Exists(htkConfig.DataDir))
+        //    {
+        //        Directory.Delete(htkConfig.DataDir, true);
+        //    }
 
-            Directory.CreateDirectory(htkConfig.DataDir);
+        //    Directory.CreateDirectory(htkConfig.DataDir);
 
-            string processedAudioFile = Path.GetFileName(audioFile.FullName);
-            var destinationAudioFile = Path.Combine(htkConfig.DataDir, Path.GetFileNameWithoutExtension(audioFile.FullName) + ".wav");
-            File.Copy(audioFile.FullName, destinationAudioFile, true);
+        //    string processedAudioFile = Path.GetFileName(audioFile.FullName);
+        //    var destinationAudioFile = Path.Combine(htkConfig.DataDir, Path.GetFileNameWithoutExtension(audioFile.FullName) + ".wav");
+        //    File.Copy(audioFile.FullName, destinationAudioFile, true);
 
-            // D: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
-            Log.WriteLine("Executing HTK_Recogniser - scanning recording: " + processedAudioFile);
-            string resultsPath = HTKScanRecording.Execute(processedAudioFile, runDir.FullName, htkConfig);
+        //    // D: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
+        //    Log.WriteLine("Executing HTK_Recogniser - scanning recording: " + processedAudioFile);
+        //    string resultsPath = HTKScanRecording.Execute(processedAudioFile, runDir.FullName, htkConfig);
 
-            // E: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
-            Log.WriteLine("Parse the HMM results file and return Acoustic Events");
-            var events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, unzipDir);
+        //    // E: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
+        //    Log.WriteLine("Parse the HMM results file and return Acoustic Events");
+        //    var events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, unzipDir);
 
-            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
+        //    SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
-            // AcousticEvent results
-            var prts =
-                events.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        //    // AcousticEvent results
+        //    var prts =
+        //        events.Select(
+        //            ae =>
+        //            ProcessingUtils.GetProcessorResultTag(
+        //                ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
 
-            return prts;
-        }
+        //    return prts;
+        //}
     }
 }

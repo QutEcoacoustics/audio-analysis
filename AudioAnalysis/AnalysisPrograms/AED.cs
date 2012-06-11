@@ -301,7 +301,7 @@ namespace AnalysisPrograms
             out double bandPassFilterMinimum, 
             out int smallAreaThreshold)
         {
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             int propertyUsageCount = 0;
 

@@ -54,7 +54,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
 
             //READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
@@ -75,10 +75,10 @@ namespace AnalysisPrograms
             Double minVocalLength = Double.Parse(dict[key_MIN_VOCAL_DURATION]);
             int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
-            double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
-            if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD)) intensityThreshold = Double.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
-            int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
-            if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
+            //double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
+            //if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD)) intensityThreshold = Double.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
+            //int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
+            //if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
 
 
 
@@ -90,11 +90,11 @@ namespace AnalysisPrograms
             var sonogram          = results1.Item1;
             var SNR_fullbandEvent = results1.Item2;
             var SNR_subbandEvent  = results1.Item3;
-            var predictedEvents = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
+            //var predictedEvents = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
             //##########################################################################################################################
 
             Log.WriteLine("# Finished calculating SNR and detecting acoustic events.");
-            Log.WriteLine("# Event Count = " + predictedEvents.Count());
+            //Log.WriteLine("# Event Count = " + predictedEvents.Count());
 
             Log.WriteLine("\nSIGNAL PARAMETERS");
             Log.WriteLine("Signal Duration =" + sonogram.Duration);
@@ -156,7 +156,7 @@ namespace AnalysisPrograms
             {
                 Log.WriteLine("# Start to draw image of sonogram.");
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
+                //DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
             }
 
 
@@ -172,7 +172,7 @@ namespace AnalysisPrograms
             if (DRAW_SONOGRAMS > 0)
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
+                //DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
             }
 
 
@@ -220,32 +220,32 @@ namespace AnalysisPrograms
             return System.Tuple.Create(sonogram, SNR_fullbandEvent, SNR_subbandEvent);
         }
 
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>> Execute_SNR(string wavPath,
-                            int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
-                            int minHz, int maxHz, int segK1, int segK2, int latency, int vocalGap, double intensityThreshold, int smallAreaThreshold)
-        {
-            //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(wavPath);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-            int sr = recording.SampleRate;
+        //public static System.Tuple<BaseSonogram, List<AcousticEvent>> Execute_SNR(string wavPath,
+        //                    int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
+        //                    int minHz, int maxHz, int segK1, int segK2, int latency, int vocalGap, double intensityThreshold, int smallAreaThreshold)
+        //{
+        //    //i: GET RECORDING
+        //    AudioRecording recording = new AudioRecording(wavPath);
+        //    if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+        //    int sr = recording.SampleRate;
 
-            //ii: SET SONOGRAM CONFIGURATION
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName    = recording.FileName;
-            sonoConfig.WindowSize     = frameSize;
-            sonoConfig.WindowOverlap  = frameOverlap;
-            sonoConfig.fftConfig.WindowFunction = windowFunction;
-            sonoConfig.fftConfig.NPointSmoothFFT = N_PointSmoothFFT;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
+        //    //ii: SET SONOGRAM CONFIGURATION
+        //    SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+        //    sonoConfig.SourceFName    = recording.FileName;
+        //    sonoConfig.WindowSize     = frameSize;
+        //    sonoConfig.WindowOverlap  = frameOverlap;
+        //    sonoConfig.fftConfig.WindowFunction = windowFunction;
+        //    sonoConfig.fftConfig.NPointSmoothFFT = N_PointSmoothFFT;
+        //    sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
-            //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            recording.Dispose();
+        //    //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
+        //    BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+        //    recording.Dispose();
 
-            //CALCULATE AED
-            var events = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
-            return System.Tuple.Create(sonogram, events);
-        }
+        //    ////CALCULATE AED
+        //    //var events = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
+        //    //return System.Tuple.Create(sonogram, events);
+        //}
 
 
 

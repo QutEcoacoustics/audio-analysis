@@ -118,7 +118,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
             try
@@ -448,7 +448,6 @@ namespace AnalysisPrograms
 
         public static Tuple<DataTable, DataTable, bool[]> ProcessCsvFile(FileInfo fiCsvFile)
         {
-            AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
