@@ -389,6 +389,17 @@
                 TimeSpan.FromMilliseconds(endMilliseconds));
         }
 
+        public static void Segment(MasterAudioUtility audioUtility, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
+        {
+            audioUtility.Segment(
+                source,
+                MediaTypes.GetMediaType(source.Extension),
+                output,
+                MediaTypes.GetMediaType(output.Extension),
+                TimeSpan.FromMilliseconds(startMilliseconds),
+                TimeSpan.FromMilliseconds(endMilliseconds));
+        }
+
         /// <summary>
         /// Convert an audio file using the default audio utility settings.
         /// </summary>
