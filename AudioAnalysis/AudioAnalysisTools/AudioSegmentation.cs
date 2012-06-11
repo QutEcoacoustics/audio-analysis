@@ -80,7 +80,7 @@ namespace AudioAnalysisTools
             SonogramConfig config1 = null;
             try
             {
-                config1 = new SonogramConfig(new Configuration(segmentIniPath));
+                config1 = new SonogramConfig(new ConfigDictionary(segmentIniPath));
             }
             catch (Exception e)
             {

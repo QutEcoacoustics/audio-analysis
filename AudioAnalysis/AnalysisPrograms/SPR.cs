@@ -68,7 +68,7 @@ namespace AnalysisPrograms
 
 
             // A: READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 

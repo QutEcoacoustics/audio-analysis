@@ -621,7 +621,7 @@ namespace AudioAnalysisTools.HTKTools
             string iniPath  = WorkingDir + "\\" + callIdentifier + "_Config.ini";
             this.ConfigPath = iniPath;
 
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
@@ -690,7 +690,7 @@ namespace AudioAnalysisTools.HTKTools
         {
             this.ConfigPath = iniPath;
 
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 

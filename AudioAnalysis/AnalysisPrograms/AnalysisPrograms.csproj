@@ -127,45 +127,33 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticIndicesExtraction.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="Harmonics.cs" />
-    <Compile Include="HTKRecogniser.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Human2.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="KiwiRecogniser.cs" />
     <Compile Include="LewinsRail3.cs" />
     <Compile Include="LSKiwi2.cs" />
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="Process\AcousticIndicesAnalysis.cs" />
     <Compile Include="Process\AnalysisHelpers.cs" />
-    <Compile Include="Process\CaneToadOdAnalysis.cs" />
-    <Compile Include="Process\HarmonicRecogniserAnalysis.cs" />
-    <Compile Include="Process\LSKiwiAnalysis.cs" />
-    <Compile Include="Process\OscillationRecogniserAnalysis.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
     <Compile Include="FrogRibit.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
-    <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="DimReduction.cs" />
     <Compile Include="FeltTemplate_Create.cs" />
     <Compile Include="FeltTemplates_Use.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
-    <Compile Include="Main_SPRScanDir.cs" />
     <Compile Include="MFCC_OD.cs" />
     <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
-    <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
-    <Compile Include="Main_ScanOneRecording.cs" />
-    <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="Segment.cs" />

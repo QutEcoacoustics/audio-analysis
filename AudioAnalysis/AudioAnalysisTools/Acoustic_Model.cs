@@ -32,7 +32,7 @@ namespace AudioAnalysisTools
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="config"></param>
-        public Acoustic_Model(Configuration config)
+        public Acoustic_Model(ConfigDictionary config)
         {
             ZscoreThreshold = config.GetDouble("ZSCORE_THRESHOLD");
         }
@@ -409,7 +409,7 @@ namespace AudioAnalysisTools
             //display N-grams
             int N = 2;
             var _2grams = ExtractNgramSequences(SyllSymbols, N);
-            var ht2 = DataTools.WordsHisto(_2grams);
+            var ht2 = DictionaryTools.WordsHisto(_2grams);
             sb.Append("\n################# Number of 2grams=" + _2grams.Count + ".  Distinct=" + ht2.Count + ".\n\t# 2gram (count,RF)\n");
             int count = 0;
             foreach (string str in ht2.Keys)
@@ -420,7 +420,7 @@ namespace AudioAnalysisTools
 
             N = 3;
             var _3grams = ExtractNgramSequences(SyllSymbols, N);
-            var ht3 = DataTools.WordsHisto(_3grams);
+            var ht3 = DictionaryTools.WordsHisto(_3grams);
             sb.Append("\n################# Number of 3grams=" + _3grams.Count + ".  Distinct=" + ht3.Count + ".\n\t# 3gram (count,RF)\n");
 
             count = 0;
@@ -429,7 +429,7 @@ namespace AudioAnalysisTools
 
             //display the sequences of valid syllables
             var list = MMTools.ExtractWordSequences(SyllSymbols);
-            var ht = DataTools.WordsHisto(list);
+            var ht = DictionaryTools.WordsHisto(list);
             sb.Append("\n################# Number of Words = " + list.Count + "  Number of Distinct Words = " + ht.Count + "\n");
 
             count = 0;

@@ -161,9 +161,9 @@ namespace AnalysisPrograms
             //READ PARAMETER VALUES FROM INI FILE
             //KiwiParams kiwiParams = ReadIniFile(iniPath);
             //WriteParameters(kiwiParams);
-            Dictionary<string, string> kiwiCfg = FileTools.ReadPropertiesFile(iniPath);
-            double segmentDuration = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, kiwiCfg);
-            double segmentOverlap  = Configuration.GetDouble(LSKiwi.key_SEGMENT_OVERLAP, kiwiCfg); 
+            Dictionary<string, string> kiwiCfg = ConfigDictionary.ReadPropertiesFile(iniPath);
+            double segmentDuration = ConfigDictionary.GetDouble(LSKiwi.key_SEGMENT_DURATION, kiwiCfg);
+            double segmentOverlap = ConfigDictionary.GetDouble(LSKiwi.key_SEGMENT_OVERLAP, kiwiCfg); 
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
@@ -259,21 +259,21 @@ namespace AnalysisPrograms
         /// <param name="segmentAudioFile"></param>
         public static DataTable Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> config, DirectoryInfo diOutputDir)
         {
-            int minHzMale       = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
-            int maxHzMale       = Configuration.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
-            int minHzFemale     = Configuration.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale     = Configuration.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
-            int frameLength     = Configuration.GetInt(LSKiwi.key_FRAME_LENGTH, config);
-            double frameOverlap = Configuration.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
-            double dctDuration  = Configuration.GetDouble(LSKiwi.key_DCT_DURATION, config);
-            double dctThreshold = Configuration.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
-            double minPeriod    = Configuration.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
-            double maxPeriod    = Configuration.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold  = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
-            double minDuration     = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration     = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
-            double drawSonograms   = Configuration.GetInt(LSKiwi.key_DRAW_SONOGRAMS, config);
-            double segmentDuration = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, config); 
+            int minHzMale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
+            int maxHzMale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
+            int minHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
+            int frameLength = ConfigDictionary.GetInt(LSKiwi.key_FRAME_LENGTH, config);
+            double frameOverlap = ConfigDictionary.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
+            double dctDuration = ConfigDictionary.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
+            double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
+            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            double drawSonograms = ConfigDictionary.GetInt(LSKiwi.key_DRAW_SONOGRAMS, config);
+            double segmentDuration = ConfigDictionary.GetDouble(LSKiwi.key_SEGMENT_DURATION, config); 
             double segmentStartMinute = segmentDuration * iter;
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
@@ -323,19 +323,19 @@ namespace AnalysisPrograms
         {
             if (config == null) return null;
 
-            int minHzMale = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
-            int maxHzMale = Configuration.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
-            int minHzFemale = Configuration.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale = Configuration.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
-            int frameLength = Configuration.GetInt(LSKiwi.key_FRAME_LENGTH, config);
-            double frameOverlap = Configuration.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
-            double dctDuration = Configuration.GetDouble(LSKiwi.key_DCT_DURATION, config);
-            double dctThreshold = Configuration.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
-            double minPeriod = Configuration.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
-            double maxPeriod = Configuration.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
-            double minDuration = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            int minHzMale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
+            int maxHzMale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
+            int minHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
+            int frameLength = ConfigDictionary.GetInt(LSKiwi.key_FRAME_LENGTH, config);
+            double frameOverlap = ConfigDictionary.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
+            double dctDuration = ConfigDictionary.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
+            double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
+            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
@@ -349,9 +349,9 @@ namespace AnalysisPrograms
 
             // (iii) NOISE REDUCTION
             bool doNoiseReduction = false;
-            doNoiseReduction = Configuration.GetBoolean(AcousticIndices.key_DO_NOISE_REDUCTION, config);
+            doNoiseReduction = ConfigDictionary.GetBoolean(AcousticIndicesExtraction.key_DO_NOISE_REDUCTION, config);
             double sonogramBackgroundThreshold = 4.0;
-            sonogramBackgroundThreshold = Configuration.GetDouble(AcousticIndices.key_BG_NOISE_REDUCTION, config);
+            sonogramBackgroundThreshold = ConfigDictionary.GetDouble(AcousticIndicesExtraction.key_BG_NOISE_REDUCTION, config);
             if (doNoiseReduction)
             {
                 var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, sonogramBackgroundThreshold);
@@ -759,7 +759,6 @@ namespace AnalysisPrograms
 
         public static Tuple<DataTable, DataTable, bool[]> ProcessCsvFile(FileInfo fiCsvFile)
         {
-            AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
 

@@ -246,18 +246,18 @@ namespace AnalysisPrograms.Processing
                     }
 
                     break;
-                case "htk": // run HTK template over a recording
-                    if (resourceFile != null && File.Exists(resourceFile.FullName))
-                    {
-                        results = ProcessingTypes.RunHtk(settingsFile, audioFile, resourceFile, runDir);
-                    }
-                    else
-                    {
-                        var path = resourceFile != null ? resourceFile.FullName : "No path given";
-                        throw new InvalidOperationException("Invalid resource file path: " + path);
-                    }
+                //case "htk": // run HTK template over a recording
+                //    if (resourceFile != null && File.Exists(resourceFile.FullName))
+                //    {
+                //        results = ProcessingTypes.RunHtk(settingsFile, audioFile, resourceFile, runDir);
+                //    }
+                //    else
+                //    {
+                //        var path = resourceFile != null ? resourceFile.FullName : "No path given";
+                //        throw new InvalidOperationException("Invalid resource file path: " + path);
+                //    }
 
-                    break;
+                //    break;
                 default:
                     Console.Error.WriteLine("Unrecognised analysis type: " + analysisType);
                     break;

@@ -406,7 +406,7 @@
             }//end over all freq bins
 
             if (add1kHzLines) Draw1kHzLines(bmp);
-            return bmp;
+            return (Image)bmp;
         }
 
         

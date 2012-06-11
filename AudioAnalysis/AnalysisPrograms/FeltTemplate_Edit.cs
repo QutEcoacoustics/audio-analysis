@@ -63,7 +63,7 @@ namespace AnalysisPrograms
             string noisePath = outputDir + targetName + "_noise.txt";
 
             //ii: READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
+            var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             string sourceFile           = dict[FeltTemplate_Create.key_SOURCE_RECORDING]; 
             string sourceDir            = dict[FeltTemplate_Create.key_SOURCE_DIRECTORY];

@@ -41,7 +41,7 @@ namespace AnalysisPrograms
             int binCount;
             double binWidth;
             double frameDuration, frameOffset, framesPerSecond;
-            Configuration config = BaseTemplate.LoadStaticConfig(appConfigPath); ;
+            ConfigDictionary config = BaseTemplate.LoadStaticConfig(appConfigPath); ;
             int sr = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
             int windowSize   = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             double overlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);

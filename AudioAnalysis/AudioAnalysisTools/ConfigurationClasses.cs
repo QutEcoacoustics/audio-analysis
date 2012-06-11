@@ -145,12 +145,12 @@ namespace AudioAnalysisTools
         #endregion
 
 
-        public FftConfiguration(Configuration config)
+        public FftConfiguration(ConfigDictionary config)
 		{
             SetConfig(config);
 		}
 
-        public void SetConfig(Configuration config)
+        public void SetConfig(ConfigDictionary config)
 		{
             sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
             //at present time following parameters are preset.
@@ -178,7 +178,7 @@ namespace AudioAnalysisTools
         public bool IncludeDoubleDelta { get; set; }
         #endregion
 
-        public MfccConfiguration(Configuration config)
+        public MfccConfiguration(ConfigDictionary config)
         {
             FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
@@ -207,7 +207,7 @@ namespace AudioAnalysisTools
     public static class EndpointDetectionConfiguration
 	{
 
-		public static void SetConfig(Configuration config)
+		public static void SetConfig(ConfigDictionary config)
 		{
             K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold); //dB threshold for recognition of vocalisations
             K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold); //dB threshold for recognition of vocalisations

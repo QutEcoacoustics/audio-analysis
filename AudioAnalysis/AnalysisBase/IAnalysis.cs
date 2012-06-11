@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Data;
+using System.IO;
 namespace AnalysisBase
 {
     /// <summary>
@@ -31,6 +33,10 @@ namespace AnalysisBase
         /// The results of the analysis.
         /// </returns>
         AnalysisResult Analyse(AnalysisSettings analysisSettings);
+
+        Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile);
+
+        DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold);
 
         //FileInfo AnalysisImage(AnalysisSettings settings);
     }

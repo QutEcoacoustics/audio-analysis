@@ -1,31 +1,27 @@
 ﻿namespace AudioBrowser
 {
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Data;
+    using System.Diagnostics; //for the StopWatch only
+    using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Diagnostics; //for the StopWatch only
+    using System.Windows.Forms;
+
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
 
     using AnalysisPrograms;
-
     using AnalysisRunner;
 
     using AudioAnalysisTools;
 
 
     using log4net;
-
-    using System;
-    using System.Drawing;
-    using System.Linq;
-    using System.Windows.Forms;
-    //using System.IO;
 
     using TowseyLib;
     using AnalysisBase;
@@ -70,12 +66,6 @@
         private string tabPageDisplayLabel = "tabPageDisplay";
         private string tabPageConsoleLabel = "tabPageConsole";
 
-        private string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
-
-        private string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: An application for exploring bio-acoustic recordings.  (c) Queensland University of Technology.";
-        private string IMAGE_TITLE_TEXT   = "Image produced by AUDIO-BROWSER, Queensland University of Technology (QUT).";
-
-
         private AnalysisCoordinator analysisCoordinator;
 
         /// <summary>
@@ -96,19 +86,19 @@
             }
             catch (Exception ex)
             {
+                MessageBox.Show("WARNING: CANNOT LOCATE BROWSER CONFIG FILE! ");
+                MessageBox.Show(ex.ToString());
                 if (Debugger.IsAttached)
                 {
                     Debugger.Break();                    
                 }
 
-                MessageBox.Show("WARNING: CANNOT LOCATE BROWSER CONFIG FILE! ");
-                MessageBox.Show(ex.ToString());
             }
 
             //initialize analysis parameters
             try
             {
-                this.analysisParams = FileTools.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
+                this.analysisParams = ConfigDictionary.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
             }
             catch (Exception ex) //DO NOT CATCH THIS EXCEPTION - DEAL WITH LATER
             {
@@ -211,7 +201,7 @@
 
             string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
 
-            Console.WriteLine(BROWSER_TITLE_TEXT);
+            Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             Console.WriteLine(DateTime.Now);
 
             LoadAnalysisConfigFile(analysisName);
@@ -232,7 +222,6 @@
             this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; 
             this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;  
 
-            string configDir = this.browserSettings.diConfigDir.FullName;
             this.browserSettings.AnalysisName = analysisName;
             if (analysisName == "None")
             {
@@ -242,9 +231,11 @@
                 this.analysisParams = null;
                 return;
             }
+
+            string configDir = this.browserSettings.diConfigDir.FullName;
             string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
             this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
-            this.analysisParams = FileTools.ReadPropertiesFile(configPath);
+            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
         }
 
         private static void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
@@ -303,7 +294,12 @@
         private void btnAnalyseSelectedAudioFiles_Click(object sender, EventArgs e)
         {
             string analysisName = (string)this.comboBoxSourceFileAnalysisType.SelectedItem;
-            LoadAnalysisConfigFile(analysisName);
+            this.browserSettings.AnalysisName = analysisName;
+            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            var fiConfig = new FileInfo(configPath);
+            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
+
+            this.browserSettings.fiAnalysisConfig = fiConfig;
             WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
             CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
 
@@ -342,9 +338,10 @@
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
                     //################# PROCESS THE RECORDING #####################################################################################
-                    var outputData = this.ProcessRecording(fiSourceRecording, browserSettings.diOutputDir, this.analysisParams);
+                    var outputData = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
                     //#############################################################################################################################
                     stopwatch.Stop();
+                    //DataTableTools.WriteTable2Console(outputData);
 
 
                     string reportFileExt = ".csv";
@@ -409,162 +406,6 @@
             }
         }
 
-        private DataTable ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, Dictionary<string, string> dict)
-        {
-            string analysisName = this.CurrentSourceFileAnalysisType;
-            string sourceRecordingPath = fiSourceRecording.FullName;
-            string outputDir = diOutputDir.FullName;
-
-            double segmentDuration_mins = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, dict);
-            int segmentOverlap = Configuration.GetInt(AudioBrowserSettings.key_SEGMENT_OVERLAP, dict);
-            int resampleRate = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, dict);
-
-            // CREATE RUN ANALYSIS CLASS HERE
-
-            // Set up the file and get info
-
-
-
-            IAudioUtility audioUtility = new MasterAudioUtility(resampleRate); //creates AudioUtility and
-            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-            var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
-            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
-            int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
-
-            //Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
-            //Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
-            Console.WriteLine("# Source audio - segments: {0}", segmentCount);
-
-            //var outputData = new List<string>(); //List to store indices
-            //SET UP THE OUTPUT REPORT DATATABLE
-            DataTable outputDataTable = null;
-            if (analysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
-            {
-                var parameters = AcousticIndices.InitOutputTableColumns();
-                outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-            }
-            else
-                if (analysisName == LSKiwi.ANALYSIS_NAME) //KiwiRecogniser
-                {
-                    var parameters = LSKiwi.InitOutputTableColumns();
-                    outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-                }
-                else
-                    if (analysisName == Human2.ANALYSIS_NAME) //Human speech Recogniser
-                    {
-                        //var parameters = Human.InitOutputTableColumns();
-                        //outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-                    }
-                    else
-                        //if (analysisName == Crow.ANALYSIS_NAME) //Crow Recogniser
-                        //{
-                        //    var parameters = Crow.InitOutputTableColumns();
-                        //    outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-                        //}
-                        //else
-                        {
-                        Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
-                        return null;
-                    }
-
-
-            // LOOP THROUGH THE FILE
-            //initialise timers for diagnostics - ONLY IF IN SEQUENTIAL MODE
-            //DateTime tStart = DateTime.Now;
-            //DateTime tPrevious = tStart;
-
-            //segmentCount = 30;   //for testing and debugging
-
-            //for (int s = 0; s < segmentCount; s++)
-            // Parallelize the loop to partition the source file by segments.
-            //Parallel.For(0, 570, s =>              //USE FOR FIRST HALF OF RECORDING
-            //Parallel.For(569, segmentCount, s =>   //USE FOR SECOND HALF OF RECORDING
-            //Parallel.For(847, 848, s =>
-            Parallel.For(0, segmentCount, s =>
-            {
-                //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
-                double startMinutes = s * segmentDuration_mins;
-                int startMilliseconds = (int)(startMinutes * 60000);
-                int endMilliseconds = startMilliseconds + segmentDuration_ms;
-
-                #region time diagnostics - used only in sequential loop - no use for parallel loop
-                //DateTime tNow = DateTime.Now;
-                //TimeSpan elapsedTime = tNow - tStart;
-                //string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
-                //double avIterTime = elapsedTime.TotalSeconds / s;
-                //if (s == 0) avIterTime = 0.0; //correct for division by zero
-                //double t2End = avIterTime * (segmentCount - s) / (double)60;
-                //TimeSpan iterTimeSpan = tNow - tPrevious;
-                //double iterTime = iterTimeSpan.TotalSeconds;
-                //if (s == 0) iterTime = 0.0;
-                //tPrevious = tNow;
-                //Console.WriteLine("\n");
-                //Console.WriteLine("## SEQUENTIAL SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
-                //                           s, startMinutes, timeDuration, t2End, iterTime, avIterTime);
-                #endregion
-
-
-                //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-
-                //set up the temporary audio segment output file
-                string tempFname = "temp" + s + ".wav";
-                string tempSegmentPath = Path.Combine(outputDir, tempFname); //path name of the temporary segment files extracted from long recording
-                FileInfo fiOutputSegment = new FileInfo(tempSegmentPath);
-                MasterAudioUtility.Segment(resampleRate, fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
-                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
-                FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
-
-                //double check that recording is over minimum length
-                double wavSegmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
-                int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
-                int minimumDuration = 30; //seconds
-                int minimumSamples = minimumDuration * resampleRate; //ignore recordings shorter than 100 frame
-                if (sampleCount <= minimumSamples)
-                {
-                    Console.WriteLine("# WARNING: Segment @{0}minutes is only {1} samples long (i.e. less than {2} seconds). Will ignore.", startMinutes, sampleCount, minimumDuration);
-                    //break;
-                }
-                else //do analysis
-                {
-                    //#############################################################################################################################################
-                    //##### DO THE ANALYSIS ############ 
-                    DataTable dt = null;
-                    if (analysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
-                    {
-                        dt = AcousticIndices.Analysis(s, fiSegmentAudioFile, dict);
-                    }
-                    else
-                        if (analysisName.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
-                        {
-                            dt = LSKiwi.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                        }
-                        //else
-                        //    if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
-                        //    {
-                        //        dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                        //    }
-                            //else
-                            //    if (analysisName.Equals(Crow.ANALYSIS_NAME)) //Human speech detection
-                            //    {
-                            //        dt = Crow.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                            //    }
-                    //#############################################################################################################################################
-
-                    if (dt != null)
-                    {
-                        foreach (DataRow row in dt.Rows) outputDataTable.ImportRow(row);
-                    }
-                }
-
-                recordingSegment.Dispose();
-                File.Delete(tempSegmentPath); //deleted the temp file
-                startMinutes += segmentDuration_mins;
-            } //end of for loop
-            ); // Parallel.For
-            
-            return outputDataTable;
-        }
-
         private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
         {
             int count = 0;
@@ -574,7 +415,7 @@
 
             this.textBoxConsole.Clear();
 
-            Console.WriteLine(BROWSER_TITLE_TEXT);
+            Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
 
@@ -644,23 +485,6 @@
             }
         }
 
-        private FileInfo InferSourceFileFromCSVFileName(FileInfo csvFile)
-        {
-            string csvFname = Path.GetFileNameWithoutExtension(csvFile.FullName);
-            string[] parts = csvFname.Split('_'); //assume that underscore plus analysis type has been added to source name
-            string sourceName = parts[0];
-            for (int i = 1; i < parts.Length - 1; i++) sourceName += ("_" + parts[i]);
-
-            string sourceDir = this.browserSettings.diSourceDir.FullName;
-            var fiSourceMP3 = new FileInfo(Path.Combine(sourceDir, sourceName + ".mp3"));
-            var fiSourceWAV = new FileInfo(Path.Combine(sourceDir, sourceName + ".wav"));
-            if (fiSourceMP3.Exists) return fiSourceMP3;
-            else
-                if (fiSourceWAV.Exists) return fiSourceWAV;
-                else
-                    return null;
-        }
-
         /// <summary>
         /// loads a csv file of indices
         /// returns a status integer. 0= no error
@@ -669,172 +493,48 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            DataTable dtRaw = null;
-            DataTable dt2Display = null;
-            //########################
-
-            string headers = this.analysisParams[key_DISPLAY_COLUMNS];
-            string[] headers2Display = null;
-            if ((headers != null) && (headers.Length > 0)) headers2Display = headers.Split(',');
-
-            if (this.CurrentCSVFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME))
+            string analyisName = this.CurrentCSVFileAnalysisType;
+            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName);
+            if (analyser == null)
             {
-                var output = AcousticIndices.ProcessCsvFile(new FileInfo(csvPath), headers2Display);
-                dtRaw = output.Item1;
-                dt2Display = output.Item2;
+                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
+                Console.WriteLine("\t Analysis name not recognized: " + analyisName);
+                return 3;
             }
-            else
-                if (this.CurrentCSVFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME))
-                {
-                    var output = LSKiwi.ProcessCsvFile(new FileInfo(csvPath));
-                    dtRaw = output.Item1;
-                    dt2Display = output.Item2;
-                }
-                else
-                    //if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
-                    //{
-                    //    var output = Human.ProcessCsvFile(new FileInfo(csvPath));
-                    //    dtRaw = output.Item1;
-                    //    dt2Display = output.Item2;
-                    //}
-                    //else
-                        if (this.CurrentCSVFileAnalysisType.Equals("None"))
-                        {
-                            dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
-                            dt2Display = DataTableTools.NormaliseColumnValues(dtRaw);
-                        }
-                        else
-                        {
-                            Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-                            Console.WriteLine("\t Analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
-                            return 3;
-                        }
+
+            var output = analyser.ProcessCsvFile(new FileInfo(csvPath), this.browserSettings.fiAnalysisConfig);
+            DataTable dtRaw = output.Item1;
+            DataTable dt2Display = output.Item2;
+            this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
+            analyser = null;
 
             string[] originalHeaders = DataTableTools.GetColumnNames(dtRaw);
             string[] displayHeaders  = DataTableTools.GetColumnNames(dt2Display);
-            List<string> list = displayHeaders.ToList();
 
             //make values of bottom track available
             this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, displayHeaders[displayHeaders.Length - 1]).ToArray();
 
-
-            //set up the text items to display in the list box of displayed tracks
-            //bool[] columns2Display = new bool[originalHeaders.Length];
+            //display column headers in the list box of displayed tracks
+            List<string> displayList = displayHeaders.ToList();
+            List<string> abbrevList = new List<string>();
+            foreach (string str in displayList) abbrevList.Add(str.Substring(0, 5)); //the headers have been tampered with!! but assume not first 5 chars
             for (int i = 0; i < originalHeaders.Length; i++)
             {
-                string text = originalHeaders[i];
-                //if (columns2Display[i]) text += "  **"; 
-                //if (list.Contains(text))
-                //{
-                //    text += "  **";
-                //    columns2Display[i] = true;
-                //}
-                this.listBoxDisplayedTracks.Items.Add((i+1) + ":   " + text);
+                string text = originalHeaders[i].Substring(0, 5);
+                if (abbrevList.Contains(text))
+                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}  (displayed)", (i + 1), originalHeaders[i]));
+                else
+                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}",              (i + 1), originalHeaders[i]));
             }
             string labelText = originalHeaders.Length + " headers in CSV file - " + displayHeaders.Length + " displayed.";
-            labelCSVHeaders.Text = labelText;
+            this.labelCSVHeaders.Text = labelText;
 
-            string fileName = Path.GetFileName(csvPath);
-            string title = String.Format(IMAGE_TITLE_TEXT + "   SOURCE:{0};  ", fileName);
-            int timeScale = 60; //put a tik every 60 pixels = 1 hour
-            bool doNormalisation = browserSettings.TrackNormalisedDisplay;
-            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, title, timeScale, browserSettings.TrackHeight, doNormalisation);
-            this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
-            this.pictureBoxVisualIndex.Image = tracksImage;
-
-            //SAVE THE IMAGE
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
-            this.pictureBoxVisualIndex.Image.Save(imagePath);
-            Console.WriteLine("\n\tSaved csv data tracks to image file: " + imagePath);
+            Bitmap tracksImage = AudioBrowserTools.ConstructVisualIndexImage(dt2Display, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay, imagePath);
+            this.pictureBoxVisualIndex.Image = tracksImage;
 
             int error = 0;
             return error;
-        }
-
-
-        /// <summary>
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="timeScale"></param>
-        /// <param name="order"></param>
-        /// <param name="trackHeight"></param>
-        /// <param name="doNormalise"></param>
-        /// <param name="tracks2Display"></param>
-        /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, int trackHeight, bool doNormalise)
-        {
-            List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
-            List<double[]> values = DataTableTools.ListOfColumnValues(dt);
-
-            //set up the array of tracks to display
-            //var dodisplay = new bool[values.Count];
-            //for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
-            //if (!(tracks2Display == null))
-            //{
-            //    for (int i = 0; i < values.Count; i++)
-            //        if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
-            //}
-
-            // accumulate the individual tracks
-            int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
-            int endPanelwidth = 150;
-            int imageWidth = duration + endPanelwidth;
-
-            var bitmaps = new List<Bitmap>();
-            double threshold = 0.0;
-            double[] array;
-            for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
-            {
-                //if ((!dodisplay[i]) || (values[i].Length == 0)) continue;
-                if (values[i].Length == 0) continue;
-                array = values[i];
-                if (doNormalise) array = DataTools.normalise(values[i]);
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
-            }
-            int x = values.Count - 1;
-            array = values[x];
-            if (doNormalise) array = DataTools.normalise(values[x]);
-            //if ((dodisplay[x]) || (values[x].Length > 0))
-            if (values[x].Length > 0)
-                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
-
-            //set up the composite image parameters
-            int imageHt = trackHeight * (bitmaps.Count + 3);  //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp  = Image_Track.DrawTimeTrack(duration, timeScale, imageWidth, trackHeight, "Time (hours)");
-
-            //draw the composite bitmap
-            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-            Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-
-            int offset = 0;
-            gr.DrawImage(titleBmp, 0, offset); //draw in the top title
-            offset += trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            offset += trackHeight;
-            for (int i = 0; i < bitmaps.Count; i++)
-            {
-                gr.DrawImage(bitmaps[i], 0, offset);
-                offset += trackHeight;
-            }
-            gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
-            return compositeBmp;
-        }
-
-        /// <summary>
-        /// assumes the passed data arrays are in correct order for visualization
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="trackHeight"></param>
-        /// <param name="doNormaliseTrackDisplay"></param>
-        /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, int trackHeight, bool doNormaliseTrackDisplay)
-        {
-            int length = dt.Rows.Count;
-            double[] order = new double[length];
-            for (int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, title, timeScale, order, trackHeight, doNormaliseTrackDisplay);
         }
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
@@ -853,11 +553,14 @@
             //mark the time scale
             Graphics g = this.pictureBoxVisualIndex.CreateGraphics();
             g.DrawImage(this.pictureBoxVisualIndex.Image, 0, 0);
-            Point pt1 = new Point(myX, 2);
-            Point pt2 = new Point(myX, this.pictureBoxVisualIndex.Height);
             float[] dashValues = { 2, 2, 2, 2 };
             Pen pen = new Pen(Color.Red, 1.0F);
             pen.DashPattern = dashValues;
+            Point pt1 = new Point(myX-1, 2);
+            Point pt2 = new Point(myX-1, this.pictureBoxVisualIndex.Height);
+            g.DrawLine(pen, pt1, pt2);
+            pt1 = new Point(myX+1, 2);
+            pt2 = new Point(myX+1, this.pictureBoxVisualIndex.Height);
             g.DrawLine(pen, pt1, pt2);
 
             if ((trackValues == null) || (trackValues.Length < 2)) return;
@@ -879,7 +582,7 @@
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
             //Infer source file name from CSV file name
-            FileInfo inferredSourceFile = InferSourceFileFromCSVFileName(browserSettings.fiCSVFile);
+            FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
             if (inferredSourceFile == null)
             {
                 browserSettings.fiSourceRecording = null;
@@ -908,109 +611,51 @@
             int resampleRate = this.browserSettings.DefaultResampleRate;
             if (analysisParams != null)
             {
-                segmentDuration = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
-                resampleRate = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
+                segmentDuration = ConfigDictionary.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
+                resampleRate = ConfigDictionary.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
             }
 
 
             //EXTRACT RECORDING SEGMENT
-            bool add30secondBuffer = true;
-            int buffer = 30000;
-            int startMilliseconds = (myX) * 60000;
-            int endMilliseconds = (myX + 1) * 60000;
-            if (segmentDuration == 3)
-            {
-                startMilliseconds = (myX - 1) * 60000;
-                endMilliseconds = (myX + 2) * 60000;
-            }
-            if (add30secondBuffer)
-            {
-                startMilliseconds -= buffer;
-                endMilliseconds += buffer;
-            }
-            if (startMilliseconds < 0) startMilliseconds = 0;
-            if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;
+            TimeSpan startMinute = new TimeSpan(0, myX, 0);
+            TimeSpan endMinute   = new TimeSpan(0, myX+1, 0);
+            //if (segmentDuration == 3)
+            //{
+            //    startMinute = new TimeSpan(0, myX - 1, 0);
+            //    endMinute   = new TimeSpan(0, myX + 2, 0);
+            //}
+            TimeSpan buffer = new TimeSpan(0, 0, 15);
 
-            string sourceFName = Path.GetFileNameWithoutExtension(browserSettings.fiSourceRecording.FullName);
-            string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
-
-            string outputSegmentPath = Path.Combine(browserSettings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
-            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
-
-
-            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
-            Console.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
-            Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
 
             //get segment from source recording
             DateTime time1 = DateTime.Now;
-            MasterAudioUtility.Segment(resampleRate, browserSettings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
+            var fiSource = browserSettings.fiSourceRecording;
+            string sourceFName = Path.GetFileNameWithoutExtension(fiSource.FullName);
+            string segmentFName = sourceFName + "_min" + (int)startMinute.TotalMinutes + ".wav"; //want a wav file
+            string outputSegmentPath = Path.Combine(browserSettings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
+            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
+            Console.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
+            Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
+            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
+            AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
+
             if (!fiOutputSegment.Exists)
             {
                 Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
                 this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
                 return;
             }
-            AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
 
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
             Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
 
             //store info
-            this.labelSonogramFileName.Text = Path.GetFileName(recordingSegment.FilePath);
-            browserSettings.fiSegmentRecording = new FileInfo(recordingSegment.FilePath);
-
-
-            //make the sonogram
-            Image_MultiTrack image = MakeSonogram(recordingSegment);
-            this.pictureBoxSonogram.Image = image.GetImage();
-
-            //attempt to deal with variable height of spectrogram
-            //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
-            if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
-            //Point location = this.panelDisplaySpectrogram.Location;
-            //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
-            //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
-            //this.pictureBoxSonogram.Location = new Point(3, 0);
-            //this.vScrollBarSonogram.Minimum = 0;
-
-            string sonogramPath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
-            Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
-            pictureBoxSonogram.Image.Save(sonogramPath);
-            this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-            this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
-
+            this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
+            this.browserSettings.fiSegmentRecording = fiOutputSegment;
+            GetSonogram(fiOutputSegment);
         }
 
-        private Image_MultiTrack MakeSonogram(AudioRecording recordingSegment)
-        {
-            this.checkBoxSonogramAnnotate.Checked = false; //calling this method does not annotate the spectrogram
-
-            Console.WriteLine("\n\tPreparing sonogram of audio segment");
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recordingSegment.FileName;
-            sonoConfig.WindowSize = 512;
-            sonoConfig.WindowOverlap = 0.0;
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recordingSegment.GetWavReader());
-
-            // (iii) NOISE REDUCTION
-            if (this.checkBoxSonnogramNoiseReduce.Checked)
-            {
-                Console.WriteLine("NOISE REDUCTION");
-                var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, browserSettings.SonogramBackgroundThreshold);
-                sonogram.Data = tuple.Item1;   // store data matrix
-            }
-
-            //prepare the image
-            bool doHighlightSubband = false;
-            bool add1kHzLines = true;
-            System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
-
-            return image;
-        }//MakeSonogram()
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
@@ -1019,10 +664,10 @@
                 Console.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
                 Console.WriteLine("It does not exist!");
                 this.tabControlMain.SelectTab("tabPageConsole");
-                RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
+                AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
             }
             else
-                RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
+                AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
         }
 
         // here be dragons!
@@ -1242,16 +887,6 @@
                    cellEvent.RowIndex != -1;
         }
 
-        private static int GetThreadsInUse()
-        {
-            int availableWorkerThreads, availableCompletionPortThreads, maxWorkerThreads, maxCompletionPortThreads;
-            ThreadPool.GetAvailableThreads(out  availableWorkerThreads, out availableCompletionPortThreads);
-            ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxCompletionPortThreads);
-            int threadsInUse = maxWorkerThreads - availableWorkerThreads;
-
-            return threadsInUse;
-        }
-
         #endregion
 
         #region dataGridViewSouceFileList source
@@ -1429,7 +1064,7 @@
 
         private void HeaderCheckBoxSourceFileList_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space)
+            if (e.KeyCode == System.Windows.Forms.Keys.Space)
                 HeaderCheckBoxClickSourceFileList((CheckBox)sender);
         }
 
@@ -1508,7 +1143,7 @@
 
         private void HeaderCheckBoxCSVFileList_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space)
+            if (e.KeyCode == System.Windows.Forms.Keys.Space)
                 HeaderCheckBoxClickCSVFileList((CheckBox)sender);
         }
 
@@ -1578,17 +1213,6 @@
 
         #endregion
 
-        private void panelDisplayVisual_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        public static void RunAudacity(string audacityPath, string recordingPath, string dir)
-        {
-            ProcessRunner process = new ProcessRunner(audacityPath);
-            process.Run(recordingPath, dir);
-        }// RunAudacity()
-
         private void hScrollBarSonogram_ValueChanged(object sender, EventArgs e)
         {
             //this.pictureBoxSonogram.Left = -this.hScrollBarSonogram.Value;
@@ -1600,99 +1224,70 @@
         /// </summary>
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
-            FileInfo f = browserSettings.fiSegmentRecording;
-            if (f == null)
+            GetSonogram(browserSettings.fiSegmentRecording);
+        }
+
+        private void GetSonogram(FileInfo fiAudio)
+        {
+            //check recording segment exists
+            if ((fiAudio == null)||(!fiAudio.Exists))
             {
-                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
+                if (fiAudio == null) Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
+                else
+                    Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + fiAudio.FullName);
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
-            if (!f.Exists)
+
+            string analysisName = this.CurrentSourceFileAnalysisType;
+            if ((this.checkBoxSonogramAnnotate.Checked) && (analysisName == "none"))
             {
-                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + f.FullName);
+                Console.WriteLine("#######  CANNOT ANNOTATE SONOGRAM because SOURCE ANALYSIS TYPE = \"none\".");
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
 
             //reload indices for source analysis type
-            LoadAnalysisConfigFile(this.CurrentSourceFileAnalysisType);
+            string opDir = browserSettings.diOutputDir.FullName;
+            string configDir = this.browserSettings.diConfigDir.FullName;
+            string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
+            var config = ConfigDictionary.ReadPropertiesFile(configPath);
+            config.Add(AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());
+            config.Add(AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
+            config.Add(AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
+            config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisName;
+            var fiTempConfig = new FileInfo(Path.Combine(opDir, "temp.cfg"));
+            ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
-            if ((this.checkBoxSonogramAnnotate.Checked) && (this.CurrentSourceFileAnalysisType == "None"))
-            {
-                Console.WriteLine("#######  CANNOT ANNOTATE SONOGRAM WHEN SELECTED ANALYSIS = 'None'.");
-                //this.browserSettings.fiAnalysisConfig = null;
-                //this.analysisParams = null;
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-
-
-
-            if (this.analysisParams != null)
-                this.analysisParams.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
-            if (this.analysisParams != null)
-                this.analysisParams.Add(AcousticIndices.key_BG_NOISE_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
-
-            AudioRecording recordingSegment = new AudioRecording(f.FullName);
-            Image image = null;
-
-            if ((this.checkBoxSonogramAnnotate.Checked) && (this.analysisParams != null))
-            {
-                if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
-                {
-                    image = AcousticIndices.GetImageFromAudioSegment(f, this.analysisParams);
-                }
-                else
-                    if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
-                    {
-                        image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
-                    }
-                    //else
-                    //    if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
-                    //    {
-                    //        image = Human.AnalysisReturnsSonogram(1, f, this.analysisParams,);
-                    //    }
-            }
-            else
-            {
-                image = MakeSonogram(recordingSegment).GetImage();
-            }
-
+            Console.WriteLine("\n\tPreparing sonogram of audio segment");
+            FileInfo fiImage = new FileInfo(Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiAudio.FullName) + ".png"));
+            Image image = AudioBrowserTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage);
 
             if (image == null)
             {
-                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + f.FullName);
+                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiAudio.FullName);
+                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
             }
-
-            this.pictureBoxSonogram.Image = image;
-            //this.panelDisplaySpectrogram.Height = image.Height;
-
-            bool saveSonogram = true;
-            if (saveSonogram)
+            else
             {
-                string opDir = browserSettings.diOutputDir.FullName;
-                string imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(f.FullName) + ".png");
-                image.Save(imagePath, ImageFormat.Png);
+                this.pictureBoxSonogram.Image = image;
+                //this.panelDisplaySpectrogram.Height = image.Height;
+                Console.WriteLine("\n\tSaved sonogram to image file: " + fiImage.FullName);
+                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
+                this.labelSonogramFileName.Text = fiAudio.Name;
+                //attempt to deal with variable height of spectrogram
+                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
+                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
+                //Point location = this.panelDisplaySpectrogram.Location;
+                //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
+                //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
+                //this.pictureBoxSonogram.Location = new Point(3, 0);
+                //this.vScrollBarSonogram.Minimum = 0;
             }
 
-            //REMOVE MEMORY OF USERS CHOICE OF NOISE REDUCTION
-            if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_DO_NOISE_REDUCTION)))
-                this.analysisParams.Remove(AcousticIndices.key_DO_NOISE_REDUCTION);
-            if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_BG_NOISE_REDUCTION)))
-                this.analysisParams.Remove(AcousticIndices.key_BG_NOISE_REDUCTION);
-        }
-
-        private void backgroundWorkerUpdateSourceFileList_DoWork(object sender, DoWorkEventArgs e)
-        {
-
-        }
-
-        private void backgroundWorkerUpdateCSVFileList_DoWork(object sender, DoWorkEventArgs e)
-        {
-
-        }
+        } //buttonRefreshSonogram_Click()
 
         private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -1713,16 +1308,6 @@
                 e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
                 e.FormattingApplied = true;
             }
-
-        }
-
-        private void labelSourceFileName_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
 
         }
 

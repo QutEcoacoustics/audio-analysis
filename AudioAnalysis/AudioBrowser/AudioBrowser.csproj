@@ -78,6 +78,7 @@
     </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AudioBrowserTools.cs" />
     <Compile Include="CsvFileItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AudioBrowserSettings.cs" />
@@ -190,7 +191,6 @@ xcopy "$(ProjectDir)..\..\Extra Assemblies\mp3splt" "$(TargetDir)audio-utils\mp3
 xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
 xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y</PostBuildEvent>
   </PropertyGroup>
-
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
