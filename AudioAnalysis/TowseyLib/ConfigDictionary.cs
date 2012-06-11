@@ -15,11 +15,11 @@ namespace TowseyLib
     using System.Linq;
 
     /// <summary>
-    /// Configuration files.
+    /// Configuration files: this class is a wrapper around a Dictionary
     /// </summary>
-    public class Configuration
+    public class ConfigDictionary
     {
-        private Dictionary<string, string> table;
+        private Dictionary<string, string> dictionary;
 
         /// <summary>
         /// Gets or sets Source.
@@ -27,11 +27,11 @@ namespace TowseyLib
         public string Source { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// Initializes a new instance of the <see cref="ConfigDictionary"/> class.
         /// </summary>
-        public Configuration()
+        public ConfigDictionary()
         {
-            table = new Dictionary<string, string>();
+            dictionary = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace TowseyLib
         /// <exception cref="ArgumentNullException">
         /// Argument is null.
         /// </exception>
-        public Configuration(params string[] files)
+        public ConfigDictionary(params string[] files)
         {
             if (files == null || files.Length == 0)
             {
@@ -51,12 +51,12 @@ namespace TowseyLib
             }
 
             Source = files[files.Length - 1]; // Take last file as filename
-            table = new Dictionary<string, string>();
+            dictionary = new Dictionary<string, string>();
             foreach (var file in files)
             {
-                foreach (var item in FileTools.ReadPropertiesFile(file))
+                foreach (var item in ConfigDictionary.ReadPropertiesFile(file))
                 {
-                    table[item.Key] = item.Value;
+                    dictionary[item.Key] = item.Value;
                     ////if (item.Key.StartsWith("VERBOSITY")) Console.WriteLine("VERBOSITY = " + item.Value);
                 }
             }
@@ -76,6 +76,12 @@ namespace TowseyLib
             return path;
         }
 
+        public Dictionary<string, string> GetDictionary()
+        {
+            return dictionary;
+        }
+
+
         /// <summary>
         /// adds key-value pairs to a properties table.
         /// Removes existing pair if it has same key.
@@ -88,24 +94,24 @@ namespace TowseyLib
         /// </param>
         public void SetPair(string key, string value)
         {
-            if (table.ContainsKey(key)) table.Remove(key);
-            table.Add(key, value);
+            if (dictionary.ContainsKey(key)) dictionary.Remove(key);
+            dictionary.Add(key, value);
         }
 
         public bool ContainsKey(string key)
         {
-            return table.ContainsKey(key);
+            return dictionary.ContainsKey(key);
         }
 
         public Dictionary<string, string> GetTable()
         {
-            return table;
+            return dictionary;
         }
 
         public string GetString(string key)
         {
             string value;
-            return table.TryGetValue(key, out value) ? value : null;
+            return dictionary.TryGetValue(key, out value) ? value : null;
         }
 
         public string GetPath(string key)
@@ -115,28 +121,40 @@ namespace TowseyLib
 
         public int GetInt(string key)
         {
-            return GetInt(key, this.table);
+            return GetInt(key, this.dictionary);
         }
 
         public int? GetIntNullable(string key)  
         {
-            return GetIntNullable(key, this.table);
+            return GetIntNullable(key, this.dictionary);
         }
 
         public double GetDouble(string key)
         {
-            return GetDouble(key, this.table);
+            return GetDouble(key, this.dictionary);
         }
 
         public double? GetDoubleNullable(string key)
         {
-            return GetDoubleNullable(key, this.table);
+            return GetDoubleNullable(key, this.dictionary);
         }
 
         public bool GetBoolean(string key)
         {
-            return GetBoolean(key, this.table);
+            return GetBoolean(key, this.dictionary);
         } //end getBoolean
+
+
+
+        public static void WriteConfgurationFile(Dictionary<string,string> dict, FileInfo path)
+        {
+            var lines = new List<string>();
+            foreach (KeyValuePair<string, string> kvp in dict)
+            {
+                lines.Add(kvp.Key + "=" + kvp.Value);
+            }
+            FileTools.WriteTextFile(path.FullName, lines);
+        } // end WriteConfgurationFile()
 
 
 
@@ -269,18 +287,61 @@ namespace TowseyLib
         }
 
 
+        public static string ReadPropertyFromFile(string fName, string key)
+        {
+            Dictionary<string, string> dict = ReadPropertiesFile(fName);
+            string value;
+            dict.TryGetValue(key, out value);
+            return value;
+        }
 
+        public static Dictionary<string, string> ReadPropertiesFile(string fName)
+        {
+            var table = new Dictionary<string, string>();
+            using (TextReader reader = new StreamReader(fName))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    // read one line at a time and process
+                    string trimmed = line.Trim();
+                    if (trimmed == null)
+                    {
+                        continue;
+                    }
 
+                    if (trimmed.StartsWith("#"))
+                    {
+                        continue;
+                    }
 
-        //#####################################################################################################################################
+                    string[] words = trimmed.Split('=');
+                    if (words.Length == 1)
+                    {
+                        continue;
+                    }
 
+                    string key = words[0].Trim(); // trim because may have spaces around the = sign i.e. ' = '
+                    string value = words[1].Trim();
+                    if (!table.ContainsKey(key))
+                    {
+                        table.Add(key, value); // this may not be a good idea!
+                    }
+                } // end while
+            } // end using
+            return table;
+        } // end ReadPropertiesFile()
 
-
-
-
-    } // end of class Configuration
+    } // end of class ConfigDictionary
 
     //#####################################################################################################################################
+
+
+
+    //#####################################################################################################################################
+
+
+
 
     /// <summary>
     /// NOTE: This is an extension class

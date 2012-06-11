@@ -435,52 +435,6 @@ namespace TowseyLib
 
         } //end of WriteArray2File_Formatted
 
-        public static string ReadPropertyFromFile(string fName, string key)
-        {
-            Dictionary<string, string> dict = ReadPropertiesFile(fName);
-            string value;
-            dict.TryGetValue(key, out value);
-            return value;
-        }
-
-        public static Dictionary<string, string> ReadPropertiesFile(string fName)
-        {
-            var table = new Dictionary<string, string>();
-            using (TextReader reader = new StreamReader(fName))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    // read one line at a time and process
-                    string trimmed = line.Trim();
-                    if (trimmed == null)
-                    {
-                        continue;
-                    }
-
-                    if (trimmed.StartsWith("#"))
-                    {
-                        continue;
-                    }
-
-                    string[] words = trimmed.Split('=');
-                    if (words.Length == 1)
-                    {
-                        continue;
-                    }
-
-                    string key = words[0].Trim(); // trim because may have spaces around the = sign i.e. ' = '
-                    string value = words[1].Trim();
-                    if (!table.ContainsKey(key))
-                    {
-                        table.Add(key, value); // this may not be a good idea!
-                    }
-                } // end while
-            } // end using
-            return table;
-        } // end ReadPropertiesFile()
-
-
         public static string PathCombine(params string[] paths)
         {
             return paths.Aggregate("", (s1, s2) => Path.Combine(s1, s2));

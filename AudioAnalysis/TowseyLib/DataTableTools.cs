@@ -453,7 +453,7 @@ namespace TowseyLib
         }
 
 
-       public static void WriteTable(DataTable dt)
+       public static void WriteTable2Console(DataTable dt)
        {
            if (dt == null) return;
            string[] headers = DataTableTools.GetColumnNames(dt);
