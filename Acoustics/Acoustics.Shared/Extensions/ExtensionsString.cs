@@ -245,6 +245,23 @@ namespace System
         }
 
         /// <summary>
+        /// </summary>
+        /// <param name="bytes">
+        /// The bytes.
+        /// </param>
+        /// <param name="encoding">
+        /// The encoding.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public static string ByteArrayToString(this byte[] bytes, Encoding encoding)
+        {
+            bytes = Encoding.Convert(encoding, Encoding.UTF8, bytes);
+            var tempString = Encoding.UTF8.GetString(bytes);
+            return tempString;
+        }
+
+        /// <summary>
         /// Contains overload allowing a StringComparison to be specified (easier case-insensitive string compare).
         /// </summary>
         /// <param name="source">
