@@ -49,6 +49,18 @@
                 return typeof(TimeSpan);
             }
 
+            int intResult;
+            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out intResult))
+            {
+                return typeof(int);
+            }
+
+            long longResult;
+            if (long.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out longResult))
+            {
+                return typeof(long);
+            }
+
             decimal decimalResult;
             if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimalResult))
             {
@@ -83,6 +95,26 @@
             if (ReferenceEquals(value.GetType(), typeof(decimal)))
             {
                 return ((decimal)value).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (ReferenceEquals(value.GetType(), typeof(int)))
+            {
+                return ((int)value).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (ReferenceEquals(value.GetType(), typeof(long)))
+            {
+                return ((long)value).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (ReferenceEquals(value.GetType(), typeof(double)))
+            {
+                return ((double)value).ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (ReferenceEquals(value.GetType(), typeof(float)))
+            {
+                return ((float)value).ToString(CultureInfo.InvariantCulture);
             }
 
             if (ReferenceEquals(value.GetType(), typeof(string)))
@@ -339,7 +371,7 @@
             this.LoadFromSimple(File.ReadAllLines(file.FullName), separators);
         }
 
-        public void LoadFromSimple(string lines, string[] separators, string[] lineSeparators)
+        public void LoadFromSimple(string lines, string[] lineSeparators, string[] separators)
         {
             var splitLines = lines.Split(lineSeparators, StringSplitOptions.RemoveEmptyEntries);
 
@@ -355,7 +387,7 @@
                 if (items.Length != 2)
                 {
                     throw new ArgumentException(
-                        string.Format("Found an invalid line when splitting using separator '{0}': '{1}'", string.Join(", ", separators), line));
+                        string.Format("Found an invalid line when splitting using {0} as separators: '{1}'", string.Join(", ", "'" + separators + "'"), line));
                 }
 
                 this.Add(items[0], items[1]);
