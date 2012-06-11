@@ -316,23 +316,23 @@ namespace System
 
             if (byteCount >= 1099511627776)
             {
-                size = String.Format("{0:##.#}", (float)byteCount / (float)1099511627776) + " tb";
+                size = string.Format("{0:##.#}", (float)byteCount / (float)1099511627776) + " tb";
             }
             else if (byteCount >= 1073741824)
             {
-                size = String.Format("{0:##.#}", (float)byteCount / (float)1073741824) + " gb";
+                size = string.Format("{0:##.#}", (float)byteCount / (float)1073741824) + " gb";
             }
             else if (byteCount >= 1048576)
             {
-                size = String.Format("{0:##.#}", (float)byteCount / (float)1048576) + " mb";
+                size = string.Format("{0:##.#}", (float)byteCount / (float)1048576) + " mb";
             }
             else if (byteCount >= 1024)
             {
-                size = String.Format("{0:##.#}", (float)byteCount / (float)1024) + " kb";
+                size = string.Format("{0:##.#}", (float)byteCount / (float)1024) + " kb";
             }
             else if (byteCount >= 1)
             {
-                size = String.Format("{0:##.#}", (float)byteCount) + " b";
+                size = string.Format("{0:##.#}", (float)byteCount) + " b";
             }
 
             return size;
@@ -643,6 +643,8 @@ namespace System
             return Expression.Lambda<Func<T, bool>>
                   (Expression.AndAlso(expr1.Body, invokedExpr), expr1.Parameters);
         }
+
+        
 #endif
     }
 }

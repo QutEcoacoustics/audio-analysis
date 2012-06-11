@@ -25,17 +25,23 @@ namespace EcosoundsFeltAdapter
 
     public class FeltAccessor
     {
-        public static readonly string CacheDirectory = "";
+        /// <summary>
+        /// The directory to store the trained caches.
+        /// </summary>
+        public static readonly string CacheDirectory = string.Empty;
 
-        public static Data CachedTrainingData;
+        /// <summary>
+        /// The Current cache loaded up from storage into memory.
+        /// </summary>
+        private static Data cachedTrainingData;
 
-        public static DateTime CachedTrainingDataDate;
+        private static DateTime cachedTrainingDataDate;
 
         static FeltAccessor()
         {
             // set up the workflow for analysis
 
-            //based off "GlobalZScore"
+            // based off "GlobalZScore"
             var workflow = new[]
                 {
                     Workflows.WorkflowItem.NewCleaner(new BasicCleaner()),
@@ -46,6 +52,9 @@ namespace EcosoundsFeltAdapter
                 };
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FeltAccessor"/> class.
+        /// </summary>
         public FeltAccessor()
         {
             if (CheckForNewerVersionOfCache(this))
@@ -55,8 +64,8 @@ namespace EcosoundsFeltAdapter
 
                 lock (this)
                 {
-                    CachedTrainingData = newData;
-                    CachedTrainingDataDate = modifiedDate;
+                    cachedTrainingData = newData;
+                    cachedTrainingDataDate = modifiedDate;
                 }
             }
         }

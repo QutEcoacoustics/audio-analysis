@@ -25,13 +25,11 @@
 
             if (List.forall (fun feature -> trainingData.Headers.ContainsKey feature ) featuresToRemove) then
                 invalidArg "" "All features listed to be removed, must actually exist"
+              
+            let newTrainingInstances = List.fold (fun state ch -> Map.remove ch state) trainingData.Instances featuresToRemove  
+            let newTestInstances     = List.fold (fun state ch -> Map.remove ch state)     testData.Instances featuresToRemove  
 
-            let rmf =
-                
-
-        
-
-            let hdrsTr = trainingData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
-            let hdrsTe =     testData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
+            let hdrsTr = List.fold (fun state ch -> Map.remove ch state) trainingData.Headers featuresToRemove
+            let hdrsTe = List.fold (fun state ch -> Map.remove ch state)     testData.Headers featuresToRemove
 
             ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe })
