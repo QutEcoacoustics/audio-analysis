@@ -349,9 +349,9 @@ namespace AnalysisPrograms
 
             // (iii) NOISE REDUCTION
             bool doNoiseReduction = false;
-            doNoiseReduction = ConfigDictionary.GetBoolean(AcousticIndicesExtraction.key_DO_NOISE_REDUCTION, config);
+            doNoiseReduction = ConfigDictionary.GetBoolean(AcousticFeatures.key_DO_NOISE_REDUCTION, config);
             double sonogramBackgroundThreshold = 4.0;
-            sonogramBackgroundThreshold = ConfigDictionary.GetDouble(AcousticIndicesExtraction.key_BG_NOISE_REDUCTION, config);
+            sonogramBackgroundThreshold = ConfigDictionary.GetDouble(AcousticFeatures.key_BG_NOISE_REDUCTION, config);
             if (doNoiseReduction)
             {
                 var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, sonogramBackgroundThreshold);

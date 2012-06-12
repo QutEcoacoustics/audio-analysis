@@ -86,7 +86,9 @@
             }
             catch (Exception ex)
             {
-                MessageBox.Show("WARNING: CANNOT LOCATE BROWSER CONFIG FILE! ");
+                MessageBox.Show("WARNING: CANNOT LOCATE ONE OF THE FOLLOWING:\n\t The Browser Config File\n\t The Default Source Directory;\n" + 
+                                             "\t The Default Output Directory.\n\nCheck entries in the application file: app.config ");
+
                 MessageBox.Show(ex.ToString());
                 if (Debugger.IsAttached)
                 {
@@ -206,7 +208,7 @@
 
             LoadAnalysisConfigFile(analysisName);
             WriteBrowserParameters2Console(this.browserSettings);
-            ConfirmAllDefualtDirectoriesAndFilesExist(this.browserSettings);
+            ConfirmAllDefaultDirectoriesAndFilesExist(this.browserSettings);
 
 
 
@@ -226,7 +228,7 @@
             if (analysisName == "None")
             {
                 Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
-                Console.WriteLine("\t CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
+                Console.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
                 this.browserSettings.fiAnalysisConfig = null;
                 this.analysisParams = null;
                 return;
@@ -252,7 +254,7 @@
             Console.WriteLine("####################################################################################\n");
         }
 
-        private static void ConfirmAllDefualtDirectoriesAndFilesExist(AudioBrowserSettings parameters)
+        private static void ConfirmAllDefaultDirectoriesAndFilesExist(AudioBrowserSettings parameters)
         {
 
             if (parameters.fiAnalysisConfig == null)  Console.WriteLine("\tWARNING: A valid config has not been set.");
@@ -281,7 +283,7 @@
 
         private static bool CheckForConsistencyOfAnalysisTypes(string currentAnalysisName, Dictionary<string, string> dict)
         {
-            string analysisName = dict[AcousticIndices.key_ANALYSIS_NAME];
+            string analysisName = dict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
             if (!currentAnalysisName.Equals(analysisName))
             {
                 Console.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", currentAnalysisName, analysisName);
@@ -338,59 +340,55 @@
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
                     //################# PROCESS THE RECORDING #####################################################################################
-                    var outputData = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
+                    var op = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
+                    var eventsDataTable  = op.Item1;
+                    var indicesDataTable = op.Item2; 
                     //#############################################################################################################################
                     stopwatch.Stop();
-                    //DataTableTools.WriteTable2Console(outputData);
+                    //DataTableTools.WriteTable2Console(indicesDataTable);
 
 
                     string reportFileExt = ".csv";
                     string opDir = this.tfOutputDirectory.Text;
                     string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
-                    string reportfilePath = null;
-
-                    //unfortunately different things happen depending on the analysis!
-                    if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //AcousticIndices
+                    string reportfilePath;
+                    int outputCount = 0;
+                    
+                    //different things happen depending on the content of the analysis data table
+                    if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
                     {
-                        //the output from ACOUSTIC analysis is rows of one minute indices                        
-                        reportfilePath = Path.Combine(opDir, fName + reportFileExt);
-                        CsvTools.DataTable2CSV(outputData, reportfilePath);
+                        outputCount = indicesDataTable.Rows.Count;
+                        string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                        indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
+                        reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
+                        CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
+
+                        string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
+                        File.Delete(target);               // Ensure that the target does not exist.
+                        File.Copy(reportfilePath, target); // Copy the file 2 target
                     }
-                    else
-                        if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //KiwiRecogniser - save two files
-                        {
-                            string sortString = "EvStartAbs ASC";
-                            outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
 
-                            //the output from KIWI analysis is rows of kiwi events - must save two files
-                            reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
-                            CsvTools.DataTable2CSV(outputData, reportfilePath);
-
-                            reportfilePath = Path.Combine(opDir, fName + reportFileExt);
-                            DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
-                            CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
-                        }
-                    if (this.CurrentSourceFileAnalysisType.Equals(Human2.ANALYSIS_NAME)) //AcousticIndices
+                    if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
                     {
-                        reportfilePath = Path.Combine(opDir, fName + reportFileExt);
-                        CsvTools.DataTable2CSV(outputData, reportfilePath);
+                        outputCount = eventsDataTable.Rows.Count;
+                        string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                        eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
+                        reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
+                        CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
+
+                        string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
+                        File.Delete(target);               // Ensure that the target does not exist.
+                        File.Copy(reportfilePath, target); // Copy the file 2 target
                     }
-                    else return;
-
-
-                    string target = Path.Combine(opDir, fName + "_BACKUP" + reportFileExt);
-                    File.Delete(target);               // Ensure that the target does not exist.
-                    File.Copy(reportfilePath, target); // Copy the file 2 target
 
                     Console.WriteLine("###################################################");
                     Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
                     Console.WriteLine("Output  to  directory: " + opDir);
-                    Console.WriteLine("CSV file is @ " + reportfilePath);
+                    Console.WriteLine("CSV file(s): " + fName + "Events/Indices" + reportFileExt);
 
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
                     TimeSpan ts = stopwatch.Elapsed;
                     Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
-                    int outputCount = outputData.Rows.Count;
                     Console.WriteLine("Number of units of output: {0}", outputCount);
                     if (outputCount == 0) outputCount = 1;
                     Console.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
