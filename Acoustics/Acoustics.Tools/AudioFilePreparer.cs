@@ -139,6 +139,58 @@ namespace Acoustics.Tools
                 endOffset);
         }
 
+        /// <summary>
+        /// Divide a value (numerator) by a segment value (denominator) 
+        /// to get segments of as equal size as possible.
+        /// </summary>
+        /// <param name="numerator">
+        /// The numerator.
+        /// </param>
+        /// <param name="denominator">
+        /// The denominator.
+        /// </param>
+        /// <returns>
+        /// Segment start points.
+        /// </returns>
+        /// <remarks>
+        /// from: http://stackoverflow.com/a/577451/31567
+        /// This doesn't try to cope with negative numbers :)
+        /// </remarks>
+        public static IEnumerable<long> DivideEvenly(long numerator, long denominator)
+        {
+            long rem;
+            long div = Math.DivRem(numerator, denominator, out rem);
+
+            for (long i = 0; i < denominator; i++)
+            {
+                yield return i < rem ? div + 1 : div;
+            }
+        }
+
+        /// <summary>
+        /// Divide a value (numerator) by a segment value (denominator) 
+        /// to get segments of exactly denominator in size, and the leftovers at the end.
+        /// </summary>
+        /// <param name="numerator">
+        /// The numerator.
+        /// </param>
+        /// <param name="denominator">
+        /// The denominator.
+        /// </param>
+        /// <returns>
+        /// Segment start points.
+        /// </returns>
+        public static IEnumerable<long> DivideExactLeaveLeftoversAtEnd(long numerator, long denominator)
+        {
+            var amountLeft = numerator;
+            while (amountLeft > denominator)
+            {
+                yield return denominator;
+                amountLeft -= denominator;
+            }
+
+            yield return amountLeft;
+        }
 
         private static IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
         {

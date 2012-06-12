@@ -10,7 +10,7 @@ namespace AnalysisRunner
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
-using Acoustics.Tools;
+    using Acoustics.Tools;
 
     /// <summary>
     /// Local source file preparer.
@@ -56,7 +56,7 @@ using Acoustics.Tools;
         /// The settings.
         /// </param>
         /// <returns>
-        /// Enumerable of file segments.
+        /// Enumerable of sub-segments.
         /// </returns>
         public IEnumerable<FileSegment> CalculateSegments(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings)
         {
@@ -83,13 +83,25 @@ using Acoustics.Tools;
                                                      ? settings.SegmentMinDuration.Value.TotalMilliseconds
                                                      : defaultAnalysisSegmentMinDuration.TotalMilliseconds;
 
+                // --------------------------------------------
+                // divide duration to get evenly-sized segments
                 // use the max duration to divide up the range
                 // this is the number of segments required to not go over the max duration
                 var analysisSegmentsForMaxSize = Math.Ceiling(fileSegmentDuration / analysisSegmentMaxDuration);
 
                 // get the segment durations
-                // TODO: assumption is for 1 minute chunks.
-                var segments = DivideEvenly(Convert.ToInt64(fileSegmentDuration), Convert.ToInt64(analysisSegmentsForMaxSize)).ToList();
+                // segment evenly - each chunk will be equal or smaller than max, and equal or greater than min.
+                ////var segments = AudioFilePreparer.DivideEvenly(Convert.ToInt64(fileSegmentDuration), Convert.ToInt64(analysisSegmentsForMaxSize)).ToList();
+
+                // --------------------------------------------
+                // --OR--
+                // --------------------------------------------
+                // segment into exact chunks - all but the last chunk will be equal to the max duration
+                var segments =
+                    AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
+                        Convert.ToInt64(fileSegmentDuration), Convert.ToInt64(analysisSegmentMaxDuration)).ToList();
+
+                // --------------------------------------------
 
                 long aggregate = 0;
 
@@ -98,7 +110,8 @@ using Acoustics.Tools;
                     var currentSegment = new FileSegment
                         {
                             OriginalFile = fileSegment.OriginalFile,
-                            SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate))
+                            SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate)),
+                            Duration = fileSegment.Duration
                         };
 
                     aggregate += segments[index];
@@ -112,18 +125,7 @@ using Acoustics.Tools;
             }
         }
 
-        // from: http://stackoverflow.com/a/577451/31567
-        // This doesn't try to cope with negative numbers :)
-        private static IEnumerable<long> DivideEvenly(long numerator, long denominator)
-        {
-            long rem;
-            long div = Math.DivRem(numerator, denominator, out rem);
 
-            for (long i = 0; i < denominator; i++)
-            {
-                yield return i < rem ? div + 1 : div;
-            }
-        }
 
         /// <summary>
         /// Get the source files based on analysis <paramref name="analysisSettings"/>.

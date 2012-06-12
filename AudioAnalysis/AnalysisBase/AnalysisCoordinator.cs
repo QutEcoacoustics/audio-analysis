@@ -50,22 +50,24 @@
         public ISourcePreparer SourcePreparer { get; private set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether DeleteFinished.
+        /// Gets or sets a value indicating whether to delete finished runs.
         /// </summary>
         public bool DeleteFinished { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether SubFoldersUnique.
+        /// Gets or sets a value indicating whether to create 
+        /// uniquely named sub folders for each run, 
+        /// or reuse a single folder named using the analysis name.
         /// </summary>
         public bool SubFoldersUnique { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether IsParallel.
+        /// Gets or sets a value indicating whether to run in parallel.
         /// </summary>
         public bool IsParallel { get; set; }
 
         /// <summary>
-        /// Analyse multiple files using the same settings.
+        /// Analyse one of more file segments using the same analysis and settings.
         /// </summary>
         /// <param name="fileSegments">
         /// The file Segments.
@@ -81,6 +83,16 @@
         /// </returns>
         public IEnumerable<AnalysisResult> Run(IEnumerable<FileSegment> fileSegments, IAnalysis analysis, AnalysisSettings settings)
         {
+            Contract.Requires(settings != null, "Settings must not be null.");
+            Contract.Requires(analysis != null, "Analysis must not be null.");
+            Contract.Requires(fileSegments != null, "File Segments must not be null.");
+            Contract.Requires(fileSegments.All(s => s.Validate()), "File Segment must be valid.");
+
+            // calculate the sub-segments of the given file segments that match what the analysis expects.
+            // analyse each sub-segment in parallel or not (IsParallel property), 
+            // creating and deleting directories and/or files as indicated by properties
+            // DeleteFinished and SubFoldersUnique
+
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
             var analysisSegmentsCount = analysisSegments.Count();
 
@@ -92,17 +104,7 @@
                     analysisSegments,
                     (item, state, index) =>
                     {
-                        var sourceFile = this.SourcePreparer.PrepareFile(
-                            settings.AnalysisBaseDirectory,
-                            item.OriginalFile,
-                            settings.SegmentMediaType,
-                            item.SegmentStartOffset.Value,
-                            item.SegmentEndOffset.Value,
-                            settings.SegmentTargetSampleRate);
-
-                        settings.AudioFile = sourceFile;
-                        var result = this.Analyse(analysis, settings);
-                        result.SegmentStartOffset = item.SegmentStartOffset.Value;
+                        var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                         results[index] = result;
                     });
 
@@ -113,16 +115,7 @@
                 var results = new List<AnalysisResult>();
                 foreach (var item in analysisSegments)
                 {
-                    var sourceFile = this.SourcePreparer.PrepareFile(
-                            settings.AnalysisBaseDirectory,
-                            item.OriginalFile,
-                            settings.SegmentMediaType,
-                            item.SegmentStartOffset.Value,
-                            item.SegmentEndOffset.Value,
-                            settings.SegmentTargetSampleRate);
-
-                    settings.AudioFile = sourceFile;
-                    var result = this.Analyse(analysis, settings);
+                    var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
                 }
 
@@ -131,8 +124,11 @@
         }
 
         /// <summary>
-        /// Run an analysis over a single file.
+        /// Prepare the resources for an analysis, and the run the analysis.
         /// </summary>
+        /// <param name="fileSegment">
+        /// The file Segment.
+        /// </param>
         /// <param name="analysis">
         /// The analysis.
         /// </param>
@@ -140,60 +136,66 @@
         /// The settings.
         /// </param>
         /// <returns>
-        /// The Results of the analysis.
+        /// The results from the analysis.
         /// </returns>
-        public AnalysisResult Analyse(IAnalysis analysis, AnalysisSettings settings)
-        {
-            AnalysisSettings currentAnalysisSettings = this.PrepareWorkingDirectory(analysis, settings);
-
-            AnalysisResult currentResult = analysis.Analyse(settings);
-            currentResult.AnalysisIdentifier = analysis.Identifier;
-            currentResult.SettingsUsed = currentAnalysisSettings;
-
-            if (this.DeleteFinished)
-            {
-                this.DeleteRunDirectory(currentAnalysisSettings.AnalysisRunDirectory);
-            }
-
-            return currentResult;
-        }
-
-        /// <summary>
-        /// Prepare the resources for an analysis.
-        /// </summary>
-        /// <param name="fileSegments">
-        /// The file Segments.
-        /// </param>
-        /// <param name="settings">
-        /// The settings.
-        /// </param>
-        /// <returns>
-        /// The paths to prepared files.
-        /// </returns>
-        private IEnumerable<FileInfo> PrepareFiles(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings)
+        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalysis analysis, AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
-            Contract.Requires(fileSegments != null, "File Segments must not be null.");
-            Contract.Requires(fileSegments.All(s => s.Validate()), "File Segments must all be valid.");
-            Contract.Ensures(Contract.Result<IEnumerable<FileInfo>>().All(f => File.Exists(f.FullName)), "One or more files were not segmented.");
+            Contract.Requires(fileSegment != null, "File Segments must not be null.");
+            Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
-            var segmentsForAnalysis = new List<FileSegment>();
+            var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
+            var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.Duration;
 
-            var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
+            // create directory for analysis run
+            settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analysis, settings);
 
-            foreach (var file in fileSegments)
+            // create the file for the analysis
+            settings.AudioFile = this.SourcePreparer.PrepareFile(
+                settings.AnalysisRunDirectory,
+                fileSegment.OriginalFile,
+                settings.SegmentMediaType,
+                start,
+                end,
+                settings.SegmentTargetSampleRate);
+
+
+            // run the analysis
+            var result = analysis.Analyse(settings);
+
+            // add information to the results
+            result.AnalysisIdentifier = analysis.Identifier;
+            result.SettingsUsed = settings;
+            result.SegmentStartOffset = start;
+            result.AudioDuration = end - start;
+
+            // clean up
+            if (this.DeleteFinished && this.SubFoldersUnique)
             {
-                var analysisSegment = this.SourcePreparer.PrepareFile(
-                    settings.AnalysisRunDirectory,
-                    file.OriginalFile,
-                    settings.SegmentMediaType,
-                    file.SegmentStartOffset.HasValue? file.SegmentStartOffset.Value : TimeSpan.Zero,
-                    file.SegmentEndOffset.HasValue ? file.SegmentEndOffset.Value : file.Duration, 
-                    settings.SegmentTargetSampleRate);
+                // delete the directory created for this run
+                try
+                {
+                    Directory.Delete(settings.AnalysisRunDirectory.FullName, true);
+                }
+                catch (Exception ex)
+                {
+                    // this error is not fatal, but it does mean we'll be leaving a folder behind.
+                }
+            }
+            else if (this.DeleteFinished && !this.SubFoldersUnique)
+            {
+                // delete the prepared audio file segment
+                try
+                {
+                    File.Delete(settings.AudioFile.FullName);
+                }
+                catch (Exception ex)
+                {
+                    // this error is not fatal, but it does mean we'll be leaving an audio file behind.
+                }
             }
 
-            //return this.SourcePreparer.PrepareFiles(settings, fileSegments);
-            return null;
+            return result;
         }
 
         /// <summary>
@@ -208,7 +210,7 @@
         /// <returns>
         /// Updated analysisSettings with working directory and configuration file paths.
         /// </returns>
-        private AnalysisSettings PrepareWorkingDirectory(IAnalysis analysis, AnalysisSettings settings)
+        private DirectoryInfo PrepareWorkingDirectory(IAnalysis analysis, AnalysisSettings settings)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
@@ -221,17 +223,7 @@
                                                    ? this.CreateUniqueRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier)
                                                    : this.CreateNamedRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier);
 
-            settings.AnalysisRunDirectory = thisAnalysisWorkingDirectory;
-
-            // config file path is already set before AnalysisCoordinator is used.
-            /*
-            var configFile = new FileInfo(Path.Combine(thisAnalysisWorkingDirectory.FullName, Path.GetRandomFileName() + ".txt"));
-            File.WriteAllText(configFile.FullName, settings.ConfigStringInput);
-
-            settings.ConfigFile = configFile;
-            */
-
-            return settings;
+            return thisAnalysisWorkingDirectory;
         }
 
         /// <summary>
@@ -282,24 +274,10 @@
             Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory was not created.");
 
             var runDirectory = Path.Combine(analysisBaseDirectory.FullName, analysisIdentifier);
+
             var dir = new DirectoryInfo(runDirectory);
             Directory.CreateDirectory(runDirectory);
             return dir;
         }
-
-        /// <summary>
-        /// Delete a <paramref name="directory"/>.
-        /// </summary>
-        /// <param name="directory">Directory to delete.</param>
-        private void DeleteRunDirectory(DirectoryInfo directory)
-        {
-            Contract.Requires(directory != null);
-            Contract.Requires(Directory.Exists(directory.FullName));
-            Contract.Ensures(!Directory.Exists(directory.FullName));
-
-            Directory.Delete(directory.FullName);
-        }
-
-
     }
 }
