@@ -37,6 +37,7 @@ namespace AudioBrowser
 
         public const string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: An application for exploring bio-acoustic recordings.  (c) Queensland University of Technology.";
         public const string IMAGE_TITLE_TEXT   = "Image produced by AUDIO-BROWSER, Queensland University of Technology (QUT).";
+        public const string REPORT_FILE_EXT    = ".csv";
 
 
         public static void Main(string[] args)
@@ -68,6 +69,10 @@ namespace AudioBrowser
             }
         } //Main()
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
         public static void ExtractSegmentFromLongSourceAudioFile(string[] args)
         {
             FileInfo fiSource = new FileInfo(args[0]);
@@ -78,6 +83,10 @@ namespace AudioBrowser
             FileInfo fiOutputSegment = new FileInfo(args[4]);
             ExtractSegment(fiSource, start, end, buffer, resampleRate, fiOutputSegment);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
         public static void GetSonogramFromAudioFile(string[] args)
         {
             FileInfo fiAudio  = new FileInfo(args[0]); 
@@ -85,6 +94,11 @@ namespace AudioBrowser
             FileInfo fiImage  = new FileInfo(args[2]);
             MakeSonogram(fiAudio, fiConfig, fiImage);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public static int LoadIndicesCsvFileAndDisplayTracksImage(string[] args)
         {
             int status = 0;
@@ -111,11 +125,25 @@ namespace AudioBrowser
             return status;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="analysisIdentifier"></param>
+        /// <param name="analysers"></param>
+        /// <returns></returns>
         public static IAnalysis GetAcousticAnalyser(string analysisIdentifier, IEnumerable<IAnalysis> analysers)
         {
             return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
         } //GetAcousticAnalyser()
 
+        /// <summary>
+        /// THIS METHOD NOT USED ANY MORE.
+        /// REPLACED BY MARK'S AnalysisCoordintor.Run().
+        /// </summary>
+        /// <param name="fiSourceRecording"></param>
+        /// <param name="diOutputDir"></param>
+        /// <param name="fiConfig"></param>
+        /// <returns></returns>
         public static System.Tuple<DataTable, DataTable> ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, FileInfo fiConfig)
         {
             var dict = ConfigDictionary.ReadPropertiesFile(fiConfig.FullName);
@@ -274,25 +302,86 @@ namespace AudioBrowser
             return System.Tuple.Create(outputDataTable, indicesDataTable);
         }
 
-        public static Tuple<DataTable, DataTable> GetEventsAndIndiciesDataTables(DataTable masterDataTable, IAnalysis analyser, TimeSpan entireOriginalAudioFileDuration)
+        /// <summary>
+        /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
+        /// Different things happen depending on the content of the analysis data table
+        /// </summary>
+        /// <param name="masterDataTable"></param>
+        /// <param name="analyser"></param>
+        /// <param name="durationOfTheOriginalAudioFile"></param>
+        /// <returns></returns>
+        public static Tuple<DataTable, DataTable> GetEventsAndIndicesDataTables(DataTable masterDataTable, IAnalysis analyser, TimeSpan durationOfTheOriginalAudioFile)
         {
-            //AT THE END OF ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
-            //different things happen depending on the content of the analysis data table
+            DataTable eventsDatatable  = null;
+            DataTable indicesDatatable = null;
             if (masterDataTable.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
             {
-                // in this case outputDataTable is the indicies table.
-                DataTable eventsDatatable = null;
+                // in this case masterDataTable is the indicies table and there is no table of events.
+                eventsDatatable = null;
                 return System.Tuple.Create(eventsDatatable, masterDataTable);
             }
 
-            //must have an events data table. Thereofre also create an indices data table
+            //masterDataTable must be an events data table. Therefore also need to create an indices data table
             var unitTime = new TimeSpan(0, 0, 60);
             double scoreThreshold = 0.2;
-            DataTable indicesDataTable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, entireOriginalAudioFileDuration, scoreThreshold); //convert to datatable of indices
-            // in this case outputDataTable is the events table table.
-            return System.Tuple.Create(masterDataTable, indicesDataTable);
+            indicesDatatable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, durationOfTheOriginalAudioFile, scoreThreshold); //convert to datatable of indices
+            return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
 
+
+        /// <summary>
+        /// Save an events and indices data tables if they exist.
+        /// File names are constructed form the analysis ID etc.
+        /// </summary>
+        /// <param name="eventsDatatable"></param>
+        /// <param name="indicesDatatable"></param>
+        /// <param name="fName"></param>
+        /// <param name="opDir"></param>
+        /// <returns></returns>
+        public static Tuple<FileInfo, FileInfo> SaveEventsAndIndicesDataTables(DataTable eventsDatatable, DataTable indicesDatatable, string fName, string opDir)
+        {
+            FileInfo fiEvents = null;
+            FileInfo fiIndices = null;
+
+            //different things happen depending on the content of the analysis data table
+            if (indicesDatatable != null) //outputdata consists of rows of one minute indices 
+            {
+                string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                indicesDatatable = DataTableTools.SortTable(indicesDatatable, sortString);    //sort by start time
+                string reportfilePath = Path.Combine(opDir, fName + ".Indices" + REPORT_FILE_EXT);
+                CsvTools.DataTable2CSV(indicesDatatable, reportfilePath);
+
+                string target = Path.Combine(opDir, fName + ".Indices_BACKUP" + REPORT_FILE_EXT);
+                File.Delete(target);               // Ensure that the target does not exist.
+                File.Copy(reportfilePath, target); // Copy the file 2 target
+                fiIndices = new FileInfo(reportfilePath);
+            }
+
+            if (eventsDatatable != null) //outputdata consists of rows of acoustic events 
+            {
+                string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                eventsDatatable = DataTableTools.SortTable(eventsDatatable, sortString);    //sort by start time
+                string reportfilePath = Path.Combine(opDir, fName + ".Events" + REPORT_FILE_EXT);
+                CsvTools.DataTable2CSV(eventsDatatable, reportfilePath);
+
+                string target = Path.Combine(opDir, fName + ".Events_BACKUP" + REPORT_FILE_EXT);
+                File.Delete(target);               // Ensure that the target does not exist.
+                File.Copy(reportfilePath, target); // Copy the file 2 target
+                fiEvents = new FileInfo(reportfilePath);
+            }
+
+            return Tuple.Create(fiEvents, fiIndices);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="masterDataTable"></param>
+        /// <param name="segmentDataTable"></param>
+        /// <param name="segmentDuration"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <param name="segmentIndex"></param>
+        /// <returns></returns>
         public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
         {
             if (segmentDataTable != null)
@@ -313,80 +402,14 @@ namespace AudioBrowser
                             if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
                             if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS]  = segmentStartOffset.TotalSeconds + (double)row[Keys.EVENT_START_ABS];
                             if (headers.Contains(Keys.START_MIN))        row[Keys.START_MIN]        = segmentStartOffset.TotalMinutes;
-                            if (headers.Contains(Keys.EVENT_COUNT))     row[Keys.EVENT_COUNT]       = segmentIndex;
-                            if (headers.Contains(Keys.INDICES_COUNT))   row[Keys.INDICES_COUNT]     = segmentIndex;
+                            if (headers.Contains(Keys.EVENT_COUNT))      row[Keys.EVENT_COUNT]      = segmentIndex;
+                            if (headers.Contains(Keys.INDICES_COUNT))    row[Keys.INDICES_COUNT]    = segmentIndex;
                             masterDataTable.ImportRow(row);
                         }
                     } //if (dt != null)
 
             return masterDataTable;
         }
-
-        /// <summary>
-        /// Analyse multiple files using the same settings.
-        /// </summary>
-        /// <param name="fileSegments">
-        /// The file Segments.
-        /// </param>
-        /// <param name="analysis">
-        /// The analysis.
-        /// </param>
-        /// <param name="settings">
-        /// The settings.
-        /// </param>
-        /// <returns>
-        /// The results from multiple analyses.
-        /// </returns>
-        //public IEnumerable<AnalysisResult> Run(IEnumerable<FileSegment> fileSegments, IAnalysis analysis, AnalysisSettings settings)
-        //{
-        //    var analysisSegments = LocalSourcePreparer.CalculateSegments(fileSegments, settings).ToList();
-        //    var analysisSegmentsCount = analysisSegments.Count();
-
-        //    bool DoParallel = true;
-        //    if (DoParallel)
-        //    {
-        //        var results = new AnalysisResult[analysisSegmentsCount];
-
-        //        Parallel.ForEach(
-        //            analysisSegments,
-        //            (item, state, index) =>
-        //            {
-        //                var sourceFile = LocalSourcePreparer.PrepareFile(
-        //                    settings.AnalysisBaseDirectory,
-        //                    item.OriginalFile,
-        //                    settings.SegmentMediaType,
-        //                    item.SegmentStartOffset.Value,
-        //                    item.SegmentEndOffset.Value,
-        //                    settings.SegmentTargetSampleRate);
-
-        //                settings.AudioFile = sourceFile;
-        //                var result = this.Analyse(analysis, settings);
-        //                results[index] = result;
-        //            });
-
-        //        return results;
-        //    }
-        //    else
-        //    {
-        //        var results = new List<AnalysisResult>();
-        //        foreach (var item in analysisSegments)
-        //        {
-        //            var sourceFile = this.SourcePreparer.PrepareFile(
-        //                    settings.AnalysisBaseDirectory,
-        //                    item.OriginalFile,
-        //                    settings.SegmentMediaType,
-        //                    item.SegmentStartOffset.Value,
-        //                    item.SegmentEndOffset.Value,
-        //                    settings.SegmentTargetSampleRate);
-
-        //            settings.AudioFile = sourceFile;
-        //            var result = this.Analyse(analysis, settings);
-        //            results.Add(result);
-        //        }
-
-        //        return results;
-        //    }
-        //}
 
 
         private static int GetThreadsInUse()
@@ -399,6 +422,15 @@ namespace AudioBrowser
             return threadsInUse;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiSource"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="buffer"></param>
+        /// <param name="resampleRate"></param>
+        /// <param name="fiOutputSegment"></param>
         public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, int resampleRate, FileInfo fiOutputSegment)
         {
             //EXTRACT RECORDING SEGMENT
@@ -406,8 +438,6 @@ namespace AudioBrowser
             int endMilliseconds   = (int)(end.TotalMilliseconds   + buffer.TotalMilliseconds);
             if (startMilliseconds < 0) startMilliseconds = 0;
             //if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
-
-            //string outputSegmentPath = Path.Combine(browserSettings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
             MasterAudioUtility.Segment(resampleRate, fiSource, fiOutputSegment, startMilliseconds, endMilliseconds);
         }
 
@@ -483,7 +513,14 @@ namespace AudioBrowser
         }
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="trackHeight"></param>
+        /// <param name="doNormalisation"></param>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
         public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool doNormalisation, string imagePath)
         {
             string fileName = Path.GetFileNameWithoutExtension(imagePath); 
@@ -502,6 +539,12 @@ namespace AudioBrowser
             return tracksImage;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="csvFile"></param>
+        /// <param name="diSourceDir"></param>
+        /// <returns></returns>
         public static FileInfo InferSourceFileFromCSVFileName(FileInfo csvFile, DirectoryInfo diSourceDir)
         {
             string csvFname = Path.GetFileNameWithoutExtension(csvFile.FullName);
@@ -518,7 +561,13 @@ namespace AudioBrowser
                     return null;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiAudio"></param>
+        /// <param name="fiConfig"></param>
+        /// <param name="fiImage"></param>
+        /// <returns></returns>
         public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage)
         {
             var config = new ConfigDictionary(fiConfig.FullName); //read in config file
@@ -557,8 +606,13 @@ namespace AudioBrowser
             return image;
         }
 
-
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiAudio"></param>
+        /// <param name="fiConfig"></param>
+        /// <param name="fiImage"></param>
+        /// <returns></returns>
         public static Image MakeSonogram(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage)
         {
             var config = new ConfigDictionary(fiConfig.FullName);
@@ -597,7 +651,12 @@ namespace AudioBrowser
             return image;
         }//MakeSonogram()
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="audacityPath"></param>
+        /// <param name="recordingPath"></param>
+        /// <param name="dir"></param>
         public static void RunAudacity(string audacityPath, string recordingPath, string dir)
         {
             ProcessRunner process = new ProcessRunner(audacityPath);
