@@ -390,7 +390,12 @@
                         //SegmentEndOffset = TimeSpan.FromMinutes(3) 
                     };
 
-                    var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
+                    this.analysisCoordinator.IsParallel = false;
+                    var analyserResults = this.analysisCoordinator.TestRun(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
+
+                    //settings.AnalysisRunDirectory
+                    //NEXT LINE was my old code
+                    // var op1 = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
 
                     DataTable datatable = null;
                     for (var index = 0; index < analyserResults.Count(); index++)
@@ -404,65 +409,85 @@
                             index);
                     }
 
+                    //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
                     var audioUtility = new MasterAudioUtility(settings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
                     var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
                     var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
-                    var op = AudioBrowserTools.GetEventsAndIndiciesDataTables(datatable, analyser, sourceDuration);
+                    var op1 = AudioBrowserTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
+                    var eventsDatatable  = op1.Item1;
+                    var indicesDatatable = op1.Item2;
+                    int eventsCount = 0;
+                    if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
+                    int indicesCount = 0;
+                    if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
+                    var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
+                    var op2 = AudioBrowserTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-                    // var op = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
-                    var eventsDataTable = op.Item1;
-                    var indicesDataTable = op.Item2;
                     //#############################################################################################################################
                     stopwatch.Stop();
                     //DataTableTools.WriteTable2Console(indicesDataTable);
 
 
-                    string reportFileExt = ".csv";
-                    string opDir = this.tfOutputDirectory.Text;
-                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
-                    string reportfilePath;
-                    int outputCount = 0;
+                    //string reportFileExt = ".csv";
+                    //string opDir = this.tfOutputDirectory.Text;
+                    //string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
+                    //string reportfilePath;
+                    //int outputCount = 0;
 
-                    //different things happen depending on the content of the analysis data table
-                    if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
-                    {
-                        outputCount = indicesDataTable.Rows.Count;
-                        string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
-                        indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
-                        reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
-                        CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
+                    ////different things happen depending on the content of the analysis data table
+                    //if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
+                    //{
+                    //    outputCount = indicesDataTable.Rows.Count;
+                    //    string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                    //    indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
+                    //    reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
+                    //    CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
 
-                        string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
-                        File.Delete(target);               // Ensure that the target does not exist.
-                        File.Copy(reportfilePath, target); // Copy the file 2 target
-                    }
+                    //    string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
+                    //    File.Delete(target);               // Ensure that the target does not exist.
+                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
+                    //}
 
-                    if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
-                    {
-                        outputCount = eventsDataTable.Rows.Count;
-                        string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
-                        eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
-                        reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
-                        CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
+                    //if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
+                    //{
+                    //    outputCount = eventsDataTable.Rows.Count;
+                    //    string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                    //    eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
+                    //    reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
+                    //    CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
 
-                        string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
-                        File.Delete(target);               // Ensure that the target does not exist.
-                        File.Copy(reportfilePath, target); // Copy the file 2 target
-                    }
+                    //    string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
+                    //    File.Delete(target);               // Ensure that the target does not exist.
+                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
+                    //}
 
-                    Console.WriteLine("###################################################");
-                    Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                    Console.WriteLine("Output  to  directory: " + opDir);
-                    Console.WriteLine("CSV file(s): " + fName + "Events/Indices" + reportFileExt);
+                    var fiEventsCSV  = op2.Item1;
+                    var fiIndicesCSV = op2.Item2;
 
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
                     TimeSpan ts = stopwatch.Elapsed;
                     Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+                    int outputCount = eventsCount;
+                    if (eventsCount == 0) outputCount = indicesCount;
                     Console.WriteLine("Number of units of output: {0}", outputCount);
                     if (outputCount == 0) outputCount = 1;
                     Console.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
 
+                    Console.WriteLine("###################################################");
+                    Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                    Console.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+                    if (fiEventsCSV != null)
+                    {
+                        Console.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                        Console.WriteLine("\tNumber of events = " + eventsCount);
+                    }
+                    if (fiIndicesCSV != null)
+                    {
+                        Console.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                        Console.WriteLine("\tNumber of indices = " + indicesCount);
+                    }
                     Console.WriteLine("###################################################\n");
 
                 }// if checked
