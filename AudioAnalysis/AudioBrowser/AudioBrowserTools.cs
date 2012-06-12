@@ -26,7 +26,7 @@ using AnalysisRunner;
 
 namespace AudioBrowser
 {
-    class AudioBrowserTools
+    public static class AudioBrowserTools
     {
         public const int DEFAULT_TRACK_HEIGHT = 10; 
 
@@ -94,7 +94,7 @@ namespace AudioBrowser
             string imagePath   = args[3]; //Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
 
             var fiAnalysisConfig = new FileInfo(configPath);
-            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName);
+            IAnalysis analyser =  AudioBrowserTools.GetAcousticAnalyser(analyisName,null);
             if (analyser == null)
             {
                 //Console.WriteLine("\nWARNING: Could not construct image from CSV file. Analysis name not recognized: " + analyisName);
@@ -111,32 +111,9 @@ namespace AudioBrowser
             return status;
         }
 
-        public static IAnalysis GetAcousticAnalyser(string analysisName)
+        public static IAnalysis GetAcousticAnalyser(string analysisIdentifier, IEnumerable<IAnalysis> analysers)
         {
-            IAnalysis analyser = null;
-            if ((analysisName==null)||(analysisName.Length == 0))
-            {
-                Console.WriteLine("ERROR: INVALID ANALYSIS NAME.");
-                return null;
-            }
-            else
-            {
-                switch (analysisName)
-                {
-                    case Acoustic.ANALYSIS_NAME:      // 
-                        analyser = new Acoustic();
-                        break;
-                    case LSKiwi2.ANALYSIS_NAME:     // 
-                        analyser = new LSKiwi2();
-                        break;
-                    case "none":     // 
-                        break;
-                    default:
-                        Console.WriteLine("Unrecognised analyis name>>> " + analysisName);
-                        break;
-                }
-            }
-            return analyser;
+            return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
         } //GetAcousticAnalyser()
 
         public static System.Tuple<DataTable, DataTable> ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, FileInfo fiConfig)
@@ -156,7 +133,7 @@ namespace AudioBrowser
 
 
             // CREATE RUN ANALYSIS CLASS HERE
-            IAnalysis analyser = GetAcousticAnalyser(analysisName);
+            IAnalysis analyser = GetAcousticAnalyser(analysisName, null);
             if (analyser == null) 
             {
                 Console.WriteLine("#######  CANNOT ANALYSE RECORDING - ANALYSIS TYPE UNKNOWN OR = \"none\".");
@@ -284,6 +261,7 @@ namespace AudioBrowser
             //different things happen depending on the content of the analysis data table
             if (outputDataTable.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
             {
+                // in this case outputDataTable is the indicies table.
                 DataTable eventsDatatable = null;
                 return System.Tuple.Create(eventsDatatable, outputDataTable);
             }
@@ -292,10 +270,57 @@ namespace AudioBrowser
             var unitTime = new TimeSpan(0, 0, 60);
             double scoreThreshold = 0.2;
             DataTable indicesDataTable = analyser.ConvertEvents2Indices(outputDataTable, unitTime, sourceDuration, scoreThreshold); //convert to datatable of indices
-
-            return System.Tuple.Create(outputDataTable, outputDataTable);
+            // in this case outputDataTable is the events table table.
+            return System.Tuple.Create(outputDataTable, indicesDataTable);
         }
 
+        public static Tuple<DataTable, DataTable> GetEventsAndIndiciesDataTables(DataTable masterDataTable, IAnalysis analyser, TimeSpan entireOriginalAudioFileDuration)
+        {
+            //AT THE END OF ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
+            //different things happen depending on the content of the analysis data table
+            if (masterDataTable.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
+            {
+                // in this case outputDataTable is the indicies table.
+                DataTable eventsDatatable = null;
+                return System.Tuple.Create(eventsDatatable, masterDataTable);
+            }
+
+            //must have an events data table. Thereofre also create an indices data table
+            var unitTime = new TimeSpan(0, 0, 60);
+            double scoreThreshold = 0.2;
+            DataTable indicesDataTable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, entireOriginalAudioFileDuration, scoreThreshold); //convert to datatable of indices
+            // in this case outputDataTable is the events table table.
+            return System.Tuple.Create(masterDataTable, indicesDataTable);
+        }
+
+        public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
+        {
+            if (segmentDataTable != null)
+                    {
+                        if (masterDataTable == null) //create the data table
+                        {
+                            masterDataTable = segmentDataTable.Clone();
+                        }
+                        var headers = new List<string>();
+
+                        foreach (DataColumn col in segmentDataTable.Columns)
+                        {
+                            headers.Add(col.ColumnName);
+                        }
+
+                        foreach (DataRow row in segmentDataTable.Rows)
+                        {
+                            if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
+                            if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS]  = segmentStartOffset.TotalSeconds + (double)row[Keys.EVENT_START_ABS];
+                            if (headers.Contains(Keys.START_MIN))        row[Keys.START_MIN]        = segmentStartOffset.TotalMinutes;
+                            if (headers.Contains(Keys.EVENT_COUNT))     row[Keys.EVENT_COUNT]       = segmentIndex;
+                            if (headers.Contains(Keys.INDICES_COUNT))   row[Keys.INDICES_COUNT]     = segmentIndex;
+                            masterDataTable.ImportRow(row);
+                        }
+                    } //if (dt != null)
+
+            return masterDataTable;
+        }
 
         /// <summary>
         /// Analyse multiple files using the same settings.
@@ -508,7 +533,7 @@ namespace AudioBrowser
 
             if (doAnnotate)
             {
-                IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName);
+                IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, null);
                 if (analyser == null)
                 {
                     Console.WriteLine("\nWARNING: Could not construct image.");

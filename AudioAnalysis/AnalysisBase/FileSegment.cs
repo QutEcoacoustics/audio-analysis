@@ -27,7 +27,10 @@
         /// </summary>
         public TimeSpan? SegmentEndOffset { get; set; }
 
-        // shove in an int!
+        /// <summary>
+        /// Gets or sets the entire audio file Duration.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
 
         /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.

@@ -26,6 +26,7 @@
     using TowseyLib;
     using AnalysisBase;
 
+
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //SCC file site 4  // sunshinecoast1 "Y:\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -35,6 +36,9 @@
 
     public partial class MainForm : Form
     {
+
+
+
         private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
         private readonly TextWriter consoleWriter;
         private readonly IAudioUtility audioUtilityForDurationColumn;
@@ -57,8 +61,8 @@
         private double[] trackValues;
         private Bitmap selectionTrackImage;
 
-        private string CurrentSourceFileAnalysisType { get { return this.comboBoxSourceFileAnalysisType.SelectedItem.ToString(); } }
-        private string CurrentCSVFileAnalysisType { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
+        private string CurrentSourceFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key; } }
+        private string CurrentCSVFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key; } }
 
         //identifers for the TAB panels/pages
         private string tabPageOutputFilesLabel = "tabPageOutputFiles";
@@ -67,6 +71,7 @@
         private string tabPageConsoleLabel = "tabPageConsole";
 
         private AnalysisCoordinator analysisCoordinator;
+        private PluginHelper pluginHelper;
 
         /// <summary>
         /// 
@@ -86,13 +91,13 @@
             }
             catch (Exception ex)
             {
-                MessageBox.Show("WARNING: CANNOT LOCATE ONE OF THE FOLLOWING:\n\t The Browser Config File\n\t The Default Source Directory;\n" + 
+                MessageBox.Show("WARNING: CANNOT LOCATE ONE OF THE FOLLOWING:\n\t The Browser Config File\n\t The Default Source Directory;\n" +
                                              "\t The Default Output Directory.\n\nCheck entries in the application file: app.config ");
 
                 MessageBox.Show(ex.ToString());
                 if (Debugger.IsAttached)
                 {
-                    Debugger.Break();                    
+                    Debugger.Break();
                 }
 
             }
@@ -114,6 +119,9 @@
                 IsParallel = true,
                 SubFoldersUnique = false
             };
+
+            this.pluginHelper = new PluginHelper();
+            this.pluginHelper.FindIAnalysisPlugins();
 
             //var results = this.analysisCoordinator.Run(files,analysis from dropdown,settings using config file);
 
@@ -195,13 +203,39 @@
                 }
             }
 
-            this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
-            this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
+            //this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
+            //this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
 
-            this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName; //set default
-            this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
+            var analyserDict = new Dictionary<string, string>();
 
-            string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
+
+            foreach (var plugin in this.pluginHelper.AnalysisPlugins)
+            {
+                analyserDict.Add(plugin.Identifier, plugin.DisplayName);
+            }
+
+            var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
+
+            analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
+
+            this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
+            this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
+            this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
+
+            this.comboBoxCSVFileAnalysisType.DataSource = analyserList.ToList();
+            this.comboBoxCSVFileAnalysisType.DisplayMember = "Key";
+            this.comboBoxCSVFileAnalysisType.DisplayMember = "Value";
+
+            //set default
+            var defaultAnalyserExists = analyserList.Any(a => a.Key == browserSettings.AnalysisIdentifier);
+            if (defaultAnalyserExists)
+            {
+                var defaultAnalyser = analyserList.First(a => a.Key == browserSettings.AnalysisIdentifier);
+                this.comboBoxSourceFileAnalysisType.SelectedItem = defaultAnalyser;
+                this.comboBoxCSVFileAnalysisType.SelectedItem = defaultAnalyser;
+            }
+
+            string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
 
             Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             Console.WriteLine(DateTime.Now);
@@ -221,10 +255,10 @@
         /// </summary>
         private void LoadAnalysisConfigFile(string analysisName)
         {
-            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; 
-            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;  
+            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;
 
-            this.browserSettings.AnalysisName = analysisName;
+            this.browserSettings.AnalysisIdentifier = analysisName;
             if (analysisName == "None")
             {
                 Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
@@ -244,9 +278,9 @@
         {
             Console.WriteLine();
             Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisName);
-            if (parameters.fiAnalysisConfig == null) 
-                 Console.WriteLine("\tAnalysis Config File: NULL");
+            Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisIdentifier);
+            if (parameters.fiAnalysisConfig == null)
+                Console.WriteLine("\tAnalysis Config File: NULL");
             else Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
             Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
             Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
@@ -257,7 +291,7 @@
         private static void ConfirmAllDefaultDirectoriesAndFilesExist(AudioBrowserSettings parameters)
         {
 
-            if (parameters.fiAnalysisConfig == null)  Console.WriteLine("\tWARNING: A valid config has not been set.");
+            if (parameters.fiAnalysisConfig == null) Console.WriteLine("\tWARNING: A valid config has not been set.");
             else
                 if (!parameters.fiAnalysisConfig.Exists) Console.WriteLine("\tWARNING: The config does not exist: {0}", parameters.fiAnalysisConfig.FullName);
             //check the source directory
@@ -295,8 +329,9 @@
 
         private void btnAnalyseSelectedAudioFiles_Click(object sender, EventArgs e)
         {
-            string analysisName = (string)this.comboBoxSourceFileAnalysisType.SelectedItem;
-            this.browserSettings.AnalysisName = analysisName;
+
+            string analysisName = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
+            this.browserSettings.AnalysisIdentifier = analysisName;
             string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
             var fiConfig = new FileInfo(configPath);
             this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
@@ -340,9 +375,44 @@
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
                     //################# PROCESS THE RECORDING #####################################################################################
-                    var op = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
-                    var eventsDataTable  = op.Item1;
-                    var indicesDataTable = op.Item2; 
+
+                    var currentlySelectedIdentifier = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
+                    var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
+
+                    var settings = analyser.DefaultSettings;
+                    settings.AnalysisBaseDirectory = this.browserSettings.diOutputDir;
+                    settings.ConfigFile = fiConfig;
+
+                    // this will only work for one file, since we need to sort the output afterwards.
+                    var file = new FileSegment { 
+                        OriginalFile = fiSourceRecording, 
+                        //SegmentStartOffset = TimeSpan.Zero, 
+                        //SegmentEndOffset = TimeSpan.FromMinutes(3) 
+                    };
+
+                    var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
+
+                    DataTable datatable = null;
+                    for (var index = 0; index < analyserResults.Count(); index++)
+                    {
+                        var analyserResult = analyserResults.Skip(index).FirstOrDefault();
+                        datatable = AudioBrowserTools.AppendToDataTable(
+                            datatable,
+                            analyserResult.Data,
+                            analyserResult.AudioDuration,
+                            analyserResult.SegmentStartOffset,
+                            index);
+                    }
+
+                    var audioUtility = new MasterAudioUtility(settings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+                    var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
+                    var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
+
+                    var op = AudioBrowserTools.GetEventsAndIndiciesDataTables(datatable, analyser, sourceDuration);
+
+                    // var op = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
+                    var eventsDataTable = op.Item1;
+                    var indicesDataTable = op.Item2;
                     //#############################################################################################################################
                     stopwatch.Stop();
                     //DataTableTools.WriteTable2Console(indicesDataTable);
@@ -353,7 +423,7 @@
                     string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
                     string reportfilePath;
                     int outputCount = 0;
-                    
+
                     //different things happen depending on the content of the analysis data table
                     if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
                     {
@@ -437,7 +507,8 @@
 
                     Console.WriteLine("# Display tracks in csv file: " + csvFileName);
 
-                    string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;//get analysis config settings
+                    //get analysis config settings
+                    string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
                     LoadAnalysisConfigFile(analysisName);
 
 
@@ -492,7 +563,7 @@
         private int LoadIndicesCSVFile(string csvPath)
         {
             string analyisName = this.CurrentCSVFileAnalysisType;
-            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName);
+            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, this.pluginHelper.AnalysisPlugins);
             if (analyser == null)
             {
                 Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
@@ -507,7 +578,7 @@
             analyser = null;
 
             string[] originalHeaders = DataTableTools.GetColumnNames(dtRaw);
-            string[] displayHeaders  = DataTableTools.GetColumnNames(dt2Display);
+            string[] displayHeaders = DataTableTools.GetColumnNames(dt2Display);
 
             //make values of bottom track available
             this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, displayHeaders[displayHeaders.Length - 1]).ToArray();
@@ -522,7 +593,7 @@
                 if (abbrevList.Contains(text))
                     this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}  (displayed)", (i + 1), originalHeaders[i]));
                 else
-                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}",              (i + 1), originalHeaders[i]));
+                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}", (i + 1), originalHeaders[i]));
             }
             string labelText = originalHeaders.Length + " headers in CSV file - " + displayHeaders.Length + " displayed.";
             this.labelCSVHeaders.Text = labelText;
@@ -554,11 +625,11 @@
             float[] dashValues = { 2, 2, 2, 2 };
             Pen pen = new Pen(Color.Red, 1.0F);
             pen.DashPattern = dashValues;
-            Point pt1 = new Point(myX-1, 2);
-            Point pt2 = new Point(myX-1, this.pictureBoxVisualIndex.Height);
+            Point pt1 = new Point(myX - 1, 2);
+            Point pt2 = new Point(myX - 1, this.pictureBoxVisualIndex.Height);
             g.DrawLine(pen, pt1, pt2);
-            pt1 = new Point(myX+1, 2);
-            pt2 = new Point(myX+1, this.pictureBoxVisualIndex.Height);
+            pt1 = new Point(myX + 1, 2);
+            pt2 = new Point(myX + 1, this.pictureBoxVisualIndex.Height);
             g.DrawLine(pen, pt1, pt2);
 
             if ((trackValues == null) || (trackValues.Length < 2)) return;
@@ -616,7 +687,7 @@
 
             //EXTRACT RECORDING SEGMENT
             TimeSpan startMinute = new TimeSpan(0, myX, 0);
-            TimeSpan endMinute   = new TimeSpan(0, myX+1, 0);
+            TimeSpan endMinute = new TimeSpan(0, myX + 1, 0);
             //if (segmentDuration == 3)
             //{
             //    startMinute = new TimeSpan(0, myX - 1, 0);
@@ -1228,7 +1299,7 @@
         private void GetSonogram(FileInfo fiAudio)
         {
             //check recording segment exists
-            if ((fiAudio == null)||(!fiAudio.Exists))
+            if ((fiAudio == null) || (!fiAudio.Exists))
             {
                 if (fiAudio == null) Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
                 else

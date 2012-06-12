@@ -144,9 +144,14 @@
         public FileInfo ImageFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the debug image file for this analysis.
+        /// Gets or sets the duration of the analysed segment.
         /// </summary>
         public TimeSpan AudioDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the offset of the segment from the original entire audio file.
+        /// </summary>
+        public TimeSpan SegmentStartOffset { get; set; }
 
     }
 }

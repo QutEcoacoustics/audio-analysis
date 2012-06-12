@@ -88,7 +88,7 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Analysis Template"; }
+            get { return "Planes Trains And Automobiles"; }
         }
 
         public string Identifier
