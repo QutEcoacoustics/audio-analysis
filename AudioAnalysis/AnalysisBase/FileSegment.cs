@@ -52,12 +52,7 @@
                 return false;
             }
 
-            if (this.SegmentEndOffset.HasValue && this.SegmentStartOffset > TimeSpan.Zero)
-            {
-                return false;
-            }
-
-            if (this.SegmentStartOffset.HasValue && this.SegmentStartOffset >= this.SegmentEndOffset)
+            if (this.SegmentStartOffset.HasValue && this.SegmentEndOffset.HasValue && this.SegmentStartOffset >= this.SegmentEndOffset)
             {
                 return false;
             }
