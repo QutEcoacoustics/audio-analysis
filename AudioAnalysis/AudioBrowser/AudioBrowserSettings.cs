@@ -26,8 +26,8 @@
             this.diOutputDir = this.DefaultOutputDir;
 
             this.AnalysisList = AppConfigHelper.GetStrings("AnalysisList", ',');
-            this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
-            this.fiAnalysisConfig = new FileInfo(Path.Combine(diConfigDir.FullName, AnalysisName + DefaultConfigExt));
+            this.AnalysisIdentifier = AppConfigHelper.GetString("DefaultAnalysisName");
+            this.fiAnalysisConfig = new FileInfo(Path.Combine(diConfigDir.FullName, AnalysisIdentifier + DefaultConfigExt));
 
             this.DefaultSegmentDuration = AppConfigHelper.GetDouble("DefaultSegmentDuration");
             this.DefaultResampleRate    = AppConfigHelper.GetInt("DefaultResampleRate");
@@ -52,7 +52,7 @@
         public int TrackCount { get; private set; }
         public bool TrackNormalisedDisplay { get; private set; }
         public string SourceFileExt { get; private set; }
-        public string AnalysisName { get; set; }
+        public string AnalysisIdentifier { get; set; }
         public string[] AnalysisList { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }

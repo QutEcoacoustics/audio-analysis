@@ -71,6 +71,7 @@ using Acoustics.Tools;
 
                 var startOffset = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
                 var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : duration;
+                fileSegment.Duration = duration;
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
 

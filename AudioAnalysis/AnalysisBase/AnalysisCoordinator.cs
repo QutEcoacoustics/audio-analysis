@@ -102,6 +102,7 @@
 
                         settings.AudioFile = sourceFile;
                         var result = this.Analyse(analysis, settings);
+                        result.SegmentStartOffset = item.SegmentStartOffset.Value;
                         results[index] = result;
                     });
 
@@ -182,8 +183,13 @@
 
             foreach (var file in fileSegments)
             {
-
-                //var analysisSegment = this.SourcePreparer.PrepareFile(file.OriginalFile.FullName,);
+                var analysisSegment = this.SourcePreparer.PrepareFile(
+                    settings.AnalysisRunDirectory,
+                    file.OriginalFile,
+                    settings.SegmentMediaType,
+                    file.SegmentStartOffset.HasValue? file.SegmentStartOffset.Value : TimeSpan.Zero,
+                    file.SegmentEndOffset.HasValue ? file.SegmentEndOffset.Value : file.Duration, 
+                    settings.SegmentTargetSampleRate);
             }
 
             //return this.SourcePreparer.PrepareFiles(settings, fileSegments);
