@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
 
 
         //KEYS TO OUTPUT INDICES
-        public static string COUNT        = "count";
+        public static string INDICES_COUNT    = "Indices Count";
         public static string SEGMENT_TIMESPAN = "SegTimeSpan";
         public static string AV_AMPLITUDE = "avAmp-dB";
         public static string START_MIN    = "start-min";
@@ -47,6 +47,7 @@ namespace AudioAnalysisTools
         public static string CALL_SCORE   = "CallScore";
 
         //KEYS TO OUTPUT EVENTS
+        public static string EVENT_COUNT     = "Event Count";
         public static string EVENT_START_ABS = "EvStartAbs";
         public static string EVENT_START_SEC = "EvStartSec";
         public static string EVENT_START_MIN = "EvStartMin";

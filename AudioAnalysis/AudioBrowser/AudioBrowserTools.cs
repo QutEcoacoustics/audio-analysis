@@ -123,8 +123,8 @@ namespace AudioBrowser
             {
                 switch (analysisName)
                 {
-                    case AcousticIndices.ANALYSIS_NAME:      // 
-                        analyser = new AcousticIndices();
+                    case Acoustic.ANALYSIS_NAME:      // 
+                        analyser = new Acoustic();
                         break;
                     case LSKiwi2.ANALYSIS_NAME:     // 
                         analyser = new LSKiwi2();
@@ -139,7 +139,7 @@ namespace AudioBrowser
             return analyser;
         } //GetAcousticAnalyser()
 
-        public static DataTable ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, FileInfo fiConfig)
+        public static System.Tuple<DataTable, DataTable> ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, FileInfo fiConfig)
         {
             var dict = ConfigDictionary.ReadPropertiesFile(fiConfig.FullName);
             string analysisName = dict[Keys.ANALYSIS_NAME];
@@ -195,7 +195,7 @@ namespace AudioBrowser
             //DateTime tStart = DateTime.Now;
             //DateTime tPrevious = tStart;
 
-            //segmentCount = 10;   //for testing and debugging
+            segmentCount = 3;   //for testing and debugging
 
             for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.
@@ -266,7 +266,8 @@ namespace AudioBrowser
                             if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
                             if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS]  = startTime.TotalSeconds + (double)row[Keys.EVENT_START_ABS];
                             if (headers.Contains(Keys.START_MIN))        row[Keys.START_MIN]        = startTime.TotalMinutes;
-                            if (headers.Contains(Keys.COUNT))            row[Keys.COUNT]            = s;
+                            if (headers.Contains(Keys.EVENT_COUNT))      row[Keys.EVENT_COUNT]      = s;
+                            if (headers.Contains(Keys.INDICES_COUNT))    row[Keys.INDICES_COUNT]    = s;
                             outputDataTable.ImportRow(row);
                         }
                     } //if (dt != null)
@@ -278,7 +279,21 @@ namespace AudioBrowser
             } //end of for loop
 //            ); // Parallel.For
 
-            return outputDataTable;
+
+            //AT THE END OF ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
+            //different things happen depending on the content of the analysis data table
+            if (outputDataTable.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
+            {
+                DataTable eventsDatatable = null;
+                return System.Tuple.Create(eventsDatatable, outputDataTable);
+            }
+
+            //must have an events data table. Thereofre also create an indices data table
+            var unitTime = new TimeSpan(0, 0, 60);
+            double scoreThreshold = 0.2;
+            DataTable indicesDataTable = analyser.ConvertEvents2Indices(outputDataTable, unitTime, sourceDuration, scoreThreshold); //convert to datatable of indices
+
+            return System.Tuple.Create(outputDataTable, outputDataTable);
         }
 
 

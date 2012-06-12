@@ -20,53 +20,14 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    public class AcousticIndices : IAnalysis
+    public class Acoustic : IAnalysis
     {
         //TASK IDENTIFIERS
         public const string task_ANALYSE  = "analysis";
         public const string task_LOAD_CSV = "loadCsv";
 
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
-        public static string key_CALL_DURATION = "CALL_DURATION";
-        public static string key_DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
-        public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_FRAME_LENGTH = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
-        public static string key_MIN_HZ = "MIN_HZ";
-        public static string key_MAX_HZ = "MAX_HZ";
-        public static string key_MIN_GAP = "MIN_GAP";
-        public static string key_MAX_GAP = "MAX_GAP";
-        public static string key_MIN_AMPLITUDE = "MIN_AMPLITUDE";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_MAX_DURATION = "MAX_DURATION";
-        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
-
-        //KEYS TO OUTPUT EVENTS and INDICES
-        public static string key_COUNT     = "count";
-        //public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
-        public static string key_AV_AMPLITUDE = "avAmp-dB";
-        //public static string key_START_ABS = "EvStartAbs";
-        //public static string key_START_MIN = "EvStartMin";
-        //public static string key_START_SEC = "EvStartSec";
-        public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CALL_SCORE = "CallScore";
-        public static string key_EVENT_TOTAL= "# events";
-
-
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "AcousticIndices";
-        public const int RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
-        //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
-        public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
-
+        public const string ANALYSIS_NAME = "Acoustic";
 
         public string DisplayName
         {
@@ -188,7 +149,7 @@ namespace AnalysisPrograms
                         var fiCsvFile    = new FileInfo(restOfArgs[0]);
                         var fiConfigFile = new FileInfo(restOfArgs[1]);
                         //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                        IAnalysis analyser = new AcousticIndices();
+                        IAnalysis analyser = new Acoustic();
                         var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
                         //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
                         break;
@@ -293,18 +254,18 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, AcousticFeatures.RESAMPLE_RATE);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, AcousticFeatures.RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalysis analyser = new AcousticIndices();
+            IAnalysis analyser = new Acoustic();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
@@ -341,7 +302,7 @@ namespace AnalysisPrograms
             analysisResults.Data = null;
 
             //######################################################################
-            var results = AcousticIndicesExtraction.Analysis(fiAudioF, configDict);
+            var results = AcousticFeatures.Analysis(fiAudioF, configDict);
             //######################################################################
 
             if (results == null) return analysisResults; //nothing to process 
@@ -396,9 +357,9 @@ namespace AnalysisPrograms
 
             foreach (DataRow row in dt.Rows)
             {
-                row[AcousticIndicesExtraction.header_count]           = count;
-                row[AcousticIndicesExtraction.header_startMin]        = segmentStartMinute;
-                row[AcousticIndicesExtraction.header_SecondsDuration] = recordingTimeSpan.TotalSeconds;
+                row[AcousticFeatures.header_count]           = count;
+                row[AcousticFeatures.header_startMin]        = segmentStartMinute;
+                row[AcousticFeatures.header_SecondsDuration] = recordingTimeSpan.TotalSeconds;
             }
         }
 
@@ -427,19 +388,19 @@ namespace AnalysisPrograms
         {
             var configuration = new ConfigDictionary(fiConfigFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
-            List<string> displayHeaders = configDict[key_DISPLAY_COLUMNS].Split(',').ToList();
+            List<string> displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
 
             bool addColumnOfweightedIndices = true;
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
-            dt = DataTableTools.SortTable(dt, AcousticIndicesExtraction.header_count + " ASC");
+            dt = DataTableTools.SortTable(dt, AcousticFeatures.header_count + " ASC");
 
             double[] weightedIndices = null;
             if (addColumnOfweightedIndices)
             {
-                double[] comboWts = AcousticIndicesExtraction.GetComboWeights();
-                weightedIndices = AcousticIndicesExtraction.GetArrayOfWeightedAcousticIndices(dt, comboWts);
+                double[] comboWts = AcousticFeatures.GetComboWeights();
+                weightedIndices = AcousticFeatures.GetArrayOfWeightedAcousticIndices(dt, comboWts);
                 string colName = "WeightedIndex";
                 displayHeaders.Add(colName);
                 DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
@@ -475,80 +436,80 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (header.Equals(AcousticIndicesExtraction.header_count))
+                if (header.Equals(AcousticFeatures.header_count))
                 {
                     newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
                     newHeaders.Add(header);
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_avAmpdB))
+                else if (header.Equals(AcousticFeatures.header_avAmpdB))
                 {
                     min = -50;
                     max = -5;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_avAmpdB + "  (-50..-5dB)");
+                    newHeaders.Add(AcousticFeatures.header_avAmpdB + "  (-50..-5dB)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_snrdB))
+                else if (header.Equals(AcousticFeatures.header_snrdB))
                 {
                     min = 5;
                     max = 50;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_snrdB + "  (5..50dB)");
+                    newHeaders.Add(AcousticFeatures.header_snrdB + "  (5..50dB)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_avSegDur))
+                else if (header.Equals(AcousticFeatures.header_avSegDur))
                 {
                     min = 0.0;
                     max = 500.0; //av segment duration in milliseconds
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_avSegDur + "  (0..500ms)");
+                    newHeaders.Add(AcousticFeatures.header_avSegDur + "  (0..500ms)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_bgdB))
+                else if (header.Equals(AcousticFeatures.header_bgdB))
                 {
                     min = -50;
                     max = -5;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_bgdB + "  (-50..-5dB)");
+                    newHeaders.Add(AcousticFeatures.header_bgdB + "  (-50..-5dB)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_avClustDur))
+                else if (header.Equals(AcousticFeatures.header_avClustDur))
                 {
                     min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
                     max = 200.0; //av segment duration in milliseconds
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_avClustDur + "  (50..200ms)");
+                    newHeaders.Add(AcousticFeatures.header_avClustDur + "  (50..200ms)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_lfCover))
+                else if (header.Equals(AcousticFeatures.header_lfCover))
                 {
                     min = 0.1; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_lfCover + "  (10..100%)");
+                    newHeaders.Add(AcousticFeatures.header_lfCover + "  (10..100%)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_mfCover))
+                else if (header.Equals(AcousticFeatures.header_mfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_mfCover + "  (0..90%)");
+                    newHeaders.Add(AcousticFeatures.header_mfCover + "  (0..90%)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_hfCover))
+                else if (header.Equals(AcousticFeatures.header_hfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_hfCover + "  (0..90%)");
+                    newHeaders.Add(AcousticFeatures.header_hfCover + "  (0..90%)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_HAmpl))
+                else if (header.Equals(AcousticFeatures.header_HAmpl))
                 {
                     min = 0.5; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_HAmpl + "  (0.5..1.0)");
+                    newHeaders.Add(AcousticFeatures.header_HAmpl + "  (0.5..1.0)");
                 }
-                else if (header.Equals(AcousticIndicesExtraction.header_HAvSpectrum))
+                else if (header.Equals(AcousticFeatures.header_HAvSpectrum))
                 {
                     min = 0.2; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticIndicesExtraction.header_HAvSpectrum + "  (0.2..1.0)");
+                    newHeaders.Add(AcousticFeatures.header_HAvSpectrum + "  (0.2..1.0)");
                 }
                 else //default is to normalise in [0,1]
                 {
@@ -583,5 +544,5 @@ namespace AnalysisPrograms
 
 
 
-    } //end class AcousticIndices
+    } //end class Acoustic
 }

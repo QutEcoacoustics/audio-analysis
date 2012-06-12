@@ -113,7 +113,7 @@ namespace AnalysisPrograms
                         SPR.Dev(restOfArgs);
                         break;
                     case "richness_indices":      // richness_indices
-                        AcousticIndices.Dev(restOfArgs);
+                        Acoustic.Dev(restOfArgs);
                         //RichnessIndices2.Executable(restOfArgs);
                         break;
                     case "species_accumulation_curves":      // species accumulation curves

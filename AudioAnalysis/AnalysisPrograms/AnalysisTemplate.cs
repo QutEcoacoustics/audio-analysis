@@ -577,7 +577,10 @@ namespace AnalysisPrograms
         {
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
-            dt = DataTableTools.SortTable(dt, Keys.COUNT + " ASC");
+            if (dt.Columns.Contains(Keys.EVENT_COUNT))
+                dt = DataTableTools.SortTable(dt, Keys.EVENT_COUNT + " ASC");
+            else if (dt.Columns.Contains(Keys.INDICES_COUNT))
+                dt = DataTableTools.SortTable(dt, Keys.INDICES_COUNT + " ASC");
 
             //get display headers from config file
             var configuration = new ConfigDictionary(fiConfigFile.FullName);
@@ -626,7 +629,7 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (header.Equals(Keys.COUNT))
+                if (header.Equals(Keys.INDICES_COUNT))
                 {
                     newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
                     newHeaders.Add(header);
