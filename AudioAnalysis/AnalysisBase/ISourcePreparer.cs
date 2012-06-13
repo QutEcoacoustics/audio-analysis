@@ -33,7 +33,7 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
+        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
 
         /// <summary>
         /// Calculate the file segments for analysis.

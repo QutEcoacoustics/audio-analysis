@@ -39,11 +39,18 @@ namespace AnalysisRunner
         /// The target Sample Rate Hz.
         /// </param>
         /// <returns>
-        /// The prepared file.
+        /// The prepared file. The returned FileSegment will have the OriginalFile and OriginalFileDuration set - 
+        /// these are the path to the segmented file and the duration of the segmented file.
+        /// The start and end offsets will not be set.
         /// </returns>
-        public FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
+        public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
-            return AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, startOffset, endOffset, targetSampleRateHz);
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, startOffset, endOffset, targetSampleRateHz);
+
+            var audioUtility = this.GetNewAudioUtility(targetSampleRateHz);
+            var preparedFileDuration = audioUtility.Duration(preparedFile, MediaTypes.GetMediaType(preparedFile.Extension));
+
+            return new FileSegment { OriginalFileDuration = preparedFileDuration, OriginalFile = preparedFile };
         }
 
         /// <summary>
@@ -71,7 +78,7 @@ namespace AnalysisRunner
 
                 var startOffset = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
                 var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : duration;
-                fileSegment.Duration = duration;
+                fileSegment.OriginalFileDuration = duration;
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
 
@@ -111,7 +118,7 @@ namespace AnalysisRunner
                         {
                             OriginalFile = fileSegment.OriginalFile,
                             SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate)),
-                            Duration = fileSegment.Duration
+                            OriginalFileDuration = fileSegment.OriginalFileDuration
                         };
 
                     aggregate += segments[index];

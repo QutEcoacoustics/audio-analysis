@@ -318,15 +318,13 @@
                     // this will only work for one file, since we need to sort the output afterwards.
                     var file = new FileSegment { 
                         OriginalFile = fiSourceRecording, 
-                        //SegmentStartOffset = TimeSpan.Zero, 
-                        //SegmentEndOffset = TimeSpan.FromMinutes(3) 
+                        SegmentStartOffset = TimeSpan.Zero, 
+                        SegmentEndOffset = TimeSpan.FromMinutes(5) 
                     };
 
                     //################# PROCESS THE RECORDING #####################################################################################
                     this.analysisCoordinator.IsParallel = false;
-                    var analyserResults = this.analysisCoordinator.TestRun(new[] { file }, analyser, settings);
-                    //this.analysisCoordinator.IsParallel = true;
-                    //var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
+                    var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
 
                     //settings.AnalysisRunDirectory
                     //NEXT LINE was my old code
