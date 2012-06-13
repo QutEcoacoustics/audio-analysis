@@ -128,34 +128,36 @@
         {
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
             var analysisSegmentsCount = analysisSegments.Count();
-
-            //if (this.IsParallel)
-            //{
-            //    var results = new AnalysisResult[analysisSegmentsCount];
-
-            //    Parallel.ForEach(
-            //        analysisSegments,
-            //        (item, state, index) =>
-            //        {
-            //            var sourceFile = this.SourcePreparer.PrepareFile(
-            //                settings.AnalysisBaseDirectory,
-            //                item.OriginalFile,
-            //                settings.SegmentMediaType,
-            //                item.SegmentStartOffset.Value,
-            //                item.SegmentEndOffset.Value,
-            //                settings.SegmentTargetSampleRate);
-
-            //            settings.AudioFile = sourceFile;
-            //            var result = this.Analyse(analysis, settings);
-            //            result.SegmentStartOffset = item.SegmentStartOffset.Value;
-            //            results[index] = result;
-            //        });
-
-            //    return results;
-            //}
-            //else
-            //{
             int count = 0;
+
+            if (this.IsParallel)
+            {
+                var results = new AnalysisResult[analysisSegmentsCount];
+
+                Parallel.ForEach(
+                    analysisSegments,
+                    (item, state, index) =>
+                    {
+                        //if (index >= 10) return;
+                        var sourceFile = this.SourcePreparer.PrepareFile(
+                            settings.AnalysisBaseDirectory,
+                            item.OriginalFile,
+                            settings.SegmentMediaType,
+                            item.SegmentStartOffset.Value,
+                            item.SegmentEndOffset.Value,
+                            settings.SegmentTargetSampleRate);
+
+                        settings.AudioFile = sourceFile;
+                        var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
+                        result.SegmentStartOffset = item.SegmentStartOffset.Value;
+                        results[index] = result;
+                        //count++;
+                    });
+
+                return results;
+            }
+            else
+            {
                 var results = new List<AnalysisResult>();
                 foreach (var item in analysisSegments)
                 {
@@ -169,13 +171,13 @@
                             settings.SegmentTargetSampleRate);
 
                     settings.AudioFile = sourceFile;
-                    var result = this.Analyse(analysis, settings);
+                    var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
                     count++;
                 }
 
                 return results;
-            //}
+            }
         }
         /// <summary>
         /// Prepare the resources for an analysis, and the run the analysis.

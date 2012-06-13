@@ -19,8 +19,6 @@
     using AnalysisRunner;
 
     using AudioAnalysisTools;
-
-
     using log4net;
 
     using TowseyLib;
@@ -36,9 +34,6 @@
 
     public partial class MainForm : Form
     {
-
-
-
         private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
         private readonly TextWriter consoleWriter;
         private readonly IAudioUtility audioUtilityForDurationColumn;
@@ -81,38 +76,11 @@
             // must be here, must be first
             InitializeComponent();
 
-
-
             //initialize instance of AudioBrowserSettings class
             browserSettings = new AudioBrowserSettings();
-            try
-            {
-                browserSettings.LoadBrowserSettings();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("WARNING: CANNOT LOCATE ONE OF THE FOLLOWING:\n\t The Browser Config File\n\t The Default Source Directory;\n" +
-                                             "\t The Default Output Directory.\n\nCheck entries in the application file: app.config ");
+            browserSettings.LoadBrowserSettings();
 
-                MessageBox.Show(ex.ToString());
-                if (Debugger.IsAttached)
-                {
-                    Debugger.Break();
-                }
-
-            }
-
-            //initialize analysis parameters
-            try
-            {
-                this.analysisParams = ConfigDictionary.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
-            }
-            catch (Exception ex) //DO NOT CATCH THIS EXCEPTION - DEAL WITH LATER
-            {
-                //MessageBox.Show("WARNING: CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
-                //MessageBox.Show(ex.ToString());
-            }
-
+            //initilise classes that will do the analysis
             this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
                 DeleteFinished = false,
@@ -120,10 +88,9 @@
                 SubFoldersUnique = false
             };
 
+            //finds valid analysis files that implement the IAnalysis interface
             this.pluginHelper = new PluginHelper();
             this.pluginHelper.FindIAnalysisPlugins();
-
-            //var results = this.analysisCoordinator.Run(files,analysis from dropdown,settings using config file);
 
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
@@ -236,73 +203,39 @@
             }
 
             string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
+            //this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem     = analysisName;
+            this.browserSettings.AnalysisIdentifier           = analysisName;
+
+            var op = LoadAnalysisConfigFile(analysisName);
+            this.browserSettings.fiAnalysisConfig = op.Item1;
+            this.analysisParams = op.Item2;
 
             Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             Console.WriteLine(DateTime.Now);
-
-            LoadAnalysisConfigFile(analysisName);
-            WriteBrowserParameters2Console(this.browserSettings);
-            ConfirmAllDefaultDirectoriesAndFilesExist(this.browserSettings);
-
-
-
+            this.browserSettings.WriteSettings2Console();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
         } //MainForm()
 
+
         /// <summary>
         /// THIS METHOD ASSUMES THAT CONFIG FILE IS IN CONFIG DIR AND HAS DEFAULT NAME
         /// </summary>
-        private void LoadAnalysisConfigFile(string analysisName)
+        private Tuple<FileInfo, Dictionary<string,string> > LoadAnalysisConfigFile(string analysisName)
         {
-            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
-            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;
-
-            this.browserSettings.AnalysisIdentifier = analysisName;
+            FileInfo fi = null;
+            Dictionary<string, string> dict = null;
             if (analysisName == "None")
             {
                 Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
                 Console.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
-                this.browserSettings.fiAnalysisConfig = null;
-                this.analysisParams = null;
-                return;
+                return Tuple.Create(fi, dict);
             }
 
             string configDir = this.browserSettings.diConfigDir.FullName;
             string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
-            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
-        }
-
-        private static void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
-        {
-            Console.WriteLine();
-            Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisIdentifier);
-            if (parameters.fiAnalysisConfig == null)
-                Console.WriteLine("\tAnalysis Config File: NULL");
-            else Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
-            Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
-            Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
-            Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", parameters.TrackHeight, parameters.TrackNormalisedDisplay);
-            Console.WriteLine("####################################################################################\n");
-        }
-
-        private static void ConfirmAllDefaultDirectoriesAndFilesExist(AudioBrowserSettings parameters)
-        {
-
-            if (parameters.fiAnalysisConfig == null) Console.WriteLine("\tWARNING: A valid config has not been set.");
-            else
-                if (!parameters.fiAnalysisConfig.Exists) Console.WriteLine("\tWARNING: The config does not exist: {0}", parameters.fiAnalysisConfig.FullName);
-            //check the source directory
-            if (parameters.diSourceDir == null) Console.WriteLine("\tWARNING: A valid source directory has not been set.");
-            else
-                if (!parameters.diSourceDir.Exists) Console.WriteLine("\tWARNING: The source directory does not exist: {0}", parameters.diSourceDir.FullName);
-
-            //check the output directory
-            if (parameters.diOutputDir == null) Console.WriteLine("\tWARNING: A valid output directory has not been set.");
-            else
-                if (!parameters.diOutputDir.Exists) Console.WriteLine("\tWARNING: The output directory does not exist: {0}", parameters.diOutputDir.FullName);
+            return Tuple.Create(new FileInfo(configPath), ConfigDictionary.ReadPropertiesFile(configPath));
         }
 
         private static void WriteAnalysisParameters2Console(Dictionary<string, string> dict, string analysisName)
@@ -374,7 +307,6 @@
 
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
-                    //################# PROCESS THE RECORDING #####################################################################################
 
                     var currentlySelectedIdentifier = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
                     var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
@@ -390,17 +322,28 @@
                         //SegmentEndOffset = TimeSpan.FromMinutes(3) 
                     };
 
+                    //################# PROCESS THE RECORDING #####################################################################################
                     this.analysisCoordinator.IsParallel = false;
-                    var analyserResults = this.analysisCoordinator.TestRun(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
+                    var analyserResults = this.analysisCoordinator.TestRun(new[] { file }, analyser, settings);
+                    //this.analysisCoordinator.IsParallel = true;
+                    //var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
 
                     //settings.AnalysisRunDirectory
                     //NEXT LINE was my old code
                     // var op1 = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
 
+                    if (analyserResults == null)
+                    {
+                        Console.WriteLine("###################################################");
+                        Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                        Console.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
+                        return;
+                    }
                     DataTable datatable = null;
                     for (var index = 0; index < analyserResults.Count(); index++)
                     {
                         var analyserResult = analyserResults.Skip(index).FirstOrDefault();
+                        if (analyserResult != null)
                         datatable = AudioBrowserTools.AppendToDataTable(
                             datatable,
                             analyserResult.Data,
@@ -534,8 +477,9 @@
 
                     //get analysis config settings
                     string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
-                    LoadAnalysisConfigFile(analysisName);
-
+                    var op = LoadAnalysisConfigFile(analysisName);
+                    this.browserSettings.fiAnalysisConfig = op.Item1;
+                    this.analysisParams = op.Item2;
 
                     this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                     this.labelSonogramFileName.Text = "File Name";

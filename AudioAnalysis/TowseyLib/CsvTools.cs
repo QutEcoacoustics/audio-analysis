@@ -205,6 +205,7 @@ namespace TowseyLib
          public static void DataTable2CSV(DataTable dt, string strFilePath)
         {
             if (dt == null) return;
+            Type[] types = DataTableTools.GetColumnTypes(dt);
 
             // Create the CSV file to which grid data will be exported.
             StreamWriter sw = new StreamWriter(strFilePath, false);
@@ -226,10 +227,15 @@ namespace TowseyLib
             {
                 for (int i = 0; i < iColCount; i++)
                 {
-
                     if (!Convert.IsDBNull(dr[i]))
                     {
-                        sw.Write(dr[i].ToString());
+                        if (types[i] == typeof(double))
+                        {
+                            string str = String.Format("{0:f5}", dr[i]);
+                            sw.Write(str);
+                        }
+                        else
+                            sw.Write(dr[i].ToString());
                     }
                     if (i < iColCount - 1)
                     {

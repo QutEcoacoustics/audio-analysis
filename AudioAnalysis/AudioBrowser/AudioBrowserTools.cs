@@ -400,9 +400,9 @@ namespace AudioBrowser
                         foreach (DataRow row in segmentDataTable.Rows)
                         {
                             if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
-                            if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS]  = segmentStartOffset.TotalSeconds + (double)row[Keys.EVENT_START_ABS];
+                            if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS]  = segmentStartOffset.TotalSeconds + (double)row[Keys.EVENT_START_SEC];
                             if (headers.Contains(Keys.START_MIN))        row[Keys.START_MIN]        = segmentStartOffset.TotalMinutes;
-                            if (headers.Contains(Keys.EVENT_COUNT))      row[Keys.EVENT_COUNT]      = segmentIndex;
+                            //if (headers.Contains(Keys.EVENT_COUNT))      row[Keys.EVENT_COUNT]      = segmentIndex;
                             if (headers.Contains(Keys.INDICES_COUNT))    row[Keys.INDICES_COUNT]    = segmentIndex;
                             masterDataTable.ImportRow(row);
                         }
