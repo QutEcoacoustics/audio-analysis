@@ -350,7 +350,7 @@
 
             if (checkExists && !Directory.Exists(value))
             {
-                throw new DirectoryNotFoundException("Could not find directory: " + key);
+                throw new DirectoryNotFoundException(String.Format("Could not find directory: {0} = {1}", key, value));
             }
 
             return new DirectoryInfo(value);
@@ -362,7 +362,7 @@
 
             if (checkExists && !File.Exists(value))
             {
-                throw new FileNotFoundException("Could not find file: " + key, value);
+                throw new FileNotFoundException(String.Format("Could not find file: {0} = {1}", key, value));
             }
 
             return new FileInfo(value);
