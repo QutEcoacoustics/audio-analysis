@@ -30,7 +30,7 @@
         /// <summary>
         /// Gets or sets the entire audio file Duration.
         /// </summary>
-        public TimeSpan Duration { get; set; }
+        public TimeSpan OriginalFileDuration { get; set; }
 
         /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.

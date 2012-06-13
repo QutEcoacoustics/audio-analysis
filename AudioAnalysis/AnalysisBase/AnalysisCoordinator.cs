@@ -123,62 +123,6 @@
             }
         }
 
-
-        public IEnumerable<AnalysisResult> TestRun(IEnumerable<FileSegment> fileSegments, IAnalysis analysis, AnalysisSettings settings)
-        {
-            var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
-            var analysisSegmentsCount = analysisSegments.Count();
-            int count = 0;
-
-            if (this.IsParallel)
-            {
-                var results = new AnalysisResult[analysisSegmentsCount];
-
-                Parallel.ForEach(
-                    analysisSegments,
-                    (item, state, index) =>
-                    {
-                        //if (index >= 10) return;
-                        var sourceFile = this.SourcePreparer.PrepareFile(
-                            settings.AnalysisBaseDirectory,
-                            item.OriginalFile,
-                            settings.SegmentMediaType,
-                            item.SegmentStartOffset.Value,
-                            item.SegmentEndOffset.Value,
-                            settings.SegmentTargetSampleRate);
-
-                        settings.AudioFile = sourceFile;
-                        var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
-                        result.SegmentStartOffset = item.SegmentStartOffset.Value;
-                        results[index] = result;
-                        //count++;
-                    });
-
-                return results;
-            }
-            else
-            {
-                var results = new List<AnalysisResult>();
-                foreach (var item in analysisSegments)
-                {
-                    if (count >= 5) break;
-                    var sourceFile = this.SourcePreparer.PrepareFile(
-                            settings.AnalysisBaseDirectory,
-                            item.OriginalFile,
-                            settings.SegmentMediaType,
-                            item.SegmentStartOffset.Value,
-                            item.SegmentEndOffset.Value,
-                            settings.SegmentTargetSampleRate);
-
-                    settings.AudioFile = sourceFile;
-                    var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
-                    results.Add(result);
-                    count++;
-                }
-
-                return results;
-            }
-        }
         /// <summary>
         /// Prepare the resources for an analysis, and the run the analysis.
         /// </summary>
@@ -201,13 +145,13 @@
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
             var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.Duration;
+            var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.OriginalFileDuration;
 
             // create directory for analysis run
             settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analysis, settings);
 
             // create the file for the analysis
-            settings.AudioFile = this.SourcePreparer.PrepareFile(
+            var preparedFile = this.SourcePreparer.PrepareFile(
                 settings.AnalysisRunDirectory,
                 fileSegment.OriginalFile,
                 settings.SegmentMediaType,
@@ -215,6 +159,10 @@
                 end,
                 settings.SegmentTargetSampleRate);
 
+            var preparedFilePath = preparedFile.OriginalFile;
+            var preparedFileDuration = preparedFile.OriginalFileDuration;
+
+            settings.AudioFile = preparedFilePath;
 
             // run the analysis
             var result = analysis.Analyse(settings);
@@ -223,7 +171,7 @@
             result.AnalysisIdentifier = analysis.Identifier;
             result.SettingsUsed = settings;
             result.SegmentStartOffset = start;
-            result.AudioDuration = end - start;
+            result.AudioDuration = preparedFileDuration;
 
             // clean up
             if (this.DeleteFinished && this.SubFoldersUnique)
@@ -270,10 +218,8 @@
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
-            Contract.Ensures(Contract.Result<AnalysisSettings>().AnalysisRunDirectory != null, "Directory was null.");
-            Contract.Ensures(Directory.Exists(Contract.Result<AnalysisSettings>().AnalysisRunDirectory.FullName), "Directory did not exist.");
-            Contract.Ensures(Contract.Result<AnalysisSettings>().ConfigFile != null, "Config File was null.");
-            Contract.Ensures(File.Exists(Contract.Result<AnalysisSettings>().ConfigFile.FullName), "Config File does not exist.");
+            Contract.Ensures(Contract.Result<DirectoryInfo>() != null, "Directory was null.");
+            Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory did not exist.");
 
             var thisAnalysisWorkingDirectory = this.SubFoldersUnique
                                                    ? this.CreateUniqueRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier)
