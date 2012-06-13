@@ -295,6 +295,50 @@
             throw this.ConvertFailed(key, value, "decimal");
         }
 
+        #region Save and Load
+
+        public void LoadFromQueryString(string query)
+        {
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                // remove everything before (and including) a question mark
+                if (query.Contains("?"))
+                {
+                    query = query.Remove(0, query.IndexOf("?", System.StringComparison.Ordinal));
+                }
+
+                var items = query.Split('&').Select(i => i.Split('='));
+
+                foreach (var item in items)
+                {
+                    if (item.Length != 2)
+                    {
+                        throw new ArgumentException(
+                            string.Format("Found an invalid item '{0}' in {1}.", string.Join("=", item), query));
+                    }
+
+                    this.Add(item[0], item[1]);
+                }
+            }
+        }
+
+        public string SaveToQueryString()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in this)
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append("&");
+                }
+
+                sb.AppendFormat("{0}={1}", item.Key, item.Value);
+            }
+
+            return sb.ToString();
+        }
+
         public void LoadFromTwoStrings(string propertyNames, string propertyValues, string separator)
         {
             if (string.IsNullOrWhiteSpace(propertyNames))
@@ -452,5 +496,7 @@
             return new InvalidOperationException(
                 string.Format("Found key '{0}' but could not convert its value '{1}' to a {2}.", key, value, type));
         }
+
+        #endregion
     }
 }
