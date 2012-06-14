@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{58F7CE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcosoundsFeltAdapter", "EcosoundsFeltAdapter\EcosoundsFeltAdapter.csproj", "{9999ADED-5392-409C-9D5C-58C6EC3A1DA5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acoustics.Shared", "..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj", "{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = FELT.vsmdi
@@ -111,6 +113,18 @@ Global
 		{9999ADED-5392-409C-9D5C-58C6EC3A1DA5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9999ADED-5392-409C-9D5C-58C6EC3A1DA5}.Release|x64.ActiveCfg = Release|Any CPU
 		{9999ADED-5392-409C-9D5C-58C6EC3A1DA5}.Release|x86.ActiveCfg = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|x64.ActiveCfg = Release|Any CPU
+		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

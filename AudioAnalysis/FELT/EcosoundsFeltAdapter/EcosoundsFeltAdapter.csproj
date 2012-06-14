@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
+      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
+      <Name>Acoustics.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FELT\FELT.fsproj">
       <Project>{73B9C579-F539-426F-9852-1EFCBA75C0D5}</Project>
       <Name>FELT</Name>

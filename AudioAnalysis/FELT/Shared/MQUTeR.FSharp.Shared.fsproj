@@ -81,6 +81,7 @@
     <Compile Include="StringStats.fs" />
     <Compile Include="Mutex.fs" />
     <Compile Include="suncalc.fs" />
+    <Compile Include="CacheFormat.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord.Statistics">

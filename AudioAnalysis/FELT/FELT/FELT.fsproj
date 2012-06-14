@@ -87,6 +87,7 @@
     <Compile Include="Classifier.GraphDistance.fs" />
     <Compile Include="Results.ResultsCombiner.fs" />
     <Compile Include="ResultsComputation.fs" />
+    <Compile Include="WebsiteComputation.fs" />
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
     <None Include="packages.config" />
