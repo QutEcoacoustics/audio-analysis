@@ -29,6 +29,28 @@
                 "ddd.hh:mm:ss.fff", "hh:mm:ss.fff", "ddd.hh:mm:ss", "hh:mm:ss"
             };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringKeyValueStore"/> class.
+        /// </summary>
+        public StringKeyValueStore()
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringKeyValueStore"/> class.
+        /// </summary>
+        /// <param name="existing">
+        /// The existing.
+        /// </param>
+        public StringKeyValueStore(Dictionary<string, string> existing)
+        {
+            foreach (var item in existing)
+            {
+                this.Add(item.Key, item.Value);
+            }
+        }
+
         public static Type GuessType(string value)
         {
             Guid guidResult;
