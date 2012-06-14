@@ -275,8 +275,13 @@ namespace AnalysisPrograms
             {
                 int iter = 0; //dummy - iteration number would ordinarily be available at this point.
                 int startMinute = (int)tsStart.TotalMinutes;
-                AddContext2Table(dt, iter, startMinute, result.AudioDuration);
-                //DataTable augmentedTable = AddContext2Table(dt, tsStart, result.AudioDuration);
+                foreach (DataRow row in dt.Rows)
+                {
+                    row[AcousticFeatures.header_count] = iter;
+                    row[AcousticFeatures.header_startMin] = startMinute;
+                    row[AcousticFeatures.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
+                }
+
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
@@ -351,180 +356,336 @@ namespace AnalysisPrograms
 
 
 
-
-        public static void AddContext2Table(DataTable dt, int count, int segmentStartMinute, TimeSpan recordingTimeSpan)
-        {
-
-            foreach (DataRow row in dt.Rows)
-            {
-                row[AcousticFeatures.header_count]           = count;
-                row[AcousticFeatures.header_startMin]        = segmentStartMinute;
-                row[AcousticFeatures.header_SecondsDuration] = recordingTimeSpan.TotalSeconds;
-            }
-        }
-
-
-  
-
-        public AnalysisSettings DefaultSettings
-        {
-            get
-            {
-                return new AnalysisSettings
-                {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
-                    SegmentMediaType   = MediaTypes.MediaTypeWav,
-                    SegmentOverlapDuration  = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
-                };
-            }
-        }
-
-
-
-
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            var configuration = new ConfigDictionary(fiConfigFile.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
-            List<string> displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
-
-            bool addColumnOfweightedIndices = true;
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
+            //get its column headers
+            var dtHeaders = new List<string>();
+            var dtTypes   = new List<Type>();
+            foreach (DataColumn col in dt.Columns)
+            {
+                dtHeaders.Add(col.ColumnName);
+                dtTypes.Add(col.DataType);
+            }
 
-            dt = DataTableTools.SortTable(dt, AcousticFeatures.header_count + " ASC");
+            List<string> displayHeaders = null;
+            //check if config file contains list of display headers
+            if (fiConfigFile != null)
+            {
+                var configuration = new ConfigDictionary(fiConfigFile.FullName);
+                Dictionary<string, string> configDict = configuration.GetTable();
+                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                    displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+            }
+            //if config file does not exist or does not contain display headers then use the original headers
+            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
 
-            double[] weightedIndices = null;
+            //now determine how to display tracks in display datatable
+            Type[] displayTypes = new Type[displayHeaders.Count];
+            bool[] canDisplay   = new bool[displayHeaders.Count];
+            for (int i = 0; i < displayTypes.Length; i++)
+            {
+                displayTypes[i] = typeof(double);
+                canDisplay[i] = false;
+                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;             
+            }
+
+            DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
+            foreach (DataRow row in dt.Rows)
+            {
+                DataRow newRow = table2Display.NewRow();
+                for (int i = 0; i < canDisplay.Length; i++)
+                {
+                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
+                    else               newRow[displayHeaders[i]] = 0.0;
+                }
+                table2Display.Rows.Add(newRow);
+            }
+
+            //order the table if possible
+            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+            }
+
+            table2Display = NormaliseColumnsOfDataTable(table2Display);
+
+            //add in column of weighted indices
+            bool addColumnOfweightedIndices = true;
             if (addColumnOfweightedIndices)
             {
                 double[] comboWts = AcousticFeatures.GetComboWeights();
-                weightedIndices = AcousticFeatures.GetArrayOfWeightedAcousticIndices(dt, comboWts);
+                double[] weightedIndices = AcousticFeatures.GetArrayOfWeightedAcousticIndices(dt, comboWts);
                 string colName = "WeightedIndex";
-                displayHeaders.Add(colName);
-                DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+                DataTableTools.AddColumnOfDoubles2Table(table2Display, colName, weightedIndices);
             }
-
-            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
 
+        /// <summary>
+        /// takes a data table of indices and normalises column values to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable NormaliseColumnValuesOfDatatable(DataTable dt)
+        {
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            string[] newHeaders = new string[headers.Length];
+
+            List<double[]> newColumns = new List<double[]>();
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
+                if ((values == null) || (values.Length == 0)) continue;
+
+                double min = 0;
+                double max = 1;
+                if (headers[i].Equals(Keys.AV_AMPLITUDE))
+                {
+                    min = -50;
+                    max = -5;
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
+                }
+                else //default is to normalise in [0,1]
+                {
+                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+                    newHeaders[i] = headers[i];
+                }
+            }
+
+            //convert type int to type double due to normalisation
+            Type[] types = new Type[newHeaders.Length];
+            for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
+
+            return processedtable;
+        }
+
+
+
+
+        /// <summary>
+        ///// takes a data table of indices and converts column values to values in [0,1].
+        ///// </summary>
+        ///// <param name="dt"></param>
+        ///// <returns></returns>
+        //public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+        //{
+        //    string[] headers = DataTableTools.GetColumnNames(dt);
+        //    List<string> originalHeaderList = headers.ToList();
+        //    List<string> newHeaders = new List<string>();
+        //    List<double[]> newColumns = new List<double[]>();
+        //    // double[] processedColumn = null;
+        //    for (int i = 0; i < headers2Display.Count; i++)
+        //    {
+        //        string header = headers2Display[i];
+        //        if (!originalHeaderList.Contains(header)) continue;
+        //        double[] values = DataTableTools.Column2ArrayOfDouble(dt, header); //get list of values
+        //        if ((values == null) || (values.Length == 0)) continue;
+        //        double min = 0;
+        //        double max = 1;
+        //        if (header.Equals(AcousticFeatures.header_avAmpdB))
+        //        {
+        //            min = -50;
+        //            max = -5;
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_avAmpdB + "  (-50..-5dB)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_snrdB))
+        //        {
+        //            min = 5;
+        //            max = 50;
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_snrdB + "  (5..50dB)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_avSegDur))
+        //        {
+        //            min = 0.0;
+        //            max = 500.0; //av segment duration in milliseconds
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_avSegDur + "  (0..500ms)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_bgdB))
+        //        {
+        //            min = -50;
+        //            max = -5;
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_bgdB + "  (-50..-5dB)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_avClustDur))
+        //        {
+        //            min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
+        //            max = 200.0; //av segment duration in milliseconds
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_avClustDur + "  (50..200ms)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_lfCover))
+        //        {
+        //            min = 0.1; //
+        //            max = 1.0; //
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_lfCover + "  (10..100%)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_mfCover))
+        //        {
+        //            min = 0.0; //
+        //            max = 0.9; //
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_mfCover + "  (0..90%)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_hfCover))
+        //        {
+        //            min = 0.0; //
+        //            max = 0.9; //
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_hfCover + "  (0..90%)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_HAmpl))
+        //        {
+        //            min = 0.5; //
+        //            max = 1.0; //
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_HAmpl + "  (0.5..1.0)");
+        //        }
+        //        else if (header.Equals(AcousticFeatures.header_HAvSpectrum))
+        //        {
+        //            min = 0.2; //
+        //            max = 1.0; //
+        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+        //            newHeaders.Add(AcousticFeatures.header_HAvSpectrum + "  (0.2..1.0)");
+        //        }
+        //        else //default is to normalise in [0,1]
+        //        {
+        //            newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+        //            newHeaders.Add(header);
+        //        }
+        //    }
+        //    //convert type int to type double due to normalisation
+        //    Type[] types = new Type[newHeaders.Count];
+        //    for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
+        //    var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
+        //    return processedtable;
+        //}
 
         /// <summary>
         /// takes a data table of indices and converts column values to values in [0,1].
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+        public static DataTable NormaliseColumnsOfDataTable(DataTable dt)
         {
             string[] headers = DataTableTools.GetColumnNames(dt);
-            List<string> originalHeaderList = headers.ToList();
-            List<string> newHeaders = new List<string>();
+            string[] newHeaders = new string[headers.Length];
 
             List<double[]> newColumns = new List<double[]>();
-            // double[] processedColumn = null;
 
-            for (int i = 0; i < headers2Display.Count; i++)
+            for (int i = 0; i < headers.Length; i++)
             {
-                string header = headers2Display[i];
-                if (!originalHeaderList.Contains(header)) continue;
-
-                List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
-                if ((values == null) || (values.Count == 0)) continue;
+                double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
+                if ((values == null) || (values.Length == 0)) continue;
 
                 double min = 0;
                 double max = 1;
-                if (header.Equals(AcousticFeatures.header_count))
-                {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
-                    newHeaders.Add(header);
-                }
-                else if (header.Equals(AcousticFeatures.header_avAmpdB))
+                if (headers[i].Equals(AcousticFeatures.header_avAmpdB))
                 {
                     min = -50;
                     max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_avAmpdB + "  (-50..-5dB)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else if (header.Equals(AcousticFeatures.header_snrdB))
+                else if (headers[i].Equals(AcousticFeatures.header_snrdB))
                 {
                     min = 5;
                     max = 50;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_snrdB + "  (5..50dB)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (5..50dB)";
                 }
-                else if (header.Equals(AcousticFeatures.header_avSegDur))
+                else if (headers[i].Equals(AcousticFeatures.header_avSegDur))
                 {
                     min = 0.0;
                     max = 500.0; //av segment duration in milliseconds
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_avSegDur + "  (0..500ms)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0..500ms)";
                 }
-                else if (header.Equals(AcousticFeatures.header_bgdB))
+                else if (headers[i].Equals(AcousticFeatures.header_bgdB))
                 {
                     min = -50;
                     max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_bgdB + "  (-50..-5dB)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else if (header.Equals(AcousticFeatures.header_avClustDur))
+                else if (headers[i].Equals(AcousticFeatures.header_avClustDur))
                 {
                     min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
                     max = 200.0; //av segment duration in milliseconds
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_avClustDur + "  (50..200ms)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (50..200ms)";
                 }
-                else if (header.Equals(AcousticFeatures.header_lfCover))
+                else if (headers[i].Equals(AcousticFeatures.header_lfCover))
                 {
                     min = 0.1; //
                     max = 1.0; //
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_lfCover + "  (10..100%)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (10..100%)";
                 }
-                else if (header.Equals(AcousticFeatures.header_mfCover))
+                else if (headers[i].Equals(AcousticFeatures.header_mfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_mfCover + "  (0..90%)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0..90%)";
                 }
-                else if (header.Equals(AcousticFeatures.header_hfCover))
+                else if (headers[i].Equals(AcousticFeatures.header_hfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_hfCover + "  (0..90%)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0..90%)";
                 }
-                else if (header.Equals(AcousticFeatures.header_HAmpl))
+                else if (headers[i].Equals(AcousticFeatures.header_HAmpl))
                 {
                     min = 0.5; //
                     max = 1.0; //
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_HAmpl + "  (0.5..1.0)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0.5..1.0)";
                 }
-                else if (header.Equals(AcousticFeatures.header_HAvSpectrum))
+                else if (headers[i].Equals(AcousticFeatures.header_HAvSpectrum))
                 {
                     min = 0.2; //
                     max = 1.0; //
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(AcousticFeatures.header_HAvSpectrum + "  (0.2..1.0)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0.2..1.0)";
                 }
                 else //default is to normalise in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
-                    newHeaders.Add(header);
+                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+                    newHeaders[i] = headers[i];
                 }
-            }
+            } //for loop
 
             //convert type int to type double due to normalisation
-            Type[] types = new Type[newHeaders.Count];
-            for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
-            var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
-
+            Type[] types = new Type[newHeaders.Length];
+            for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
             return processedtable;
         }
+
 
 
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
@@ -542,7 +703,20 @@ namespace AnalysisPrograms
             }
         }
 
-
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings
+                {
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                };
+            }
+        }
 
     } //end class Acoustic
 }

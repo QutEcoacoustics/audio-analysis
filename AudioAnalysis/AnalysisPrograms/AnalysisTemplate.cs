@@ -23,7 +23,7 @@ namespace AnalysisPrograms
     public class AnalysisTemplate : IAnalysis
     {
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Template";
+        public const string ANALYSIS_NAME = "Default";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
@@ -32,7 +32,7 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Analysis Template"; }
+            get { return "Default Analysis"; }
         }
 
         public string Identifier
@@ -461,7 +461,7 @@ namespace AnalysisPrograms
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { Keys.EVENT_START_ABS, Keys.CALL_SCORE };
+            string[] headers = { Keys.EVENT_START_ABS, AudioAnalysisTools.Keys.EVENT_NORMSCORE };
             Type[] types     = { typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -471,7 +471,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartSec
-                row[Keys.CALL_SCORE] = (double)ev.Score;     //Score
+                row[Keys.EVENT_NORMSCORE] = (double)ev.Score;     //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -495,7 +495,7 @@ namespace AnalysisPrograms
             foreach (DataRow ev in dt.Rows)
             {
                 double eventStart = (double)ev[Keys.EVENT_START_ABS];
-                double eventScore = (double)ev[Keys.CALL_SCORE]; 
+                double eventScore = (double)ev[Keys.EVENT_NORMSCORE]; 
                 int timeUnit = (int)(eventStart / timeDuration.TotalSeconds);
                 eventsPerMinute[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerMinute[timeUnit]++;
@@ -553,106 +553,114 @@ namespace AnalysisPrograms
          return augmentedTable;
      }
 
-
-
-        public AnalysisSettings DefaultSettings
-        {
-            get
-            {
-                return new AnalysisSettings
-                {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
-                    SegmentMediaType   = MediaTypes.MediaTypeWav,
-                    SegmentOverlapDuration  = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
-                };
-            }
-        }
-
-
-
-
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
-            if (dt.Columns.Contains(Keys.EVENT_COUNT))
-                dt = DataTableTools.SortTable(dt, Keys.EVENT_COUNT + " ASC");
-            else if (dt.Columns.Contains(Keys.INDICES_COUNT))
-                dt = DataTableTools.SortTable(dt, Keys.INDICES_COUNT + " ASC");
+            //get its column headers
+            var dtHeaders = new List<string>();
+            var dtTypes   = new List<Type>();
+            foreach (DataColumn col in dt.Columns)
+            {
+                dtHeaders.Add(col.ColumnName);
+                dtTypes.Add(col.DataType);
+            }
 
-            //get display headers from config file
-            var configuration = new ConfigDictionary(fiConfigFile.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
-            if(! configDict.ContainsKey(Keys.DISPLAY_COLUMNS)) return System.Tuple.Create(dt, dt);
-            string headers = configDict[Keys.DISPLAY_COLUMNS];
-            if ((headers == null) || (headers.Length < 2)) return System.Tuple.Create(dt, dt);
-            List<string> displayHeaders = headers.Split(',').ToList();
+            List<string> displayHeaders = null;
+            //check if config file contains list of display headers
+            if (fiConfigFile != null)
+            {
+                var configuration = new ConfigDictionary(fiConfigFile.FullName);
+                Dictionary<string, string> configDict = configuration.GetTable();
+                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                    displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+            }
+            //if config file does not exist or does not contain display headers then use the original headers
+            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
 
-            //bool addColumnOfweightedIndices = true;
-            //if (addColumnOfweightedIndices)
-            //{
-            //    AcousticIndices.InitOutputTableColumns();
-            //    double[] weightedIndices = null;
-            //    weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
-            //    string colName = "WeightedIndex";
-            //    displayHeaders.Add(colName);
-            //    DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
-            //}
+            //now determine how to display tracks in display datatable
+            Type[] displayTypes = new Type[displayHeaders.Count];
+            bool[] canDisplay   = new bool[displayHeaders.Count];
+            for (int i = 0; i < displayTypes.Length; i++)
+            {
+                displayTypes[i] = typeof(double);
+                canDisplay[i] = false;
+                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
+            }
 
-            DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, displayHeaders);
+            DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
+            foreach (DataRow row in dt.Rows)
+            {
+                DataRow newRow = table2Display.NewRow();
+                for (int i = 0; i < canDisplay.Length; i++)
+                {
+                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
+                    else               newRow[displayHeaders[i]] = 0.0;
+                }
+                table2Display.Rows.Add(newRow);
+            }
+
+            //order the table if possible
+            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+            }
+            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            {
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+            }
+
+            table2Display = NormaliseColumnsOfDataTable(table2Display);
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
+
+
 
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt, List<string> headers2Display)
+        public static DataTable NormaliseColumnsOfDataTable(DataTable dt)
         {
             string[] headers = DataTableTools.GetColumnNames(dt);
-            List<string> originalHeaderList = headers.ToList();
-            List<string> newHeaders = new List<string>();
+            string[] newHeaders = new string[headers.Length];
 
             List<double[]> newColumns = new List<double[]>();
-            // double[] processedColumn = null;
 
-            for (int i = 0; i < headers2Display.Count; i++)
+            for (int i = 0; i < headers.Length; i++)
             {
-                string header = headers2Display[i];
-                if (!originalHeaderList.Contains(header)) continue;
-
-                List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
-                if ((values == null) || (values.Count == 0)) continue;
+                double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
+                if ((values == null) || (values.Length == 0)) continue;
 
                 double min = 0;
                 double max = 1;
-                if (header.Equals(Keys.INDICES_COUNT))
-                {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
-                    newHeaders.Add(header);
-                }
-                else if (header.Equals(Keys.AV_AMPLITUDE))
+                if (headers[i].Equals(Keys.AV_AMPLITUDE))
                 {
                     min = -50;
                     max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
-                    newHeaders.Add(header + "  (-50..-5dB)");
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
                 else //default is to normalise in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
-                    newHeaders.Add(header);
+                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
+                    newHeaders[i] = headers[i];
                 }
-            }
+            } //for loop
 
             //convert type int to type double due to normalisation
-            Type[] types = new Type[newHeaders.Count];
-            for (int i = 0; i < newHeaders.Count; i++) types[i] = typeof(double);
-            var processedtable = DataTableTools.CreateTable(newHeaders.ToArray(), types, newColumns);
-
+            Type[] types = new Type[newHeaders.Length];
+            for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
             return processedtable;
         }
 
@@ -664,6 +672,23 @@ namespace AnalysisPrograms
                 return string.Empty;
             }
         }
+
+
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings
+                {
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentMinDuration = TimeSpan.FromSeconds(30),
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                };
+            }
+        }
+
 
 
 
