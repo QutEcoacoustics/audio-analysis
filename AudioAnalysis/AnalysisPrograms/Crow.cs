@@ -691,33 +691,27 @@ namespace AnalysisPrograms
             List<string> newHeaders = new List<string>();
 
             List<double[]> newColumns = new List<double[]>();
-            // double[] processedColumn = null;
 
             for (int i = 0; i < headers2Display.Count; i++)
             {
                 string header = headers2Display[i];
                 if (!originalHeaderList.Contains(header)) continue;
 
-                List<double> values = DataTableTools.Column2ListOfDouble(dt, header); //get list of values
-                if ((values == null) || (values.Count == 0)) continue;
+                double[] values = DataTableTools.Column2ArrayOfDouble(dt, header); //get list of values
+                if ((values == null) || (values.Length == 0)) continue;
 
                 double min = 0;
                 double max = 1;
-                if (header.Equals(key_COUNT))
-                {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
-                    newHeaders.Add(header);
-                }
-                else if (header.Equals(Keys.AV_AMPLITUDE))
+                if (header.Equals(Keys.AV_AMPLITUDE))
                 {
                     min = -50;
                     max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values.ToArray(), min, max));
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders.Add(header + "  (-50..-5dB)");
                 }
                 else //default is to normalise in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values.ToArray())); //normalise all values in [0,1]
+                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
                     newHeaders.Add(header);
                 }
             }

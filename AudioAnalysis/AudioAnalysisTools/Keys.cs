@@ -32,25 +32,28 @@ namespace AudioAnalysisTools
         public static string NOISE_BG_REDUCTION = "BG_NOISE_REDUCTION";
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
+        public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
 
-
-
-
-
-        //KEYS TO OUTPUT INDICES
+        //KEYS TO OUTPUT INDICES HEADERS
         public static string INDICES_COUNT    = "Indices Count";
         public static string SEGMENT_TIMESPAN = "SegTimeSpan";
         public static string AV_AMPLITUDE = "avAmp-dB";
         public static string START_MIN    = "start-min";
         public static string CALL_DENSITY = "CallDensity";
-        public static string CALL_SCORE   = "CallScore";
 
-        //KEYS TO OUTPUT EVENTS
+        //KEYS TO OUTPUT EVENT HEADERS
         public static string EVENT_COUNT     = "Event Count";
+        public static string EVENT_INTENSITY = "EvIntensity";
+        public static string EVENT_NAME      = "Event Name";
+        public static string EVENT_NORMSCORE = "EvScoreNorm";
+        public static string EVENT_SCORE     = "EvScore";
         public static string EVENT_START_ABS = "EvStartAbs";
         public static string EVENT_START_SEC = "EvStartSec";
         public static string EVENT_START_MIN = "EvStartMin";
+        public static string EVENT_DURATION  = "EvDuration";
         public static string EVENT_TOTAL     = "# events";
+
+        public static string SNR_SCORE       = "SNRscore";
+
     }
 }

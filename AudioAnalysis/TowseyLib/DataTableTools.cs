@@ -9,28 +9,37 @@ namespace TowseyLib
     public static class DataTableTools
     {
 
+        //EXAMPLE
+        //DataTable workTable = new DataTable("Customers");
+        //DataColumn workCol = workTable.Columns.Add("CustID", typeof(Int32));
+        //workCol.AllowDBNull = false;
+        //workCol.Unique = true;
+        //workTable.Columns.Add("CustLName", typeof(String));
+
+        //MORE EXAMPLES
+        //table.Columns.Add("Drug", typeof(string));
+        //table.Columns.Add("Patient", typeof(string));
+        //table.Columns.Add("Date", typeof(DateTime));
+
+        // Here we add five DataRows.
+        //table.Rows.Add(25, "Indocin", "David", DateTime.Now);
+        //table.Rows.Add(50, "Enebrel", "Sam", DateTime.Now);
+        //table.Rows.Add(10, "Hydralazine", "Christoff", DateTime.Now);
+        //table.Rows.Add(21, "Combivent", "Janet", DateTime.Now);
+        //table.Rows.Add(100, "Dilantin", "Melanie", DateTime.Now);
+
+        //Another way to add rows to DataTable 
+        //DataRow row = dt.NewRow();
+        //row["ID"] = 1;
+        //row["Name"] = "Jack";
+        //dt.Rows.Add(row); 
+
 
         public static DataTable CreateTable(string[] headers, Type[] types)
         {
             if (headers.Length != types.Length) return null;
             DataTable table = new DataTable();
             for (int i = 0; i < headers.Length; i++) table.Columns.Add(headers[i], types[i]);
-            //table.Columns.Add("Drug", typeof(string));
-            //table.Columns.Add("Patient", typeof(string));
-            //table.Columns.Add("Date", typeof(DateTime));
-
-            // Here we add five DataRows.
-            //table.Rows.Add(25, "Indocin", "David", DateTime.Now);
-            //table.Rows.Add(50, "Enebrel", "Sam", DateTime.Now);
-            //table.Rows.Add(10, "Hydralazine", "Christoff", DateTime.Now);
-            //table.Rows.Add(21, "Combivent", "Janet", DateTime.Now);
-            //table.Rows.Add(100, "Dilantin", "Melanie", DateTime.Now);
-
-            //Another way to add rows to DataTable 
-            //DataRow row = dt.NewRow();
-            //row["ID"] = 1;
-            //row["Name"] = "Jack";
-            //dt.Rows.Add(row); 
             return table;
         }
 
@@ -100,30 +109,6 @@ namespace TowseyLib
             }
             return CreateTable(headers.ToArray(), typeOfs.ToArray());
         }
-
-
-        /// <summary>
-        /// create a new table using columns selected from the passed table
-        /// WARNING THIS METHOD APPEARS NOT TO WORK - ADD TO THE TODO LIST
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
-        public static DataTable CreateTable(DataTable dt, string[] newHeaders)
-        {
-            DataTable newTable = new DataTable();
-            foreach (string header in newHeaders)
-            {
-                if (dt.Columns.Contains(header))
-                {
-                    DataColumn col = dt.Columns[header];
-                    DataTableTools.AddColumn2Table(newTable, col);
-                }
-            }
-            return newTable;
-        }
-
-
-
 
 
 
@@ -283,7 +268,7 @@ namespace TowseyLib
         }
 
 
-        public static void AddColumn2Table(DataTable dt, string columnName, double[] array)
+        public static void AddColumnOfDoubles2Table(DataTable dt, string columnName, double[] array)
         {
             if (array == null) return;
             if (array.Length == 0) return;
@@ -292,31 +277,9 @@ namespace TowseyLib
             if (!dt.Columns.Contains(columnName)) dt.Columns.Add(columnName, typeof(double));
             foreach (DataRow row in dt.Rows)
             {
-                row[columnName] = (double)array[index++];
+                row[columnName] = array[index++];
             }
         }
-
-        /// <summary>
-        /// WARNING THIS METHOD APPEARS NOT TO WORK - ADD TO THE TODO LIST
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="col"></param>
-        public static void AddColumn2Table(DataTable dt, DataColumn col)
-        {
-            if (dt == null) return;
-            if ((col == null) || (col.Container == null) || (col.Container.Components == null)) return;
-            int rowCount = col.Container.Components.Count;
-            if (rowCount == 0) return;
-            string name = col.ColumnName;
-            Type type = col.GetType();
-            if (!dt.Columns.Contains(name)) dt.Columns.Add(name, type);
-
-            for (int r = 0; r < rowCount; r++)
-            {
-                dt.Rows[r][name] = col.Container.Components[r];
-            } //for all rows
-        } //AddColumn2Table()
-
 
 
         public static List<int> Column2ListOfInt(DataTable dt, string colName)
@@ -344,9 +307,10 @@ namespace TowseyLib
             return Double.NaN;
         }
 
-        public static List<double> Column2ListOfDouble(DataTable dt, string colName)
+        public static double[] Column2ArrayOfDouble(DataTable dt, string colName)
         {
             if (dt == null) return null;
+            if(! dt.Columns.Contains(colName)) return null;
             var list = new List<double>();
             var colType = dt.Columns[colName].DataType;
 
@@ -373,7 +337,7 @@ namespace TowseyLib
                 }
             }
 
-            return list;
+            return list.ToArray();
         }
 
         public static List<double[]> ListOfColumnValues(DataTable dt)
@@ -383,8 +347,7 @@ namespace TowseyLib
             foreach (DataColumn col in dt.Columns)
             {
                 string name = col.ColumnName;
-                List<double> values = Column2ListOfDouble(dt, name);
-                list.Add(values.ToArray());
+                list.Add(Column2ArrayOfDouble(dt, name));
             }
             return list;
         }
@@ -406,6 +369,16 @@ namespace TowseyLib
             return types.ToArray();
         }
 
+        public static void ChangeColumnName(DataTable dt, string oldName, string newName)
+        {
+            if (dt == null) return;
+            dt.Columns[oldName].ColumnName = newName;
+        }
+        public static void ChangeColumnType(DataTable dt, string colName, Type newType)
+        {
+            if (dt == null) return;
+            dt.Columns[colName].DataType = newType;
+        }
 
 
         /// <summary>

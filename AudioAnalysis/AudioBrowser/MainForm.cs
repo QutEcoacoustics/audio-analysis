@@ -226,7 +226,7 @@
         {
             FileInfo fi = null;
             Dictionary<string, string> dict = null;
-            if (analysisName == "None")
+            if ((analysisName == "None") || (analysisName == "none"))
             {
                 Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
                 Console.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
@@ -235,7 +235,14 @@
 
             string configDir = this.browserSettings.diConfigDir.FullName;
             string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            return Tuple.Create(new FileInfo(configPath), ConfigDictionary.ReadPropertiesFile(configPath));
+            var fiConfig = new FileInfo(configPath);
+            if (! fiConfig.Exists)
+            {
+                Console.WriteLine("#######  WARNING: The CONFIG file does not exist: <" + configPath + ">");
+                return Tuple.Create(fi, dict);
+            }
+
+            return Tuple.Create(fiConfig, ConfigDictionary.ReadPropertiesFile(configPath));
         }
 
         private static void WriteAnalysisParameters2Console(Dictionary<string, string> dict, string analysisName)
@@ -315,7 +322,12 @@
                     settings.AnalysisBaseDirectory = this.browserSettings.diOutputDir;
                     settings.ConfigFile = fiConfig;
 
-                    // this will only work for one file, since we need to sort the output afterwards.
+                    //For limited analysis of a file:
+                    //    set IsParallel to false
+                    //    create a FileSegment with start and end offsets
+                    //    Comment out the SegmentStartOffset and SegmentEndOffset if want to analyse the whole file
+                    //    else    set     SegmentEndOffset = TimeSpan.FromMinutes(5)  to get 5 segments of 1 min, for example.
+                    // the following call will only work for one file, since we need to sort the output afterwards.
                     var file = new FileSegment { 
                         OriginalFile = fiSourceRecording, 
                         SegmentStartOffset = TimeSpan.Zero, 
@@ -471,13 +483,7 @@
                         new FileInfo(
                             Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
-                    Console.WriteLine("# Display tracks in csv file: " + csvFileName);
-
-                    //get analysis config settings
-                    string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
-                    var op = LoadAnalysisConfigFile(analysisName);
-                    this.browserSettings.fiAnalysisConfig = op.Item1;
-                    this.analysisParams = op.Item2;
+                    //Console.WriteLine("# Display tracks in csv file: " + csvFileName);
 
                     this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                     this.labelSonogramFileName.Text = "File Name";
@@ -529,13 +535,18 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            string analyisName = this.CurrentCSVFileAnalysisType;
-            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, this.pluginHelper.AnalysisPlugins);
+            //get analysis config settings
+            string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
+            var op = LoadAnalysisConfigFile(analysisName);
+            this.browserSettings.fiAnalysisConfig = op.Item1;
+            this.analysisParams = op.Item2;
+
+            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
             if (analyser == null)
             {
-                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-                Console.WriteLine("\t Analysis name not recognized: " + analyisName);
-                return 3;
+                Console.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
+                Console.WriteLine("\t Using default analysis module.");
+                analyser = new AnalysisTemplate();
             }
 
             var output = analyser.ProcessCsvFile(new FileInfo(csvPath), this.browserSettings.fiAnalysisConfig);
@@ -548,7 +559,8 @@
             string[] displayHeaders = DataTableTools.GetColumnNames(dt2Display);
 
             //make values of bottom track available
-            this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, displayHeaders[displayHeaders.Length - 1]).ToArray();
+            string header = displayHeaders[displayHeaders.Length - 1];
+            this.trackValues = DataTableTools.Column2ArrayOfDouble(dtRaw, header);
 
             //display column headers in the list box of displayed tracks
             List<string> displayList = displayHeaders.ToList();

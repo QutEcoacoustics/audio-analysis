@@ -909,7 +909,7 @@ namespace AnalysisPrograms
                  {
                      weights.Add(weightArray[i]);
                      string colName = dt.Columns[i].ColumnName;
-                     double[] array = DataTableTools.Column2ListOfDouble(dt, colName).ToArray();
+                     double[] array = DataTableTools.Column2ArrayOfDouble(dt, colName);
                      columns.Add(DataTools.NormaliseArea(array)); //normalize the arrays prior to obtaining weighted index.
                  }
              } //for
