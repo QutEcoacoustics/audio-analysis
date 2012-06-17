@@ -64,6 +64,7 @@
     <Compile Include="Extensions\ExtensionsSystem.cs" />
     <Compile Include="Extensions\ExtensionsIO.cs" />
     <Compile Include="Extensions\ExtensionsXml.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="FilterResult.cs" />
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />

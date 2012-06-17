@@ -8,7 +8,12 @@
     open FELT.Results
     open MQUTeR.FSharp.Shared
     open Microsoft.FSharp.Reflection
+    open System.IO
     
+    type ResultComputationType =
+        | Console of ResultsComputation
+        | OutFile of FileInfo
+
     type WorkflowItem =
         | Dummy
         | Cleaner of BasicCleaner
@@ -16,7 +21,7 @@
         | Selection of SelectorBase
         | Trainer of TrainerBase
         | Classifier of ClassifierBase
-        | Result of ResultsComputation
+        | Result of ResultComputationType
 
     let Analyses = 
         new Map<string, WorkflowItem list>(
@@ -112,6 +117,19 @@
                 Classifier(new EuclideanClassifier())
                 ]
             );
+            (
+                "WebsiteWorkFlow-SaveBinary", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Transformer(new Transformers.ZScoreNormalise());
+                Trainer(new GroupTrainer()); 
+                Result(OutFile(new FileInfo(".\cachedFile.feltcache")))
+                //Classifier(new EuclideanClassifier())
+                ]
+            );
+
+
             // end declaration
             ])
     

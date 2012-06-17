@@ -2,7 +2,9 @@
     open System
 
     [<AutoOpen>]
-    module Operators =
+    [<CompiledName("OperatorsExtensions")>]
+    [<System.Runtime.CompilerServices.ExtensionAttribute>]
+    module public Operators2 =
         let fsts tuples = Seq.map (fst) tuples
 
         let third3 (_,_,c) = c

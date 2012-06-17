@@ -6,7 +6,7 @@
     [<AbstractClass>]
     type TransformerBase() = class
         
-        abstract member Transform : Data -> Data -> Data * Data
+        abstract member Transform : Data -> Data -> Data * Data * Option<Object>
 
         end
         

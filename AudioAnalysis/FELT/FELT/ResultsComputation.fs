@@ -156,33 +156,21 @@
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
 
 
-        
-
-        /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
-        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults:ClassifierResult) (opList: (string * string * string) list) =
-            
-            Log "Result computation start"
-            
-            //let fullResultsTags = Array.Parallel.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
-//
-//            Log "full results tags"
-//
-//            let fullResultsDistances = Array.Parallel.mapJagged fst classificationResults
-
-            let fullResultsTags, fullResultsDistances =
+        static member extractResults (trainingData:Data) classificationResults (testData:Data) =
+                let testLength = testData.Classes.Length
                 let getClass y = trainingData.Classes.[snd y]
                 match classificationResults with
                     | ClassifierResult.Function f ->
                         let g r = (getClass r, fst r)   
                         let h = f >> Array.mapUnzip g
-                        Array.Parallel.init2 testData.Classes.Length h
+                        Array.Parallel.init2 testLength h
 
                     | ClassifierResult.ResultArray a ->
                         Array.Parallel.mapJagged getClass a,
                         Array.Parallel.mapJagged fst a
                     | ClassifierResult.ResultSeq s ->
-                        let frt : Class[][] = Array.createEmpty testData.Classes.Length
-                        let frd : Distance[][] = Array.createEmpty testData.Classes.Length
+                        let frt : Class[][] = Array.createEmpty testLength
+                        let frd : Distance[][] = Array.createEmpty testLength
                         // mutation of above arrays follows
                         s |>
                         PSeq.iteri
@@ -197,6 +185,21 @@
                             )
                         frt, frd
                     | _ -> failwith "Unknown classification result format"
+
+        /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
+        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults:ClassifierResult) (opList: (string * string * string) list) =
+            
+            Log "Result computation start"
+            
+            //let fullResultsTags = Array.Parallel.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
+//
+//            Log "full results tags"
+//
+//            let fullResultsDistances = Array.Parallel.mapJagged fst classificationResults
+
+            let fullResultsTags, fullResultsDistances = 
+                ResultsComputation.extractResults trainingData classificationResults testData 
+
 
 
             Log "full results distances and tags completed"
