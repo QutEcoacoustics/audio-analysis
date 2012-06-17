@@ -68,6 +68,24 @@ namespace Acoustics.Tools
             return output;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="outputDirectory">
+        /// The output directory.
+        /// </param>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output media type.
+        /// </param>
+        /// <param name="targetSampleRateHz">
+        /// The target sample rate hz.
+        /// </param>
+        /// <returns>
+        /// 
+        /// </returns>
         public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, int targetSampleRateHz)
         {
             var audioUtility = GetNewAudioUtility(targetSampleRateHz);

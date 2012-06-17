@@ -9,7 +9,7 @@
 
     using log4net;
 
-    public class SoxSpectrogramUtility : AbstractSpectrogramUtility,ISpectrogramUtility
+    public class SoxSpectrogramUtility : AbstractSpectrogramUtility, ISpectrogramUtility
     {
         private readonly FileInfo soxExe;
 
