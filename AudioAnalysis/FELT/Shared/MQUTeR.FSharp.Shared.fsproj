@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>MQUTeR.FSharp.Shared</Name>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\FELT\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -80,6 +81,7 @@
     <Compile Include="StringStats.fs" />
     <Compile Include="Mutex.fs" />
     <Compile Include="suncalc.fs" />
+    <Compile Include="Serialization.fs" />
     <Compile Include="CacheFormat.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -152,11 +154,14 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
     <Reference Include="zlib.net">
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

@@ -65,7 +65,7 @@
                     let hdrsTr = trainingData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
                     let hdrsTe =     testData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
 
-                    ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe })
+                    ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe }, None)
                 else
                     invalidArg "" "Missing correct columns for day phase transformation"
 
@@ -98,7 +98,7 @@
                 let hdrsTr = trainingData.Headers.Remove(feature).Add(newName, DataType.Text)
                 let hdrsTe =     testData.Headers.Remove(feature).Add(newName, DataType.Text)
 
-                ({ trainingData with Instances = newTrainingInstances }, { testData with Instances = newTestInstances })
+                ({ trainingData with Instances = newTrainingInstances }, { testData with Instances = newTestInstances }, None)
         
         
 

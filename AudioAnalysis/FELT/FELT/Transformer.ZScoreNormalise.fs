@@ -18,7 +18,27 @@
 
         let zscore mean stddev s : Value = upcast new Number(Maths.zscore s mean stddev)
 
-        override this.Transform (trainingData: Data)  (testData: Data):  Data * Data =
+        member this.NormaliseWithValues (anyData:Data) (featureMap) =
+            let normalise2 featureName vs = 
+                if Map.containsKey featureName featureMap then
+                    let _, Some(mean, stddev) = featureMap.[featureName]
+                    let numbers = 
+                        match vs with
+                        | IsAnyNumbers ns ->
+                            ns
+                        | _ -> failwith "not implemented"
+                
+                    let zs = Array.map (zscore mean stddev) numbers
+                    zs
+                else
+                    vs
+
+            let normedVs = Map.map (normalise2) anyData.Instances
+            { anyData with Instances = normedVs }
+
+            
+
+        override this.Transform (trainingData: Data)  (testData: Data):  Data * Data * Option<obj> =
             
             // do standard feature check
             Helpers.headersMatch trainingData testData
@@ -50,33 +70,10 @@
             // all scores in test data should be normalised, w/respect to training scores, 
             // i.e. z-score in test data based off mean and stddev of training data
             let subF = Map.filter (fun name (vs, avgInfo) -> Option.isSome avgInfo) normedVsTr
-            let normalise2 featureName vs = 
-                if Map.containsKey featureName subF then
-                    let _, Some(mean, stddev) = subF.[featureName]
-                    let numbers = 
-                        match vs with
-                        | IsAnyNumbers ns ->
-                            ns
-                        | _ -> failwith "not implemented"
-                
-                    let zs = Array.map (zscore mean stddev) numbers
-                    zs
-                else
-                    vs
 
-            let normedVsTe = Map.map (normalise2 ) testData.Instances
-        
+            let normedTestData = this.NormaliseWithValues testData subF
 
-            ({ trainingData with Instances = (Map.map (fun _ (v, _) -> v) normedVsTr) }, { testData with Instances = normedVsTe })
+            // TODO: need someway to return subF
 
-//            let groupedClasses = Array.foldi grp Map.empty<Class, int list> c
-//            let agFunc = this.aggregator groupedClasses
-//
-//            // then run aggregator function over all other values
-//            let avgValuesForAllColumns = Map.fold agFunc emptyDT data.Instances
-//
-//            // optional post-processing step used in sub classes
-//            let instances = this.PostProcess avgValuesForAllColumns
-//            
-//            let data' = {data with Classes = (Map.keys groupedClasses); Instances = (instances)}
-//            data'
+            ({ trainingData with Instances = (Map.map (fun _ (v, _) -> v) normedVsTr) }, normedTestData, Some(upcast subF))
+

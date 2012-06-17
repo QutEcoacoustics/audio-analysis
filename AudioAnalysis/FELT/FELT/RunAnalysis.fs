@@ -20,29 +20,42 @@
     
 
     // TODO: pipe/compose
-    let workflow trainingData testData  operationsList (data:ReportConfig) = 
+    let workflow trainingData testData  operationsList (config:ReportConfig) = 
         Info "Started analysis workflow"
 
-        let oplst' = List.append operationsList [Result(new ResultsComputation(data ))]
+        let oplst' =
+            if List.exists (function | Result r -> true | _ -> false) operationsList then
+                operationsList
+             else
+                List.append operationsList [Result(Console(new ResultsComputation(config)))]
         
 
 
-        let f (state: Data * Data * ClassifierResult) (wfItem: WorkflowItem) =
+        let f (state: Data * Data * ClassifierResult * Map<string, obj>) (wfItem: WorkflowItem) =
             Infof "Started workflow item %A" (GetUnderlyingTypes wfItem)
-            let trData, teData, results = state
+            let trData, teData, results, extraDataStore = state
             match wfItem with
-                | Cleaner c -> (c.Clean(trData), c.Clean(teData), results)
+                | Cleaner c -> (c.Clean(trData), c.Clean(teData), results, extraDataStore)
                 | Transformer t -> 
-                    let (ttr, tte) = t.Transform trData teData
-                    (ttr, tte, results)
-                | Selection s -> (s.Pick(trData), teData, results)
-                | Trainer t -> (t.Train(trData), teData, results)
-                | Classifier c -> (trData, teData, c.Classify(trData, teData))
-                | Result r -> 
-                    // statefull
-                    r.Calculate trData teData results (toString oplst') |> ignore
-                    
-                    (trData, teData, ClassifierResult.Nothing)
+                    let (ttr, tte, extraData) = t.Transform trData teData
+                    (
+                        ttr,
+                        tte, 
+                        results,
+                        (if extraData.IsSome then Map.add (t.GetType().Name) extraData.Value extraDataStore else extraDataStore)
+                    )
+                | Selection s -> (s.Pick(trData), teData, results, extraDataStore)
+                | Trainer t -> (t.Train(trData), teData, results, extraDataStore)
+                | Classifier c -> (trData, teData, c.Classify(trData, teData), extraDataStore)
+                | Result r ->
+                    match r with
+                        | Console rc -> 
+                            // statefull
+                            rc.Calculate trData teData results (toString oplst') |> ignore
+                        | OutFile filePath ->
+                            Felt.Results.ResultsOutFile.Output config filePath trData extraDataStore
+
+                    (trData, teData, ClassifierResult.Nothing, extraDataStore)
                 | Dummy ->
                     // noop
                     state
@@ -50,7 +63,7 @@
                     Errorf "Workflow item %A not supported" wfItem
                     failwith "Workflow error"
         
-        List.scan f (trainingData, testData, ClassifierResult.Nothing) oplst' |> ignore
+        List.scan f (trainingData, testData, ClassifierResult.Nothing, Map.empty) oplst' |> ignore
 
     
     let RunAnalysis (trainingData:Data) (testData:Data) (tests: WorkflowItem list) (transformList: List<string * string *string>) data =

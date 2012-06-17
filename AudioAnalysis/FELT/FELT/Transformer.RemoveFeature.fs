@@ -16,7 +16,7 @@
     type RemoveFeatures(featuresToRemove: ColumnHeader list) =
         inherit TransformerBase()
 
-        override this.Transform (trainingData: Data)  (testData: Data):  Data * Data =
+        override this.Transform (trainingData: Data)  (testData: Data):  Data * Data * Option<obj> =
             
             // do standard feature check
             Helpers.headersMatch trainingData testData
@@ -32,4 +32,4 @@
             let hdrsTr = List.fold (fun state ch -> Map.remove ch state) trainingData.Headers featuresToRemove
             let hdrsTe = List.fold (fun state ch -> Map.remove ch state)     testData.Headers featuresToRemove
 
-            ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe })
+            ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe }, None)

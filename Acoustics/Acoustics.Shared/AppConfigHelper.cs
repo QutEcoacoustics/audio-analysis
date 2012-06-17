@@ -262,6 +262,14 @@
 
         public static string WebsitePath { get; set; }
 
+        public static IEnumerable<DirectoryInfo> SuggestionAnalysisCacheDirectoy
+        {
+            get
+            {
+                return GetDirs(WebsitePath, "SuggestionAnalysisCacheDirectoy", true, ",");
+            }
+        }
+
         public static string GetString(string key)
         {
             if (!ConfigurationManager.AppSettings.AllKeys.Any(k => k == key))
@@ -444,8 +452,8 @@
 
             var dirs =
                 values.Where(v => !string.IsNullOrEmpty(v)).Select(
-                    v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v)).
-                    ToList();
+                    v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v))
+                    .ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {

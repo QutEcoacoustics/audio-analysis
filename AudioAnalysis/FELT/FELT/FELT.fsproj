@@ -14,6 +14,7 @@
     <Name>FELT</Name>
     <ProjectTypeGuids>{f2a71f9b-5d33-465a-a702-920d77279786}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\FELT\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>bin\Debug\</OutputPath>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DocumentationFile>
     </DocumentationFile>
@@ -89,6 +90,7 @@
     <Compile Include="Classifier.GraphDistance.fs" />
     <Compile Include="Results.ResultsCombiner.fs" />
     <Compile Include="ResultsComputation.fs" />
+    <Compile Include="Results.OutFile.fs" />
     <Compile Include="WebsiteComputation.fs" />
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
@@ -206,4 +208,5 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>

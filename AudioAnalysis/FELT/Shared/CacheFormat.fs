@@ -1,6 +1,7 @@
 ﻿namespace MQUTeR.FSharp.Shared
     
     open System
+    open System.Reflection
 
     type CacheFormat =
         {
@@ -13,5 +14,6 @@
             TrainingOriginalCount: int
 
             CachedData : Data
-            Assembly: Version
+            ExtraData : Map<string, obj>
+            Assembly : AssemblyName
         }

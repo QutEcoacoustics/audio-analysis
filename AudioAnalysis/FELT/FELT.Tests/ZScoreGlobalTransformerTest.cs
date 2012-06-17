@@ -99,7 +99,7 @@ namespace FELT.Tests
 
             // set up the z-score transformer
             var transformer = new ZScoreNormalise();
-            Tuple<Data, Data> transformedDataActual = transformer.Transform(trainingData, testData);
+            Tuple<Data, Data, FSharpOption<object>> transformedDataActual = transformer.Transform(trainingData, testData);
 
             // also group the training data
             var grouper = new Trainers.GroupTrainer();
@@ -170,7 +170,7 @@ namespace FELT.Tests
             // set up the z-score transformer
             var transformer = new ZScoreNormalise();
 
-            Tuple<Data, Data> transformedDataActual = transformer.Transform(testData, trainingData);
+            Tuple<Data, Data, FSharpOption<object>> transformedDataActual = transformer.Transform(testData, trainingData);
         }
 
 
@@ -197,7 +197,7 @@ namespace FELT.Tests
             // set up the z-score transformer
             var transformer = new ZScoreNormalise();
 
-            Tuple<Data, Data> transformedDataActual = transformer.Transform(trainingData, testData);
+            Tuple<Data, Data, FSharpOption<object>> transformedDataActual = transformer.Transform(trainingData, testData);
 
             AssertTwoDatasEqual(transformedTrainingData, transformedDataActual.Item1);
 
