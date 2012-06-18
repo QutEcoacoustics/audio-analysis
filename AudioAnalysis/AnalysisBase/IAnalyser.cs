@@ -6,7 +6,7 @@ namespace AnalysisBase
     /// <summary>
     /// Interface a compatible analysis must implement.
     /// </summary>
-    public interface IAnalysis
+    public interface IAnalyser
     {
         /// <summary>
         /// Gets the name to display for the analysis.
