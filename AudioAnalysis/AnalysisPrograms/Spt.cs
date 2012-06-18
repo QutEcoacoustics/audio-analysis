@@ -17,7 +17,7 @@ namespace AnalysisPrograms
 
     using Microsoft.FSharp.Math;
 
-    using QutSensors.AudioAnalysis.AED;
+    using AnalysisPrograms.AED;
 
     using TowseyLib;
 

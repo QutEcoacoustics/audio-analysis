@@ -159,8 +159,6 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SPR.cs" />
-    <Compile Include="SPT.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">

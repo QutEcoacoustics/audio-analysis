@@ -14,8 +14,8 @@
 
     public class Program
     {
-        [ImportMany(typeof(IAnalysis))]
-        private IEnumerable<IAnalysis> analysisPlugins;
+        [ImportMany(typeof(IAnalyser))]
+        private IEnumerable<IAnalyser> analysisPlugins;
 
         [ImportMany(typeof(ISourcePreparer))]
         private IEnumerable<ISourcePreparer> sourcePreparerPlugins;
@@ -81,11 +81,11 @@
 
         }
 
-        private IEnumerable<IAnalysis> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
+        private IEnumerable<IAnalyser> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             // AnalysisPrograms.exe
             // "*.dll", "*.exe"
-            var plugins = Plugins.GetPlugins<IAnalysis>("IAnalysis", pluginBaseDirs, "AnalysisPrograms.exe");
+            var plugins = Plugins.GetPlugins<IAnalyser>("IAnalysis", pluginBaseDirs, "AnalysisPrograms.exe");
             //plugins.AddRange(Plugins.GetPlugins<IAnalysis>("IAnalysis"));
 
             return plugins;
@@ -114,7 +114,7 @@
             throw new ArgumentException("Could not locate directory: " + dir, "dir");
         }
 
-        private IEnumerable<IAnalysis> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
+        private IEnumerable<IAnalyser> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             this.Compose(pluginBaseDirs);
 
@@ -124,7 +124,7 @@
         private void Compose(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             var registration = new RegistrationBuilder();
-            registration.ForTypesDerivedFrom<IAnalysis>().Export<IAnalysis>();
+            registration.ForTypesDerivedFrom<IAnalyser>().Export<IAnalyser>();
             registration.ForTypesDerivedFrom<ISourcePreparer>().Export<ISourcePreparer>();
 
             var assemblyCatalog = new AssemblyCatalog(typeof(Program).Assembly);

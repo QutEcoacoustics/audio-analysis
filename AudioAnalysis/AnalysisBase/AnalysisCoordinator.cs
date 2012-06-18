@@ -81,7 +81,7 @@
         /// <returns>
         /// The results from multiple analyses.
         /// </returns>
-        public IEnumerable<AnalysisResult> Run(IEnumerable<FileSegment> fileSegments, IAnalysis analysis, AnalysisSettings settings)
+        public IEnumerable<AnalysisResult> Run(IEnumerable<FileSegment> fileSegments, IAnalyser analysis, AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
             Contract.Requires(analysis != null, "Analysis must not be null.");
@@ -138,7 +138,7 @@
         /// <returns>
         /// The results from the analysis.
         /// </returns>
-        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalysis analysis, AnalysisSettings settings)
+        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser analysis, AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
@@ -214,7 +214,7 @@
         /// <returns>
         /// Updated analysisSettings with working directory and configuration file paths.
         /// </returns>
-        private DirectoryInfo PrepareWorkingDirectory(IAnalysis analysis, AnalysisSettings settings)
+        private DirectoryInfo PrepareWorkingDirectory(IAnalyser analysis, AnalysisSettings settings)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");

@@ -446,61 +446,39 @@ namespace AnalysisPrograms
         }
 
 
-
         /// <summary>
-        /// Converts a DataTable of acoustic events to a datatable where one row = one minute of events
-        /// WARNING: TODO: This method needs to be checked! Maybe putting events into the wrong minute.
+        /// Converts a DataTable of events to a datatable where one row = one minute of indices
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static DataTable ConvertEvents2Indices(DataTable dt)
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
-            dt = DataTableTools.SortTable(dt, key_START_ABS+ " ASC"); //must ensure a sort
+            double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
+            int unitCount = (int)(units / 1);   //get whole minutes
+            if (units % 1 > 0.0) unitCount += 1; //add fractional minute
+            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
+            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
 
-            double scoreThreshold = 0.25;
-            int timeScale = 60; //i.e. 60 seconds per output row.
-            string[] headers = { key_COUNT, key_START_MIN, "# Events", ("#Ev>" + scoreThreshold), key_CALL_SCORE };
-            Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(double) };
-            var newtable = DataTableTools.CreateTable(headers, types);
-
-            int prevMinuteStart = 0;
-            int minuteStart = 0;
-            int eventcount = 0;
-            int eventCountThresholded = 0;
-            double indexScore = 0.0;
             foreach (DataRow ev in dt.Rows)
             {
-                int eventStart = (int)ev[key_START_ABS];
-                double eventScore = (double)ev[key_CALL_SCORE];
-                if (eventScore > indexScore) indexScore = eventScore;
-                minuteStart = eventStart / timeScale;
-
-                if (minuteStart > prevMinuteStart)
-                {
-                    // fill in missing minutes
-                    for (int i = prevMinuteStart + 1; i < minuteStart; i++)
-                        newtable.Rows.Add(i, i, 0, 0, 0.0);
-                    newtable.Rows.Add(minuteStart, minuteStart, eventcount, eventCountThresholded, indexScore);
-                    prevMinuteStart = minuteStart;
-                    eventcount = 1;
-                    if (eventScore > scoreThreshold) eventCountThresholded = 1;
-                    else eventCountThresholded = 0;
-                    indexScore = 0.0;
-                }
-                else
-                {
-                    eventcount++;
-                    if (eventScore > scoreThreshold) eventCountThresholded++;
-                }
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+                eventsPerUnitTime[timeUnit]++;
+                if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
-            newtable.Rows.Add(minuteStart, minuteStart, eventcount, eventCountThresholded, indexScore); //add in last minute
 
-            //NEXT TWO LINES ARE FOR DEBUG PURPOSES ONLY
-            //string outputTablePath = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\DELETE_ME.csv";
-            //CsvTools.DataTable2CSV(newtable, outputTablePath);
+            string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            Type[] types = { typeof(int), typeof(int), typeof(int) };
+            var newtable = DataTableTools.CreateTable(headers, types);
+
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
+            {
+                int unitID = (int)(i * unitTime.TotalMinutes);
+                newtable.Rows.Add(unitID, eventsPerUnitTime[i], bigEvsPerUnitTime[i]);
+            }
             return newtable;
         }
-
 
 
         //public static List<Dictionary<string, double>> ExtractMyPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)

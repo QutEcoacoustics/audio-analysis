@@ -66,6 +66,9 @@ namespace AnalysisPrograms
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
                         LSKiwi2.Dev(restOfArgs);
                         break;
+                    case "kiwiROC":  // little spotted kiwi calls from Andrew @ Victoria university.
+                        LSKiwi.Dev(restOfArgs);
+                        break;
                     case "LewinsRail":  //LewinsRail3
                         LewinsRail3.Dev(restOfArgs);
                         break;
@@ -106,12 +109,12 @@ namespace AnalysisPrograms
                     case "frog_ribbit":  // frog calls
                         FrogRibit.Dev(restOfArgs);
                         break;
-                    case "spt":  // spectral peak tracking
-                        SPT.Dev(restOfArgs);
-                        break;
-                    case "spr":  // syntactic pattern recognition
-                        SPR.Dev(restOfArgs);
-                        break;
+                    //case "spt":  // spectral peak tracking
+                    //    SPT.Dev(restOfArgs);
+                    //    break;
+                    //case "spr":  // syntactic pattern recognition
+                    //    SPR.Dev(restOfArgs);
+                    //    break;
                     case "richness_indices":      // richness_indices
                         Acoustic.Dev(restOfArgs);
                         //RichnessIndices2.Executable(restOfArgs);

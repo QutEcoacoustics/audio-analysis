@@ -27,10 +27,14 @@ namespace AudioAnalysisTools
         public static string MIN_AMPLITUDE = "MIN_AMPLITUDE";
         public static string MIN_DURATION = "MIN_DURATION";
         public static string MAX_DURATION = "MAX_DURATION";
+        public static string MIN_PERIODICITY = "MIN_PERIOD";
+        public static string MAX_PERIODICITY = "MAX_PERIOD";
         public static string NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
         public static string NOISE_DO_REDUCTION = "DO_NOISE_REDUCTION";
         public static string NOISE_BG_REDUCTION = "BG_NOISE_REDUCTION";
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
+        public static string SAVE_INTERMEDIATE_FILES = "SAVE_INTERMEDIATE_FILES";
+        public static string SAVE_SONOGRAM_FILES = "SAVE_SONOGRAM_FILES";
         public static string SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
 
