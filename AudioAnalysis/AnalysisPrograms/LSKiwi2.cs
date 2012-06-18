@@ -20,22 +20,17 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    public class LSKiwi2 : IAnalysis
+    public class LSKiwi2 : IAnalyser
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
         public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
         public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
         public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
-        //public static string key_DCT_DURATION = "DCT_DURATION";
-        //public static string key_DCT_THRESHOLD = "DCT_THRESHOLD";
-        public static string key_MIN_PERIODICITY = "MIN_PERIOD";
-        public static string key_MAX_PERIODICITY = "MAX_PERIOD";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_MAX_DURATION = "MAX_DURATION";
 
         //HEADER KEYS
         public static string key_EVENT_NAME      = AudioAnalysisTools.Keys.EVENT_NAME;
+        public static string key_INTENSITY_SCORE = AudioAnalysisTools.Keys.EVENT_INTENSITY;
         public static string key_BANDWIDTH_SCORE = "BandwidthScore";
         public static string key_DELTA_SCORE     = "DeltaPeriodScore";
         public static string key_SNR_SCORE       = AudioAnalysisTools.Keys.SNR_SCORE;
@@ -45,8 +40,8 @@ namespace AnalysisPrograms
 
 
         public static string[] defaultRules = {
-                                           "EXCLUDE_RULE1=feature1<0.45",
-                                           "EXCLUDE_RULE2=feature1<0.45",
+                                           "EXCLUDE_IF_RULE=feature1_LT_0.45",
+                                           "EXCLUDE_IF_RULE=feature1_GT_0.45",
                                            "WEIGHT_feature1=0.45",
                                            "WEIGHT_feature2=0.45",
                                            "WEIGHT_feature3=0.45"
@@ -65,10 +60,10 @@ namespace AnalysisPrograms
         {
             get { return "Little Spotted Kiwi"; }
         }
-
+        private static string identifier = "Towsey." + ANALYSIS_NAME;
         public string Identifier
         {
-            get { return "Towsey." + ANALYSIS_NAME; }
+            get { return identifier; }
         }
 
 
@@ -111,15 +106,15 @@ namespace AnalysisPrograms
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
-            int startMinute = 55;
+            int startMinute = 10;
             int durationSeconds = 300; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName = string.Format("{0}_converted.wav", segmentFileStem);
+            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname = string.Format("{0}_Events{1}min.csv", segmentFileStem, startMinute);
-            var indicesFname = string.Format("{0}_Indices{1}min.csv", segmentFileStem, startMinute);
+            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
+            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             //var fiCsvFile = new FileInfo(restOfArgs[0]);
             //var fiConfigFile = new FileInfo(restOfArgs[1]);
@@ -299,7 +294,7 @@ namespace AnalysisPrograms
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalysis analyser = new LSKiwi2();
+            IAnalyser analyser = new LSKiwi2();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
@@ -314,12 +309,12 @@ namespace AnalysisPrograms
             return status;
         }
 
-
+        private static readonly object imageWriteLock = new object();
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
+            //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            //Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF    = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
@@ -329,7 +324,7 @@ namespace AnalysisPrograms
             analysisResults.Data = null;
 
             //######################################################################
-            var results = Analysis(fiAudioF, configDict);
+            var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
             //######################################################################
 
             if (results == null) return analysisResults; //nothing to process 
@@ -340,47 +335,60 @@ namespace AnalysisPrograms
             var recordingTimeSpan = results.Item5;
             analysisResults.AudioDuration = recordingTimeSpan;
 
-            DataTable dataTable = null;
+            DataTable dataTableOfEvents = null;
 
             if ((predictedEvents != null) && (predictedEvents.Count != 0))
             {
-                string analysisName = configDict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
+                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.SourceFileName = fName;
-                    ev.Name = analysisName;
+                    //ev.Name = analysisName; //name was added previously
                     ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
-                dataTable = WriteEvents2DataTable(predictedEvents);
+                dataTableOfEvents = WriteEvents2DataTable(predictedEvents);
                 string sortString = AudioAnalysisTools.Keys.EVENT_START_SEC + " ASC";
-                dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
+                dataTableOfEvents = DataTableTools.SortTable(dataTableOfEvents, sortString); //sort by start time before returning
             }
 
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
+            if ((analysisSettings.EventsFile != null) && (dataTableOfEvents != null))
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
+                CsvTools.DataTable2CSV(dataTableOfEvents, analysisSettings.EventsFile.FullName);
             }
 
-            if ((analysisSettings.IndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.IndicesFile != null) && (dataTableOfEvents != null))
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
+                var indicesDT = ConvertEvents2Indices(dataTableOfEvents, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
 
             //save image of sonograms
             if (analysisSettings.ImageFile != null)
             {
+                var fileExists = File.Exists(analysisSettings.ImageFile.FullName);
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
-                image.Save(imagePath, ImageFormat.Png);
+                //image.Save(imagePath, ImageFormat.Png);
+
+                lock (imageWriteLock)
+                {
+                    //try
+                    //{
+                    image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
+                    //}
+                    //catch (Exception ex)
+                    //{
+
+                    //}
+                }
             }
 
-            analysisResults.Data = dataTable;
+            analysisResults.Data = dataTableOfEvents;
             analysisResults.ImageFile = analysisSettings.ImageFile;
             analysisResults.AudioDuration = recordingTimeSpan;
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
@@ -407,8 +415,8 @@ namespace AnalysisPrograms
             int maxHzFemale = ConfigDictionary.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
             int frameLength = ConfigDictionary.GetInt(LSKiwi.key_FRAME_LENGTH, config);
             double frameOverlap = ConfigDictionary.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
-            double dctDuration = ConfigDictionary.GetDouble(LSKiwi.key_DCT_DURATION, config);
-            double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            //double dctDuration = ConfigDictionary.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            //double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
             double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
             double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
             double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
@@ -432,13 +440,13 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             
             //DETECT MALE KIWI
-            var resultsMale = DetectKiwi(sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold,  minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
+            var resultsMale = DetectKiwi(sonogram, minHzMale, maxHzMale, /*dctDuration, dctThreshold,*/  minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
             var scoresM = resultsMale.Item1;
             var hitsM = resultsMale.Item2;
             var predictedEventsM = resultsMale.Item3;
             foreach (AcousticEvent ev in predictedEventsM) ev.Name = "LSK(m)";
             //DETECT FEMALE KIWI
-            var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
+            var resultsFemale = DetectKiwi(sonogram, minHzFemale, maxHzFemale,/* dctDuration, dctThreshold,*/ minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
             var scoresF = resultsFemale.Item1;
             var hitsF = resultsFemale.Item2;
             var predictedEventsF = resultsFemale.Item3;
@@ -453,7 +461,7 @@ namespace AnalysisPrograms
         } //Analysis()
 
         public static System.Tuple<List<double[]>, double[,], List<AcousticEvent>> DetectKiwi(BaseSonogram sonogram, int minHz, int maxHz, 
-                                    double dctDuration, double dctThreshold, double minPeriod, double maxPeriod, double eventThreshold, double minDuration, double maxDuration)
+                                    /* double dctDuration, double dctThreshold, */ double minPeriod, double maxPeriod, double eventThreshold, double minDuration, double maxDuration)
         {
             int step = (int)Math.Round(sonogram.FramesPerSecond); //take one second steps
             int sampleLength = 32; //32 frames = 1.85 seconds.   64 frames (i.e. 3.7 seconds) is to long a sample - require stationarity.
@@ -507,21 +515,18 @@ namespace AnalysisPrograms
             //double maxOscilFreq = 1 / minPeriod;  //convert min period (seconds) to oscilation rate (Herz).
             //OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
             //                             minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
-            //                             out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
-
-            
+            //                             out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);            
             
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             List<AcousticEvent> events = AcousticEvent.ConvertScoreArray2Events(intensity1, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                                                          eventThreshold, minDuration, maxDuration);
 
-            CropEvents(events, fullArray);
+            CropEvents(events, fullArray, minDuration);
             CalculateAvIntensityScore(events, intensity1);
             CalculateDeltaPeriodScore(events, periodicity1, minFramePeriod, maxFramePeriod);
             CalculateBandWidthScore(events, sonogram.Data);
             CalculatePeaksScore(events, fullArray);
-            double bwThreshold = 0.2;
-            FilterEventsOnBandwidthScore(events, bwThreshold);
+            //FilterEvents(events);
             CalculateWeightedEventScore(events);
 
             // PREPARE HITS MATRIX
@@ -555,16 +560,16 @@ namespace AnalysisPrograms
             return System.Tuple.Create(scores, hits, events);
         }
 
-        public static void CropEvents(List<AcousticEvent> events, double[] intensity)
+        public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds)
         {
             double severity = 0.2;
-            int length = intensity.Length;
+            int length = activity.Length;
 
             foreach (AcousticEvent ev in events)
             {
                 int start = ev.oblong.r1;
                 int end = ev.oblong.r2;
-                double[] subArray = DataTools.Subarray(intensity, start, end - start + 1);
+                double[] subArray = DataTools.Subarray(activity, start, end - start + 1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
                 int newMinRow = start + bounds[0];
@@ -573,9 +578,12 @@ namespace AnalysisPrograms
 
                 Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
                 ev.oblong = o;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.TimeStart = newMinRow  * ev.FrameOffset;
+                ev.TimeEnd   = newMaxRow  * ev.FrameOffset;
+                ev.Duration  = ev.TimeEnd - ev.TimeStart;
+                //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset); 
             }
+            for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
         }
 
         public static double[] CropArrayToEvents(List<AcousticEvent> events, double[] array)
@@ -675,14 +683,41 @@ namespace AnalysisPrograms
             return 1 - CCscore;
         }
 
-        public static void FilterEventsOnBandwidthScore(List<AcousticEvent> events, double bwThreshold)
-        {
-            for (int i = events.Count - 1; i >= 0; i--)
-            {
-                AcousticEvent ev = events[i];
-                if (ev.kiwi_bandWidthScore < bwThreshold) events.Remove(ev);
-            }
-        }
+        //public static void FilterEvents(List<AcousticEvent> events)
+        //{
+        //    string[] defaultRules = {
+        //                                   "EXCLUDE_IF_RULE="+key_BANDWIDTH_SCORE+"_LT_0.2",
+        //                                   "EXCLUDE_IF_RULE="+key_INTENSITY_SCORE+"_LT_0.2",
+        //                                   "WEIGHT_feature1=0.45",
+        //                                   "WEIGHT_feature2=0.45",
+        //                                   "WEIGHT_feature3=0.45"
+        //    };
+
+        //    var excludeRules = new List<string[]>();
+        //    foreach (string rule in defaultRules)
+        //    {
+        //        string[] parts = rule.Split('=');
+        //        if (parts[0] == "EXCLUDE_IF_RULE") excludeRules.Add(parts[1].Split('_'));
+        //    }
+
+        //    foreach (string[] rule in excludeRules)
+        //    {
+        //        string feature = rule[0];
+        //        string op      = rule[1];
+        //        double value   = Double.Parse(rule[2]);
+        //        for (int i = events.Count - 1; i >= 0; i--)
+        //        {
+        //            AcousticEvent ev = events[i];
+        //            if ((feature == key_BANDWIDTH_SCORE) && (op == "LT") && (ev.kiwi_bandWidthScore < value)) events.Remove(ev);
+        //            else
+        //            if ((feature == key_BANDWIDTH_SCORE) && (op == "GT") && (ev.kiwi_bandWidthScore > value)) events.Remove(ev);
+        //            else
+        //            if ((feature == key_INTENSITY_SCORE) && (op == "LT") && (ev.kiwi_intensityScore < value)) events.Remove(ev);
+        //            else
+        //            if ((feature == key_INTENSITY_SCORE) && (op == "GT") && (ev.kiwi_intensityScore > value)) events.Remove(ev);
+        //        }
+        //    }
+        //}
 
         public static void CalculatePeaksScore(List<AcousticEvent> events, double[] dBArray)
         {
@@ -741,7 +776,7 @@ namespace AnalysisPrograms
             foreach (AcousticEvent ev in events)
             {
                 //double comboScore = (snrScore * 0.1)        +   (sdPeakScore * 0.1)         + (ev.kiwi_intensityScore * 0.1) + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.05) + (ev.kiwi_sdPeakScore * 0.25) + (ev.kiwi_intensityScore * 0.3) + (ev.kiwi_deltaPeriodScore * 0.3) + (ev.kiwi_bandWidthScore * 0.1); 
+                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.05) + (ev.kiwi_sdPeakScore * 0.25) + (ev.kiwi_intensityScore * 0.2) + (ev.kiwi_deltaPeriodScore * 0.3) + (ev.kiwi_bandWidthScore * 0.2); 
             }
         }
 
@@ -820,28 +855,30 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
+            if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
-            int unitCount = (int)(units / 1);
-            if(units % 1 > 0.0) unitCount += 1; 
-            int[] eventsPerMinute = new int[unitCount]; //to store event counts
-            int[] bigEvsPerMinute = new int[unitCount]; //to store counts of high scoring events
+            int unitCount = (int)(units / 1);   //get whole minutes
+            if(units % 1 > 0.0) unitCount += 1; //add fractional minute
+            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
+            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
-                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE]; 
-                int timeUnit = (int)(eventStart / sourceDuration.TotalSeconds);
-                eventsPerMinute[timeUnit]++;
-                if (eventScore > scoreThreshold) bigEvsPerMinute[timeUnit]++;
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+                eventsPerUnitTime[timeUnit]++;
+                if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
             Type[]   types   = { typeof(int),   typeof(int),  typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
-            for (int i = 0; i < eventsPerMinute.Length; i++)
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
-                newtable.Rows.Add(i, eventsPerMinute[i], bigEvsPerMinute[i]);
+                int unitID = (int)(i * unitTime.TotalMinutes);
+                newtable.Rows.Add(unitID, eventsPerUnitTime[i], bigEvsPerUnitTime[i]);
             }
             return newtable;
         }

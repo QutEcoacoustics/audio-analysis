@@ -105,7 +105,7 @@
     <Compile Include="AnalysisResult.cs" />
     <Compile Include="AnalysisSettings.cs" />
     <Compile Include="FileSegment.cs" />
-    <Compile Include="IAnalysis.cs" />
+    <Compile Include="IAnalyser.cs" />
     <Compile Include="ISourcePreparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

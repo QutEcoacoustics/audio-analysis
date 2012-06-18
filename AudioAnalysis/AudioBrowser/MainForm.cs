@@ -65,7 +65,7 @@
         private string tabPageDisplayLabel = "tabPageDisplay";
         private string tabPageConsoleLabel = "tabPageConsole";
 
-        private AnalysisCoordinator analysisCoordinator;
+        //private AnalysisCoordinator analysisCoordinator;
         private PluginHelper pluginHelper;
 
         /// <summary>
@@ -80,13 +80,13 @@
             browserSettings = new AudioBrowserSettings();
             browserSettings.LoadBrowserSettings();
 
-            //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
-            {
-                DeleteFinished = false,
-                IsParallel = true,
-                SubFoldersUnique = false
-            };
+            ////initilise classes that will do the analysis
+            //this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            //{
+            //    DeleteFinished = false,
+            //    IsParallel = true,
+            //    SubFoldersUnique = false
+            //};
 
             //finds valid analysis files that implement the IAnalysis interface
             this.pluginHelper = new PluginHelper();
@@ -280,18 +280,11 @@
             WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
             CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
 
-            int count = 0;
 
             //this.textBoxConsole.Clear();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
-            //string date = "# DATE AND TIME: " + DateTime.Now;
-            //Console.WriteLine(date);
-            //Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
-            //var files = ((IEnumerable<DataGridViewRow>)this.dataGridViewFileList.Rows).Select(i => i.DataBoundItem as MediaFileItem).Select(m => new FileSegment { OriginalFile = m.FullName });
-
-            //this.analysisCoordinator.Run(files, null, null, null);
-
+            int count = 0;
             foreach (DataGridViewRow row in this.dataGridViewFileList.Rows)
             {
                 var checkBoxCol = row.Cells["selectedDataGridViewCheckBoxColumn"] as DataGridViewCheckBoxCell;
@@ -321,24 +314,19 @@
                     var settings = analyser.DefaultSettings;
                     settings.AnalysisBaseDirectory = this.browserSettings.diOutputDir;
                     settings.ConfigFile = fiConfig;
+                    var configuration = new ConfigDictionary(fiConfig.FullName);
+                    settings.ConfigDict = configuration.GetTable();
 
-                    //For limited analysis of a file:
-                    //    set IsParallel to false
-                    //    create a FileSegment with start and end offsets
-                    //    Comment out the SegmentStartOffset and SegmentEndOffset if want to analyse the whole file
-                    //    else    set     SegmentEndOffset = TimeSpan.FromMinutes(5)  to get 5 segments of 1 min, for example.
-                    // the following call will only work for one file, since we need to sort the output afterwards.
-                    var file = new FileSegment { 
-                        OriginalFile = fiSourceRecording, 
-                        SegmentStartOffset = TimeSpan.Zero, 
-                        SegmentEndOffset = TimeSpan.FromMinutes(5) 
-                    };
+                    //#SEGMENT_DURATION=minutes,   SEGMENT_OVERLAP=seconds        
+                    //SEGMENT_DURATION=5
+                    //SEGMENT_OVERLAP=10
+                    int segmentOffsetMinutes = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_DURATION, settings.ConfigDict);
+                    settings.SegmentMaxDuration     = new TimeSpan(0, segmentOffsetMinutes, 0);
+                    int segmentOverlapSeconds       = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_OVERLAP, settings.ConfigDict);
+                    settings.SegmentOverlapDuration = new TimeSpan(0, 0, segmentOverlapSeconds); 
 
                     //################# PROCESS THE RECORDING #####################################################################################
-                    this.analysisCoordinator.IsParallel = false;
-                    var analyserResults = this.analysisCoordinator.Run(new[] { file }, analyser, settings).OrderBy(a => a.SegmentStartOffset);
-
-                    //settings.AnalysisRunDirectory
+                    var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
                     //NEXT LINE was my old code
                     // var op1 = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
 
@@ -349,18 +337,8 @@
                         Console.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
                         return;
                     }
-                    DataTable datatable = null;
-                    for (var index = 0; index < analyserResults.Count(); index++)
-                    {
-                        var analyserResult = analyserResults.Skip(index).FirstOrDefault();
-                        if (analyserResult != null)
-                        datatable = AudioBrowserTools.AppendToDataTable(
-                            datatable,
-                            analyserResult.Data,
-                            analyserResult.AudioDuration,
-                            analyserResult.SegmentStartOffset,
-                            index);
-                    }
+
+                    DataTable datatable = AudioBrowserTools.MergeResultsIntoSingleDataTable(analyserResults);
 
                     //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
                     var audioUtility = new MasterAudioUtility(settings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
@@ -541,7 +519,7 @@
             this.browserSettings.fiAnalysisConfig = op.Item1;
             this.analysisParams = op.Item2;
 
-            IAnalysis analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
+            IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
             if (analyser == null)
             {
                 Console.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);

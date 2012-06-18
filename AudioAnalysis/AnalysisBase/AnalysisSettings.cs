@@ -4,13 +4,6 @@
     using System.Collections.Generic;
     using System.IO;
 
-    //public enum AnalysisMode {
-    //    None = 0,
-    //    Efficient = 1, // data table only
-    //    Display = 2, // image only
-    //    Everything = 3 // everything!
-    //}
-
     /// <summary>
     /// The analysis settings for processing one audio file.
     /// </summary>
@@ -201,20 +194,13 @@
         public string SegmentMediaType { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration string. 
-        /// Before an analysis is run, the user may be given the chance to modify the configuration.
-        /// This should be set to an initial value by an analysis.
-        /// </summary>
-        //public string ConfigStringInput { get; set; }
-
-        /// <summary>
         /// Gets or sets the configuration file to use to run the analysis.
         /// </summary>
         public FileInfo ConfigFile { get; set; }
 
         /// <summary>
-        /// Gets or sets analysis mode (this is just a hint).
+        /// Gets or sets the config dictionary.
         /// </summary>
-        //public AnalysisMode AnalysisRunMode { get; set; }
+        public Dictionary<string, string> ConfigDict { get; set; }
     }
 }

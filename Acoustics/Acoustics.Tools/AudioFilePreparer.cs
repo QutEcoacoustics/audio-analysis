@@ -43,9 +43,9 @@ namespace Acoustics.Tools
             var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
 
             outputFileName = string.Format(
-                "{0}_{1}_{2}.{3}",
+                "{0}_{1:f0}min.{3}",
                 outputFileName,
-                startOffset.TotalMilliseconds,
+                startOffset.TotalMinutes,
                 endOffset.TotalMilliseconds,
                 MediaTypes.GetExtension(outputMediaType));
 

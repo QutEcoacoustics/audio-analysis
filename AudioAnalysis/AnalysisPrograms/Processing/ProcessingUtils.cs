@@ -226,9 +226,9 @@ namespace AnalysisPrograms.Processing
                 case "epr": // event pattern recognition - groundparrot (in progress)
                     results = ProcessingTypes.RunEpr(settingsFile, audioFile);
                     break;
-                case "spr":  // syntactic pattern recognition
-                    results = ProcessingTypes.RunSpr(settingsFile, audioFile);
-                    break;
+                //case "spr":  // syntactic pattern recognition
+                //    results = ProcessingTypes.RunSpr(settingsFile, audioFile);
+                //    break;
                 case "hd": // Harmonic Recogniser
                     results = ProcessingTypes.RunHd(settingsFile, audioFile);
                     break;

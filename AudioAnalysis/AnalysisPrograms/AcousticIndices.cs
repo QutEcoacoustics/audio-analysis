@@ -20,7 +20,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    public class Acoustic : IAnalysis
+    public class Acoustic : IAnalyser
     {
         //TASK IDENTIFIERS
         public const string task_ANALYSE  = "analysis";
@@ -34,9 +34,10 @@ namespace AnalysisPrograms
             get { return "Acoustic Indices"; }
         }
 
+        private static string identifier = "Towsey." + ANALYSIS_NAME;
         public string Identifier
         {
-            get { return "Towsey." + ANALYSIS_NAME; }
+            get { return identifier; }
         }
 
 
@@ -61,10 +62,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName = string.Format("{0}_converted.wav", segmentFileStem);
-            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname = string.Format("{0}_Events{1}min.csv", segmentFileStem, startMinute);
-            var indicesFname = string.Format("{0}_Indices{1}min.csv", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav",             segmentFileStem, startMinute);
+            var sonogramFname = string.Format("{0}_{1}min.png",            segmentFileStem, startMinute);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv",   segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             if (false)
@@ -149,7 +150,7 @@ namespace AnalysisPrograms
                         var fiCsvFile    = new FileInfo(restOfArgs[0]);
                         var fiConfigFile = new FileInfo(restOfArgs[1]);
                         //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                        IAnalysis analyser = new Acoustic();
+                        IAnalyser analyser = new Acoustic();
                         var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
                         //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
                         break;
@@ -265,7 +266,7 @@ namespace AnalysisPrograms
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalysis analyser = new Acoustic();
+            IAnalyser analyser = new Acoustic();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################

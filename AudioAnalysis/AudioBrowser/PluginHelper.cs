@@ -14,8 +14,8 @@
 
     public class PluginHelper
     {
-        [ImportMany(typeof(IAnalysis))]
-        public IEnumerable<IAnalysis> AnalysisPlugins { get; private set; }
+        [ImportMany(typeof(IAnalyser))]
+        public IEnumerable<IAnalyser> AnalysisPlugins { get; private set; }
 
         [ImportMany(typeof(ISourcePreparer))]
         public IEnumerable<ISourcePreparer> SourcePreparerPlugins { get; private set; }
@@ -93,11 +93,11 @@
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
         }
 
-        private IEnumerable<IAnalysis> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
+        private IEnumerable<IAnalyser> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             // AnalysisPrograms.exe
             // "*.dll", "*.exe"
-            var plugins = Plugins.GetPlugins<IAnalysis>("IAnalysis", pluginBaseDirs, "AnalysisPrograms.exe");
+            var plugins = Plugins.GetPlugins<IAnalyser>("IAnalysis", pluginBaseDirs, "AnalysisPrograms.exe");
             //plugins.AddRange(Plugins.GetPlugins<IAnalysis>("IAnalysis"));
 
             return plugins;
@@ -126,7 +126,7 @@
             throw new ArgumentException("Could not locate directory: " + dir, "dir");
         }
 
-        private IEnumerable<IAnalysis> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
+        private IEnumerable<IAnalyser> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
 
@@ -136,7 +136,7 @@
         private void Compose(IEnumerable<DirectoryInfo> pluginBaseDirs, string searchPattern)
         {
             var registration = new RegistrationBuilder();
-            registration.ForTypesDerivedFrom<IAnalysis>().Export<IAnalysis>();
+            registration.ForTypesDerivedFrom<IAnalyser>().Export<IAnalyser>();
             registration.ForTypesDerivedFrom<ISourcePreparer>().Export<ISourcePreparer>();
 
             var assemblyCatalog = new AssemblyCatalog(typeof(Program).Assembly);

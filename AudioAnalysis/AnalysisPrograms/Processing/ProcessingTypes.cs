@@ -468,138 +468,138 @@ namespace AnalysisPrograms.Processing
         /// <exception cref="NotImplementedException">
         /// Not completed.
         /// </exception>
-        internal static IEnumerable<ProcessorResultTag> RunSpr(FileInfo settingsFile, FileInfo audioFile)
-        {
-            var expected = new List<string>
-                {
-                    SPR.key_CALL_NAME,
-                    ////SPR.key_DO_SEGMENTATION, // not used
-                    ////SPR.key_DRAW_SONOGRAMS, // not used
-                    SPR.key_EVENT_THRESHOLD,
-                    SPR.key_FRAME_OVERLAP,
-                    SPR.key_MAX_DURATION,
-                    SPR.key_MIN_DURATION,
-                    SPR.key_SPT_INTENSITY_THRESHOLD,
-                    SPR.key_SPT_SMALL_LENGTH_THRESHOLD,
-                    SPR.key_WHIP_DURATION,
-                    SPR.key_WHIP_MAX_HZ,
-                    SPR.key_WHIP_MIN_HZ,
-                    SPR.key_WHISTLE_DURATION,
-                    SPR.key_WHISTLE_MAX_HZ,
-                    SPR.key_WHISTLE_MIN_HZ
-                };
+        //internal static IEnumerable<ProcessorResultTag> RunSpr(FileInfo settingsFile, FileInfo audioFile)
+        //{
+        //    var expected = new List<string>
+        //        {
+        //            SPR.key_CALL_NAME,
+        //            ////SPR.key_DO_SEGMENTATION, // not used
+        //            ////SPR.key_DRAW_SONOGRAMS, // not used
+        //            SPR.key_EVENT_THRESHOLD,
+        //            SPR.key_FRAME_OVERLAP,
+        //            SPR.key_MAX_DURATION,
+        //            SPR.key_MIN_DURATION,
+        //            SPR.key_SPT_INTENSITY_THRESHOLD,
+        //            SPR.key_SPT_SMALL_LENGTH_THRESHOLD,
+        //            SPR.key_WHIP_DURATION,
+        //            SPR.key_WHIP_MAX_HZ,
+        //            SPR.key_WHIP_MIN_HZ,
+        //            SPR.key_WHISTLE_DURATION,
+        //            SPR.key_WHISTLE_MAX_HZ,
+        //            SPR.key_WHISTLE_MIN_HZ
+        //        };
 
-            // settings
-            var config = new ConfigDictionary(settingsFile.FullName);
-            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
+        //    // settings
+        //    var config = new ConfigDictionary(settingsFile.FullName);
+        //    var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
+        //    ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
-            string callName = dict[SPR.key_CALL_NAME];
-            double frameOverlap = Convert.ToDouble(dict[SPR.key_FRAME_OVERLAP]);
+        //    string callName = dict[SPR.key_CALL_NAME];
+        //    double frameOverlap = Convert.ToDouble(dict[SPR.key_FRAME_OVERLAP]);
 
-            // SPT PARAMETERS
-            double intensityThreshold = Convert.ToDouble(dict[SPR.key_SPT_INTENSITY_THRESHOLD]);
-            int smallLengthThreshold = Convert.ToInt32(dict[SPR.key_SPT_SMALL_LENGTH_THRESHOLD]);
+        //    // SPT PARAMETERS
+        //    double intensityThreshold = Convert.ToDouble(dict[SPR.key_SPT_INTENSITY_THRESHOLD]);
+        //    int smallLengthThreshold = Convert.ToInt32(dict[SPR.key_SPT_SMALL_LENGTH_THRESHOLD]);
 
-            // WHIPBIRD PARAMETERS
-            int whistleMinHz = Int32.Parse(dict[SPR.key_WHISTLE_MIN_HZ]);
-            int whistleMaxHz = Int32.Parse(dict[SPR.key_WHISTLE_MAX_HZ]);
-            double optimumWhistleDuration = Double.Parse(dict[SPR.key_WHISTLE_DURATION]);
-            int whipMinHz = Int32.Parse(dict[SPR.key_WHIP_MIN_HZ]);
-            int whipMaxHz = Int32.Parse(dict[SPR.key_WHIP_MAX_HZ]);
-            double whipDuration = Double.Parse(dict[SPR.key_WHIP_DURATION]);
+        //    // WHIPBIRD PARAMETERS
+        //    int whistleMinHz = Int32.Parse(dict[SPR.key_WHISTLE_MIN_HZ]);
+        //    int whistleMaxHz = Int32.Parse(dict[SPR.key_WHISTLE_MAX_HZ]);
+        //    double optimumWhistleDuration = Double.Parse(dict[SPR.key_WHISTLE_DURATION]);
+        //    int whipMinHz = Int32.Parse(dict[SPR.key_WHIP_MIN_HZ]);
+        //    int whipMaxHz = Int32.Parse(dict[SPR.key_WHIP_MAX_HZ]);
+        //    double whipDuration = Double.Parse(dict[SPR.key_WHIP_DURATION]);
 
-            // CURLEW PARAMETERS
-            double minDuration = Double.Parse(dict[SPR.key_MIN_DURATION]);
-            double maxDuration = Double.Parse(dict[SPR.key_MAX_DURATION]);
+        //    // CURLEW PARAMETERS
+        //    double minDuration = Double.Parse(dict[SPR.key_MIN_DURATION]);
+        //    double maxDuration = Double.Parse(dict[SPR.key_MAX_DURATION]);
 
-            double eventThreshold = Double.Parse(dict[SPR.key_EVENT_THRESHOLD]);
+        //    double eventThreshold = Double.Parse(dict[SPR.key_EVENT_THRESHOLD]);
 
-            // B: CHECK to see if conversion from .MP3 to .WAV is necessary
-            var destinationAudioFile = audioFile.FullName;
+        //    // B: CHECK to see if conversion from .MP3 to .WAV is necessary
+        //    var destinationAudioFile = audioFile.FullName;
 
-            // LOAD RECORDING AND MAKE SONOGRAM
-            BaseSonogram sonogram;
-            using (var recording = new AudioRecording(destinationAudioFile))
-            {
-                if (recording.SampleRate != 22050)
-                {
-                    // down sample if necessary
-                    recording.ConvertSampleRate22kHz();
-                }
+        //    // LOAD RECORDING AND MAKE SONOGRAM
+        //    BaseSonogram sonogram;
+        //    using (var recording = new AudioRecording(destinationAudioFile))
+        //    {
+        //        if (recording.SampleRate != 22050)
+        //        {
+        //            // down sample if necessary
+        //            recording.ConvertSampleRate22kHz();
+        //        }
 
-                var sonoConfig = new SonogramConfig
-                {
-                    NoiseReductionType = NoiseReductionType.NONE,
-                    ////NoiseReductionType = NoiseReductionType.STANDARD,
-                    WindowOverlap = frameOverlap
-                };
-                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            }
+        //        var sonoConfig = new SonogramConfig
+        //        {
+        //            NoiseReductionType = NoiseReductionType.NONE,
+        //            ////NoiseReductionType = NoiseReductionType.STANDARD,
+        //            WindowOverlap = frameOverlap
+        //        };
+        //        sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+        //    }
 
-            List<AcousticEvent> predictedEvents = null;
+        //    List<AcousticEvent> predictedEvents = null;
 
-            var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile);
+        //    var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile);
 
-            // execute  - only for whip bird for now.
-            if (callName.Equals("WHIPBIRD"))
-            {
-                // SPT
-                var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
+        //    // execute  - only for whip bird for now.
+        //    if (callName.Equals("WHIPBIRD"))
+        //    {
+        //        // SPT
+        //        var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
 
-                // SPR
-                Log.WriteLine("SPR start: intensity threshold = " + intensityThreshold);
-                int slope = 0;
-                double sensitivity = 0.7;
-                var mHori = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
-                slope = 87;
-                sensitivity = 0.8;
-                var mVert = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold + 1, sensitivity);
-                Log.WriteLine("SPR finished");
-                Log.WriteLine("Extract Whipbird calls - start");
+        //        // SPR
+        //        Log.WriteLine("SPR start: intensity threshold = " + intensityThreshold);
+        //        int slope = 0;
+        //        double sensitivity = 0.7;
+        //        var mHori = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
+        //        slope = 87;
+        //        sensitivity = 0.8;
+        //        var mVert = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold + 1, sensitivity);
+        //        Log.WriteLine("SPR finished");
+        //        Log.WriteLine("Extract Whipbird calls - start");
 
-                int minBoundWhistle = (int)(whistleMinHz / sonogram.FBinWidth);
-                int maxBoundWhistle = (int)(whistleMaxHz / sonogram.FBinWidth);
-                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration);
-                int minBoundWhip = (int)(whipMinHz / sonogram.FBinWidth);
-                int maxBoundWhip = (int)(whipMaxHz / sonogram.FBinWidth);
-                int whipFrames = (int)(sonogram.FramesPerSecond * whipDuration);
-                var result3 = SPR.DetectWhipBird(
-                    mHori,
-                    mVert,
-                    minBoundWhistle,
-                    maxBoundWhistle,
-                    whistleFrames,
-                    minBoundWhip,
-                    maxBoundWhip,
-                    whipFrames,
-                    smallLengthThreshold);
-                double[] scores = result3.Item1;
+        //        int minBoundWhistle = (int)(whistleMinHz / sonogram.FBinWidth);
+        //        int maxBoundWhistle = (int)(whistleMaxHz / sonogram.FBinWidth);
+        //        int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration);
+        //        int minBoundWhip = (int)(whipMinHz / sonogram.FBinWidth);
+        //        int maxBoundWhip = (int)(whipMaxHz / sonogram.FBinWidth);
+        //        int whipFrames = (int)(sonogram.FramesPerSecond * whipDuration);
+        //        var result3 = SPR.DetectWhipBird(
+        //            mHori,
+        //            mVert,
+        //            minBoundWhistle,
+        //            maxBoundWhistle,
+        //            whistleFrames,
+        //            minBoundWhip,
+        //            maxBoundWhip,
+        //            whipFrames,
+        //            smallLengthThreshold);
+        //        double[] scores = result3.Item1;
 
-                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whipMinHz, whipMaxHz,
-                                                              sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold, minDuration, maxDuration);
-                foreach (AcousticEvent ev in predictedEvents)
-                {
-                    ev.SourceFileName = audioFileName;
-                    ev.Name = callName;
-                }
+        //        predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whipMinHz, whipMaxHz,
+        //                                                      sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold, minDuration, maxDuration);
+        //        foreach (AcousticEvent ev in predictedEvents)
+        //        {
+        //            ev.SourceFileName = audioFileName;
+        //            ev.Name = callName;
+        //        }
 
-                sonogram.Data = result1.Item1;
-                Log.WriteLine("Extract Whipbird calls - finished");
-            }
+        //        sonogram.Data = result1.Item1;
+        //        Log.WriteLine("Extract Whipbird calls - finished");
+        //    }
 
-            SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
+        //    SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
 
-            // AcousticEvent results
-            var prts =
-                predictedEvents.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        //    // AcousticEvent results
+        //    var prts =
+        //        predictedEvents.Select(
+        //            ae =>
+        //            ProcessingUtils.GetProcessorResultTag(
+        //                ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
 
-            return prts;
-        }
+        //    return prts;
+        //}
 
         /// <summary>
         /// Harmonic Recogniser.

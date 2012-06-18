@@ -36,10 +36,11 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
-        //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
-        //public const string WORKING_DIRECTORY     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\";
-        //public const string CONFIG_PATH           = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt";
-        //public const string ANDREWS_SELECTION_PATH= @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
+        public const string SOURCE_RECORDING_PATH  = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+        public const string WORKING_DIRECTORY      = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
+        public const string OUTPUT_DIRECTORY       = WORKING_DIRECTORY + "Towsey.LSKiwi2";
+        public const string CONFIG_PATH            = @"C:\SensorNetworks\Output\LSKiwi2\Towsey.LSKiwi2.csv";
+        public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi2\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
 
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav";
         //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\";
@@ -51,13 +52,13 @@ namespace AnalysisPrograms
         //public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\lskiwi_Params.txt";
         //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\TUITCE_20091215_220004_ANDREWS_SELECTIONS.csv";
 
-        public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_210000.wav";
-        public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\";
-        public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\lskiwi_Params.txt";
-        public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
+        //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_210000.wav";
+        //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\";
+        //public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\lskiwi_Params.txt";
+        //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
 
 
-        public const string ANALYSIS_NAME = "LSKiwi";
+        public const string ANALYSIS_NAME = "LSKiwi2";
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int DEFAULT_WINDOW_SIZE = 256;
 
@@ -121,7 +122,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void Dev()
+        public static void Dev(string[] args)
         {
             string title = "# SOFTWARE TO DETECT CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -141,18 +142,31 @@ namespace AnalysisPrograms
 
             Log.WriteIfVerbose("# Output dir: " + outputDir);
 
-            string myResultsPath = outputDir + "LSKCallScores_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
-            string reportROCPath = outputDir + "LSKRoc_Report_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
 
             InitOutputTableColumns();
-
-            // method to calculate ROC curve results
-            if (false)
+            string opFileStem = Path.GetFileNameWithoutExtension(sourceRecordingPath);
+            string myResultsPath = Path.Combine(OUTPUT_DIRECTORY, opFileStem + "_Towsey.LSKiwi2.events.csv");
+            // method to calculate ROC curve results _Towsey.LSKiwi2.Events.
+            if (true)
             {
-                var fiTheTruth = new FileInfo(ANDREWS_SELECTION_PATH);
                 var fiMyResults = new FileInfo(myResultsPath);
+                if (!fiMyResults.Exists)
+                {
+                    Console.WriteLine("FILE <{0}> DOES NOT EXIST!", fiMyResults);
+                    Console.ReadLine();
+                    System.Environment.Exit(999);
+                }
+                var fiTheTruth  = new FileInfo(ANDREWS_SELECTION_PATH);
+                if (!fiTheTruth.Exists)
+                {
+                    Console.WriteLine("FILE <{0}> DOES NOT EXIST!", fiTheTruth);
+                    Console.ReadLine();
+                    System.Environment.Exit(999);
+                }
+                string reportROCPath = outputDir + "LSKRoc_Report_" + opFileStem + ".csv";
                 DataTable dt = CalculateRecallPrecision(fiMyResults, fiTheTruth);
                 CsvTools.DataTable2CSV(dt, reportROCPath);
+
                 Console.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(999);
@@ -235,15 +249,15 @@ namespace AnalysisPrograms
             // Calculate and save ROC curve results
             if (true)
             {
-                var fiMyResults = new FileInfo(myResultsPath);
-                var fiTheTruth = new FileInfo(ANDREWS_SELECTION_PATH);
-                DataTable dt = CalculateRecallPrecision(fiMyResults, fiTheTruth);
-                CsvTools.DataTable2CSV(dt, reportROCPath);
+                //var fiMyResults = new FileInfo(myResultsPath);
+                //var fiTheTruth = new FileInfo(ANDREWS_SELECTION_PATH);
+                //DataTable dt = CalculateRecallPrecision(fiMyResults, fiTheTruth);
+                //CsvTools.DataTable2CSV(dt, reportROCPath);
             }
 
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(sourceRecordingPath));
-            Log.WriteLine("# Output CSV at:-      " + myResultsPath);
+            //Log.WriteLine("# Output CSV at:-      " + myResultsPath);
             Console.ReadLine();
         } //Dev()
 
@@ -918,15 +932,27 @@ namespace AnalysisPrograms
 
         public static DataTable CalculateRecallPrecision(FileInfo fiMyResults, FileInfo fiTheTruth)
         {
-            string[] ROC_HEADERS = { "startSec", "min",         "secOffset", "hitScore",     "snrScore",     "sdScore",        "gapScore",      "bwScore",    "comboScore", "Quality",       "Sex",        "Harmonics",      "TP",     "FP",       "FN"};
-            Type[] ROC_COL_TYPES = { typeof(int),typeof(string), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
+            string[] ROC_HEADERS = { Keys.EVENT_START_ABS,     //typeof(double)
+                                       Keys.EVENT_START_MIN, 
+                                       Keys.EVENT_START_SEC, 
+                                       Keys.EVENT_INTENSITY, 
+                                       LSKiwi2.key_PEAKS_SNR_SCORE, 
+                                       LSKiwi2.key_PEAKS_STD_SCORE, 
+                                       LSKiwi2.key_DELTA_SCORE, 
+                                       LSKiwi2.key_BANDWIDTH_SCORE, 
+                                       Keys.EVENT_NORMSCORE, 
+                                       "Quality", "Sex", "Harmonics", "TP", "FP", "FN" };
+
+            //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "hitScore",     "snrScore",     "sdScore",        "gapScore",      "bwScore",    "comboScore", "Quality",       "Sex",        "Harmonics",      "TP",     "FP",       "FN"};
+            Type[] ROC_COL_TYPES = { typeof(double), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
 
             //ANDREW'S HEADERS:          Selection,        View,     Channel, Begin Time (s),  End Time (s), Low Freq (Hz),High Freq (Hz),    Begin File,    Species,        Sex,       Harmonics,   Quality
             Type[] ANDREWS_TYPES = {typeof(string),typeof(string),typeof(int),typeof(double),typeof(double),typeof(double),typeof(double),typeof(string),typeof(string),typeof(string),typeof(int),typeof(int) };
         
             bool isFirstRowHeader = true;
-            var dtADResults = CsvTools.ReadCSVToTable(fiTheTruth.FullName,  isFirstRowHeader, ANDREWS_TYPES);  //AD = Andrew Digby
-            var dtMyResults = CsvTools.ReadCSVToTable(fiMyResults.FullName, isFirstRowHeader, COL_TYPES);      //MY = Michael Towsey
+            var dtTheTruth = CsvTools.ReadCSVToTable(fiTheTruth.FullName,  isFirstRowHeader, ANDREWS_TYPES);    //AD = Andrew Digby
+            //var dtMyResults = CsvTools.ReadCSVToTable(fiMyResults.FullName, isFirstRowHeader, COL_TYPES);      //MY = Michael Towsey
+            var dtMyResult = CsvTools.ReadCSVToTable(fiMyResults.FullName, isFirstRowHeader);                   //MY = Michael Towsey
             //string colName  = "Species"; 
             //string value    = "LSK";
             //DataTableTools.DeleteRows(dtADResults, colName, value); //delete rows where Species name is not "LSK"
@@ -935,32 +961,39 @@ namespace AnalysisPrograms
             int FP = 0;
             int FN = 0;
 
-            foreach(DataRow myRow in dtMyResults.Rows)
+            foreach (DataRow myRow in dtMyResult.Rows)
             {
-                int    myStart  = (int)myRow[HEADERS[6]];
-                double hitScore = (double)myRow[HEADERS[11]];
-                double snrScore = (double)myRow[HEADERS[12]];
-                double sdScore = (double)myRow[HEADERS[13]]; //sdPeakScore
-                double gapScore = (double)myRow[HEADERS[14]];
-                double bandWidthScore = (double)myRow[HEADERS[15]];
-                double comboScore = (double)myRow[HEADERS[16]];
+                double myStartSecAbs  = (double)myRow[Keys.EVENT_START_ABS];
+                double startMin       = (double)myRow[Keys.EVENT_START_MIN];
+                double startSecOffset = (double)myRow[Keys.EVENT_START_SEC];
+                double intensityScore = (double)myRow[Keys.EVENT_INTENSITY];
+                double snrScore = (double)myRow[LSKiwi2.key_PEAKS_SNR_SCORE];
+                double sdPeakScore    = (double)myRow[LSKiwi2.key_PEAKS_STD_SCORE]; //standard deviation of peak snr's
+                double periodicityScore = (double)myRow[LSKiwi2.key_DELTA_SCORE];
+                double bandWidthScore = (double)myRow[LSKiwi2.key_BANDWIDTH_SCORE];
+                double comboScore = (double)myRow[Keys.EVENT_NORMSCORE];
 
                 //################################################################################
                 // the following line experiments with different weightings other than the default
-                comboScore = (hitScore * 0.0) + (snrScore * 0.1) + (sdScore * 0.1) + (gapScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
+                //comboScore = (intensityScore * 0.0) + (snrScore * 0.1)  + (sdPeakScore * 0.1)  + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
+                comboScore = (intensityScore * 0.2) + (snrScore * 0.0)  + (sdPeakScore * 0.1)  + (periodicityScore * 0.1) + (bandWidthScore * 0.5); //weighted sum
+                //comboScore = (intensityScore * 0.2) + (snrScore * 0.05) + (sdPeakScore * 0.25) + (periodicityScore * 0.3) + (bandWidthScore * 0.3); 
 
+
+                List<string[]> excludeRules = GetExcludeRules();
+                if (FilterEvent(myRow, excludeRules) == null) continue; 
 
                 DataRow opRow = dtOutput.NewRow();
-                opRow["startSec"]  = myStart;
-                opRow["min"]       = (string)myRow[1];
-                opRow["secOffset"] = (int)Math.Round((double)myRow[5]);
-                opRow["hitScore"]  = hitScore;
-                opRow["snrScore"]  = snrScore;
-                opRow["sdScore"]   = sdScore;
-                opRow["gapScore"]  = gapScore;
-                opRow["bwScore"]   = bandWidthScore;
-                opRow["comboScore"] = comboScore;
-                opRow["Quality"] = -99;
+                opRow[Keys.EVENT_START_ABS] = myStartSecAbs;
+                opRow[Keys.EVENT_START_MIN] = startMin;
+                opRow[Keys.EVENT_START_SEC] = startSecOffset;
+                opRow[Keys.EVENT_INTENSITY] = intensityScore;
+                opRow[LSKiwi2.key_PEAKS_SNR_SCORE] = snrScore;
+                opRow[LSKiwi2.key_PEAKS_STD_SCORE] = sdPeakScore;
+                opRow[LSKiwi2.key_DELTA_SCORE] = periodicityScore;
+                opRow[LSKiwi2.key_BANDWIDTH_SCORE] = bandWidthScore;
+                opRow[Keys.EVENT_NORMSCORE] = comboScore;
+                opRow["Quality"] = -99; //fill in with blanks
                 opRow["Sex"] = "-";
                 opRow["Harmonics"] = 0;
                 opRow["TP"] = 0;
@@ -968,19 +1001,19 @@ namespace AnalysisPrograms
                 opRow["FN"] = 0;
 
                 bool isTP = false;
-                foreach (DataRow adRow in dtADResults.Rows) 
+                foreach (DataRow trueEvent in dtTheTruth.Rows) 
                 {
-                    double adStart = (double)adRow["Begin Time (s)"];
-                    if ((adStart >= (myStart - 10)) && (adStart <= (myStart + 10))) //myStart is within 10 seconds of adStart THERFORE TRUE POSTIIVE
+                    double trueStart = (double)trueEvent["Begin Time (s)"];
+                    if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 10))) //myStart is within 10 seconds of trueStart THERFORE TRUE POSTIIVE
                     {
                         isTP = true;
-                        adRow["Begin Time (s)"] = Double.NaN; //mark so that will not use again 
-                        opRow["Quality"] = adRow["Quality"];
-                        opRow["Sex"] = adRow["Sex"];
-                        opRow["Harmonics"] = adRow["Harmonics"];
+                        trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again 
+                        opRow["Quality"] = trueEvent["Quality"];
+                        opRow["Sex"] = trueEvent["Sex"];
+                        opRow["Harmonics"] = trueEvent["Harmonics"];
                         break;
                     }
-                } //foreach - AD loop
+                } //foreach - AD loop 
                 if (isTP)
                 {
                     opRow["TP"] = 1;
@@ -995,24 +1028,24 @@ namespace AnalysisPrograms
             } //foreach - MY loop
 
             //now add in the false negatives
-            foreach (DataRow adRow in dtADResults.Rows)
+            foreach (DataRow trueEvent in dtTheTruth.Rows)
             {
-                double adStart = (double)adRow["Begin Time (s)"];
-                if (! Double.IsNaN(adStart))
+                double trueStart = (double)trueEvent["Begin Time (s)"];
+                if (!Double.IsNaN(trueStart))
                 {
                     DataRow row = dtOutput.NewRow();
-                    row["startSec"] = (int)Math.Round(adStart);
-                    row["min"]      = "not calculated";
-                    row["secOffset"] = 0;
-                    row["hitScore"] = 0.0;
-                    row["snrScore"] = 0.0;
-                    row["sdScore"]  = 0.0;
-                    row["gapScore"] = 0.0;
-                    row["bwScore"]  = 0.0;
-                    row["comboScore"] = 0.0;
-                    row["Quality"] = adRow["Quality"];
-                    row["Sex"] = adRow["Sex"];
-                    row["Harmonics"] = adRow["Harmonics"];
+                    row[Keys.EVENT_START_ABS] = trueStart;
+                    row[Keys.EVENT_START_MIN] = (int)(trueStart / 60);
+                    row[Keys.EVENT_START_SEC] = (double)(trueStart % 60);
+                    row[Keys.EVENT_INTENSITY] = 0.0;
+                    row[LSKiwi2.key_PEAKS_SNR_SCORE] = 0.0;
+                    row[LSKiwi2.key_PEAKS_STD_SCORE] = 0.0;
+                    row[LSKiwi2.key_DELTA_SCORE] = 0.0;
+                    row[LSKiwi2.key_BANDWIDTH_SCORE] = 0.0;
+                    row[Keys.EVENT_NORMSCORE] = 0.0;
+                    row["Quality"]    = trueEvent["Quality"];
+                    row["Sex"]        = trueEvent["Sex"];
+                    row["Harmonics"]  = trueEvent["Harmonics"];
                     row["TP"] = 0;
                     row["FP"] = 0;
                     row["FN"] = 1;
@@ -1026,15 +1059,55 @@ namespace AnalysisPrograms
             Console.WriteLine("TP={0},  FP={1},  FN={2}", TP, FP, FN);
             Console.WriteLine("RECALL={0:f3},  SPECIFICITY={1:f3}", recall, specificity);
 
-            string sortString = "comboScore desc";
-            //string sortString = "startSec desc";
+            string sortString = Keys.EVENT_NORMSCORE + " desc";
             dtOutput = DataTableTools.SortTable(dtOutput, sortString);
 
-            ROCCurve(dtOutput, dtADResults.Rows.Count); //write ROC area above curve
+            ROCCurve(dtOutput, dtTheTruth.Rows.Count); //write ROC area above curve
 
 
             return dtOutput;
         }
+
+
+
+        public static List<string[]> GetExcludeRules()
+        {
+            string[] defaultRules = {
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_BANDWIDTH_SCORE+"_LT_0.2",
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_INTENSITY_SCORE+"_LT_0.1",
+                                           "WEIGHT_feature1=0.45",
+                                           "WEIGHT_feature2=0.45",
+                                           "WEIGHT_feature3=0.45"
+            };
+
+            var excludeRules = new List<string[]>();
+            foreach (string rule in defaultRules)
+            {
+                string[] parts = rule.Split('=');
+                if (parts[0] == "EXCLUDE_IF_RULE") excludeRules.Add(parts[1].Split('_'));
+            }
+            return excludeRules;
+        } //GetExcludeRules()
+
+
+        public static DataRow FilterEvent(DataRow acousticEvent, List<string[]> rules)
+        {
+            foreach (string[] rule in rules)
+            {
+                string feature = rule[0];
+                string op = rule[1];
+                double value = Double.Parse(rule[2]);
+                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwi2.key_BANDWIDTH_SCORE] < value)) return null;
+                else
+                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "GT") && ((double)acousticEvent[LSKiwi2.key_BANDWIDTH_SCORE] > value)) return null;
+                else
+                if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwi2.key_INTENSITY_SCORE] < value)) return null;
+                else
+                if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "GT") && ((double)acousticEvent[LSKiwi2.key_INTENSITY_SCORE] > value)) return null;
+            }
+            return acousticEvent;
+        }
+
 
 
         public static void ROCCurve(DataTable dt, int countOfTargetTrues)
@@ -1068,14 +1141,14 @@ namespace AnalysisPrograms
                     maxAccuracy = accuracy;
                     recallAtMax = recall;
                     precisionAtMax = precision;
-                    scoreAtMax = (double)row["comboScore"];
+                    scoreAtMax = (double)row[Keys.EVENT_NORMSCORE];
                 }
                 count++;
                 if (count == 30)
                 {
                     recallAt30 = recall;
                     precisionAt30 = precision;
-                    scoreAt30 = (double)row["comboScore"];
+                    scoreAt30 = (double)row[Keys.EVENT_NORMSCORE];
                 }
 
                 double delta = precision * (recall - previousRecall);
