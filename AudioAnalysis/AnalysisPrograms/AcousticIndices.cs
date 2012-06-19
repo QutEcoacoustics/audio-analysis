@@ -294,11 +294,12 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
+            //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            //Dictionary<string, string> configDict = configuration.GetTable();
             //string key_GET_ANNOTATED_SONOGRAM = "ANNOTATE_SONOGRAM";
             //configDict.Add(key_GET_ANNOTATED_SONOGRAM, Boolean.FalseString);
             //if (analysisSettings.ImageFile != null) configDict[key_GET_ANNOTATED_SONOGRAM] = Boolean.TrueString;
+    
             var fiAudioF    = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
@@ -308,7 +309,7 @@ namespace AnalysisPrograms
             analysisResults.Data = null;
 
             //######################################################################
-            var results = AcousticFeatures.Analysis(fiAudioF, configDict);
+            var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings.ConfigDict);
             //######################################################################
 
             if (results == null) return analysisResults; //nothing to process 
@@ -318,7 +319,7 @@ namespace AnalysisPrograms
             var hits                      = results.Item4;
             var scores                    = results.Item5;
 
-            if (sonogram != null)
+            if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
                 var image = DrawSonogram(sonogram, hits, scores);

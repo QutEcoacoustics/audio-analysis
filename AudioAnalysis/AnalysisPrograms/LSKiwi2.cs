@@ -367,7 +367,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 var fileExists = File.Exists(analysisSettings.ImageFile.FullName);
                 string imagePath = analysisSettings.ImageFile.FullName;
@@ -419,7 +419,7 @@ namespace AnalysisPrograms
             //double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
             double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
             double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double eventThreshold = ConfigDictionary.GetDouble(Keys.EVENT_THRESHOLD, config);
             double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
             double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
 

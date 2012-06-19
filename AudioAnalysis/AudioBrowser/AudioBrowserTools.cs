@@ -93,7 +93,14 @@ namespace AudioBrowser
             FileInfo fiAudio  = new FileInfo(args[0]); 
             FileInfo fiConfig = new FileInfo(args[1]);
             FileInfo fiImage  = new FileInfo(args[2]);
-            MakeSonogram(fiAudio, fiConfig, fiImage);
+            Image image = MakeSonogram(fiAudio, fiConfig, fiImage);
+            if (image != null)
+            {
+                if (fiImage.Exists) fiImage.Delete();
+                image.Save(fiImage.FullName, ImageFormat.Png);
+            }
+
+
         }
         /// <summary>
         /// 
@@ -109,7 +116,9 @@ namespace AudioBrowser
             string imagePath   = args[3]; //Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
 
             var fiAnalysisConfig = new FileInfo(configPath);
-            IAnalyser analyser =  AudioBrowserTools.GetAcousticAnalyser(analyisName,null);
+
+            IEnumerable<IAnalyser> analysers = GetListOfAvailableAnalysers();
+            IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, analysers);
             if (analyser == null)
             {
                 //Console.WriteLine("\nWARNING: Could not construct image from CSV file. Analysis name not recognized: " + analyisName);
@@ -126,6 +135,15 @@ namespace AudioBrowser
             return status;
         }
 
+
+        public static IEnumerable<IAnalyser> GetListOfAvailableAnalysers()
+        {
+             //finds valid analysis files that implement the IAnalysis interface
+            PluginHelper pluginHelper = new PluginHelper();
+            pluginHelper.FindIAnalysisPlugins();
+            return pluginHelper.AnalysisPlugins;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -136,6 +154,18 @@ namespace AudioBrowser
         {
             return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
         } //GetAcousticAnalyser()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="analysisIdentifier"></param>
+        /// <param name="analysers"></param>
+        /// <returns></returns>
+        public static IAnalyser GetAcousticAnalyser(string analysisIdentifier)
+        {
+            var analysers = GetListOfAvailableAnalysers();
+            return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+        } //GetAcousticAnalyser()
+
 
 
         /// <summary>
@@ -160,11 +190,12 @@ namespace AudioBrowser
             };
             var fileSegments = new[] { file };
 
+            bool saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
             //initilise classes that will do the analysis
             AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
-                DeleteFinished = false,    // create and delete directories 
-                IsParallel       = true,                             //########### PARALLEL OR SEQUENTIAL ??????????????
+                DeleteFinished   = (! saveIntermediateWavFiles), // create and delete directories 
+                IsParallel       = true,                // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
             
@@ -177,12 +208,20 @@ namespace AudioBrowser
             if (!settings.AnalysisRunDirectory.Exists) Directory.CreateDirectory(runDirectory);
 
             bool saveSonograms = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_SONOGRAM_FILES, settings.ConfigDict);
-            bool saveIntermediateFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_FILES, settings.ConfigDict);
-
-
+            bool saveIntermediateFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_CSV_FILES, settings.ConfigDict);
 
             if (analysisCoordinator.IsParallel)
             {
+                //a fudge becaues parallel mode cannot save images at the moment
+                saveSonograms = false;
+                settings.ConfigDict[Keys.SAVE_SONOGRAM_FILES] = saveSonograms.ToString();
+                saveIntermediateFiles = false;
+                settings.ConfigDict[Keys.SAVE_INTERMEDIATE_CSV_FILES] = saveIntermediateFiles.ToString();
+                //settings.ConfigDict[Keys.SAVE_INTERMEDIATE_WAV_FILES] = saveIntermediateFiles.ToString();
+                settings.ImageFile = null;
+                settings.EventsFile  = null;
+                settings.IndicesFile = null;
+
                 var results = new AnalysisResult[analysisSegmentsCount];
 
                 Parallel.ForEach(
@@ -205,23 +244,23 @@ namespace AudioBrowser
                 {
                     Console.Write("{0}\t", count);
                     if (count % 10 == 0) Console.WriteLine();
-                    try
-                    {
+                    //try
+                    //{
                         var result = AudioBrowserTools.PrepareFileAndRunAnalysis(analysisCoordinator, item, analyser, settings, saveSonograms, saveIntermediateFiles);
                         results.Add(result);
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine("###################################### ERROR ##############################################");
-                        DataTable datatable = AudioBrowserTools.MergeResultsIntoSingleDataTable(results);
-                        var op1 = AudioBrowserTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
-                        var eventsDatatable = op1.Item1;
-                        var indicesDatatable = op1.Item2;
-                        var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                        string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-                        var op2 = AudioBrowserTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-                        Console.WriteLine(ex);
-                    }
+                    //}
+                    //catch(Exception ex)
+                    //{
+                    //    Console.WriteLine("###################################### ERROR ##############################################");
+                    //    DataTable datatable = AudioBrowserTools.MergeResultsIntoSingleDataTable(results);
+                    //    var op1 = AudioBrowserTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
+                    //    var eventsDatatable = op1.Item1;
+                    //    var indicesDatatable = op1.Item2;
+                    //    var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+                    //    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
+                    //    var op2 = AudioBrowserTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+                    //    Console.WriteLine(ex);
+                    //}
                     count++;
                 }
                 Console.WriteLine();
@@ -258,11 +297,11 @@ namespace AudioBrowser
                 end,
                 settings.SegmentTargetSampleRate);
 
-            var preparedFilePath = preparedFile.OriginalFile;
+            //var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;
 
-            settings.AudioFile  = preparedFilePath;
-            string fName = Path.GetFileNameWithoutExtension(preparedFilePath.Name);
+            settings.AudioFile = preparedFile.OriginalFile;
+            string fName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
             if (saveIntermediateFiles)
             {
                 settings.EventsFile  = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, fName + ".Events.csv"));
@@ -284,18 +323,19 @@ namespace AudioBrowser
             result.AudioDuration = preparedFileDuration;
 
             // clean up
-            //if (coordinator.DeleteFinished)
-            //{
-            //    // delete the prepared audio file segment
-            //    try
-            //    {
-            //        File.Delete(settings.AudioFile.FullName);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        // this error is not fatal, but it does mean we'll be leaving an audio file behind.
-            //    }
-            //}
+            if (coordinator.DeleteFinished)
+            {
+                // delete the prepared audio file segment
+                try
+                {
+                    File.Delete(preparedFile.OriginalFile.FullName);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Could not delete file <{0}>", preparedFile.OriginalFile.FullName);
+                    // this error is not fatal, but it does mean we'll be leaving an audio file behind.
+                }
+            }
 
             return result;
         }
@@ -518,13 +558,16 @@ namespace AudioBrowser
 
                 foreach (DataRow row in segmentDataTable.Rows)
                 {
-                    double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
+                    if (headers.Contains(Keys.EVENT_START_SEC)) //this is a file of events
+                    {
+                        double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
+                        if (headers.Contains(Keys.EVENT_START_ABS)) row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
+                        if (headers.Contains(Keys.EVENT_START_MIN)) row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
+                        if (headers.Contains(Keys.EVENT_COUNT))     row[Keys.EVENT_COUNT] = masterDataTable.Rows.Count + 1;
+                        row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
+                    }
+                    if (headers.Contains(Keys.INDICES_COUNT))    row[Keys.INDICES_COUNT] = segmentIndex;
                     if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
-                    if (headers.Contains(Keys.EVENT_START_ABS))  row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
-                    if (headers.Contains(Keys.EVENT_START_MIN))  row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
-                    if (headers.Contains(Keys.EVENT_COUNT))      row[Keys.EVENT_COUNT]     = masterDataTable.Rows.Count + 1; 
-                    if (headers.Contains(Keys.INDICES_COUNT))    row[Keys.INDICES_COUNT]   = segmentIndex;
-                    row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //change the offset to nearest minute - not start of segment
                     masterDataTable.ImportRow(row);
                 }
             } //if (dt != null)
@@ -760,7 +803,7 @@ namespace AudioBrowser
         /// <param name="fiConfig"></param>
         /// <param name="fiImage"></param>
         /// <returns></returns>
-        public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage)
+        public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage, IAnalyser analyser)
         {
             var config = new ConfigDictionary(fiConfig.FullName); //read in config file
 
@@ -770,19 +813,21 @@ namespace AudioBrowser
             double bgNoiseThreshold = config.GetDouble(Keys.NOISE_BG_REDUCTION);
 
             var diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiImage.FullName));
-            Image image = null;
+            //Image image = null;
 
             if (doAnnotate)
             {
-                IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, null);
                 if (analyser == null)
                 {
-                    Console.WriteLine("\nWARNING: Could not construct image.");
-                    Console.WriteLine("\t Analysis name not recognized: " + analyisName);
+                    Console.WriteLine("\nWARNING: Could not construct annotated image because analysis name not recognized:");
+                    Console.WriteLine("\t " + analyisName);
                     return null;
                 }
+                
+                Image image = null;
                 AnalysisSettings settings = new AnalysisSettings();
                 settings.AudioFile = fiAudio;
+                settings.ConfigDict = config.GetDictionary();
                 settings.ConfigFile = fiConfig;
                 settings.ImageFile = fiImage;
                 settings.AnalysisRunDirectory = diOutputDir;
@@ -790,12 +835,19 @@ namespace AudioBrowser
                 if (results.ImageFile == null) image = null;
                 else                           image = Image.FromFile(results.ImageFile.FullName);
                 analyser = null;
+                return image;
             }
             else
             {
-                image = AudioBrowserTools.MakeSonogram(fiAudio, fiConfig, fiImage);
+                analyser = null;
+                Image image = AudioBrowserTools.MakeSonogram(fiAudio, fiConfig, fiImage);
+                if (image != null)
+                {
+                    if (fiImage.Exists) fiImage.Delete();
+                    image.Save(fiImage.FullName, ImageFormat.Png);
+                }
+                return image;
             }
-            return image;
         }
 
         /// <summary>
@@ -836,9 +888,6 @@ namespace AudioBrowser
             Image_MultiTrack mti = new Image_MultiTrack(img);
             mti.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             var image = mti.GetImage();
-
-            if (image != null)
-                image.Save(fiImage.FullName, ImageFormat.Png);
 
             return image;
         }//MakeSonogram()

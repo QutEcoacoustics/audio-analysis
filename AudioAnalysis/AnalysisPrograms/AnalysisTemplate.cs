@@ -330,7 +330,7 @@ namespace AnalysisPrograms
             }
 
             //save image of sonograms
-            if (analysisSettings.ImageFile != null)
+            if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;

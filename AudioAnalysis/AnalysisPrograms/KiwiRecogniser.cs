@@ -116,9 +116,6 @@ namespace AnalysisPrograms
         public static string key_MAX_PERIODICITY = "MAX_PERIOD";
         public static string key_MIN_DURATION    = "MIN_DURATION";
         public static string key_MAX_DURATION    = "MAX_DURATION";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
-        public static string key_REPORT_FORMAT   = "REPORT_FORMAT";
 
 
 
@@ -283,10 +280,10 @@ namespace AnalysisPrograms
             double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
             double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
             double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double eventThreshold = ConfigDictionary.GetDouble(Keys.EVENT_THRESHOLD, config);
             double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
             double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
-            double drawSonograms = ConfigDictionary.GetInt(LSKiwi.key_DRAW_SONOGRAMS, config);
+            double drawSonograms = ConfigDictionary.GetInt(Keys.SAVE_SONOGRAM_FILES, config);
             double segmentDuration = ConfigDictionary.GetDouble(LSKiwi.key_SEGMENT_DURATION, config); 
             double segmentStartMinute = segmentDuration * iter;
 
@@ -347,9 +344,9 @@ namespace AnalysisPrograms
             double dctThreshold = ConfigDictionary.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
             double minPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
             double maxPeriod = ConfigDictionary.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
-            double eventThreshold = ConfigDictionary.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
-            double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            double eventThreshold = ConfigDictionary.GetDouble(Keys.EVENT_THRESHOLD, config);
+            double minDuration = ConfigDictionary.GetDouble(LSKiwi.key_MIN_DURATION, config);  //minimum event duration to qualify as species call
+            double maxDuration = ConfigDictionary.GetDouble(LSKiwi.key_MAX_DURATION, config);  //maximum event duration to qualify as species call
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
@@ -363,9 +360,9 @@ namespace AnalysisPrograms
 
             // (iii) NOISE REDUCTION
             bool doNoiseReduction = false;
-            doNoiseReduction = ConfigDictionary.GetBoolean(AcousticFeatures.key_DO_NOISE_REDUCTION, config);
+            doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
             double sonogramBackgroundThreshold = 4.0;
-            sonogramBackgroundThreshold = ConfigDictionary.GetDouble(AcousticFeatures.key_BG_NOISE_REDUCTION, config);
+            sonogramBackgroundThreshold = ConfigDictionary.GetDouble(Keys.NOISE_BG_REDUCTION, config);
             if (doNoiseReduction)
             {
                 var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, sonogramBackgroundThreshold);
@@ -976,11 +973,25 @@ namespace AnalysisPrograms
                 //################################################################################
                 // the following line experiments with different weightings other than the default
                 //comboScore = (intensityScore * 0.0) + (snrScore * 0.1)  + (sdPeakScore * 0.1)  + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                comboScore = (intensityScore * 0.2) + (snrScore * 0.0)  + (sdPeakScore * 0.1)  + (periodicityScore * 0.1) + (bandWidthScore * 0.5); //weighted sum
-                //comboScore = (intensityScore * 0.2) + (snrScore * 0.05) + (sdPeakScore * 0.25) + (periodicityScore * 0.3) + (bandWidthScore * 0.3); 
+                string[] defaultRules = {
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_BANDWIDTH_SCORE+"_LT_0.3",
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_INTENSITY_SCORE+"_LT_0.12",
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_PEAKS_SNR_SCORE+"_LT_0.12",
+                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_DELTA_SCORE+"_LT_0.25",
+                                           "WEIGHT_"+LSKiwi2.key_BANDWIDTH_SCORE+"=0.30",
+                                           "WEIGHT_"+LSKiwi2.key_INTENSITY_SCORE+"=0.40",
+                                           "WEIGHT_"+LSKiwi2.key_PEAKS_SNR_SCORE+"=0.10",
+                                           "WEIGHT_"+LSKiwi2.key_PEAKS_STD_SCORE+"=0.10",
+                                           "WEIGHT_"+LSKiwi2.key_DELTA_SCORE+    "=0.10"
+            };
+                var weights = GetFeatureWeights(defaultRules);
+                comboScore = (intensityScore   * weights[LSKiwi2.key_INTENSITY_SCORE]) +
+                             (snrScore         * weights[LSKiwi2.key_PEAKS_SNR_SCORE]) +
+                             (sdPeakScore      * weights[LSKiwi2.key_PEAKS_STD_SCORE]) + 
+                             (periodicityScore * weights[LSKiwi2.key_DELTA_SCORE])     + 
+                             (bandWidthScore   * weights[LSKiwi2.key_BANDWIDTH_SCORE]);   //weighted sum
 
-
-                List<string[]> excludeRules = GetExcludeRules();
+                List<string[]> excludeRules = GetExcludeRules(defaultRules);
                 if (FilterEvent(myRow, excludeRules) == null) continue; 
 
                 DataRow opRow = dtOutput.NewRow();
@@ -1043,9 +1054,9 @@ namespace AnalysisPrograms
                     row[LSKiwi2.key_DELTA_SCORE] = 0.0;
                     row[LSKiwi2.key_BANDWIDTH_SCORE] = 0.0;
                     row[Keys.EVENT_NORMSCORE] = 0.0;
-                    row["Quality"]    = trueEvent["Quality"];
+                    row["Harmonics"] = trueEvent["Harmonics"];
+                    row["Quality"] = trueEvent["Quality"];
                     row["Sex"]        = trueEvent["Sex"];
-                    row["Harmonics"]  = trueEvent["Harmonics"];
                     row["TP"] = 0;
                     row["FP"] = 0;
                     row["FN"] = 1;
@@ -1070,24 +1081,32 @@ namespace AnalysisPrograms
 
 
 
-        public static List<string[]> GetExcludeRules()
+        public static List<string[]> GetExcludeRules(string[] rules)
         {
-            string[] defaultRules = {
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_BANDWIDTH_SCORE+"_LT_0.2",
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_INTENSITY_SCORE+"_LT_0.1",
-                                           "WEIGHT_feature1=0.45",
-                                           "WEIGHT_feature2=0.45",
-                                           "WEIGHT_feature3=0.45"
-            };
-
             var excludeRules = new List<string[]>();
-            foreach (string rule in defaultRules)
+            foreach (string rule in rules)
             {
                 string[] parts = rule.Split('=');
                 if (parts[0] == "EXCLUDE_IF_RULE") excludeRules.Add(parts[1].Split('_'));
             }
             return excludeRules;
         } //GetExcludeRules()
+
+        public static Dictionary<string, double> GetFeatureWeights(string[] rules)
+        {
+            var weights = new Dictionary<string, double>();
+            foreach (string rule in rules)
+            {
+                string[] parts = rule.Split('_');
+                if (parts[0] == "WEIGHT")
+                {
+                    string[] words = parts[1].Split('=');
+                    weights.Add(words[0], Double.Parse(words[1]));
+                }
+            }
+            return weights;
+        } //GetExcludeRules()
+
 
 
         public static DataRow FilterEvent(DataRow acousticEvent, List<string[]> rules)

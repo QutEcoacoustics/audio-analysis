@@ -16,7 +16,6 @@ namespace AudioAnalysisTools
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
         public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
         public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
-        public static string EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string FRAME_LENGTH = "FRAME_LENGTH";
         public static string FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
@@ -33,7 +32,8 @@ namespace AudioAnalysisTools
         public static string NOISE_DO_REDUCTION = "DO_NOISE_REDUCTION";
         public static string NOISE_BG_REDUCTION = "BG_NOISE_REDUCTION";
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
-        public static string SAVE_INTERMEDIATE_FILES = "SAVE_INTERMEDIATE_FILES";
+        public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
+        public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
         public static string SAVE_SONOGRAM_FILES = "SAVE_SONOGRAM_FILES";
         public static string SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
@@ -47,6 +47,7 @@ namespace AudioAnalysisTools
 
         //KEYS TO OUTPUT EVENT HEADERS
         public static string EVENT_COUNT     = "Event Count";
+        public static string EVENT_DURATION = "EvDuration";
         public static string EVENT_INTENSITY = "EvIntensity";
         public static string EVENT_NAME      = "Event Name";
         public static string EVENT_NORMSCORE = "EvScoreNorm";
@@ -54,7 +55,7 @@ namespace AudioAnalysisTools
         public static string EVENT_START_ABS = "EvStartAbs";
         public static string EVENT_START_SEC = "EvStartSec";
         public static string EVENT_START_MIN = "EvStartMin";
-        public static string EVENT_DURATION  = "EvDuration";
+        public static string EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string EVENT_TOTAL     = "# events";
 
         public static string SNR_SCORE       = "SNRscore";
