@@ -80,18 +80,6 @@
             browserSettings = new AudioBrowserSettings();
             browserSettings.LoadBrowserSettings();
 
-            ////initilise classes that will do the analysis
-            //this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
-            //{
-            //    DeleteFinished = false,
-            //    IsParallel = true,
-            //    SubFoldersUnique = false
-            //};
-
-            //finds valid analysis files that implement the IAnalysis interface
-            this.pluginHelper = new PluginHelper();
-            this.pluginHelper.FindIAnalysisPlugins();
-
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
             this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
@@ -159,8 +147,6 @@
 
             if (browserSettings.DefaultOutputDir != null)
             {
-                //string opDir = Path.Combine(browserSettings.DefaultOutputDir.FullName, browserSettings.AnalysisName);
-                //this.browserSettings.diOutputDir = new DirectoryInfo(opDir);
                 this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
                 this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
 
@@ -170,21 +156,19 @@
                 }
             }
 
-            //this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
-            //this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
-
+            //finds valid analysis files that implement the IAnalysis interface
+            this.pluginHelper = new PluginHelper();
+            this.pluginHelper.FindIAnalysisPlugins();
+            //create list of analysers for display to user
             var analyserDict = new Dictionary<string, string>();
-
-
             foreach (var plugin in this.pluginHelper.AnalysisPlugins)
             {
                 analyserDict.Add(plugin.Identifier, plugin.DisplayName);
             }
-
             var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
-
             analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
 
+            //create comboBox display
             this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
@@ -538,7 +522,7 @@
 
             //make values of bottom track available
             string header = displayHeaders[displayHeaders.Length - 1];
-            this.trackValues = DataTableTools.Column2ArrayOfDouble(dtRaw, header);
+            this.trackValues = DataTableTools.Column2ArrayOfDouble(dt2Display, header);
 
             //display column headers in the list box of displayed tracks
             List<string> displayList = displayHeaders.ToList();
@@ -663,14 +647,17 @@
             Console.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
             Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
-            AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
+            //if (!fiOutputSegment.Exists) //extract the segment
+            //{
+                AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
+            //}
 
-            if (!fiOutputSegment.Exists)
-            {
-                Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
-                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
-                return;
-            }
+                if (!fiOutputSegment.Exists) //still has not been extracted
+                {
+                    Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
+                    this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
+                    return;
+                }
 
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
@@ -679,8 +666,32 @@
             //store info
             this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
             this.browserSettings.fiSegmentRecording = fiOutputSegment;
-            GetSonogram(fiOutputSegment);
-        }
+            Image image = GetSonogram(fiOutputSegment);
+
+            if (image == null)
+            {
+                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiOutputSegment.FullName);
+                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+            }
+            else
+            {
+                this.pictureBoxSonogram.Image = image;
+                //this.panelDisplaySpectrogram.Height = image.Height;
+                Console.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
+                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
+                this.labelSonogramFileName.Text = fiOutputSegment.Name;
+                //attempt to deal with variable height of spectrogram
+                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
+                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
+                //Point location = this.panelDisplaySpectrogram.Location;
+                //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
+                //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
+                //this.pictureBoxSonogram.Location = new Point(3, 0);
+                //this.vScrollBarSonogram.Minimum = 0;
+            }
+
+        } //pictureBoxVisualIndex_MouseClick()
 
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
@@ -1250,10 +1261,34 @@
         /// </summary>
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
-            GetSonogram(browserSettings.fiSegmentRecording);
-        }
+            if (browserSettings.fiSegmentRecording == null)
+            {
+                Console.WriteLine("YOU MUST SELECT A SEGMENT OF AUDIO BY CLICKING ON THE 'TRACKS' IMAGE.");
+                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            Image image = GetSonogram(browserSettings.fiSegmentRecording);
+            if (image == null)
+            {
+                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + browserSettings.fiSegmentRecording.FullName);
+                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            else
+            {
+                this.pictureBoxSonogram.Image = image;
+                Console.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
+                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
+                this.labelSonogramFileName.Text = browserSettings.fiSegmentRecording.Name;
+                //attempt to deal with variable height of spectrogram
+                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
+                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
+            }
+        } //buttonRefreshSonogram_Click()
 
-        private void GetSonogram(FileInfo fiAudio)
+        private Image GetSonogram(FileInfo fiAudio)
         {
             //check recording segment exists
             if ((fiAudio == null) || (!fiAudio.Exists))
@@ -1262,7 +1297,7 @@
                 else
                     Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + fiAudio.FullName);
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
+                return null;
             }
 
             string analysisName = this.CurrentSourceFileAnalysisType;
@@ -1270,7 +1305,7 @@
             {
                 Console.WriteLine("#######  CANNOT ANNOTATE SONOGRAM because SOURCE ANALYSIS TYPE = \"none\".");
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
+                return null;
             }
 
             //reload indices for source analysis type
@@ -1288,32 +1323,10 @@
 
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             FileInfo fiImage = new FileInfo(Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiAudio.FullName) + ".png"));
-            Image image = AudioBrowserTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage);
-
-            if (image == null)
-            {
-                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiAudio.FullName);
-                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-            }
-            else
-            {
-                this.pictureBoxSonogram.Image = image;
-                //this.panelDisplaySpectrogram.Height = image.Height;
-                Console.WriteLine("\n\tSaved sonogram to image file: " + fiImage.FullName);
-                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-                this.labelSonogramFileName.Text = fiAudio.Name;
-                //attempt to deal with variable height of spectrogram
-                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
-                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
-                //Point location = this.panelDisplaySpectrogram.Location;
-                //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
-                //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
-                //this.pictureBoxSonogram.Location = new Point(3, 0);
-                //this.vScrollBarSonogram.Minimum = 0;
-            }
-
-        } //buttonRefreshSonogram_Click()
+            IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
+            Image image = AudioBrowserTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);
+            return image;
+        } //GetSonogram()
 
         private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {

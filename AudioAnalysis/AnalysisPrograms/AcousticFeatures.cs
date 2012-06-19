@@ -22,6 +22,11 @@ namespace AnalysisPrograms
         public const  int   RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
 
+        //Keys to recognise identifiers in ANALYSIS CONFIG file. 
+        public static string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
+        public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
+        public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
+
         private const int    COL_NUMBER = 18;
         private static Type[] COL_TYPES = new Type[COL_NUMBER];
         private static string[] HEADERS = new string[COL_NUMBER];
@@ -96,23 +101,6 @@ namespace AnalysisPrograms
        
         public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
         public static string FORMAT_STR_DATA    = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
-
-
-        //Keys to recognise identifiers in ANALYSIS CONFIG file. 
-        public static string key_ANALYSIS_NAME    = "ANALYSIS_NAME";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
-        public static string key_RESAMPLE_RATE    = "RESAMPLE_RATE";
-        public static string key_FRAME_LENGTH     = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP    = "FRAME_OVERLAP";
-        public static string key_LOW_FREQ_BOUND   = "LOW_FREQ_BOUND";
-        public static string key_MID_FREQ_BOUND   = "MID_FREQ_BOUND";
-        public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
-        public static string key_DISPLAY_COLUMNS  = "DISPLAY_COLUMNS";
-        //public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
-        public static string key_STORE_INTERMEDATE_RESULTS = "STORE_INTERMEDATE_RESULTS";
-        public static string key_DO_NOISE_REDUCTION = "DO_NOISE_REDUCTION"; // used when displaying sonograms
-        public static string key_BG_NOISE_REDUCTION = "BG_NOISE_REDUCTION"; // used when displaying sonograms - backgroud noise reduction severity in dB.
 
 
         /// Following is list of scaling originally applied to the Acoustic Indices Tracks
@@ -199,11 +187,11 @@ namespace AnalysisPrograms
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
             AcousticFeatures.Parameters paramaters; // st
-            paramaters.segmentDuration = Double.Parse(dict[AcousticFeatures.key_SEGMENT_DURATION]);
-            paramaters.segmentOverlap = Int32.Parse(dict[AcousticFeatures.key_SEGMENT_OVERLAP]);
-            paramaters.resampleRate = Int32.Parse(dict[AcousticFeatures.key_RESAMPLE_RATE]);
-            paramaters.frameLength = Int32.Parse(dict[AcousticFeatures.key_FRAME_LENGTH]);
-            paramaters.frameOverlap = Double.Parse(dict[AcousticFeatures.key_FRAME_OVERLAP]);
+            paramaters.segmentDuration = Double.Parse(dict[Keys.SEGMENT_DURATION]);
+            paramaters.segmentOverlap = Int32.Parse(dict[Keys.SEGMENT_OVERLAP]);
+            paramaters.resampleRate = Int32.Parse(dict[Keys.RESAMPLE_RATE]);
+            paramaters.frameLength = Int32.Parse(dict[Keys.FRAME_LENGTH]);
+            paramaters.frameOverlap = Double.Parse(dict[Keys.FRAME_OVERLAP]);
             paramaters.lowFreqBound = Int32.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
             //paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
             //paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
@@ -288,13 +276,13 @@ namespace AnalysisPrograms
 
             //ii: EXTRACT INDICES 
             Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
-            dict.Add(key_FRAME_LENGTH, AcousticFeatures.DEFAULT_WINDOW_SIZE.ToString());
+            dict.Add(Keys.FRAME_LENGTH, AcousticFeatures.DEFAULT_WINDOW_SIZE.ToString());
             dict.Add(key_LOW_FREQ_BOUND, "500");
             dict.Add(key_LOW_FREQ_BOUND, "3500");
             //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
             int iterationNumber = 1;
             var fiRecording = new FileInfo(recordingPath);
-            dict.Add(key_STORE_INTERMEDATE_RESULTS, "false");
+            dict.Add(Keys.SAVE_INTERMEDIATE_CSV_FILES, "false");
 
             //######################################################
             var results = Analysis(fiRecording, dict);
@@ -328,10 +316,10 @@ namespace AnalysisPrograms
         {
             //get parameters for the analysis
             int frameSize = AcousticFeatures.DEFAULT_WINDOW_SIZE;
-            if (config.ContainsKey(key_FRAME_LENGTH)) frameSize = ConfigDictionary.GetInt(key_FRAME_LENGTH, config);
+            if (config.ContainsKey(Keys.FRAME_LENGTH)) frameSize = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
             if (config.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config);
             if (config.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config);
-            double windowOverlap = ConfigDictionary.GetDouble(AcousticFeatures.key_FRAME_OVERLAP, config);
+            double windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
 
             //get recording segment
             AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
@@ -394,10 +382,9 @@ namespace AnalysisPrograms
             List<double[]> scores = new List<double[]>();
 
             bool returnSonogramInfo = false;
-            string key_GET_ANNOTATED_SONOGRAM = "ANNOTATE_SONOGRAM"; //this must be same as in AcousticIndices class.
-            if (config.ContainsKey(key_GET_ANNOTATED_SONOGRAM)) returnSonogramInfo = ConfigDictionary.GetBoolean(key_GET_ANNOTATED_SONOGRAM, config);
+            if (config.ContainsKey(Keys.SAVE_SONOGRAM_FILES)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAM_FILES, config);
             bool doNoiseReduction = false;
-            if (config.ContainsKey(key_DO_NOISE_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(key_DO_NOISE_REDUCTION, config);
+            if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
 
             if (returnSonogramInfo)
             {
