@@ -29,14 +29,14 @@ namespace EcosoundsFeltAdapter
     /// <summary>
     /// The felt accessor.
     /// </summary>
-    public class FeltAccessor
+    public class FeltAccessor : IFeltAccessor
     {
         #region Constants and Fields
 
         /// <summary>
         /// The felt ext.
         /// </summary>
-        public const string FeltExt = "feltcache";
+        public const string FeltExt = ".feltcache";
 
         /// <summary>
         /// The directory to store the trained caches.
@@ -181,6 +181,22 @@ namespace EcosoundsFeltAdapter
 
             // summarise the results
             return computationResults;
+        }
+
+        public bool IsSearchAvailable
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public string[] SearchUnavilabilityMessages
+        {
+            get
+            {
+                return new string[0];
+            }
         }
 
         #endregion

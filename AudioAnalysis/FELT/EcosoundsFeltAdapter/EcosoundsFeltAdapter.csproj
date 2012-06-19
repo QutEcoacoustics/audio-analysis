@@ -44,7 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FeltAccessor.cs" />
+    <Compile Include="IFeltAccessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnavailableFeltAccessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
