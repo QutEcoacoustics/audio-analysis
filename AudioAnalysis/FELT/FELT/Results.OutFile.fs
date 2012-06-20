@@ -33,7 +33,15 @@
                     Assembly = assembly;
                 }
 
+            let fDest =
+                if fileDestination.Exists then
+                    new FileInfo(fileDestination.Directory.FullName + "\\" + Path.GetFileNameWithoutExtension(fileDestination.Name)+ (DateTime.Now.ToString "yyyy-MM-dd HH_mm_ss") + fileDestination.Extension)
+                else
+                    fileDestination
+            
+            Warnf "Outputting serialized results file to %s" fDest.FullName    
+
             // side affect
-            Serialization.serializeBinaryToFile cacheItem (fileDestination.FullName)
+            Serialization.serializeBinaryToFile cacheItem (fDest.FullName)
 
             ()

@@ -21,7 +21,8 @@
         member this.NormaliseWithValues (anyData:Data) (featureMap) =
             let normalise2 featureName vs = 
                 if Map.containsKey featureName featureMap then
-                    let _, Some(mean, stddev) = featureMap.[featureName]
+                    let mean, stddev = featureMap.[featureName]
+                    
                     let numbers = 
                         match vs with
                         | IsAnyNumbers ns ->
@@ -69,7 +70,7 @@
 
             // all scores in test data should be normalised, w/respect to training scores, 
             // i.e. z-score in test data based off mean and stddev of training data
-            let subF = Map.filter (fun name (vs, avgInfo) -> Option.isSome avgInfo) normedVsTr
+            let subF = Map.filter (fun name (vs, avgInfo) -> Option.isSome avgInfo) normedVsTr |> Map.map (fun key (vs, op) -> op.Value )
 
             let normedTestData = this.NormaliseWithValues testData subF
 

@@ -8,6 +8,7 @@ namespace EcosoundsFeltAdapter
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
@@ -25,6 +26,8 @@ namespace EcosoundsFeltAdapter
     using Microsoft.FSharp.Core;
 
     using MQUTeR.FSharp.Shared;
+
+    using log4net;
 
     /// <summary>
     /// The felt accessor.
@@ -62,6 +65,8 @@ namespace EcosoundsFeltAdapter
 
         private readonly FSharpMap<string, object> cachedExtraData;
 
+        private static ILog logger;
+
         #endregion
 
         #region Constructors and Destructors
@@ -71,6 +76,7 @@ namespace EcosoundsFeltAdapter
         /// </summary>
         static FeltAccessor()
         {
+            logger = LogManager.GetLogger(typeof(FeltAccessor));
         }
 
         /// <summary>
@@ -82,8 +88,14 @@ namespace EcosoundsFeltAdapter
         public FeltAccessor(DirectoryInfo cacheDirectory)
         {
             Contract.Requires(cacheDirectory.Exists);
-
-            // TODO: logging - ask mark
+            logger.Info("Loading FELT cache");
+            Stopwatch s = null;
+            if (logger.IsDebugEnabled)
+            {
+                s = new Stopwatch();
+                s.Start();
+            }
+            
 
             this.CacheDirectory = cacheDirectory;
             FileInfo newFile;
@@ -108,11 +120,25 @@ namespace EcosoundsFeltAdapter
             this.zScoreNormaliser = new ZScoreNormalise();
             this.classifier = new EuclideanClassifier(FSharpOption<bool>.Some(true));
             this.resultComputation = new WebsiteComputation(cacheFormat);
+
+            if (logger.IsDebugEnabled)
+            {
+                s.Stop();
+                logger.DebugFormat("FELT constructor loaded ({0})", s.Elapsed);
+            }
         }
 
         #endregion
 
         #region Public Properties
+
+        public DateTime CachedTrainingDataDate
+        {
+            get
+            {
+                return this.cachedTrainingDataDate;
+            }
+        }
 
         /// <summary>
         /// Gets DataSet.
@@ -147,12 +173,18 @@ namespace EcosoundsFeltAdapter
             {
                 if (!values.ContainsKey(kvp.Key))
                 {
-                    hdrs = dtraining.Headers.Remove(kvp.Key);
-                    instances = dtraining.Instances.Remove(kvp.Key);
+                    hdrs = hdrs.Remove(kvp.Key);
+                    instances = instances.Remove(kvp.Key);
                 }
             }
 
             dtraining = new Data(dtraining.DataSet, hdrs, instances, dtraining.ClassHeader, dtraining.Classes);
+
+            // if there a no features left in the training set by now there is nothing to compare with, return no results
+            if (dtraining.Headers.Count == 0 || dtraining.Instances.Count == 0)
+            {
+                return new Dictionary<string, int>();
+            }
 
 
             // construct the test set
@@ -170,8 +202,8 @@ namespace EcosoundsFeltAdapter
 
             // z-score processing
             var meanStdDevMap =
-                (FSharpMap<string, Tuple<string, FSharpOption<Tuple<double, double>>>>)
-                this.cachedExtraData["FELT.Transformers.ZScoreNormalise"];
+                (FSharpMap<string,Tuple<double, double>>)
+                this.cachedExtraData["ZScoreNormalise"];
             d = this.zScoreNormaliser.NormaliseWithValues(d, meanStdDevMap);
 
             // pass both into the classifier
@@ -234,10 +266,14 @@ namespace EcosoundsFeltAdapter
             Contract.Requires(
                 this.DataSet == null, "Currently loading of a data set may only be done on construction of object");
 
+            Stopwatch deserTimer = new Stopwatch();
+            deserTimer.Start();
+
             // deserialise into Data object
             cacheFormat = Serialization.deserializeBinaryStream<CacheFormat>(cachedFile.OpenRead());
 
-            
+            deserTimer.Stop();
+            logger.DebugFormat("Deserialization of FELT cache took {0}", deserTimer.Elapsed);
 
             // ensure versions match!
             Version versionFromFile = cacheFormat.Assembly.Version;
@@ -245,7 +281,7 @@ namespace EcosoundsFeltAdapter
             Assembly feltAsbly = Assembly.GetAssembly(typeof(Workflows));
             Version versionFromAssembly = feltAsbly.GetName().Version;
 
-            if (versionFromAssembly != versionFromFile)
+            if (!(versionFromAssembly.Major == versionFromFile.Major && versionFromAssembly.Minor == versionFromFile.Minor))
             {
                 throw new InvalidOperationException(
                     string.Format(
