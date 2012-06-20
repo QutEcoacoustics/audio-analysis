@@ -95,7 +95,7 @@ namespace EcosoundsFeltAdapter
                 s = new Stopwatch();
                 s.Start();
             }
-            
+
 
             this.CacheDirectory = cacheDirectory;
             FileInfo newFile;
@@ -202,7 +202,7 @@ namespace EcosoundsFeltAdapter
 
             // z-score processing
             var meanStdDevMap =
-                (FSharpMap<string,Tuple<double, double>>)
+                (Microsoft.FSharp.Collections.FSharpMap<string, System.Tuple<double, Microsoft.FSharp.Core.FSharpOption<System.Tuple<double, double>>>>)
                 this.cachedExtraData["ZScoreNormalise"];
             d = this.zScoreNormaliser.NormaliseWithValues(d, meanStdDevMap);
 
@@ -285,8 +285,8 @@ namespace EcosoundsFeltAdapter
             {
                 throw new InvalidOperationException(
                     string.Format(
-                        "The version of the cache file does not match the version of the FELT assembly. File:{0}, Assembly:{1}", 
-                        versionFromFile, 
+                        "The version of the cache file does not match the version of the FELT assembly. File:{0}, Assembly:{1}",
+                        versionFromFile,
                         versionFromAssembly));
             }
 
