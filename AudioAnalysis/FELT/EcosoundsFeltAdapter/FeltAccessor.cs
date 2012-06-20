@@ -202,7 +202,7 @@ namespace EcosoundsFeltAdapter
 
             // z-score processing
             var meanStdDevMap =
-                (Microsoft.FSharp.Collections.FSharpMap<string, System.Tuple<double, Microsoft.FSharp.Core.FSharpOption<System.Tuple<double, double>>>>)
+                (FSharpMap<string,Tuple<double, double>>)
                 this.cachedExtraData["ZScoreNormalise"];
             d = this.zScoreNormaliser.NormaliseWithValues(d, meanStdDevMap);
 
