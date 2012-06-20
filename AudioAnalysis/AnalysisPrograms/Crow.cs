@@ -383,8 +383,9 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
-            //set default values - ignore those set by user
-            int frameSize = 1024;
+            //set default values -
+            int frameLength = 1024;
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]); 
             double windowOverlap = 0.0;
 
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);
@@ -404,7 +405,7 @@ namespace AnalysisPrograms
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = frameSize;
+            sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -444,23 +445,41 @@ namespace AnalysisPrograms
 
             //transfer periodicity info to a hits matrix.
             //intensity = DataTools.filterMovingAverage(intensity, 3);
+            int noiseBound = (int)(300 / freqBinWidth);
             double[] scoreArray = new double[intensity.Length];
-            var hits = new double[rowCount, colCount];
             for (int r = 0; r < rowCount; r++)
             {
-                if (periodicity[r] < 2) continue;
+                if (intensity[r] < harmonicIntensityThreshold) continue;
                 //ignore locations with incorrect formant gap
                 double herzPeriod = periodicity[r] * freqBinWidth;
                 if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
 
-                //set up the hits matrix
-                double relativePeriod = periodicity[r] / colCount / 2;
-                for (int c = minBin; c < maxbin; c++) hits[r, c] = relativePeriod;
+                //find freq having max power and use info to adjust score.
+                //expect humans to have max < 1000 Hz
+                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
+                for (int j = 0; j < noiseBound; j++) spectrum[j] = 0.0;
+                int maxIndex = DataTools.GetMaxIndex(spectrum);
+                int freqWithMaxPower = (int)Math.Round(maxIndex * freqBinWidth);
+                double discount = 1.0;
+                if (freqWithMaxPower < 1200) discount = 0.0;
 
                 //set scoreArray[r]  - ignore locations with low intensity
-                if (intensity[r] > harmonicIntensityThreshold) scoreArray[r] = intensity[r];
+                if (intensity[r] > harmonicIntensityThreshold) scoreArray[r] = intensity[r] * discount;
             }
 
+            //transfer info to a hits matrix.
+            var hits = new double[rowCount, colCount];
+            double threshold = harmonicIntensityThreshold * 0.75; //reduced threshold for display of hits
+            for (int r = 0; r < rowCount; r++)
+            {
+                if (scoreArray[r] < threshold) continue;
+                double herzPeriod = periodicity[r] * freqBinWidth;
+                for (int c = minBin; c < maxbin; c++)
+                {
+                    //hits[r, c] = herzPeriod / (double)380;  //divide by 380 to get a relativePeriod;
+                    hits[r, c] = (herzPeriod - minFormantgap) / (double)maxFormantgap;  //to get a relativePeriod;
+                }
+            }
 
             //iii: CONVERT TO ACOUSTIC EVENTS
             double maxPossibleScore = 0.5;
@@ -477,9 +496,7 @@ namespace AnalysisPrograms
                 ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
                 //ev.Score_MaxPossible = maxPossibleScore;
                 predictedEvents.Add(ev);
-            }
-
-
+            } //for loop
             return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
