@@ -1,5 +1,6 @@
 namespace EcosoundsFeltAdapter
 {
+    using System;
     using System.Collections.Generic;
 
     using MQUTeR.FSharp.Shared;
@@ -17,5 +18,7 @@ namespace EcosoundsFeltAdapter
         bool IsSearchAvailable { get; }
 
         string[] SearchUnavilabilityMessages { get; }
+
+        DateTime CachedTrainingDataDate { get; }
     }
 }

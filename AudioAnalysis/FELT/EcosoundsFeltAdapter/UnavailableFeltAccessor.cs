@@ -36,5 +36,13 @@ namespace EcosoundsFeltAdapter
                 return this.messages;
             }
         }
+
+        public DateTime CachedTrainingDataDate
+        {
+            get
+            {
+                throw new InvalidOperationException("No cache data is loaded.");
+            }
+        }
     }
 }
