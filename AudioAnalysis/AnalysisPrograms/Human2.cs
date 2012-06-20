@@ -357,7 +357,8 @@ namespace AnalysisPrograms
                                         Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values
-            int frameSize = 1024;
+            int frameLength = 1024;
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]);
             double windowOverlap = 0.0;
 
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);
@@ -378,7 +379,7 @@ namespace AnalysisPrograms
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = frameSize;
+            sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -415,24 +416,44 @@ namespace AnalysisPrograms
             double[] intensity = results.Item1;
             double[] periodicity = results.Item2; //an array of periodicity scores
 
-            //transfer periodicity info to a hits matrix.
+            //transfer periodicity info score array.
             //intensity = DataTools.filterMovingAverage(intensity, 3);
+            int noiseBound = (int)(minHz / freqBinWidth);
             double[] scoreArray = new double[intensity.Length];
-            var hits = new double[rowCount, colCount];
-            double threshold = intensityThreshold * 0.75; //reduced threshold for display of hits
             for (int r = 0; r < rowCount; r++)
             {
-                if (intensity[r] < threshold) continue;
+                if (intensity[r] < intensityThreshold) continue;
                 //ignore locations with incorrect formant gap
                 double herzPeriod = periodicity[r] * freqBinWidth;
                 if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
 
-                //set up the hits matrix
-                double relativePeriod = herzPeriod / (double)380;
-                for (int c = minBin; c < maxbin; c++) hits[r, c] = relativePeriod;
+                //find freq having max power and use info to adjust score.
+                //expect humans to have max < 1000 Hz
+                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
+                for (int j = 0; j < noiseBound; j++) spectrum[j] = 0.0;
+                int maxIndex = DataTools.GetMaxIndex(spectrum);
+                int freqWithMaxPower = (int)Math.Round(maxIndex * freqBinWidth);
+                double discount = 1.0;
+                if (freqWithMaxPower > 2000) discount = 0.0;
+                else
+                    if (freqWithMaxPower > 1000) discount = -(freqWithMaxPower/(double)1000.0) + 2.0; //y=mx+c where m = -1/1000 and c=2.0
 
                 //set scoreArray[r]  - ignore locations with low intensity
-                if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r];
+                if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r] * discount;
+            }
+
+            //transfer info to a hits matrix.
+            var hits = new double[rowCount, colCount];
+            double threshold = intensityThreshold * 0.75; //reduced threshold for display of hits
+            for (int r = 0; r < rowCount; r++)
+            {
+                if (scoreArray[r] < threshold) continue;
+                double herzPeriod = periodicity[r] * freqBinWidth;
+                for (int c = minBin; c < maxbin; c++)
+                {
+                    //hits[r, c] = herzPeriod / (double)380;  //divide by 380 to get a relativePeriod;
+                    hits[r, c] = (herzPeriod - minFormantgap) / (double)maxFormantgap;  //to get a relativePeriod;
+                }
             }
 
             //iii: CONVERT TO ACOUSTIC EVENTS

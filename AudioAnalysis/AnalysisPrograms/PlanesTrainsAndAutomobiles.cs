@@ -22,64 +22,9 @@ namespace AnalysisPrograms
 {
     public class PlanesTrainsAndAutomobiles : IAnalyser
     {
-        //private const int COL_NUMBER = 7;
-        //private static Type[] COL_TYPES = new Type[COL_NUMBER];
-        //private static string[] HEADERS = new string[COL_NUMBER];
-        //private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
-        //private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
-        //public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
-        //{
-        //    HEADERS[0] = "count";      COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
-        //    HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
-        //    HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
-        //    HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = false;
-        //    HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
-        //    HEADERS[5] = "Density";    COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
-        //    HEADERS[6] = "MachineScore"; COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;
-        //    return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
-        //}
-
-        //public static bool[] MachineColumns2Display()
-        //{
-        //    bool[] machineColumns2Display = { false, false, true, true, true };
-        //    return machineColumns2Display;
-        //}
-
-
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
-        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
-        public static string key_FRAME_LENGTH = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-        public static string key_MIN_HZ          = "MIN_HZ";
-        public static string key_MAX_HZ          = "MAX_HZ";
-        public static string key_MIN_FORMANT_GAP = "MIN_FORMANT_GAP";
-        public static string key_MAX_FORMANT_GAP = "MAX_FORMANT_GAP";
-        public static string key_EXPECTED_HARMONIC_COUNT = "EXPECTED_HARMONIC_COUNT";
-        public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
-        public static string key_MIN_DURATION    = "MIN_FORMANT_DURATION";
-        public static string key_MAX_DURATION    = "MAX_FORMANT_DURATION";
-        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
-
-
-        //KEYS TO OUTPUT EVENTS and INDICES
-        public static string key_COUNT = "count";
-        public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
-        public static string key_START_ABS = "EvStartAbs";
-        public static string key_START_MIN = "EvStartMin";
-        public static string key_START_SEC = "EvStartSec";
-        public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CALL_SCORE = "CallScore";
-        public static string key_EVENT_TOTAL = "# events";
-
-        //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "PlanesTrainsAndAutomobiles";
+        //CONSTANTS
+        public const string ANALYSIS_NAME = "Machine";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
@@ -349,7 +294,7 @@ namespace AnalysisPrograms
 
             if ((predictedEvents != null) && (predictedEvents.Count != 0))
             {
-                string analysisName = configDict[key_ANALYSIS_NAME];
+                string analysisName = configDict[Keys.ANALYSIS_NAME];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
@@ -359,7 +304,7 @@ namespace AnalysisPrograms
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = key_START_SEC + " ASC";
+                string sortString = Keys.EVENT_START_SEC + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
 
             }
@@ -406,12 +351,21 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
-            string analysisName = configDict[key_ANALYSIS_NAME];
-            int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
-            int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
-            int minHz = Int32.Parse(configDict[key_MIN_HZ]);
-            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
-            double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
+            string analysisName = configDict[Keys.ANALYSIS_NAME];
+            int minFormantgap   = Int32.Parse(configDict[Keys.MIN_FORMANT_GAP]);
+            int maxFormantgap   = Int32.Parse(configDict[Keys.MAX_FORMANT_GAP]);
+            int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
+            double intensityThreshold = Double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
+            double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);  // seconds
+            int frameLength = 2048;
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) 
+                frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]); 
+            double windowOverlap = 0.0;
+            if (frameLength == 1024) //this is to make adjustment with other harmonic methods that use frame length = 1024
+            {
+                frameLength = 2048;
+                windowOverlap = 0.5;
+            }
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -421,7 +375,7 @@ namespace AnalysisPrograms
             }
 
             //#############################################################################################################################################
-            var results = DetectHarmonics(recording, intensityThreshold, minFormantgap, maxFormantgap, minDuration); //uses XCORR and FFT
+            var results = DetectHarmonics(recording, intensityThreshold, minHz, minFormantgap, maxFormantgap, minDuration, frameLength, windowOverlap); //uses XCORR and FFT
             recording.Dispose();
             //#############################################################################################################################################
 
@@ -442,18 +396,20 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> DetectHarmonics(AudioRecording recording, double intensityThreshold,
-                                                                                         int minFormantgap, int maxFormantgap, double minDuration)
+                                                              int minHz, int minFormantgap, int maxFormantgap, double minDuration, int windowSize, double windowOverlap)
         {
             //i: MAKE SONOGRAM
-            int frameSize = 2048;
             int numberOfBins = 32;
-            int minBin = 8;
-            double windowOverlap = 0.0;
-            double binWidth = recording.SampleRate / (double)frameSize;
+            double binWidth = recording.SampleRate / (double)windowSize;
             int sr = recording.SampleRate;
-            double framesPerSecond = binWidth;
+            double frameDuration = windowSize / (double)sr;           // Duration of full frame or window in seconds
+            double frameOffset = frameDuration * (1 - windowOverlap); //seconds between starts of consecutive frames
+            double framesPerSecond = 1 / frameOffset;
+            //double framesPerSecond = sr / (double)windowSize; 
+            //int frameOffset = (int)(windowSize * (1 - overlap));
+            //int frameCount = (length - windowSize + frameOffset) / frameOffset;
 
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, windowSize, windowOverlap);
             double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
             double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
@@ -467,7 +423,7 @@ namespace AnalysisPrograms
             //the Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
             //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
             //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
-            int minHz = (int)Math.Round(minBin * binWidth);
+            int minBin = (int)Math.Round(minHz / binWidth);
             int maxHz  = (int)Math.Round(minHz + (numberOfBins * binWidth));
 
             int rowCount = matrix.GetLength(0);
@@ -502,8 +458,9 @@ namespace AnalysisPrograms
             scoreArray = DataTools.filterMovingAverage(scoreArray, 11);
 
             //iii: CONVERT TO ACOUSTIC EVENTS
+            double maxDuration = 100000.0; //abitrary long number - do not want to restrict duration of machine noise
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, framesPerSecond, binWidth,
-                                                                                         intensityThreshold, minDuration, 100000.0);
+                                                                                         intensityThreshold, minDuration, maxDuration);
             hits = null;
 
             //set up the songogram to return. Use the existing amplitude sonogram
@@ -512,7 +469,7 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
 
-            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
+            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, windowSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
 
             sonogram.DecibelsNormalised = new double[rowCount];
             for (int i = 0; i < rowCount; i++) //foreach frame or time step
@@ -523,6 +480,8 @@ namespace AnalysisPrograms
 
            return System.Tuple.Create(sonogram, hits, scoreArray, predictedEvents);
         }//end Execute_HDDetect
+
+
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
