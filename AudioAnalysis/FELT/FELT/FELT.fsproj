@@ -186,7 +186,9 @@
 	     Other similar extension points exist, see Microsoft.Common.targets.	-->
   <Target Name="BeforeBuild">
     <!-- C:\Program Files (x86)\CollabNet\Subversion Server\ -->
-    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\">
+	<!-- ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\" -->
+	<!-- C:\Program Files\CollabNet\Subversion Client -->
+    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="C:\Program Files\CollabNet\Subversion Client">
       <Output TaskParameter="Revision" PropertyName="Revision" />
     </SvnVersion>
     <PropertyGroup>
