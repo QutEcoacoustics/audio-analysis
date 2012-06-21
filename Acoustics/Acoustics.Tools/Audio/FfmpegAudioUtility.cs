@@ -180,7 +180,7 @@
 
             if (OutputContains(process, "No such file or directory"))
             {
-                throw new ArgumentException("Ffmpeg could not find input file: " + source.FullName);
+                throw new ArgumentException("Could not find source file: " + source.FullName);
             }
 
             Match match = Regex.Match(process.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);

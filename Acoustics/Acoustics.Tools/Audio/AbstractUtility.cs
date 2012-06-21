@@ -367,7 +367,7 @@
 
             if (runner != null
                 && !string.IsNullOrEmpty(runner.ErrorOutput)
-                && runner.ErrorOutput.Contains(compareString))
+                && runner.ErrorOutput.ToLowerInvariant().Trim().Contains(compareString))
             {
                 return true;
 
@@ -375,7 +375,7 @@
 
             if (runner != null
                 && !string.IsNullOrEmpty(runner.StandardOutput)
-                && runner.StandardOutput.Contains(compareString))
+                && runner.StandardOutput.ToLowerInvariant().Trim().Contains(compareString))
             {
                 return true;
             }

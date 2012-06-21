@@ -478,6 +478,12 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypeXmlApplication = "application/xml";
 
+        /// <summary>
+        /// Info from ffprobe 
+        /// STREAM codec_long_name: PCM signed 16-bit little-endian.
+        /// </summary>
+        public const string CodecWavPcm16BitLe = "PCM signed 16-bit little-endian";
+
         private static readonly List<MediaTypeExtGroup> Mapping = new List<MediaTypeExtGroup>
             {
                 new MediaTypeExtGroup { MediaType = MediaTypeMp4Audio, Extension = ExtMp4, Group = MediaTypeGroup.Audio }, 
