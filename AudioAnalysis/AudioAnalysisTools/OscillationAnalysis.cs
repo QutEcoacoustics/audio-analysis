@@ -157,8 +157,8 @@ namespace AudioAnalysisTools
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
 
             //following two lines write bmp image of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
-            //ImageTools.DrawMatrix(cosines, fPath);
+            string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
+            ImageTools.DrawMatrix(cosines, fPath, true);
 
             foreach (AcousticEvent av in events)
             {
@@ -216,7 +216,7 @@ namespace AudioAnalysisTools
                             for (int i = 0; i < dctLength; i++) hits[r + i, c]   = oscilFreq;
                             for (int i = 0; i < dctLength; i++) hits[r + i, c+1] = oscilFreq; //write alternate column - MUST DO THIS BECAUSE doing alternate columns
                         }
-                        r += 6; //skip rows
+                        r += 6; //skip rows i.e. frames of the sonogram.
                     }
                     c++; //do alternate columns
                 }
@@ -235,6 +235,90 @@ namespace AudioAnalysisTools
             Double[,] hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, (double)minOscilFreq, (double)maxOscilFreq, events);
             return hits;
         }
+
+
+
+        /// <summary>
+        /// Detects oscillations in a given freq bin.
+        /// there are several important parameters for tuning.
+        /// a) DCTLength: Good values are 0.25 to 0.50 sec. Do not want too long because DCT requires stationarity.
+        ///     Do not want too short because too small a range of oscillations
+        /// b) DCTindex: Sets lower bound for oscillations of interest. Index refers to array of coeff returned by DCT.
+        ///     Array has same length as the length of the DCT. Low freq oscillations occur more often by chance. Want to exclude them.
+        /// c) MinAmplitude: minimum acceptable value of a DCT coefficient if hit is to be accepted.
+        ///     The algorithm is sensitive to this value. A lower value results in more oscillation hits being returned.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="minBin">min freq bin of search band</param>
+        /// <param name="maxBin">max freq bin of search band</param>
+        /// <param name="dctLength">number of values</param>
+        /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
+        /// <param name="minAmplitude">threshold - do not accept a DCT value if its amplitude is less than this threshold</param>
+        /// <returns></returns>
+        public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz,
+                                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude)
+        {
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+
+            int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
+            int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
+
+            int rows = sonogram.Data.GetLength(0);
+            int cols = sonogram.Data.GetLength(1);
+            Double[,] hits = new Double[rows, cols];
+            Double[,] matrix = sonogram.Data;
+            //matrix = ImageTools.WienerFilter(sonogram.Data, 3);// DO NOT USE - SMUDGES EVERYTHING
+
+
+            double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            //following two lines write matrix of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
+            //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
+
+            //following two lines write bmp image of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
+            //ImageTools.DrawMatrix(cosines, fPath);
+
+
+
+            for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows - dctLength; r++)
+                {
+                    var array = new double[dctLength];
+                    //accumulate J columns of values
+                    for (int i = 0; i < dctLength; i++)
+                        for (int j = 0; j < 5; j++) array[i] += matrix[r + i, c + j];
+
+                    array = DataTools.SubtractMean(array);
+                    //     DataTools.writeBarGraph(array);
+
+                    double[] dct = Speech.DCT(array, cosines);
+                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                    dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
+                    dct = DataTools.normalise2UnitLength(dct);
+                    //dct = DataTools.normalise(dct); //another option to normalise
+                    int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                    double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+
+                    //DataTools.MinMax(dct, out min, out max);
+                    //      DataTools.writeBarGraph(dct);
+
+                    //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
+                    if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > minAmplitude))
+                    {
+                        for (int i = 0; i < dctLength; i++) hits[r + i, c] = oscilFreq;
+                    }
+                    r += 5; //skip rows
+                }
+                c++; //do alternate columns
+            }
+            return hits;
+        }
+
 
 
         public static double[] DetectOscillationsInScoreArray(double[] scoreArray, double dctDuration, double timeScale, double dctThreshold,

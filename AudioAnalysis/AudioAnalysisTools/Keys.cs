@@ -13,7 +13,10 @@ namespace AudioAnalysisTools
         public static string ANNOTATE_SONOGRAM  = "ANNOTATE_SONOGRAM";
         public static string ANALYSIS_NAME = "ANALYSIS_NAME";
         public static string CALL_DURATION = "CALL_DURATION";
+        public static string DCT_DURATION = "DCT_DURATION";
+        public static string DCT_THRESHOLD = "DCT_THRESHOLD";
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
+        public static string DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
         public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string FRAME_LENGTH = "FRAME_LENGTH";
@@ -21,11 +24,15 @@ namespace AudioAnalysisTools
         public static string INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
         public static string MIN_HZ = "MIN_HZ";
         public static string MAX_HZ = "MAX_HZ";
+        public static string MIN_FORMANT_GAP = "MIN_FORMANT_GAP";
+        public static string MAX_FORMANT_GAP = "MAX_FORMANT_GAP";
         public static string MIN_GAP = "MIN_GAP";
         public static string MAX_GAP = "MAX_GAP";
         public static string MIN_AMPLITUDE = "MIN_AMPLITUDE";
         public static string MIN_DURATION = "MIN_DURATION";
         public static string MAX_DURATION = "MAX_DURATION";
+        public static string MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
+        public static string MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
         public static string MIN_PERIODICITY = "MIN_PERIOD";
         public static string MAX_PERIODICITY = "MAX_PERIOD";
         public static string NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";

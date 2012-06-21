@@ -42,6 +42,9 @@ namespace AnalysisPrograms
                     case "aed":      // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
+                    case "canetoad":      // acoustic event detection
+                        Canetoad.Dev(restOfArgs);
+                        break;
                     case "crow":     // recognises uhman speech but not word recognition
                         Crow.Dev(restOfArgs);
                         break;
@@ -54,8 +57,11 @@ namespace AnalysisPrograms
                     //case "grids":  // grid recognition
                     //    BarsAndStripes.Dev(restOfArgs);
                     //    break;
-                    case "harmonics":   // general harmonics recogniser
-                        Harmonics.Dev(restOfArgs);
+                    case "koalaMale":      // acoustic event detection
+                        KoalaMale.Dev(restOfArgs);
+                        break;
+                    case "multiAnalyser":   // general harmonics recogniser
+                        MultiAnalyser.Dev(restOfArgs);
                         break;
                     case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(restOfArgs);

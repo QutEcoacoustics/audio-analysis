@@ -102,9 +102,10 @@ namespace TowseyLib
         /// <returns></returns>
         public static System.Tuple<double[], double[], double[,], double> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
         {
-            int length = signal.Length;
             int frameOffset = (int)(windowSize * (1 - overlap));
-            int frameCount = (length - windowSize + frameOffset) / frameOffset;
+            int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
+            int frameCount = frameIDs.GetLength(0);
+
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
 

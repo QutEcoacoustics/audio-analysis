@@ -182,7 +182,12 @@
     <Compile Include="NeuralNets\Cluster.cs" />
     <Compile Include="NeuralNets\FuzzyART.cs" />
     <Compile Include="NeuralNets\VQ.cs" />
-    <Compile Include="OscillationAnalysis.cs" />
+    <Compile Include="OscillationAnalysis.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="OscillationDetector.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalToImage.cs" />
     <Compile Include="Sonogram\BaseSonogram.cs" />
