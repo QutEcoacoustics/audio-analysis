@@ -98,6 +98,7 @@ namespace AnalysisPrograms
             if (status != 0)
             {
                 Console.WriteLine("\n\n# FATAL ERROR. CANNOT PROCEED!");
+                Console.WriteLine("# ANALYSIS RETURNED STATUS CODE: " + status);
                 Console.ReadLine();
                 System.Environment.Exit(99);
             }
@@ -157,28 +158,37 @@ namespace AnalysisPrograms
                 status = 1;
                 return status;
             }
+
             //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
+            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
+            if (!diSource.Exists)
+            {
+                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                status = 2;
+                return status;
+            }
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                Console.WriteLine("Source directory exists: " + diSource.FullName);
+                Console.WriteLine("\t but the source file does not exist: " + recordingPath);
                 status = 2;
                 return status;
             }
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
                 status = 2;
                 return status;
             }
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
-                Console.WriteLine("Output directory does not exist: " + recordingPath);
+                Console.WriteLine("Output directory does not exist: " + diOP.FullName);
                 status = 2;
                 return status;
             }
@@ -193,6 +203,8 @@ namespace AnalysisPrograms
             analysisSettings.ImageFile = null;
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
+            var configuration = new ConfigDictionary(fiConfig.FullName);
+            analysisSettings.ConfigDict = configuration.GetTable();
 
             //PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
@@ -268,6 +280,10 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
                 //DataTableTools.WriteTable(augmentedTable);
             }
+            else
+            {
+                return -993;  //error!!
+            }
 
             return status;
         }
@@ -320,6 +336,8 @@ namespace AnalysisPrograms
             {
                 CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
             }
+            else
+                analysisResults.EventsFile = null;
 
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
@@ -328,6 +346,8 @@ namespace AnalysisPrograms
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
+            else
+                analysisResults.IndicesFile = null;
 
             //save image of sonograms
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
@@ -337,6 +357,8 @@ namespace AnalysisPrograms
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
             }
+            else
+                analysisResults.ImageFile = null;
 
             analysisResults.Data = dataTable;
             analysisResults.ImageFile = analysisSettings.ImageFile;
@@ -365,8 +387,8 @@ namespace AnalysisPrograms
 
             int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
             double intensityThreshold = Double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
-            //double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
-            //double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
+            //double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);  // seconds
+            //double maxDuration = Double.Parse(configDict[Keys.MAX_DURATION]);  // seconds
             double minDuration = 0.0;
             double maxDuration = 0.0;
 

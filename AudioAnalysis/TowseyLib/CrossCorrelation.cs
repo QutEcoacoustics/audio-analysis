@@ -379,6 +379,7 @@ out double[] r)
 
 
 
+         /// A METHOD TO DETECT HARMONICS IN THE ROWS of the passed portion of a sonogram.
          /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
          /// Was first developed for crow calls.
          /// First looks for a decibel profile that matches the passed call duration and decibel loudness

@@ -302,7 +302,8 @@
             Color gray = Color.LightGray;
             Color white = Color.White;
 
-            for (int w = 0; w < bmpWidth; w++)
+            int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
+            for (int w = 0; w < length; w++)
             {
                 int start = w * subSample;
                 int end = (w + 1) * subSample;

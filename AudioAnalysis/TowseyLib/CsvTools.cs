@@ -120,7 +120,7 @@ namespace TowseyLib
         /// <returns></returns>
         public static List<string[]> ConvertCSVRowsToListOfStringArrays(string[] csvRows, int rowStart, int rowEnd)
         {
-             if (rowEnd > csvRows.Length) rowEnd = csvRows.Length-1;
+             if (rowEnd >= csvRows.Length) rowEnd = csvRows.Length-1;
              List<string[]> listOfStringArrays = new List<string[]>();
              int fieldCount  = csvRows[0].Split(',').Length;
              int arrayLength = rowEnd - rowStart + 1;
