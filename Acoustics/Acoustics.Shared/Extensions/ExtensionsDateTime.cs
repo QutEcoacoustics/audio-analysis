@@ -31,15 +31,20 @@ namespace System
         /// <returns>
         /// Human-readable string of difference between two DateTimes.
         /// </returns>
-        public static string ToDifferenceString(this DateTime first, DateTime second)
+        public static string ToDifferenceString(this DateTimeOffset first, DateTimeOffset second)
         {
-            if (first == DateTime.MaxValue || first == DateTime.MinValue || second == DateTime.MaxValue ||
-                second == DateTime.MinValue)
+            if (first == DateTimeOffset.MaxValue || first == DateTimeOffset.MinValue || second == DateTimeOffset.MaxValue ||
+                second == DateTimeOffset.MinValue)
             {
                 return TimeSpan.MaxValue.ToDifferenceString();
             }
 
             return (second - first).ToDifferenceString();
+        }
+
+        public static string ToDifferenceString(this DateTime first, DateTime second)
+        {
+            return ToDifferenceString(new DateTimeOffset(first), new DateTimeOffset(second));
         }
 
         /// <summary>
@@ -113,13 +118,18 @@ namespace System
             return DateTime.MinValue.Add(value).ToString(format);
         }
 
-        public static long ToJavascriptTimestamp(this DateTime value)
+        public static long ToJavascriptTimestamp(this DateTimeOffset value)
         {
             // as milliseconds since January 1, 1970 00:00
-            var stamp = new DateTime(1970, 1, 1);
+            var stamp = new DateTimeOffset(new DateTime(1970, 1, 1));
             var js = value - stamp;
 
             return Convert.ToInt64(js.TotalMilliseconds);
+        }
+
+        public static long ToJavascriptTimestamp(this DateTime value)
+        {
+            return ToJavascriptTimestamp(new DateTimeOffset(value));
         }
 
         private static string Plural(double number)
