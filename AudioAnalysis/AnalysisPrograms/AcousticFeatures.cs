@@ -288,7 +288,7 @@ namespace AnalysisPrograms
             var results = Analysis(fiRecording, dict);
             //######################################################
 
-            double segmentDuration = ConfigDictionary.GetDouble(LSKiwi.key_SEGMENT_DURATION, dict);
+            double segmentDuration = ConfigDictionary.GetDouble(Keys.SEGMENT_DURATION, dict);
             double segmentStartMinute = segmentDuration * iterationNumber;
 
             Log.WriteLine("# Finished everything!");

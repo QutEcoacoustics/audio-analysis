@@ -27,7 +27,8 @@ namespace AnalysisPrograms
     ///    1) ConvertEvents2Indices();  and
     ///    2) Analyse()
     ///
-    /// As of 20 June 2012 this class includes three analysers: crow, human and machine.
+    /// As of 20 June 2012 this class includes three analysers: crow, human, machine.
+    /// As of 22 June 2012 this class includes five  analysers: crow, human, machine, canetoad, koala-male.
 
     public class MultiAnalyser : IAnalyser
     {
@@ -37,6 +38,8 @@ namespace AnalysisPrograms
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+        public static string[] analysisTitles = { Human2.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
 
 
         public string DisplayName
@@ -53,10 +56,10 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             //HUMAN
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav"; //WARNING: RECORDING IS 44 MINUTES LONG. NEEDT TO SAMPLE
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
@@ -71,8 +74,20 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Cassandra111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min430Crows.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min646Crows.wav";
+            //KOALA MALE
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
+            //CANETOAD
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
 
-            string configPath = @"C:\SensorNetworks\Output\MultiAnalyser\Towsey.MultiAnalyser.cfg";
+
+
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             string outputDir  = @"C:\SensorNetworks\Output\MultiAnalyser\";
 
             string title = "# RUNS MULTIPLE ANALYSES";
@@ -174,24 +189,32 @@ namespace AnalysisPrograms
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
+            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
+            if (!diSource.Exists)
+            {
+                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                status = 2;
+                return status;
+            }
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                Console.WriteLine("Source directory exists: " + diSource.FullName);
+                Console.WriteLine("\t but the source file does not exist: " + recordingPath);
                 status = 2;
                 return status;
             }
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
                 status = 2;
                 return status;
             }
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
-                Console.WriteLine("Output directory does not exist: " + recordingPath);
+                Console.WriteLine("Output directory does not exist: " + diOP.FullName);
                 status = 2;
                 return status;
             }
@@ -315,6 +338,7 @@ namespace AnalysisPrograms
             var recordingTimeSpan = new TimeSpan();
             var scores = new List<double[]>();
 
+            //######################################################################
             //HUMAN
             //######################################################################
             newDict = new Dictionary<string, string>();
@@ -336,10 +360,13 @@ namespace AnalysisPrograms
                 sonogram = results1.Item1;
                 hits = results1.Item2;
                 scores.Add(results1.Item3);
-                foreach (AcousticEvent ae in results1.Item4)
+                if (results1.Item4 != null)
                 {
-                    ae.Name = Human2.ANALYSIS_NAME;
-                    events.Add(ae);
+                    foreach (AcousticEvent ae in results1.Item4)
+                    {
+                        ae.Name = Human2.ANALYSIS_NAME;
+                        events.Add(ae);
+                    }
                 }
                 recordingTimeSpan = results1.Item5;
             }
@@ -365,10 +392,13 @@ namespace AnalysisPrograms
                 if (sonogram == null) sonogram = results2.Item1;
                 hits = MatrixTools.AddMatrices(hits, results2.Item2);
                 scores.Add(results2.Item3);
-                foreach (AcousticEvent ae in results2.Item4)
+                if (results2.Item4 != null)
                 {
-                    ae.Name = Crow.ANALYSIS_NAME;
-                    events.Add(ae);
+                    foreach (AcousticEvent ae in results2.Item4)
+                    {
+                        ae.Name = Crow.ANALYSIS_NAME;
+                        events.Add(ae);
+                    }
                 }
                 recordingTimeSpan = results2.Item5;
             }
@@ -394,12 +424,79 @@ namespace AnalysisPrograms
                 if (sonogram == null) sonogram = results3.Item1;
                 hits = MatrixTools.AddMatrices(hits, results3.Item2);
                 scores.Add(DataTools.normalise(results3.Item3));
-                foreach (AcousticEvent ae in results3.Item4)
+                if (results3.Item4 != null)
                 {
-                    ae.Name = PlanesTrainsAndAutomobiles.ANALYSIS_NAME;
-                    events.Add(ae);
+                    foreach (AcousticEvent ae in results3.Item4)
+                    {
+                        ae.Name = PlanesTrainsAndAutomobiles.ANALYSIS_NAME;
+                        events.Add(ae);
+                    }
                 }
                 recordingTimeSpan = results3.Item5;
+            }
+            //######################################################################
+            //CANETOAD
+            //######################################################################
+            newDict = new Dictionary<string, string>();
+            filter = "CANETOAD";
+            keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, filter);
+
+            foreach (string key in keysFiltered)  //derive new dictionary for crow
+            {
+                string newKey = key.Substring(9);
+                newDict.Add(newKey, configDict[key]);
+            }
+            newDict.Add(Keys.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME);
+            if (frameLength != null)
+                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+
+            var results4 = Canetoad.Analysis(fiAudioF, newDict);
+            if (results4 != null)
+            {
+                if (sonogram == null) sonogram = results4.Item1;
+                //hits = MatrixTools.AddMatrices(hits, results4.Item2);
+                scores.Add(results4.Item3);
+                if (results4.Item4 != null)
+                {
+                    foreach (AcousticEvent ae in results4.Item4)
+                    {
+                        ae.Name = Canetoad.ANALYSIS_NAME;
+                        events.Add(ae);
+                    }
+                }
+                recordingTimeSpan = results4.Item5;
+            }
+            //######################################################################
+            //KOALA-MALE
+            //######################################################################
+            newDict = new Dictionary<string, string>();
+            filter = "KOALAMALE";
+            keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, filter);
+
+            foreach (string key in keysFiltered)  //derive new dictionary for crow
+            {
+                string newKey = key.Substring(10);
+                newDict.Add(newKey, configDict[key]);
+            }
+            newDict.Add(Keys.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME);
+            if (frameLength != null)
+                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+
+            var results5 = KoalaMale.Analysis(fiAudioF, newDict);
+            if (results5 != null)
+            {
+                if (sonogram == null) sonogram = results5.Item1;
+                //hits = MatrixTools.AddMatrices(hits, results5.Item2);
+                scores.Add(results5.Item3);
+                if (results5.Item4 != null)
+                {
+                    foreach (AcousticEvent ae in results5.Item4)
+                    {
+                        ae.Name = KoalaMale.ANALYSIS_NAME;
+                        events.Add(ae);
+                    }
+                }
+                recordingTimeSpan = results5.Item5;
             }
             //######################################################################
 
@@ -463,10 +560,14 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) foreach(double[] array in scores) image.AddTrack(Image_Track.GetScoreTrack(array, 0.0, 1.0, eventThreshold));
+            if (scores != null) for (int i = 0; i < scores.Count; i++)
+                {
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(scores[i], 0.0, 1.0, eventThreshold, analysisTitles[i]));
+                }
             //if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null) image.OverlayRainbowTransparency(hits);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
+            if ((predictedEvents != null) && (predictedEvents.Count > 0))
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
 
@@ -517,6 +618,8 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
+            if (dt == null) return null;
+
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);   //get whole minutes
             if (units % 1 > 0.0) unitCount += 1; //add fractional minute
@@ -561,6 +664,8 @@ namespace AnalysisPrograms
 
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
+            if (dt == null) return;
+
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));

@@ -5,13 +5,19 @@ using System.Text;
 using TowseyLib;
 
 
-namespace AudioAnalysis
+namespace AudioAnalysisTools
 {
+
+    /// <summary>
+    /// NOTE: 21st June 2012.
+    /// 
+    /// This class contains methods to detect oscillations in a the sonogram of a signal. 
+    /// The method Execute() returns all info about oscillaitons in the passed sonogram.
+    /// This method should be called in preference to those in the class OscillationAnalysis.
+    /// (The latter hsould be depracated.)
+    /// </summary>
     public static class OscillationDetector
     {
-
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -24,19 +30,26 @@ namespace AudioAnalysis
         /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude, double scoreThreshold,
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+                                   double minDuration, double maxDuration, out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
 
             //DETECT OSCILLATIONS
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude);
+            if (hits == null)
+            {
+                Console.WriteLine("###### WARNING: DCT length too short to detect the maxOscilFreq");
+                scores = null;
+                events = null;
+                return;
+            }
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            scores = DataTools.filterMovingAverage(scores, 3);
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            double durationThreshold = 0.25; //seconds
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                          durationThreshold, sonogram.Configuration.SourceFName);
+                                          minDuration, sonogram.Configuration.SourceFName);
         }//end method
 
 
@@ -66,7 +79,8 @@ namespace AudioAnalysis
             int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
             int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
             int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
-            if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
+
+            if (maxIndex > dctLength) return null;       //safety check
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
@@ -75,12 +89,12 @@ namespace AudioAnalysis
 
             double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
-            //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
+            //string txtPath = @"C:\SensorNetworks\Output\cosines.txt";
+            //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
 
             //following two lines write bmp image of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
-            //ImageTools.DrawMatrix(cosines, fPath);
+            //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
+            //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
 
 
@@ -251,7 +265,7 @@ namespace AudioAnalysis
                         ev.Name = "OscillationEvent"; //default name
                         //ev.SetTimeAndFreqScales(22050, 512, 128);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.SourceFile = fileName;
+                        ev.SourceFileName = fileName;
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
@@ -273,5 +287,16 @@ namespace AudioAnalysis
             return events;
         }//end method ConvertODScores2Events()
 
-    }//end class
-}
+
+        public static double CalculateRequiredFrameOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
+        {
+            double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
+            //int dctLength = (int)Math.Round(optimumFrameRate * dctDuration);
+            double frameOffset = sr / (double)optimumFrameRate;
+
+            double overlap = (framewidth - frameOffset) / (double)framewidth;
+            return overlap;
+        }
+
+    }//end class 
+} //AudioAnalysisTools

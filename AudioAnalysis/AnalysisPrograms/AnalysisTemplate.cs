@@ -45,9 +45,9 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Template.cfg";
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Template.cfg";
             string outputDir  = @"C:\SensorNetworks\Output\Test\";
-            string csvPath    = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
+            //string csvPath    = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
 
             string title = "# FOR DETECTION OF ############ using TECHNIQUE ########";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -378,7 +378,7 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static System.Tuple<BaseSonogram, Double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values - ignore those set by user
@@ -398,6 +398,13 @@ namespace AnalysisPrograms
                 Console.WriteLine("AudioRecording == null. Analysis not possible.");
                 return null;
             }
+            TimeSpan tsRecordingDuration = recording.Duration();
+            double minRecordingDuration = 15;
+            if (tsRecordingDuration.TotalSeconds < minRecordingDuration)
+            {
+                Console.WriteLine("Audio recording must be at least {0} seconds long for analysis.", minRecordingDuration);
+                return null;
+            }
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -406,7 +413,6 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = freqBinWidth;
@@ -449,17 +455,19 @@ namespace AnalysisPrograms
             double[] scoreArray2 = results.Item2; 
             //######################################################################
 
+            var plots = new List<Plot>();
+            plots.Add(new Plot("title", scoreArray1, 0.2)); //or get the analysis to pass back plots
             var hits = new double[rowCount, colCount];
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray1, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
-            return System.Tuple.Create(sonogram, hits, scoreArray1, predictedEvents, tsRecordingtDuration);
+            return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingDuration);
         } //Analysis()
 
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency / 2;
@@ -471,10 +479,14 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-            //if (hits != null) image.OverlayRedTransparency(hits);
+            //if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            if (scores != null)
+            {
+                foreach (Plot plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
             if (hits != null) image.OverlayRainbowTransparency(hits);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
+            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
 
@@ -495,7 +507,7 @@ namespace AnalysisPrograms
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -556,6 +568,8 @@ namespace AnalysisPrograms
 
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
+            if (dt == null) return;
+
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));

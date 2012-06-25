@@ -229,9 +229,9 @@ namespace AnalysisPrograms.Processing
                 //case "spr":  // syntactic pattern recognition
                 //    results = ProcessingTypes.RunSpr(settingsFile, audioFile);
                 //    break;
-                case "hd": // Harmonic Recogniser
-                    results = ProcessingTypes.RunHd(settingsFile, audioFile);
-                    break;
+                //case "hd": // Harmonic Recogniser
+                //    results = ProcessingTypes.RunHd(settingsFile, audioFile);
+                //    break;
 
                 // require extra resources
                 case "mfcc-od": // MFCCs and OD for calls haveing oscillating character

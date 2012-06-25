@@ -468,7 +468,7 @@ namespace AnalysisPrograms
                     image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
                 } //end adding in score tracks
 
-                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
                 image.Save(path);
             } // using
         } // DrawSonogram()

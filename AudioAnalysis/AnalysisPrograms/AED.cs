@@ -268,7 +268,7 @@ namespace AnalysisPrograms
             ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
             ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
+            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
             image.Save(imagePath);
         }
 

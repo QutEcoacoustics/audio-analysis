@@ -761,6 +761,43 @@ namespace TowseyLib
             }
         }
     }
+
+    /// <summary>
+    /// returns an array showing values at the peaks
+    /// </summary>
+    /// <param name="array"></param>
+    /// <param name="count"></param>
+    /// <param name="sum"></param>
+    public static double[] GetPeakValues(double[] array)
+    {
+        int L = array.Length;
+        var values = new double[L];
+
+        for (int i = 1; i < L - 1; i++) // iterate through array
+        {
+            if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
+            {
+                values[i] = array[i];
+            }
+        }
+        return values;
+    }
+
+    // returns the locations of peaks ranked from highest value to lowest valued peak
+    public static int[] GetOrderedPeakLocations(double[] peakValues, int count)
+    {
+        var peakLocations = new List<int>();
+        for (int i = 0; i < count; i++)
+        {
+            int location = DataTools.GetMaxIndex(peakValues);
+            peakLocations.Add(location);
+            peakValues[location] = 0.0;
+        }
+
+        return peakLocations.ToArray();
+    }
+
+
     //=============================================================================
 
 
@@ -2109,7 +2146,7 @@ namespace TowseyLib
         /// <summary>
         /// normalises the values in a vector such that the passed min value = 0 
         /// and the passed max value = 1.0
-        /// Values less than 0.0 and > 1.0 are truncated.
+        /// Values LT 0.0 and GT 1.0 are truncated.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="normMin"></param>

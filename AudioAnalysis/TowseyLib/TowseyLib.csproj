@@ -225,6 +225,7 @@
     <Compile Include="LLR.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MatrixTools.cs" />
+    <Compile Include="Plot.cs" />
     <Compile Include="PolarCoordinates.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />

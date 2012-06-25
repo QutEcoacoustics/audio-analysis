@@ -71,7 +71,7 @@ namespace AnalysisPrograms.Processing
                 {
                     image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                     image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
+                    image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
                     image.Save(imagePath);
                 }
             }
@@ -613,50 +613,50 @@ namespace AnalysisPrograms.Processing
         /// <returns>
         /// Processing results.
         /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunHd(FileInfo settingsFile, FileInfo audioFile)
-        {
-            var config = new ConfigDictionary(settingsFile.FullName);
-            var dict = config.GetTable();
+        //internal static IEnumerable<ProcessorResultTag> RunHd(FileInfo settingsFile, FileInfo audioFile)
+        //{
+        //    var config = new ConfigDictionary(settingsFile.FullName);
+        //    var dict = config.GetTable();
 
-            var callName = dict[HarmonicRecogniser.key_CALL_NAME];
-            var nrt = SNR.Key2NoiseReductionType(dict[HarmonicRecogniser.key_NOISE_REDUCTION_TYPE]);
-            var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
-            var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
-            var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
-            var amplitudeThreshold = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
-            var harmonicCount = Int32.Parse(dict[HarmonicRecogniser.key_EXPECTED_HARMONIC_COUNT]);
-            var minDuration = Double.Parse(dict[HarmonicRecogniser.key_MIN_DURATION]);
-            var maxDuration = Double.Parse(dict[HarmonicRecogniser.key_MAX_DURATION]);
+        //    var callName = dict[HarmonicRecogniser.key_CALL_NAME];
+        //    var nrt = SNR.Key2NoiseReductionType(dict[HarmonicRecogniser.key_NOISE_REDUCTION_TYPE]);
+        //    var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
+        //    var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
+        //    var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
+        //    var amplitudeThreshold = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
+        //    var harmonicCount = Int32.Parse(dict[HarmonicRecogniser.key_EXPECTED_HARMONIC_COUNT]);
+        //    var minDuration = Double.Parse(dict[HarmonicRecogniser.key_MIN_DURATION]);
+        //    var maxDuration = Double.Parse(dict[HarmonicRecogniser.key_MAX_DURATION]);
 
-            string audioFileName = audioFile.Name;
+        //    string audioFileName = audioFile.Name;
 
-            var results =
-                HarmonicRecogniser.Execute_HDDetect(
-                    audioFile.FullName,
-                    nrt,
-                    minHz,
-                    maxHz,
-                    frameOverlap,
-                    harmonicCount,
-                    amplitudeThreshold,
-                    minDuration,
-                    maxDuration,
-                    audioFileName,
-                    callName);
+        //    var results =
+        //        HarmonicRecogniser.Execute_HDDetect(
+        //            audioFile.FullName,
+        //            nrt,
+        //            minHz,
+        //            maxHz,
+        //            frameOverlap,
+        //            harmonicCount,
+        //            amplitudeThreshold,
+        //            minDuration,
+        //            maxDuration,
+        //            audioFileName,
+        //            callName);
 
-            var predictedEvents = results.Item4;
+        //    var predictedEvents = results.Item4;
 
-            SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
+        //    SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
 
-            // AcousticEvent results
-            var prts =
-                predictedEvents.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        //    // AcousticEvent results
+        //    var prts =
+        //        predictedEvents.Select(
+        //            ae =>
+        //            ProcessingUtils.GetProcessorResultTag(
+        //                ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
 
-            return prts;
-        }
+        //    return prts;
+        //}
 
         /// <summary>
         /// MFCC OD Regoniser.

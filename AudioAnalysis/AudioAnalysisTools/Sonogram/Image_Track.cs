@@ -6,7 +6,7 @@
 
     using TowseyLib;
 
-    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
+    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
 
 
     public sealed class Image_Track
@@ -53,6 +53,7 @@
         public double scoreMax = 10.0; //default max score displayed in score track of image
         public double ScoreMax { get { return scoreMax; } set { scoreMax = value; } }
         public double ScoreThreshold { set; get; }
+        public string Name { set; get; }
 
         public int topOffset { get; set; }    //set to track's TOP    pixel row in final image
         public int bottomOffset { get; set; } //set to track's BOTTOM pixel row in final image
@@ -147,6 +148,8 @@
                     return syllablesTrackHeight;
                 case TrackType.scoreArray:
                     return scoreTrackHeight;
+                case TrackType.scoreArrayNamed:
+                    return scoreTrackHeight;
                 case TrackType.deciBels:
                     return DefaultHeight;
                 case TrackType.waveEnvelope:
@@ -183,6 +186,9 @@
                 case TrackType.scoreArray:
                     DrawScoreArrayTrack(bmp);  //add a score track
                     break;
+                case TrackType.scoreArrayNamed:
+                    DrawNamedScoreArrayTrack(bmp);  //add a score track
+                    break;
                 case TrackType.scoreMatrix:
                     DrawScoreMatrixTrack(bmp);  //add a score track
                     break;
@@ -192,6 +198,16 @@
 
             }
             // none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits 
+            //if ((title != null) && (title.Length != 0)) DrawTrackTitle(bmp, title);  //add a score track
+
+        }
+
+        /// adds title to bottom of bmp which is assume to be a track.
+        public Bitmap DrawTrackTitle(Bitmap bmp, string title)
+        {
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.Black, new PointF(10, bmp.Height - 2));
+            return bmp;
         }
 
         /// <summary>
@@ -285,6 +301,16 @@
             return ba; //byte array
         }
 
+        public Bitmap DrawNamedScoreArrayTrack(Bitmap bmp)
+        {
+            DrawScoreArrayTrack(bmp);
+
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Red, new PointF(10, topOffset));
+
+            return bmp;
+        }
+
         /// <summary>
         /// Displays a score track, normalised to min and max of the data. max=approx 8-16.
         /// </summary>
@@ -331,7 +357,6 @@
             if (lineID < 0) lineID = 0;
             else if (lineID > this.Height) lineID = this.Height;
             for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
-
             return bmp;
         }
 
@@ -546,6 +571,15 @@
             track.ScoreThreshold = scoreThreshold ?? 0;
             track.ScoreMin = scoreMin ?? 0;
             track.ScoreMax = scoreMax ?? 0;
+            return track;
+        }
+        public static Image_Track GetNamedScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, string name)
+        {
+            var track = new Image_Track(TrackType.scoreArrayNamed, scores);
+            track.ScoreThreshold = scoreThreshold ?? 0;
+            track.ScoreMin = scoreMin ?? 0;
+            track.ScoreMax = scoreMax ?? 0;
+            track.Name = name;
             return track;
         }
         public static Image_Track GetScoreTrack(int[] scores, int? scoreMin, int? scoreMax, int? scoreThreshold)

@@ -392,7 +392,7 @@ namespace AnalysisPrograms
                 //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 //var aes = new List<AcousticEvent>();
                 //aes.Add(ae);
-                image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
+                image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
                 image.Save(path);
             }
         } //end DrawSonogram
