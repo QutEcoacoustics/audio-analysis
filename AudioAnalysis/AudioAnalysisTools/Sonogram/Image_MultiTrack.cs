@@ -145,14 +145,15 @@ namespace AudioAnalysisTools
 
         void DrawEvents(Graphics g)
         {
+            double freqBinWidth = this.nyquistFreq / this.freqBinCount;
             Pen p1 = new Pen(Color.Crimson);
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
                 //if (e.oblong == null) continue;
                 //calculate top and bottom freq bins
-                int minFreqBin = (int)(e.MinFreq / e.FreqBinWidth);
-                int maxFreqBin = (int)(e.MaxFreq / e.FreqBinWidth);
+                int minFreqBin = (int)(e.MinFreq / freqBinWidth);
+                int maxFreqBin = (int)(e.MaxFreq / freqBinWidth);
                 int height = maxFreqBin - minFreqBin + 1;
                 int y = this.sonogramImage.Height - maxFreqBin;
 
