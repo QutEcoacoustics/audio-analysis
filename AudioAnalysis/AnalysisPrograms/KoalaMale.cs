@@ -58,12 +58,12 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
 
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
             string outputDir = @"C:\SensorNetworks\Output\KoalaMale\";
-            //string csvPath       = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
 
             string title = "# FOR DETECTION OF MALE KOALA using DCT OSCILLATION DETECTION";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -415,7 +415,7 @@ namespace AnalysisPrograms
                 return null;
             }
 
-            int frameSize = 1024; //seems to work
+            int frameSize = 512; //seems to work  -- frameSize = 1024 takes too long to compute; 
             double windowOverlap = OscillationDetector.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
 
 
@@ -453,12 +453,54 @@ namespace AnalysisPrograms
             Double[,] hits;
             OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
                                         minDuration, maxDuration, out scores, out events, out hits);
+            events = KoalaMale.FilterMaleKoalaEvents(events); //remove isolated koala events - 
 
             //######################################################################
 
             return System.Tuple.Create(sonogram, hits, scores, events, tsRecordingtDuration);
         } //Analysis()
 
+        ///
+        /// THis method removes isolated koala events. Expect at least consecutive inhales with centres spaced between 1.5 and 2.5 seconds 
+        public static List<AcousticEvent> FilterMaleKoalaEvents(List<AcousticEvent> events)
+        {
+            int count = events.Count;
+            if (count < 3000) //require three consecutive inhale events to be a koala bellow.
+            {
+                //events = new List<AcousticEvent>();
+                events = null;
+                return events;
+            }
+
+            double[] eventCentres = new double[count]; //to store the centres of the events
+            for (int i = 0; i < count; i++)
+            {
+                eventCentres[i] = events[i].TimeStart + (events[i].TimeEnd - events[i].TimeStart) / 2.0; //centres in seconds
+            }
+
+            bool[] partOfTriple = new bool[count];
+            for (int i = 1; i < count - 1; i++)
+            {
+                double leftGap = eventCentres[i] - eventCentres[i-1];
+                double rghtGap = eventCentres[i+1] - eventCentres[i];
+                bool leftGapCorrect = (leftGap > 1.4) && (leftGap < 2.6); //centres between 1.5 and 2.5 s separated.
+                bool rghtGapCorrect = (rghtGap > 1.4) && (rghtGap < 2.6);
+
+                if (leftGapCorrect && rghtGapCorrect)
+                {
+                    partOfTriple[i-1] = true;
+                    partOfTriple[i]   = true;
+                    partOfTriple[i+1] = true;
+                }
+            }
+
+            for (int i = count - 1; i >= 0; i--)
+            {
+                if (!partOfTriple[i]) events.Remove(events[i]);
+            }
+            if (events.Count == 0) events = null;
+            return events;
+        }
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
@@ -476,8 +518,8 @@ namespace AnalysisPrograms
             if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
             //if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null) image.OverlayRainbowTransparency(hits);
-            if ((predictedEvents != null) && (predictedEvents.Count > 0)) 
-                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
+            if ((predictedEvents != null) && (predictedEvents.Count > 0))
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
 
@@ -528,6 +570,8 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
+            if (dt == null) return null;
+
             if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);   //get whole minutes
@@ -559,6 +603,8 @@ namespace AnalysisPrograms
 
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
+            if (dt == null) return;
+
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));

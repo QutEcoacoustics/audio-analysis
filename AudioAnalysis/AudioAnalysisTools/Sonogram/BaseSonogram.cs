@@ -112,6 +112,12 @@
             this.Configuration.Duration = wav.Time;
             this.Configuration.fftConfig.SampleRate = wav.SampleRate; //also set the Nyquist
             this.Duration = wav.Time;
+            double minDuration = 3.0;
+            if (this.Duration.TotalSeconds < minDuration)
+            {
+                Console.WriteLine("Signal must at least {0} seconds long iin order to produce a sonogram!", minDuration);
+                return;
+            }
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
             double[] signal = wav.Samples;
 

@@ -14,7 +14,7 @@ namespace AudioAnalysisTools
     {
 
         #region Properties
-        public Image SonoImage { get; private set; }
+        public Image sonogramImage { get; private set; }
         List<Image_Track> tracks = new List<Image_Track>();
         public IEnumerable<Image_Track> Tracks { get { return tracks; } }
         public List<AcousticEvent> eventList { get; set; }
@@ -23,8 +23,9 @@ namespace AudioAnalysisTools
         double[,] SuperimposedRainbowTransparency { get; set; }
         private double superImposedMaxScore;
         private int[] FreqHits;
-        private int nyquistFreq;
+        private int nyquistFreq; //sets the frequency scale for drawing events
         private int freqBinCount;
+        private double framesPerSecond;
         #endregion
 
 
@@ -34,7 +35,7 @@ namespace AudioAnalysisTools
         /// <param name="image"></param>
         public Image_MultiTrack(Image image)
         {
-            SonoImage = image;
+            sonogramImage = image;
         }
 
 
@@ -43,11 +44,12 @@ namespace AudioAnalysisTools
             tracks.Add(track);
         }
 
-        public void AddEvents(List<AcousticEvent> list, int nyquist, int freqBinCount)
+        public void AddEvents(List<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
         {
-            this.eventList = list;
-            this.nyquistFreq = nyquist;
-            this.freqBinCount = freqBinCount;
+            this.eventList       = _list;
+            this.nyquistFreq     = _nyquist;
+            this.freqBinCount    = _freqBinCount;
+            this.framesPerSecond = _framesPerSecond;
         }
 
         public void AddSuperimposedMatrix(Double[,] m, double maxScore)
@@ -103,24 +105,24 @@ namespace AudioAnalysisTools
             var height = CalculateImageHeight();
 
             //set up a new image having the correct dimensions
-            var image2return = new Bitmap(SonoImage.Width, height, PixelFormat.Format24bppRgb);
+            var image2return = new Bitmap(sonogramImage.Width, height, PixelFormat.Format24bppRgb);
 
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
             {
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
-                GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
+                GraphicsSegmented.Draw(g, this.sonogramImage); // USE THIS CALL INSTEAD.
 
-                if (this.SuperimposedRedTransparency != null)     OverlayRedTransparency(g, (Bitmap)this.SonoImage);
+                if (this.SuperimposedRedTransparency != null)     OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedMatrix != null)              OverlayMatrix(g);
-                if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.SonoImage);
+                if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
             }
 
             //now add tracks to the image
-            int offset = SonoImage.Height;
-            foreach (var track in Tracks)
+            int offset = sonogramImage.Height;
+            foreach (Image_Track track in tracks)
             {
                 track.topOffset = offset;
                 track.bottomOffset = offset + track.Height - 1;
@@ -135,7 +137,7 @@ namespace AudioAnalysisTools
 
         private int CalculateImageHeight()
         {
-            int totalHeight = SonoImage.Height;
+            int totalHeight = sonogramImage.Height;
             foreach (Image_Track track in tracks)
                 totalHeight += track.Height;
             return totalHeight;
@@ -147,15 +149,30 @@ namespace AudioAnalysisTools
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
-                if (e.oblong == null) continue;
+                //if (e.oblong == null) continue;
+                //calculate top and bottom freq bins
                 int minFreqBin = (int)(e.MinFreq / e.FreqBinWidth);
                 int maxFreqBin = (int)(e.MaxFreq / e.FreqBinWidth);
                 int height = maxFreqBin - minFreqBin + 1;
-                int t1 = e.oblong.r1; //temporal start of event
-                int y = this.SonoImage.Height - maxFreqBin;
-                //int tWidth = (int)Math.Round(e.Duration / e.FrameDuration);
-                int tWidth = e.oblong.r2 - t1 + 1;
+                int y = this.sonogramImage.Height - maxFreqBin;
+
+                //calculate start and end time frames
+                int t1 = 0;
+                int tWidth = 0;
+                double duration = e.TimeEnd - e.TimeStart;
+                if ((duration != 0.0) && (this.framesPerSecond != 0.0))
+                {
+                    t1     = (int)Math.Round(e.TimeStart * this.framesPerSecond); //temporal start of event
+                    tWidth = (int)Math.Round(duration * this.framesPerSecond);
+                }
+                else if (e.oblong != null)
+                {
+                    t1     = e.oblong.r1; //temporal start of event
+                    tWidth = e.oblong.r2 - t1 + 1;
+                }
+
                 g.DrawRectangle(p1, t1, y, tWidth, height);
+
                 //draw the score bar to indicate relative score
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
@@ -176,7 +193,7 @@ namespace AudioAnalysisTools
             for (int x = 0; x < L; x++)
             {
                 if (this.FreqHits[x] <= 0) continue;
-                int y = (int)(this.SonoImage.Height * (1 - (this.FreqHits[x] / (double)this.nyquistFreq)));
+                int y = (int)(this.sonogramImage.Height * (1 - (this.FreqHits[x] / (double)this.nyquistFreq)));
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
                 g.DrawLine(p1, x, y, x, y + 1);
                 //g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
@@ -191,7 +208,7 @@ namespace AudioAnalysisTools
         {
             int rows = this.SuperimposedRedTransparency.GetLength(0);
             int cols = this.SuperimposedRedTransparency.GetLength(1);
-            int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
             //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedRedTransparency), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
@@ -216,7 +233,7 @@ namespace AudioAnalysisTools
             Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet, Color.Purple };
             int rows = this.SuperimposedRainbowTransparency.GetLength(0);
             int cols = this.SuperimposedRainbowTransparency.GetLength(1);
-            int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
 
             for (int r = 0; r < rows; r++)
             {
@@ -250,7 +267,7 @@ namespace AudioAnalysisTools
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
-            int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
             //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
@@ -272,7 +289,7 @@ namespace AudioAnalysisTools
         public void Dispose()
         {
             this.eventList = null;
-            this.SonoImage.Dispose();
+            this.sonogramImage.Dispose();
         }
 
         #endregion

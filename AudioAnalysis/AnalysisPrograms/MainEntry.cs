@@ -63,17 +63,18 @@ namespace AnalysisPrograms
                     case "multiAnalyser":   // general harmonics recogniser
                         MultiAnalyser.Dev(restOfArgs);
                         break;
-                    case "hd":   // Harmonic Recogniser
-                        HarmonicRecogniser.Dev(restOfArgs);
-                        break;
+                    //case "hd":   // Harmonic Recogniser
+                    //    HarmonicRecogniser.Dev(restOfArgs);
+                    //    break;
                     case "human":     // recognises uhman speech but not word recognition
                         Human2.Dev(restOfArgs);
                         break;
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwi2.Dev(restOfArgs);
+                        //LSKiwi2.Dev(restOfArgs);
+                        LSKiwi3.Dev(restOfArgs);
                         break;
                     case "kiwiROC":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwi.Dev(restOfArgs);
+                        LSKiwi1.Dev(restOfArgs);
                         break;
                     case "LewinsRail":  //LewinsRail3
                         LewinsRail3.Dev(restOfArgs);

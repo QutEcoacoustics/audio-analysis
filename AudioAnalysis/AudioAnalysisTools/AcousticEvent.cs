@@ -50,8 +50,8 @@ namespace AudioAnalysisTools
         public double ScoreNormalised { get; set; }
         /// <summary> Max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
         public double Score_MaxPossible { get; private set; }
-        public double Score_MaxInEvent { get; private set; }
-        public double Score_TimeOfMaxInEvent { get; private set; }
+        public double Score_MaxInEvent { get; set; }
+        public double Score_TimeOfMaxInEvent { get; set; }
 
         public string Score2Name { get; set; }
         /// <summary> second score if required</summary>

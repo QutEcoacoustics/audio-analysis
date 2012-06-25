@@ -182,43 +182,17 @@ namespace TowseyLib
             //double threshold = 0.001;
 
             int length = array.Length;
-            double[] gridScore = new double[length];
+            var gridScore = new double[length];
             int segmentLength = numberOfCycles * cyclePeriod;
 
-            var output = new double[length];
             for (int i = 0; i < length; i++)
             {
                 //if (noiseReducedArray[i] < threshold) continue;
                 double[] extract = DataTools.Subarray(array, i, segmentLength);
-                if (extract == null) return output; // reached end of array
+                if (extract == null) return gridScore; // reached end of array
 
                 //now reduce the segment
-                double[] reducedSegment = null;
-                if (cyclePeriod == 2) reducedSegment = extract;
-                else
-                {
-                    int halfPeriod = cyclePeriod / 2;
-                    int reducedLength = numberOfCycles * 2;
-                    reducedSegment = new double[reducedLength];
-                    for (int x = 0; x < reducedLength; x++)
-                    {
-                        //################# Two ways to reduce: 
-                        //################ (1) by average of the period or (2) by max of the period
-                        double sum = 0;
-                        for (int c = 0; c < halfPeriod; c++) sum += extract[(x * halfPeriod) + c];
-                        reducedSegment[x] = sum / (double)cyclePeriod;
-                        //################ (2)
-                        //double max = -Double.MaxValue;
-                        //for (int c = 0; c < halfPeriod; c++)
-                        //{
-                        //    double value = extract[(x * halfPeriod) + c];
-                        //    if (max < value) max = value;
-                        //}
-                        //reducedSegment[x] = max;
-                    }
-                }
-
-
+                double[] reducedSegment = ReduceArray(extract, cyclePeriod, numberOfCycles);
                 double score = DetectPeriod2Grating(reducedSegment);
 
                 //if (i == 100)
@@ -229,12 +203,42 @@ namespace TowseyLib
                 //}
 
                 //transfer score to output array
-                for (int x = 0; x < segmentLength; x++) if (output[i+x] < score) output[i+x] = score;
+                for (int x = 0; x < segmentLength; x++) if (gridScore[i+x] < score) gridScore[i+x] = score;
 
                 i += (step - 1);
             }
-            return output;
+            return gridScore;
         } //ScanArrayForGridPattern()
+
+
+        public static double[] ReduceArray(double[] array, int cyclePeriod, int numberOfCycles)
+        {
+            double[] reducedSegment = null;
+            if (cyclePeriod == 2) return array;
+
+            int halfPeriod = cyclePeriod / 2;
+            int reducedLength = numberOfCycles * 2;
+            reducedSegment = new double[reducedLength];
+            for (int x = 0; x < reducedLength; x++)
+            {
+                    //################# Two ways to reduce: 
+                    //################ (1) by average of the period or (2) by max of the period
+                    double sum = 0;
+                    for (int c = 0; c < halfPeriod; c++) sum += array[(x * halfPeriod) + c];
+                    reducedSegment[x] = sum / (double)cyclePeriod;
+                    //################ (2)
+                    //double max = -Double.MaxValue;
+                    //for (int c = 0; c < halfPeriod; c++)
+                    //{
+                    //    double value = extract[(x * halfPeriod) + c];
+                    //    if (max < value) max = value;
+                    //}
+                    //reducedSegment[x] = max;
+            }
+            return reducedSegment;
+        }
+
+
 
 
         /// <summary>

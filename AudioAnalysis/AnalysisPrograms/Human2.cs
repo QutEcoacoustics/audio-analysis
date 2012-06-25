@@ -78,10 +78,11 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Airplane.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
             string configPath    = @"C:\SensorNetworks\Output\Human\Human.cfg";
             string outputDir     = @"C:\SensorNetworks\Output\Human\";
@@ -260,10 +261,17 @@ namespace AnalysisPrograms
             DataTable dt = result.Data;
             //#############################################################################################################################################
 
-            //ADD IN ADDITIONAL INFO TO TABLE
-            AddContext2Table(dt, tsStart, result.AudioDuration);
-            CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
-            //DataTableTools.WriteTable(dt);
+            //ADD IN ADDITIONAL INFO TO RESULTS TABLE
+            if (dt != null)
+            {
+                AddContext2Table(dt, tsStart, result.AudioDuration);
+                CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
+                //DataTableTools.WriteTable(augmentedTable);
+            }
+            else
+            {
+                return -993;  //error!!
+            }
 
             return status;
         } //Execute()
@@ -459,8 +467,52 @@ namespace AnalysisPrograms
             //iii: CONVERT TO ACOUSTIC EVENTS
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
+
+            predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians 
             return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
         } //Analysis()
+
+        ///
+        /// THis method removes isolated speech events. Expect at least 2 events in 2 seconds 
+        public static List<AcousticEvent> FilterHumanSpeechEvents(List<AcousticEvent> events)
+        {
+            int count = events.Count;
+            if (count < 2) //require three speech events in space of three seconds to be a human speech event.
+            {
+                //events = new List<AcousticEvent>();
+                events = null;
+                return events;
+            }
+            bool[] partOfDouble = new bool[count];
+            for (int i = 1; i < count; i++)
+            {
+                double gap = events[i].TimeStart - events[i-1].TimeStart;
+                //double leftGap = events[i].TimeStart - events[i-1].TimeStart;
+                //double rghtGap = events[i + 1].TimeStart - events[i].TimeStart;
+
+                //if ((leftGap < 2.0) && (rghtGap < 2.0))
+                //{
+                //    partOfTriple[i - 1] = true;
+                //    partOfTriple[i]     = true;
+                //    partOfTriple[i + 1] = true;
+                //}
+                if (gap < 2.0)
+                {
+                    partOfDouble[i - 1] = true;
+                    partOfDouble[i]     = true;
+                }
+
+            }
+
+            for (int i = count - 1; i >= 0; i--)
+            {
+                if (!partOfDouble[i]) events.Remove(events[i]);
+            }
+            if (events.Count == 0) events = null;
+            return events;
+        }
+
+
 
 
 
@@ -473,7 +525,8 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
             if (hits != null)   image.OverlayRainbowTransparency(hits);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
+            if ((predictedEvents != null) && (predictedEvents.Count > 0)) 
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
 
@@ -521,6 +574,9 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
+            if (dt == null) return null;
+
+            if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);   //get whole minutes
             if (units % 1 > 0.0) unitCount += 1; //add fractional minute
@@ -537,7 +593,7 @@ namespace AnalysisPrograms
             }
 
             string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
-            Type[] types = { typeof(int), typeof(int), typeof(int) };
+            Type[]   types   = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
@@ -547,10 +603,11 @@ namespace AnalysisPrograms
             }
             return newtable;
         }
-
-
+        
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
+            if (dt == null) return;
+
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
