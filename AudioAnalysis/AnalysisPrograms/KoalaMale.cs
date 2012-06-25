@@ -465,7 +465,7 @@ namespace AnalysisPrograms
         public static List<AcousticEvent> FilterMaleKoalaEvents(List<AcousticEvent> events)
         {
             int count = events.Count;
-            if (count < 3000) //require three consecutive inhale events to be a koala bellow.
+            if (count < 3) //require three consecutive inhale events to be a koala bellow.
             {
                 //events = new List<AcousticEvent>();
                 events = null;

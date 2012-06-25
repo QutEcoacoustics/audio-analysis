@@ -106,7 +106,7 @@ namespace AnalysisPrograms
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
-            int startMinute = 40;
+            int startMinute = 75;
             int durationSeconds = 300; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
