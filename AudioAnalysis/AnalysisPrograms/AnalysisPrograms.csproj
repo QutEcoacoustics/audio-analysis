@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
+    <StartupObject>AnalysisPrograms.AnalyseLongRecording</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <FileUpgradeFlags>
@@ -144,6 +144,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
+    <Compile Include="Processing\TempTools.cs" />
+    <Compile Include="ProcessLongRecording.cs" />
     <Compile Include="Process\AnalysisHelpers.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
@@ -179,6 +181,10 @@
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AnalysisRunner\AnalysisRunner.csproj">
+      <Project>{EEB8AE89-A07B-4974-8685-88BDCFF22C78}</Project>
+      <Name>AnalysisRunner</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>

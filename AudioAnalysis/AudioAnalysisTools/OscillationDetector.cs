@@ -234,8 +234,9 @@ namespace AudioAnalysisTools
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
                                                                double maxThreshold, double durationThreshold, string fileName)
         {
-            double minThreshold = 0.1;
-            double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
+            //double minThreshold = 0.1;
+            //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
+            double scoreThreshold = maxThreshold; //set this to the minimum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
@@ -259,12 +260,13 @@ namespace AudioAnalysisTools
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
-                        double duration = endTime - startTime;
+                        //double duration = endTime - startTime;
+                        double duration = (i - startFrame + 1)  * frameOffset;
                         if (duration < durationThreshold) continue; //skip events with duration shorter than threshold
+                        //Console.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
-                        //ev.SetTimeAndFreqScales(22050, 512, 128);
-                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                        //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFileName = fileName;
                         //obtain average score.
                         double av = 0.0;
@@ -278,9 +280,9 @@ namespace AudioAnalysisTools
                     }
 
                 //adapt the threshold
-                if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
-                else
-                if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
+                //if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
+                //else
+                //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
                 
 
             } //end of pass over all frames
@@ -291,8 +293,8 @@ namespace AudioAnalysisTools
         public static double CalculateRequiredFrameOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
-            //int dctLength = (int)Math.Round(optimumFrameRate * dctDuration);
-            double frameOffset = sr / (double)optimumFrameRate;
+            //double frameOffset = sr / (double)optimumFrameRate;
+            int frameOffset = (int)(sr / (double)optimumFrameRate);  //do this AND NOT LINE ABOVE OR ELSE GET CUMULATIVE ERRORS IN time scale
 
             double overlap = (framewidth - frameOffset) / (double)framewidth;
             return overlap;

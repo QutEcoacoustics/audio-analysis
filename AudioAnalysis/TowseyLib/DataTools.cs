@@ -1638,6 +1638,7 @@ namespace TowseyLib
         public static double[] ScaleArray(double[] v, int newLength)
         {
             int L = v.Length;
+            if (newLength == L) return v;
             double[] ret = new double[newLength];
             double ratio = newLength / (double)L;
 

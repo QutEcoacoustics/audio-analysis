@@ -31,6 +31,12 @@ namespace TowseyLib
             data = DataTools.normalise(data);
         }
 
+        public void ScaleDataArray(int newLength)
+        {
+            this.data = DataTools.ScaleArray(this.data, newLength);
+        }
+
+
         public void NormaliseData(double min, double max)
         {
             data = DataTools.NormaliseInZeroOne(data, min, max);
