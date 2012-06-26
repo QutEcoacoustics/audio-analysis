@@ -20,7 +20,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    public class Human2 : IAnalyser
+    public class Human1 : IAnalyser
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -256,7 +256,7 @@ namespace AnalysisPrograms
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalyser analyser = new Human2();
+            IAnalyser analyser = new Human1();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
@@ -479,7 +479,7 @@ namespace AnalysisPrograms
 
             //predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians 
 
-            Plot plot = new Plot(Human2.ANALYSIS_NAME, intensity, intensityThreshold);
+            Plot plot = new Plot(Human1.ANALYSIS_NAME, intensity, intensityThreshold);
             return System.Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
@@ -567,7 +567,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
