@@ -39,7 +39,7 @@ namespace AnalysisPrograms
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static string[] analysisTitles = { Human2.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
+        public static string[] analysisTitles = { Human1.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
 
 
         public string DisplayName
@@ -352,11 +352,11 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(6);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, Human2.ANALYSIS_NAME);
+            newDict.Add(Keys.ANALYSIS_NAME, Human1.ANALYSIS_NAME);
             if (frameLength != null) 
                 newDict.Add(Keys.FRAME_LENGTH, frameLength); 
 
-            var results1 = Human2.Analysis(fiAudioF, newDict);
+            var results1 = Human1.Analysis(fiAudioF, newDict);
             if (results1 != null)
             {
                 sonogram = results1.Item1;
@@ -366,7 +366,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results1.Item4)
                     {
-                        ae.Name = Human2.ANALYSIS_NAME;
+                        ae.Name = Human1.ANALYSIS_NAME;
                         events.Add(ae);
                     }
                 }
@@ -642,7 +642,7 @@ namespace AnalysisPrograms
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
                 string eventName = (string)ev[AudioAnalysisTools.Keys.EVENT_NAME];
-                if(eventName == Human2.ANALYSIS_NAME)
+                if(eventName == Human1.ANALYSIS_NAME)
                 {
                     if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
                 } else if(eventName == Crow.ANALYSIS_NAME)

@@ -67,7 +67,7 @@ namespace AnalysisPrograms
                     //    HarmonicRecogniser.Dev(restOfArgs);
                     //    break;
                     case "human":     // recognises uhman speech but not word recognition
-                        Human2.Dev(restOfArgs);
+                        Human1.Dev(restOfArgs);
                         break;
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
                         //LSKiwi2.Dev(restOfArgs);
