@@ -517,6 +517,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartSec
                 row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
@@ -546,10 +547,10 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                eventsPerUnitTime[timeUnit]++;
+                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 

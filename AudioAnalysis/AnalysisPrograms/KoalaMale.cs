@@ -394,7 +394,7 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static System.Tuple<BaseSonogram, Double[,], Plot, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             int minHz           = Int32.Parse(configDict[Keys.MIN_HZ]);
@@ -429,16 +429,12 @@ namespace AnalysisPrograms
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-            double framesPerSecond = freqBinWidth;
 
             //#############################################################################################################################################
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
             // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
             // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
             // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-
-            //int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            //int maxbin = minBin + numberOfBins - 1;
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             int rowCount = sonogram.Data.GetLength(0);
@@ -457,7 +453,8 @@ namespace AnalysisPrograms
 
             //######################################################################
 
-            return System.Tuple.Create(sonogram, hits, scores, events, tsRecordingtDuration);
+            Plot plot = new Plot(KoalaMale.ANALYSIS_NAME, scores, eventThreshold);
+            return System.Tuple.Create(sonogram, hits, plot, events, tsRecordingtDuration);
         } //Analysis()
 
         ///
@@ -503,7 +500,7 @@ namespace AnalysisPrograms
         }
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency / 2;
@@ -515,7 +512,7 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             //if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
@@ -581,10 +578,10 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                eventsPerUnitTime[timeUnit]++;
+                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 

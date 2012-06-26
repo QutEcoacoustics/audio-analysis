@@ -62,7 +62,7 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
             //MACHINES
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min173Airplane.wav";
@@ -74,8 +74,10 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Cassandra111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min430Crows.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min646Crows.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
+
             //KOALA MALE
-            string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
@@ -100,7 +102,7 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
             int startMinute = 0;
-            int durationSeconds = 0; //set zero to get entire recording
+            int durationSeconds = 60; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
@@ -336,7 +338,7 @@ namespace AnalysisPrograms
             var events = new List<AcousticEvent>();
             double[,] hits = null;
             var recordingTimeSpan = new TimeSpan();
-            var scores = new List<double[]>();
+            var scores = new List<Plot>();
 
             //######################################################################
             //HUMAN
@@ -423,7 +425,7 @@ namespace AnalysisPrograms
             {
                 if (sonogram == null) sonogram = results3.Item1;
                 hits = MatrixTools.AddMatrices(hits, results3.Item2);
-                scores.Add(DataTools.normalise(results3.Item3));
+                scores.Add(results3.Item3);
                 if (results3.Item4 != null)
                 {
                     foreach (AcousticEvent ae in results3.Item4)
@@ -548,7 +550,7 @@ namespace AnalysisPrograms
         } //Analyse()
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<double[]> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency / 2;
@@ -560,9 +562,11 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) for (int i = 0; i < scores.Count; i++)
+            if (scores != null) 
+                for (int i = 0; i < scores.Count; i++)
                 {
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(scores[i], 0.0, 1.0, eventThreshold, analysisTitles[i]));
+                    scores[i].ScaleDataArray(sonogram.FrameCount);
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(scores[i].data, 0.0, 1.0, scores[i].threshold, scores[i].title));
                 }
             //if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null) image.OverlayRainbowTransparency(hits);
@@ -599,6 +603,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartAbs - OVER-WRITE LATER
                 row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
@@ -609,8 +614,6 @@ namespace AnalysisPrograms
         }
 
 
-
-
         /// <summary>
         /// Converts a DataTable of events to a datatable where one row = one minute of indices
         /// </summary>
@@ -619,6 +622,7 @@ namespace AnalysisPrograms
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
             if (dt == null) return null;
+            if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
 
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);   //get whole minutes
@@ -626,41 +630,51 @@ namespace AnalysisPrograms
             int[] human_EventsPerUnitTime = new int[unitCount]; //to store event counts
             int[] crow__EventsPerUnitTime = new int[unitCount]; //to store counts
             int[] machinEventsPerUnitTime = new int[unitCount]; //to store counts
+            int[] koala_EventsPerUnitTime = new int[unitCount]; //to store counts
+            int[] canetdEventsPerUnitTime = new int[unitCount]; //to store counts
 
 
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
                 string eventName = (string)ev[AudioAnalysisTools.Keys.EVENT_NAME];
                 if(eventName == Human2.ANALYSIS_NAME)
                 {
-                    human_EventsPerUnitTime[timeUnit]++;
+                    if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
                 } else if(eventName == Crow.ANALYSIS_NAME)
                 {
-                    crow__EventsPerUnitTime[timeUnit]++;
+                    if (eventScore != 0.0) crow__EventsPerUnitTime[timeUnit]++;
                 }
                 else if (eventName == PlanesTrainsAndAutomobiles.ANALYSIS_NAME)
                 {
-                    machinEventsPerUnitTime[timeUnit]++;
+                    if (eventScore != 0.0) machinEventsPerUnitTime[timeUnit]++;
+                }
+                else if (eventName == KoalaMale.ANALYSIS_NAME)
+                {
+                    if (eventScore != 0.0) koala_EventsPerUnitTime[timeUnit]++;
+                }
+                else if (eventName == Canetoad.ANALYSIS_NAME)
+                {
+                    if (eventScore != 0.0) canetdEventsPerUnitTime[timeUnit]++;
                 }
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.START_MIN, "CrowEvents", "HumanEvents", "MachineEvents"};
-            Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int) };
+            string[] headers = { AudioAnalysisTools.Keys.START_MIN, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
+            Type[]   types   = { typeof(int),                        typeof(int),  typeof(int),   typeof(int),     typeof(int),    typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
             for (int i = 0; i < unitCount; i++)
             {
                 int unitID = (int)(i * unitTime.TotalMinutes);
-                newtable.Rows.Add(unitID, human_EventsPerUnitTime[i], crow__EventsPerUnitTime[i], machinEventsPerUnitTime[i]);
+                newtable.Rows.Add(unitID, human_EventsPerUnitTime[i], crow__EventsPerUnitTime[i], machinEventsPerUnitTime[i],
+                                          koala_EventsPerUnitTime[i], canetdEventsPerUnitTime[i]);
             }
             return newtable;
         }
-
 
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {

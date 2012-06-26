@@ -103,10 +103,6 @@
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AnalysisPrograms\AnalysisPrograms.csproj">
-      <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
-      <Name>AnalysisPrograms</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

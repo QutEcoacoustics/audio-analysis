@@ -322,14 +322,14 @@
                         return;
                     }
 
-                    DataTable datatable = AudioBrowserTools.MergeResultsIntoSingleDataTable(analyserResults);
+                    DataTable datatable = TempTools.MergeResultsIntoSingleDataTable(analyserResults);
 
                     //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
                     var audioUtility = new MasterAudioUtility(settings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
                     var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
                     var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
-                    var op1 = AudioBrowserTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
+                    var op1 = TempTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
                     var eventsDatatable  = op1.Item1;
                     var indicesDatatable = op1.Item2;
                     int eventsCount = 0;
@@ -338,7 +338,7 @@
                     if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
                     var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
                     string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-                    var op2 = AudioBrowserTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+                    var op2 = TempTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
                     //#############################################################################################################################
                     stopwatch.Stop();

@@ -361,7 +361,7 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static System.Tuple<BaseSonogram, Double[,], Plot, List<AcousticEvent>, TimeSpan>
                                         Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values
@@ -424,9 +424,10 @@ namespace AnalysisPrograms
             double[] intensity = results.Item1;
             double[] periodicity = results.Item2; //an array of periodicity scores
 
-            //transfer periodicity info score array.
             //intensity = DataTools.filterMovingAverage(intensity, 3);
-            int noiseBound = (int)(minHz / freqBinWidth);
+            //expect humans to have max power >100 and < 1000 Hz. Set these bounds
+            int lowerHumanMaxBound = (int)(100 / freqBinWidth); //ignore 0-100 hz - too much noise
+            int upperHumanMaxBound = (int)(3000 / freqBinWidth); //ignore above 2500 hz
             double[] scoreArray = new double[intensity.Length];
             for (int r = 0; r < rowCount; r++)
             {
@@ -436,16 +437,24 @@ namespace AnalysisPrograms
                 if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
 
                 //find freq having max power and use info to adjust score.
-                //expect humans to have max < 1000 Hz
                 double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
-                for (int j = 0; j < noiseBound; j++) spectrum[j] = 0.0;
-                int maxIndex = DataTools.GetMaxIndex(spectrum);
-                int freqWithMaxPower = (int)Math.Round(maxIndex * freqBinWidth);
-                double discount = 1.0;
-                if (freqWithMaxPower > 2000) discount = 0.0;
-                else
-                    if (freqWithMaxPower > 1000) discount = -(freqWithMaxPower/(double)1000.0) + 2.0; //y=mx+c where m = -1/1000 and c=2.0
+                for (int j = 0; j < lowerHumanMaxBound; j++) spectrum[j] = 0.0;
+                for (int j = upperHumanMaxBound; j < spectrum.Length; j++) spectrum[j] = 0.0;
 
+                double[] peakvalues = DataTools.GetPeakValues(spectrum);
+                int maxIndex1 = DataTools.GetMaxIndex(peakvalues);
+                peakvalues[maxIndex1] = 0.0;
+                int maxIndex2 = DataTools.GetMaxIndex(peakvalues);
+                int avMaxBin = (maxIndex1 + maxIndex2) /2;
+                //int freqWithMaxPower = (int)Math.Round(maxIndex * freqBinWidth);
+                int freqWithMaxPower = (int)Math.Round(avMaxBin * freqBinWidth);
+                double discount = 1.0;
+                if (freqWithMaxPower > 1000) discount = 0.0;
+                else
+                    if (freqWithMaxPower < 500) discount = 0.0;
+                    //else
+                    //    if (freqWithMaxPower > 1000) discount = -(freqWithMaxPower / (double)1000.0) + 2.0; //y=mx+c where m = -1/1000 and c=2.0
+                double time = r / framesPerSecond;
                 //set scoreArray[r]  - ignore locations with low intensity
                 if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r] * discount;
             }
@@ -468,8 +477,10 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
 
-            predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians 
-            return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
+            //predictedEvents = Human2.FilterHumanSpeechEvents(predictedEvents); //remove isolated speech events - expect humans to talk like politicians 
+
+            Plot plot = new Plot(Human2.ANALYSIS_NAME, intensity, intensityThreshold);
+            return System.Tuple.Create(sonogram, hits, plot, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
         ///
@@ -516,14 +527,14 @@ namespace AnalysisPrograms
 
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency / 2;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             if (hits != null)   image.OverlayRainbowTransparency(hits);
             if ((predictedEvents != null) && (predictedEvents.Count > 0)) 
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
@@ -556,6 +567,7 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartSec
                 row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
@@ -585,10 +597,10 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                eventsPerUnitTime[timeUnit]++;
+                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
