@@ -109,6 +109,16 @@
                 ]
             );
             (
+                "GlobalZScoreAnti", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new RandomiserSelector());
+                Transformer(new Transformers.ZScoreNormalise());
+                Trainer(new GroupTrainer()); 
+                Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
                 "BasicGrouped-ReferenceOnly", 
                 [ 
                 Cleaner(new BasicCleaner()); 
@@ -117,6 +127,7 @@
                 Classifier(new EuclideanClassifier())
                 ]
             );
+
             (
                 "WebsiteWorkFlow-SaveBinary", 
                 [ 

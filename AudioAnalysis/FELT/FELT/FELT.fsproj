@@ -188,7 +188,7 @@
     <!-- C:\Program Files (x86)\CollabNet\Subversion Server\ -->
 	<!-- ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\" -->
 	<!-- C:\Program Files\CollabNet\Subversion Client -->
-    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="C:\Program Files\CollabNet\Subversion Client">
+    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\">
       <Output TaskParameter="Revision" PropertyName="Revision" />
     </SvnVersion>
     <PropertyGroup>
