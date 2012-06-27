@@ -94,7 +94,7 @@ namespace AnalysisRunner
                 // divide duration to get evenly-sized segments
                 // use the max duration to divide up the range
                 // this is the number of segments required to not go over the max duration
-                var analysisSegmentsForMaxSize = Math.Ceiling(fileSegmentDuration / analysisSegmentMaxDuration);
+                double analysisSegmentsForMaxSize = Math.Ceiling(fileSegmentDuration / analysisSegmentMaxDuration);
 
                 // get the segment durations
                 // segment evenly - each chunk will be equal or smaller than max, and equal or greater than min.

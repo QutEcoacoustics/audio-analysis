@@ -188,8 +188,8 @@
 
             string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
             //this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
-            this.comboBoxCSVFileAnalysisType.SelectedItem     = analysisName;
-            this.browserSettings.AnalysisIdentifier           = analysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;
+            this.browserSettings.AnalysisIdentifier = analysisName;
 
             var op = LoadAnalysisConfigFile(analysisName);
             this.browserSettings.fiAnalysisConfig = op.Item1;
@@ -206,7 +206,7 @@
         /// <summary>
         /// THIS METHOD ASSUMES THAT CONFIG FILE IS IN CONFIG DIR AND HAS DEFAULT NAME
         /// </summary>
-        private Tuple<FileInfo, Dictionary<string,string> > LoadAnalysisConfigFile(string analysisName)
+        private Tuple<FileInfo, Dictionary<string, string>> LoadAnalysisConfigFile(string analysisName)
         {
             FileInfo fi = null;
             Dictionary<string, string> dict = null;
@@ -220,7 +220,7 @@
             string configDir = this.browserSettings.diConfigDir.FullName;
             string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
             var fiConfig = new FileInfo(configPath);
-            if (! fiConfig.Exists)
+            if (!fiConfig.Exists)
             {
                 Console.WriteLine("#######  WARNING: The CONFIG file does not exist: <" + configPath + ">");
                 return Tuple.Create(fi, dict);
@@ -301,13 +301,31 @@
                     var configuration = new ConfigDictionary(fiConfig.FullName);
                     settings.ConfigDict = configuration.GetTable();
 
-                    //#SEGMENT_DURATION=minutes,   SEGMENT_OVERLAP=seconds        
-                    //SEGMENT_DURATION=5
-                    //SEGMENT_OVERLAP=10
+                    //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
+
                     int segmentOffsetMinutes = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_DURATION, settings.ConfigDict);
-                    settings.SegmentMaxDuration     = new TimeSpan(0, segmentOffsetMinutes, 0);
-                    int segmentOverlapSeconds       = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_OVERLAP, settings.ConfigDict);
-                    settings.SegmentOverlapDuration = new TimeSpan(0, 0, segmentOverlapSeconds); 
+                    TimeSpan? tsOffset = null;
+                    if (segmentOffsetMinutes == -Int32.MaxValue || segmentOffsetMinutes == int.MaxValue || segmentOffsetMinutes == int.MinValue)
+                    {
+                        tsOffset = null;
+                    }
+                    else
+                    {
+                        tsOffset = TimeSpan.FromMinutes(segmentOffsetMinutes);
+                    }
+
+                    if (tsOffset.HasValue) settings.SegmentMaxDuration = tsOffset;
+
+                    // set overlap
+                    int segmentOverlapSeconds = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_OVERLAP, settings.ConfigDict);
+                    if (segmentOverlapSeconds == -Int32.MaxValue || segmentOverlapSeconds == int.MaxValue || segmentOverlapSeconds == int.MinValue)
+                    {
+
+                    }
+                    else
+                    {
+                        settings.SegmentOverlapDuration = TimeSpan.FromSeconds(segmentOverlapSeconds);
+                    }
 
                     //################# PROCESS THE RECORDING #####################################################################################
                     var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
@@ -330,7 +348,7 @@
                     var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
                     var op1 = TempTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
-                    var eventsDatatable  = op1.Item1;
+                    var eventsDatatable = op1.Item1;
                     var indicesDatatable = op1.Item2;
                     int eventsCount = 0;
                     if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
@@ -378,7 +396,7 @@
                     //    File.Copy(reportfilePath, target); // Copy the file 2 target
                     //}
 
-                    var fiEventsCSV  = op2.Item1;
+                    var fiEventsCSV = op2.Item1;
                     var fiIndicesCSV = op2.Item2;
 
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
@@ -649,15 +667,15 @@
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
             //if (!fiOutputSegment.Exists) //extract the segment
             //{
-                AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
+            AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
             //}
 
-                if (!fiOutputSegment.Exists) //still has not been extracted
-                {
-                    Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
-                    this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
-                    return;
-                }
+            if (!fiOutputSegment.Exists) //still has not been extracted
+            {
+                Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
+                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
+                return;
+            }
 
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
