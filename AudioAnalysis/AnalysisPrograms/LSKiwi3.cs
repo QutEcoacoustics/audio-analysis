@@ -1015,7 +1015,7 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 eventsPerUnitTime[timeUnit]++;

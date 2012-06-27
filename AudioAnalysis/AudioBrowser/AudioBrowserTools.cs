@@ -185,8 +185,10 @@ namespace AudioBrowser
             // the following call will only work for one file, since we need to sort the output afterwards.
             var file = new FileSegment { 
                     OriginalFile = fiSourceRecording,
-                    //SegmentStartOffset = TimeSpan.Zero,            //########### comment this line to analyse whole file
-                    //SegmentEndOffset   = TimeSpan.FromMinutes(15)  //########### comment this line to analyse whole file
+                    SegmentStartOffset = TimeSpan.Zero,             //########### comment this line to analyse whole file
+                    SegmentEndOffset   = TimeSpan.FromHours(12)     //########### comment this line to analyse whole file
+                    //SegmentStartOffset = TimeSpan.FromHours(12),  //########### comment this line to analyse whole file
+                    //SegmentEndOffset   = TimeSpan.FromHours(24)   //########### comment this line to analyse whole file
             };
             var fileSegments = new[] { file };
 
