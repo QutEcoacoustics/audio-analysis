@@ -33,14 +33,12 @@ namespace AnalysisPrograms
         public static string key_INTENSITY_SCORE = AudioAnalysisTools.Keys.EVENT_INTENSITY;
         public static string key_BANDWIDTH_SCORE = "BandwidthScore";
         public static string key_DELTA_SCORE     = "DeltaPeriodScore";
-        public static string key_SNR_SCORE       = AudioAnalysisTools.Keys.SNR_SCORE;
-        public static string key_PEAKS_SNR_SCORE = "PeaksSnrScore";
-        public static string key_PEAKS_STD_SCORE = "PeaksStdScore";
+        public static string key_GRID_SCORE      = "GridScore";
+        public static string key_CHIRP_SCORE     = "ChirpScore";
         public static string key_EVENT_NORMSCORE = AudioAnalysisTools.Keys.EVENT_NORMSCORE;
-
-
+        
         public static string[] defaultRules = {
-                                           "EXCLUDE_IF_RULE=feature1_LT_0.45",
+                                           "EXCLUDE_IF_RULE="+key_BANDWIDTH_SCORE+"_LT_0.30",
                                            "EXCLUDE_IF_RULE=feature1_GT_0.45",
                                            "WEIGHT_feature1=0.45",
                                            "WEIGHT_feature2=0.45",
@@ -105,8 +103,8 @@ namespace AnalysisPrograms
             Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
-            Log.Verbosity = 1;
-            int startMinute = 75;
+            //Log.Verbosity = 1;
+            int startMinute = 40;
             int durationSeconds = 300; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
@@ -372,9 +370,9 @@ namespace AnalysisPrograms
 
             if ((analysisSettings.IndicesFile != null) && (dataTableOfEvents != null))
             {
-                double scoreThreshold = 0.1;
-                TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTableOfEvents, unitTime, recordingTimeSpan, scoreThreshold);
+                double eventThreshold = ConfigDictionary.GetDouble(Keys.EVENT_THRESHOLD, analysisSettings.ConfigDict);
+                TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of one minute
+                var indicesDT = ConvertEvents2Indices(dataTableOfEvents, unitTime, recordingTimeSpan, eventThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
 
@@ -533,7 +531,8 @@ namespace AnalysisPrograms
             }
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            var events = LSKiwi3.ConvertScoreArray2Events(comboScore, bandWidthScore, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+            var events = LSKiwi3.ConvertScoreArray2Events(intensity1, gridScore, deltaPeriodScore, chirpScores, comboScore, bandWidthScore, 
+                                                          minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                           eventThreshold, minDuration, maxDuration);
 
             CropEvents(events, dBArray, minDuration);
@@ -541,8 +540,6 @@ namespace AnalysisPrograms
             //CalculateDeltaPeriodScore(events, periodicity1, minFramePeriod, maxFramePeriod);
             //CalculateBandWidthScore(events, sonogram.Data);
             //CalculatePeaksScore(events, dBArray);
-            //FilterEvents(events);
-            //CalculateWeightedEventScore(events);
 
             // PREPARE HITS MATRIX
             var hits = new double[rowCount, colCount];
@@ -568,73 +565,18 @@ namespace AnalysisPrograms
             return System.Tuple.Create(scores, hits, events);
         }
 
-        public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds)
-        {
-            double severity = 0.2;
-            int length = activity.Length;
-
-            foreach (AcousticEvent ev in events)
-            {
-                int start = ev.oblong.r1;
-                int end = ev.oblong.r2;
-                double[] subArray = DataTools.Subarray(activity, start, end - start + 1);
-                int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
-
-                int newMinRow = start + bounds[0];
-                int newMaxRow = start + bounds[1];
-                if (newMaxRow >= length) newMaxRow = length - 1;
-
-                ev.oblong = null;
-                ev.TimeStart = newMinRow  * ev.FrameOffset;
-                ev.TimeEnd   = newMaxRow  * ev.FrameOffset;
-                ev.Duration  = ev.TimeEnd - ev.TimeStart;
-                //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset); 
-            }
-            for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
-        }
-
-        public static double[] CropArrayToEvents(List<AcousticEvent> events, double[] array)
-        {
-            int length = array.Length;
-            double[] returnArray = new double[length];
-            foreach (AcousticEvent ev in events)
-            {
-                int start = ev.oblong.r1;
-                int end = ev.oblong.r2;
-                for (int i = start; i < end; i++) returnArray[i] = array[i];
-            }
-            return returnArray;
-        }
-
-        public static void CalculateAvIntensityScore(List<AcousticEvent> events, double[] intensity)
-        {
-            //periodicity score is the average intensity response to the periodicity - i.e. amplitude of the FFT
-            foreach (AcousticEvent ev in events)
-            {
-                int start = ev.oblong.r1;
-                int end = ev.oblong.r2;
-                int length = end - start + 1;
-                double avIntensity = 0.0;
-                for (int i = start; i <= end; i++) avIntensity += intensity[i];
-                ev.kiwi_intensityScore = avIntensity / (double)length;
-            }
-
-        }
-
-
-
-        public static double[] NormalisePeriodicity(double[] periodicity, double minFramePeriod, double maxFramePeriod)
-        {
-            double range = maxFramePeriod - minFramePeriod;
-            for (int i = 0; i < periodicity.Length; i++)
-            {
-                //if (i > 100) 
-                //    Console.WriteLine("{0}      {1}",  periodicity[i], ((periodicity[i] - minFramePeriod) / range));
-                if (periodicity[i] <= 0.0) continue;
-                periodicity[i] = (periodicity[i] - minFramePeriod) / range;
-            }
-            return periodicity;
-        }
+        //public static double[] NormalisePeriodicity(double[] periodicity, double minFramePeriod, double maxFramePeriod)
+        //{
+        //    double range = maxFramePeriod - minFramePeriod;
+        //    for (int i = 0; i < periodicity.Length; i++)
+        //    {
+        //        //if (i > 100) 
+        //        //    Console.WriteLine("{0}      {1}",  periodicity[i], ((periodicity[i] - minFramePeriod) / range));
+        //        if (periodicity[i] <= 0.0) continue;
+        //        periodicity[i] = (periodicity[i] - minFramePeriod) / range;
+        //    }
+        //    return periodicity;
+        //}
 
 
         public static double[] CalculateGridScore(double[] dBArray, double[] peakPeriodicity)
@@ -790,8 +732,6 @@ namespace AnalysisPrograms
             }
             return scores;
         }
-
-
         /// <summary>
         /// Checks acoustic activity that spills outside the kiwi bandwidth.
         /// </summary>
@@ -842,52 +782,12 @@ namespace AnalysisPrograms
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="ae">an acoustic event</param>
-        /// <param name="dbArray">The sequence of frame dB over the event</param>
-        /// <returns></returns>
-        public static System.Tuple<double, double> KiwiPeakAnalysis(AcousticEvent ae, double[] dbArray)
-        {
 
-            //dbArray = DataTools.filterMovingAverage(dbArray, 3);
-            bool[] peaks = DataTools.GetPeaks(dbArray);  //locate the peaks
-            double[] peakValues = new double[dbArray.Length];
-            for (int i = 0; i < dbArray.Length; i++)
-            {
-                if(peaks[i])  peakValues[i] = dbArray[i];
-            }
-
-            //take the top N peaks
-            int N = 5;
-            double[] topNValues = new double[N];
-            for (int p = 0; p < N; p++)
-            {
-                int maxID = DataTools.GetMaxIndex(peakValues);
-                topNValues[p] = peakValues[maxID];
-                peakValues[maxID] = 0.0;
-            }        
-            //PROCESS PEAK DECIBELS
-            double avPeakDB, sdPeakDB;
-            NormalDist.AverageAndSD(topNValues, out avPeakDB, out sdPeakDB);
-            return System.Tuple.Create(avPeakDB, sdPeakDB);
-        }
-
-
-
-        public static void CalculateWeightedEventScore(List<AcousticEvent> events)
-        {
-            foreach (AcousticEvent ev in events)
-            {
-                //double comboScore = (snrScore * 0.1)        +   (sdPeakScore * 0.1)         + (ev.kiwi_intensityScore * 0.1) + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                ev.ScoreNormalised = (ev.kiwi_snrScore * 0.05) + (ev.kiwi_sdPeakScore * 0.25) + (ev.kiwi_intensityScore * 0.2) + (ev.kiwi_deltaPeriodScore * 0.3) + (ev.kiwi_bandWidthScore * 0.2); 
-            }
-        }
-
-
-        public static List<AcousticEvent> ConvertScoreArray2Events(double[] comboScore, double[] bwScore, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
-                                                                   double scoreThreshold, double minDuration, double maxDuration)
+        public static List<AcousticEvent> ConvertScoreArray2Events(
+                                          double[] intensity, double[] gridScore, double[] deltaPeriodScore, double[] chirpScores, 
+                                          double[] comboScore, double[] bwScore, 
+                                          int minHz, int maxHz, double framesPerSec, double freqBinWidth,
+                                          double scoreThreshold, double minDuration, double maxDuration)
         {
             int count = comboScore.Length;
             var events = new List<AcousticEvent>();
@@ -897,7 +797,11 @@ namespace AnalysisPrograms
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++) // pass over all frames
+            //for filtering acoustic events
+            List<string[]> excludeRules = LSKiwi1.GetExcludeRules(defaultRules);
+
+            // pass over all frames
+            for (int i = 0; i < count; i++) 
             {
                 if ((isHit == false) && (comboScore[i] >= scoreThreshold))//start of an event
                 {
@@ -909,44 +813,121 @@ namespace AnalysisPrograms
                     if ((isHit == true) && (comboScore[i] <= scoreThreshold)) // this is end of an event, so initialise it
                     {
                         isHit = false;
+
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
-                        // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration outside defined limits
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
-                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        int frameCount = i - startFrame + 1;
+                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth); //need time scale for later cropping of events
 
-                        // obtain an average score for the duration of the event.
-                        double av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += comboScore[n];
-                        ev.Score = av / (double)frameCount;
-                        ev.ScoreNormalised = ev.Score;  //assume score already nomalised / maxPossibleScore; // normalised to the user supplied threshold
+                        //
+                        ev.kiwi_intensityScore   = CalculateAverageEventScore(ev, intensity);
+                        ev.kiwi_gridScore        = CalculateAverageEventScore(ev, gridScore);
+                        ev.kiwi_deltaPeriodScore = CalculateAverageEventScore(ev, deltaPeriodScore);
+                        ev.kiwi_chirpScore       = CalculateAverageEventScore(ev, chirpScores);
+                        ev.Score                 = CalculateAverageEventScore(ev, comboScore);
+                        ev.ScoreNormalised       = ev.Score;  //assume score already nomalised
                         if (ev.ScoreNormalised > 1.0) ev.ScoreNormalised = 1.0;
 
+                        //int frameCount = i - startFrame + 1;
+
+                        // obtain an average score for the duration of the event.
+                        //double av = 0.0;
+                        //for (int n = startFrame; n <= i; n++) av += comboScore[n];
+
                         //find max score and its time - also calculate bandwidth score
-                        double bandwidthScore = 0.0;
-                        double maxComboSocre = -double.MaxValue;
-                        for (int n = startFrame; n <= i; n++)
-                        {
-                            if (comboScore[n] > maxComboSocre)
-                            {
-                                maxComboSocre = comboScore[n];
-                                ev.Score_MaxInEvent = maxComboSocre;
-                                ev.Score_TimeOfMaxInEvent = n * frameOffset;
-                            }
-                            bandwidthScore += bwScore[n];
-                        }
-                        bandwidthScore /= frameCount;
-                        //deal with bandwidth score
-                        ev.kiwi_bandWidthScore = bandwidthScore;
-                        ev.ScoreNormalised *= bandwidthScore;
+                        //double bandwidthScore = 0.0;
+                        //double maxComboSocre = -double.MaxValue;
+                        //for (int n = startFrame; n <= i; n++)
+                        //{
+                        //    if (comboScore[n] > maxComboSocre)
+                        //    {
+                        //        maxComboSocre = comboScore[n];
+                        //        ev.Score_MaxInEvent = maxComboSocre;
+                        //        ev.Score_TimeOfMaxInEvent = n * frameOffset;
+                        //    }
+                        //    bandwidthScore += bwScore[n];
+                        //}
+                        //bandwidthScore /= frameCount;
+
+                        ev.kiwi_bandWidthScore = CalculateAverageEventScore(ev, bwScore);
+
+                        ev = FilterEvent(ev, excludeRules);
                         events.Add(ev);
                     }
             } //end of pass over all frames
             return events;
         }//end method ConvertScoreArray2Events()
 
+
+        public static double CalculateAverageEventScore(AcousticEvent ae, double[] scoreArray)
+        {
+            int start  = ae.oblong.r1;
+            int end    = ae.oblong.r2;
+            if (end > scoreArray.Length) end = scoreArray.Length - 1;
+            int length = end - start + 1;
+            double sum = 0.0;
+            for (int i = start; i <= end; i++) sum += scoreArray[i];
+            return sum / (double)length;
+        }
+
+        public static AcousticEvent FilterEvent(AcousticEvent ae, List<string[]> rules)
+        {
+            //discount the normalised score by the bandwidth score.
+            ae.ScoreNormalised *= ae.kiwi_bandWidthScore;
+
+            //loop through exclusion rules - DO NOT DELETE events - set score to zero so can check later what is happening.
+            foreach (string[] rule in rules)
+            {
+                string feature = rule[0];
+                string op = rule[1];
+                double value = Double.Parse(rule[2]);
+                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "LT") && (ae.kiwi_bandWidthScore < value))
+                {
+                    ae.kiwi_bandWidthScore = 0.0;
+                    ae.ScoreNormalised     = 0.0;
+                    return ae;
+                }
+                else
+                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "GT") && (ae.kiwi_bandWidthScore > value))
+                {
+                    ae.kiwi_bandWidthScore = 0.0;
+                    ae.ScoreNormalised = 0.0;
+                    return ae;
+                }
+                    //else
+                    //    if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "LT") && (ae.kiwi_INTENSITY_SCORE < value)) return null;
+                    //    else
+                    //        if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "GT") && (ae.kiwi_INTENSITY_SCORE > value)) return null;
+            }
+            return ae;
+        }
+
+
+        public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds)
+        {
+            double croppingSeverity = 0.2;
+            int length = activity.Length;
+
+            foreach (AcousticEvent ev in events)
+            {
+                int start = ev.oblong.r1;
+                int end = ev.oblong.r2;
+                double[] subArray = DataTools.Subarray(activity, start, end - start + 1);
+                int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, croppingSeverity);
+
+                int newMinRow = start + bounds[0];
+                int newMaxRow = start + bounds[1];
+                if (newMaxRow >= length) newMaxRow = length - 1;
+
+                ev.oblong = null;
+                ev.TimeStart = newMinRow * ev.FrameOffset;
+                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.Duration = ev.TimeEnd - ev.TimeStart;
+                //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset); 
+            }
+            for (int i = events.Count - 1; i >= 0; i--) if (events[i].Duration < minDurationInSeconds) events.Remove(events[i]);
+        }
 
 
 
@@ -972,24 +953,24 @@ namespace AnalysisPrograms
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,
-                                 AudioAnalysisTools.Keys.EVENT_START_MIN,
-                                 AudioAnalysisTools.Keys.EVENT_START_SEC, 
-                                 AudioAnalysisTools.Keys.EVENT_START_ABS,
-                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,
-                                 AudioAnalysisTools.Keys.EVENT_DURATION, 
-                                 AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.Keys.EVENT_NAME,
-                                 key_BANDWIDTH_SCORE,
-                                 key_DELTA_SCORE,
-                                 key_PEAKS_SNR_SCORE,
-                                 key_PEAKS_STD_SCORE,
-                                 AudioAnalysisTools.Keys.EVENT_SCORE,
-                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE 
-
+            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,     //1
+                                 AudioAnalysisTools.Keys.EVENT_START_MIN, //2
+                                 AudioAnalysisTools.Keys.EVENT_START_SEC, //3
+                                 AudioAnalysisTools.Keys.EVENT_START_ABS, //4
+                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,//5
+                                 AudioAnalysisTools.Keys.EVENT_NAME,      //6
+                                 AudioAnalysisTools.Keys.EVENT_DURATION,  //7
+                                 AudioAnalysisTools.Keys.EVENT_INTENSITY, //8
+                                 key_GRID_SCORE,                          //9   
+                                 key_DELTA_SCORE,                         //10
+                                 key_CHIRP_SCORE,                         //11  
+                                 key_BANDWIDTH_SCORE,                     //12
+                                 AudioAnalysisTools.Keys.EVENT_SCORE,     //13
+                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE  //14 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), typeof(double), 
+            //                   9                10              11               12              13             14
                              typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -1001,14 +982,14 @@ namespace AnalysisPrograms
                 row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
                 row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
+                row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;       //
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
                 row[key_BANDWIDTH_SCORE]                     = (double)ev.kiwi_bandWidthScore;  
                 row[key_DELTA_SCORE]                         = (double)ev.kiwi_deltaPeriodScore;
-                row[key_PEAKS_SNR_SCORE]                     = (double)ev.kiwi_snrScore;
-                row[key_PEAKS_STD_SCORE]                     = (double)ev.kiwi_sdPeakScore;
-                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
+                row[key_GRID_SCORE]                          = (double)ev.kiwi_gridScore;
+                row[key_CHIRP_SCORE]                         = (double)ev.kiwi_chirpScore;
                 row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
                 dataTable.Rows.Add(row);
             }
             return dataTable;

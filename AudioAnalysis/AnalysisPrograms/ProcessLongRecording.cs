@@ -38,7 +38,7 @@ namespace AnalysisPrograms
         public const int RESAMPLE_RATE = 17640;
 
 
-        public static int Main(string[] args)
+        public static void Main(string[] args)
         {
             int status = 0;
             string title = "# PROCESS LONG RECORDING";
@@ -145,7 +145,8 @@ namespace AnalysisPrograms
             }
             Console.WriteLine("###################################################\n");
 
-            return status;
+            //return status;
+            return;
         }
 
         public static int CheckArguments(string[] args)
