@@ -734,7 +734,11 @@ namespace AnalysisPrograms
                 DataRow newRow = table2Display.NewRow();
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
-                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
+                    if (canDisplay[i])
+                    {
+                        //if ( typeof(row[displayHeaders[i]) != typeof(string))
+                        //newRow[displayHeaders[i]] = row[displayHeaders[i]];
+                    }
                     else newRow[displayHeaders[i]] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
