@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.AnalyseLongRecording</StartupObject>
+    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <FileUpgradeFlags>
@@ -136,9 +136,15 @@
     <Compile Include="Human1.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="LewinsRail3.cs" />
-    <Compile Include="LSKiwi1.cs" />
-    <Compile Include="LSKiwi2.cs" />
+    <Compile Include="LSKiwi1.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LSKiwi2.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="LSKiwi3.cs" />
+    <Compile Include="LSKiwiHelper.cs" />
+    <Compile Include="LSKiwiROC.cs" />
     <Compile Include="MultiAnalyser.cs" />
     <Compile Include="OscillationRecogniser.cs">
       <SubType>Code</SubType>

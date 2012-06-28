@@ -22,37 +22,10 @@ namespace AnalysisPrograms
 {
     public class LSKiwi3 : IAnalyser
     {
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
-        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
-        public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
-        public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
-
-        //HEADER KEYS
-        public static string key_EVENT_NAME      = AudioAnalysisTools.Keys.EVENT_NAME;
-        public static string key_INTENSITY_SCORE = AudioAnalysisTools.Keys.EVENT_INTENSITY;
-        public static string key_BANDWIDTH_SCORE = "BandwidthScore";
-        public static string key_DELTA_SCORE     = "DeltaPeriodScore";
-        public static string key_GRID_SCORE      = "GridScore";
-        public static string key_CHIRP_SCORE     = "ChirpScore";
-        public static string key_EVENT_NORMSCORE = AudioAnalysisTools.Keys.EVENT_NORMSCORE;
         
-        public static string[] defaultRules = {
-                                           "EXCLUDE_IF_RULE="+key_BANDWIDTH_SCORE+"_LT_0.30",
-                                           "EXCLUDE_IF_RULE=feature1_GT_0.45",
-                                           "WEIGHT_feature1=0.45",
-                                           "WEIGHT_feature2=0.45",
-                                           "WEIGHT_feature3=0.45"
-        };
-
-
-        //OTHER CONSTANTS
+        //CONSTANTS
         public const string ANALYSIS_NAME = "LSKiwi3";
         public const int RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
-        //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
-        public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
-
 
         public string DisplayName
         {
@@ -168,7 +141,7 @@ namespace AnalysisPrograms
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                ProcessRunner process = new ProcessRunner(imageViewer);
+                ProcessRunner process = new ProcessRunner(LSKiwiHelper.imageViewer);
                 process.Run(imagePath, outputDir);
             }
 
@@ -419,17 +392,17 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, Double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> config)
         {
-            int minHzMale = ConfigDictionary.GetInt(LSKiwi1.key_MIN_HZ_MALE, config);
-            int maxHzMale = ConfigDictionary.GetInt(LSKiwi1.key_MAX_HZ_MALE, config);
-            int minHzFemale = ConfigDictionary.GetInt(LSKiwi1.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale = ConfigDictionary.GetInt(LSKiwi1.key_MAX_HZ_FEMALE, config);
-            int frameLength = ConfigDictionary.GetInt(LSKiwi1.key_FRAME_LENGTH, config);
-            double frameOverlap = ConfigDictionary.GetDouble(LSKiwi1.key_FRAME_OVERLAP, config);
-            double minPeriod = ConfigDictionary.GetDouble(LSKiwi1.key_MIN_PERIODICITY, config);
-            double maxPeriod = ConfigDictionary.GetDouble(LSKiwi1.key_MAX_PERIODICITY, config);
+            int minHzMale   = ConfigDictionary.GetInt(LSKiwiHelper.key_MIN_HZ_MALE, config);
+            int maxHzMale   = ConfigDictionary.GetInt(LSKiwiHelper.key_MAX_HZ_MALE, config);
+            int minHzFemale = ConfigDictionary.GetInt(LSKiwiHelper.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = ConfigDictionary.GetInt(LSKiwiHelper.key_MAX_HZ_FEMALE, config);
+            int frameLength = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
+            double frameOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
+            double minPeriod    = ConfigDictionary.GetDouble(Keys.MIN_PERIODICITY, config);
+            double maxPeriod    = ConfigDictionary.GetDouble(Keys.MAX_PERIODICITY, config);
             double eventThreshold = ConfigDictionary.GetDouble(Keys.EVENT_THRESHOLD, config);
-            double minDuration = ConfigDictionary.GetDouble(LSKiwi1.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration = ConfigDictionary.GetDouble(LSKiwi1.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            double minDuration  = ConfigDictionary.GetDouble(Keys.MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration  = ConfigDictionary.GetDouble(Keys.MAX_DURATION, config); //maximum event duration to qualify as species call
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -524,10 +497,16 @@ namespace AnalysisPrograms
             double[] chirpScores      = ConvertChirpsToScoreArray(chirps, dBArray, sonogram.FramesPerSecond);
             double[] bandWidthScore   = CalculateKiwiBandWidthScore(sonogram, minHz, maxHz, peakPeriodicity);
 
+
+            //GET A COMBINED WEIGHTED SCORE FOR FOUR OF THE FEATURES
+            var weights = LSKiwiHelper.GetFeatureWeights();
             double[] comboScore = new double[dBArray.Length];
             for (int r = 0; r < dBArray.Length; r++)
             {
-                comboScore[r] = (intensity1[r] * 0.3) + (gridScore[r] * 0.2) + (deltaPeriodScore[r] * 0.2) + (chirpScores[r] * 0.3);
+                comboScore[r] = (intensity1[r]       * weights[LSKiwiHelper.key_INTENSITY_SCORE]) +
+                                (gridScore[r]        * weights[LSKiwiHelper.key_GRID_SCORE])      +
+                                (deltaPeriodScore[r] * weights[LSKiwiHelper.key_DELTA_SCORE])     +
+                                (chirpScores[r]      * weights[LSKiwiHelper.key_CHIRP_SCORE]);    //weighted sum
             }
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
@@ -798,7 +777,7 @@ namespace AnalysisPrograms
             int startFrame = 0;
 
             //for filtering acoustic events
-            List<string[]> excludeRules = LSKiwi1.GetExcludeRules(defaultRules);
+            List<string[]> excludeRules = LSKiwiHelper.GetExcludeRules();
 
             // pass over all frames
             for (int i = 0; i < count; i++) 
@@ -882,14 +861,14 @@ namespace AnalysisPrograms
                 string feature = rule[0];
                 string op = rule[1];
                 double value = Double.Parse(rule[2]);
-                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "LT") && (ae.kiwi_bandWidthScore < value))
+                if ((feature == LSKiwiHelper.key_BANDWIDTH_SCORE) && (op == "LT") && (ae.kiwi_bandWidthScore < value))
                 {
                     ae.kiwi_bandWidthScore = 0.0;
                     ae.ScoreNormalised     = 0.0;
                     return ae;
                 }
                 else
-                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "GT") && (ae.kiwi_bandWidthScore > value))
+                    if ((feature == LSKiwiHelper.key_BANDWIDTH_SCORE) && (op == "GT") && (ae.kiwi_bandWidthScore > value))
                 {
                     ae.kiwi_bandWidthScore = 0.0;
                     ae.ScoreNormalised = 0.0;
@@ -961,10 +940,10 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.Keys.EVENT_NAME,      //6
                                  AudioAnalysisTools.Keys.EVENT_DURATION,  //7
                                  AudioAnalysisTools.Keys.EVENT_INTENSITY, //8
-                                 key_GRID_SCORE,                          //9   
-                                 key_DELTA_SCORE,                         //10
-                                 key_CHIRP_SCORE,                         //11  
-                                 key_BANDWIDTH_SCORE,                     //12
+                                 LSKiwiHelper.key_GRID_SCORE,             //9   
+                                 LSKiwiHelper.key_DELTA_SCORE,            //10
+                                 LSKiwiHelper.key_CHIRP_SCORE,            //11  
+                                 LSKiwiHelper.key_BANDWIDTH_SCORE,        //12
                                  AudioAnalysisTools.Keys.EVENT_SCORE,     //13
                                  AudioAnalysisTools.Keys.EVENT_NORMSCORE  //14 
                                };
@@ -984,10 +963,10 @@ namespace AnalysisPrograms
                 row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;       //
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[key_BANDWIDTH_SCORE]                     = (double)ev.kiwi_bandWidthScore;  
-                row[key_DELTA_SCORE]                         = (double)ev.kiwi_deltaPeriodScore;
-                row[key_GRID_SCORE]                          = (double)ev.kiwi_gridScore;
-                row[key_CHIRP_SCORE]                         = (double)ev.kiwi_chirpScore;
+                row[LSKiwiHelper.key_BANDWIDTH_SCORE]        = (double)ev.kiwi_bandWidthScore;
+                row[LSKiwiHelper.key_DELTA_SCORE]            = (double)ev.kiwi_deltaPeriodScore;
+                row[LSKiwiHelper.key_GRID_SCORE]             = (double)ev.kiwi_gridScore;
+                row[LSKiwiHelper.key_CHIRP_SCORE]            = (double)ev.kiwi_chirpScore;
                 row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
                 dataTable.Rows.Add(row);

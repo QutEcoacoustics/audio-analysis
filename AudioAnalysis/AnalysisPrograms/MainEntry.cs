@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                         LSKiwi3.Dev(restOfArgs);
                         break;
                     case "kiwiROC":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwi1.Dev(restOfArgs);
+                        LSKiwiROC.Main(restOfArgs);
                         break;
                     case "LewinsRail":  //LewinsRail3
                         LewinsRail3.Dev(restOfArgs);

@@ -22,39 +22,9 @@ namespace AnalysisPrograms
 {
     public class  LSKiwi2: IAnalyser
     {
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
-        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
-        public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
-        public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
-
-        //HEADER KEYS
-        public static string key_EVENT_NAME      = AudioAnalysisTools.Keys.EVENT_NAME;
-        public static string key_INTENSITY_SCORE = AudioAnalysisTools.Keys.EVENT_INTENSITY;
-        public static string key_BANDWIDTH_SCORE = "BandwidthScore";
-        public static string key_DELTA_SCORE     = "DeltaPeriodScore";
-        public static string key_SNR_SCORE       = AudioAnalysisTools.Keys.SNR_SCORE;
-        public static string key_PEAKS_SNR_SCORE = "PeaksSnrScore";
-        public static string key_PEAKS_STD_SCORE = "PeaksStdScore";
-        public static string key_EVENT_NORMSCORE = AudioAnalysisTools.Keys.EVENT_NORMSCORE;
-
-
-        public static string[] defaultRules = {
-                                           "EXCLUDE_IF_RULE=feature1_LT_0.45",
-                                           "EXCLUDE_IF_RULE=feature1_GT_0.45",
-                                           "WEIGHT_feature1=0.45",
-                                           "WEIGHT_feature2=0.45",
-                                           "WEIGHT_feature3=0.45"
-        };
-
 
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "LSKiwi2";
-        public const int RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
-        //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
-        public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
-
 
         public string DisplayName
         {
@@ -170,7 +140,7 @@ namespace AnalysisPrograms
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                ProcessRunner process = new ProcessRunner(imageViewer);
+                ProcessRunner process = new ProcessRunner(LSKiwiHelper.imageViewer);
                 process.Run(imagePath, outputDir);
             }
 
@@ -286,12 +256,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, LSKiwiHelper.RESAMPLE_RATE);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, LSKiwiHelper.RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -787,10 +757,10 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.Keys.EVENT_DURATION, 
                                  AudioAnalysisTools.Keys.EVENT_INTENSITY,
                                  AudioAnalysisTools.Keys.EVENT_NAME,
-                                 key_BANDWIDTH_SCORE,
-                                 key_DELTA_SCORE,
-                                 key_PEAKS_SNR_SCORE,
-                                 key_PEAKS_STD_SCORE,
+                                 LSKiwiHelper.key_BANDWIDTH_SCORE,
+                                 LSKiwiHelper.key_DELTA_SCORE,
+                                 LSKiwiHelper.key_PEAKS_SNR_SCORE,
+                                 LSKiwiHelper.key_PEAKS_STD_SCORE,
                                  AudioAnalysisTools.Keys.EVENT_SCORE,
                                  AudioAnalysisTools.Keys.EVENT_NORMSCORE 
 
@@ -810,10 +780,10 @@ namespace AnalysisPrograms
                 row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
-                row[key_BANDWIDTH_SCORE]                     = (double)ev.kiwi_bandWidthScore;  
-                row[key_DELTA_SCORE]                         = (double)ev.kiwi_deltaPeriodScore;
-                row[key_PEAKS_SNR_SCORE]                     = (double)ev.kiwi_snrScore;
-                row[key_PEAKS_STD_SCORE]                     = (double)ev.kiwi_sdPeakScore;
+                row[LSKiwiHelper.key_BANDWIDTH_SCORE] = (double)ev.kiwi_bandWidthScore;
+                row[LSKiwiHelper.key_DELTA_SCORE] = (double)ev.kiwi_deltaPeriodScore;
+                row[LSKiwiHelper.key_PEAKS_SNR_SCORE] = (double)ev.kiwi_snrScore;
+                row[LSKiwiHelper.key_PEAKS_STD_SCORE] = (double)ev.kiwi_sdPeakScore;
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
                 row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
