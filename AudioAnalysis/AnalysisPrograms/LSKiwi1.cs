@@ -40,22 +40,18 @@ namespace AnalysisPrograms
         public const string WORKING_DIRECTORY      = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
         public const string OUTPUT_DIRECTORY       = WORKING_DIRECTORY + "Towsey.LSKiwi2";
         public const string CONFIG_PATH            = @"C:\SensorNetworks\Output\LSKiwi2\Towsey.LSKiwi2.csv";
-        public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi2\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
 
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav";
         //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\";
         //public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\lskiwi_Params.txt";
-        //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\KAPITI2_20100219_202900_ANDREWS_SELECTIONS.csv";
 
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
         //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\";
         //public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\lskiwi_Params.txt";
-        //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\TUITCE_20091215_220004_ANDREWS_SELECTIONS.csv";
 
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_210000.wav";
         //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\";
         //public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\lskiwi_Params.txt";
-        //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
 
 
         public const string ANALYSIS_NAME = "LSKiwi2";
@@ -143,30 +139,11 @@ namespace AnalysisPrograms
             InitOutputTableColumns();
             string opFileStem = Path.GetFileNameWithoutExtension(sourceRecordingPath);
             string myResultsPath = Path.Combine(OUTPUT_DIRECTORY, opFileStem + "_Towsey.LSKiwi2.events.csv");
+
             // method to calculate ROC curve results _Towsey.LSKiwi2.Events.
             if (true)
             {
-                var fiMyResults = new FileInfo(myResultsPath);
-                if (!fiMyResults.Exists)
-                {
-                    Console.WriteLine("FILE <{0}> DOES NOT EXIST!", fiMyResults);
-                    Console.ReadLine();
-                    System.Environment.Exit(999);
-                }
-                var fiTheTruth  = new FileInfo(ANDREWS_SELECTION_PATH);
-                if (!fiTheTruth.Exists)
-                {
-                    Console.WriteLine("FILE <{0}> DOES NOT EXIST!", fiTheTruth);
-                    Console.ReadLine();
-                    System.Environment.Exit(999);
-                }
-                string reportROCPath = outputDir + "LSKRoc_Report_" + opFileStem + ".csv";
-                DataTable dt = CalculateRecallPrecision(fiMyResults, fiTheTruth);
-                CsvTools.DataTable2CSV(dt, reportROCPath);
 
-                Console.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(999);
             }
 
             //READ PARAMETER VALUES FROM INI FILE
@@ -924,261 +901,6 @@ namespace AnalysisPrograms
             image.AddSuperimposedMatrix(hits, maxScore);
             image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
             return image.GetImage();
-        }
-
-
-        public static DataTable CalculateRecallPrecision(FileInfo fiMyResults, FileInfo fiTheTruth)
-        {
-            string[] ROC_HEADERS = { Keys.EVENT_START_ABS,     //typeof(double)
-                                       Keys.EVENT_START_MIN, 
-                                       Keys.EVENT_START_SEC, 
-                                       Keys.EVENT_INTENSITY, 
-                                       LSKiwi2.key_PEAKS_SNR_SCORE, 
-                                       LSKiwi2.key_PEAKS_STD_SCORE, 
-                                       LSKiwi2.key_DELTA_SCORE, 
-                                       LSKiwi2.key_BANDWIDTH_SCORE, 
-                                       Keys.EVENT_NORMSCORE, 
-                                       "Quality", "Sex", "Harmonics", "TP", "FP", "FN" };
-
-            //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "hitScore",     "snrScore",     "sdScore",        "gapScore",      "bwScore",    "comboScore", "Quality",       "Sex",        "Harmonics",      "TP",     "FP",       "FN"};
-            Type[] ROC_COL_TYPES = { typeof(double), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
-
-            //ANDREW'S HEADERS:          Selection,        View,     Channel, Begin Time (s),  End Time (s), Low Freq (Hz),High Freq (Hz),    Begin File,    Species,        Sex,       Harmonics,   Quality
-            Type[] ANDREWS_TYPES = {typeof(string),typeof(string),typeof(int),typeof(double),typeof(double),typeof(double),typeof(double),typeof(string),typeof(string),typeof(string),typeof(int),typeof(int) };
-        
-            bool isFirstRowHeader = true;
-            var dtTheTruth = CsvTools.ReadCSVToTable(fiTheTruth.FullName,  isFirstRowHeader, ANDREWS_TYPES);    //AD = Andrew Digby
-            //var dtMyResults = CsvTools.ReadCSVToTable(fiMyResults.FullName, isFirstRowHeader, COL_TYPES);      //MY = Michael Towsey
-            var dtMyResult = CsvTools.ReadCSVToTable(fiMyResults.FullName, isFirstRowHeader);                   //MY = Michael Towsey
-            //string colName  = "Species"; 
-            //string value    = "LSK";
-            //DataTableTools.DeleteRows(dtADResults, colName, value); //delete rows where Species name is not "LSK"
-            var dtOutput = DataTableTools.CreateTable(ROC_HEADERS, ROC_COL_TYPES);
-            int TP = 0;
-            int FP = 0;
-            int FN = 0;
-
-            foreach (DataRow myRow in dtMyResult.Rows)
-            {
-                double myStartSecAbs  = (double)myRow[Keys.EVENT_START_ABS];
-                double startMin       = (double)myRow[Keys.EVENT_START_MIN];
-                double startSecOffset = (double)myRow[Keys.EVENT_START_SEC];
-                double intensityScore = (double)myRow[Keys.EVENT_INTENSITY];
-                double snrScore = (double)myRow[LSKiwi2.key_PEAKS_SNR_SCORE];
-                double sdPeakScore    = (double)myRow[LSKiwi2.key_PEAKS_STD_SCORE]; //standard deviation of peak snr's
-                double periodicityScore = (double)myRow[LSKiwi2.key_DELTA_SCORE];
-                double bandWidthScore = (double)myRow[LSKiwi2.key_BANDWIDTH_SCORE];
-                double comboScore = (double)myRow[Keys.EVENT_NORMSCORE];
-
-                //################################################################################
-                // the following line experiments with different weightings other than the default
-                //comboScore = (intensityScore * 0.0) + (snrScore * 0.1)  + (sdPeakScore * 0.1)  + (periodicityScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
-                string[] defaultRules = {
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_BANDWIDTH_SCORE+"_LT_0.3",
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_INTENSITY_SCORE+"_LT_0.12",
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_PEAKS_SNR_SCORE+"_LT_0.12",
-                                           "EXCLUDE_IF_RULE="+LSKiwi2.key_DELTA_SCORE+"_LT_0.25",
-                                           "WEIGHT_"+LSKiwi2.key_BANDWIDTH_SCORE+"=0.30",
-                                           "WEIGHT_"+LSKiwi2.key_INTENSITY_SCORE+"=0.40",
-                                           "WEIGHT_"+LSKiwi2.key_PEAKS_SNR_SCORE+"=0.10",
-                                           "WEIGHT_"+LSKiwi2.key_PEAKS_STD_SCORE+"=0.10",
-                                           "WEIGHT_"+LSKiwi2.key_DELTA_SCORE+    "=0.10"
-            };
-                var weights = GetFeatureWeights(defaultRules);
-                comboScore = (intensityScore   * weights[LSKiwi2.key_INTENSITY_SCORE]) +
-                             (snrScore         * weights[LSKiwi2.key_PEAKS_SNR_SCORE]) +
-                             (sdPeakScore      * weights[LSKiwi2.key_PEAKS_STD_SCORE]) + 
-                             (periodicityScore * weights[LSKiwi2.key_DELTA_SCORE])     + 
-                             (bandWidthScore   * weights[LSKiwi2.key_BANDWIDTH_SCORE]);   //weighted sum
-
-                List<string[]> excludeRules = GetExcludeRules(defaultRules);
-                if (FilterEvent(myRow, excludeRules) == null) continue; 
-
-                DataRow opRow = dtOutput.NewRow();
-                opRow[Keys.EVENT_START_ABS] = myStartSecAbs;
-                opRow[Keys.EVENT_START_MIN] = startMin;
-                opRow[Keys.EVENT_START_SEC] = startSecOffset;
-                opRow[Keys.EVENT_INTENSITY] = intensityScore;
-                opRow[LSKiwi2.key_PEAKS_SNR_SCORE] = snrScore;
-                opRow[LSKiwi2.key_PEAKS_STD_SCORE] = sdPeakScore;
-                opRow[LSKiwi2.key_DELTA_SCORE] = periodicityScore;
-                opRow[LSKiwi2.key_BANDWIDTH_SCORE] = bandWidthScore;
-                opRow[Keys.EVENT_NORMSCORE] = comboScore;
-                opRow["Quality"] = -99; //fill in with blanks
-                opRow["Sex"] = "-";
-                opRow["Harmonics"] = 0;
-                opRow["TP"] = 0;
-                opRow["FP"] = 0;
-                opRow["FN"] = 0;
-
-                bool isTP = false;
-                foreach (DataRow trueEvent in dtTheTruth.Rows) 
-                {
-                    double trueStart = (double)trueEvent["Begin Time (s)"];
-                    if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 10))) //myStart is within 10 seconds of trueStart THERFORE TRUE POSTIIVE
-                    {
-                        isTP = true;
-                        trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again 
-                        opRow["Quality"] = trueEvent["Quality"];
-                        opRow["Sex"] = trueEvent["Sex"];
-                        opRow["Harmonics"] = trueEvent["Harmonics"];
-                        break;
-                    }
-                } //foreach - AD loop 
-                if (isTP)
-                {
-                    opRow["TP"] = 1;
-                    TP++;
-                }
-                else //FALSE POSITIVE
-                {
-                    opRow["FP"] = 1;
-                    FP++;
-                }
-                dtOutput.Rows.Add(opRow);
-            } //foreach - MY loop
-
-            //now add in the false negatives
-            foreach (DataRow trueEvent in dtTheTruth.Rows)
-            {
-                double trueStart = (double)trueEvent["Begin Time (s)"];
-                if (!Double.IsNaN(trueStart))
-                {
-                    DataRow row = dtOutput.NewRow();
-                    row[Keys.EVENT_START_ABS] = trueStart;
-                    row[Keys.EVENT_START_MIN] = (int)(trueStart / 60);
-                    row[Keys.EVENT_START_SEC] = (double)(trueStart % 60);
-                    row[Keys.EVENT_INTENSITY] = 0.0;
-                    row[LSKiwi2.key_PEAKS_SNR_SCORE] = 0.0;
-                    row[LSKiwi2.key_PEAKS_STD_SCORE] = 0.0;
-                    row[LSKiwi2.key_DELTA_SCORE] = 0.0;
-                    row[LSKiwi2.key_BANDWIDTH_SCORE] = 0.0;
-                    row[Keys.EVENT_NORMSCORE] = 0.0;
-                    row["Harmonics"] = trueEvent["Harmonics"];
-                    row["Quality"] = trueEvent["Quality"];
-                    row["Sex"]        = trueEvent["Sex"];
-                    row["TP"] = 0;
-                    row["FP"] = 0;
-                    row["FN"] = 1;
-                    dtOutput.Rows.Add(row);
-                    FN++;
-                }
-            }
-
-            double recall = TP / (double)(TP + FN);
-            double specificity = TP / (double)(TP + FP);
-            Console.WriteLine("TP={0},  FP={1},  FN={2}", TP, FP, FN);
-            Console.WriteLine("RECALL={0:f3},  SPECIFICITY={1:f3}", recall, specificity);
-
-            string sortString = Keys.EVENT_NORMSCORE + " desc";
-            dtOutput = DataTableTools.SortTable(dtOutput, sortString);
-
-            ROCCurve(dtOutput, dtTheTruth.Rows.Count); //write ROC area above curve
-
-
-            return dtOutput;
-        }
-
-
-
-        public static List<string[]> GetExcludeRules(string[] rules)
-        {
-            var excludeRules = new List<string[]>();
-            foreach (string rule in rules)
-            {
-                string[] parts = rule.Split('=');
-                if (parts[0] == "EXCLUDE_IF_RULE") excludeRules.Add(parts[1].Split('_'));
-            }
-            return excludeRules;
-        } //GetExcludeRules()
-
-        public static Dictionary<string, double> GetFeatureWeights(string[] rules)
-        {
-            var weights = new Dictionary<string, double>();
-            foreach (string rule in rules)
-            {
-                string[] parts = rule.Split('_');
-                if (parts[0] == "WEIGHT")
-                {
-                    string[] words = parts[1].Split('=');
-                    weights.Add(words[0], Double.Parse(words[1]));
-                }
-            }
-            return weights;
-        } //GetExcludeRules()
-
-
-
-        public static DataRow FilterEvent(DataRow acousticEvent, List<string[]> rules)
-        {
-            foreach (string[] rule in rules)
-            {
-                string feature = rule[0];
-                string op = rule[1];
-                double value = Double.Parse(rule[2]);
-                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwi2.key_BANDWIDTH_SCORE] < value)) return null;
-                else
-                if ((feature == LSKiwi2.key_BANDWIDTH_SCORE) && (op == "GT") && ((double)acousticEvent[LSKiwi2.key_BANDWIDTH_SCORE] > value)) return null;
-                else
-                if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwi2.key_INTENSITY_SCORE] < value)) return null;
-                else
-                if ((feature == LSKiwi2.key_INTENSITY_SCORE) && (op == "GT") && ((double)acousticEvent[LSKiwi2.key_INTENSITY_SCORE] > value)) return null;
-            }
-            return acousticEvent;
-        }
-
-
-
-        public static void ROCCurve(DataTable dt, int countOfTargetTrues)
-        {
-            double previousRecall = 0.0;
-            int cumulativeTP = 0; 
-            int cumulativeFP = 0;
-            double area = 0.0;  //area under the ROC curve
-            List<double> curveValues = new List<double>();
-            double maxAccuracy = 0.0;
-            double precisionAtMax = 0.0;
-            double recallAtMax = 0.0;
-            double scoreAtMax = 0.0;
-            double precisionAt30 = 0.0;
-            double recallAt30 = 0.0;
-            double scoreAt30 = 0.0;
-
-
-            int count = 0;
-            foreach (DataRow row in dt.Rows)
-            {
-                int value = (int)row["TP"];
-                if (value == 1) cumulativeTP++;
-                else
-                    if ((int)row["FP"] == 1) cumulativeFP++;
-                double recall = cumulativeTP / (double)countOfTargetTrues;
-                double precision = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
-                double accuracy = (recall + precision) / (double)2;
-                if (accuracy > maxAccuracy)
-                {
-                    maxAccuracy = accuracy;
-                    recallAtMax = recall;
-                    precisionAtMax = precision;
-                    scoreAtMax = (double)row[Keys.EVENT_NORMSCORE];
-                }
-                count++;
-                if (count == 30)
-                {
-                    recallAt30 = recall;
-                    precisionAt30 = precision;
-                    scoreAt30 = (double)row[Keys.EVENT_NORMSCORE];
-                }
-
-                double delta = precision * (recall - previousRecall);
-                area += delta;
-                if (delta > 0.0) curveValues.Add(delta);
-                previousRecall = recall;
-            }
-            DataTools.writeBarGraph(curveValues.ToArray());
-            Console.WriteLine("Area under ROC curve = {0:f4}", area);
-            Console.WriteLine("Max accuracy={0:f3};  where recall={1:f3}, precision={2:f3} for score threshold={3:f3}", maxAccuracy, recallAtMax, precisionAtMax, scoreAtMax);
-            Console.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
         }
 
     } //end class LSKiwi1

@@ -639,8 +639,10 @@
             int resampleRate = this.browserSettings.DefaultResampleRate;
             if (analysisParams != null)
             {
-                segmentDuration = ConfigDictionary.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
-                resampleRate = ConfigDictionary.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
+                if (analysisParams.ContainsKey(AudioBrowserSettings.key_SEGMENT_DURATION)) 
+                    segmentDuration = ConfigDictionary.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
+                if (analysisParams.ContainsKey(AudioBrowserSettings.key_RESAMPLE_RATE)) 
+                    resampleRate    = ConfigDictionary.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
             }
 
 
