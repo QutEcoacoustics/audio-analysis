@@ -210,5 +210,10 @@ namespace System
 
             return readable;
         }
+
+        public static string ToTimeZoneString(this TimeSpan ts)
+        {
+            return (ts < TimeSpan.Zero ? "-" : string.Empty) + ts.ToString(@"mm\:ss");
+        }
     }
 }
