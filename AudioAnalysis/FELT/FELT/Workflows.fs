@@ -135,7 +135,7 @@
                 Selection(new OneForOneSelector());
                 Transformer(new Transformers.ZScoreNormalise());
                 Trainer(new GroupTrainer()); 
-                Result(OutFile(new FileInfo("C:\Work\Sensors9\AudioDataStorage\suggestions\cachedFile.feltcache")))
+                Result(OutFile(new FileInfo("D:\Work\Sensors\AudioDataStorage\suggestions\cachedFile.feltcache")))
                 //Classifier(new EuclideanClassifier())
                 ]
             );

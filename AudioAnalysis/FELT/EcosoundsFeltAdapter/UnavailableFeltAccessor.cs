@@ -16,7 +16,7 @@ namespace EcosoundsFeltAdapter
             this.messages = messages;
         }
 
-        public Dictionary<string, int> Search(Dictionary<string, Value> values, int limit)
+        public System.Collections.Generic.SortedDictionary<int, string> Search(Dictionary<string, Value> values, int limit)
         {
             throw new InvalidOperationException("No search is possible at this time.");
         }

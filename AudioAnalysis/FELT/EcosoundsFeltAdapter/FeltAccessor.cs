@@ -161,7 +161,7 @@ namespace EcosoundsFeltAdapter
         /// <returns>
         /// The search.
         /// </returns>
-        public Dictionary<string, int> Search(Dictionary<string, Value> values, int limit)
+        public System.Collections.Generic.SortedDictionary<int, string> Search(Dictionary<string, Value> values, int limit)
         {
             Contract.Requires(limit > 0);
 
@@ -183,7 +183,7 @@ namespace EcosoundsFeltAdapter
             // if there a no features left in the training set by now there is nothing to compare with, return no results
             if (dtraining.Headers.Count == 0 || dtraining.Instances.Count == 0)
             {
-                return new Dictionary<string, int>();
+                return new SortedDictionary<int, string>();
             }
 
 
