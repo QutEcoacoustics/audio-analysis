@@ -551,6 +551,15 @@ namespace System
             return collection.Cast<string>().ToDictionary(key => key, key => collection[key]);
         }
 
+        public static SortedDictionary<TKey, TValue> ToSortedDictionary<TKey, TValue>(
+       this IEnumerable<KeyValuePair<TKey, TValue>> l)
+        {
+            SortedDictionary<TKey, TValue> result = new SortedDictionary<TKey, TValue>();
+            foreach (var e in l)
+                result[e.Key] = e.Value;
+            return result;
+        }
+
         public static int IndexOf<T>(this IEnumerable<T> source, Predicate<T> predicate)
         {
             var i = 0;

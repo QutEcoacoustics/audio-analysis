@@ -11,13 +11,18 @@
     type GroupTrainer() =
         inherit TrainerBase()
 
+        let txtInfo =System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo;
+
         let emptyDT = Map.empty<ColumnHeader, Value array> 
 
-        let grp index (state:Map<_, index list>) ele =
-            if state.ContainsKey(ele) then
-                state.Add(ele, (index :: state.[ele]))
+        let grp index (state:Map<_, index list>) (ele: string) =
+            // ignore case and white space
+            let ele' = txtInfo.ToTitleCase <| ele.Trim().ToLowerInvariant()
+
+            if state.ContainsKey(ele') then
+                state.Add(ele', (index :: state.[ele']))
             else
-                state.Add(ele, [index])
+                state.Add(ele', [index])
         
         /// given an array of values to average, average them
         abstract member AvgValue: Value array -> Value

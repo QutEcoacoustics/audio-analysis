@@ -28,7 +28,7 @@
                     | ClassifierResult.Function f -> f
                     | _ -> invalidArg "classificationResults" "Only lazy evaulation supported!"
 
-            let d = new System.Collections.Generic.Dictionary<Class, int>()
+            let d = new System.Collections.Generic.SortedDictionary<int, Class>()
             
             let getClass y = trainingData.Classes.[snd y]
             
@@ -37,7 +37,7 @@
             let singleRow = f 0 // only one test item
 
             // stick value into dictionary - ignore distance value for now
-            Array.iteri (fun index result -> d.Add( result |> getClass, index)) singleRow
+            Array.iteri (fun index result -> d.Add(index, result |> getClass)) singleRow
 
             d
 

@@ -13,7 +13,7 @@ namespace EcosoundsFeltAdapter
         /// <returns>
         /// The search.
         /// </returns>
-        Dictionary<string, int> Search(Dictionary<string, Value> values, int limit);
+        SortedDictionary<int, string> Search(Dictionary<string, Value> values, int limit);
 
         bool IsSearchAvailable { get; }
 
