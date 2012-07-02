@@ -116,6 +116,11 @@ namespace Acoustics.Shared
         public const string ExtGif = "gif";
 
         /// <summary>
+        /// The ext bmp.
+        /// </summary>
+        public const string ExtBmp = "bmp";
+
+        /// <summary>
         /// The ext html.
         /// </summary>
         public const string ExtHtml = "html";
@@ -725,18 +730,18 @@ namespace Acoustics.Shared
 
             switch (CanonicaliseExtension(extension))
             {
-                    // case MediaTypes.ExtBmp:
-                    // format = ImageFormat.Bmp;
-                    // break;
+                     case ExtBmp:
+                     format = ImageFormat.Bmp;
+                     break;
                     // case MediaTypes.ExtEmf:
                     // format = ImageFormat.Emf;
                     // break;
                     // case MediaTypes.ExtExif:
                     // format = ImageFormat.Exif;
                     // break;
-                    // case MediaTypes.ExtGif:
-                    // format = ImageFormat.Gif;
-                    // break;
+                     case ExtGif:
+                     format = ImageFormat.Gif;
+                    break;
                 case ExtIco:
                     format = ImageFormat.Icon;
                     break;
