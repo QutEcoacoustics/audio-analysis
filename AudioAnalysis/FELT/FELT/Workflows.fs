@@ -119,11 +119,11 @@
                 ]
             );
             (
-                "BasicGrouped-ReferenceOnly", 
+                "Basic-ReferenceOnly", 
                 [ 
                 Cleaner(new BasicCleaner()); 
-                Selection(new PredicateSelector(fun headers values -> values.["ReferenceTag"] :?> FuzzyBit |> (fun fb -> fb.Value >= 1.0) ));
-                Trainer(new GroupTrainer()); 
+                Selection(new PredicateSelector(fun headers values -> values.["IsReferenceTag"] :?> FuzzyBit |> (fun fb -> fb.Value >= 1.0) ));
+                //Trainer(new GroupTrainer()); 
                 Classifier(new EuclideanClassifier())
                 ]
             );
