@@ -12,8 +12,6 @@
     /// </summary>
     public static class ExtensionsDrawing
     {
-        #region Constants and Fields
-
         /// <summary>
         /// The color reg ex error.
         /// </summary>
@@ -24,15 +22,13 @@
         /// </summary>
         public const string RegExHexColor = "^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$";
 
-        #endregion
-
-
         /// <summary>
         /// Convert an image to a byte array.
         /// </summary>
         /// <param name="image">
         /// The image.
         /// </param>
+        /// <param name="imageFormat">
         /// The image Format.
         /// </param>
         /// <returns>
@@ -56,15 +52,21 @@
         /// <summary>
         /// Crop an image using a <paramref name="crop"/> Rectangle.
         /// </summary>
-        /// <param name="source">Source image.</param>
-        /// <param name="crop">Crop rectangle.</param>
-        /// <returns>Cropped image.</returns>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
         /// <remarks>
         /// Use Graphics.DrawImage() to copy the selection portion of the source image. 
         /// You'll need the overload that takes a source and a destination Rectangle. 
         /// Create the Graphics instance from Graphics.FromImage() on a new bitmap that 
         /// has the same size as the rectangle.
-        /// from: http://stackoverflow.com/questions/2405261/how-to-clip-a-rectangle-from-a-tiff
+        /// from: http://stackoverflow.com/questions/2405261/how-to-clip-a-rectangle-from-a-tiff.
         /// </remarks>
         public static Bitmap Crop(this Image source, Rectangle crop)
         {
@@ -110,91 +112,8 @@
         }
 
         /// <summary>
-        /// Crop <paramref name="originalImage"/>.
-        /// </summary>
-        /// <param name="originalImage">
-        /// The original image.
-        /// </param>
-        /// <param name="originalStart">
-        /// The original Start.
-        /// </param>
-        /// <param name="originalEnd">
-        /// The original End.
-        /// </param>
-        /// <param name="originalMimeType">
-        /// The original Mime Type.
-        /// </param>
-        /// <param name="desiredStart">
-        /// The desired Start.
-        /// </param>
-        /// <param name="desiredEnd">
-        /// The desired End.
-        /// </param>
-        /// <param name="desiredMimeType">
-        /// The desired Mime Type.
-        /// </param>
-        /// <returns>
-        /// <paramref name="originalImage"/> cropped to match <paramref name="desiredRequest"/>.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        /// <c>InvalidOperationException</c>.
-        /// </exception>
-        public static Image Crop(this Image originalImage, long? originalStart, long? originalEnd, string originalMimeType, long? desiredStart, long? desiredEnd, string desiredMimeType)
-        {
-            if (originalImage == null)
-            {
-                return null;
-            }
-
-            if (originalStart == null || originalEnd == null)
-            {
-                return null;
-            }
-
-            /*
-             * Image retrieved from cache must be modified to match request.
-             */
-
-            var availableStart = Convert.ToInt32(originalStart);
-            var availableEnd = Convert.ToInt32(originalEnd);
-
-            var requestStart = Convert.ToInt32(desiredStart.HasValue ? desiredStart.Value : availableStart);
-            var requestEnd = Convert.ToInt32(desiredEnd.HasValue ? desiredEnd.Value : availableEnd);
-
-            if (availableStart > requestStart)
-            {
-                throw new InvalidOperationException("Request start (" + requestStart + ") must be less than or equal to available start (" + availableStart + ").");
-            }
-
-            if (availableEnd < requestEnd)
-            {
-                throw new InvalidOperationException("Request end (" + requestEnd + ") must be greater than or equal to available start (" + availableEnd + ").");
-            }
-
-            Image image = originalImage;
-
-            if (availableStart == requestStart && availableEnd == requestEnd && originalMimeType == desiredMimeType)
-            {
-                return image;
-            }
-
-            // pixels per millisecond
-            double ppms = (double)image.Width / (double)(availableEnd - availableStart);
-
-            var pixelsToRemoveFromStart = Convert.ToInt32((requestStart - availableStart) * ppms);
-            var pixelsToRemoveFromEnd = Convert.ToInt32((availableEnd - requestEnd) * ppms);
-
-            var targetWidth = image.Width - pixelsToRemoveFromStart - pixelsToRemoveFromEnd;
-
-            var cropRect = new Rectangle(pixelsToRemoveFromStart, 0, targetWidth, image.Height);
-            var resultImage = image.Crop(cropRect);
-
-            return resultImage;
-        }
-
-        /// <summary>
-        /// Ensure <paramref name="sourceImage"/> conforms to <paramref name="height"/> and <paramref name="width"/>.
-        /// Removes DC value if required.
+        /// Resize <paramref name="sourceImage"/> to match <paramref name="height"/> and <paramref name="width"/>.
+        /// Removes DC value if <paramref name="removeBottomRow"/> is true.
         /// </summary>
         /// <param name="sourceImage">
         /// The source Image.
@@ -216,23 +135,23 @@
         /// </returns>
         public static Image Modify(this Image sourceImage, int? height, int? width, bool removeBottomRow)
         {
-            /*
-             * Resize the single image.
-             * Remove the DC value (bottom 1px) if necessary.
-             */
+            var amountToRemove = removeBottomRow ? 1 : 0;
 
-            Bitmap returnImage = null;
+            var sourceRectangle = new Rectangle(
+                0, 0, sourceImage.Width, sourceImage.Height - amountToRemove);
+
+            var returnImage = new Bitmap(
+                width.HasValue ? width.Value : sourceImage.Width,
+                height.HasValue ? height.Value : (sourceImage.Height - amountToRemove));
+
+            var destRectangle = new Rectangle(0, 0, returnImage.Width, returnImage.Height);
+
             try
             {
-                var returnImageWidth = width.HasValue ? width.Value : sourceImage.Width;
-                var returnImageHeight = height.HasValue ? height.Value :
-                    (sourceImage.Height - (removeBottomRow ? 1 : 0));
-
-                returnImage = new Bitmap(returnImageWidth, returnImageHeight);
-
                 using (var graphics = Graphics.FromImage(returnImage))
                 {
-                    GraphicsSegmented.Draw(graphics, sourceImage, returnImage.Height, returnImage.Width);
+                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
+                    //GraphicsSegmented.Draw(graphics, sourceImage, returnImage.Height, returnImage.Width);
                 }
             }
             catch (ArgumentException ex)
@@ -313,6 +232,5 @@
 
             return Color.FromArgb(255, parts[2], parts[1], parts[0]);
         }
-
     }
 }

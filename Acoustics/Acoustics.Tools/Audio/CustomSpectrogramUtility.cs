@@ -43,6 +43,12 @@
 
         private readonly IAudioUtility audioUtility;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomSpectrogramUtility"/> class.
+        /// </summary>
+        /// <param name="audioUtility">
+        /// The audio utility.
+        /// </param>
         public CustomSpectrogramUtility(IAudioUtility audioUtility)
         {
             this.audioUtility = audioUtility;
@@ -66,6 +72,8 @@
         /// </param>
         public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
         {
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+
             var tempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
 
             this.audioUtility.Convert(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav);
@@ -94,44 +102,7 @@
                 image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
             }
 
-            ImageFormat format;
-
-            switch (MediaTypes.GetExtension(outputMimeType))
-            {
-                //case MediaTypes.ExtBmp:
-                //    format = ImageFormat.Bmp;
-                //    break;
-                //case MediaTypes.ExtEmf:
-                //    format = ImageFormat.Emf;
-                //    break;
-                //case MediaTypes.ExtExif:
-                //    format = ImageFormat.Exif;
-                //    break;
-                case MediaTypes.ExtGif:
-                    format = ImageFormat.Gif;
-                    break;
-                case MediaTypes.ExtIco:
-                    format = ImageFormat.Icon;
-                    break;
-                case MediaTypes.ExtJpeg:
-                    format = ImageFormat.Jpeg;
-                    break;
-                //case MediaTypes.ExtBmp:
-                //    format = ImageFormat.MemoryBmp;
-                //    break;
-                case MediaTypes.ExtPng:
-                    format = ImageFormat.Png;
-                    break;
-                case MediaTypes.ExtTiff:
-                    format = ImageFormat.Tiff;
-                    break;
-                //case MediaTypes.ExtWmf:
-                //    format = ImageFormat.Wmf;
-                //    break;
-                default:
-                    format = ImageFormat.Jpeg;
-                    break;
-            }
+            ImageFormat format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
 
             if (this.Log.IsDebugEnabled)
             {
