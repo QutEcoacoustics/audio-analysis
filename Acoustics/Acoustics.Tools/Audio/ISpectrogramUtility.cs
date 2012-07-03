@@ -1,14 +1,6 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ISpectrogramUtility.cs" company="">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
-
-namespace Acoustics.Tools.Audio
+﻿namespace Acoustics.Tools.Audio
 {
-    using System.Collections.Generic;
     using System.IO;
-    using System.Text;
 
     public interface ISpectrogramUtility
     {
