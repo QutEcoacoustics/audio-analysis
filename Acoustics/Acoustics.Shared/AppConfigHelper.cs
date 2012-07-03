@@ -117,17 +117,7 @@
         {
             get
             {
-                CheckWebSiteRootPathSet();
-
-                return GetDirs(WebsitePath, "OriginalAudioStorageDirs", true, ",");
-            }
-        }
-
-        private static void CheckWebSiteRootPathSet()
-        {
-            if (string.IsNullOrEmpty(WebsitePath))
-            {
-                throw new InvalidOperationException("Absolute website path needs to be set before use");
+                return GetDirs(WebsiteBasePath, "OriginalAudioStorageDirs", true, ",");
             }
         }
 
@@ -138,8 +128,7 @@
         {
             get
             {
-                CheckWebSiteRootPathSet();
-                return GetDirs(WebsitePath, "SegmentedAudioStorageDirs", true, ",");
+                return GetDirs(WebsiteBasePath, "SegmentedAudioStorageDirs", true, ",");
             }
         }
 
@@ -150,8 +139,7 @@
         {
             get
             {
-                CheckWebSiteRootPathSet();
-                return GetDirs(WebsitePath, "SpectrogramStorageDirs", true, ",");
+                return GetDirs(WebsiteBasePath, "SpectrogramStorageDirs", true, ",");
             }
         }
 
@@ -255,18 +243,17 @@
             get
             {
                 var appDomainPath = HttpRuntime.AppDomainAppPath;
-                var basePath = HostingEnvironment.MapPath("/");
-                return basePath;
+                var appBasePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+                var hostingEnvironmentRoot = HostingEnvironment.MapPath("/");
+                return hostingEnvironmentRoot;
             }
         }
-
-        public static string WebsitePath { get; set; }
 
         public static IEnumerable<DirectoryInfo> SuggestionAnalysisCacheDirectoy
         {
             get
             {
-                return GetDirs(WebsitePath, "SuggestionAnalysisCacheDirectoy", true, ",");
+                return GetDirs(WebsiteBasePath, "SuggestionAnalysisCacheDirectoy", true, ",");
             }
         }
 
@@ -444,8 +431,6 @@
         /// </exception>
         public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory, string key, bool checkAnyExist, params string[] separators)
         {
-            CheckWebSiteRootPathSet();
-
             var value = GetString(key);
 
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
