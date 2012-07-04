@@ -10,7 +10,7 @@
         [<ConfigurationProperty("", IsDefaultCollection = true)>]
         member this.Analyses
             with get() = base.[""] :?> AnalysisCollection
-            and set(value) =  base.[""]  <- value
+            and set(value:AnalysisCollection) =  base.[""]  <- value
 
         end
     and

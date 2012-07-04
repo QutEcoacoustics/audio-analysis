@@ -51,8 +51,9 @@
         let initJagged i j f = Array.init i (fun i -> Array.init j (f i))
 
         // The input parameter should be checked by callers if necessary
-        let inline zeroCreateUnchecked (count:int) = 
-            (# "newarr !0" type ('T) count : 'T array #)
+        let inline zeroCreateUnchecked (count:int) : 'a[] = 
+            Array.create count Unchecked.defaultof<'a>
+            //(# "newarr !0" type ('T) count : 'T array #)
 
         let mapUnzip (f: 'T -> 'U * 'V) (array : 'T[]) : 'U[]  * 'V[]=
             let inputLength = array.Length
