@@ -25,6 +25,7 @@
 
             let instances' = Map.map (fun key (value: Value[]) -> value.getValues chosen) data.Instances
             let classes' = data.Classes.getValues chosen
+            let ``Hello anthony`` = 3
 
             { data with Instances = instances' ; Classes = classes'}
         
