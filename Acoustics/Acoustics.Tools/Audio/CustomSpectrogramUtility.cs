@@ -70,7 +70,10 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
+        /// <param name="request">
+        /// The spectrogram request.
+        /// </param>
+        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, SpectrogramRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -78,53 +81,69 @@
 
             this.audioUtility.Convert(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav);
 
-            Bitmap image;
+            Bitmap sourceImage;
 
             if (this.Log.IsDebugEnabled)
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
+                sourceImage = Spectrogram(File.ReadAllBytes(tempFile.FullName));
 
                 stopwatch.Stop();
 
                 this.Log.DebugFormat(
                     "Generated spectrogram for {0}. Took {1} ({2}ms).",
                     source.Name,
-                    stopwatch.Elapsed.ToReadableString(),
+                    stopwatch.Elapsed.Humanise(),
                     stopwatch.Elapsed.TotalMilliseconds);
 
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             }
             else
             {
-                image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
+                sourceImage = Spectrogram(File.ReadAllBytes(tempFile.FullName));
             }
 
-            ImageFormat format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
-
-            if (this.Log.IsDebugEnabled)
+            // modify image to match request
+            using (sourceImage)
             {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                // remove 1px from bottom (DC value)
+                var sourceRectangle = new Rectangle(0, 0, sourceImage.Width, sourceImage.Height - 1);
 
-                image.Save(output.FullName, format);
+                using (var requestedImage = new Bitmap(
+                        request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width,
+                        request.Height.HasValue ? request.Height.Value : sourceRectangle.Height))
+                using (var graphics = Graphics.FromImage(requestedImage))
+                {
+                    var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
+                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
 
-                stopwatch.Stop();
+                    var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
 
-                this.Log.DebugFormat(
-                    "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
-                    source.Name,
-                    output.Name,
-                    stopwatch.Elapsed.ToReadableString(),
-                    stopwatch.Elapsed.TotalMilliseconds);
+                    if (this.Log.IsDebugEnabled)
+                    {
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
 
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-            }
-            else
-            {
-                image.Save(output.FullName, format);
+                        requestedImage.Save(output.FullName, format);
+
+                        stopwatch.Stop();
+
+                        this.Log.DebugFormat(
+                            "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
+                            source.Name,
+                            output.Name,
+                            stopwatch.Elapsed.Humanise(),
+                            stopwatch.Elapsed.TotalMilliseconds);
+
+                        this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+                    }
+                    else
+                    {
+                        requestedImage.Save(output.FullName, format);
+                    }
+                }
             }
 
             tempFile.SafeDeleteFile();

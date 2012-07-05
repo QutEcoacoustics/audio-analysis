@@ -410,7 +410,7 @@
                     "Executed {0} in working directory {1}. Took {2} ({3}ms).",
                     processRunner.ExecutableFile.Name,
                     workingDirectory,
-                    stopwatch.Elapsed.ToReadableString(),
+                    stopwatch.Elapsed.Humanise(),
                     stopwatch.Elapsed.TotalMilliseconds);
 
                 this.Log.Debug(processRunner.BuildLogOutput());

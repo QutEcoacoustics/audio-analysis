@@ -32,8 +32,7 @@
             if (arg is TimeSpan)
             {
                 var timeSpan = (TimeSpan)arg;
-                //return _formatParser.Replace(format, GetMatchEvaluator(timeSpan));
-                return timeSpan.ToReadableString();
+                return timeSpan.Humanise();
             }
 
             var formattable = arg as IFormattable;

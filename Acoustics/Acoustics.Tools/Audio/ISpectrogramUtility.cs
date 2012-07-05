@@ -20,6 +20,9 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType);
+        /// <param name="request">
+        /// The spectrogram request.
+        /// </param>
+        void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, SpectrogramRequest request);
     }
 }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
 
     using Acoustics.Shared;
@@ -56,29 +57,35 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
+        /// <param name="request">
+        /// The spectrogram request.
+        /// </param>
+        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, SpectrogramRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
             this.CanProcess(output, new[] { MediaTypes.MediaTypePng, MediaTypes.MediaTypeJpeg }, null);
 
-            var tempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
+            // to get a proper image from sox, need to remove DC value, plus 1px from top and left. 
+            var wavFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
+            var originalSoxFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtPng);
 
-            this.audioUtility.Convert(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav);
+            this.audioUtility.Convert(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav);
 
+            // generate spectrogram using sox.
             if (this.Log.IsDebugEnabled)
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                this.Spectrogram(tempFile, output);
+                this.Spectrogram(wavFile, originalSoxFile);
 
                 stopwatch.Stop();
 
                 this.Log.DebugFormat(
                     "Generated and saved spectrogram for {0}. Took {1} ({2}ms).",
                     source.Name,
-                    stopwatch.Elapsed.ToReadableString(),
+                    stopwatch.Elapsed.Humanise(),
                     stopwatch.Elapsed.TotalMilliseconds);
 
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
@@ -86,10 +93,53 @@
             }
             else
             {
-                this.Spectrogram(tempFile, output);
+                this.Spectrogram(wavFile, originalSoxFile);
             }
 
-            tempFile.SafeDeleteFile();
+            wavFile.SafeDeleteFile();
+
+            // modify the original image to match the request
+            using (var sourceImage = Image.FromFile(originalSoxFile.FullName))
+            {
+                // remove 1px from top, bottom (DC value) and left
+                var sourceRectangle = new Rectangle(1, 1, sourceImage.Width - 1, sourceImage.Height - 2);
+
+                using (var requestedImage = new Bitmap(
+                    request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width,
+                    request.Height.HasValue ? request.Height.Value : sourceRectangle.Height))
+                using (var graphics = Graphics.FromImage(requestedImage))
+                {
+                    var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
+                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
+
+                    var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
+
+                    if (this.Log.IsDebugEnabled)
+                    {
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        requestedImage.Save(output.FullName, format);
+
+                        stopwatch.Stop();
+
+                        this.Log.DebugFormat(
+                            "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
+                            source.Name,
+                            output.Name,
+                            stopwatch.Elapsed.Humanise(),
+                            stopwatch.Elapsed.TotalMilliseconds);
+
+                        this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+                    }
+                    else
+                    {
+                        requestedImage.Save(output.FullName, format);
+                    }
+                }
+            }
+
+            originalSoxFile.SafeDeleteFile();
         }
 
         private void Spectrogram(FileInfo sourceAudioFile, FileInfo outputImageFile)
