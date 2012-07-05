@@ -402,13 +402,15 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             var startTs = TimeSpan.FromMilliseconds(start);
             var endTs = TimeSpan.FromMilliseconds(end);
 
+            const string SecondTwoDigits = "ss";
+
             var beginEnd = string.Format(
                 " {0}.{1}.{2:00} {3}.{4}.{5:00} ",
                 Math.Floor(startTs.TotalMinutes),
-                startTs.TsToString("ss"),
+                startTs.ToString(SecondTwoDigits),
                 startTs.Milliseconds / 10,
                 Math.Floor(endTs.TotalMinutes),
-                endTs.TsToString("ss"),
+                endTs.ToString(SecondTwoDigits),
                 endTs.Milliseconds / 10);
 
             var fileName = Path.GetFileNameWithoutExtension(tempFilePath);
@@ -535,10 +537,10 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             var audioFileName = FileNameTemplate
                 .Replace("@f", name)
                 .Replace("@m", Math.Floor(startTs.TotalMinutes).ToString(TwoDigits))
-                .Replace("@s", startTs.TsToString(SecondTwoDigits))
+                .Replace("@s", startTs.ToString(SecondTwoDigits))
                 .Replace("@h", (startTs.Milliseconds / 10).ToString(TwoDigits))
                 .Replace("@M", Math.Floor(endTs.TotalMinutes).ToString(TwoDigits))
-                .Replace("@S", endTs.TsToString(SecondTwoDigits))
+                .Replace("@S", endTs.ToString(SecondTwoDigits))
                 .Replace("@H", (endTs.Milliseconds / 10).ToString(TwoDigits))
                 ;
 

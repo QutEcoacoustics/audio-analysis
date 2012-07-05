@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioFilePreparer.cs" />
+    <Compile Include="AudioReadingRequest.cs" />
     <Compile Include="Audio\AbstractAudioUtility.cs" />
     <Compile Include="Audio\AbstractSpectrogramUtility.cs" />
     <Compile Include="Audio\AbstractUtility.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Audio\SoxSpectrogramUtility.cs" />
     <Compile Include="Audio\WavPackAudioUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpectrogramRequest.cs" />
     <Compile Include="Wav\IWavReader.cs" />
     <Compile Include="Wav\WavAudioInfo.cs" />
     <Compile Include="Wav\WavChunk.cs" />
