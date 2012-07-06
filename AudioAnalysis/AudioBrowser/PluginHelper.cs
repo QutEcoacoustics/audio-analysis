@@ -2,14 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.ComponentModel.Composition;
-    using AnalysisBase;
     using System.ComponentModel.Composition.Hosting;
-    using System.IO;
     using System.ComponentModel.Composition.Registration;
+    using System.IO;
+    using System.Linq;
+
     using Acoustics.Shared;
+
+    using AnalysisBase;
+
     using AnalysisRunner;
 
     public class PluginHelper
