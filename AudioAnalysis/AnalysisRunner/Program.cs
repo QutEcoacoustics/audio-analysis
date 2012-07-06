@@ -22,8 +22,15 @@
 
         public static void Main(string[] args)
         {
-            Program p = new Program();
-            p.Run();
+            var mb = new MonoBuild();
+            mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
+            //mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\Acoustics"));
+            //mb.CopyMonoSolutionFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
+
+            mb.DeleteMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
+
+            //Program p = new Program();
+            //p.Run();
         }
 
         public void Run()
