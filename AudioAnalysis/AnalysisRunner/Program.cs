@@ -23,7 +23,7 @@
         public static void Main(string[] args)
         {
             var mb = new MonoBuild();
-            mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
+            //mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
             //mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\Acoustics"));
             //mb.CopyMonoSolutionFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
 
