@@ -47,7 +47,7 @@ namespace antPaperApp
             // time bounds to constrain to
 
             // levels of testing to do
-            var numSamples = new[] { 10, 20, 60, 100, 200 };
+            var numSamples = Program.LevelsOfTestingToDo;
             var files = new Dictionary<int, StringBuilder>();
             foreach (var numSample in numSamples)
             {
@@ -147,7 +147,7 @@ namespace antPaperApp
 
         }
 
-        public Dictionary<int, int> MakeAllSet(List<SiteDayProfile>  profiles)
+        public Dictionary<int, int> MakeAllSet(List<SiteDaySpeciesProfile>  profiles)
         {
             var allMinutes = new Dictionary<int, int>(1440);
             foreach (var profile in profiles)

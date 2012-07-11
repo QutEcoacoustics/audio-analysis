@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JasonAndMike_TheirPowersCombined_AreCaptainPLANET.cs" />
     <Compile Include="JasonsAdaptiveFrequency.cs" />
     <Compile Include="JasonsBasic.cs" />
     <Compile Include="GroupTagsIntoMinutesForEachDayAndSite.cs" />
@@ -59,6 +60,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PutSpeciesInTags.cs" />
     <Compile Include="SpeciesCall.cs" />
+    <Compile Include="Stats\EnumerableEuclideanDistance.cs" />
+    <Compile Include="Stats\EnumerableStats.cs" />
+    <Compile Include="Stats\EnumerableStatsCovariance.cs" />
+    <Compile Include="Stats\EnumerableStatsMedian.cs" />
+    <Compile Include="Stats\EnumerableStatsMode.cs" />
+    <Compile Include="Stats\EnumerableStatsPearson.cs" />
+    <Compile Include="Stats\EnumerableStatsRange.cs" />
+    <Compile Include="Stats\EnumerableStatsStandardDeviation.cs" />
+    <Compile Include="Stats\EnumerableStatsStandardDeviationP.cs" />
+    <Compile Include="Stats\EnumerableStatsVariance.cs" />
+    <Compile Include="Stats\EnumerableStatsVarianceP.cs" />
     <Compile Include="Tag.cs" />
   </ItemGroup>
   <ItemGroup>

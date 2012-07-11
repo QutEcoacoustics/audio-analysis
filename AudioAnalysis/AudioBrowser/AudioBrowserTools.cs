@@ -197,7 +197,7 @@ namespace AudioBrowser
             AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
                 DeleteFinished   = (! saveIntermediateWavFiles), // create and delete directories 
-                IsParallel       = false,                // ########### PARALLEL OR SEQUENTIAL ??????????????
+                IsParallel       = true,                // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
             
