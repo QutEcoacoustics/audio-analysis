@@ -10,10 +10,15 @@ namespace antPaperApp
     using System.IO;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Count = Int32;
+    using Minute = Int32;
+
 
     /// <summary>
     /// THIS is an adaptive sampling algorithm.
-    /// It has NO random element in it - it only needs to be run once.
+    /// It has a random element in it, and hence its results are repeated a thousand times.
+    /// THis algorithm choose the training samples with most unique calls first.
+    /// The minute chosen, is then evaluated against ONE test sample (which has to be randomly chosen from the remaining test sites/days)
     /// </summary>
     public class JasonsAdaptiveFrequency
     {
@@ -32,19 +37,20 @@ namespace antPaperApp
 
             var testProfiles = Helpers.ReadFiles(test);
 
-            // record all the different "days" and "sites" we get
-            var distinctDays = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
-            var distinctSites = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
+            // record all the different "days" and "sites" we get in testData
+            var distinctDaysTest = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
+            var distinctSitesTest = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
+
 
             // levels of testing to do
-            var numSamples = new[] { 10, 20, 60, 100, 200 };
-            var files = new Dictionary<int, StringBuilder>();
+            var numSamples = Program.LevelsOfTestingToDo;
+            var outputFiles = new Dictionary<int, StringBuilder>();
             foreach (var numSample in numSamples)
             {
-                files.Add(numSample, new StringBuilder());
+                outputFiles.Add(numSample, new StringBuilder());
             }
 
-            const int RandomRuns = 5;
+            const int RandomRuns = 100;
             var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
             Parallel.For(
                 (long)0,
@@ -55,105 +61,167 @@ namespace antPaperApp
 
                         foreach (var testRun in numSamples)
                         {
-                            var rand = new Random();
+                            
                             // eventually we will pick #testRun random samples
-                            var samplesChosen = new List<KeyValuePair<int, int>>(testRun);
-                            var speciesFound = new HashSet<string>();
+                            var samplesChosen = new List<Tuple<int, string, DateTime, Count>>(testRun);
+                            var speciesFoundInTestData = new HashSet<string>();
 
                             // so sample from test data ordered on number of unique 
                             // species found in equivalent training minute
-                            // i.e. min 300 in training, has 25 unique species, pick min 300 from test data
-                            // however we do it adaptively based on the test profiles.
+                            // i.e. min 300 in training, has 25 unique species, pick min 300 from test data (there will be serveral matching minutes, pick only one)
+                            // however we do it adaptively based on the species we "discover" in test profiles.
 
-                            List<SiteDayProfile> adaptiveFilter = trainingProfiles;
+                            List<SiteDaySpeciesProfile> adaptiveFilter = trainingProfiles;
                             for (int sample = 0; sample < testRun; sample++)
                             {
                                 // first remove training samples where we have already found that species
                                 adaptiveFilter =
-                                    adaptiveFilter.Where(sdp => !speciesFound.Contains(sdp.SpeciesName)).ToList();
+                                    adaptiveFilter.Where(sdp => !speciesFoundInTestData.Contains(sdp.SpeciesName)).ToList();
 
                                 // for the first iteration, none should be removed
                                 Contract.Assert(sample > 0 || adaptiveFilter.Count() == trainingProfiles.Count());
 
-                                // then form ALL set from ramining profiles
-                                var allSet = this.MakeAllSet(adaptiveFilter);
+                                // then form super profile from remaining profiles
+                                // IMPORTANT  - the all set will sum and not AND
 
-                                // choose samples out of the all set where precence *is* indicated
-                                var presence = allSet.Where(kvp => kvp.Value == 1).ToList();
+                                // group into sites and days
+                                var allset = JasonsAdaptiveBit.MakeAllSet(adaptiveFilter, true);
 
-                                // randomly choose from presence subset
-                                var randomChoice = rand.Next(presence.Count());
-                                var randomChoiceMinute = presence[randomChoice];
-                                samplesChosen.Add(randomChoiceMinute);
+                                // ORDER samples based on the most unique species occuring
+                                var orderedUniqueSpeciesCount = allset.OrderByDescending(m => m.Value).ToList();
+
+                                // choose the first sample with the most unique species
+                                var trainingChoice = orderedUniqueSpeciesCount.First();
+
+
+                                // there could be multiple results from that minute, randomly choose one
+                                // if each profile is a species * day * site tuple
+                                // we want to filter down to one site and one day
+                                var randomTestSite = distinctSitesTest.GetRandomElement();
+                                var randomTestDay = distinctDaysTest.GetRandomElement();
+
+                                samplesChosen.Add(Tuple.Create(trainingChoice.Key, randomTestSite, randomTestDay, trainingChoice.Value));
 
 
 
-                                // now we have our random sample,
+                                // now we have our sample,
                                 // we do our evaluation
-                                // we take the minute from the randomly chosen training sample
+                                // we take the minute from the chosen training sample
                                 // and grab all the unique species from the test data
+                                var restrictedTestProfiles = 
+                                    testProfiles.Where(sdp => sdp.Site == randomTestSite && sdp.Day == randomTestDay).ToArray();
 
-                                foreach (var sdp in testProfiles)
+                                Contract.Assert(restrictedTestProfiles.All(sdp => sdp.Day == restrictedTestProfiles.First().Day));
+                                Contract.Assert(restrictedTestProfiles.All(sdp => sdp.Site == restrictedTestProfiles.First().Site));
+
+                                foreach (var sdp in restrictedTestProfiles)
                                 {
-                                    if (sdp.MinuteProfile[randomChoiceMinute.Key] == 1)
+                                    if (sdp.MinuteProfile[trainingChoice.Key] == 1)
                                     {
-                                        speciesFound.Add(sdp.SpeciesName);
+                                        speciesFoundInTestData.Add(sdp.SpeciesName);
                                     }
                                 }
 
                                 // loop back, try again
                             }
 
+                            var foundCount = speciesFoundInTestData.Count;
+                            if (foundCount == 0)
+                            {
+                                speciesFoundInTestData.Add("[[[NONE!]]]");
+                            }
+
                             // make a summary result
                             StringBuilder sb = new StringBuilder();
-                            sb.AppendLine("*** Jason's adaptive bit (RUN NUMBER: " + runIndex + " )");
+                            sb.AppendLine("*** Jason's unique frequency (RUN NUMBER: " + runIndex + " )");
                             sb.AppendFormat("NumSamples,{0}\n", testRun);
                             sb.AppendLine(
-                                "Species Found," + speciesFound.Aggregate((build, current) => build + "," + current));
+                                "Species Found," + speciesFoundInTestData.Aggregate((build, current) => build + "," + current));
                             sb.AppendLine(
-                                "Species Found count," + speciesFound.Count.ToString(CultureInfo.InvariantCulture));
-                            sb.AppendLine(
-                                "Minutes sampled"
+                                "Species Found count," + foundCount.ToString(CultureInfo.InvariantCulture));
+                            sb.AppendLine("Minutes sampled (minute, site, day, #numTrainingSpecies)"
                                 +
-                                samplesChosen.Select(kvp => kvp.Key).Aggregate(
-                                    "", (build, current) => build + "," + current));
+                                samplesChosen.Aggregate(
+                                    "",
+                                    (build, current) =>
+                                    build
+                                    +
+                                    string.Format(
+                                        ", ({0}, {1}, {2}, {3})",
+                                        current.Item1,
+                                        current.Item2,
+                                        current.Item3.ToShortDateString(),
+                                        current.Item4)
+                                        ));
 
-                            lock (files)
+                            lock (outputFiles)
                             {
-                                files[testRun].AppendLine(sb.ToString());
+                                outputFiles[testRun].AppendLine(sb.ToString());
                             }
                             
                         }
                     }); // end 1000 loops
 
 
-            foreach (var stringBuilder in files)
+            foreach (var stringBuilder in outputFiles)
             {
                 File.AppendAllText(output + "\\" + stringBuilder.Key + ".txt", stringBuilder.Value.ToString());
             }
 
         }
 
-        public Dictionary<int, int> MakeAllSet(List<SiteDayProfile>  profiles)
+        public class AggregatedSiteDayMinute
         {
-            var allMinutes = new Dictionary<int, int>(1440);
-            foreach (var profile in profiles)
-            {
-                foreach (var min in profile.MinuteProfile)
-                {
-                    if (min.Value == 1)
-                    {
-                        allMinutes[min.Key] = 1;
+            public DateTime Day { get; set; }
 
+            public string Site { get; set; }
+
+            public Minute Minute { get; set; }
+
+            public HashSet<string> Species { get; set; }
+        }
+
+        public static List<AggregatedSiteDayMinute> Group(List<SiteDaySpeciesProfile> profiles)
+        {
+            var result = new List<AggregatedSiteDayMinute>();
+            const int MinutesInADay = 1440;
+            foreach (var daySpeciesProfile in profiles)
+            {
+                for (int minute = 0; minute < MinutesInADay; minute++)
+                {
+                    AggregatedSiteDayMinute aggregatedSDP;
+
+                    aggregatedSDP = result.SingleOrDefault(sdp => sdp.Site == daySpeciesProfile.Site && sdp.Day == daySpeciesProfile.Day && sdp.Minute == minute);
+
+                    if (aggregatedSDP == null)
+                    {
+                        aggregatedSDP = new AggregatedSiteDayMinute
+                            {
+                                Site = daySpeciesProfile.Site,
+                                Day = daySpeciesProfile.Day,
+                                Minute = minute,
+                                Species = new HashSet<string>()
+                            };
+                        
+                        result.Add(aggregatedSDP);
+                    }
+
+                    // add all the species that can be found
+                   
+
+                    if (daySpeciesProfile.MinuteProfile[minute] == 1)
+                    {
+                        aggregatedSDP.Species.Add(daySpeciesProfile.SpeciesName);
                     }
                 }
             }
 
-            return allMinutes;
+
+            return result;
+
         }
 
 
-        
 
     }
 }

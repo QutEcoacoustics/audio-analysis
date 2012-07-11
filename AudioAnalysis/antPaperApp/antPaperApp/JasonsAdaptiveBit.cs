@@ -11,7 +11,7 @@ namespace antPaperApp
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
-    public class SiteDayProfile
+    public class SiteDaySpeciesProfile
     {
         public Dictionary<int, int> MinuteProfile;
 
@@ -45,18 +45,18 @@ namespace antPaperApp
             var testProfiles = Helpers.ReadFiles(test);
 
             // record all the different "days" and "sites" we get
-            var distinctDays = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
-            var distinctSites = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
+            var distinctDaysTest = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
+            var distinctSitesTest = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
 
             // levels of testing to do
-            var numSamples = new[] { 10, 20, 60, 100, 200 };
+            var numSamples = Program.LevelsOfTestingToDo;
             var files = new Dictionary<int, StringBuilder>();
             foreach (var numSample in numSamples)
             {
                 files.Add(numSample, new StringBuilder());
             }
 
-            var randomRuns = 100;
+            const int randomRuns = 100;
             var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
             Parallel.For(
                 (long)0,
@@ -70,23 +70,23 @@ namespace antPaperApp
                             var rand = new Random();
                             // eventually we will pick #testRun random samples
                             var randomSamplesChosen = new List<Tuple<int, string, DateTime>>(testRun);
-                            var speciesFound = new HashSet<string>();
+                            var speciesFoundInTestData = new HashSet<string>();
 
                             // so sample randomly from test data
-                            // however we do it adaptively based on the test profiles.
+                            // however we do it adaptively based on the species we "discover" in test profiles.
 
-                            List<SiteDayProfile> adaptiveFilter = trainingProfiles;
+                            List<SiteDaySpeciesProfile> adaptiveFilter = trainingProfiles;
                             for (int sample = 0; sample < testRun; sample++)
                             {
                                 // first remove training samples where we have already found that species
                                 adaptiveFilter =
-                                    adaptiveFilter.Where(sdp => !speciesFound.Contains(sdp.SpeciesName)).ToList();
+                                    adaptiveFilter.Where(sdp => !speciesFoundInTestData.Contains(sdp.SpeciesName)).ToList();
 
                                 // for the first iteration, none should be removed
                                 Contract.Assert(sample > 0 || adaptiveFilter.Count() == trainingProfiles.Count());
 
-                                // then form ALL set from ramining profiles
-                                var allSet = this.MakeAllSet(adaptiveFilter);
+                                // then form ALL set from remaining profiles
+                                var allSet = MakeAllSet(adaptiveFilter);
 
                                 // choose samples out of the all set where precence *is* indicated
                                 var presence = allSet.Where(kvp => kvp.Value == 1).ToList();
@@ -98,8 +98,8 @@ namespace antPaperApp
                                 // there could be multiple results from that minute, randomly choose one
                                 // if each profile is a species * day * site tuple
                                 // we want to filter down to one site and one day
-                                var randomSite = distinctSites.GetRandomElement();
-                                var randomDay = distinctDays.GetRandomElement();
+                                var randomSite = distinctSitesTest.GetRandomElement();
+                                var randomDay = distinctDaysTest.GetRandomElement();
 
                                 // now we have our random sample,
                                 // we do our evaluation
@@ -107,19 +107,19 @@ namespace antPaperApp
                                 // and grab all the unique species from the test data
                                 // MUST BE CAREFUL TO ONLY GRAB '1' SAMPLE
 
-                                var restrictedProfiles =
+                                var restrictedTestProfiles =
                                     testProfiles.Where(sdp => sdp.Site == randomSite && sdp.Day == randomDay).ToArray();
 
                                 randomSamplesChosen.Add(Tuple.Create(randomChoiceMinute.Key, randomSite, randomDay));
 
-                                Contract.Assert(restrictedProfiles.All(sdp=> sdp.Day == restrictedProfiles.First().Day));
-                                Contract.Assert(restrictedProfiles.All(sdp => sdp.Site == restrictedProfiles.First().Site));
+                                Contract.Assert(restrictedTestProfiles.All(sdp=> sdp.Day == restrictedTestProfiles.First().Day));
+                                Contract.Assert(restrictedTestProfiles.All(sdp => sdp.Site == restrictedTestProfiles.First().Site));
 
-                                foreach (var sdp in restrictedProfiles)
+                                foreach (var sdp in restrictedTestProfiles)
                                 {
                                     if (sdp.MinuteProfile[randomChoiceMinute.Key] == 1)
                                     {
-                                        speciesFound.Add(sdp.SpeciesName);
+                                        speciesFoundInTestData.Add(sdp.SpeciesName);
                                     }
                                 }
 
@@ -128,18 +128,19 @@ namespace antPaperApp
 
                             // make a summary result
 
-                            if (speciesFound.Count == 0)
+                            var foundCount = speciesFoundInTestData.Count;
+                            if (foundCount == 0)
                             {
-                                speciesFound.Add("[[[NONE!]]]");
+                                speciesFoundInTestData.Add("[[[NONE!]]]");
                             }
 
                             StringBuilder sb = new StringBuilder();
                             sb.AppendLine("*** Jason's adaptive bit (RUN NUMBER: " + randomRunIndex + " )");
                             sb.AppendFormat("NumSamples,{0}\n", testRun);
                             sb.AppendLine(
-                                "Species Found," + speciesFound.Aggregate((build, current) => build + "," + current));
+                                "Species Found," + speciesFoundInTestData.Aggregate((build, current) => build + "," + current));
                             sb.AppendLine(
-                                "Species Found count," + speciesFound.Count.ToString(CultureInfo.InvariantCulture));
+                                "Species Found count," + foundCount.ToString(CultureInfo.InvariantCulture));
                             sb.AppendLine(
                                 "Minutes sampled (minute, site, day)"
                                 +
@@ -170,7 +171,7 @@ namespace antPaperApp
 
         }
 
-        public Dictionary<int, int> MakeAllSet(List<SiteDayProfile>  profiles)
+        public static Dictionary<int, int> MakeAllSet(List<SiteDaySpeciesProfile>  profiles, bool sum = false)
         {
             var allMinutes = new Dictionary<int, int>(1440);
             foreach (var profile in profiles)
@@ -179,8 +180,22 @@ namespace antPaperApp
                 {
                     if (min.Value == 1)
                     {
-                        allMinutes[min.Key] = 1;
-
+                       if (sum)
+                       {
+                           if (allMinutes.ContainsKey(min.Key))
+                           {
+                               allMinutes[min.Key] = allMinutes[min.Key] + 1;
+                           }
+                           else
+                           {
+                               allMinutes[min.Key] = 1;   
+                           }
+                       }
+                       else
+                       {
+                           allMinutes[min.Key] = 1;    
+                           
+                       }
                     }
                 }
             }

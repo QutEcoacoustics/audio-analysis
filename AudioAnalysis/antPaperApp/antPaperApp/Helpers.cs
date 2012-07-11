@@ -9,6 +9,8 @@ namespace antPaperApp
     using System.IO;
     using System.Text.RegularExpressions;
 
+    using LINQtoCSV;
+
     public static class Helpers
     {
 
@@ -25,10 +27,10 @@ namespace antPaperApp
 
 
 
-        public static List<SiteDayProfile> ReadFiles(DirectoryInfo directory)
+        public static List<SiteDaySpeciesProfile> ReadFiles(DirectoryInfo directory)
         {
             var regex = new Regex(@"(\d{4})_(\d{2})_(\d{2})_(.*).csv");
-            var profiles = new List<SiteDayProfile>(3000);
+            var profiles = new List<SiteDaySpeciesProfile>(3000);
 
             foreach (var file in directory.EnumerateFiles("*.csv"))
             {
@@ -80,7 +82,7 @@ namespace antPaperApp
                     }
 
 
-                    profiles.Add(new SiteDayProfile()
+                    profiles.Add(new SiteDaySpeciesProfile()
                     {
                         Day = day,
                         MinuteProfile = minutes,
@@ -93,8 +95,41 @@ namespace antPaperApp
             return profiles;
         }
 
+        
 
 
+        public static List<IndiciesRow> ReadIndiciesFiles(DirectoryInfo directory)
+        {
+            var regex = new Regex(@"Towsey.Acoustic.Indicies_(\d{4})_(\d{2})_(\d{2})_(.*).csv");
+            var profiles = new List<IndiciesRow>(1440 * 4);
+
+            var fileDescription = new LINQtoCSV.CsvFileDescription { SeparatorChar = ',', FirstLineHasColumnNames = true };
+            var context = new CsvContext();
+
+            foreach (var file in directory.EnumerateFiles("*.csv"))
+            {
+                var match = regex.Match(file.Name);
+                Contract.Assert(match.Success);
+
+                var day = new DateTime(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value), int.Parse(match.Groups[3].Value));
+                var site = match.Groups[4].Value;
+
+                // read in file, parse from csv
+                var indicies = context.Read<IndiciesRow>(file.FullName).ToArray();
+
+                foreach (var row in indicies)
+                {
+                    row.Site = site;
+                    row.Day = day;
+                }
+                
+                profiles.AddRange(indicies);
+              
+                
+            }
+
+            return profiles;
+        }
 
     }
 }
