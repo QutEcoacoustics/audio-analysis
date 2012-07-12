@@ -8,6 +8,7 @@
     using System.ComponentModel.Composition.Registration;
     using System.IO;
     using System.Linq;
+    using System.Text;
 
     using Acoustics.Shared;
     using AnalysisBase;
@@ -22,15 +23,17 @@
 
         public static void Main(string[] args)
         {
-            var mb = new MonoBuild();
+            //var mb = new MonoBuild();
             //mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
             //mb.CopyMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\Acoustics"));
             //mb.CopyMonoSolutionFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
 
-            mb.DeleteMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
+            //mb.DeleteMonoProjectFiles(new DirectoryInfo(@"C:\Work\Software Dev\svn-trunk\AudioAnalysis"));
 
             //Program p = new Program();
             //p.Run();
+
+            PageEventsToCsv();
         }
 
         public void Run()
@@ -146,6 +149,21 @@
 
             var container = new CompositionContainer(aggregateCatalog);
             container.ComposeParts(this);
+        }
+
+        private static void PageEventsToCsv()
+        {
+            var propNames =
+                File.ReadAllLines(@"C:\Work\Masters\Papers\eScience experiment documents\user12002_propnames.txt");
+            var propValues =
+                File.ReadAllLines(@"C:\Work\Masters\Papers\eScience experiment documents\user12002_propvalues.txt");
+
+            var propsFile = @"C:\Work\Masters\Papers\eScience experiment documents\user12002_props.txt";
+
+            StringKeyValueStore.SaveToCsv(
+                new FileInfo(@"C:\Work\Masters\Papers\eScience experiment documents\user12002_all.csv"),
+                new FileInfo(@"C:\Work\Masters\Papers\eScience experiment documents\user12002_output.csv"));
+
         }
     }
 }

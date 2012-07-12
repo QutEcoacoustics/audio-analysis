@@ -110,6 +110,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <UsingTask AssemblyFile="$(SolutionDir)..\Extra Assemblies\Gendarme\GendarmeMsBuild.dll" TaskName="GendarmeMsBuild.Gendarme"/>
+  <Target Name="AfterBuild">
+      <Gendarme 
+		Assemblies="$(TargetPath)" IntegrateWithVisualStudio="True" 
+		OutputXmlFilename="$(SolutionDir)\AnalysisBase.Gendarme.xml"
+		GendarmeExeFilename="$(SolutionDir)..\Extra Assemblies\Gendarme\Runner\gendarme.exe"/>
+  </Target>
+  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
