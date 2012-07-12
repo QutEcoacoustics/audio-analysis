@@ -65,7 +65,7 @@ namespace AudioAnalysisTools
 
         //SIX KIWI SCORES
         public double kiwi_durationScore, kiwi_hitScore, kiwi_snrScore, kiwi_sdPeakScore;
-        public double kiwi_intensityScore, kiwi_gridScore, kiwi_chirpScore, kiwi_bandWidthScore, kiwi_deltaPeriodScore;
+        public double kiwi_intensityScore, kiwi_gridScore, kiwi_chirpScore, kiwi_bandWidthScore, kiwi_deltaPeriodScore, kiwi_comboScore;
 
 
 

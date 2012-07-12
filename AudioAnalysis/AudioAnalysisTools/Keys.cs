@@ -16,6 +16,7 @@ namespace AudioAnalysisTools
         public static string DCT_DURATION = "DCT_DURATION";
         public static string DCT_THRESHOLD = "DCT_THRESHOLD";
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
+        public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
         public static string DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
         public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
