@@ -16,6 +16,7 @@
     using Acoustics.Tools.Audio;
 
     using AnalysisPrograms;
+    using AnalysisPrograms.Processing;
     using AnalysisRunner;
 
     using AudioAnalysisTools;
@@ -682,7 +683,7 @@
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
             Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
-
+ 
             //store info
             this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
             this.browserSettings.fiSegmentRecording = fiOutputSegment;
@@ -700,7 +701,15 @@
                 //this.panelDisplaySpectrogram.Height = image.Height;
                 Console.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
                 this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-                this.labelSonogramFileName.Text = fiOutputSegment.Name;
+                string title = fiOutputSegment.Name;
+                if (title.Length > 23)
+                {
+                    int remainder = title.Length - 22;
+                    title = title.Substring(0, 21) + "\n   " + title.Substring(22, remainder);
+                }
+                
+                this.labelSonogramFileName.Text = title;
+
                 //attempt to deal with variable height of spectrogram
                 //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
                 if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
@@ -716,15 +725,24 @@
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
+            int status = 0;
             if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists))
             {
                 Console.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
                 Console.WriteLine("It does not exist!");
                 this.tabControlMain.SelectTab("tabPageConsole");
-                AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
+                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
             }
             else
-                AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
+                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
+
+            if (status != 0)
+            {
+                Console.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
+                Console.WriteLine("   Check Audacity path in the app.config.");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);     
+            }
+
         }
 
         // here be dragons!
@@ -1300,8 +1318,8 @@
             {
                 this.pictureBoxSonogram.Image = image;
                 Console.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
-                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-                this.labelSonogramFileName.Text = browserSettings.fiSegmentRecording.Name;
+                //this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
+                //this.labelSonogramFileName.Text = browserSettings.fiSegmentRecording.Name;
                 //attempt to deal with variable height of spectrogram
                 //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
                 if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
@@ -1332,6 +1350,13 @@
             string opDir = browserSettings.diOutputDir.FullName;
             string configDir = this.browserSettings.diConfigDir.FullName;
             string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
+
+            if (!(new FileInfo(configPath)).Exists)
+            {
+                Console.WriteLine("Config file does not exists: {0}", configPath);
+                return null;
+            }
+
             this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
             var config = ConfigDictionary.ReadPropertiesFile(configPath);
             config.Add(AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());

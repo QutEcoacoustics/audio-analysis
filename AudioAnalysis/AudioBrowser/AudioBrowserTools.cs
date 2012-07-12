@@ -192,12 +192,17 @@ namespace AudioBrowser
             };
             var fileSegments = new[] { file };
 
-            bool saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
+            bool saveIntermediateWavFiles = false;
+            if(settings.ConfigDict.ContainsKey(Keys.SAVE_INTERMEDIATE_WAV_FILES))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(Keys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
+            bool doParallelProcessing = false;
+            if (settings.ConfigDict.ContainsKey(Keys.PARALLEL_PROCESSING))
+                doParallelProcessing = ConfigDictionary.GetBoolean(Keys.PARALLEL_PROCESSING, settings.ConfigDict);
             //initilise classes that will do the analysis
             AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
                 DeleteFinished   = (! saveIntermediateWavFiles), // create and delete directories 
-                IsParallel       = true,                // ########### PARALLEL OR SEQUENTIAL ??????????????
+                IsParallel       = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
             
@@ -216,9 +221,9 @@ namespace AudioBrowser
             {
                 //a fudge becaues parallel mode cannot save images at the moment
                 saveSonograms = false;
-                settings.ConfigDict[Keys.SAVE_SONOGRAM_FILES] = saveSonograms.ToString();
+                settings.ConfigDict[Keys.SAVE_SONOGRAM_FILES] = false.ToString();
                 saveIntermediateFiles = false;
-                settings.ConfigDict[Keys.SAVE_INTERMEDIATE_CSV_FILES] = saveIntermediateFiles.ToString();
+                settings.ConfigDict[Keys.SAVE_INTERMEDIATE_CSV_FILES] = false.ToString();
                 //settings.ConfigDict[Keys.SAVE_INTERMEDIATE_WAV_FILES] = saveIntermediateFiles.ToString();
                 settings.ImageFile = null;
                 settings.EventsFile  = null;
@@ -770,10 +775,13 @@ namespace AudioBrowser
         /// <param name="audacityPath"></param>
         /// <param name="recordingPath"></param>
         /// <param name="dir"></param>
-        public static void RunAudacity(string audacityPath, string recordingPath, string dir)
+        public static int RunAudacity(string audacityPath, string recordingPath, string dir)
         {
+            var fiAudacity = new FileInfo(audacityPath);
+            if (!fiAudacity.Exists) return 666;
             ProcessRunner process = new ProcessRunner(audacityPath);
             process.Run(recordingPath, dir);
+            return 0;
         }// RunAudacity()
 
 
