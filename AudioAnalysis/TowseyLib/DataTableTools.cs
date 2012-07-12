@@ -91,7 +91,7 @@ namespace TowseyLib
 
 
         /// <summary>
-        /// setup skeleton of new table with same headers and column types as passed tabloel
+        /// setup skeleton of new table with same headers and column types as passed table
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
@@ -368,6 +368,16 @@ namespace TowseyLib
             foreach (DataColumn col in dt.Columns) types.Add(col.DataType);
             return types.ToArray();
         }
+
+
+        public static Type GetColumnType(DataTable dt, string columnName)
+        {
+            if ((dt == null) || (columnName == null)) return null;
+            if (!dt.Columns.Contains(columnName)) return null;
+            return dt.Columns[columnName].DataType;
+        }
+
+
 
         public static void ChangeColumnName(DataTable dt, string oldName, string newName)
         {
