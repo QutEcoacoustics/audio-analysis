@@ -297,6 +297,8 @@ namespace TowseyLib
 
         public static Dictionary<string, string> ReadPropertiesFile(string fName)
         {
+            if (!(new FileInfo(fName)).Exists) return null;
+           
             var table = new Dictionary<string, string>();
             using (TextReader reader = new StreamReader(fName))
             {
