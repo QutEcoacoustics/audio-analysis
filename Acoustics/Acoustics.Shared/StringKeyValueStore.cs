@@ -319,6 +319,101 @@
 
         #region Save and Load
 
+        public static void SaveToCsv(FileInfo input, FileInfo output)
+        {
+            // read in entire file to get all property names
+            var inputContents = File.ReadAllLines(input.FullName);
+            var inputSplit = inputContents.Select(l => l.Split(new[] { "\t" }, StringSplitOptions.RemoveEmptyEntries)).ToList();
+
+            var modified = inputSplit.Skip(1).Select(
+                l =>
+                {
+                    var skvs = new StringKeyValueStore();
+                    skvs.LoadFromTwoStrings(l.Skip(9).First(), l.Skip(10).First(), ":");
+
+                    return new { First9 = string.Join(", ", l.Take(9).Select(i => i)), Skvs = skvs };
+                }).ToList();
+
+            // headers
+            var headers = inputSplit.First().Take(9);
+
+            // string key value store headers
+            var skvsHeaders = modified.SelectMany(i => i.Skvs.Keys).Distinct().ToList();
+
+            var sb = new StringBuilder(string.Join(", ", headers.Select(i => i.Replace(',', ' '))) + ", " + string.Join(", ", skvsHeaders.Select(i => i.Replace(',', ' '))) + Environment.NewLine);
+            foreach (var item in modified)
+            {
+                sb.Append(item.First9 + ", ");
+
+                foreach (var key in skvsHeaders)
+                {
+                    if (item.Skvs.ContainsKey(key))
+                    {
+                        sb.Append(item.Skvs[key].Replace(',', ' '));
+                    }
+
+                    sb.Append(", ");
+                }
+
+                sb.AppendLine();
+            }
+
+            File.WriteAllText(output.FullName, sb.ToString());
+            /*
+          
+SELECT TOP 1000 [PageEventId]
+      ,[UserId]
+      ,[DateTimeOccurred]
+      ,[DateTimeOccurredUtc]
+      ,[DateTimeCreated]
+      ,[DateTimeCreatedUtc]
+      ,[RequestUrl]
+      ,[PageName]
+      ,[EventName]
+      ,[PropertyNamesStored]
+      ,[PropertyValuesStored]
+  FROM [QutSensors].[Ecosounds].[PageEvents]
+  where userid = '66E4A431-41E1-430F-8E29-FBD22DEF21BB'
+  order by pageeventid desc
+      
+             
+             
+SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtimeoffsetms,lb.createddate,l.createddate,b.createddate,u.username,u.userid,
+	b.endtimeoffsetms - b.starttimeoffsetMs as tagdurationms, 
+	cast(datepart(year, lb.createddate) as varchar(100))+'/'+
+       cast(datepart(month, lb.createddate) as varchar(100))+'/'+
+       cast(datepart(day, lb.createddate) as varchar(100)) as CreatedDate
+       ,cast(datepart(hh,lb.createddate) as varchar(100))+':'+
+       cast(datepart(minute, lb.createddate) as varchar(100))+':'+
+       cast(datepart(second, lb.createddate) as varchar(100)) as CreatedTime
+       
+	   ,cast(datepart(year,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
+       cast(datepart(month,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
+       cast(datepart(day,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100)) as StartDate
+       ,cast(datepart(hh,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+':'+
+       cast(datepart(minute,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+':'+
+       cast(datepart(second,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100)) as StartTime
+       ,cast(datepart(year,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100))+'/'+
+       cast(datepart(month,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100))+'/'+
+       cast(datepart(day,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100)) as EndDate
+       ,cast(datepart(hh,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100))+':'+
+       cast(datepart(minute,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100))+':'+
+       cast(datepart(second,dateadd(millisecond, b.endtimeoffsetms, ar.Time)) as varchar(100)) as EndTime
+  FROM ecosounds.labelledbounds lb
+  inner join aspnet_users u on lb.createdbyuserid = u.userid
+  inner join ecosounds.Labels l on lb.labelid = l.labelid
+  inner join ecosounds.bounds b on lb.boundid = b.boundid
+  inner join audioreadings ar on b.audioreadingid = ar.audioreadingid
+  where b.createdtagtypecontext = 'SamfordBirdWalkDawnQuest'
+  order by lb.createdbyuserid, b.starttimeoffsetMs
+  
+             
+             
+             
+             */
+
+        }
+
         public void LoadFromQueryString(string query)
         {
             if (!string.IsNullOrWhiteSpace(query))
@@ -384,6 +479,14 @@
 
             for (var index = 0; index < properties.Length; index++)
             {
+                if (!string.IsNullOrWhiteSpace(currentName) && currentStartIndex >= 0 && currentLength >= 0)
+                {
+                    this.Add(currentName, propertyValues.Substring(currentStartIndex, currentLength));
+                    currentName = null;
+                    currentStartIndex = -1;
+                    currentLength = -1;
+                }
+
                 if (string.IsNullOrWhiteSpace(currentName))
                 {
                     currentName = properties[index];
@@ -395,13 +498,6 @@
                 else if (currentLength < 0)
                 {
                     currentLength = int.Parse(properties[index]);
-                }
-                else
-                {
-                    this.Add(currentName, propertyValues.Substring(currentStartIndex, currentLength));
-                    currentName = null;
-                    currentStartIndex = -1;
-                    currentLength = -1;
                 }
             }
         }
