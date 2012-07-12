@@ -270,7 +270,7 @@
                 for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
                 bmp.SetPixel(x, topOffset, black);                    // top line of scale
                 bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
-                if (hScale[x] == 0) g.DrawString(span.Humanise(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
+                if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
             } //end of adding time grid
             return bmp;
         }
@@ -304,9 +304,11 @@
         public Bitmap DrawNamedScoreArrayTrack(Bitmap bmp)
         {
             DrawScoreArrayTrack(bmp);
+            int length = bmp.Width;
 
             Graphics g = Graphics.FromImage(bmp);
             g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Red, new PointF(10, topOffset));
+            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Red, new PointF(length/2, topOffset));
 
             return bmp;
         }
