@@ -28,6 +28,12 @@ namespace antPaperApp
     /// </summary>
     public class JasonsAdaptiveBit
     {
+        public static Tuple<string, DateTime>[] SiteDayCombos(List<SiteDaySpeciesProfile> testProfiles)
+        {
+            return
+                testProfiles.GroupBy(sdp => new { sdp.Day, sdp.Site }).Select(
+                    grp => Tuple.Create(grp.Key.Site, grp.Key.Day)).ToArray();
+        }
 
 
         public JasonsAdaptiveBit(DirectoryInfo training, DirectoryInfo test, DirectoryInfo output)
@@ -45,8 +51,7 @@ namespace antPaperApp
             var testProfiles = Helpers.ReadFiles(test);
 
             // record all the different "days" and "sites" we get
-            var distinctDaysTest = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
-            var distinctSitesTest = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
+            var testDayCombos = JasonsAdaptiveBit.SiteDayCombos(testProfiles);
 
             // levels of testing to do
             var numSamples = Program.LevelsOfTestingToDo;
@@ -57,11 +62,11 @@ namespace antPaperApp
             }
 
             const int randomRuns = 100;
-            var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
+          
             Parallel.For(
                 (long)0,
                 randomRuns,
-                parallelOptions,
+                Program.ParallelOptions,
                 (randomRunIndex, loopState) =>
                     {
 
@@ -98,8 +103,9 @@ namespace antPaperApp
                                 // there could be multiple results from that minute, randomly choose one
                                 // if each profile is a species * day * site tuple
                                 // we want to filter down to one site and one day
-                                var randomSite = distinctSitesTest.GetRandomElement();
-                                var randomDay = distinctDaysTest.GetRandomElement();
+                                var randomTestDay = testDayCombos.GetRandomElement();
+                                var randomSite = randomTestDay.Item1;
+                                var randomDay = randomTestDay.Item2;
 
                                 // now we have our random sample,
                                 // we do our evaluation

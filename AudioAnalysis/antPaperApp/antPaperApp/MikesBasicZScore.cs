@@ -46,11 +46,11 @@ namespace antPaperApp
 
             // NOT RANDOM (do 5 to ensure consistent results
             const int RandomRuns = 8;
-            var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
+
             Parallel.For(
                 (long)0,
                 RandomRuns,
-                parallelOptions,
+                Program.ParallelOptions,
                 (runIndex, loopState) =>
                 {
 

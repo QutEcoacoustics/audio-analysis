@@ -38,6 +38,9 @@ namespace antPaperApp
             var trainingIndiciesRows = Helpers.ReadIndiciesFiles(trainingIndicies);
             var testIndiciesRows = Helpers.ReadIndiciesFiles(testIndicies);
 
+            // record all the different "days" and "sites" we get in testData
+            var testDayCombos = JasonsAdaptiveBit.SiteDayCombos(testProfiles);
+
             // misc setup
 
             var numSamples = Program.LevelsOfTestingToDo;
@@ -48,12 +51,12 @@ namespace antPaperApp
             }
 
             // NOT RANDOM (do 8 to ensure consistent results)
-            const int RandomRuns = 1;
-            var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
+            const int RandomRuns = 100;
+            
             Parallel.For(
                 (long)0,
                 RandomRuns,
-                parallelOptions,
+                Program.ParallelOptions,
                 (runIndex, loopState) =>
                     {
                         foreach (var testRun in numSamples)
@@ -85,16 +88,16 @@ namespace antPaperApp
 
                                 // using acoustic indicies as well is too stable,  filter out any minutes that have been checked previously
                                 // note, filtering out one minute here, means several sites&days will not get their minutes checked
-                                if (samplesChosen.Count > 1)
-                                {
-                                    foreach (var siteDaySpeciesProfile in adaptiveFilter)
-                                    {
-                                        foreach (var tuple in samplesChosen)
-                                        {
-                                            siteDaySpeciesProfile.MinuteProfile[tuple.Item1] = 0;
-                                        }
-                                    }
-                                }
+                                //if (samplesChosen.Count > 1)
+                                //{
+                                //    foreach (var siteDaySpeciesProfile in adaptiveFilter)
+                                //    {
+                                //        foreach (var tuple in samplesChosen)
+                                //        {
+                                //            siteDaySpeciesProfile.MinuteProfile[tuple.Item1] = 0;
+                                //        }
+                                //    }
+                                //}
 
                                 // for the first iteration, none should be removed
                                 Contract.Assert(sample > 0 || adaptiveFilter.Count() == trainingProfiles.Count());
@@ -141,6 +144,8 @@ namespace antPaperApp
                                 // testing
                                 // there could be multiple results from that minute, randomly choose one
                                 // if each profile is a species * day * site tuple
+
+                                /*
                                 // we want to filter down to one site and one day
                                 // WE WILL DO THIS WITH ACOUSTIC INDICIES
                                 var possibleTestMinutes = 
@@ -151,6 +156,12 @@ namespace antPaperApp
 
                                 // pick the "best"
                                 var chosenTest = possibleTestMinutes.First();
+                                 * */
+
+                                var randomTestDay = testDayCombos.GetRandomElement();
+                                var randomSite = randomTestDay.Item1;
+                                var randomDay = randomTestDay.Item2;
+                                var chosenTest = new SiteDayMinuteExtremness() { Day = randomDay, Site = randomSite, Minute = trainingChoice.Minute };
                                 
                                 // translate back to profiles
                                 var restrictedTestProfiles =
@@ -185,7 +196,7 @@ namespace antPaperApp
 
                             // make a summary result
                             StringBuilder sb = new StringBuilder();
-                            sb.AppendLine("*** Mikes's indicies zscore (RUN NUMBER: " + runIndex + " )");
+                            sb.AppendLine("*** Mikes's AND JASONS- dis iz meant 2b da shitdizzle (RUN NUMBER: " + runIndex + " )");
                             sb.AppendFormat("NumSamples,{0}\n", testRun);
                             sb.AppendLine(
                                 "Species Found,"
