@@ -41,8 +41,7 @@ namespace antPaperApp
             var allProfiles = testProfiles;
 
             // record all the different "days" and "sites" we get
-            var distinctDays = allProfiles.Select(sdp => sdp.Day).Distinct();
-            var distinctSites = allProfiles.Select(sdp => sdp.Site).Distinct();
+            var testDayCombos = JasonsAdaptiveBit.SiteDayCombos(testProfiles);
 
             // time bounds to constrain to
 
@@ -55,11 +54,11 @@ namespace antPaperApp
             }
 
             var randomRuns = 100;
-            var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 8 };
+            
             Parallel.For(
                 (long)0,
                 randomRuns,
-                parallelOptions,
+                Program.ParallelOptions,
                 (randomRunIndex, loopState) =>
                     {
 
@@ -80,8 +79,9 @@ namespace antPaperApp
                                 // there could be multiple results from that minute, randomly choose one
                                 // if each profile is a species * day * site tuple
                                 // we want to filter down to one site and one day
-                                var randomSite = distinctSites.GetRandomElement();
-                                var randomDay = distinctDays.GetRandomElement();
+                                var randomTestDay = testDayCombos.GetRandomElement();
+                                var randomSite = randomTestDay.Item1;
+                                var randomDay = randomTestDay.Item2;
 
                                 // MUST BE CAREFUL TO ONLY GRAB '1' SAMPLE
                                 var restrictedProfiles =
@@ -109,6 +109,14 @@ namespace antPaperApp
                                 // loop back, try again
                             }
 
+
+                            var foundCount = speciesFound.Count;
+                            if (foundCount == 0)
+                            {
+                                speciesFound.Add("[[[NONE!]]]");
+                            }
+
+
                             // make a summary result
                             StringBuilder sb = new StringBuilder();
                             sb.AppendLine("*** "+testName+ " (RUN NUMBER: " + randomRunIndex + " )");
@@ -116,7 +124,7 @@ namespace antPaperApp
                             sb.AppendLine(
                                 "Species Found," + speciesFound.Aggregate((build, current) => build + "," + current));
                             sb.AppendLine(
-                                "Species Found count," + speciesFound.Count.ToString(CultureInfo.InvariantCulture));
+                                "Species Found count," + foundCount.ToString(CultureInfo.InvariantCulture));
                             sb.AppendLine(
                                 "Minutes sampled (minute, site, day)"
                                 +

@@ -38,8 +38,7 @@ namespace antPaperApp
             var testProfiles = Helpers.ReadFiles(test);
 
             // record all the different "days" and "sites" we get in testData
-            var distinctDaysTest = testProfiles.Select(sdp => sdp.Day).Distinct().ToArray();
-            var distinctSitesTest = testProfiles.Select(sdp => sdp.Site).Distinct().ToArray();
+            var testDayCombos = JasonsAdaptiveBit.SiteDayCombos(testProfiles);
 
 
             // levels of testing to do
@@ -51,11 +50,11 @@ namespace antPaperApp
             }
 
             const int RandomRuns = 100;
-            var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 16 };
+
             Parallel.For(
                 (long)0,
                 RandomRuns,
-                parallelOptions,
+                Program.ParallelOptions,
                 (runIndex, loopState) =>
                     {
 
@@ -97,10 +96,11 @@ namespace antPaperApp
                                 // there could be multiple results from that minute, randomly choose one
                                 // if each profile is a species * day * site tuple
                                 // we want to filter down to one site and one day
-                                var randomTestSite = distinctSitesTest.GetRandomElement();
-                                var randomTestDay = distinctDaysTest.GetRandomElement();
+                                var randomTestDay = testDayCombos.GetRandomElement();
+                                var randomSite = randomTestDay.Item1;
+                                var randomDay = randomTestDay.Item2;
 
-                                samplesChosen.Add(Tuple.Create(trainingChoice.Key, randomTestSite, randomTestDay, trainingChoice.Value));
+                                samplesChosen.Add(Tuple.Create(trainingChoice.Key, randomSite, randomDay, trainingChoice.Value));
 
 
 
@@ -108,8 +108,8 @@ namespace antPaperApp
                                 // we do our evaluation
                                 // we take the minute from the chosen training sample
                                 // and grab all the unique species from the test data
-                                var restrictedTestProfiles = 
-                                    testProfiles.Where(sdp => sdp.Site == randomTestSite && sdp.Day == randomTestDay).ToArray();
+                                var restrictedTestProfiles =
+                                    testProfiles.Where(sdp => sdp.Site == randomSite && sdp.Day == randomDay).ToArray();
 
                                 Contract.Assert(restrictedTestProfiles.All(sdp => sdp.Day == restrictedTestProfiles.First().Day));
                                 Contract.Assert(restrictedTestProfiles.All(sdp => sdp.Site == restrictedTestProfiles.First().Site));

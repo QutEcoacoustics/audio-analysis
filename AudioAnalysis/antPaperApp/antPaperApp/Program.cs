@@ -6,6 +6,7 @@ using System.Text;
 namespace antPaperApp
 {
     using System.IO;
+    using System.Threading.Tasks;
 
     class Program
     {
@@ -15,23 +16,25 @@ namespace antPaperApp
            // GiveTagsASpecies();
              
 
-           // TurnTagSpeciesListIntoMinuteProfiles();
+            //TurnTagSpeciesListIntoMinuteProfiles();
 
-            //RunJasonsAdaptiveBit();
-
-            //RunJasonsAdaptiveFrequency();
-
-            //RunJasonsBasic3hrs();
-
-           //RunJasonsBasicFullDay();
-
-            //RunMikesBasicZScore();
+            RunJasonsAdaptiveBit();
+            
+            RunJasonsAdaptiveFrequency();
+            
+            RunJasonsBasic3hrs();
+            
+            RunJasonsBasicFullDay();
+            
+            RunMikesBasicZScore();
 
             RunJasonAndMike_TheirPowersCombined_AreCaptainPLANET();
 
         }
 
-        public static int[] LevelsOfTestingToDo = new[] { 10, 20, 60, 100, 200 };
+        public static int[] LevelsOfTestingToDo = new[] { 1, 10, 15, 20, 30, 45, 60, 120, 180 };
+
+        public static ParallelOptions ParallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 8 };
 
 
         public static void GiveTagsASpecies()
