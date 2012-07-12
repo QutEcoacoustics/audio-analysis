@@ -517,7 +517,6 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
@@ -538,6 +537,8 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
         {
+            if (dt == null) return null;
+
             if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
             double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
             int unitCount = (int)(units / 1);   //get whole minutes
@@ -547,16 +548,16 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
                 double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
+                eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
             string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
-            Type[] types = { typeof(int), typeof(int), typeof(int) };
-            var newtable = DataTableTools.CreateTable(headers, types);
+            Type[]   types   = { typeof(int), typeof(int), typeof(int) };
+            var newtable     = DataTableTools.CreateTable(headers, types);
 
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
@@ -565,7 +566,6 @@ namespace AnalysisPrograms
             }
             return newtable;
         }
-
 
         public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
         {
@@ -588,9 +588,16 @@ namespace AnalysisPrograms
         {
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
+
+            return AnalysisTemplate.ProcessCsvFile(dt, fiConfigFile);
+        }
+
+
+        public static Tuple<DataTable, DataTable> ProcessCsvFile(DataTable dt, FileInfo fiConfigFile)
+        {
             //get its column headers
             var dtHeaders = new List<string>();
-            var dtTypes   = new List<Type>();
+            var dtTypes = new List<Type>();
             foreach (DataColumn col in dt.Columns)
             {
                 dtHeaders.Add(col.ColumnName);
@@ -611,12 +618,13 @@ namespace AnalysisPrograms
 
             //now determine how to display tracks in display datatable
             Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay   = new bool[displayHeaders.Count];
+            bool[] canDisplay = new bool[displayHeaders.Count];
             for (int i = 0; i < displayTypes.Length; i++)
             {
                 displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
+                string columnName = displayHeaders[i];
+                if ((dtHeaders.Contains(columnName)) && (dt.Columns[columnName].DataType != typeof(string)))
+                    canDisplay[i] = true;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
@@ -626,7 +634,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
                     if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else               newRow[displayHeaders[i]] = 0.0;
+                    else newRow[displayHeaders[i]] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
             }
@@ -652,6 +660,7 @@ namespace AnalysisPrograms
             table2Display = NormaliseColumnsOfDataTable(table2Display);
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
+
 
 
 
