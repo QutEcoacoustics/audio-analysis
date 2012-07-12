@@ -252,6 +252,7 @@ namespace AudioAnalysisTools
                     int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
                     int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
                     g.DrawLine(new Pen(Color.FromArgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
+                    c++; //every second column
                 }
             }
         } //OverlayRainbowTransparency()
