@@ -232,7 +232,7 @@ namespace Acoustics.Shared
         /// <returns>
         /// Returns value between 0 and 1. 1 = identical, 0=opposite.
         /// </returns>
-        /// <exception cref="InvalidOperationException">Number of features given ({0}) does not match expected ({1}).</exception>
+        /// <exception cref="InvalidOperationException">Number of features given does not match expected.</exception>
         public double Compare<T>(T refItem, T compareItem, params Func<T, double>[] features)
         {
             if (features.Length != this.featureCount)

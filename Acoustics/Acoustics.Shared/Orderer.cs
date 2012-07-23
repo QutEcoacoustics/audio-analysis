@@ -1,11 +1,13 @@
 ﻿namespace Acoustics.Shared
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     /// <summary>
     /// Sort direction.
@@ -131,6 +133,82 @@
         }
     }
 
+    public class OrdererDouble<TOrder> : IOrderer<TOrder>
+    {
+        private readonly Expression<Func<TOrder, double>> orderExpr;
+
+        private readonly SortDirection sortDirection;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Orderer{TOrder,TOrderProperty}"/> class. Orders by ascending.
+        /// </summary>
+        /// <param name="orderExpr">
+        /// The order expr.
+        /// </param>
+        public OrdererDouble(Expression<Func<TOrder, double>> orderExpr)
+            : this(orderExpr, SortDirection.Ascending)
+        {
+        }
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        public Expression<Func<TOrder, double>> Expression
+        {
+            get
+            {
+                return this.orderExpr;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Orderer{TOrder,TOrderProperty}"/> class. 
+        /// </summary>
+        /// <param name="orderExpr">
+        /// The order expr.
+        /// </param>
+        /// <param name="sortDirection">
+        /// The sort Direction.
+        /// </param>
+        public OrdererDouble(Expression<Func<TOrder, double>> orderExpr, SortDirection sortDirection)
+        {
+            this.orderExpr = orderExpr;
+            this.sortDirection = sortDirection;
+        }
+
+        /// <summary>
+        /// Apply order by to IQueryable.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// Ordered Queryable.
+        /// </returns>
+        public IOrderedQueryable<TOrder> ApplyOrderBy(IQueryable<TOrder> source)
+        {
+            return this.sortDirection == SortDirection.Ascending
+                       ? source.OrderBy(this.orderExpr)
+                       : source.OrderByDescending(this.orderExpr);
+        }
+
+        /// <summary>
+        /// Apply order then by to IQueryable.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// Ordered Queryable.
+        /// </returns>
+        public IOrderedQueryable<TOrder> ApplyThenBy(IOrderedQueryable<TOrder> source)
+        {
+            return this.sortDirection == SortDirection.Ascending
+                       ? source.ThenBy(this.orderExpr)
+                       : source.ThenByDescending(this.orderExpr);
+        }
+    }
+
     /// <summary>
     /// Order coordinator.
     /// </summary>
@@ -148,9 +226,32 @@
         }
 
         /// <summary>
-        /// Gets or sets Orders.
+        /// Gets Orders.
         /// </summary>
         public List<IOrderer<T>> Orders { get; private set; }
+
+        /// <summary>
+        /// Create an order with one order specified.
+        /// </summary>
+        /// <param name="orderExpr">
+        /// The order expr.
+        /// </param>
+        /// <param name="sortDirection">
+        /// The sort Direction.
+        /// </param>
+        /// <typeparam name="TOrderProperty">
+        /// The property being ordered by.
+        /// </typeparam>
+        /// <returns>
+        /// A new ordercooodrinator.
+        /// </returns>
+        public static OrderCoordinator<T> OneOrder<TOrderProperty>(Expression<Func<T, TOrderProperty>> orderExpr, SortDirection sortDirection)
+        {
+            var result = new OrderCoordinator<T>();
+            result.Orders.Add(new Orderer<T, TOrderProperty>(orderExpr, sortDirection));
+
+            return result;
+        }
 
         /// <summary>
         /// Apply orders.
@@ -184,56 +285,59 @@
         }
 
         /// <summary>
-        /// Apply orders.
+        /// The apply euclidean distance order.
         /// </summary>
         /// <param name="source">
         /// The source.
         /// </param>
         /// <returns>
-        /// Queryable ordered by Orders.
+        /// The ordered queryable.
         /// </returns>
-        /// <remarks>
-        /// note, did not return IOrderedQueryable to support ability to return with empty Orders.
-        /// </remarks>
-        public IOrderedQueryable<T> ApplyOrders(IOrderedQueryable<T> source)
+        public IOrderedQueryable<T> ApplyEuclideanDistanceOrder(IQueryable<T> source)
         {
-            if (this.Orders == null || this.Orders.Count < 1)
+            var parameter = Expression.Parameter(typeof(T));
+
+            var expressions = this.Orders.OfType<OrdererDouble<T>>()
+                .Select(order1 => order1.Expression)
+                .Select(CreateAbsoluteExpression)
+                .Select(CreateSquareExpression)
+                .ToList();
+
+            var sum = expressions.First();
+            for (int i = 1; i < expressions.Count(); i++)
             {
-                return source;
+                sum = Expression.Add(sum, expressions[i]);
             }
 
-            foreach (IOrderer<T> orderer in this.Orders.Skip(1))
-            {
-                source = orderer.ApplyThenBy(source);
-            }
+            var sqrtExpression = CreateSqrtExpression(sum);
+            var funcExpression = Expression.Lambda<Func<T, double>>(sqrtExpression, parameter);
 
-            return source;
+            // the sqrt is irrelevant to order of this sequence
+            // but try it anyway
+            return source.OrderBy(funcExpression);
+
         }
 
-        /// <summary>
-        /// Create an order with one order specified.
-        /// </summary>
-        /// <param name="orderExpr">
-        /// The order expr.
-        /// </param>
-        /// <param name="sortDirection">
-        /// The sort Direction.
-        /// </param>
-        /// <typeparam name="TOrderProperty">
-        /// The property being ordered by.
-        /// </typeparam>
-        /// <returns>
-        /// A new ordercooodrinator.
-        /// </returns>
-        public static OrderCoordinator<T> OneOrder<TOrderProperty>(Expression<Func<T, TOrderProperty>> orderExpr, SortDirection sortDirection)
+        private static Expression CreateSquareExpression(Expression x)
         {
-            var result = new OrderCoordinator<T>();
-            result.Orders.Add(new Orderer<T, TOrderProperty>(orderExpr, sortDirection));
+            //return Expression.Multiply(x, x);
 
-            return result;
+            var method = typeof(Math).GetMethod("Pow", BindingFlags.Static | BindingFlags.Public);
+            return Expression.Call(method, x, Expression.Constant(2.0));
         }
 
-        
+        private static Expression CreateAbsoluteExpression(Expression x)
+        {
+            return x;
+            //var method = typeof(Math).GetMethod("Abs", new[] { typeof(double) });
+            //return Expression.Call(method, x);
+        }
+
+        private static Expression CreateSqrtExpression(Expression x)
+        {
+            var method = typeof(Math).GetMethod("Sqrt", new[] { typeof(double) });
+            return Expression.Call(method, x);
+        }
     }
 
     internal class ExampleOrderCoordinator
