@@ -82,13 +82,13 @@ namespace AnalysisPrograms
             // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
             var m = MatrixModule.transpose(MatrixModule.ofArray2D(sonogram.Data));
 
-            Log.WriteLine("Wiener filter start");
-            var w = Matlab.wiener2(7, m);
-            Log.WriteLine("Wiener filter end");
+            //Log.WriteLine("Wiener filter start");
+            //var w = Matlab.wiener2(7, m);
+            //Log.WriteLine("Wiener filter end");
 
-            Log.WriteLine("Remove subband mode intensities start");
-            var s = AcousticEventDetection.removeSubbandModeIntensities(w);
-            Log.WriteLine("Remove subband mode intensities end");
+            //Log.WriteLine("Remove subband mode intensities start");
+            //var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+            //Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");
             int nh = 3;

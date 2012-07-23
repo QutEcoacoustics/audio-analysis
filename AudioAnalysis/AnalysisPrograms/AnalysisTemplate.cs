@@ -623,18 +623,22 @@ namespace AnalysisPrograms
             {
                 displayTypes[i] = typeof(double);
                 string columnName = displayHeaders[i];
-                if ((dtHeaders.Contains(columnName)) && (dt.Columns[columnName].DataType != typeof(string)))
-                    canDisplay[i] = true;
+                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
+                if (dtTypes[i] == typeof(string))          canDisplay[i] = false;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
-            foreach (DataRow row in dt.Rows)
+            foreach (DataRow oldRow in dt.Rows)
             {
                 DataRow newRow = table2Display.NewRow();
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
-                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else newRow[displayHeaders[i]] = 0.0;
+                    string header = displayHeaders[i];
+                    if (canDisplay[i])
+                    {
+                        newRow[header] = oldRow[header];
+                    }
+                    else newRow[header] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
             }
@@ -660,7 +664,6 @@ namespace AnalysisPrograms
             table2Display = NormaliseColumnsOfDataTable(table2Display);
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
-
 
 
 
