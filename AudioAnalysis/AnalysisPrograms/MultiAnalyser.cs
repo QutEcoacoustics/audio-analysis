@@ -681,8 +681,8 @@ namespace AnalysisPrograms
             if (dt == null) return;
 
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
+            if (!dt.Columns.Contains(Keys.EVENT_START_ABS))  dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS,  typeof(double));
+            if (!dt.Columns.Contains(Keys.EVENT_START_MIN))  dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN,  typeof(double));
             double start = segmentStartMinute.TotalSeconds;
             foreach (DataRow row in dt.Rows)
             {
@@ -724,22 +724,23 @@ namespace AnalysisPrograms
             for (int i = 0; i < displayTypes.Length; i++)
             {
                 displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
+                string columnName = displayHeaders[i];
                 if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
+                if (dtTypes[i] == typeof(string))          canDisplay[i] = false;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
-            foreach (DataRow row in dt.Rows)
+            foreach (DataRow oldRow in dt.Rows)
             {
                 DataRow newRow = table2Display.NewRow();
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
+                    string header = displayHeaders[i];
                     if (canDisplay[i])
                     {
-                        //if ( typeof(row[displayHeaders[i]) != typeof(string))
-                        //newRow[displayHeaders[i]] = row[displayHeaders[i]];
+                        newRow[header] = oldRow[header];
                     }
-                    else newRow[displayHeaders[i]] = 0.0;
+                    else newRow[header] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
             }
