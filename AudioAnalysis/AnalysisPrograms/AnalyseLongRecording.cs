@@ -82,8 +82,12 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
             FileInfo fiConfig = new FileInfo(configPath);
-            var configuration = new ConfigDictionary(fiConfig.FullName);
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
+
+            //get the config dictionary and the analysis identifier
+            var configuration = new ConfigDictionary(fiConfig.FullName);
+            Dictionary<string, string> configDict = configuration.GetTable();
+            string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
              
             // run the analysis
             AnalysisCoordinator coord = new AnalysisCoordinator(new LocalSourcePreparer())
@@ -100,8 +104,6 @@ namespace AnalysisPrograms
                 SegmentEndOffset = TimeSpan.FromMinutes(double.Parse(endOffsetMins)),
             };
 
-
-            string analysisIdentifier = "";
             //IEnumerable<IAnalyser> analysers = GetListOfAvailableAnalysers();
             //IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, analysers);
             //IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
@@ -134,7 +136,7 @@ namespace AnalysisPrograms
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.ConfigFile = fiConfig;
             analysisSettings.AnalysisBaseDirectory = diOP;
-            analysisSettings.ConfigDict = configuration.GetTable();
+            analysisSettings.ConfigDict = configDict;
 
             var analyserResults = coord.Run(new[] { fileSegment }, analyser, analysisSettings);
 
