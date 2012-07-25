@@ -23,10 +23,11 @@ namespace antPaperApp
     public class JasonsAdaptiveFrequency
     {
 
-        public JasonsAdaptiveFrequency(DirectoryInfo training, DirectoryInfo test, DirectoryInfo output)
+        public JasonsAdaptiveFrequency(DirectoryInfo training, DirectoryInfo test, DirectoryInfo output, int variance = 1)
         {
             Contract.Requires(training.Exists);
             Contract.Requires(test.Exists);
+            Contract.Requires(variance >= 1);
 
             // load and parse files
 
@@ -91,6 +92,12 @@ namespace antPaperApp
 
                                 // choose the first sample with the most unique species
                                 var trainingChoice = orderedUniqueSpeciesCount.First();
+
+                                // or if a variance is set, choose a sample N randomly within the top V species
+                                if (variance > 1)
+                                {
+                                    trainingChoice = orderedUniqueSpeciesCount.Take(variance).GetRandomElement();
+                                }
 
 
                                 // there could be multiple results from that minute, randomly choose one
