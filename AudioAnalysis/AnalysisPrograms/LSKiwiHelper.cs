@@ -153,7 +153,7 @@ namespace AnalysisPrograms
            string sortString = Keys.EVENT_START_ABS + " ASC";
            dt = DataTableTools.SortTable(dt, sortString);
            int rowCount = dt.Rows.Count;
-           for (int i = rowCount-2; i >=0; i--)
+           for (int i = rowCount-2; i >=0; i--) //work from end to beginning
            {
                DataRow row1 = dt.Rows[i];
                DataRow row2 = dt.Rows[i+1];

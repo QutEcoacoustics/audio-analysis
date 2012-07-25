@@ -87,6 +87,10 @@ namespace AnalysisPrograms
 
         public static DataTable CalculateRecallPrecision(FileInfo fiPredictions, FileInfo fiGroundTruth)
         {
+            string header_trueSex      = "truSex";
+            string header_predictedSex = "preSex";
+            string header_Harmonics    = "Harmonics";
+            string header_Quality      = "Quality";
             string[] ROC_HEADERS = { Keys.EVENT_START_ABS,     //typeof(double)
                                        Keys.EVENT_START_MIN, 
                                        Keys.EVENT_START_SEC, 
@@ -96,13 +100,15 @@ namespace AnalysisPrograms
                                        LSKiwiHelper.key_CHIRP_SCORE, 
                                        LSKiwiHelper.key_PEAKS_SNR_SCORE, 
                                        LSKiwiHelper.key_BANDWIDTH_SCORE, 
-                                       LSKiwiHelper.key_COMBO_SCORE, 
+                                       Keys.EVENT_SCORE, 
                                        Keys.EVENT_NORMSCORE, 
-                                       "preSex", 
-                                       "Harmonics", 
-                                       "truSex", "Quality", "TP", "FP", "FN" };
+                                       header_predictedSex, 
+                                       header_Harmonics, 
+                                       header_trueSex, 
+                                       header_Quality, 
+                                       "TP", "FP", "FN" };
 
-            //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "intensity",     "gridScore",    "deltaScore",  "chirpScore",    "snrScore"      "bwScore",      "comboScore",   "normScore",     "preSex",     "Harmonics",   "truSex",      "Quality",    "TP",     "FP",       "FN"};
+            //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "intensity",     "gridScore",    "deltaScore",  "chirpScore",      "PeaksSnrScore"  "bwScore",      "comboScore",   "normScore",     "preSex",     "Harmonics",   "truSex",      "Quality",    "TP",       "FP",        "FN"};
             Type[] ROC_COL_TYPES = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
 
             //ANDREW'S HEADERS:          Selection,        View,     Channel,     Begin Time (s),  End Time (s),  Low Freq (Hz),  High Freq (Hz),   Begin File,    Species,          Sex,         Harmonics,    Quality
@@ -135,9 +141,10 @@ namespace AnalysisPrograms
                 double gridScore = (double)myRow[LSKiwiHelper.key_GRID_SCORE];
                 double deltScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
                 double chrpScore = (double)myRow[LSKiwiHelper.key_CHIRP_SCORE];
-                double peakSnrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
+                double peakSnrScore   = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
                 double bandWidthScore = (double)myRow[LSKiwiHelper.key_BANDWIDTH_SCORE];
-                double comboScore     = (double)myRow[LSKiwiHelper.key_COMBO_SCORE];
+                //double comboScore   = (double)myRow[LSKiwiHelper.key_COMBO_SCORE];
+                double eventScore     = (double)myRow[Keys.EVENT_SCORE];
                 double normScore      = (double)myRow[Keys.EVENT_NORMSCORE];
 
                 string predictedSex;
@@ -158,11 +165,12 @@ namespace AnalysisPrograms
                 opRow[LSKiwiHelper.key_CHIRP_SCORE] = chrpScore;
                 opRow[LSKiwiHelper.key_PEAKS_SNR_SCORE] = peakSnrScore;
                 opRow[LSKiwiHelper.key_BANDWIDTH_SCORE] = bandWidthScore;
-                opRow[LSKiwiHelper.key_COMBO_SCORE]     = comboScore;
-                opRow[Keys.EVENT_NORMSCORE]             = normScore;
-                opRow["Quality"] = 0; //fill in with blanks
-                opRow["preSex"]  = predictedSex;
-                opRow["truSex"]  = "???";
+                //opRow[LSKiwiHelper.key_COMBO_SCORE]     = comboScore;
+                opRow[Keys.EVENT_SCORE]     = eventScore;
+                opRow[Keys.EVENT_NORMSCORE] = normScore;
+                opRow[header_Quality] = 0; //fill in with blanks
+                opRow[header_predictedSex] = predictedSex;
+                opRow[header_trueSex] = "???";
                 opRow["TP"] = 0;
                 opRow["FP"] = 0;
                 opRow["FN"] = 0;
@@ -176,9 +184,9 @@ namespace AnalysisPrograms
                     {
                         isTP = true;
                         trueEvent["Begin Time (s)"] = Double.NaN; //mark so that will not use again 
-                        opRow["Quality"]   = trueEvent["Quality"];
-                        opRow["truSex"]    = trueEvent["Sex"];
-                        opRow["Harmonics"] = trueEvent["Harmonics"];
+                        opRow[header_Quality] = trueEvent[header_Quality];
+                        opRow[header_trueSex] = trueEvent["Sex"];
+                        opRow[header_Harmonics] = trueEvent[header_Harmonics];
                         break;
                     }
                 } //foreach - AD loop 
@@ -212,10 +220,10 @@ namespace AnalysisPrograms
                     //row[LSKiwiHelper.key_BANDWIDTH_SCORE] = 0.0;
                     //row[Keys.EVENT_NORMSCORE]             = 0.0;
                     //row[LSKiwiHelper.key_NEW_COMBO_SCORE] = 0.0;
-                    row["preSex"]    = "???";
+                    row[header_predictedSex] = "???";
                     row["Harmonics"] = trueEvent["Harmonics"];
                     row["Quality"]   = trueEvent["Quality"];
-                    row["truSex"]    = trueEvent["Sex"];
+                    row[header_trueSex] = trueEvent["Sex"];
                     row["TP"] = 0;
                     row["FP"] = 0;
                     row["FN"] = 1;
@@ -229,10 +237,11 @@ namespace AnalysisPrograms
             Console.WriteLine("TP={0},  FP={1},  FN={2}", TP, FP, FN);
             Console.WriteLine("RECALL={0:f3},  SPECIFICITY={1:f3}", recall, specificity);
 
+            //use normalised score as the threshold to determine area under ROC curve
+            int totalPositiveCount = dtGroundTruth.Rows.Count;
+            int totalNegativeCount = FP;
             string sortString = Keys.EVENT_NORMSCORE + " desc";
-            dtOutput = DataTableTools.SortTable(dtOutput, sortString);
-
-            ROCCurve(dtOutput, dtGroundTruth.Rows.Count); //write ROC area above curve
+            ROCCurve(dtOutput, totalPositiveCount, totalNegativeCount, sortString); //write ROC area above curve
 
             return dtOutput;
         } //CalculateRecallPrecision()
@@ -256,21 +265,33 @@ namespace AnalysisPrograms
             return acousticEvent;
         }
 
-
-        public static void ROCCurve(DataTable dt, int countOfTargetTrues)
+        /// <summary>
+        /// Calculates an ROC score for the predictions and tags provided in the passed data table.
+        /// First order the data by appropriate score as per the sort string
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="countOfTargetPositives"></param>
+        /// <param name="predictionCount"></param>
+        public static void ROCCurve(DataTable dt, int totalPositiveCount, int totalNegativeCount, string sortString)
         {
+            dt = DataTableTools.SortTable(dt, sortString);
+
             double previousRecall = 0.0;
             int cumulativeTP = 0;
             int cumulativeFP = 0;
             double area = 0.0;  //area under the ROC curve
-            List<double> curveValues = new List<double>();
+            List<double> ROC_Curve = new List<double>();
             double maxAccuracy = 0.0;
+
             double precisionAtMax = 0.0;
+            double specificityAtMax = 0.0;
             double recallAtMax = 0.0;
             double scoreAtMax = 0.0;
-            double precisionAt30 = 0.0;
-            double recallAt30 = 0.0;
-            double scoreAt30 = 0.0;
+            int optimumCount = 0;
+
+            //double precisionAt30 = 0.0;
+            //double recallAt30 = 0.0;
+            //double scoreAt30 = 0.0;
 
 
             int count = 0;
@@ -280,35 +301,43 @@ namespace AnalysisPrograms
                 if (value == 1) cumulativeTP++;
                 else
                     if ((int)row["FP"] == 1) cumulativeFP++;
-                double recall = cumulativeTP / (double)countOfTargetTrues;
-                double precision = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
+                double recall      = cumulativeTP / (double)totalPositiveCount;  //the true positive rate
+                double specificity = cumulativeFP / (double)totalNegativeCount;
+                double precision   = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
                 double accuracy = (recall + precision) / (double)2;
                 if (accuracy > maxAccuracy)
                 {
+                    optimumCount = count;
                     maxAccuracy = accuracy;
                     recallAtMax = recall;
                     precisionAtMax = precision;
+                    specificityAtMax = specificity;
                     scoreAtMax = (double)row[Keys.EVENT_NORMSCORE];
                 }
                 count++;
-                if (count == 30)
-                {
-                    recallAt30 = recall;
-                    precisionAt30 = precision;
-                    scoreAt30 = (double)row[Keys.EVENT_NORMSCORE];
-                }
+                //if (count == 30)
+                //{
+                //    recallAt30 = recall;
+                //    precisionAt30 = precision;
+                //    scoreAt30 = (double)row[Keys.EVENT_NORMSCORE];
+                //}
 
-                double delta = precision * (recall - previousRecall);
+                //double delta = precision * (recall - previousRecall);
+                double delta = specificity * (recall - previousRecall);
+                //double fpRate = 1 - specificity;
+                //double delta = fpRate * (recall - previousRecall);
                 area += delta;
-                if (delta > 0.0) curveValues.Add(delta);
+                if (delta > 0.0) ROC_Curve.Add(delta); //
                 previousRecall = recall;
-            }
-            if (curveValues.Count > 0) 
+            } //foreach row in table
+
+            if (ROC_Curve.Count > 0) 
             {
-                DataTools.writeBarGraph(curveValues.ToArray());
+                DataTools.writeBarGraph(ROC_Curve.ToArray());
                 Console.WriteLine("Area under ROC curve = {0:f4}", area);
-                Console.WriteLine("Max accuracy={0:f3};  where recall={1:f3}, precision={2:f3} for score threshold={3:f3}", maxAccuracy, recallAtMax, precisionAtMax, scoreAtMax);
-                Console.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
+                Console.WriteLine("Max accuracy={0:f3} for score threshold={1:f3}", maxAccuracy, scoreAtMax);
+                Console.WriteLine("  where recall={0:f3}, precision={1:f3}, specifcity={2:f3}", recallAtMax, precisionAtMax, specificityAtMax);
+                //Console.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
             }
         }
 
