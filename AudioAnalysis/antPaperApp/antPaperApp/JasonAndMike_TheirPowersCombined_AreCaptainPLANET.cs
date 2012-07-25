@@ -22,13 +22,15 @@ namespace antPaperApp
     public class JasonAndMike_TheirPowersCombined_AreCaptainPLANET
     {
 
-        public JasonAndMike_TheirPowersCombined_AreCaptainPLANET(DirectoryInfo trainingTagProfiles, DirectoryInfo testTagProfiles, DirectoryInfo trainingIndicies, DirectoryInfo testIndicies, DirectoryInfo output)
+        public JasonAndMike_TheirPowersCombined_AreCaptainPLANET(DirectoryInfo trainingTagProfiles, DirectoryInfo testTagProfiles, DirectoryInfo trainingIndicies, DirectoryInfo testIndicies, DirectoryInfo output, int variance = 1)
         {
             Contract.Requires(trainingTagProfiles.Exists);
             Contract.Requires(testTagProfiles.Exists);
             Contract.Requires(trainingIndicies.Exists);
             Contract.Requires(testIndicies.Exists);
             Contract.Requires(output.Exists);
+            Contract.Requires(variance >= 1);
+
 
             // load and parse files
 
@@ -140,6 +142,13 @@ namespace antPaperApp
 
                                 // choose the first sample with the most unique species
                                 var trainingChoice = orderedUniqueSpeciesCount.First();
+
+                                // or if a variance is set, choose a sample N randomly within the top V species
+                                if (variance > 1)
+                                {
+                                    trainingChoice = orderedUniqueSpeciesCount.Take(variance).GetRandomElement();
+                                }
+
 
                                 // testing
                                 // there could be multiple results from that minute, randomly choose one

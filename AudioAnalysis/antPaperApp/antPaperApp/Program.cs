@@ -13,7 +13,7 @@ namespace antPaperApp
         static void Main(string[] args)
         {
             
-           // GiveTagsASpecies();
+            //GiveTagsASpecies();
              
 
             //TurnTagSpeciesListIntoMinuteProfiles();
@@ -29,6 +29,10 @@ namespace antPaperApp
             RunMikesBasicZScore();
 
             RunJasonAndMike_TheirPowersCombined_AreCaptainPLANET();
+
+            RunJasonAndMike_TheirPowersCombined_AreCaptainPLANET_WithVariance();
+
+            RunJasonsAdaptiveFrequencyWithVariance();
 
         }
 
@@ -55,7 +59,7 @@ namespace antPaperApp
         public static void TurnTagSpeciesListIntoMinuteProfiles()
         {
             FileInfo tags = new FileInfo(
-                    @"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\AudioTags_SERF_WITH_SPECIES__CLEAN2.csv");
+                    @"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\AudioTags_SERF_WITH_SPECIES.csv");
             DirectoryInfo dest =
                 new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\DaySiteMinuteProfiles");
             var p = new GroupTagsIntoMinutesForEachDayAndSite(tags, dest);
@@ -94,6 +98,14 @@ namespace antPaperApp
             var p = new JasonsAdaptiveFrequency(training, test, output);
         }
 
+        public static void RunJasonsAdaptiveFrequencyWithVariance()
+        {
+            DirectoryInfo training = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TrainingData");
+            DirectoryInfo test = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TestData");
+            DirectoryInfo output = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\6_Adaptive_Count_Variance");
+            var p = new JasonsAdaptiveFrequency(training, test, output, 15);
+        }
+
         public static  void RunMikesBasicZScore()
         {
             DirectoryInfo training = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TrainingData");
@@ -112,6 +124,16 @@ namespace antPaperApp
             DirectoryInfo testIndicies = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TestData\Indicies");
             DirectoryInfo output = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\5_Combined");
             var p = new JasonAndMike_TheirPowersCombined_AreCaptainPLANET(training, test, trainingIndicies, testIndicies, output);
+        }        
+        
+        public static void RunJasonAndMike_TheirPowersCombined_AreCaptainPLANET_WithVariance()
+        {
+            DirectoryInfo training = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TrainingData");
+            DirectoryInfo test = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TestData");
+            DirectoryInfo trainingIndicies = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TrainingData\Indicies");
+            DirectoryInfo testIndicies = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\TestData\Indicies");
+            DirectoryInfo output = new DirectoryInfo(@"D:\Antman\DropBox\Sensors\Anthony\eScience 2012\Experiments\7_Combined_Variance");
+            var p = new JasonAndMike_TheirPowersCombined_AreCaptainPLANET(training, test, trainingIndicies, testIndicies, output, 15);
         }
 
     }
