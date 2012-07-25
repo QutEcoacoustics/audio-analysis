@@ -5,6 +5,7 @@
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
@@ -280,6 +281,28 @@
             var dir = new DirectoryInfo(runDirectory);
             Directory.CreateDirectory(runDirectory);
             return dir;
+        }
+
+        /// <summary>
+        /// The get analysers.
+        /// </summary>
+        /// <param name="assembly">
+        /// The assembly.
+        /// </param>
+        /// <returns>
+        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyser].
+        /// </returns>
+        public static IEnumerable<IAnalyser> GetAnalysers(Assembly assembly)
+        {
+            // to find the assembly, get the type of a class in that assembly
+            // eg. typeof(MainEntry).Assembly
+            var analyserType = typeof(IAnalyser);
+
+            var analysers = assembly.GetTypes()
+                .Where(analyserType.IsAssignableFrom)
+                .Select(t => Activator.CreateInstance(t) as IAnalyser);
+
+            return analysers;
         }
     }
 }

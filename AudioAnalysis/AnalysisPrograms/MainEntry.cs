@@ -14,6 +14,8 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
 
+    using AnalysisBase;
+
     using AnalysisPrograms.Processing;
 
     /// <summary>
@@ -29,6 +31,9 @@ namespace AnalysisPrograms
         /// </param>
         public static void Main(string[] args)
         {
+            //var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
+            //analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+
             if (args.Length == 0)
             {
                 Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
