@@ -130,7 +130,7 @@
         /// <param name="fileSegment">
         /// The file Segment.
         /// </param>
-        /// <param name="analysis">
+        /// <param name="analyser">
         /// The analysis.
         /// </param>
         /// <param name="settings">
@@ -139,7 +139,7 @@
         /// <returns>
         /// The results from the analysis.
         /// </returns>
-        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser analysis, AnalysisSettings settings)
+        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser analyser, AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
@@ -149,7 +149,7 @@
             var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.OriginalFileDuration;
 
             // create directory for analysis run
-            settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analysis, settings);
+            settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analyser, settings);
 
             // create the file for the analysis
             var preparedFile = this.SourcePreparer.PrepareFile(
@@ -165,11 +165,25 @@
 
             settings.AudioFile = preparedFilePath;
 
-            // run the analysis
-            var result = analysis.Analyse(settings);
+            //if user requests, save the sonogram files 
+            if (settings.ConfigDict.ContainsKey("SAVE_SONOGRAM_FILES"))
+            {
+                string value = settings.ConfigDict["SAVE_SONOGRAM_FILES"].ToString();
+                bool saveSonograms = false;
+                saveSonograms = Boolean.Parse(value);
+                if (saveSonograms)
+                {
+                    string fName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
+                    settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, (fName + ".png")));
+                }
+            }
+
+            //##### RUN the ANALYSIS ################################################################
+            var result = analyser.Analyse(settings);
+            //#######################################################################################
 
             // add information to the results
-            result.AnalysisIdentifier = analysis.Identifier;
+            result.AnalysisIdentifier = analyser.Identifier;
             result.SettingsUsed = settings;
             result.SegmentStartOffset = start;
             result.AudioDuration = preparedFileDuration;

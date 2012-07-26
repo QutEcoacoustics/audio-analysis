@@ -2,25 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-//using System.Threading.Tasks;
-
-
-//using Acoustics.Shared;
-using Acoustics.Tools;
-//using Acoustics.Tools.Audio;
-using AnalysisBase;
-using TowseyLib;
 using System.Threading.Tasks;
-using AnalysisRunner;
+
+using Acoustics.Tools;
 using Acoustics.Tools.Audio;
 using Acoustics.Shared;
-using AudioBrowser;
+using AnalysisBase;
+using AnalysisRunner;
+//using AudioBrowser;
 using AudioAnalysisTools;
-using System.Diagnostics.Contracts;
+using TowseyLib;
 
 
 namespace AnalysisPrograms
@@ -39,11 +35,18 @@ namespace AnalysisPrograms
         //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
         //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi3\";
 
+        //ACOUSTIC INDICES
+        //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
+        //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
+        //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi3\";
+
         // THE COMMAND LINES DERIVED FROM ABOVE
         // MULTIANLAYSER and CROWS
-        //"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
+        //cmdLine  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
         // LITTLE SPOTTED KIWI3
-        //"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" "C:\SensorNetworks\Output\LSKiwi3\"
+        //cmdLine  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
+        //ACOUSTIC INDICES
+        //cmdLine  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" C:\SensorNetworks\Output\LSKiwi3\
 
         public const int RESAMPLE_RATE = 17640;
 
@@ -60,7 +63,7 @@ namespace AnalysisPrograms
                 Console.WriteLine(date);
             }
 
-            if (CheckArguments(args) != 0) //checkes validity of the first 3 path arguments
+            if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
             {
                 Console.WriteLine("\nPress <ENTER> key to exit.");
                 Console.ReadLine();
@@ -70,8 +73,6 @@ namespace AnalysisPrograms
             string recordingPath = args[0];
             string configPath    = args[1];
             string outputDir     = args[2];
-            string startOffsetMins = args[3];
-            string endOffsetMins = args[4];
 
             if (verbose)
             {
@@ -79,67 +80,96 @@ namespace AnalysisPrograms
                 Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             }
 
+            //1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
             FileInfo fiConfig = new FileInfo(configPath);
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
 
-            //get the config dictionary and the analysis identifier
+            //2. get the analysis config dictionary
             var configuration = new ConfigDictionary(fiConfig.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
-            string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
-             
-            // run the analysis
-            AnalysisCoordinator coord = new AnalysisCoordinator(new LocalSourcePreparer())
+
+            //3. initilise AnalysisCoordinator class that will do the analysis
+            bool saveIntermediateWavFiles = false;
+            if (configDict.ContainsKey(Keys.SAVE_INTERMEDIATE_WAV_FILES))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(Keys.SAVE_INTERMEDIATE_WAV_FILES, configDict);
+
+            bool saveSonograms = false;
+            if (configDict.ContainsKey(Keys.SAVE_SONOGRAM_FILES))
+                saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAM_FILES, configDict);
+
+            
+            bool doParallelProcessing = false;
+            if (configDict.ContainsKey(Keys.PARALLEL_PROCESSING))
+                doParallelProcessing = ConfigDictionary.GetBoolean(Keys.PARALLEL_PROCESSING, configDict);
+
+            AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
-                DeleteFinished = false,
-                //DeleteFinished = true,
-                IsParallel = true,
+                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
+                IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
 
-            var fileSegment = new FileSegment { 
-                OriginalFile = fiSourceRecording,
-                SegmentStartOffset = TimeSpan.FromMinutes(double.Parse(startOffsetMins)),
-                SegmentEndOffset = TimeSpan.FromMinutes(double.Parse(endOffsetMins)),
-            };
+            //4. get the segment of audio to be analysed
+            var fileSegment = new FileSegment { }; 
+            if(args.Length == 3)
+            {
+                fileSegment = new FileSegment { OriginalFile = fiSourceRecording };
+            }
+            else if (args.Length == 5)
+            {
+                string startOffsetMins = args[3];
+                string endOffsetMins = args[4];
+                fileSegment = new FileSegment
+                { 
+                    OriginalFile = fiSourceRecording,
+                    SegmentStartOffset = TimeSpan.FromMinutes(double.Parse(startOffsetMins)),
+                    SegmentEndOffset   = TimeSpan.FromMinutes(double.Parse(endOffsetMins)),
+                };
+            }
 
+            //5. initialise the analyser
+            string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
             //IEnumerable<IAnalyser> analysers = GetListOfAvailableAnalysers();
-            //IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analyisName, analysers);
-            //IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-            IAnalyser analyser = new MultiAnalyser();
+            //IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisIdentifier, analysers);
+            var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
+            IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
             {
                 Console.WriteLine("###################################################\n");
-                Console.WriteLine("Analysis failed. Cannot find <{0}> Analyser.", analysisIdentifier);
+                Console.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
+                Console.WriteLine("Available analysers are:");
+                foreach(IAnalyser anal in analysers) Console.WriteLine("\t  " + anal.Identifier);
                 Console.WriteLine("###################################################\n");
                 return 1;
             }
 
 
             //test conversion of events file to indices file
-            if (false)
-            {
-                string ipPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Events.csv";
-                string opPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Indices.csv";
-                DataTable dt = CsvTools.ReadCSVToTable(ipPath, true);
-                TimeSpan unitTime = new TimeSpan(0, 0, 60);
-                TimeSpan source   = new TimeSpan(0, 59, 47);
-                double dummy = 0.0;
-                DataTable dt1 = analyser.ConvertEvents2Indices(dt, unitTime, source, dummy);
-                CsvTools.DataTable2CSV(dt1, opPath);
-                Console.WriteLine("FINISHED");
-                Console.ReadLine();
-            }
+            //if (false)
+            //{
+            //    string ipPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Events.csv";
+            //    string opPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Indices.csv";
+            //    DataTable dt = CsvTools.ReadCSVToTable(ipPath, true);
+            //    TimeSpan unitTime = new TimeSpan(0, 0, 60);
+            //    TimeSpan source   = new TimeSpan(0, 59, 47);
+            //    double dummy = 0.0;
+            //    DataTable dt1 = analyser.ConvertEvents2Indices(dt, unitTime, source, dummy);
+            //    CsvTools.DataTable2CSV(dt1, opPath);
+            //    Console.WriteLine("FINISHED");
+            //    Console.ReadLine();
+            //}
 
-
+            //6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.ConfigFile = fiConfig;
-            analysisSettings.AnalysisBaseDirectory = diOP;
-            analysisSettings.ConfigDict = configDict;
+            analysisSettings.SetUserConfiguration(fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
 
-            var analyserResults = coord.Run(new[] { fileSegment }, analyser, analysisSettings);
+            //7. ####################################### DO THE ANALYSIS ###################################
+            var analyserResults = analysisCoordinator.Run(new[] { fileSegment }, analyser, analysisSettings);
+            //   ###########################################################################################
 
+            //8. PROCESS THE RESULTS
             if (analyserResults == null)
             {
                 Console.WriteLine("###################################################\n");
@@ -149,7 +179,7 @@ namespace AnalysisPrograms
             }
 
             // write the results to file
-            DataTable datatable = TempTools.MergeResultsIntoSingleDataTable(analyserResults);
+            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
             if ((datatable == null) || (datatable.Rows.Count == 0))
             {
                 Console.WriteLine("###################################################\n");
@@ -163,7 +193,7 @@ namespace AnalysisPrograms
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
-            var op1 = TempTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
             var eventsDatatable  = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;
@@ -172,14 +202,15 @@ namespace AnalysisPrograms
             if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
             var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
             string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-            var op2 = TempTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+            var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-            var fiEventsCSV = op2.Item1;
+            var fiEventsCSV  = op2.Item1;
             var fiIndicesCSV = op2.Item2;
 
-            Console.WriteLine("###################################################");
+            Console.WriteLine("\n###################################################");
             Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-            Console.WriteLine("Output  to  directory: " + diOP.FullName);
+            //Console.WriteLine("Output  to  directory: " + diOP.FullName);
+            Console.WriteLine("\n");
 
             if (fiEventsCSV == null)
             {
@@ -190,6 +221,7 @@ namespace AnalysisPrograms
                 Console.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
                 Console.WriteLine("\tNumber of events = " + eventsCount);
             }
+            Console.WriteLine("\n");
             if (fiIndicesCSV == null)
             {
                 Console.WriteLine("An Indices CSV file was NOT returned.");
@@ -199,7 +231,8 @@ namespace AnalysisPrograms
                 Console.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
                 Console.WriteLine("\tNumber of indices = " + indicesCount);
             }
-            Console.WriteLine("###################################################\n");
+            Console.WriteLine("\n##### FINSHED FILE ###################################################\n");
+            Console.ReadLine();
             
             return status;
         } //Main(string[] args)
@@ -208,12 +241,12 @@ namespace AnalysisPrograms
 
         public static int CheckArguments(string[] args)
         {
-            int argumentCount = 5;
-            if (args.Length != argumentCount)
+            if ((args.Length != 3) && (args.Length != 5))
             {
-                Console.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
+                Console.WriteLine("\nINCORRECT COMMAND LINE.");
+                Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
                 foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", argumentCount);
+                Console.WriteLine("\nYOU REQUIRE 3 OR 5 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 return 666;
             }
@@ -281,12 +314,16 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
             Console.WriteLine("USAGE:");
-            Console.WriteLine("SpeciesAccumulation.exe inputFilePath outputFilePath");
+            Console.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
             Console.WriteLine("where:");
-            Console.WriteLine("inputFileName:- (string) Path of the input  file to be processed.");
-            Console.WriteLine("outputFileName:-(string) Path of the output file to store results.");
+            Console.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
+            Console.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
+            Console.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
+            Console.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
+            Console.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
+            Console.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
+            Console.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
             Console.WriteLine("");
         }
 
