@@ -12,17 +12,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-//using Acoustics.Shared;
-//using Acoustics.Tools;
-//using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using AnalysisPrograms;
-using AudioAnalysisTools;
-using TowseyLib;
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
+using AnalysisBase;
+using AnalysisPrograms;
 using AnalysisRunner;
+using AudioAnalysisTools;
+using TowseyLib;
 
 
 namespace AudioBrowser
@@ -198,6 +194,7 @@ namespace AudioBrowser
             bool doParallelProcessing = false;
             if (settings.ConfigDict.ContainsKey(Keys.PARALLEL_PROCESSING))
                 doParallelProcessing = ConfigDictionary.GetBoolean(Keys.PARALLEL_PROCESSING, settings.ConfigDict);
+
             //initilise classes that will do the analysis
             AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
@@ -319,9 +316,10 @@ namespace AudioBrowser
                 settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, (fName + ".png")));
             }
 
-            // run the analysis
+            //##### RUN the ANALYSIS ################################################################
             var settings1 = settings;
-            var result = analyser.Analyse(settings1); //#######################################################################################
+            var result = analyser.Analyse(settings1);
+            //#######################################################################################
 
             // add information to the results
             result.AnalysisIdentifier = analyser.Identifier;

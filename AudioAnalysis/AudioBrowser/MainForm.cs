@@ -297,36 +297,9 @@
                     var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
 
                     var settings = analyser.DefaultSettings;
-                    settings.AnalysisBaseDirectory = this.browserSettings.diOutputDir;
-                    settings.ConfigFile = fiConfig;
                     var configuration = new ConfigDictionary(fiConfig.FullName);
-                    settings.ConfigDict = configuration.GetTable();
-
-                    //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
-
-                    int segmentOffsetMinutes = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_DURATION, settings.ConfigDict);
-                    TimeSpan? tsOffset = null;
-                    if (segmentOffsetMinutes == -Int32.MaxValue || segmentOffsetMinutes == int.MaxValue || segmentOffsetMinutes == int.MinValue)
-                    {
-                        tsOffset = null;
-                    }
-                    else
-                    {
-                        tsOffset = TimeSpan.FromMinutes(segmentOffsetMinutes);
-                    }
-
-                    if (tsOffset.HasValue) settings.SegmentMaxDuration = tsOffset;
-
-                    // set overlap
-                    int segmentOverlapSeconds = ConfigDictionary.GetInt(AudioAnalysisTools.Keys.SEGMENT_OVERLAP, settings.ConfigDict);
-                    if (segmentOverlapSeconds == -Int32.MaxValue || segmentOverlapSeconds == int.MaxValue || segmentOverlapSeconds == int.MinValue)
-                    {
-
-                    }
-                    else
-                    {
-                        settings.SegmentOverlapDuration = TimeSpan.FromSeconds(segmentOverlapSeconds);
-                    }
+                    settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir, 
+                                                  AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
 
                     //################# PROCESS THE RECORDING #####################################################################################
                     var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
@@ -341,14 +314,14 @@
                         return;
                     }
 
-                    DataTable datatable = TempTools.MergeResultsIntoSingleDataTable(analyserResults);
+                    DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
 
                     //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
                     var audioUtility = new MasterAudioUtility(settings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
                     var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
                     var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
-                    var op1 = TempTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
+                    var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceDuration);
                     var eventsDatatable = op1.Item1;
                     var indicesDatatable = op1.Item2;
                     int eventsCount = 0;
@@ -357,7 +330,7 @@
                     if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
                     var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
                     string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-                    var op2 = TempTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+                    var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
                     //#############################################################################################################################
                     stopwatch.Stop();
@@ -546,6 +519,8 @@
             //display column headers in the list box of displayed tracks
             List<string> displayList = displayHeaders.ToList();
             List<string> abbrevList = new List<string>();
+            this.listBoxDisplayedTracks.Items.Clear(); //remove previous entries in list box.
+
             foreach (string str in displayList) abbrevList.Add(str.Substring(0, 5)); //the headers have been tampered with!! but assume not first 5 chars
             for (int i = 0; i < originalHeaders.Length; i++)
             {
