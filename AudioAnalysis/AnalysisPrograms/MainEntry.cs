@@ -43,52 +43,73 @@ namespace AnalysisPrograms
                 string[] restOfArgs = args.Skip(1).ToArray();
                 switch (args[0])
                 {
-                    // READY TO BE USED - REQUIRE PARAMS FILE ONLY
-                    case "aed":      // acoustic event detection
+                    // READY TO BE USED - REQUIRE CONFIG FILE
+                    case "aed":           // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
-                    case "canetoad":      // acoustic event detection
-                        Canetoad.Dev(restOfArgs);
+                    case "canetoad":      // detects canetoad calls as acoustic events
+                        Canetoad.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "cmdLine":      // acoustic event detection
-                        AnalyseLongRecording.Main(restOfArgs);
+                    case "audio2csv":     // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
+                        AnalyseLongRecording.Main(restOfArgs);   //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "crow":     // recognises uhman speech but not word recognition
-                        Crow.Dev(restOfArgs);
+                    case "crow":          // recognises the short crow "caw" - NOT the longer sigh.
+                        Crow.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
+                    case "epr":           // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
                         break;
-                    case "gratings":  // grid recognition
+                    case "koalaMale":     // detects the oscillating portion of a male koala bellow
+                        KoalaMale.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "multiAnalyser": // currently recognizes five different calls: human, crow, canetoad, machine and koala.
+                        MultiAnalyser.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "human":         // recognises human speech but not word recognition
+                        Human1.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "kiwi":          // little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
+                        LSKiwi3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "kiwiROC":       // little spotted kiwi calls from Andrew @ Victoria university.
+                        LSKiwiROC.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "LewinsRail":    //LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
+                        LewinsRail3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "machines":      // recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
+                        PlanesTrainsAndAutomobiles.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "snr":           // calculates signal to noise ratio
+                        SnrAnalysis.Dev(restOfArgs);  //Signed off: Anthony, 25th July 2012
+                        break;
+
+
+
+                    // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
+                    case "acousticIndices":      // extracts acoustic indices from one minute segment - for dev purposes only
+                        Acoustic.Dev(restOfArgs);  //Signed off: Michael Towsey, 27th July 2012
+                        break;
+                    case "dimred":               // for reducing the dimensionality of sonograms - i.e. compression in time domain.
+                        DimReduction.Dev(restOfArgs);
+                        break;
+                    case "createtemplate_felt":  // extract an acoustic event and make a template for FELT
+                        FeltTemplate_Create.Dev(restOfArgs);
+                        break;
+                    case "edittemplate_felt":    // edits the FELT template created above
+                        FeltTemplate_Edit.Dev(restOfArgs);
+                        break;
+                    case "epr2":                 // event pattern recognition - used for ground-parrots (TOWSEY)
+                        EPR.Dev(restOfArgs);
+                        break;
+                    case "felt":                 // find other acoustic events like this
+                        FeltTemplates_Use.Dev(restOfArgs);
+                        break;
+                    case "frog_ribbit":          // frog calls
+                        FrogRibit.Dev(restOfArgs);
+                        break;
+                    case "gratings":      // grid recognition
                         GratingDetection.Dev(restOfArgs);
-                        break;
-                    //case "grids":  // grid recognition
-                    //    BarsAndStripes.Dev(restOfArgs);
-                    //    break;
-                    case "koalaMale":      // acoustic event detection
-                        KoalaMale.Dev(restOfArgs);
-                        break;
-                    case "multiAnalyser":   // general harmonics recogniser
-                        MultiAnalyser.Dev(restOfArgs);
-                        break;
-                    //case "hd":   // Harmonic Recogniser
-                    //    HarmonicRecogniser.Dev(restOfArgs);
-                    //    break;
-                    case "human":     // recognises uhman speech but not word recognition
-                        Human1.Dev(restOfArgs);
-                        break;
-                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        //LSKiwi2.Dev(restOfArgs);
-                        LSKiwi3.Dev(restOfArgs);
-                        break;
-                    case "kiwiROC":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwiROC.Main(restOfArgs);
-                        break;
-                    case "LewinsRail":  //LewinsRail3
-                        LewinsRail3.Dev(restOfArgs);
-                        break;
-                    case "machines":     // recognises Planes, Trains And Automobiles 
-                        PlanesTrainsAndAutomobiles.Dev(restOfArgs);
                         break;
                     case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(restOfArgs);
@@ -96,33 +117,9 @@ namespace AnalysisPrograms
                     case "segment":  // segmentation of a recording
                         Segment.Dev(restOfArgs);
                         break;
-                    case "snr":      // signal to noise ratio
-                        SnrAnalysis.Dev(restOfArgs);
-                        break;
-                    case "test":      //
-                        AnalysisTemplate.Dev(restOfArgs);
-                        break;
-
-
-
-                    // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
-                    //case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
-                    //    Create_MFCC_OD_Template.Dev(restOfArgs);
-                    //    break;
-                    //case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
-                    //    BarsAndStripes.Dev(restOfArgs);
-                    //    break;                       
-                    case "felt":     // find other acoustic events like this
-                        FeltTemplates_Use.Dev(restOfArgs);
-                        break;
-					case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
-                        FeltTemplate_Create.Dev(restOfArgs);
-                        break;
-                    case "edittemplate_felt":     // edits the FELT template created above
-                        FeltTemplate_Edit.Dev(restOfArgs);
-                        break;
-                    case "frog_ribbit":  // frog calls
-                        FrogRibit.Dev(restOfArgs);
+                    case "species_accumulation_curves":      // species accumulation curves
+                        SpeciesAccumulationCurve.Dev(restOfArgs);
+                        //SpeciesAccumulationCurve.Executable(restOfArgs);
                         break;
                     //case "spt":  // spectral peak tracking
                     //    SPT.Dev(restOfArgs);
@@ -130,25 +127,18 @@ namespace AnalysisPrograms
                     //case "spr":  // syntactic pattern recognition
                     //    SPR.Dev(restOfArgs);
                     //    break;
-                    case "richness_indices":      // richness_indices
-                        Acoustic.Dev(restOfArgs);
-                        //RichnessIndices2.Executable(restOfArgs);
-                        break;
-                    case "species_accumulation_curves":      // species accumulation curves
-                        SpeciesAccumulationCurve.Dev(restOfArgs);
-                        //SpeciesAccumulationCurve.Executable(restOfArgs);
-                        break;
-                    case "dimred":   // dimensionality reduction
-                        DimReduction.Dev(restOfArgs);
-                        break;
-                    case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
-                        EPR.Dev(restOfArgs);
+                    case "test":      //
+                        AnalysisTemplate.Dev(restOfArgs);
                         break;
 
-                    // Analysis runs - FOR MARK'S USE ONLY
+
+
+                    // FOR MARK'S USE ONLY
+                    // Analysis runs
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(restOfArgs);
                         break;
+
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
                         Console.WriteLine("Press any key to exit...");
