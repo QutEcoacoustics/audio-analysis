@@ -13,6 +13,7 @@ namespace AnalysisPrograms
 
         //CURRAWONG
         // dimred "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3"  C:\SensorNetworks\Output\DIMRED\DIMRED_Params.txt  events.txt
+        // dimred "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Output_OLD\DIMRED\DIMRED_Params.txt"  events.txt
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -95,10 +96,10 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished oscillation reduction.");
             //#############################################################################################################################################
             // reduced oscillation sonogram
-            var tuple3 = SH_DimRed(reducedSono, timeRedFactor, freqRedFactor, sonogram.FBinWidth);
-            var shHits = tuple3.Item1;
-            var shReduced = tuple3.Item2;
-            Log.WriteLine("# Finished stacked harmonics reduction.");
+            //var tuple3 = SH_DimRed(reducedSono, timeRedFactor, freqRedFactor, sonogram.FBinWidth);
+            //var shHits = tuple3.Item1;
+            //var shReduced = tuple3.Item2;
+            //Log.WriteLine("# Finished stacked harmonics reduction.");
             //#############################################################################################################################################
 
             //var predictedEvents = results.Item2; //contain the segments detected
@@ -150,7 +151,7 @@ namespace AnalysisPrograms
 
                 DrawSonogram(sonogram, orHits, orHitsPath);
 
-                DrawSonogram(sonogram, shHits, shHitsPath);
+                //DrawSonogram(sonogram, shHits, shHitsPath);
 
             }
 
@@ -250,55 +251,55 @@ namespace AnalysisPrograms
         /// <param name="timeRedFactor"></param>
         /// <param name="freqRedFactor"></param>
         /// <returns></returns>
-        public static System.Tuple<double[,], double[,]> SH_DimRed(double[,] matrix, int timeRedFactor, int freqRedFactor, double freqBinWidth)
-        {
-            int minHz = 500;
-            int maxHz = 5000;
-            double dctThreshold = 40.0;
-            bool normaliseDCT = false;
-            int minPeriod = 500;
-            int maxPeriod = 2500;
-            double eventThreshold = 0.5;
-            double minDuration = 0.5;  //sec
+        //public static System.Tuple<double[,], double[,]> SH_DimRed(double[,] matrix, int timeRedFactor, int freqRedFactor, double freqBinWidth)
+        //{
+        //    int minHz = 500;
+        //    int maxHz = 5000;
+        //    double dctThreshold = 40.0;
+        //    bool normaliseDCT = false;
+        //    int minPeriod = 500;
+        //    int maxPeriod = 2500;
+        //    double eventThreshold = 0.5;
+        //    double minDuration = 0.5;  //sec
 
 
-            //DETECT OSCILLATIONS
-            int minBin = (int)(minHz / freqBinWidth);
-            int maxBin = (int)(maxHz / freqBinWidth);
-            int hzWidth = maxHz - minHz;
-            Double[,] hits = HarmonicAnalysis.DetectHarmonicsUsingDCT(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
-            //hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
+        //    //DETECT OSCILLATIONS
+        //    //int minBin = (int)(minHz / freqBinWidth);
+        //    //int maxBin = (int)(maxHz / freqBinWidth);
+        //    //int hzWidth = maxHz - minHz;
+        //    //Double[,] hits = HarmonicAnalysis.DetectHarmonicsUsingDCT(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
+        //    //hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
 
-            //EXTRACT SCORES AND ACOUSTIC EVENTS
-           // double[] scores = HarmonicAnalysis.GetHarmonicScores(hits, minHz, maxHz, freqBinWidth);
-            //double[] oscFreq = HarmonicAnalysis.GetHDFrequency(hits, minHz, maxHz, freqBinWidth);
+        //    //EXTRACT SCORES AND ACOUSTIC EVENTS
+        //   // double[] scores = HarmonicAnalysis.GetHarmonicScores(hits, minHz, maxHz, freqBinWidth);
+        //    //double[] oscFreq = HarmonicAnalysis.GetHDFrequency(hits, minHz, maxHz, freqBinWidth);
 
-            //TRANSFER HITS TO REDUCED MATRIX
-            int frameCount   = matrix.GetLength(0);
-            int freqBinCount = matrix.GetLength(1);
+        //    //TRANSFER HITS TO REDUCED MATRIX
+        //    int frameCount   = matrix.GetLength(0);
+        //    int freqBinCount = matrix.GetLength(1);
 
-            int timeReducedCount = frameCount / timeRedFactor;
-            int freqReducedCount = freqBinCount / freqRedFactor;
+        //    int timeReducedCount = frameCount / timeRedFactor;
+        //    int freqReducedCount = freqBinCount / freqRedFactor;
 
-            var reducedMatrix = new double[timeReducedCount, freqReducedCount];
-            int cellArea = timeRedFactor * freqRedFactor;
-            //for (int r = 0; r < timeReducedCount; r++)
-            //    for (int c = 0; c < freqReducedCount; c++)
-            //    {
-            //        int or = r * timeRedFactor;
-            //        int oc = c * freqRedFactor;
-            //        double sum = 0.0;
-            //        for (int i = 0; i < timeRedFactor; i++)
-            //            for (int j = 0; j < freqRedFactor; j++)
-            //            {
-            //                sum += sonogram.Data[or + i, oc + j];
-            //            }
-            //        reducedMatrix[r, c] = sum / cellArea;
-            //    }
+        //    var reducedMatrix = new double[timeReducedCount, freqReducedCount];
+        //    int cellArea = timeRedFactor * freqRedFactor;
+        //    //for (int r = 0; r < timeReducedCount; r++)
+        //    //    for (int c = 0; c < freqReducedCount; c++)
+        //    //    {
+        //    //        int or = r * timeRedFactor;
+        //    //        int oc = c * freqRedFactor;
+        //    //        double sum = 0.0;
+        //    //        for (int i = 0; i < timeRedFactor; i++)
+        //    //            for (int j = 0; j < freqRedFactor; j++)
+        //    //            {
+        //    //                sum += sonogram.Data[or + i, oc + j];
+        //    //            }
+        //    //        reducedMatrix[r, c] = sum / cellArea;
+        //    //    }
 
-            var tuple2 = System.Tuple.Create(hits, reducedMatrix);
-            return tuple2;
-        }//end SH_DimRed
+        //    var tuple2 = System.Tuple.Create(hits, reducedMatrix);
+        //    return tuple2;
+        //}//end SH_DimRed
 
 
 
