@@ -196,6 +196,9 @@
     <Compile Include="Sonogram\Image_MultiTrack.cs" />
     <Compile Include="Sonogram\Image_Track.cs" />
     <Compile Include="SprTools.cs" />
+    <Compile Include="ResultsTools.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +209,10 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
       <Name>Acoustics.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
+      <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
+      <Name>AnalysisBase</Name>
     </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
