@@ -202,5 +202,50 @@
         /// Gets or sets the config dictionary.
         /// </summary>
         public Dictionary<string, string> ConfigDict { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiConfig"></param>
+        /// <param name="dict"></param>
+        /// <param name="diOutputDir"></param>
+        /// <param name="key_SEGMENT_DURATION"></param>
+        /// <param name="key_SEGMENT_OVERLAP"></param>
+        public void SetUserConfiguration(FileInfo fiConfig, Dictionary<string, string> dict, DirectoryInfo diOutputDir, string key_SEGMENT_DURATION, string key_SEGMENT_OVERLAP)
+        {
+            this.ConfigFile = fiConfig;
+            this.ConfigDict = dict;
+            this.AnalysisBaseDirectory = diOutputDir;
+
+            //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
+
+            //set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
+            if (this.ConfigDict.ContainsKey(key_SEGMENT_DURATION))
+            {
+                string value = dict.TryGetValue(key_SEGMENT_DURATION, out value) ? value : null;
+                int segmentOffsetMinutes;
+                if (int.TryParse(value, out segmentOffsetMinutes))
+                    this.SegmentMaxDuration = TimeSpan.FromMinutes(segmentOffsetMinutes);
+                else
+                {
+                    this.SegmentMaxDuration = null;
+                    Console.WriteLine("############### WARNING #############");
+                    Console.WriteLine("ERROR READING USER CONFIGURATION FILE");
+                    Console.WriteLine("\tINVALID KVP: key={0}, value={1}", key_SEGMENT_DURATION, value);
+                }
+            }
+
+            // set overlap
+            if (this.ConfigDict.ContainsKey(key_SEGMENT_OVERLAP))
+            {
+                string value = dict.TryGetValue(key_SEGMENT_OVERLAP, out value) ? value : null;
+                int segmentOverlapSeconds;
+                if (int.TryParse(value, out segmentOverlapSeconds))
+                    this.SegmentOverlapDuration = TimeSpan.FromSeconds(segmentOverlapSeconds);
+                else
+                    this.SegmentOverlapDuration = TimeSpan.Zero;
+            }
+        } //SetUserConfiguration()
+
     }
 }

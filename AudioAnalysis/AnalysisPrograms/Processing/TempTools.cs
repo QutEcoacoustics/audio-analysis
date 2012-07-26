@@ -1,28 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-
 using System.Linq;
 using System.Text;
 
-using System.Threading;
-using System.Threading.Tasks;
-
-//using Acoustics.Shared;
-//using Acoustics.Tools;
-//using Acoustics.Tools.Audio;
 using AnalysisBase;
-
-using AnalysisPrograms;
 using AudioAnalysisTools;
 using TowseyLib;
-using Acoustics.Shared;
-using Acoustics.Tools.Audio;
-using AnalysisRunner;
+//using Acoustics.Shared;
+//using Acoustics.Tools.Audio;
+//using AnalysisRunner;
 
 
 namespace AudioBrowser
@@ -123,6 +111,7 @@ namespace AudioBrowser
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
 
+
         /// <summary>
         /// Save an events and indices data tables if they exist.
         /// File names are constructed form the analysis ID etc.
@@ -166,5 +155,7 @@ namespace AudioBrowser
 
             return Tuple.Create(fiEvents, fiIndices);
         }
-    } //AudioBrowserTools
-}
+
+    } //TempTools
+
+} //AudioBrowser

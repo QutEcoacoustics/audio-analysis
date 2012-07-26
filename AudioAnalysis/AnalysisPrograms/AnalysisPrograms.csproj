@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.AnalyseLongRecording</StartupObject>
+    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <FileUpgradeFlags>
@@ -150,7 +150,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="Processing\TempTools.cs" />
     <Compile Include="AnalyseLongRecording.cs" />
     <Compile Include="Process\AnalysisHelpers.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />

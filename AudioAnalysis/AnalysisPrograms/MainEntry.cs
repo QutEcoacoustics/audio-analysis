@@ -50,6 +50,9 @@ namespace AnalysisPrograms
                     case "canetoad":      // acoustic event detection
                         Canetoad.Dev(restOfArgs);
                         break;
+                    case "cmdLine":      // acoustic event detection
+                        AnalyseLongRecording.Main(restOfArgs);
+                        break;
                     case "crow":     // recognises uhman speech but not word recognition
                         Crow.Dev(restOfArgs);
                         break;
