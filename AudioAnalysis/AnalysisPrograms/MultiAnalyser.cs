@@ -537,8 +537,10 @@ namespace AnalysisPrograms
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;
-                Image image = DrawSonogram(sonogram, hits, scores, events, eventThreshold);
-                image.Save(imagePath, ImageFormat.Png);
+                using (Image image = DrawSonogram(sonogram, hits, scores, events, eventThreshold))
+                {
+                    image.Save(imagePath, ImageFormat.Png);
+                }
             }
 
             analysisResults.Data = dataTable;
