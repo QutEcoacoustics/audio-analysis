@@ -90,7 +90,7 @@ namespace AnalysisPrograms
 
 
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\MultiAnalyser\";
+            string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
 
             string title = "# RUNS MULTIPLE ANALYSES";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -106,10 +106,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             cmdLineArgs.Add(recordingPath);
@@ -286,12 +286,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -321,10 +321,10 @@ namespace AnalysisPrograms
             //Dictionary<string, string> configDict = configuration.GetTable();
             var configDict = analysisSettings.ConfigDict;
             string frameLength = null;
-            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) 
-                 frameLength = (Int32.Parse(configDict[Keys.FRAME_LENGTH]).ToString()); 
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH))
+                frameLength = (Int32.Parse(configDict[Keys.FRAME_LENGTH]).ToString());
 
-            var fiAudioF    = analysisSettings.AudioFile;
+            var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
             var analysisResults = new AnalysisResult();
@@ -345,7 +345,7 @@ namespace AnalysisPrograms
             //######################################################################
             newDict = new Dictionary<string, string>();
             string filter = "HUMAN";
-            var keysFiltered= DictionaryTools.FilterKeysInDictionary(configDict, filter);
+            var keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, filter);
 
             foreach (string key in keysFiltered) //derive new dictionary for human
             {
@@ -353,8 +353,8 @@ namespace AnalysisPrograms
                 newDict.Add(newKey, configDict[key]);
             }
             newDict.Add(Keys.ANALYSIS_NAME, Human1.ANALYSIS_NAME);
-            if (frameLength != null) 
-                newDict.Add(Keys.FRAME_LENGTH, frameLength); 
+            if (frameLength != null)
+                newDict.Add(Keys.FRAME_LENGTH, frameLength);
 
             var results1 = Human1.Analysis(fiAudioF, newDict);
             if (results1 != null)
@@ -387,7 +387,7 @@ namespace AnalysisPrograms
             newDict.Add(Keys.ANALYSIS_NAME, Crow.ANALYSIS_NAME);
             if (frameLength != null)
                 newDict.Add(Keys.FRAME_LENGTH, frameLength);
-            
+
             var results2 = Crow.Analysis(fiAudioF, newDict);
             if (results2 != null)
             {
@@ -418,7 +418,7 @@ namespace AnalysisPrograms
             }
             newDict.Add(Keys.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength); 
+                newDict.Add(Keys.FRAME_LENGTH, frameLength);
 
             var results3 = PlanesTrainsAndAutomobiles.Analysis(fiAudioF, newDict);
             if (results3 != null)
@@ -564,7 +564,7 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) 
+            if (scores != null)
                 for (int i = 0; i < scores.Count; i++)
                 {
                     scores[i].ScaleDataArray(sonogram.FrameCount);
@@ -644,10 +644,11 @@ namespace AnalysisPrograms
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
                 string eventName = (string)ev[AudioAnalysisTools.Keys.EVENT_NAME];
-                if(eventName == Human1.ANALYSIS_NAME)
+                if (eventName == Human1.ANALYSIS_NAME)
                 {
                     if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
-                } else if(eventName == Crow.ANALYSIS_NAME)
+                }
+                else if (eventName == Crow.ANALYSIS_NAME)
                 {
                     if (eventScore != 0.0) crow__EventsPerUnitTime[timeUnit]++;
                 }
@@ -666,7 +667,7 @@ namespace AnalysisPrograms
             }
 
             string[] headers = { AudioAnalysisTools.Keys.START_MIN, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
-            Type[]   types   = { typeof(int),                        typeof(int),  typeof(int),   typeof(int),     typeof(int),    typeof(int) };
+            Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
             for (int i = 0; i < unitCount; i++)
@@ -683,8 +684,8 @@ namespace AnalysisPrograms
             if (dt == null) return;
 
             if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_ABS))  dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS,  typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_MIN))  dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN,  typeof(double));
+            if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
+            if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
             double start = segmentStartMinute.TotalSeconds;
             foreach (DataRow row in dt.Rows)
             {
@@ -728,7 +729,7 @@ namespace AnalysisPrograms
                 displayTypes[i] = typeof(double);
                 string columnName = displayHeaders[i];
                 if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-                if (dtTypes[i] == typeof(string))          canDisplay[i] = false;
+                if (dtTypes[i] == typeof(string)) canDisplay[i] = false;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);

@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Acoustics.Tools.Audio;
-using System.IO;
-using Acoustics.Shared;
-
-namespace Acoustics.Tools
+﻿namespace Acoustics.Tools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
+
+    /// <summary>
+    /// The audio file preparer.
+    /// </summary>
     public static class AudioFilePreparer
     {
         /// <summary>
@@ -22,21 +24,15 @@ namespace Acoustics.Tools
         /// <param name="outputMediaType">
         /// The output Media Type.
         /// </param>
-        /// <param name="startOffset">
-        /// The start Offset from start of entire original file.
-        /// </param>
-        /// <param name="endOffset">
-        /// The end Offset from start of entire original file.
-        /// </param>
-        /// <param name="targetSampleRateHz">
-        /// The target Sample Rate Hz.
+        /// <param name="request">
+        /// The request.
         /// </param>
         /// <returns>
         /// The prepared file.
         /// </returns>
-        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
+        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, AudioUtilityRequest request)
         {
-            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
+            var audioUtility = GetNewAudioUtility();
 
             var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
 
@@ -45,8 +41,8 @@ namespace Acoustics.Tools
             outputFileName = string.Format(
                 "{0}_{1:f0}min.{3}",
                 outputFileName,
-                startOffset.TotalMinutes,
-                endOffset.TotalMilliseconds,
+                request.OffsetStart.Value.TotalMinutes,
+                request.OffsetEnd.Value.TotalMilliseconds,
                 MediaTypes.GetExtension(outputMediaType));
 
             if (!Directory.Exists(outputDirectory.FullName))
@@ -62,63 +58,26 @@ namespace Acoustics.Tools
                 sourceMimeType,
                 output,
                 outputMimeType,
-                startOffset,
-                endOffset);
+                request);
 
             return output;
         }
 
         /// <summary>
-        /// 
+        /// The prepare file.
         /// </summary>
-        /// <param name="outputDirectory">
-        /// The output directory.
+        /// <param name="sourceF">
+        /// The source f.
         /// </param>
-        /// <param name="source">
-        /// The source.
+        /// <param name="outputF">
+        /// The output f.
         /// </param>
-        /// <param name="outputMediaType">
-        /// The output media type.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="targetSampleRateHz">
-        /// The target sample rate hz.
-        /// </param>
-        /// <returns>
-        /// 
-        /// </returns>
-        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, int targetSampleRateHz)
+        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, AudioUtilityRequest request)
         {
-            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
-
-            var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
-
-            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
-
-            outputFileName = string.Format(
-                "{0}_converted.{1}",
-                outputFileName,
-                MediaTypes.GetExtension(outputMediaType));
-
-            if (!Directory.Exists(outputDirectory.FullName))
-            {
-                Directory.CreateDirectory(outputDirectory.FullName);
-            }
-
-            var output = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-            var outputMimeType = MediaTypes.GetMediaType(output.Extension);
-
-            audioUtility.Convert(
-                source,
-                sourceMimeType,
-                output,
-                outputMimeType);
-
-            return output;
-        }
-
-        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, int targetSampleRateHz)
-        {
-            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
+            var audioUtility = GetNewAudioUtility();
 
             var sourceMimeType = MediaTypes.GetMediaType(sourceF.Extension);
             var outputMimeType = MediaTypes.GetMediaType(outputF.Extension);
@@ -129,32 +88,12 @@ namespace Acoustics.Tools
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            audioUtility.Convert(
-                sourceF,
-                sourceMimeType,
-                outputF,
-                outputMimeType);
-        }
-
-        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, int targetSampleRateHz, TimeSpan startOffset, TimeSpan endOffset)
-        {
-            var audioUtility = GetNewAudioUtility(targetSampleRateHz);
-
-            var sourceMimeType = MediaTypes.GetMediaType(sourceF.Extension);
-            var outputMimeType = MediaTypes.GetMediaType(outputF.Extension);
-            string outputDirectory = Path.GetDirectoryName(outputF.FullName);
-
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
             audioUtility.Segment(
                 sourceF,
                 sourceMimeType,
                 outputF,
                 outputMimeType,
-                startOffset,
-                endOffset);
+                request);
         }
 
         /// <summary>
@@ -172,7 +111,7 @@ namespace Acoustics.Tools
         /// </returns>
         /// <remarks>
         /// from: http://stackoverflow.com/a/577451/31567
-        /// This doesn't try to cope with negative numbers :)
+        /// This doesn't try to cope with negative numbers :).
         /// </remarks>
         public static IEnumerable<long> DivideEvenly(long numerator, long denominator)
         {
@@ -210,9 +149,9 @@ namespace Acoustics.Tools
             yield return amountLeft;
         }
 
-        private static IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
+        private static IAudioUtility GetNewAudioUtility()
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRateHz, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
             return audioUtility;
         }
     }

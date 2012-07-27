@@ -19,15 +19,19 @@
 
         private const string Format = "hh\\:mm\\:ss\\.fff";
 
-        // -y answer yes to overwriting
+        // -y answer yes to overwriting "Overwrite output files without asking."
         // -i input file.  extension used to determine filetype.
         // BUG:050211: added -y arg
         private const string ArgsOverwriteSource = " -i \"{0}\" -y ";
 
         // -ar Set the audio sampling frequency (default = 44100 Hz).
+        // eg,  -ar 22050
+        private const string ArgsSampleRate = " -ar {0} ";
+
         // -ab Set the audio bitrate in bit/s (default = 64k).
-        // " -ar 22050 -ab 128k "
-        //private const string ArgsSamplebitRate = " -ar 22050 -ab 128k ";
+        // -ab[:stream_specifier] integer (output,audio)
+        // eg. -ab 128k
+        private const string ArgsBitRate = " -ab {0} ";
 
         // -t Restrict the transcoded/captured video sequence to the duration specified in seconds. hh:mm:ss[.xxx] syntax is also supported.
         private const string ArgsDuration = "-t {0} ";
@@ -38,6 +42,19 @@
         // -acodec Force audio codec to codec. Use the copy special value to specify that the raw codec data must be copied as is.
         // output file. extension used to determine filetype.
         private const string ArgsCodecOutput = " -acodec {0}  \"{1}\" ";
+
+        // -map_channel [input_file_id.stream_specifier.channel_id]
+        // Map an audio channel from a given input to an output. 
+        // The order of the "-map_channel" option specifies the order of the channels in the output stream.
+        // input_file_id, stream_specifier, and channel_id are indexes starting from 0.
+        private const string ArgsMapChannel = " -map_channel 0.0.{0} ";
+
+        // -ac[:stream_specifier] channels (input/output,per-stream)
+        // Set the number of audio channels. For output streams it is set by default to the number of input audio channels.
+        // ‘-ac[:stream_specifier] integer (input/output,audio)
+        // set number of audio channels 
+        // Note that ffmpeg integrates a default down-mix (and up-mix) system that should be preferred (see "-ac" option) unless you have very specific needs. 
+        private const string ArgsChannelCount = " -ac {0} ";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class. 
@@ -89,62 +106,28 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end)
+        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            ValidateStartEnd(start, end);
+            request.ValidateChecked();
 
-            CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
+            this.CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
 
-            CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
+            this.CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
 
             var process = new ProcessRunner(this.ffmpegExe.FullName);
 
-            string args = ConstructArgs(source, output, start, end);
+            // TODO: for now, do not use ffmpeg to resample or change bit rate or mix down to mono
+            request.BitsPerSecond = null;
+            request.MixDownToMono = false;
+            request.Channel = null;
+            request.SampleRate = null;
 
-            this.RunExe(process, args, output.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-            }
-        }
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        public void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
-        {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
-
-            CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
-
-            var process = new ProcessRunner(this.ffmpegExe.FullName);
-
-            string args = ConstructArgs(source, output, null, null);
+            string args = ConstructArgs(source, output, request);
 
             this.RunExe(process, args, output.DirectoryName);
 
@@ -170,20 +153,23 @@
         /// <exception cref="ArgumentException"><c>ArgumentException</c>.</exception>
         public TimeSpan Duration(FileInfo source, string sourceMimeType)
         {
-            ValidateMimeTypeExtension(source, sourceMimeType);
-            CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
+            this.ValidateMimeTypeExtension(source, sourceMimeType);
+
+            this.CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
 
             var process = new ProcessRunner(this.ffmpegExe.FullName);
+
             string args = string.Format(ArgsOverwriteSource, source.FullName);
 
             this.RunExe(process, args, source.DirectoryName);
 
-            if (OutputContains(process, "No such file or directory"))
+            if (this.OutputContains(process, "No such file or directory"))
             {
                 throw new ArgumentException("Could not find source file: " + source.FullName);
             }
 
             Match match = Regex.Match(process.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
             return Parse(match.Groups[1].Value);
         }
 
@@ -205,7 +191,7 @@
                 this.RunExe(process, args, source.DirectoryName);
 
                 // parse output
-                //var err = process.ErrorOutput;
+                ////var err = process.ErrorOutput;
                 var std = process.StandardOutput;
                 string currentBlockName = string.Empty;
                 foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
@@ -214,7 +200,6 @@
                     {
                         // end of a block
                     }
-
                     else if (line.StartsWith("[") && line.EndsWith("]"))
                     {
                         // start of a block
@@ -244,19 +229,13 @@
         /// <param name="output">
         /// The output file.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the audio file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the audio file.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// </exception>
         /// <returns>
         /// The argument string.
         /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private static string ConstructArgs(FileInfo source, FileInfo output, TimeSpan? start, TimeSpan? end)
+        private static string ConstructArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             // only supports converting to .wav and .mp3
             string codec;
@@ -271,12 +250,12 @@
                     codec = "libmp3lame";
                     break;
                 case MediaTypes.ExtOgg:
-                case MediaTypes.ExtOggAudio:
-                    codec = "libvorbis -aq 60"; // ogg container vorbis encoder at quality level of 60
+                case MediaTypes.ExtOggAudio: // http://wiki.hydrogenaudio.org/index.php?title=Recommended_Ogg_Vorbis#Recommended_Encoder_Settings
+                    codec = "libvorbis -q 7"; // ogg container vorbis encoder at quality level of 7 
                     break;
                 case MediaTypes.ExtWebm:
                 case MediaTypes.ExtWebmAudio:
-                    codec = "libvorbis -aq 60"; // webm container vorbis encoder at quality level of 60
+                    codec = "libvorbis -q 7"; // webm container vorbis encoder at quality level of 7
                     break;
                 default:
                     codec = "copy";
@@ -285,22 +264,39 @@
 
             var args = new StringBuilder()
                 .AppendFormat(ArgsOverwriteSource, source.FullName);
-            // now using sox instead of ffmpeg to resample
-            //.Append(ArgsSamplebitRate);
 
-            if (start.HasValue && start.Value > TimeSpan.Zero)
+            if (request.BitsPerSecond.HasValue)
             {
-                args.AppendFormat(ArgsSeek, FormatTimeSpan(start.Value));
+                args.AppendFormat(ArgsBitRate, request.BitsPerSecond.Value);
             }
 
-            if (end.HasValue && end.Value > TimeSpan.Zero)
+            if (request.SampleRate.HasValue)
             {
-                if (!start.HasValue)
-                {
-                    start = TimeSpan.Zero;
-                }
+                args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
+            }
 
-                args.AppendFormat(ArgsDuration, FormatTimeSpan(end.Value - start.Value));
+            if (request.MixDownToMono)
+            {
+                args.AppendFormat(ArgsChannelCount, 1);
+            }
+
+            if (request.Channel.HasValue)
+            {
+                args.AppendFormat(ArgsMapChannel, request.Channel.Value - 1);
+            }
+
+            if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
+            {
+                args.AppendFormat(ArgsSeek, FormatTimeSpan(request.OffsetStart.Value));
+            }
+
+            if (request.OffsetEnd.HasValue && request.OffsetEnd.Value > TimeSpan.Zero)
+            {
+                var duration = request.OffsetStart.HasValue
+                                   ? FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value)
+                                   : FormatTimeSpan(request.OffsetEnd.Value - TimeSpan.Zero);
+
+                args.AppendFormat(ArgsDuration, duration);
             }
 
             args.AppendFormat(ArgsCodecOutput, codec, output.FullName);

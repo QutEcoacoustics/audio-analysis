@@ -56,8 +56,8 @@ namespace AnalysisPrograms
         public static string key_START_SEC = "EvStartSec";
         public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
         public static string key_CALL_DENSITY = "CrowDensity";
-        public static string key_CALL_SCORE   = "CrowScore";
-        public static string key_EVENT_TOTAL  = "# events";
+        public static string key_CALL_SCORE = "CrowScore";
+        public static string key_EVENT_TOTAL = "# events";
 
 
 
@@ -112,7 +112,7 @@ namespace AnalysisPrograms
         {
             string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             string configPath = @"C:\SensorNetworks\Output\Crow\Crow.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\Crow\";
+            string outputDir = @"C:\SensorNetworks\Output\Crow\";
 
             string title = "# FOR DETECTION OF CROW CALLS - version 2";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -128,10 +128,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             cmdLineArgs.Add(recordingPath);
@@ -271,12 +271,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -385,7 +385,7 @@ namespace AnalysisPrograms
         {
             //set default values -
             int frameLength = 1024;
-            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]); 
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]);
             double windowOverlap = 0.0;
 
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -36,29 +37,13 @@
         /// <param name="reduceToMono">Set whether to mix all channels to mono.</param>
         /// <exception cref="FileNotFoundException">Could not find exe.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="soxExe" /> is <c>null</c>.</exception>
-        public SoxAudioUtility(FileInfo soxExe, bool? useSteepFilter, int? targetSampleRateHz, SoxResampleQuality? resampleQuality, bool? reduceToMono)
+        public SoxAudioUtility(FileInfo soxExe)
         {
             this.CheckExe(soxExe, "sox.exe");
             this.soxExe = soxExe;
 
-            this.UseSteepFilter = useSteepFilter;
-            this.TargetSampleRateHz = targetSampleRateHz;
-            this.ResampleQuality = resampleQuality;
-            this.ReduceToMono = reduceToMono;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SoxAudioUtility"/> class.
-        /// Defaults will be used:
-        /// ResampleQuality = SoxResampleQuality.Medium;
-        /// TargetSampleRateHz = 22050;
-        /// ReduceToMono = true;
-        /// UseSteepFilter = true;
-        /// </summary>
-        /// <param name="soxExe">The exe file.</param>
-        public SoxAudioUtility(FileInfo soxExe)
-            : this(soxExe, true, 22050, SoxResampleQuality.Medium, true)
-        {
+            this.UseSteepFilter = true;
+            this.ResampleQuality = SoxResampleQuality.VeryHigh;
         }
 
         /// <summary>
@@ -112,20 +97,11 @@
         /// </summary>
         public bool? UseSteepFilter { get; private set; }
 
-        /// <summary>
-        /// Gets or sets TargetSampleRate.
-        /// </summary>
-        public int? TargetSampleRateHz { get; private set; }
 
         /// <summary>
         /// Gets or sets ResampleQuality.
         /// </summary>
         public SoxResampleQuality? ResampleQuality { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to reduce to mono (single channel).
-        /// </summary>
-        public bool? ReduceToMono { get; private set; }
 
         #region Implementation of IAudioUtility
 
@@ -145,34 +121,10 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file. Ensure the file does not exist.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        public void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
+        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
             ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -182,7 +134,7 @@
 
             var process = new ProcessRunner(this.soxExe.FullName);
 
-            string args = this.ConstructResamplingArgs(source, output);
+            string args = this.ConstructResamplingArgs(source, output, request);
 
             this.RunExe(process, args, output.DirectoryName);
 
@@ -374,14 +326,14 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             }
         }
 
-        private string ConstructResamplingArgs(FileInfo source, FileInfo output)
+        private string ConstructResamplingArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             // example
             // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
             // sox input.wav output.wav remix - rate -m -s 11025
 
             var remix = string.Empty;
-            if (this.ReduceToMono.HasValue && this.ReduceToMono.Value)
+            if (request.MixDownToMono)
             {
                 /*
                 Where a range of channels is specified, the channel numbers to the left and right of the hyphen are
@@ -398,8 +350,8 @@ performs a mix-down of all input channels to mono.
 
             var steepFilter = this.UseSteepFilter.HasValue && this.UseSteepFilter.Value ? "-s" : string.Empty;
 
-            var targetSampleRateHz = this.TargetSampleRateHz.HasValue
-                                         ? this.TargetSampleRateHz.Value.ToString()
+            var targetSampleRateHz = request.SampleRate.HasValue
+                                         ? request.SampleRate.Value.ToString(CultureInfo.InvariantCulture)
                                          : string.Empty;
 
             var rate = string.Format("rate {0} {1} {2}", resampleQuality, steepFilter, targetSampleRateHz);

@@ -26,6 +26,8 @@ using Acoustics.Tools.Audio;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Tools;
+
     public class LSKiwi1
     {
         //Following lines are used for the debug command line.
@@ -187,7 +189,15 @@ namespace AnalysisPrograms
 
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(segmentDuration * 60000) + overlap_ms;
-                MasterAudioUtility.SegmentToWav(resampleRate, fiSourceRecording, new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
+                MasterAudioUtility.SegmentToWav(
+                    fiSourceRecording,
+                    new FileInfo(tempSegmentPath),
+                    new AudioUtilityRequest
+                        {
+                            SampleRate = resampleRate,
+                            OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                            OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                        });
                 AudioRecording recordingSegment = new AudioRecording(tempSegmentPath);
                 FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
                 TimeSpan ts = recordingSegment.Duration();

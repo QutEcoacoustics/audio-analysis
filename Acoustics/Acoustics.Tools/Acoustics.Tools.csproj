@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="AudioFilePreparer.cs" />
     <Compile Include="AudioReadingRequest.cs" />
+    <Compile Include="AudioUtilityRequest.cs" />
     <Compile Include="Audio\AbstractAudioUtility.cs" />
     <Compile Include="Audio\AbstractSpectrogramUtility.cs" />
     <Compile Include="Audio\AbstractUtility.cs" />
