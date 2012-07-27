@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Contracts;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -71,7 +73,8 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
             FileInfo fiConfig = new FileInfo(configPath);
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
+            FileInfo fiImage = new FileInfo(Path.Combine(outputDir, Path.GetFileNameWithoutExtension(recordingPath) + ".png"));
+            //DirectoryInfo diOP = new DirectoryInfo(outputDir);
 
             //2. get the config dictionary
             var configuration = new ConfigDictionary(fiConfig.FullName);
@@ -97,11 +100,11 @@ namespace AnalysisPrograms
             if (configDict.ContainsKey(Keys.FREQ_REDUCTION_FACTOR))
                 freqReductionFactor = ConfigDictionary.GetInt(Keys.FREQ_REDUCTION_FACTOR, configDict);
 
-            bool addTimeScale = true;
+            bool addTimeScale = false;
             if (configDict.ContainsKey(Keys.ADD_TIME_SCALE))
                 addTimeScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
 
-            bool addSegmentationTrack = true;
+            bool addSegmentationTrack = false;
             if (configDict.ContainsKey(Keys.ADD_SEGMENTATION_TRACK))
                 addSegmentationTrack = ConfigDictionary.GetBoolean(Keys.ADD_SEGMENTATION_TRACK, configDict);
 
@@ -121,46 +124,56 @@ namespace AnalysisPrograms
             //var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             //var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 
+            //AudioRecording.ExtractSegmentFromLongSourceAudioFile(restOfArgs); // extracts segment from long audio source file
 
+            using (Image image = SonogramTools.MakeSonogram(fiSourceRecording, fiConfig))
+            {
+                if (image != null)
+                {
+                    if (fiImage.Exists) fiImage.Delete();
+                    image.Save(fiImage.FullName, ImageFormat.Png);
+                }
+            }
 
 
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(recordingPath);
 
-            //ii: MAKE SONOGRAM
-            //Log.WriteLine("# Start sonogram.");
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            //sonoConfig.DynamicRange = dynamicRange;
+            ////ii: MAKE SONOGRAM
+            ////Log.WriteLine("# Start sonogram.");
+            //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            //sonoConfig.WindowOverlap = frameOverlap;
+            //sonoConfig.SourceFName = recording.FileName;
+            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            ////sonoConfig.DynamicRange = dynamicRange;
 
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            recording.Dispose();
+            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            //recording.Dispose();
 
-            //draw images of sonograms
-            if ((timeReductionFactor != 1) || (freqReductionFactor != 1))
-            {
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                bool doHighlightSubband = false; bool add1kHzLines = true;
-                using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-                using (Image_MultiTrack image   = new Image_MultiTrack(img))
-                {
-                    if (addTimeScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                    if (addSegmentationTrack) image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.Save(imagePath);
+            ////draw images of sonograms
+            //bool doHighlightSubband = false; bool add1kHzLines = true;
+            //if ((timeReductionFactor == 1) && (freqReductionFactor == 1))
+            //{
+            //    string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            //    using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            //    using (Image_MultiTrack image   = new Image_MultiTrack(img))
+            //    {
+            //        if (addTimeScale)         image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            //        if (addSegmentationTrack) image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //        image.Save(imagePath);
 
-                }
-            }
-            else //sonogram to be reduced
-            {
-                var results = AI_DimRed(sonogram, timeReductionFactor, freqReductionFactor); //acoustic intensity
-                var reducedSono = results.Item1;
-                var results1 = BaseSonogram.Data2ImageData(reducedSono);
-                string reducedPath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_reduced.png";
-                ImageTools.DrawMatrix(results1.Item1, 1, 1, reducedPath);
-            }
+            //    }
+            //}
+            //else //sonogram to be reduced
+            //{
+            //    double[,] reducedData = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor); //acoustic intensity
+            //    //sonogram.Data = reducedData;
+            //    //sonogram.FramesPerSecond = reducedData.GetLength(0);
+            //    var results1 = BaseSonogram.Data2ImageData(reducedData);
+            //    string reducedPath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_reduced.png";
+            //    ImageTools.DrawMatrix(results1.Item1, 1, 1, reducedPath);                
+            //}
 
             Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
             Console.ReadLine();
@@ -169,10 +182,10 @@ namespace AnalysisPrograms
         } //Main(string[] args)
 
 
-        public static System.Tuple<double[,]> AI_DimRed(BaseSonogram sonogram, int timeRedFactor, int freqRedFactor)
+        public static double[,] ReduceDimensionalityOfSpectrogram(double[,] data, int timeRedFactor, int freqRedFactor)
         {
-            int freqBinCount = sonogram.Configuration.FreqBinCount;
-            int frameCount = sonogram.FrameCount;
+            int frameCount   = data.GetLength(0);
+            int freqBinCount = data.GetLength(1);
 
             int timeReducedCount = frameCount / timeRedFactor;
             int freqReducedCount = freqBinCount / freqRedFactor;
@@ -184,17 +197,26 @@ namespace AnalysisPrograms
                 {
                     int or = r * timeRedFactor;
                     int oc = c * freqRedFactor;
-                    double sum = 0.0;
+
+                    //display average of the cell
+                    //double sum = 0.0;
+                    //for (int i = 0; i < timeRedFactor; i++)
+                    //    for (int j = 0; j < freqRedFactor; j++)
+                    //    {
+                    //        sum += data[or + i, oc + j];
+                    //    }
+                    //reducedMatrix[r, c] = sum / cellArea;
+
+                    //display the maximum in the cell
+                    double max = -100000000.0;
                     for (int i = 0; i < timeRedFactor; i++)
                         for (int j = 0; j < freqRedFactor; j++)
                         {
-                            sum += sonogram.Data[or + i, oc + j];
+                            if (max < data[or + i, oc + j]) max = data[or + i, oc + j];
                         }
-                    reducedMatrix[r, c] = sum / cellArea;
+                    reducedMatrix[r, c] = max;
                 }
-
-            var tuple2 = System.Tuple.Create(reducedMatrix);
-            return tuple2;
+            return reducedMatrix;
         }//end AI_DimRed
 
 

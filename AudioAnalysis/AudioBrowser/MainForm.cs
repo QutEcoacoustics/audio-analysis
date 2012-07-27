@@ -645,7 +645,7 @@
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
             //if (!fiOutputSegment.Exists) //extract the segment
             //{
-            AudioBrowserTools.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
+            AudioRecording.ExtractSegment(fiSource, startMinute, endMinute, buffer, resampleRate, fiOutputSegment);
             //}
 
             if (!fiOutputSegment.Exists) //still has not been extracted
@@ -1354,7 +1354,7 @@
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             FileInfo fiImage = new FileInfo(Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiAudio.FullName) + ".png"));
             IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
-            Image image = AudioBrowserTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);
+            Image image = SonogramTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);
             return image;
         } //GetSonogram()
 
