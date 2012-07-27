@@ -92,6 +92,11 @@
         /// </exception>
         public void Run(string arguments, string workingDirectory)
         {
+            Run(arguments, workingDirectory, true);
+        }
+
+        public void Run(string arguments, string workingDirectory, bool waitForExit)
+        {
             // reset output strings
             this.standardOutput.Length = 0;
             this.errorOutput.Length = 0;
@@ -146,7 +151,10 @@
             this.process.BeginErrorReadLine();
             this.process.BeginOutputReadLine();
 
-            this.process.WaitForExit();
+            if (waitForExit)
+            {
+                this.process.WaitForExit();
+            }
         }
 
         public string BuildLogOutput()

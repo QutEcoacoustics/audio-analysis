@@ -18,7 +18,6 @@ namespace AudioAnalysisTools
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
         public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
         public static string DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
         public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string FRAME_LENGTH = "FRAME_LENGTH";
         public static string FRAME_OVERLAP = "FRAME_OVERLAP";
@@ -42,9 +41,19 @@ namespace AudioAnalysisTools
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
         public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
-        public static string SAVE_SONOGRAM_FILES = "SAVE_SONOGRAM_FILES";
         public static string SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
+        public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
+        public static string THRESHOLD = "THRESHOLD";
+
+        // KEYS To SONOGRAMS
+        //public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string SAVE_SONOGRAM_FILES    = "SAVE_SONOGRAM_FILES";
+        public static string TIME_REDUCTION_FACTOR  = "TIME_REDUCTION_FACTOR";
+        public static string FREQ_REDUCTION_FACTOR  = "FREQ_REDUCTION_FACTOR";
+        public static string ADD_TIME_SCALE         = "ADD_TIME_SCALE";
+        public static string ADD_SEGMENTATION_TRACK = "ADD_SEGMENTATION_TRACK";
+
 
         //KEYS TO OUTPUT INDICES HEADERS
         public static string INDICES_COUNT    = "Indices Count";

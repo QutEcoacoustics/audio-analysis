@@ -16,7 +16,7 @@
     using Acoustics.Tools.Audio;
 
     using AnalysisPrograms;
-    using AnalysisPrograms.Processing;
+   // using AnalysisPrograms.Processing;
     using AnalysisRunner;
 
     using AudioAnalysisTools;
@@ -672,6 +672,11 @@
             }
             else
             {
+                if (this.pictureBoxSonogram.Image != null)
+                {
+                    this.pictureBoxSonogram.Image.Dispose();
+                }
+
                 this.pictureBoxSonogram.Image = image;
                 //this.panelDisplaySpectrogram.Height = image.Height;
                 Console.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
@@ -1291,6 +1296,11 @@
             }
             else
             {
+                if (this.pictureBoxSonogram.Image != null)
+                {
+                    this.pictureBoxSonogram.Image.Dispose();
+                }
+
                 this.pictureBoxSonogram.Image = image;
                 Console.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
                 //this.tabControlMain.SelectTab(this.tabPageDisplayLabel);

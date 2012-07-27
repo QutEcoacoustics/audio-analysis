@@ -16,7 +16,7 @@ namespace AnalysisPrograms
 
     using AnalysisBase;
 
-    using AnalysisPrograms.Processing;
+    //using AnalysisPrograms.Processing;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -90,8 +90,8 @@ namespace AnalysisPrograms
                     case "acousticIndices":      // extracts acoustic indices from one minute segment - for dev purposes only
                         Acoustic.Dev(restOfArgs);  //Signed off: Michael Towsey, 27th July 2012
                         break;
-                    case "dimred":               // for reducing the dimensionality of sonograms - i.e. compression in time domain.
-                        DimReduction.Dev(restOfArgs);
+                    case "audio2sonogram":        // produces a sonogram from an audio file. Can reduce dimensionality of the image.
+                        Audio2Sonogram.Main(restOfArgs);
                         break;
                     case "createtemplate_felt":  // extract an acoustic event and make a template for FELT
                         FeltTemplate_Create.Dev(restOfArgs);
@@ -135,9 +135,9 @@ namespace AnalysisPrograms
 
                     // FOR MARK'S USE ONLY
                     // Analysis runs
-                    case "processing": // for running on the processing cluster
-                        ProcessingUtils.Run(restOfArgs);
-                        break;
+                   // case "processing": // for running on the processing cluster
+                    //    ProcessingUtils.Run(restOfArgs);
+                    //    break;
 
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);

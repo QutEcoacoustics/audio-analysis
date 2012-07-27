@@ -158,24 +158,12 @@
   <ItemGroup>
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="AudioRecording.cs" />
-    <Compile Include="BKGTrainer.cs" />
     <Compile Include="ConfigurationClasses.cs" />
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="AudioSegmentation.cs" />
-    <Compile Include="Helper.cs" />
     <Compile Include="HMMSettings.cs" />
-    <Compile Include="HTKConfig.cs" />
-    <Compile Include="HTKHelper.cs" />
     <Compile Include="Keys.cs" />
-    <Compile Include="MarkovModels\MMResults.cs" />
-    <Compile Include="MarkovModels\MMTools.cs" />
-    <Compile Include="MarkovModels\MM_2State_Periodic.cs" />
-    <Compile Include="MarkovModels\MM_Base.cs" />
-    <Compile Include="MarkovModels\MM_Ergodic.cs" />
-    <Compile Include="MarkovModels\SequenceInfo.cs" />
-    <Compile Include="MarkovModels\StateDurationTools.cs" />
-    <Compile Include="MarkovModels\TrainingSet.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />
     <Compile Include="NeuralNets\BinaryCluster.cs" />

@@ -658,130 +658,130 @@ namespace AnalysisPrograms.Processing
         //    return prts;
         //}
 
-        /// <summary>
-        /// MFCC OD Regoniser.
-        /// </summary>
-        /// <param name="settingsFile">
-        /// The settings File.
-        /// </param>
-        /// <param name="audioFile">
-        /// Audio file to analyse.
-        /// </param>
-        /// <param name="resourceFile">
-        /// Compressed resource file.
-        /// </param>
-        /// <param name="runDir">
-        /// Working directory.
-        /// </param>
-        /// <returns>
-        /// Processing results.
-        /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
-        {
-            var expected = new List<string>
-                {
-                    MFCC_OD.key_CC_COUNT,
-                    MFCC_OD.key_DCT_DURATION,
-                    MFCC_OD.key_DELTA_T,
-                    MFCC_OD.key_DO_MELSCALE,
-                    MFCC_OD.key_DRAW_SONOGRAMS,
-                    MFCC_OD.key_DYNAMIC_RANGE,
-                    MFCC_OD.key_EVENT_THRESHOLD,
-                    MFCC_OD.key_FRAME_OVERLAP,
-                    MFCC_OD.key_FRAME_SIZE,
-                    MFCC_OD.key_INCLUDE_DELTA,
-                    MFCC_OD.key_INCLUDE_DOUBLE_DELTA,
-                    MFCC_OD.key_MAX_DURATION,
-                    MFCC_OD.key_MAX_HZ,
-                    MFCC_OD.key_MAX_OSCIL_FREQ,
-                    MFCC_OD.key_MIN_AMPLITUDE,
-                    MFCC_OD.key_MIN_DURATION,
-                    MFCC_OD.key_MIN_HZ,
-                    MFCC_OD.key_MIN_OSCIL_FREQ,
-                    MFCC_OD.key_NOISE_REDUCTION_TYPE
-                };
+        ///// <summary>
+        ///// MFCC OD Regoniser.
+        ///// </summary>
+        ///// <param name="settingsFile">
+        ///// The settings File.
+        ///// </param>
+        ///// <param name="audioFile">
+        ///// Audio file to analyse.
+        ///// </param>
+        ///// <param name="resourceFile">
+        ///// Compressed resource file.
+        ///// </param>
+        ///// <param name="runDir">
+        ///// Working directory.
+        ///// </param>
+        ///// <returns>
+        ///// Processing results.
+        ///// </returns>
+        //internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
+        //{
+        //    var expected = new List<string>
+        //        {
+        //            MFCC_OD.key_CC_COUNT,
+        //            MFCC_OD.key_DCT_DURATION,
+        //            MFCC_OD.key_DELTA_T,
+        //            MFCC_OD.key_DO_MELSCALE,
+        //            MFCC_OD.key_DRAW_SONOGRAMS,
+        //            MFCC_OD.key_DYNAMIC_RANGE,
+        //            MFCC_OD.key_EVENT_THRESHOLD,
+        //            MFCC_OD.key_FRAME_OVERLAP,
+        //            MFCC_OD.key_FRAME_SIZE,
+        //            MFCC_OD.key_INCLUDE_DELTA,
+        //            MFCC_OD.key_INCLUDE_DOUBLE_DELTA,
+        //            MFCC_OD.key_MAX_DURATION,
+        //            MFCC_OD.key_MAX_HZ,
+        //            MFCC_OD.key_MAX_OSCIL_FREQ,
+        //            MFCC_OD.key_MIN_AMPLITUDE,
+        //            MFCC_OD.key_MIN_DURATION,
+        //            MFCC_OD.key_MIN_HZ,
+        //            MFCC_OD.key_MIN_OSCIL_FREQ,
+        //            MFCC_OD.key_NOISE_REDUCTION_TYPE
+        //        };
 
-            // upzip resources file into new folder in working dir.
-            const string ZipFolderName = "UnzipedResources";
-            var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
-            if (!Directory.Exists(unzipDir))
-            {
-                Directory.CreateDirectory(unzipDir);
-            }
+        //    // upzip resources file into new folder in working dir.
+        //    const string ZipFolderName = "UnzipedResources";
+        //    var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
+        //    if (!Directory.Exists(unzipDir))
+        //    {
+        //        Directory.CreateDirectory(unzipDir);
+        //    }
 
-            ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
+        //    ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
 
-            // only used for lewin's rail for now.
+        //    // only used for lewin's rail for now.
 
-            // list of doubles
-            var doublesFile = Path.Combine(unzipDir, "FV1_KEKKEK1.txt");
-            double[] fv = FileTools.ReadDoubles2Vector(doublesFile);
+        //    // list of doubles
+        //    var doublesFile = Path.Combine(unzipDir, "FV1_KEKKEK1.txt");
+        //    double[] fv = FileTools.ReadDoubles2Vector(doublesFile);
 
-            // ini file
-            var iniFile = Path.Combine(unzipDir, "Template_KEKKEK1.txt");
+        //    // ini file
+        //    var iniFile = Path.Combine(unzipDir, "Template_KEKKEK1.txt");
 
-            // append to settings file
-            File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
+        //    // append to settings file
+        //    File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
 
-            // settings
-            var config = new ConfigDictionary(settingsFile.FullName);
-            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
+        //    // settings
+        //    var config = new ConfigDictionary(settingsFile.FullName);
+        //    var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
+        //    ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
-            int windowSize = Int32.Parse(dict[MFCC_OD.key_FRAME_SIZE]);
-            double frameOverlap = Double.Parse(dict[MFCC_OD.key_FRAME_OVERLAP]);
-            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[MFCC_OD.key_NOISE_REDUCTION_TYPE]);
-            double dynamicRange = Double.Parse(dict[MFCC_OD.key_DYNAMIC_RANGE]);
-            int minHz = Int32.Parse(dict[MFCC_OD.key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[MFCC_OD.key_MAX_HZ]);
-            int ccCount = Int32.Parse(dict[MFCC_OD.key_CC_COUNT]);
-            bool doMelScale = Boolean.Parse(dict[MFCC_OD.key_DO_MELSCALE]);
-            bool includeDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DELTA]);
-            bool includeDoubleDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DOUBLE_DELTA]);
-            int deltaT = Int32.Parse(dict[MFCC_OD.key_DELTA_T]);
-            double dctDuration = Double.Parse(dict[MFCC_OD.key_DCT_DURATION]);
-            int minOscilFreq = Int32.Parse(dict[MFCC_OD.key_MIN_OSCIL_FREQ]);
-            int maxOscilFreq = Int32.Parse(dict[MFCC_OD.key_MAX_OSCIL_FREQ]);
-            double minAmplitude = Double.Parse(dict[MFCC_OD.key_MIN_AMPLITUDE]);
-            double eventThreshold = Double.Parse(dict[MFCC_OD.key_EVENT_THRESHOLD]);
-            double minDuration = Double.Parse(dict[MFCC_OD.key_MIN_DURATION]);
-            double maxDuration = Double.Parse(dict[MFCC_OD.key_MAX_DURATION]);
-            int DRAW_SONOGRAMS = Int32.Parse(dict[MFCC_OD.key_DRAW_SONOGRAMS]);
+        //    int windowSize = Int32.Parse(dict[MFCC_OD.key_FRAME_SIZE]);
+        //    double frameOverlap = Double.Parse(dict[MFCC_OD.key_FRAME_OVERLAP]);
+        //    NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[MFCC_OD.key_NOISE_REDUCTION_TYPE]);
+        //    double dynamicRange = Double.Parse(dict[MFCC_OD.key_DYNAMIC_RANGE]);
+        //    int minHz = Int32.Parse(dict[MFCC_OD.key_MIN_HZ]);
+        //    int maxHz = Int32.Parse(dict[MFCC_OD.key_MAX_HZ]);
+        //    int ccCount = Int32.Parse(dict[MFCC_OD.key_CC_COUNT]);
+        //    bool doMelScale = Boolean.Parse(dict[MFCC_OD.key_DO_MELSCALE]);
+        //    bool includeDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DELTA]);
+        //    bool includeDoubleDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DOUBLE_DELTA]);
+        //    int deltaT = Int32.Parse(dict[MFCC_OD.key_DELTA_T]);
+        //    double dctDuration = Double.Parse(dict[MFCC_OD.key_DCT_DURATION]);
+        //    int minOscilFreq = Int32.Parse(dict[MFCC_OD.key_MIN_OSCIL_FREQ]);
+        //    int maxOscilFreq = Int32.Parse(dict[MFCC_OD.key_MAX_OSCIL_FREQ]);
+        //    double minAmplitude = Double.Parse(dict[MFCC_OD.key_MIN_AMPLITUDE]);
+        //    double eventThreshold = Double.Parse(dict[MFCC_OD.key_EVENT_THRESHOLD]);
+        //    double minDuration = Double.Parse(dict[MFCC_OD.key_MIN_DURATION]);
+        //    double maxDuration = Double.Parse(dict[MFCC_OD.key_MAX_DURATION]);
+        //    int DRAW_SONOGRAMS = Int32.Parse(dict[MFCC_OD.key_DRAW_SONOGRAMS]);
 
-            var results = MFCC_OD.Execute_CallDetect(
-                audioFile.FullName,
-                minHz,
-                maxHz,
-                windowSize,
-                frameOverlap,
-                nrt,
-                dynamicRange,
-                doMelScale,
-                ccCount,
-                includeDelta,
-                includeDoubleDelta,
-                deltaT,
-                fv,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                minAmplitude,
-                eventThreshold,
-                minDuration,
-                maxDuration);
+        //    var results = MFCC_OD.Execute_CallDetect(
+        //        audioFile.FullName,
+        //        minHz,
+        //        maxHz,
+        //        windowSize,
+        //        frameOverlap,
+        //        nrt,
+        //        dynamicRange,
+        //        doMelScale,
+        //        ccCount,
+        //        includeDelta,
+        //        includeDoubleDelta,
+        //        deltaT,
+        //        fv,
+        //        dctDuration,
+        //        minOscilFreq,
+        //        maxOscilFreq,
+        //        minAmplitude,
+        //        eventThreshold,
+        //        minDuration,
+        //        maxDuration);
 
-            var events = results.Item4;
+        //    var events = results.Item4;
 
-            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
+        //    SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
-            // AcousticEvent results
-            return
-                events.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
-        }
+        //    // AcousticEvent results
+        //    return
+        //        events.Select(
+        //            ae =>
+        //            ProcessingUtils.GetProcessorResultTag(
+        //                ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        //}
 
         /// <summary>
         /// HTK template Recogniser.

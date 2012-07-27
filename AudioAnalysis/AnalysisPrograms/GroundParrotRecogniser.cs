@@ -10,7 +10,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.IO;
 
-    using AnalysisPrograms.Processing;
+    //using AnalysisPrograms.Processing;
 
     using AudioAnalysisTools;
 
@@ -190,7 +190,7 @@ namespace AnalysisPrograms
 
                 string outputFolder = Path.GetDirectoryName(iniPath) ?? @"C:\SensorNetworks\Output\";
                 AED.GenerateImage(wavFilePath, outputFolder, result.Item1, eprEvents);
-                ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
+                //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
                 Log.WriteLine("Finished");
             }

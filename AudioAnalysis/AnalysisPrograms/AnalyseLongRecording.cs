@@ -76,7 +76,7 @@ namespace AnalysisPrograms
 
             if (verbose)
             {
-                Console.WriteLine("# Output folder =" + outputDir);
+                Console.WriteLine("# Output folder:  " + outputDir);
                 Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             }
 

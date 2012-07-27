@@ -130,6 +130,7 @@
     <Compile Include="AcousticFeatures.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalysisTemplate.cs" />
+    <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
@@ -151,21 +152,16 @@
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="AnalyseLongRecording.cs" />
-    <Compile Include="Process\AnalysisHelpers.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
     <Compile Include="FrogRibit.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
-    <Compile Include="DimReduction.cs" />
     <Compile Include="FeltTemplate_Create.cs" />
     <Compile Include="FeltTemplates_Use.cs" />
-    <Compile Include="MFCC_OD.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
-    <Compile Include="Processing\ProcessingTypes.cs" />
-    <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
