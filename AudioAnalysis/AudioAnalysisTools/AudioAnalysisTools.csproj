@@ -164,6 +164,7 @@
     <Compile Include="AudioSegmentation.cs" />
     <Compile Include="HMMSettings.cs" />
     <Compile Include="Keys.cs" />
+    <Compile Include="SonogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />
     <Compile Include="NeuralNets\BinaryCluster.cs" />
