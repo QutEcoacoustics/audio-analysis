@@ -79,10 +79,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             if (true)
@@ -114,7 +114,7 @@ namespace AnalysisPrograms
             if (status != 0)
             {
                 Console.WriteLine("\n\n# FATAL ERROR. CANNOT PROCEED!");
-                Console.WriteLine("# ANALYSIS RETURNED STATUS CODE: "+status);
+                Console.WriteLine("# ANALYSIS RETURNED STATUS CODE: " + status);
                 Console.ReadLine();
                 System.Environment.Exit(99);
             }
@@ -273,12 +273,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -308,7 +308,7 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF    = analysisSettings.AudioFile;
+            var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
             var analysisResults = new AnalysisResult();
@@ -397,15 +397,15 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, Double[,], Plot, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
-            int minHz           = Int32.Parse(configDict[Keys.MIN_HZ]);
-            int maxHz           = Int32.Parse(configDict[Keys.MAX_HZ]);
+            int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
+            int maxHz = Int32.Parse(configDict[Keys.MAX_HZ]);
             //double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);    //BETTER TO CALUCLATE THIS. IGNORE USER!
-            double dctDuration  = Double.Parse(configDict[Keys.DCT_DURATION]);       //duration of DCT in seconds 
+            double dctDuration = Double.Parse(configDict[Keys.DCT_DURATION]);       //duration of DCT in seconds 
             double dctThreshold = Double.Parse(configDict[Keys.DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-            int minOscilFreq    = Int32.Parse(configDict[Keys.MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
-            int maxOscilFreq    = Int32.Parse(configDict[Keys.MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
-            double minDuration  = Double.Parse(configDict[Keys.MIN_DURATION]);       //min duration of event in seconds 
-            double maxDuration  = Double.Parse(configDict[Keys.MAX_DURATION]);       //max duration of event in seconds 
+            int minOscilFreq = Int32.Parse(configDict[Keys.MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
+            int maxOscilFreq = Int32.Parse(configDict[Keys.MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
+            double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);       //min duration of event in seconds 
+            double maxDuration = Double.Parse(configDict[Keys.MAX_DURATION]);       //max duration of event in seconds 
             double eventThreshold = Double.Parse(configDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
@@ -422,7 +422,7 @@ namespace AnalysisPrograms
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize  = frameSize;
+            sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
@@ -478,16 +478,16 @@ namespace AnalysisPrograms
             bool[] partOfTriple = new bool[count];
             for (int i = 1; i < count - 1; i++)
             {
-                double leftGap = eventCentres[i] - eventCentres[i-1];
-                double rghtGap = eventCentres[i+1] - eventCentres[i];
+                double leftGap = eventCentres[i] - eventCentres[i - 1];
+                double rghtGap = eventCentres[i + 1] - eventCentres[i];
                 bool leftGapCorrect = (leftGap > 1.4) && (leftGap < 2.6); //centres between 1.5 and 2.5 s separated.
                 bool rghtGapCorrect = (rghtGap > 1.4) && (rghtGap < 2.6);
 
                 if (leftGapCorrect && rghtGapCorrect)
                 {
-                    partOfTriple[i-1] = true;
-                    partOfTriple[i]   = true;
-                    partOfTriple[i+1] = true;
+                    partOfTriple[i - 1] = true;
+                    partOfTriple[i] = true;
+                    partOfTriple[i + 1] = true;
                 }
             }
 
@@ -550,9 +550,9 @@ namespace AnalysisPrograms
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
                 row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;    //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
+                row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -622,7 +622,7 @@ namespace AnalysisPrograms
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
             //get its column headers
             var dtHeaders = new List<string>();
-            var dtTypes   = new List<Type>();
+            var dtTypes = new List<Type>();
             foreach (DataColumn col in dt.Columns)
             {
                 dtHeaders.Add(col.ColumnName);
@@ -643,7 +643,7 @@ namespace AnalysisPrograms
 
             //now determine how to display tracks in display datatable
             Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay   = new bool[displayHeaders.Count];
+            bool[] canDisplay = new bool[displayHeaders.Count];
             for (int i = 0; i < displayTypes.Length; i++)
             {
                 displayTypes[i] = typeof(double);
@@ -658,7 +658,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
                     if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else               newRow[displayHeaders[i]] = 0.0;
+                    else newRow[displayHeaders[i]] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
             }

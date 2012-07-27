@@ -79,7 +79,15 @@
 
             var tempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
 
-            this.audioUtility.Convert(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav);
+            var audioUtilRequest = new AudioUtilityRequest
+            {
+                MixDownToMono = true,
+                OffsetStart = request.Start,
+                OffsetEnd = request.End,
+                SampleRate = 22050
+            };
+
+            this.audioUtility.Segment(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 
             Bitmap sourceImage;
 

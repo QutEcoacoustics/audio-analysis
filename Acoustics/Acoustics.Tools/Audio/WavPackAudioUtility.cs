@@ -89,78 +89,50 @@
         /// <param name="end">
         /// The end time relative to the start of the <paramref name="source"/> file.
         /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end)
+        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            ValidateStartEnd(start, end);
+            request.ValidateChecked();
 
-            CanProcess(source, new[] { MediaTypes.MediaTypeWavpack }, null);
+            this.CanProcess(source, new[] { MediaTypes.MediaTypeWavpack }, null);
 
-            CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
+            this.CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
 
             var process = new ProcessRunner(this.wavUnpack.FullName);
 
-            var sb = new StringBuilder(ArgsDefault);
+            string args;
 
-            if (start.HasValue && start.Value > TimeSpan.Zero)
+            // only deals with start and end, does not do anything with sampling, channels or bit rate.
+            if (request.OffsetStart.HasValue || request.OffsetEnd.HasValue)
             {
-                sb.AppendFormat(ArgsSkip, FormatTimeSpan(start.Value));
-            }
-
-            if (end.HasValue && end.Value > TimeSpan.Zero)
-            {
-                if (start.HasValue && start.Value > TimeSpan.Zero)
+                var sb = new StringBuilder(ArgsDefault);
+                if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
                 {
-                    sb.AppendFormat(ArgsUtil, "+", FormatTimeSpan(end.Value - start.Value));
+                    sb.AppendFormat(ArgsSkip, FormatTimeSpan(request.OffsetStart.Value));
                 }
-                else
+
+                if (request.OffsetEnd.HasValue && request.OffsetEnd.Value > TimeSpan.Zero)
                 {
-                    sb.Append(string.Format(ArgsUtil, string.Empty, FormatTimeSpan(end.Value)));
+                    if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
+                    {
+                        sb.AppendFormat(ArgsUtil, "+", FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value));
+                    }
+                    else
+                    {
+                        sb.Append(string.Format(ArgsUtil, string.Empty, FormatTimeSpan(request.OffsetEnd.Value)));
+                    }
                 }
+
+                sb.AppendFormat(ArgsFile, source.FullName);
+                sb.AppendFormat(ArgsFile, output.FullName);
+
+                args = sb.ToString();
             }
-
-            sb.AppendFormat(ArgsFile, source.FullName);
-            sb.AppendFormat(ArgsFile, output.FullName);
-
-            string args = sb.ToString();
-
-            this.RunExe(process, args, output.DirectoryName);
-
-            if (Log.IsDebugEnabled)
+            else
             {
-                Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+                args = string.Format(" -m -q -w \"{0}\" \"{1}\" ", source.FullName, output.FullName);
             }
-        }
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        public void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
-        {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            CanProcess(source, new[] { MediaTypes.MediaTypeWavpack }, null);
-
-            CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
-
-            var process = new ProcessRunner(this.wavUnpack.FullName);
-
-            string args = string.Format(" -y -m -q -w \"{0}\" \"{1}\" ", source.FullName, output.FullName);
 
             this.RunExe(process, args, output.DirectoryName);
 

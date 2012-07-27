@@ -14,51 +14,30 @@
         /// <paramref name="output"/> file will be created.
         /// </summary>
         /// <param name="source">
-        /// The source audio file.
+        /// The <paramref name="source"/> audio file.
         /// </param>
         /// <param name="sourceMimeType">
-        /// The source Mime Type.
+        /// The <paramref name="source"/> Mime Type.
         /// </param>
         /// <param name="output">
-        /// The output audio file. Ensure the file does not exist.
+        /// The <paramref name="output"/> audio file. Ensure the file does not exist.
         /// </param>
         /// <param name="outputMimeType">
-        /// The output Mime Type.
+        /// The <paramref name="output"/> Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The segment <paramref name="request"/>.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end);
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file. Ensure the file does not exist.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType);
+        void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request);
 
         /// <summary>
         /// Calculate duration of <paramref name="source"/> audio file.
         /// </summary>
         /// <param name="source">
-        /// The source audio file.
+        /// The <paramref name="source"/> audio file.
         /// </param>
         /// <param name="sourceMimeType">
-        /// The source Mime Type.
+        /// The <paramref name="source"/> Mime Type.
         /// </param>
         /// <returns>
         /// Duration of <paramref name="source"/> audio file.
@@ -66,10 +45,10 @@
         TimeSpan Duration(FileInfo source, string sourceMimeType);
 
         /// <summary>
-        /// Get metadata for the given file.
+        /// Get meta data for the given file.
         /// </summary>
-        /// <param name="source">File to get metadata from. This should be an audio file.</param>
-        /// <returns>A dictionary containing metadata for the given file.</returns>
+        /// <param name="source">File to get meta data from. This should be an audio file.</param>
+        /// <returns>A dictionary containing meta data for the given file.</returns>
         Dictionary<string, string> Info(FileInfo source);
     }
 }

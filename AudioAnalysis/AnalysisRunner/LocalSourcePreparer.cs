@@ -45,9 +45,9 @@ namespace AnalysisRunner
         /// </returns>
         public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
-            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, startOffset, endOffset, targetSampleRateHz);
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, SampleRate = targetSampleRateHz });
 
-            var audioUtility = this.GetNewAudioUtility(targetSampleRateHz);
+            var audioUtility = this.GetNewAudioUtility();
             var preparedFileDuration = audioUtility.Duration(preparedFile, MediaTypes.GetMediaType(preparedFile.Extension));
 
             return new FileSegment { OriginalFileDuration = preparedFileDuration, OriginalFile = preparedFile };
@@ -67,7 +67,7 @@ namespace AnalysisRunner
         /// </returns>
         public IEnumerable<FileSegment> CalculateSegments(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings)
         {
-            var audioUtility = this.GetNewAudioUtility(settings.SegmentTargetSampleRate);
+            var audioUtility = this.GetNewAudioUtility();
 
             var defaultAnalysisSegmentMinDuration = TimeSpan.FromSeconds(10);
 
@@ -148,8 +148,7 @@ namespace AnalysisRunner
         /// </returns>
         private IEnumerable<FileInfo> PrepareFiles(AnalysisSettings analysisSettings, IEnumerable<FileSegment> fileSegments)
         {
-            var audioUtility = new MasterAudioUtility(
-                analysisSettings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
 
             foreach (var fileSegment in fileSegments)
             {
@@ -218,12 +217,16 @@ namespace AnalysisRunner
                     if (!File.Exists(path.FullName))
                     {
                         audioUtility.Segment(
-                        fileSegment.OriginalFile,
-                        mediaType,
-                        path,
-                        analysisSettings.SegmentMediaType,
-                        offset.Minimum,
-                        offset.Maximum);
+                            fileSegment.OriginalFile,
+                            mediaType,
+                            path,
+                            analysisSettings.SegmentMediaType,
+                            new AudioUtilityRequest
+                                {
+                                    OffsetStart = offset.Minimum,
+                                    OffsetEnd = offset.Maximum,
+                                    SampleRate = analysisSettings.SegmentTargetSampleRate
+                                });
                     }
 
                     yield return path;
@@ -231,9 +234,9 @@ namespace AnalysisRunner
             }
         }
 
-        private IAudioUtility GetNewAudioUtility(int targetSampleRateHz)
+        private IAudioUtility GetNewAudioUtility()
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRateHz, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
             return audioUtility;
         }
     }

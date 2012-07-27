@@ -23,7 +23,7 @@ namespace AnalysisPrograms
     public class Acoustic : IAnalyser
     {
         //TASK IDENTIFIERS
-        public const string task_ANALYSE  = "analysis";
+        public const string task_ANALYSE = "analysis";
         public const string task_LOAD_CSV = "loadCsv";
 
         //OTHER CONSTANTS
@@ -62,9 +62,9 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName = string.Format("{0}_{1}min.wav",             segmentFileStem, startMinute);
-            var sonogramFname = string.Format("{0}_{1}min.png",            segmentFileStem, startMinute);
-            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv",   segmentFileStem, startMinute, identifier);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
             var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
@@ -146,8 +146,8 @@ namespace AnalysisPrograms
                         ExecuteAnalysis(restOfArgs);
                         break;
                     case task_LOAD_CSV:     // loads a csv file for visualisation
-                        string[] defaultColumns2Display = { "avAmp-dB","snr-dB","bg-dB","activity","segCount","avSegDur","hfCover","mfCover","lfCover","H[ampl]","H[avSpectrum]","#clusters","avClustDur" };
-                        var fiCsvFile    = new FileInfo(restOfArgs[0]);
+                        string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
+                        var fiCsvFile = new FileInfo(restOfArgs[0]);
                         var fiConfigFile = new FileInfo(restOfArgs[1]);
                         //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
                         IAnalyser analyser = new Acoustic();
@@ -226,41 +226,41 @@ namespace AnalysisPrograms
                     analysisSettings.AudioFile = new FileInfo(outputWavPath);
                 }
                 else
-                if (parts[0].StartsWith("-indices"))
-                {
-                  string indicesPath = Path.Combine(outputDir, parts[1]);
-                   analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                }
-                else
-                if (parts[0].StartsWith("-start"))
-                {
-                   int s = Int32.Parse(parts[1]);
-                   tsStart = new TimeSpan(0, 0, s);
-                }
-                else
-                if (parts[0].StartsWith("-duration"))
-                {
-                    int s = Int32.Parse(parts[1]);
-                    tsDuration = new TimeSpan(0, 0, s);
-                    if (tsDuration.TotalMinutes > 10)
+                    if (parts[0].StartsWith("-indices"))
                     {
-                         Console.WriteLine("Segment duration cannot exceed 10 minutes.");
-                         status = 3;
-                         return status;
+                        string indicesPath = Path.Combine(outputDir, parts[1]);
+                        analysisSettings.IndicesFile = new FileInfo(indicesPath);
                     }
-                }//if
+                    else
+                        if (parts[0].StartsWith("-start"))
+                        {
+                            int s = Int32.Parse(parts[1]);
+                            tsStart = new TimeSpan(0, 0, s);
+                        }
+                        else
+                            if (parts[0].StartsWith("-duration"))
+                            {
+                                int s = Int32.Parse(parts[1]);
+                                tsDuration = new TimeSpan(0, 0, s);
+                                if (tsDuration.TotalMinutes > 10)
+                                {
+                                    Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                                    status = 3;
+                                    return status;
+                                }
+                            }//if
             } //for
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, AcousticFeatures.RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, AcousticFeatures.RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -299,8 +299,8 @@ namespace AnalysisPrograms
             //string key_GET_ANNOTATED_SONOGRAM = "ANNOTATE_SONOGRAM";
             //configDict.Add(key_GET_ANNOTATED_SONOGRAM, Boolean.FalseString);
             //if (analysisSettings.ImageFile != null) configDict[key_GET_ANNOTATED_SONOGRAM] = Boolean.TrueString;
-    
-            var fiAudioF    = analysisSettings.AudioFile;
+
+            var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
             var analysisResults = new AnalysisResult();
@@ -313,11 +313,11 @@ namespace AnalysisPrograms
             //######################################################################
 
             if (results == null) return analysisResults; //nothing to process 
-            analysisResults.Data          = results.Item1;
+            analysisResults.Data = results.Item1;
             analysisResults.AudioDuration = results.Item2;
-            var sonogram                  = results.Item3;
-            var hits                      = results.Item4;
-            var scores                    = results.Item5;
+            var sonogram = results.Item3;
+            var hits = results.Item4;
+            var scores = results.Item5;
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
@@ -351,7 +351,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             double eventThreshold = 0.2;
-            if (scores != null) foreach(double[] track in scores) image.AddTrack(Image_Track.GetScoreTrack(track, 0.0, 1.0, eventThreshold));
+            if (scores != null) foreach (double[] track in scores) image.AddTrack(Image_Track.GetScoreTrack(track, 0.0, 1.0, eventThreshold));
             if (hits != null) image.OverlayRainbowTransparency(hits);
             return image.GetImage();
         } //DrawSonogram()
@@ -364,7 +364,7 @@ namespace AnalysisPrograms
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
             //get its column headers
             var dtHeaders = new List<string>();
-            var dtTypes   = new List<Type>();
+            var dtTypes = new List<Type>();
             foreach (DataColumn col in dt.Columns)
             {
                 dtHeaders.Add(col.ColumnName);
@@ -385,12 +385,12 @@ namespace AnalysisPrograms
 
             //now determine how to display tracks in display datatable
             Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay   = new bool[displayHeaders.Count];
+            bool[] canDisplay = new bool[displayHeaders.Count];
             for (int i = 0; i < displayTypes.Length; i++)
             {
                 displayTypes[i] = typeof(double);
                 canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;             
+                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
@@ -400,7 +400,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < canDisplay.Length; i++)
                 {
                     if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else               newRow[displayHeaders[i]] = 0.0;
+                    else newRow[displayHeaders[i]] = 0.0;
                 }
                 table2Display.Rows.Add(newRow);
             }

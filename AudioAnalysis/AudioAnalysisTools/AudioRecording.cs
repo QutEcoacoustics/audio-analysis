@@ -2,6 +2,7 @@
 {
     using System;
 
+    using Acoustics.Tools;
     using Acoustics.Tools.Wav;
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
@@ -397,7 +398,17 @@
             var sourceDuration = audioUtility.Duration(sourceFile, mimeType); // Get duration of the source file
             int startMilliseconds = 0;
             int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
-            MasterAudioUtility.SegmentToWav(resampleRate, sourceFile, new FileInfo(opPath), startMilliseconds, endMilliseconds);
+
+            MasterAudioUtility.SegmentToWav(
+                sourceFile,
+                new FileInfo(opPath),
+                new AudioUtilityRequest
+                    {
+                        SampleRate = resampleRate,
+                        OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                    });
+
             return new AudioRecording(opPath);
         }
 
@@ -418,7 +429,15 @@
             int endMilliseconds = (int)(end.TotalMilliseconds + buffer.TotalMilliseconds);
             if (startMilliseconds < 0) startMilliseconds = 0;
             //if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
-            MasterAudioUtility.Segment(resampleRate, fiSource, fiOutputSegment, startMilliseconds, endMilliseconds);
+            MasterAudioUtility.Segment(
+                fiSource,
+                fiOutputSegment,
+                new AudioUtilityRequest
+                    {
+                        SampleRate = resampleRate,
+                        OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                    });
         }
 
 

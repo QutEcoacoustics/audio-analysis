@@ -54,26 +54,24 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end)
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            ValidateStartEnd(start, end);
+            request.ValidateChecked();
 
-            CanProcess(source, new[] { MediaTypes.MediaTypeMp3 }, null);
+            this.CanProcess(source, new[] { MediaTypes.MediaTypeMp3 }, null);
 
-            CanProcess(output, new[] { MediaTypes.MediaTypeMp3 }, null);
+            this.CanProcess(output, new[] { MediaTypes.MediaTypeMp3 }, null);
 
             var process = new ProcessRunner(this.mp3SpltExe.FullName);
 
-            string args = CreateSingleSegmentArguments(source, output, start, end);
+            string args = CreateSingleSegmentArguments(source, output, request);
 
             this.RunExe(process, args, output.DirectoryName);
 
@@ -82,28 +80,6 @@
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
                 this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
             }
-        }
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        /// <exception cref="NotSupportedException"><c>NotSupportedException</c>.</exception>
-        public void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
-        {
-            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -146,16 +122,13 @@
         /// <param name="output">
         /// The output.
         /// </param>
-        /// <param name="start">
-        /// Start in milliseconds from start of audio file.
-        /// </param>
-        /// <param name="end">
-        /// End in milliseconds from start of audio file.
+        /// <param name="request">
+        /// The request.
         /// </param>
         /// <returns>
         /// Argument string.
         /// </returns>
-        private static string CreateSingleSegmentArguments(FileInfo source, FileInfo output, TimeSpan? start, TimeSpan? end)
+        private static string CreateSingleSegmentArguments(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             var sb = new StringBuilder();
 
@@ -176,7 +149,7 @@
             // input file
             sb.Append("  \"" + source.FullName.TrimEnd('\\', '"').Replace("\"", string.Empty) + "\" ");
 
-            TimeSpan calcStart = start.HasValue ? start.Value : TimeSpan.Zero;
+            TimeSpan calcStart = request.OffsetStart.HasValue ? request.OffsetStart.Value : TimeSpan.Zero;
 
             // must have a start if end is specified
             if (calcStart > TimeSpan.Zero)
@@ -189,9 +162,9 @@
             }
 
             // end time
-            if (end.HasValue && end.Value > calcStart)
+            if (request.OffsetEnd.HasValue && request.OffsetEnd.Value > calcStart)
             {
-                sb.Append(" " + FormatTimeSpan(end.Value) + " ");
+                sb.Append(" " + FormatTimeSpan(request.OffsetEnd.Value) + " ");
             }
             else
             {

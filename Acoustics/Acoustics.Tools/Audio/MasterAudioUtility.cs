@@ -22,27 +22,9 @@
         private readonly SoxAudioUtility soxUtility;
 
         /// <summary>
-        /// Creates a new audio utility that can be used to convert and segment audio, 
-        /// and to get information about audio.
-        /// Will use 22050 hz and Medium quality for sox.
-        /// </summary>
-        public MasterAudioUtility()
-            : this(22050, SoxAudioUtility.SoxResampleQuality.VeryHigh)
-        { }
-
-        /// <summary>
-        /// Creates a new audio utility that can be used to convert and segment audio, 
-        /// and to get information about audio.
-        /// Will use Medium quality for sox.
-        /// </summary>
-        public MasterAudioUtility(int targetSampleRate)
-            : this(targetSampleRate, SoxAudioUtility.SoxResampleQuality.Medium)
-        { }
-
-        /// <summary>
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// </summary>
-        public MasterAudioUtility(int targetSampleRate, SoxAudioUtility.SoxResampleQuality resampleQuality)
+        public MasterAudioUtility()
         {
             DirectoryInfo assemblyDir = AppConfigHelper.IsAspNet
                                             ? new DirectoryInfo(AppConfigHelper.WebsiteBasePath)
@@ -51,7 +33,7 @@
             this.wvunpackUtility = InitWavUnpack(assemblyDir);
             this.mp3SpltUtility = InitMp3Splt(assemblyDir);
             this.ffmpegUtility = InitFfmpeg(assemblyDir);
-            this.soxUtility = InitSox(assemblyDir, targetSampleRate, resampleQuality);
+            this.soxUtility = InitSox(assemblyDir);
         }
 
         /// <summary>
@@ -86,20 +68,17 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, TimeSpan? start, TimeSpan? end)
+        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
             sourceMimeType = MediaTypes.CanonicaliseMediaType(sourceMimeType);
             outputMimeType = MediaTypes.CanonicaliseMediaType(outputMimeType);
 
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            ValidateStartEnd(start, end);
+            request.ValidateChecked();
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
@@ -109,7 +88,7 @@
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                 // use wvunpack to segment and convert to wav.
-                this.wvunpackUtility.Segment(source, MediaTypes.MediaTypeWavpack, wavunpackTempFile, MediaTypes.MediaTypeWav, start, end);
+                this.wvunpackUtility.Segment(source, MediaTypes.MediaTypeWavpack, wavunpackTempFile, MediaTypes.MediaTypeWav, request);
 
                 // use a temp file to run sox.
                 var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -117,7 +96,7 @@
                 if (this.soxUtility != null)
                 {
                     // if sox is available, use it.
-                    this.soxUtility.Convert(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+                    this.soxUtility.Segment(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
                 }
                 else
                 {
@@ -128,7 +107,7 @@
                 if (outputMimeType != MediaTypes.MediaTypeWav)
                 {
                     // if outpu format is not wav, convert it
-                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
                 }
                 else
                 {
@@ -148,7 +127,7 @@
                 var mp3SpltTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
 
                 // use mp3splt to segment mp3.
-                this.mp3SpltUtility.Segment(source, sourceMimeType, mp3SpltTempFile, MediaTypes.MediaTypeMp3, start, end);
+                this.mp3SpltUtility.Segment(source, sourceMimeType, mp3SpltTempFile, MediaTypes.MediaTypeMp3, request);
 
                 if (this.soxUtility != null)
                 {
@@ -156,16 +135,16 @@
                     var wavtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // convert to wav
-                    this.ffmpegUtility.Convert(mp3SpltTempFile, MediaTypes.MediaTypeMp3, wavtempfile, MediaTypes.MediaTypeWav);
+                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeMp3, wavtempfile, MediaTypes.MediaTypeWav, request);
 
                     // use a temp file to run sox.
                     var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // run sox
-                    this.soxUtility.Convert(wavtempfile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+                    this.soxUtility.Segment(wavtempfile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
 
                     // convert to output format
-                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
 
                     // delete temp files
                     wavtempfile.SafeDeleteFile();
@@ -174,7 +153,7 @@
                 else
                 {
                     // if sox is not available, just convert to output format.
-                    this.ffmpegUtility.Convert(mp3SpltTempFile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
                 }
 
                 // delete temp files
@@ -191,16 +170,16 @@
                     var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // use ffmpeg to segment.
-                    this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, start, end);
+                    this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, request);
 
                     // use a temp file to run sox.
                     var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // run sox
-                    this.soxUtility.Convert(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+                    this.soxUtility.Segment(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
 
                     // convert to output format
-                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
 
                     // delete temp files
                     ffmpegTempFile.SafeDeleteFile();
@@ -209,7 +188,7 @@
                 else
                 {
                     // use ffmpeg to segment and convert.
-                    this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, start, end);
+                    this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, request);
                 }
 
             }
@@ -238,6 +217,7 @@
 
             ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
+            var request = new AudioUtilityRequest { MixDownToMono = false };
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
@@ -247,7 +227,7 @@
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                 // use wvunpack to segment and convert to wav.
-                this.wvunpackUtility.Convert(source, MediaTypes.MediaTypeWavpack, wavunpackTempFile, MediaTypes.MediaTypeWav);
+                this.wvunpackUtility.Segment(source, MediaTypes.MediaTypeWavpack, wavunpackTempFile, MediaTypes.MediaTypeWav, request);
 
                 // use a temp file to run sox.
                 var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -255,7 +235,7 @@
                 if (this.soxUtility != null)
                 {
                     // if sox is available, use it.
-                    this.soxUtility.Convert(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+                    this.soxUtility.Segment(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
                 }
                 else
                 {
@@ -266,7 +246,7 @@
                 if (outputMimeType != MediaTypes.MediaTypeWav)
                 {
                     // if outpu format is not wav, convert it
-                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
                 }
                 else
                 {
@@ -288,16 +268,16 @@
                     var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // use ffmpeg to convert.
-                    this.ffmpegUtility.Convert(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav);
+                    this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, request);
 
                     // use a temp file to run sox.
                     var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // run sox
-                    this.soxUtility.Convert(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+                    this.soxUtility.Segment(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
 
                     // convert to output format
-                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
 
                     // delete temp files
                     ffmpegTempFile.SafeDeleteFile();
@@ -306,7 +286,7 @@
                 else
                 {
                     // use ffmpeg to convert.
-                    this.ffmpegUtility.Convert(source, sourceMimeType, output, outputMimeType);
+                    this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, request);
                 }
             }
         }
@@ -377,27 +357,25 @@
 
         }
 
-        public static void Segment(int targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
+        public static void Segment(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
             audioUtility.Segment(
                 source,
                 MediaTypes.GetMediaType(source.Extension),
                 output,
                 MediaTypes.GetMediaType(output.Extension),
-                TimeSpan.FromMilliseconds(startMilliseconds),
-                TimeSpan.FromMilliseconds(endMilliseconds));
+                request);
         }
 
-        public static void Segment(MasterAudioUtility audioUtility, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
+        public static void Segment(MasterAudioUtility audioUtility, FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             audioUtility.Segment(
                 source,
                 MediaTypes.GetMediaType(source.Extension),
                 output,
                 MediaTypes.GetMediaType(output.Extension),
-                TimeSpan.FromMilliseconds(startMilliseconds),
-                TimeSpan.FromMilliseconds(endMilliseconds));
+                request);
         }
 
         /// <summary>
@@ -413,12 +391,16 @@
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void Convert(int targetSampleRate, FileInfo source, FileInfo output)
+        public static void Convert(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
 
-            audioUtility.Convert(
-                source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension));
+            audioUtility.Segment(
+                source,
+                MediaTypes.GetMediaType(source.Extension),
+                output,
+                MediaTypes.GetMediaType(output.Extension),
+                request);
         }
 
         /// <summary>
@@ -434,12 +416,12 @@
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void ConvertToWav(int targetSampleRate, FileInfo source, FileInfo output)
+        public static void ConvertToWav(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
 
-            audioUtility.Convert(
-                source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.MediaTypeWav);
+            audioUtility.Segment(
+                source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.MediaTypeWav, request);
         }
 
         /// <summary>
@@ -451,23 +433,22 @@
         /// <param name="output">
         /// The destination wav path.
         /// </param>
-        /// <param name="targetSampleRate"></param>
-        /// <param name="startMilliseconds"></param>
-        /// <param name="endMilliseconds"></param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void SegmentToWav(int targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
+        public static void SegmentToWav(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
 
             audioUtility.Segment(
                 source,
                 MediaTypes.GetMediaType(source.Extension),
                 output,
                 MediaTypes.MediaTypeWav,
-                TimeSpan.FromMilliseconds(startMilliseconds),
-                TimeSpan.FromMilliseconds(endMilliseconds));
+                request);
         }
 
         private static WavPackAudioUtility InitWavUnpack(DirectoryInfo baseDir)
@@ -506,13 +487,13 @@
             return ffmpegUtility;
         }
 
-        private static SoxAudioUtility InitSox(DirectoryInfo baseDir, int? targetSampleRate, SoxAudioUtility.SoxResampleQuality? resampleQuality)
+        private static SoxAudioUtility InitSox(DirectoryInfo baseDir)
         {
             var soxExeName = AppConfigHelper.SoxExe;
             if (!string.IsNullOrEmpty(soxExeName))
             {
                 var soxExe = Path.Combine(baseDir.FullName, soxExeName);
-                return new SoxAudioUtility(new FileInfo(soxExe), true, targetSampleRate, resampleQuality, true);
+                return new SoxAudioUtility(new FileInfo(soxExe));
             }
 
             return null;

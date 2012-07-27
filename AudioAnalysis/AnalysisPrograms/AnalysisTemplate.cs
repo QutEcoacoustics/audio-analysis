@@ -46,7 +46,7 @@ namespace AnalysisPrograms
         {
             string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Template.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\Test\";
+            string outputDir = @"C:\SensorNetworks\Output\Test\";
             //string csvPath    = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
 
             string title = "# FOR DETECTION OF ############ using TECHNIQUE ########";
@@ -63,10 +63,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             if (true)
@@ -257,12 +257,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -294,7 +294,7 @@ namespace AnalysisPrograms
         {
             //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             //Dictionary<string, string> configDict = configuration.GetTable();
-            var fiAudioF    = analysisSettings.AudioFile;
+            var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
             var analysisResults = new AnalysisResult();
@@ -452,7 +452,7 @@ namespace AnalysisPrograms
             //ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             var results = System.Tuple.Create(new double[100], new double[100]);
             double[] scoreArray1 = results.Item1;
-            double[] scoreArray2 = results.Item2; 
+            double[] scoreArray2 = results.Item2;
             //######################################################################
 
             var plots = new List<Plot>();
@@ -517,11 +517,11 @@ namespace AnalysisPrograms
             {
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
+                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
                 row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;   //
+                row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -556,8 +556,8 @@ namespace AnalysisPrograms
             }
 
             string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
-            Type[]   types   = { typeof(int), typeof(int), typeof(int) };
-            var newtable     = DataTableTools.CreateTable(headers, types);
+            Type[] types = { typeof(int), typeof(int), typeof(int) };
+            var newtable = DataTableTools.CreateTable(headers, types);
 
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
@@ -624,7 +624,7 @@ namespace AnalysisPrograms
                 displayTypes[i] = typeof(double);
                 string columnName = displayHeaders[i];
                 if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-                if (dtTypes[i] == typeof(string))          canDisplay[i] = false;
+                if (dtTypes[i] == typeof(string)) canDisplay[i] = false;
             }
 
             DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);

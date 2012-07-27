@@ -17,7 +17,7 @@ namespace AnalysisPrograms
 
     using Microsoft.FSharp.Math;
 
-    using AnalysisPrograms.AED;
+    using QutSensors.AudioAnalysis.AED;
 
     using TowseyLib;
 
@@ -83,11 +83,11 @@ namespace AnalysisPrograms
             var m = MatrixModule.transpose(MatrixModule.ofArray2D(sonogram.Data));
 
             //Log.WriteLine("Wiener filter start");
-            //var w = Matlab.wiener2(7, m);
+            var w = Matlab.wiener2(7, m);
             //Log.WriteLine("Wiener filter end");
 
             //Log.WriteLine("Remove subband mode intensities start");
-            //var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+            var s = AcousticEventDetection.removeSubbandModeIntensities(w);
             //Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");

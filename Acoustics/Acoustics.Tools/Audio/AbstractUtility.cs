@@ -221,47 +221,6 @@
         }
 
         /// <summary>
-        /// Validate start and end times.
-        /// </summary>
-        /// <param name="start">
-        /// The start time.
-        /// </param>
-        /// <param name="end">
-        /// The end time.
-        /// </param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        protected void ValidateStartEnd(TimeSpan? start, TimeSpan? end)
-        {
-            if (start.HasValue && start.Value < TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException("start", "Start must be equal or greater than zero.");
-            }
-
-            if (end.HasValue && end.Value <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException("end", "End must be greater than zero.");
-            }
-
-            if (start.HasValue && end.HasValue)
-            {
-                if (start.Value > end.Value)
-                {
-                    var msg = string.Format(
-                        "Start ({0}) must be equal or less than End ({1}).",
-                        start.Value.TotalMilliseconds,
-                        end.Value.TotalMilliseconds);
-
-                    throw new ArgumentOutOfRangeException("start", msg);
-                }
-
-                if (start.Value == end.Value)
-                {
-                    throw new ArgumentOutOfRangeException("start", "Start and end should not be equal.");
-                }
-            }
-        }
-
-        /// <summary>
         /// The file exists.
         /// </summary>
         /// <param name="file">

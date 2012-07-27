@@ -189,7 +189,7 @@ namespace AnalysisPrograms
             }
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
-            var audioUtility = new MasterAudioUtility(analysisSettings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
+            var audioUtility = new MasterAudioUtility();
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
 

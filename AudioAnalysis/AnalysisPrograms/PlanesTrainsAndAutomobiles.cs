@@ -51,11 +51,11 @@ namespace AnalysisPrograms
             string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\KAPITI2-20100219-202900_Airplane.mp3";
 
             string configPath = @"C:\SensorNetworks\Output\Machines\Machine.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\Machines\";
+            string outputDir = @"C:\SensorNetworks\Output\Machines\";
 
 
             string title = "# FOR DETECTION OF PLANES, TRAINS AND AUTOMOBILES using CROSS-CORRELATION & FFT";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(title);
             Console.WriteLine(date);
             Console.WriteLine("# Output folder:  " + outputDir);
@@ -68,10 +68,10 @@ namespace AnalysisPrograms
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
             var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
             var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
             cmdLineArgs.Add(recordingPath);
@@ -238,12 +238,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, RESAMPLE_RATE, tsStart, tsStart.Add(tsDuration));
+                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -352,14 +352,14 @@ namespace AnalysisPrograms
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             string analysisName = configDict[Keys.ANALYSIS_NAME];
-            int minFormantgap   = Int32.Parse(configDict[Keys.MIN_FORMANT_GAP]);
-            int maxFormantgap   = Int32.Parse(configDict[Keys.MAX_FORMANT_GAP]);
+            int minFormantgap = Int32.Parse(configDict[Keys.MIN_FORMANT_GAP]);
+            int maxFormantgap = Int32.Parse(configDict[Keys.MAX_FORMANT_GAP]);
             int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
             double intensityThreshold = Double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
             double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);  // seconds
             int frameLength = 2048;
-            if (configDict.ContainsKey(Keys.FRAME_LENGTH)) 
-                frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]); 
+            if (configDict.ContainsKey(Keys.FRAME_LENGTH))
+                frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]);
             double windowOverlap = 0.0;
             if (frameLength == 1024) //this is to make adjustment with other harmonic methods that use frame length = 1024
             {
@@ -426,7 +426,7 @@ namespace AnalysisPrograms
             //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
             //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
             int minBin = (int)Math.Round(minHz / binWidth);
-            int maxHz  = (int)Math.Round(minHz + (numberOfBins * binWidth));
+            int maxHz = (int)Math.Round(minHz + (numberOfBins * binWidth));
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -455,7 +455,7 @@ namespace AnalysisPrograms
                 }
                 double herzPeriod = periodicity[r] * binWidth;
                 if ((herzPeriod > minFormantgap) && (herzPeriod < maxFormantgap))
-                       scoreArray[r] = 2 * intensity[r] * intensity[r];    //enhance high score wrt low score.
+                    scoreArray[r] = 2 * intensity[r] * intensity[r];    //enhance high score wrt low score.
             }
             scoreArray = DataTools.filterMovingAverage(scoreArray, 11);
 
@@ -480,7 +480,7 @@ namespace AnalysisPrograms
             }
             sonogram.DecibelsNormalised = DataTools.normalise(sonogram.DecibelsNormalised);
 
-           return System.Tuple.Create(sonogram, hits, scoreArray, predictedEvents);
+            return System.Tuple.Create(sonogram, hits, scoreArray, predictedEvents);
         }//end Execute_HDDetect
 
 
