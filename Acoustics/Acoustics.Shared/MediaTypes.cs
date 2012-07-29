@@ -489,6 +489,10 @@ namespace Acoustics.Shared
         /// </summary>
         public const string CodecWavPcm16BitLe = "PCM signed 16-bit little-endian";
 
+        public const string CodecVorbis = "Vorbis";
+
+        public const string CodecMp3 = "MP3 (MPEG audio layer 3)";
+
         private static readonly List<MediaTypeExtGroup> Mapping = new List<MediaTypeExtGroup>
             {
                 new MediaTypeExtGroup { MediaType = MediaTypeMp4Audio, Extension = ExtMp4, Group = MediaTypeGroup.Audio }, 

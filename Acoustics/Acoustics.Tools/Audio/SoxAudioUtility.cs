@@ -222,10 +222,17 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             }
 
-            // first 15 are split by colon (:)
-
             IEnumerable<string> lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
+            // if no lines, or any line contains "no handler for file extension", return empty
+            if (!lines.Any() || lines.Any(l => l.Contains("no handler for file extension")))
+            {
+                return new Dictionary<string, string>();
+            }
+
+            // 
+
+            // first 15 are split by colon (:)
             var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));
             var statOutput = statOutputRaw.Select(i => new KeyValuePair<string, string>(i.First(), i.Skip(1).First()));
 

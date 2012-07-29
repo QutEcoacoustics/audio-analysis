@@ -15,6 +15,8 @@ namespace Acoustics.Shared
 
     using Microsoft.SqlServer.Types;
 
+    //using Microsoft.SqlServer.Types;
+
     /// <summary>
     /// Coordinate.
     /// </summary>
@@ -150,9 +152,9 @@ namespace Acoustics.Shared
                 // for bing maps
                 var bingMapsUrl =
                     string.Format(
-                        "http://dev.virtualearth.net/REST/v1/Locations/{0},{1}?includeEntityTypes=Neighborhood,PopulatedPlace&includeNeighborhood=1&key={2}", 
-                        coordinate.Latitude, 
-                        coordinate.Longitude, 
+                        "http://dev.virtualearth.net/REST/v1/Locations/{0},{1}?includeEntityTypes=Neighborhood,PopulatedPlace&includeNeighborhood=1&key={2}",
+                        coordinate.Latitude,
+                        coordinate.Longitude,
                         AppConfigHelper.GetString("BingMaps.Key"));
 
                 JavaScriptSerializer jss = new JavaScriptSerializer();

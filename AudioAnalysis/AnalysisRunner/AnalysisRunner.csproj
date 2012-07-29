@@ -68,26 +68,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition.CodePlex">
-      <HintPath>..\..\Extra Assemblies\MEF\System.ComponentModel.Composition.CodePlex.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition.Registration.CodePlex">
-      <HintPath>..\..\Extra Assemblies\MEF\System.ComponentModel.Composition.Registration.CodePlex.dll</HintPath>
-    </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reflection.Context.CodePlex">
-      <HintPath>..\..\Extra Assemblies\MEF\System.Reflection.Context.CodePlex.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LocalSourcePreparer.cs" />
-    <Compile Include="MonoBuild.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

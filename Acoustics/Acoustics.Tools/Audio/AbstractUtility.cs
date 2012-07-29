@@ -221,31 +221,6 @@
         }
 
         /// <summary>
-        /// The file exists.
-        /// </summary>
-        /// <param name="file">
-        /// The file to check.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="file"/> is <c>null</c>.
-        /// </exception>
-        /// <exception cref="FileNotFoundException">
-        /// Could not find file.
-        /// </exception>
-        protected void FileExists(FileInfo file)
-        {
-            if (file == null)
-            {
-                throw new ArgumentNullException("file");
-            }
-
-            if (!File.Exists(file.FullName))
-            {
-                throw new FileNotFoundException("Could not find file.", file.FullName);
-            }
-        }
-
-        /// <summary>
         /// Get file extension in uppcase, without dot.
         /// </summary>
         /// <param name="file">
