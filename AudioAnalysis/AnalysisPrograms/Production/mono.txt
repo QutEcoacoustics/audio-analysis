@@ -1,0 +1,4 @@
+mono "I:\Projects\QUT\QutSensors\sensors-trunk\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" canetoad
+mono -v "I:\Projects\QUT\QutSensors\sensors-trunk\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" LewinsRail > "I:\Projects\QUT\QutSensors\sensors-trunk\AudioAnalysis\AnalysisPrograms\Production\Output\monooutputLewinsRail.txt"
+mono -v "I:\Projects\QUT\QutSensors\sensors-trunk\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" canetoad > "I:\Projects\QUT\QutSensors\sensors-trunk\AudioAnalysis\AnalysisPrograms\Production\Output\monooutputcanetoad.txt"
+
