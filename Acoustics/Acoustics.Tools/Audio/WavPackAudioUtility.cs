@@ -194,9 +194,9 @@
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
         /// <returns>A dictionary containing metadata for the given file.</returns>
-        public Dictionary<string, string> Info(FileInfo source)
+        public AudioUtilityInfo Info(FileInfo source)
         {
-            return new Dictionary<string, string>();
+            return new AudioUtilityInfo();
         }
 
         #endregion
