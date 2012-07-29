@@ -10,13 +10,7 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Configuration;
-    using System.IO;
     using System.Linq;
-
-    using AnalysisBase;
-
-    //using AnalysisPrograms.Processing;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -47,37 +41,37 @@ namespace AnalysisPrograms
                     case "aed":           // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
-                    case "canetoad":      // detects canetoad calls as acoustic events
+                    case "canetoad":      // IAnalyser - detects canetoad calls as acoustic events
                         Canetoad.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "audio2csv":     // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
                         AnalyseLongRecording.Main(restOfArgs);   //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "crow":          // recognises the short crow "caw" - NOT the longer sigh.
+                    case "crow":          // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
                         Crow.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "epr":           // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
                         break;
-                    case "koalaMale":     // detects the oscillating portion of a male koala bellow
+                    case "koalaMale":     // IAnalyser - detects the oscillating portion of a male koala bellow
                         KoalaMale.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "multiAnalyser": // currently recognizes five different calls: human, crow, canetoad, machine and koala.
+                    case "multiAnalyser": // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
                         MultiAnalyser.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "human":         // recognises human speech but not word recognition
+                    case "human":         // IAnalyser - recognises human speech but not word recognition
                         Human1.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "kiwi":          // little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
+                    case "kiwi":          // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
                         LSKiwi3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "kiwiROC":       // little spotted kiwi calls from Andrew @ Victoria university.
                         LSKiwiROC.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "LewinsRail":    //LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
+                    case "LewinsRail":    // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
                         LewinsRail3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "machines":      // recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
+                    case "machines":      // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
                         PlanesTrainsAndAutomobiles.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "snr":           // calculates signal to noise ratio

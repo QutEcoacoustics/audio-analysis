@@ -80,6 +80,8 @@
 
             request.ValidateChecked();
 
+            var emptyRequest = new AudioUtilityRequest();
+
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
                 this.Log.Debug("Segmenting .wv file using wvunpack.");
@@ -96,7 +98,7 @@
                 if (this.soxUtility != null)
                 {
                     // if sox is available, use it.
-                    this.soxUtility.Segment(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
+                    this.soxUtility.Segment(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, emptyRequest);
                 }
                 else
                 {
@@ -107,7 +109,7 @@
                 if (outputMimeType != MediaTypes.MediaTypeWav)
                 {
                     // if outpu format is not wav, convert it
-                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, emptyRequest);
                 }
                 else
                 {
@@ -135,16 +137,16 @@
                     var wavtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // convert to wav
-                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeMp3, wavtempfile, MediaTypes.MediaTypeWav, request);
+                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeMp3, wavtempfile, MediaTypes.MediaTypeWav, emptyRequest);
 
                     // use a temp file to run sox.
                     var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // run sox
-                    this.soxUtility.Segment(wavtempfile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
+                    this.soxUtility.Segment(wavtempfile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, emptyRequest);
 
                     // convert to output format
-                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, emptyRequest);
 
                     // delete temp files
                     wavtempfile.SafeDeleteFile();
@@ -153,7 +155,7 @@
                 else
                 {
                     // if sox is not available, just convert to output format.
-                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
+                    this.ffmpegUtility.Segment(mp3SpltTempFile, MediaTypes.MediaTypeMp3, output, outputMimeType, emptyRequest);
                 }
 
                 // delete temp files
@@ -176,10 +178,10 @@
                     var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // run sox
-                    this.soxUtility.Segment(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
+                    this.soxUtility.Segment(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, emptyRequest);
 
                     // convert to output format
-                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
+                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, emptyRequest);
 
                     // delete temp files
                     ffmpegTempFile.SafeDeleteFile();
@@ -191,103 +193,6 @@
                     this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, request);
                 }
 
-            }
-        }
-
-        /// <summary>
-        /// Convert <paramref name="source"/> audio file to format 
-        /// determined by <paramref name="output"/> file's extension.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        public void Convert(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
-        {
-            sourceMimeType = MediaTypes.CanonicaliseMediaType(sourceMimeType);
-            outputMimeType = MediaTypes.CanonicaliseMediaType(outputMimeType);
-
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            var request = new AudioUtilityRequest { MixDownToMono = false };
-
-            if (sourceMimeType == MediaTypes.MediaTypeWavpack)
-            {
-                this.Log.Debug("Converting .wv file using wvunpack.");
-
-                // use a temp file for wvunpack.
-                var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
-
-                // use wvunpack to segment and convert to wav.
-                this.wvunpackUtility.Segment(source, MediaTypes.MediaTypeWavpack, wavunpackTempFile, MediaTypes.MediaTypeWav, request);
-
-                // use a temp file to run sox.
-                var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
-
-                if (this.soxUtility != null)
-                {
-                    // if sox is available, use it.
-                    this.soxUtility.Segment(wavunpackTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
-                }
-                else
-                {
-                    // if sox is not available, just copy file.
-                    File.Copy(wavunpackTempFile.FullName, soxtempfile.FullName);
-                }
-
-                if (outputMimeType != MediaTypes.MediaTypeWav)
-                {
-                    // if outpu format is not wav, convert it
-                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
-                }
-                else
-                {
-                    // if output  is wav, just copy it.
-                    File.Copy(soxtempfile.FullName, output.FullName);
-                }
-
-                // delete temp files.
-                wavunpackTempFile.SafeDeleteFile();
-                soxtempfile.SafeDeleteFile();
-            }
-            else
-            {
-                this.Log.Debug("Converting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
-
-                if (this.soxUtility != null)
-                {
-                    // use a temp file to convert to wav.
-                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
-
-                    // use ffmpeg to convert.
-                    this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, request);
-
-                    // use a temp file to run sox.
-                    var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
-
-                    // run sox
-                    this.soxUtility.Segment(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav, request);
-
-                    // convert to output format
-                    this.ffmpegUtility.Segment(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType, request);
-
-                    // delete temp files
-                    ffmpegTempFile.SafeDeleteFile();
-                    soxtempfile.SafeDeleteFile();
-                }
-                else
-                {
-                    // use ffmpeg to convert.
-                    this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, request);
-                }
             }
         }
 
@@ -328,11 +233,15 @@
 
             var dictionaries = new List<Dictionary<string, string>>
                 {
-                    this.ffmpegUtility.Info(source),
-                    this.mp3SpltUtility.Info(source),
-                    this.wvunpackUtility.Info(source),
-                    this.soxUtility.Info(source)
+                    this.ffmpegUtility.Info(source), 
+                    this.mp3SpltUtility.Info(source), 
+                    this.wvunpackUtility.Info(source)
                 };
+
+            if (this.soxUtility != null)
+            {
+                dictionaries.Add(this.soxUtility.Info(source));
+            }
 
             var result =
                 dictionaries.SelectMany(dict => dict).ToLookup(pair => pair.Key, pair => pair.Value).ToDictionary(
@@ -366,62 +275,6 @@
                 output,
                 MediaTypes.GetMediaType(output.Extension),
                 request);
-        }
-
-        public static void Segment(MasterAudioUtility audioUtility, FileInfo source, FileInfo output, AudioUtilityRequest request)
-        {
-            audioUtility.Segment(
-                source,
-                MediaTypes.GetMediaType(source.Extension),
-                output,
-                MediaTypes.GetMediaType(output.Extension),
-                request);
-        }
-
-        /// <summary>
-        /// Convert an audio file using the default audio utility settings.
-        /// </summary>
-        /// <param name="targetSampleRate"></param>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="output">
-        /// The destination wav path.
-        /// </param>
-        /// <returns>
-        /// True if converted file was created.
-        /// </returns>
-        public static void Convert(FileInfo source, FileInfo output, AudioUtilityRequest request)
-        {
-            var audioUtility = new MasterAudioUtility();
-
-            audioUtility.Segment(
-                source,
-                MediaTypes.GetMediaType(source.Extension),
-                output,
-                MediaTypes.GetMediaType(output.Extension),
-                request);
-        }
-
-        /// <summary>
-        /// Convert an audio file to a specific wav format using the default audio utility settings.
-        /// </summary>
-        /// <param name="targetSampleRate"></param>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="output">
-        /// The destination wav path.
-        /// </param>
-        /// <returns>
-        /// True if converted file was created.
-        /// </returns>
-        public static void ConvertToWav(FileInfo source, FileInfo output, AudioUtilityRequest request)
-        {
-            var audioUtility = new MasterAudioUtility();
-
-            audioUtility.Segment(
-                source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.MediaTypeWav, request);
         }
 
         /// <summary>
