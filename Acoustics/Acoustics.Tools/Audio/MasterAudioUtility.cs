@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -227,43 +228,52 @@
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
         /// <returns>A dictionary containing metadata for the given file.</returns>
-        public Dictionary<string, string> Info(FileInfo source)
+        public AudioUtilityInfo Info(FileInfo source)
         {
-            // get information from all audio utilities
+            // only get info from ffmpeg / ffprobe, since sox takes a long time with day long recordings.
+            var info = this.ffmpegUtility.Info(source);
 
-            var dictionaries = new List<Dictionary<string, string>>
-                {
-                    this.ffmpegUtility.Info(source), 
-                    this.mp3SpltUtility.Info(source), 
-                    this.wvunpackUtility.Info(source)
-                };
+            var keyDuration = "FORMAT duration";
+            var keyBitRate = "FORMAT bit_rate";
+            var keySampleRate = "STREAM sample_rate";
+            var keyChannels = "STREAM channels";
 
-            if (this.soxUtility != null)
+            if (info.RawData != null)
             {
-                dictionaries.Add(this.soxUtility.Info(source));
+                if (info.RawData.ContainsKey(keyDuration))
+                {
+                    var stringDuration = info.RawData[keyDuration];
+
+                    var formats = new[]
+                        {
+                            @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
+                            @"hh:mm:ss.ffffff"
+                        };
+
+                    TimeSpan result;
+                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out result))
+                    {
+                        info.Duration = result;
+                    }
+                }
+
+                if (info.RawData.ContainsKey(keyBitRate))
+                {
+                    info.BitsPerSecond = int.Parse(info.RawData[keyBitRate]);
+                }
+
+                if (info.RawData.ContainsKey(keySampleRate))
+                {
+                    info.SampleRate = int.Parse(info.RawData[keySampleRate]);
+                }
+
+                if (info.RawData.ContainsKey(keyChannels))
+                {
+                    info.ChannelCount = int.Parse(info.RawData[keyChannels]);
+                }
             }
 
-            var result =
-                dictionaries.SelectMany(dict => dict).ToLookup(pair => pair.Key, pair => pair.Value).ToDictionary(
-                    group => group.Key,
-                    group =>
-                    {
-                        var sb = new StringBuilder();
-                        foreach (var item in group)
-                        {
-                            if (!string.IsNullOrEmpty(item))
-                            {
-                                sb.Append(item.Replace(',', '_') + ", ");
-                            }
-                        }
-
-                        var toreturn = sb.ToString().TrimEnd(',', ' ');
-                        return toreturn;
-
-                    });
-
-            return result;
-
+            return info;
         }
 
         public static void Segment(FileInfo source, FileInfo output, AudioUtilityRequest request)

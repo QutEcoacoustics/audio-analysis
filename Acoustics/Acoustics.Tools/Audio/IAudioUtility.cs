@@ -49,6 +49,6 @@
         /// </summary>
         /// <param name="source">File to get meta data from. This should be an audio file.</param>
         /// <returns>A dictionary containing meta data for the given file.</returns>
-        Dictionary<string, string> Info(FileInfo source);
+        AudioUtilityInfo Info(FileInfo source);
     }
 }

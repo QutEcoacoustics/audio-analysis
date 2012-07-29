@@ -552,9 +552,10 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                     sb.AppendLine(item.Key + ": " + item.Value);
                 }
                 */
-                if (info != null && info.ContainsKey("STREAM codec_long_name"))
+                
+                if (info != null && info.RawData != null && info.RawData.ContainsKey("STREAM codec_long_name"))
                 {
-                    var codec = info["STREAM codec_long_name"];
+                    var codec = info.RawData["STREAM codec_long_name"];
 
                     if (outputMimeType == MediaTypes.MediaTypeWav)
                     {
@@ -577,6 +578,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                         Assert.IsTrue(codec == MediaTypes.ExtUnknown);
                     }
                 }
+                
             }
         }
 
@@ -638,11 +640,11 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, null);
         }
 
-        private static string GetDurationInfo(Dictionary<string, string> info)
+        private static string GetDurationInfo(AudioUtilityInfo info)
         {
             var durationText = string.Join(
                 ", ",
-                info.Where(
+                info.RawData.Where(
                     l => l.Key.ToLowerInvariant().Contains("duration") || l.Key.ToLowerInvariant().Contains("length")));
 
             using (ConsoleRedirector cr = new ConsoleRedirector())

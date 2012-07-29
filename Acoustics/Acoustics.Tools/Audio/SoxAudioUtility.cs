@@ -185,7 +185,7 @@
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
         /// <returns>A dictionary containing metadata for the given file.</returns>
-        public Dictionary<string, string> Info(FileInfo source)
+        public AudioUtilityInfo Info(FileInfo source)
         {
             /*
              * −w name 
@@ -227,7 +227,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             // if no lines, or any line contains "no handler for file extension", return empty
             if (!lines.Any() || lines.Any(l => l.Contains("no handler for file extension")))
             {
-                return new Dictionary<string, string>();
+                return new AudioUtilityInfo();
             }
 
             // 
@@ -291,7 +291,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 results.Add(keyName, value);
             }
 
-            return results;
+            return new AudioUtilityInfo { RawData = results };
         }
 
         #endregion
