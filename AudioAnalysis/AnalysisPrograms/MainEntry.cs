@@ -12,6 +12,8 @@ namespace AnalysisPrograms
     using System;
     using System.Linq;
 
+    using AnalysisPrograms.Production;
+
     /// <summary>
     /// Main Entry for Analysis Programs.
     /// </summary>
@@ -127,11 +129,10 @@ namespace AnalysisPrograms
 
 
 
-                    // FOR MARK'S USE ONLY
-                    // Analysis runs
-                   // case "processing": // for running on the processing cluster
-                    //    ProcessingUtils.Run(restOfArgs);
-                    //    break;
+                    // Production Analysis runs
+                    case "production": // for running on mono or to run as fast as possible
+                        Runner.Run(restOfArgs);
+                        break;
 
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
