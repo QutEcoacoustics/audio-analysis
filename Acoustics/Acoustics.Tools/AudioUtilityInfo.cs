@@ -21,6 +21,11 @@
         public int? BitsPerSecond { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public int? BitsPerSample { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of channels.
         /// stream:channels.
         /// </summary>
