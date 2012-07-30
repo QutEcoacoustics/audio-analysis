@@ -83,13 +83,10 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <param name="start">
-        /// The start time relative to the start of the <paramref name="source"/> file.
+        /// <param name="request">
+        /// The request.
         /// </param>
-        /// <param name="end">
-        /// The end time relative to the start of the <paramref name="source"/> file.
-        /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -143,6 +140,22 @@
             }
         }
 
+
+
+        /// <summary>
+        /// Get metadata for the given file.
+        /// </summary>
+        /// <param name="source">File to get metadata from. This should be an audio file.</param>
+        /// <returns>A dictionary containing metadata for the given file.</returns>
+        public AudioUtilityInfo Info(FileInfo source)
+        {
+            var duration = this.Duration(source, MediaTypes.GetMediaType(source.Extension));
+
+            return new AudioUtilityInfo { Duration = duration };
+        }
+
+        #endregion
+
         /// <summary>
         /// Calculate duration of <paramref name="source"/> audio file.
         /// </summary>
@@ -156,7 +169,7 @@
         /// Duration of <paramref name="source"/> audio file.
         /// </returns>
         /// <exception cref="InvalidOperationException">Could not get duration for source file.</exception>
-        public TimeSpan Duration(FileInfo source, string sourceMimeType)
+        private TimeSpan Duration(FileInfo source, string sourceMimeType)
         {
             ValidateMimeTypeExtension(source, sourceMimeType);
 
@@ -188,18 +201,6 @@
 
             throw new InvalidOperationException("Could not get duration for source file.");
         }
-
-        /// <summary>
-        /// Get metadata for the given file.
-        /// </summary>
-        /// <param name="source">File to get metadata from. This should be an audio file.</param>
-        /// <returns>A dictionary containing metadata for the given file.</returns>
-        public AudioUtilityInfo Info(FileInfo source)
-        {
-            return new AudioUtilityInfo();
-        }
-
-        #endregion
 
         private static string FormatTimeSpan(TimeSpan value)
         {

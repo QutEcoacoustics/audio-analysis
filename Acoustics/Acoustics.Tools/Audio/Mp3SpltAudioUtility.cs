@@ -59,7 +59,7 @@
         /// </param>
         /// <exception cref="ArgumentException">
         /// </exception>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -83,24 +83,6 @@
         }
 
         /// <summary>
-        /// Calculate duration of <paramref name="source"/> audio file.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <returns>
-        /// Duration of <paramref name="source"/> audio file.
-        /// </returns>
-        /// <exception cref="NotSupportedException"><c>NotSupportedException</c>.</exception>
-        public TimeSpan Duration(FileInfo source, string sourceMimeType)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
         /// Get metadata for the given file.
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
@@ -108,7 +90,7 @@
         /// <exception cref="NotSupportedException"><c>NotSupportedException</c>.</exception>
         public AudioUtilityInfo Info(FileInfo source)
         {
-            return new AudioUtilityInfo();
+            return null;
         }
 
         #endregion
@@ -151,6 +133,7 @@
 
             TimeSpan calcStart = request.OffsetStart.HasValue ? request.OffsetStart.Value : TimeSpan.Zero;
 
+            // only segments, does not touch sample rate or channels
             // must have a start if end is specified
             if (calcStart > TimeSpan.Zero)
             {

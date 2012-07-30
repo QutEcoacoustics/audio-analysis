@@ -41,8 +41,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationAsf()
         {
-            CalculatesCorrectDurationTest(
-                "06Sibylla.asf", MediaTypes.MediaTypeAsf, TimeSpan.FromSeconds(109.53), TimeSpan.FromMilliseconds(0));
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(109.53)
+            };
+
+            Modify(
+                "06Sibylla.asf",
+                expected,
+                new AudioUtilityRequest { },
+                MediaTypes.MediaTypeAsf,
+                expected);
         }
 
         /// <summary>
@@ -51,11 +62,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationMp3()
         {
-            CalculatesCorrectDurationTest(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(240)
+            };
+
+            Modify(
                 "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeMp3,
-                TimeSpan.FromSeconds(240),
-                TimeSpan.FromMilliseconds(30));
+                expected);
         }
 
         /// <summary>
@@ -64,11 +83,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationOgg()
         {
-            CalculatesCorrectDurationTest(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(152.17)
+            };
+
+            Modify(
                 "ocioncosta-lindamenina.ogg",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeOggAudio,
-                TimeSpan.FromSeconds(152.17),
-                TimeSpan.FromMilliseconds(0));
+                expected);
         }
 
         /// <summary>
@@ -77,11 +104,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationWav()
         {
-            CalculatesCorrectDurationTest(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(60.24)
+            };
+
+            Modify(
                 "Lewins Rail Kekkek.wav",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeWav,
-                TimeSpan.FromSeconds(60.24),
-                TimeSpan.FromMilliseconds(0));
+                expected);
         }
 
         /// <summary>
@@ -90,11 +125,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationWebm()
         {
-            CalculatesCorrectDurationTest(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(60.71)
+            };
+
+            Modify(
                 "Lewins Rail Kekkek.webm",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeWebMAudio,
-                TimeSpan.FromSeconds(60.71),
-                TimeSpan.FromMilliseconds(0));
+                expected);
         }
 
         /// <summary>
@@ -103,8 +146,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationWma()
         {
-            CalculatesCorrectDurationTest(
-                "06Sibylla.wma", MediaTypes.MediaTypeWma, TimeSpan.FromSeconds(109.53), TimeSpan.FromMilliseconds(10));
+            var expected = new AudioUtilityInfo
+                {
+                    ChannelCount = 1,
+                    SampleRate = 22050,
+                    Duration = TimeSpan.FromSeconds(109.53)
+                };
+
+            Modify(
+                "06Sibylla.wma",
+                 expected,
+                new AudioUtilityRequest { },
+                MediaTypes.MediaTypeWma,
+                expected);
         }
 
         /// <summary>
@@ -113,11 +167,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void CalculatesCorrectDurationWv()
         {
-            CalculatesCorrectDurationTest(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(120)
+            };
+
+            Modify(
                 "Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeWavpack,
-                TimeSpan.FromSeconds(120),
-                TimeSpan.FromMilliseconds(0));
+                expected);
         }
 
         /// <summary>
@@ -126,12 +188,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void ConvertsMp3ToMp3Corectly()
         {
-            ConvertsCorrectly(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(240)
+            };
+
+            Modify(
                 "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeMp3,
-                MediaTypes.MediaTypeMp3,
-                TimeSpan.FromSeconds(240),
-                TimeSpan.FromMilliseconds(60));
+                expected);
         }
 
         /// <summary>
@@ -140,12 +209,19 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void ConvertsMp3ToWavCorrectly()
         {
-            ConvertsCorrectly(
+            var expected = new AudioUtilityInfo
+            {
+                ChannelCount = 1,
+                SampleRate = 22050,
+                Duration = TimeSpan.FromSeconds(240)
+            };
+
+            Modify(
                 "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
-                MediaTypes.MediaTypeMp3,
+                expected,
+                new AudioUtilityRequest { },
                 MediaTypes.MediaTypeWav,
-                TimeSpan.FromSeconds(240),
-                TimeSpan.FromMilliseconds(30));
+                expected);
         }
 
         /// <summary>
@@ -201,7 +277,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 MediaTypes.MediaTypeWav,
                 MediaTypes.MediaTypeWav,
                 TimeSpan.FromSeconds(60.24),
-                TimeSpan.FromMilliseconds(0));
+                TimeSpan.FromMilliseconds(5));
         }
 
         /// <summary>
@@ -215,7 +291,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 MediaTypes.MediaTypeWebMAudio,
                 MediaTypes.MediaTypeWav,
                 TimeSpan.FromSeconds(60.24),
-                TimeSpan.FromMilliseconds(0));
+                TimeSpan.FromMilliseconds(10));
         }
 
         /// <summary>
@@ -229,7 +305,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 MediaTypes.MediaTypeWebMAudio,
                 MediaTypes.MediaTypeWebMAudio,
                 TimeSpan.FromSeconds(60.71),
-                TimeSpan.FromMilliseconds(20));
+                TimeSpan.FromMilliseconds(30));
         }
 
         /// <summary>
@@ -242,8 +318,8 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () =>
-                combined.Duration(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"), MediaTypes.MediaTypeWav),
+                combined.Info(
+                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")),
                 "does not match File extension");
         }
 
@@ -293,7 +369,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var combined = GetAudioUtility();
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => combined.Duration(TestHelper.GetTestAudioFile("does not exist.wav"), MediaTypes.MediaTypeWav),
+                () => combined.Info(TestHelper.GetTestAudioFile("does not exist.wav")),
                 "Could not find source file");
         }
 
@@ -307,9 +383,8 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () =>
-                combined.Duration(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.unknown"),
-                    MediaTypes.MediaTypeBin),
+                combined.Info(
+                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.unknown")),
                 "is not recognised");
         }
 
@@ -323,8 +398,8 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () =>
-                combined.Duration(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"), "garbage in garbage out"),
+                combined.Info(
+                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")),
                 " does not match File extension");
         }
 
@@ -483,103 +558,11 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
         #region Methods
 
-        private static void CalculatesCorrectDurationTest(
-            string filename, string mediatype, TimeSpan expectedDuration, TimeSpan range)
+        private static FileInfo GetAudioUtilityExe(string name)
         {
-            foreach (var combined in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
-            {
-                var duration = combined.Duration(TestHelper.GetTestAudioFile(filename), mediatype);
-                var info = GetDurationInfo(combined.Info(TestHelper.GetTestAudioFile(filename)));
-
-                var compareResult = "Expected duration " + expectedDuration + " actual duration " + duration
-                                    + " expected max variation " + range + " actual variation "
-                                    + expectedDuration.Subtract(duration).Duration();
-
-                using (ConsoleRedirector cr = new ConsoleRedirector())
-                {
-                    Console.WriteLine(compareResult);
-                }
-
-                Assert.IsTrue(
-                    TestHelper.CompareTimeSpans(duration, expectedDuration, range), compareResult + ". Info: " + info);
-            }
-        }
-
-        private static void ConvertsCorrectly(
-            string filename, string mimetype, string outputMimeType, TimeSpan expectedDuration, TimeSpan maxVariance)
-        {
-            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
-            {
-                var dir = TestHelper.GetTempDir();
-                var output =
-                    new FileInfo(
-                        Path.Combine(
-                            dir.FullName,
-                            Path.GetFileNameWithoutExtension(filename) + "_converted."
-                            + MediaTypes.GetExtension(outputMimeType)));
-
-                var audioUtilRequest = new AudioUtilityRequest { };
-
-                var input = TestHelper.GetTestAudioFile(filename);
-
-                util.Segment(input, mimetype, output, outputMimeType, audioUtilRequest);
-
-                var outputduration = util.Duration(output, outputMimeType);
-                var infoInput = GetDurationInfo(util.Info(input));
-                var infoOutput = GetDurationInfo(util.Info(output));
-
-                var compareResult = "Expected duration " + expectedDuration + " actual duration " + outputduration
-                                    + " expected max variation " + maxVariance + " actual variation "
-                                    + expectedDuration.Subtract(outputduration).Duration();
-
-                using (ConsoleRedirector cr = new ConsoleRedirector())
-                {
-                    Console.WriteLine(compareResult);
-                }
-
-                Assert.IsTrue(
-                    TestHelper.CompareTimeSpans(expectedDuration, outputduration, maxVariance),
-                    compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
-                    + infoOutput);
-
-                var info = util.Info(output);
-                TestHelper.DeleteTempDir(dir);
-
-                /*
-                var sb = new StringBuilder();
-                foreach (var item in info)
-                {
-                    sb.AppendLine(item.Key + ": " + item.Value);
-                }
-                */
-                
-                if (info != null && info.RawData != null && info.RawData.ContainsKey("STREAM codec_long_name"))
-                {
-                    var codec = info.RawData["STREAM codec_long_name"];
-
-                    if (outputMimeType == MediaTypes.MediaTypeWav)
-                    {
-                        Assert.IsTrue(codec == MediaTypes.CodecWavPcm16BitLe);
-                    }
-                    else if (outputMimeType == MediaTypes.MediaTypeOggAudio)
-                    {
-                        Assert.IsTrue(codec == MediaTypes.CodecVorbis);
-                    }
-                    else if (outputMimeType == MediaTypes.MediaTypeMp3)
-                    {
-                        Assert.IsTrue(codec == MediaTypes.CodecMp3);
-                    }
-                    else if (outputMimeType == MediaTypes.MediaTypeWebMAudio)
-                    {
-                        Assert.IsTrue(codec == MediaTypes.CodecVorbis);
-                    }
-                    else
-                    {
-                        Assert.IsTrue(codec == MediaTypes.ExtUnknown);
-                    }
-                }
-                
-            }
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+            var exe = new FileInfo(Path.Combine(baseresourcesdir, name));
+            return exe;
         }
 
         private static IAudioUtility GetAudioUtility()
@@ -598,13 +581,6 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var sox = new SoxAudioUtility(soxExe);
 
             return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
-        }
-
-        private static FileInfo GetAudioUtilityExe(string name)
-        {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-            var exe = new FileInfo(Path.Combine(baseresourcesdir, name));
-            return exe;
         }
 
         private static IAudioUtility GetAudioUtilityNoFfprobe()
@@ -640,6 +616,112 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, null);
         }
 
+        private static void CalculatesCorrectDurationTest(
+            string filename, string mediatype, TimeSpan expectedDuration, TimeSpan range)
+        {
+            foreach (var combined in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            {
+                var utilInfo = combined.Info(TestHelper.GetTestAudioFile(filename));
+                var info = GetDurationInfo(utilInfo);
+
+                var compareResult = "Expected duration " + expectedDuration + " actual duration " + utilInfo.Duration
+                                    + " expected max variation " + range + " actual variation "
+                                    + expectedDuration.Subtract(utilInfo.Duration.HasValue ? utilInfo.Duration.Value : TimeSpan.Zero).Duration();
+
+                using (ConsoleRedirector cr = new ConsoleRedirector())
+                {
+                    Console.WriteLine(compareResult);
+                }
+
+                Assert.IsTrue(
+                    TestHelper.CompareTimeSpans(
+                        utilInfo.Duration.HasValue ? utilInfo.Duration.Value : TimeSpan.Zero, expectedDuration, range),
+                    compareResult + ". Info: " + info);
+            }
+        }
+
+        private static void ConvertsCorrectly(
+            string filename, string mimetype, string outputMimeType, TimeSpan expectedDuration, TimeSpan maxVariance)
+        {
+            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            {
+                var dir = TestHelper.GetTempDir();
+                var output =
+                    new FileInfo(
+                        Path.Combine(
+                            dir.FullName,
+                            Path.GetFileNameWithoutExtension(filename) + "_converted."
+                            + MediaTypes.GetExtension(outputMimeType)));
+
+                var audioUtilRequest = new AudioUtilityRequest { };
+
+                var input = TestHelper.GetTestAudioFile(filename);
+
+                util.Modify(input, mimetype, output, outputMimeType, audioUtilRequest);
+
+                var utilInfoInput = util.Info(input);
+                var utilInfoOutput = util.Info(output);
+                var infoInput = GetDurationInfo(util.Info(input));
+                var infoOutput = GetDurationInfo(util.Info(output));
+
+                var compareResult = "Expected duration " + expectedDuration + " actual duration "
+                                    + utilInfoOutput.Duration + " expected max variation " + maxVariance
+                                    + " actual variation "
+                                    +
+                                    expectedDuration.Subtract(
+                                        utilInfoOutput.Duration.HasValue ? utilInfoOutput.Duration.Value : TimeSpan.Zero)
+                                        .Duration();
+
+                using (ConsoleRedirector cr = new ConsoleRedirector())
+                {
+                    Console.WriteLine(compareResult);
+                }
+
+                Assert.IsTrue(
+                    TestHelper.CompareTimeSpans(expectedDuration, utilInfoOutput.Duration.Value, maxVariance),
+                    compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
+                    + infoOutput);
+
+                var info = util.Info(output);
+                TestHelper.DeleteTempDir(dir);
+
+                /*
+                var sb = new StringBuilder();
+                foreach (var item in info)
+                {
+                    sb.AppendLine(item.Key + ": " + item.Value);
+                }
+                */
+
+                if (info != null && info.RawData != null && info.RawData.ContainsKey("STREAM codec_long_name"))
+                {
+                    var codec = info.RawData["STREAM codec_long_name"];
+
+                    if (outputMimeType == MediaTypes.MediaTypeWav)
+                    {
+                        Assert.IsTrue(codec == MediaTypes.CodecWavPcm16BitLe);
+                    }
+                    else if (outputMimeType == MediaTypes.MediaTypeOggAudio)
+                    {
+                        Assert.IsTrue(codec == MediaTypes.CodecVorbis);
+                    }
+                    else if (outputMimeType == MediaTypes.MediaTypeMp3)
+                    {
+                        Assert.IsTrue(codec == MediaTypes.CodecMp3);
+                    }
+                    else if (outputMimeType == MediaTypes.MediaTypeWebMAudio)
+                    {
+                        Assert.IsTrue(codec == MediaTypes.CodecVorbis);
+                    }
+                    else
+                    {
+                        Assert.IsTrue(codec == MediaTypes.ExtUnknown);
+                    }
+                }
+
+            }
+        }
+
         private static string GetDurationInfo(AudioUtilityInfo info)
         {
             var durationText = string.Join(
@@ -647,10 +729,16 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 info.RawData.Where(
                     l => l.Key.ToLowerInvariant().Contains("duration") || l.Key.ToLowerInvariant().Contains("length")));
 
-            using (ConsoleRedirector cr = new ConsoleRedirector())
+            if (info.Duration.HasValue)
             {
-                Console.WriteLine(durationText);
+                durationText += ", Duration: " + info.Duration;
+                durationText = durationText.Trim(' ', ',');
             }
+
+            //using (var cr = new ConsoleRedirector())
+            //{
+            //    Console.WriteLine(durationText);
+            //}
 
             return durationText;
         }
@@ -678,28 +766,106 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 var audioUtilRequest = new AudioUtilityRequest { OffsetStart = start, OffsetEnd = end };
 
                 var input = TestHelper.GetTestAudioFile(filename);
-                util.Segment(input, mimetype, output, destMimeType, audioUtilRequest);
+                util.Modify(input, mimetype, output, destMimeType, audioUtilRequest);
 
-                var duration = util.Duration(output, destMimeType);
-                var infoInput = GetDurationInfo(util.Info(input));
-                var infoOutput = GetDurationInfo(util.Info(output));
+                var utilInfoInput = util.Info(input);
+                var utilInfoOutput = util.Info(output);
+                var infoInput = GetDurationInfo(utilInfoInput);
+                var infoOutput = GetDurationInfo(utilInfoOutput);
 
-                var compareResult = "Expected duration " + (end - start) + " actual duration " + duration
+                var compareResult = "Expected duration " + (end - start) + " actual duration " + utilInfoOutput.Duration.Value
                                     + " expected max variation " + maxVariance + " actual variation "
-                                    + (end - start).Subtract(duration).Duration();
+                                    + (end - start).Subtract(utilInfoOutput.Duration.Value).Duration();
 
-                using (ConsoleRedirector cr = new ConsoleRedirector())
+                using (var cr = new ConsoleRedirector())
                 {
                     Console.WriteLine(compareResult);
                 }
 
                 Assert.IsTrue(
-                    TestHelper.CompareTimeSpans(duration, end - start, maxVariance),
+                    TestHelper.CompareTimeSpans(utilInfoOutput.Duration.Value, end - start, maxVariance),
                     compareResult + ". Info input: " + infoInput + "." + Environment.NewLine + "Info output: "
                     + infoOutput);
 
                 TestHelper.DeleteTempDir(dir);
             }
+        }
+
+        private static void Modify(string filename, AudioUtilityInfo sourceExpected, AudioUtilityRequest request, string outputMimeType, AudioUtilityInfo outputExpected)
+        {
+            var source = TestHelper.GetTestAudioFile(filename);
+
+            var destExtension = MediaTypes.GetExtension(outputMimeType);
+            var outputFilename = Path.GetFileNameWithoutExtension(filename) + "_modified." + destExtension;
+
+            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            {
+                var dir = TestHelper.GetTempDir();
+                var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));
+
+                util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, outputMimeType, request);
+
+                var sourceInfo = util.Info(source);
+
+                CheckSource(source, sourceExpected, sourceInfo);
+
+                var outputInfo = util.Info(output);
+                var outputInfoText = GetDurationInfo(outputInfo);
+
+
+                TestHelper.DeleteTempDir(dir);
+            }
+        }
+
+        private static void CheckSource(FileInfo audioFile, AudioUtilityInfo expected, AudioUtilityInfo actual)
+        {
+            if (expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
+            {
+                Assert.AreEqual(expected.BitsPerSample.Value, actual.BitsPerSample.Value);
+            }
+
+            if (expected.BitsPerSample.HasValue && !actual.BitsPerSample.HasValue)
+            {
+                Assert.Fail("BitsPerSample");
+            }
+
+            if (!expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
+            {
+                Assert.Fail("BitsPerSample");
+            }
+
+
+            if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
+            {
+                Assert.AreEqual(expected.BitsPerSecond.Value, actual.BitsPerSecond.Value);
+            }
+
+            if (expected.BitsPerSecond.HasValue && !actual.BitsPerSecond.HasValue)
+            {
+                Assert.Fail("BitsPerSecond");
+            }
+
+            if (!expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
+            {
+                Assert.Fail("BitsPerSecond");
+            }
+
+            Assert.IsTrue(expected.ChannelCount.HasValue);
+            Assert.IsTrue(expected.Duration.HasValue);
+            Assert.IsTrue(expected.SampleRate.HasValue);
+
+            Assert.IsTrue(actual.ChannelCount.HasValue);
+            Assert.IsTrue(actual.Duration.HasValue);
+            Assert.IsTrue(actual.SampleRate.HasValue);
+
+            Assert.AreEqual(expected.ChannelCount.Value, actual.ChannelCount.Value);
+            Assert.AreEqual(expected.Duration.Value, actual.Duration.Value);
+            Assert.AreEqual(expected.SampleRate.Value, actual.SampleRate.Value);
+        }
+
+        private static void CheckOutput(FileInfo audioFile, AudioUtilityRequest request, string outputMimeType, AudioUtilityInfo expected, AudioUtilityInfo actual)
+        {
+
         }
 
         #endregion

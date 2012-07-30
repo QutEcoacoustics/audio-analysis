@@ -48,9 +48,9 @@ namespace AnalysisRunner
             var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, SampleRate = targetSampleRateHz });
 
             var audioUtility = this.GetNewAudioUtility();
-            var preparedFileDuration = audioUtility.Duration(preparedFile, MediaTypes.GetMediaType(preparedFile.Extension));
+            var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment { OriginalFileDuration = preparedFileDuration, OriginalFile = preparedFile };
+            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile };
         }
 
         /// <summary>
@@ -74,11 +74,11 @@ namespace AnalysisRunner
             foreach (var fileSegment in fileSegments)
             {
                 var mediaType = MediaTypes.GetMediaType(fileSegment.OriginalFile.Extension);
-                var duration = audioUtility.Duration(fileSegment.OriginalFile, mediaType);
+                var info = audioUtility.Info(fileSegment.OriginalFile);
 
                 var startOffset = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-                var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : duration;
-                fileSegment.OriginalFileDuration = duration;
+                var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : info.Duration.Value;
+                fileSegment.OriginalFileDuration = info.Duration.Value;
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
 
@@ -153,10 +153,10 @@ namespace AnalysisRunner
             foreach (var fileSegment in fileSegments)
             {
                 var mediaType = MediaTypes.GetMediaType(fileSegment.OriginalFile.Extension);
-                var duration = audioUtility.Duration(fileSegment.OriginalFile, mediaType);
+                var info = audioUtility.Info(fileSegment.OriginalFile);
 
                 var startOffset = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-                var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : duration;
+                var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : info.Duration.Value;
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
                 double currentPostion = 0;
@@ -216,7 +216,7 @@ namespace AnalysisRunner
 
                     if (!File.Exists(path.FullName))
                     {
-                        audioUtility.Segment(
+                        audioUtility.Modify(
                             fileSegment.OriginalFile,
                             mediaType,
                             path,

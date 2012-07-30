@@ -53,7 +53,7 @@
             var output = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
             var outputMimeType = MediaTypes.GetMediaType(output.Extension);
 
-            audioUtility.Segment(
+            audioUtility.Modify(
                 source,
                 sourceMimeType,
                 output,
@@ -88,7 +88,7 @@
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            audioUtility.Segment(
+            audioUtility.Modify(
                 sourceF,
                 sourceMimeType,
                 outputF,

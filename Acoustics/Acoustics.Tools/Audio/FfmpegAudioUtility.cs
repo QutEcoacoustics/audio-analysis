@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -109,7 +110,7 @@
         /// <param name="request">
         /// The request.
         /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -120,12 +121,6 @@
             this.CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
 
             var process = new ProcessRunner(this.ffmpegExe.FullName);
-
-            // TODO: for now, do not use ffmpeg to resample or change bit rate or mix down to mono
-            request.BitsPerSecond = null;
-            request.MixDownToMono = false;
-            request.Channel = null;
-            request.SampleRate = null;
 
             string args = ConstructArgs(source, output, request);
 
@@ -180,7 +175,7 @@
         /// <returns>A dictionary containing metadata for the given file.</returns>
         public AudioUtilityInfo Info(FileInfo source)
         {
-            var results = new Dictionary<string, string>();
+            var result = new AudioUtilityInfo();
 
             if (this.ffprobeExe != null)
             {
@@ -210,12 +205,55 @@
                         // key=value
                         var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
                         var value = line.Substring(line.IndexOf('=') + 1);
-                        results.Add(key.Trim(), value.Trim());
+                        result.RawData.Add(key.Trim(), value.Trim());
                     }
                 }
+
+                // parse info info class
+                var keyDuration = "FORMAT duration";
+                var keyBitRate = "FORMAT bit_rate";
+                var keySampleRate = "STREAM sample_rate";
+                var keyChannels = "STREAM channels";
+
+
+                if (result.RawData.ContainsKey(keyDuration))
+                {
+                    var stringDuration = result.RawData[keyDuration];
+
+                    var formats = new[]
+                        {
+                            @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
+                            @"hh:mm:ss.ffffff"
+                        };
+
+                    TimeSpan tsresult;
+                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
+                    {
+                        result.Duration = tsresult;
+                    }
+                }
+
+                if (result.RawData.ContainsKey(keyBitRate))
+                {
+                    result.BitsPerSecond = int.Parse(result.RawData[keyBitRate]);
+                }
+
+                if (result.RawData.ContainsKey(keySampleRate))
+                {
+                    result.SampleRate = int.Parse(result.RawData[keySampleRate]);
+                }
+
+                if (result.RawData.ContainsKey(keyChannels))
+                {
+                    result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+                }
+            }
+            else
+            {
+                result.Duration = this.Duration(source, MediaTypes.GetMediaType(source.Extension));
             }
 
-            return new AudioUtilityInfo { RawData = results };
+            return result;
         }
 
         #endregion
@@ -237,7 +275,6 @@
         /// </returns>
         private static string ConstructArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            // only supports converting to .wav and .mp3
             string codec;
             var ext = MediaTypes.CanonicaliseExtension(output.Extension);
 
@@ -265,15 +302,12 @@
             var args = new StringBuilder()
                 .AppendFormat(ArgsOverwriteSource, source.FullName);
 
-            if (request.BitsPerSecond.HasValue)
-            {
-                args.AppendFormat(ArgsBitRate, request.BitsPerSecond.Value);
-            }
+            // TODO: sox is much better than ffmpeg at resampling
+            //if (request.SampleRate.HasValue)
+            //{
 
-            if (request.SampleRate.HasValue)
-            {
-                args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
-            }
+            //args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
+            //}
 
             if (request.MixDownToMono)
             {
@@ -282,6 +316,7 @@
 
             if (request.Channel.HasValue)
             {
+                // request.Channel starts at 1, ffmpeg starts at 0.
                 args.AppendFormat(ArgsMapChannel, request.Channel.Value - 1);
             }
 

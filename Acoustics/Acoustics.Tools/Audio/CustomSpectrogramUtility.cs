@@ -87,7 +87,7 @@
                 SampleRate = 22050
             };
 
-            this.audioUtility.Segment(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);
+            this.audioUtility.Modify(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 
             Bitmap sourceImage;
 
