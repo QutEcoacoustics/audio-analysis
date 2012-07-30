@@ -16,7 +16,6 @@ using Acoustics.Tools.Audio;
 using Acoustics.Shared;
 using AnalysisBase;
 using AnalysisRunner;
-//using AudioBrowser;
 using AudioAnalysisTools;
 using TowseyLib;
 
@@ -27,21 +26,13 @@ namespace AnalysisPrograms
     {
         //use the following paths for the command line for the <Audio2Sonogram> task. 
 
-        // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\
+        // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
 
         public const int DEFAULT_SAMPLE_RATE = 22050;
         
         public static int Main(string[] args)
         {
             int status = 0;
-            string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            bool verbose = true;
-            if (verbose)
-            {
-                Console.WriteLine(title);
-                Console.WriteLine(date);
-            }
 
             if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
             {
@@ -52,29 +43,38 @@ namespace AnalysisPrograms
 
             string recordingPath = args[0];
             string configPath    = args[1];
-            string outputDir     = args[2];
+            string outputPath    = args[2];
 
-            TimeSpan startOffsetMins;
-            TimeSpan endOffsetMins;
+            TimeSpan startOffsetMins = TimeSpan.Zero;
+            TimeSpan endOffsetMins   = TimeSpan.Zero;
 
-            if (args.Length == 5)
+            if (args.Length >= 5)
             {
                 startOffsetMins = TimeSpan.FromMinutes(double.Parse(args[3]));
                 endOffsetMins   = TimeSpan.FromMinutes(double.Parse(args[4]));
             }
 
-            if (verbose)
+            bool verbose = false;
+            if (args.Length == 6)
             {
-                Console.WriteLine("# Output folder:  " + outputDir);
-                Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                verbose = bool.Parse(args[5]);
+                if (verbose)
+                {
+                    string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
+                    string date  = "# DATE AND TIME: " + DateTime.Now;
+                    Console.WriteLine(title);
+                    Console.WriteLine(date);
+                    Console.WriteLine("# Audio file: " + Path.GetFileName(recordingPath));
+                    Console.WriteLine("# Image file: " + outputPath);
+                }
             }
+            
 
             //1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
             FileInfo fiConfig = new FileInfo(configPath);
-            FileInfo fiImage = new FileInfo(Path.Combine(outputDir, Path.GetFileNameWithoutExtension(recordingPath) + ".png"));
-            //DirectoryInfo diOP = new DirectoryInfo(outputDir);
+            FileInfo fiImage  = new FileInfo(outputPath);
 
             //2. get the config dictionary
             var configuration = new ConfigDictionary(fiConfig.FullName);
@@ -120,64 +120,27 @@ namespace AnalysisPrograms
             }
 
             //3: GET RECORDING
-            //var audioUtility = new MasterAudioUtility(analysisSettings.SegmentTargetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
-            //var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-            //var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType);
-
-            //AudioRecording.ExtractSegmentFromLongSourceAudioFile(restOfArgs); // extracts segment from long audio source file
-
-            using (Image image = SonogramTools.MakeSonogram(fiSourceRecording, fiConfig))
+            FileInfo fiOutputSegment = fiSourceRecording;
+            if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
             {
-                if (image != null)
-                {
-                    if (fiImage.Exists) fiImage.Delete();
-                    image.Save(fiImage.FullName, ImageFormat.Png);
-                }
+                TimeSpan buffer = new TimeSpan(0, 0, 0);
+                fiOutputSegment = new FileInfo(Path.Combine(Path.GetDirectoryName(outputPath), "tempWavFile.wav"));
+                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, resampleRate, fiOutputSegment);
             }
 
+            using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, fiConfig))
+            {
+                if (image == null) return 666;
+                if (fiImage.Exists) fiImage.Delete();
+                image.Save(fiImage.FullName, ImageFormat.Png);
+            }
 
+            if (verbose)
+            {
+                Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+                Console.ReadLine();
+            }
 
-            //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(recordingPath);
-
-            ////ii: MAKE SONOGRAM
-            ////Log.WriteLine("# Start sonogram.");
-            //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            //sonoConfig.WindowOverlap = frameOverlap;
-            //sonoConfig.SourceFName = recording.FileName;
-            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            ////sonoConfig.DynamicRange = dynamicRange;
-
-            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //recording.Dispose();
-
-            ////draw images of sonograms
-            //bool doHighlightSubband = false; bool add1kHzLines = true;
-            //if ((timeReductionFactor == 1) && (freqReductionFactor == 1))
-            //{
-            //    string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-            //    using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            //    using (Image_MultiTrack image   = new Image_MultiTrack(img))
-            //    {
-            //        if (addTimeScale)         image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            //        if (addSegmentationTrack) image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            //        image.Save(imagePath);
-
-            //    }
-            //}
-            //else //sonogram to be reduced
-            //{
-            //    double[,] reducedData = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor); //acoustic intensity
-            //    //sonogram.Data = reducedData;
-            //    //sonogram.FramesPerSecond = reducedData.GetLength(0);
-            //    var results1 = BaseSonogram.Data2ImageData(reducedData);
-            //    string reducedPath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_reduced.png";
-            //    ImageTools.DrawMatrix(results1.Item1, 1, 1, reducedPath);                
-            //}
-
-            Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
-            Console.ReadLine();
-            
             return status;
         } //Main(string[] args)
 
@@ -222,12 +185,12 @@ namespace AnalysisPrograms
 
         public static int CheckArguments(string[] args)
         {
-            if ((args.Length != 3) && (args.Length != 5))
+            if ((args.Length != 5) && (args.Length != 6))
             {
                 Console.WriteLine("\nINCORRECT COMMAND LINE.");
                 Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
                 foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("\nYOU REQUIRE 3 OR 5 COMMAND LINE ARGUMENTS\n");
+                Console.WriteLine("\nYOU REQUIRE 5 OR 6 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 return 666;
             }
@@ -245,7 +208,7 @@ namespace AnalysisPrograms
             //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
-            string outputDir = args[2];
+            string outputPath = args[2];
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             if (!diSource.Exists)
             {
@@ -268,14 +231,16 @@ namespace AnalysisPrograms
                 status = 2;
                 return status;
             }
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
+            
+            DirectoryInfo diOP = new DirectoryInfo(Path.GetDirectoryName(outputPath));
             if (!diOP.Exists)
             {
                 bool success = true;
+                
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
-                    success = Directory.Exists(outputDir);
+                    Directory.CreateDirectory(diOP.FullName);
+                    success = Directory.Exists(diOP.FullName);
                 }
                 catch
                 {
@@ -302,10 +267,11 @@ namespace AnalysisPrograms
             Console.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
             Console.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
             Console.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
-            Console.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
             Console.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
             Console.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
-            Console.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
+            Console.WriteLine("In order to analyse the entire file, set start and end times both equal to zero.");
+            Console.WriteLine("The following argument is OPTIONAL.");
+            Console.WriteLine("verbosity:   (boolean) true/false");
             Console.WriteLine("");
         }
 

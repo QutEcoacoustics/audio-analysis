@@ -436,7 +436,9 @@
                     {
                         SampleRate = resampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
+                        //Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
+                        //MixDownToMono  =true
                     });
         }
 

@@ -15,7 +15,7 @@
         /// </summary>
         public AudioUtilityRequest()
         {
-            
+            this.MixDownToMono = true;
         }
 
         /// <summary>
