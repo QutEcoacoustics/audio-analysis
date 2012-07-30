@@ -19,17 +19,6 @@
         }
 
         /// <summary>
-        /// The create default.
-        /// </summary>
-        /// <returns>
-        /// The Acoustics.Tools.AudioUtilityRequest.
-        /// </returns>
-        public static AudioUtilityRequest CreateDefault()
-        {
-            return new AudioUtilityRequest { MixDownToMono = true, SampleRate = 22050 };
-        }
-
-        /// <summary>
         /// Gets or sets the offset start.
         /// </summary>
         public TimeSpan? OffsetStart { get; set; }
@@ -43,11 +32,6 @@
         /// Gets or sets the target Sample Rate in hertz.
         /// </summary>
         public int? SampleRate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bits per second (bits/second).
-        /// </summary>
-        public int? BitsPerSecond { get; set; }
 
         /// <summary>
         /// Gets or sets the target channel number (eg. 1,2,3 ... ).

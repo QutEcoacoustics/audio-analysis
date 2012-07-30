@@ -395,10 +395,9 @@
             if (! sourceFile.Exists) return null;
             string opPath = Path.Combine(opDir, opFileName); //path location/name of extracted recording segment
             IAudioUtility audioUtility = new MasterAudioUtility();
-            var mimeType = MediaTypes.GetMediaType(sourceFile.Extension);
-            var sourceDuration = audioUtility.Duration(sourceFile, mimeType); // Get duration of the source file
+            var info = audioUtility.Info(sourceFile); // Get duration of the source file
             int startMilliseconds = 0;
-            int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
+            int endMilliseconds = (int)info.Duration.Value.TotalMilliseconds;
 
             MasterAudioUtility.SegmentToWav(
                 sourceFile,
@@ -437,7 +436,7 @@
             int endMilliseconds = (int)(end.TotalMilliseconds + buffer.TotalMilliseconds);
             if (startMilliseconds < 0) startMilliseconds = 0;
             //if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
-            MasterAudioUtility.Segment(
+            MasterAudioUtility.SegmentToWav(
                 fiSource,
                 fiOutputSegment,
                 new AudioUtilityRequest

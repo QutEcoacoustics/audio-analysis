@@ -178,7 +178,7 @@
         {
             get
             {
-                var assemblyDirString = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var assemblyDirString = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
                 if (!string.IsNullOrEmpty(assemblyDirString))
                 {
@@ -196,6 +196,9 @@
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether is asp net.
+        /// </summary>
         public static bool IsAspNet
         {
             get
@@ -206,7 +209,7 @@
                     var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
                     var interactive = Environment.UserInteractive;
                     var entryAssembly = Assembly.GetEntryAssembly();
-                    var currentContext = System.Web.HttpContext.Current;
+                    var currentContext = HttpContext.Current;
 
                     // process name might be one of these
                     if (processName == "w3wp"

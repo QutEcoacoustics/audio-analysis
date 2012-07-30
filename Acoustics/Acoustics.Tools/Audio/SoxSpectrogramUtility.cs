@@ -70,11 +70,9 @@
             var wavFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
             var originalSoxFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtPng);
 
-            var audioUtilRequest = AudioUtilityRequest.CreateDefault();
-            audioUtilRequest.OffsetStart = request.Start;
-            audioUtilRequest.OffsetEnd = request.End;
+            var audioUtilRequest = new AudioUtilityRequest { OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, SampleRate = 22050 };
 
-            this.audioUtility.Segment(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav, audioUtilRequest);
+            this.audioUtility.Modify(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 
             // generate spectrogram using sox.
             if (this.Log.IsDebugEnabled)

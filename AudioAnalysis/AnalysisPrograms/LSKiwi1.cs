@@ -157,18 +157,18 @@ namespace AnalysisPrograms
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
-            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-            var duration = audioUtility.Duration(fiSourceRecording, mimeType);
+            var sourceInfo = audioUtility.Info(fiSourceRecording);
+            var sourceDuration = sourceInfo.Duration.Value;
 
-            var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
-            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration); //convert length to minute chunks
+
+            int segmentCount = (int)Math.Round(sourceDuration.TotalMinutes / segmentDuration); //convert length to minute chunks
             //int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
 
 
 
             Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(sourceRecordingPath));
             Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-            Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
+            Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", sourceDuration.Hours, sourceDuration.Minutes, sourceDuration.Seconds, sourceDuration.Milliseconds);
 
             //SET UP THE REPORT DATATABLE
             var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);

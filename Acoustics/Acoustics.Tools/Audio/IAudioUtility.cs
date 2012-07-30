@@ -28,21 +28,7 @@
         /// <param name="request">
         /// The segment <paramref name="request"/>.
         /// </param>
-        void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request);
-
-        /// <summary>
-        /// Calculate duration of <paramref name="source"/> audio file.
-        /// </summary>
-        /// <param name="source">
-        /// The <paramref name="source"/> audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The <paramref name="source"/> Mime Type.
-        /// </param>
-        /// <returns>
-        /// Duration of <paramref name="source"/> audio file.
-        /// </returns>
-        TimeSpan Duration(FileInfo source, string sourceMimeType);
+        void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request);
 
         /// <summary>
         /// Get meta data for the given file.

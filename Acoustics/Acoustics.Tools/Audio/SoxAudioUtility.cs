@@ -5,7 +5,6 @@
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
 
     using Acoustics.Shared;
 
@@ -31,18 +30,16 @@
         /// <param name="soxExe">
         /// The exe file.
         /// </param>
-        /// <param name="useSteepFilter">Use the steep filter.</param>
-        /// <param name="targetSampleRateHz">Set the target sampe rate in hertz.</param>
-        /// <param name="resampleQuality">Set the resmaple quality.</param>
-        /// <param name="reduceToMono">Set whether to mix all channels to mono.</param>
-        /// <exception cref="FileNotFoundException">Could not find exe.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="soxExe" /> is <c>null</c>.</exception>
+        /// <exception cref="FileNotFoundException">
+        /// Could not find exe.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="soxExe"/> is <c>null</c>.
+        /// </exception>
         public SoxAudioUtility(FileInfo soxExe)
         {
             this.CheckExe(soxExe, "sox.exe");
             this.soxExe = soxExe;
-
-            this.UseSteepFilter = true;
             this.ResampleQuality = SoxResampleQuality.VeryHigh;
         }
 
@@ -93,17 +90,9 @@
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to Use Steep Filter.
-        /// </summary>
-        public bool? UseSteepFilter { get; private set; }
-
-
-        /// <summary>
-        /// Gets or sets ResampleQuality.
+        /// Gets ResampleQuality.
         /// </summary>
         public SoxResampleQuality? ResampleQuality { get; private set; }
-
-        #region Implementation of IAudioUtility
 
         /// <summary>
         /// Segment a <paramref name="source"/> audio file.
@@ -124,13 +113,13 @@
         /// <param name="request">
         /// The request.
         /// </param>
-        public void Segment(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
-            ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            CanProcess(source, new[] { MediaTypes.MediaTypeWav }, null);
+            this.CanProcess(source, new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 }, null);
 
-            CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
+            this.CanProcess(output, new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 }, null);
 
             var process = new ProcessRunner(this.soxExe.FullName);
 
@@ -146,46 +135,112 @@
         }
 
         /// <summary>
-        /// Calculate duration of <paramref name="source"/> audio file.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <returns>
-        /// Duration of <paramref name="source"/> audio file.
-        /// </returns>
-        public TimeSpan Duration(FileInfo source, string sourceMimeType)
-        {
-            ValidateMimeTypeExtension(source, sourceMimeType);
-
-            CanProcess(source, null, null);
-
-            var process = new ProcessRunner(this.soxExe.FullName);
-
-            string args = source.FullName;
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            }
-
-            // Duration       : 10:23:15.51 = 1649142153 samples = 2.80466e+006 CDDA sectors
-            Match match = Regex.Match(process.ErrorOutput, "Duration[ ]+: ([0-9]+:[0-9]+:[0-9]+.[0-9]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-            return Parse(match.Groups[1].Value);
-        }
-
-        /// <summary>
         /// Get metadata for the given file.
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
         /// <returns>A dictionary containing metadata for the given file.</returns>
         public AudioUtilityInfo Info(FileInfo source)
+        {
+            //var stats = this.SoxStats(source);
+            var info = this.SoxInfo(source);
+
+            return info;
+        }
+
+        private static string GetResampleQuality(SoxResampleQuality rq)
+        {
+            switch (rq)
+            {
+                case SoxResampleQuality.Quick:
+                    return "q";
+                case SoxResampleQuality.Low:
+                    return "l";
+                case SoxResampleQuality.Medium:
+                    return "m";
+                case SoxResampleQuality.High:
+                    return "h";
+                case SoxResampleQuality.VeryHigh:
+                    return "v";
+                default:
+                    return "m";
+            }
+        }
+
+        private static TimeSpan Parse(string timeToParse)
+        {
+            try
+            {
+                string hours = timeToParse.Substring(0, 2);
+                string minutes = timeToParse.Substring(3, 2);
+                string seconds = timeToParse.Substring(6, 2);
+                string fractions = timeToParse.Substring(9, 2);
+
+                return new TimeSpan(
+                    0, int.Parse(hours), int.Parse(minutes), int.Parse(seconds), int.Parse(fractions) * 10);
+            }
+            catch
+            {
+                return TimeSpan.Zero;
+            }
+        }
+
+        private string ConstructResamplingArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
+        {
+            // resample - sox specific
+            var resampleQuality = this.ResampleQuality.HasValue
+                                     ? "-" + GetResampleQuality(this.ResampleQuality.Value)
+                                     : string.Empty;
+
+            // allow aliasing/imaging above the pass-band: -a
+            // steep filter: -s
+
+            // resample
+            var targetSampleRateHz = request.SampleRate.HasValue
+                                        ? request.SampleRate.Value.ToString(CultureInfo.InvariantCulture)
+                                        : string.Empty;
+            var rate = string.Format("rate -s -a {0} {1}", resampleQuality, targetSampleRateHz);
+
+            // mix down to mono
+            var remix = string.Empty;
+            if (request.MixDownToMono)
+            {
+                /*
+                 * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are 
+                 * optional and default to 1 and to the number of input channels respectively. Thus
+                 *    sox input.wav output.wav remix −
+                 * performs a mix-down of all input channels to mono.
+                */
+                remix = "remix -";
+            }
+
+            // get a single channel
+            if (request.Channel.HasValue)
+            {
+                remix = "remix " + request.Channel.Value;
+            }
+
+            // offsets
+            var trim = string.Empty;
+            if (request.OffsetStart.HasValue && !request.OffsetEnd.HasValue)
+            {
+                trim = "trim " + request.OffsetStart.Value.TotalSeconds;
+            }
+            else if (!request.OffsetStart.HasValue && request.OffsetEnd.HasValue)
+            {
+                trim = "trim 0 " + request.OffsetEnd.Value.TotalSeconds;
+            }
+            else if (request.OffsetStart.HasValue && request.OffsetEnd.HasValue)
+            {
+                trim = "trim " + request.OffsetStart.Value.TotalSeconds + " " + request.OffsetEnd.Value.TotalSeconds;
+            }
+
+            // example
+            // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
+            // sox input.wav output.wav remix - rate -m -s 11025
+            return string.Format(" \"{0}\" \"{1}\" {2} {3} {4}", source.FullName, output.FullName, trim, remix, rate);
+        }
+
+        private AudioUtilityInfo SoxStats(FileInfo source)
         {
             /*
              * −w name 
@@ -294,76 +349,148 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             return new AudioUtilityInfo { RawData = results };
         }
 
-        #endregion
-
-        private static string GetResampleQuality(SoxResampleQuality rq)
+        private AudioUtilityInfo SoxInfo(FileInfo source)
         {
-            switch (rq)
+            this.CanProcess(source, null, null);
+
+            var process = new ProcessRunner(this.soxExe.FullName);
+
+            string args = " --info \"" + source.FullName + "\"";
+
+            this.RunExe(process, args, source.DirectoryName);
+
+            if (this.Log.IsDebugEnabled)
             {
-                case SoxResampleQuality.Quick:
-                    return "q";
-                case SoxResampleQuality.Low:
-                    return "l";
-                case SoxResampleQuality.Medium:
-                    return "m";
-                case SoxResampleQuality.High:
-                    return "h";
-                case SoxResampleQuality.VeryHigh:
-                    return "v";
-                default:
-                    return "m";
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             }
+
+            IEnumerable<string> errorlines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // if no lines, or any line contains "no handler for file extension", return empty
+            if (errorlines.Any(l => l.Contains("no handler for file extension")))
+            {
+                return new AudioUtilityInfo();
+            }
+
+            IEnumerable<string> lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var result = new AudioUtilityInfo();
+
+            foreach (var line in lines)
+            {
+                var firstColon = line.IndexOf(':');
+                var key = line.Substring(0, firstColon).Trim();
+                var value = line.Substring(firstColon + 1).Trim();
+
+                if (key == "Duration")
+                {
+                    var values = value.Split('=', '~');
+
+                    // duration
+                    result.RawData.Add(key, values[0].Trim());
+
+                    // sample count
+                    result.RawData.Add("Samples", values[1].Replace("samples", string.Empty).Trim());
+
+                    // approx. CDDA sectors
+                    result.RawData.Add("CDDA sectors", values[2].Replace("CDDA sectors", string.Empty).Trim());
+                }
+                else
+                {
+                    result.RawData.Add(key, value);
+                }
+            }
+
+            // parse info info class
+            var keyDuration = "Duration";
+            var keyBitRate = "Bit Rate";
+            var keySampleRate = "Sample Rate";
+            var keyChannels = "Channels";
+            var keyPrecision = "Precision";
+
+            if (result.RawData.ContainsKey(keyDuration))
+            {
+                var stringDuration = result.RawData[keyDuration];
+
+                var formats = new[]
+                        {
+                            @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
+                            @"hh:mm:ss.ff"
+                        };
+
+                TimeSpan tsresult;
+                if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
+                {
+                    result.Duration = tsresult;
+                }
+
+                var extra = this.Duration(source);
+                if (extra.HasValue)
+                {
+                    result.Duration = extra.Value;
+                }
+            }
+
+            if (result.RawData.ContainsKey(keyBitRate))
+            {
+                var stringValue = result.RawData[keyBitRate];
+
+                var hadK = false;
+                if (stringValue.Contains("k"))
+                {
+                    stringValue = stringValue.Replace("k", string.Empty);
+                    hadK = true;
+                }
+
+                var value = double.Parse(stringValue);
+
+                if (hadK)
+                {
+                    value = value * 1000;
+                }
+
+                result.BitsPerSecond = Convert.ToInt32(value);
+            }
+
+            if (result.RawData.ContainsKey(keySampleRate))
+            {
+                result.SampleRate = int.Parse(result.RawData[keySampleRate]);
+            }
+
+            if (result.RawData.ContainsKey(keyChannels))
+            {
+                result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+            }
+
+            return result;
         }
 
-        private static TimeSpan Parse(string timeToParse)
+        private TimeSpan? Duration(FileInfo source)
         {
-            try
-            {
-                string hours = timeToParse.Substring(0, 2);
-                string minutes = timeToParse.Substring(3, 2);
-                string seconds = timeToParse.Substring(6, 2);
-                string fractions = timeToParse.Substring(9, 2);
+            this.CanProcess(source, null, null);
 
-                return new TimeSpan(
-                    0, int.Parse(hours), int.Parse(minutes), int.Parse(seconds), int.Parse(fractions) * 10);
-            }
-            catch
-            {
-                return TimeSpan.Zero;
-            }
-        }
+            var process = new ProcessRunner(this.soxExe.FullName);
 
-        private string ConstructResamplingArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
-        {
-            // example
-            // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
-            // sox input.wav output.wav remix - rate -m -s 11025
+            string args = " --info -D \"" + source.FullName + "\"";
 
-            var remix = string.Empty;
-            if (request.MixDownToMono)
+            this.RunExe(process, args, source.DirectoryName);
+
+            if (this.Log.IsDebugEnabled)
             {
-                /*
-                Where a range of channels is specified, the channel numbers to the left and right of the hyphen are
-optional and default to 1 and to the number of input channels respectively. Thus
-sox input.wav output.wav remix −
-performs a mix-down of all input channels to mono.
-                */
-                remix = "remix -";
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             }
 
-            var resampleQuality = this.ResampleQuality.HasValue
-                                     ? "-" + GetResampleQuality(this.ResampleQuality.Value)
-                                     : string.Empty;
+            IEnumerable<string> errorlines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var steepFilter = this.UseSteepFilter.HasValue && this.UseSteepFilter.Value ? "-s" : string.Empty;
+            // if no lines, or any line contains "no handler for file extension", return empty
+            if (errorlines.Any(l => l.Contains("no handler for file extension")))
+            {
+                return null;
+            }
 
-            var targetSampleRateHz = request.SampleRate.HasValue
-                                         ? request.SampleRate.Value.ToString(CultureInfo.InvariantCulture)
-                                         : string.Empty;
+            IEnumerable<string> lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var rate = string.Format("rate {0} {1} {2}", resampleQuality, steepFilter, targetSampleRateHz);
-
-            return string.Format(" \"{0}\" \"{1}\" {2} {3}", source.FullName, output.FullName, remix, rate);
+            return TimeSpan.FromSeconds(double.Parse(lines.First()));
         }
     }
 }
