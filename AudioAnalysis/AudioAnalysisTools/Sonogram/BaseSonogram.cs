@@ -580,16 +580,23 @@
             //get melscale locations
             if (this.Configuration.DoMelScale) gridLineLocations = CreateMelYaxis(kHz, height);//WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
 
+            Graphics g = Graphics.FromImage(bmp);
+            //g.SmoothingMode = SmoothingMode.AntiAlias;
+            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             for (int b = 0; b < bandCount; b++) //over each band
             {
                 int y = gridLineLocations[b];
                 for (int x = 1; x < width; x++)
                 {
                     bmp.SetPixel(x - 1, y, Color.White);
-                    bmp.SetPixel(x, y,     Color.Black);
+                    bmp.SetPixel(x,     y, Color.Black);
                     x++;
                 }
+                g.DrawString(((b+1) +" kHz"), new Font("Thachoma", 8), Brushes.Black, 2, y+1);
             }
+
+            //g.Flush();
         }//end AddGridLines()
 
 
