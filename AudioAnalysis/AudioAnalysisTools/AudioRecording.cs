@@ -1,6 +1,7 @@
 ﻿namespace AudioAnalysisTools
 {
     using System;
+    using System.Collections.Generic;
 
     using Acoustics.Tools;
     using Acoustics.Tools.Wav;
@@ -422,8 +423,15 @@
         /// <param name="buffer"></param>
         /// <param name="resampleRate"></param>
         /// <param name="fiOutputSegment"></param>
-        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, int resampleRate, FileInfo fiOutputSegment)
+        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, Dictionary<string, string> configDict, FileInfo fiOutputSegment)
         {
+            int DEFAULT_SAMPLE_RATE = 22050;
+
+
+            int resampleRate = DEFAULT_SAMPLE_RATE;
+            if (configDict.ContainsKey(Keys.RESAMPLE_RATE))
+                resampleRate = ConfigDictionary.GetInt(Keys.RESAMPLE_RATE, configDict);
+
             //EXTRACT RECORDING SEGMENT
             int startMilliseconds = (int)(start.TotalMilliseconds - buffer.TotalMilliseconds);
             int endMilliseconds = (int)(end.TotalMilliseconds + buffer.TotalMilliseconds);
@@ -441,23 +449,6 @@
                         //MixDownToMono  =true
                     });
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="args"></param>
-        public static void ExtractSegmentFromLongSourceAudioFile(string[] args)
-        {
-            FileInfo fiSource = new FileInfo(args[0]);
-            TimeSpan start = new TimeSpan(0, 0, Int32.Parse(args[1]));
-            TimeSpan end = new TimeSpan(0, 0, Int32.Parse(args[2]));
-            TimeSpan buffer = new TimeSpan(0, 0, 0);
-            int resampleRate = Int32.Parse(args[3]);
-            FileInfo fiOutputSegment = new FileInfo(args[4]);
-            ExtractSegment(fiSource, start, end, buffer, resampleRate, fiOutputSegment);
-        }
-
 
     }// end class AudioRecording
 }

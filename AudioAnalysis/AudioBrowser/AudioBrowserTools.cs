@@ -27,44 +27,13 @@ namespace AudioBrowser
     {
         public const int DEFAULT_TRACK_HEIGHT = 10;
 
-        //TASK IDENTIFIERS
-        public const string task_EXTRACT_SEGMENT = "SOURCE.audio2SEGMENT.wav";
-        public const string task_GETSONOGRAM = "SEGMENT.wav2SONOGRAM.png";
-        public const string task_LOAD_CSV = "INDICES.csv2TRACKSIMAGE.png";
 
         public const string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: An application for exploring bio-acoustic recordings.  (c) Queensland University of Technology.";
         public const string IMAGE_TITLE_TEXT = "Image produced by AUDIO-BROWSER, Queensland University of Technology (QUT).";
         public const string REPORT_FILE_EXT = ".csv";
 
 
-        public static void Main(string[] args)
-        {
-            if (args.Length == 0)
-            {
-                Console.WriteLine("ERROR: AudioBrowserTools.Main() must be called with command line arguments.");
-            }
-            else
-            {
-                string[] restOfArgs = args.Skip(1).ToArray();
-                switch (args[0])
-                {
-                    case task_EXTRACT_SEGMENT: // extraqcts segment from long audio source file
-                        AudioRecording.ExtractSegmentFromLongSourceAudioFile(restOfArgs);
-                        break;
-                    case task_GETSONOGRAM:     // converts segment into sonogram
-                        SonogramTools.GetSonogramFromAudioFile(restOfArgs);
-                        break;
-                    case task_LOAD_CSV:        // loads a csv file for visualisation
-                        LoadIndicesCsvFileAndDisplayTracksImage(restOfArgs);
-                        break;
-                    default:
-                        Console.WriteLine("Unrecognised task>>> " + args[0]);
-                        Console.WriteLine("Press any key to exit...");
-                        Console.ReadLine();
-                        break;
-                }
-            }
-        } //Main()
+        // LoadIndicesCsvFileAndDisplayTracksImage(restOfArgs); // loads a csv file for visualisation
 
         /// <summary>
         /// 

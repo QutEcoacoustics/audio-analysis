@@ -28,7 +28,7 @@ namespace AnalysisPrograms
 
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
 
-        public const int DEFAULT_SAMPLE_RATE = 22050;
+        //public const int DEFAULT_SAMPLE_RATE = 22050;
         
         public static int Main(string[] args)
         {
@@ -64,8 +64,8 @@ namespace AnalysisPrograms
                     string date  = "# DATE AND TIME: " + DateTime.Now;
                     Console.WriteLine(title);
                     Console.WriteLine(date);
-                    Console.WriteLine("# Audio file: " + Path.GetFileName(recordingPath));
-                    Console.WriteLine("# Image file: " + outputPath);
+                    Console.WriteLine("# Input  audio file: " + Path.GetFileName(recordingPath));
+                    Console.WriteLine("# Output image file: " + outputPath);
                 }
             }
             
@@ -80,43 +80,13 @@ namespace AnalysisPrograms
             var configuration = new ConfigDictionary(fiConfig.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
 
-            int resampleRate = DEFAULT_SAMPLE_RATE;
-            if (configDict.ContainsKey(Keys.RESAMPLE_RATE))
-                resampleRate = ConfigDictionary.GetInt(Keys.RESAMPLE_RATE, configDict);
-
-            int frameLength = 0;
-            if (configDict.ContainsKey(Keys.FRAME_LENGTH))
-                frameLength = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, configDict);
-
-            double frameOverlap = 0.0;
-            if (configDict.ContainsKey(Keys.FRAME_OVERLAP))
-                frameOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, configDict);
-
-            int timeReductionFactor = 1;
-            if (configDict.ContainsKey(Keys.TIME_REDUCTION_FACTOR))
-                timeReductionFactor = ConfigDictionary.GetInt(Keys.TIME_REDUCTION_FACTOR, configDict);
-
-            int freqReductionFactor = 1;
-            if (configDict.ContainsKey(Keys.FREQ_REDUCTION_FACTOR))
-                freqReductionFactor = ConfigDictionary.GetInt(Keys.FREQ_REDUCTION_FACTOR, configDict);
-
-            bool addTimeScale = false;
-            if (configDict.ContainsKey(Keys.ADD_TIME_SCALE))
-                addTimeScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
-
-            bool addSegmentationTrack = false;
-            if (configDict.ContainsKey(Keys.ADD_SEGMENTATION_TRACK))
-                addSegmentationTrack = ConfigDictionary.GetBoolean(Keys.ADD_SEGMENTATION_TRACK, configDict);
-
-            //double smoothWindow = Double.Parse(configDict[Keys.SMOOTHING_WINDOW]);   //smoothing window (seconds) before segmentation
-            //double thresholdSD = Double.Parse(configDict[Keys.THRESHOLD]);           //segmentation threshold in noise SD
-            //int lowFrequencyBound = Double.Int(configDict[Keys.LOW_FREQ_BOUND]);     //lower bound of the freq band to be displayed
-            //int hihFrequencyBound = Double.Int(configDict[Keys.HIGH_FREQ_BOUND]);    //upper bound of the freq band to be displayed
-
             if (verbose)
             {
-                Console.WriteLine("# Freq band: {0} Hz - {1} Hz.)", timeReductionFactor, freqReductionFactor);
-                //Console.WriteLine("# Smoothing Window: {0}s.", smoothWindow);
+                Console.WriteLine("\nPARAMETERS");
+                foreach (KeyValuePair<string, string> kvp in configDict)
+                {
+                    Console.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                }
             }
 
             //3: GET RECORDING
@@ -125,15 +95,18 @@ namespace AnalysisPrograms
             {
                 TimeSpan buffer = new TimeSpan(0, 0, 0);
                 fiOutputSegment = new FileInfo(Path.Combine(Path.GetDirectoryName(outputPath), "tempWavFile.wav"));
-                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, resampleRate, fiOutputSegment);
+                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, configDict, fiOutputSegment);
             }
 
-            using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, fiConfig))
+            //get sonogram image
+            using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, configDict))
             {
                 if (image == null) return 666;
                 if (fiImage.Exists) fiImage.Delete();
                 image.Save(fiImage.FullName, ImageFormat.Png);
             }
+            //SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+
 
             if (verbose)
             {
@@ -144,43 +117,6 @@ namespace AnalysisPrograms
             return status;
         } //Main(string[] args)
 
-
-        public static double[,] ReduceDimensionalityOfSpectrogram(double[,] data, int timeRedFactor, int freqRedFactor)
-        {
-            int frameCount   = data.GetLength(0);
-            int freqBinCount = data.GetLength(1);
-
-            int timeReducedCount = frameCount / timeRedFactor;
-            int freqReducedCount = freqBinCount / freqRedFactor;
-
-            var reducedMatrix = new double[timeReducedCount, freqReducedCount];
-            int cellArea = timeRedFactor * freqRedFactor;
-            for (int r = 0; r < timeReducedCount; r++)
-                for (int c = 0; c < freqReducedCount; c++)
-                {
-                    int or = r * timeRedFactor;
-                    int oc = c * freqRedFactor;
-
-                    //display average of the cell
-                    //double sum = 0.0;
-                    //for (int i = 0; i < timeRedFactor; i++)
-                    //    for (int j = 0; j < freqRedFactor; j++)
-                    //    {
-                    //        sum += data[or + i, oc + j];
-                    //    }
-                    //reducedMatrix[r, c] = sum / cellArea;
-
-                    //display the maximum in the cell
-                    double max = -100000000.0;
-                    for (int i = 0; i < timeRedFactor; i++)
-                        for (int j = 0; j < freqRedFactor; j++)
-                        {
-                            if (max < data[or + i, oc + j]) max = data[or + i, oc + j];
-                        }
-                    reducedMatrix[r, c] = max;
-                }
-            return reducedMatrix;
-        }//end AI_DimRed
 
 
         public static int CheckArguments(string[] args)
