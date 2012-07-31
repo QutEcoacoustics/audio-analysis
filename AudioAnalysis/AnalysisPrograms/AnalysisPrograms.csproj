@@ -129,6 +129,7 @@
   <ItemGroup>
     <Compile Include="AcousticFeatures.cs" />
     <Compile Include="AED.cs" />
+    <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="Canetoad.cs" />
@@ -138,12 +139,6 @@
     <Compile Include="IndicesCsv2Display.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="LewinsRail3.cs" />
-    <Compile Include="LSKiwi1.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LSKiwi2.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="LSKiwi3.cs" />
     <Compile Include="LSKiwiHelper.cs" />
     <Compile Include="LSKiwiROC.cs" />
