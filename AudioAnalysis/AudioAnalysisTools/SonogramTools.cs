@@ -194,6 +194,8 @@ namespace AudioAnalysisTools
             return image;
         }//MakeSonogram()
 
+
+
         public static void MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
             //string sourceMimeType = "wav";
@@ -233,5 +235,31 @@ namespace AudioAnalysisTools
             //var soxUtility = new SoxSpectrogramUtility(audioUtility, soxExe);
             //soxUtility.Create(fiAudio, sourceMimeType, output, outputMimeType, request);
         }
-    }
+
+
+      //public static Image MakeSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
+        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            int maxFreq = sonogram.NyquistFrequency / 2;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+
+            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
+
+            //Image_MultiTrack image = new Image_MultiTrack(img);
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            if (scores != null)
+            {
+                foreach (Plot plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
+            if (hits != null) image.OverlayRainbowTransparency(hits);
+            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            return image.GetImage();
+        } //DrawSonogram()
+
+    } //class
 }

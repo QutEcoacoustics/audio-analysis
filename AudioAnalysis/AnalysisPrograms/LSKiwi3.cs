@@ -1084,10 +1084,7 @@ namespace AnalysisPrograms
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
-
-            return AnalysisTemplate.ProcessCsvFile(dt, fiConfigFile);
+            return DisplayIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
         } // ProcessCsvFile()
 
 

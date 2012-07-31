@@ -131,8 +131,6 @@ namespace AnalysisPrograms
 
             //5. initialise the analyser
             string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
-            //IEnumerable<IAnalyser> analysers = GetListOfAvailableAnalysers();
-            //IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisIdentifier, analysers);
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
