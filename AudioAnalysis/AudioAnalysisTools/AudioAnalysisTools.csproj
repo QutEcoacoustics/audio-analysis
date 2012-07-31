@@ -159,6 +159,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="ConfigurationClasses.cs" />
+    <Compile Include="DisplayIndices.cs" />
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="AudioSegmentation.cs" />

@@ -49,8 +49,14 @@ namespace AnalysisPrograms
                     case "audio2csv":     // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
                         AnalyseLongRecording.Main(restOfArgs);   //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "crow":          // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
+                    case "audio2sonogram":        // produces a sonogram from an audio file. Can reduce dimensionality of the image.
+                        Audio2Sonogram.Main(restOfArgs);   //Signed off: Michael Towsey 31st July 2012
+                        break;
+                    case "crow":               // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
                         Crow.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                        break;
+                    case "indicesCsv2Image":        // produces a tracks image of column values in a csv file - one track per csv column.
+                        IndicesCsv2Display.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "epr":           // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
@@ -85,9 +91,6 @@ namespace AnalysisPrograms
                     // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
                     case "acousticIndices":      // extracts acoustic indices from one minute segment - for dev purposes only
                         Acoustic.Dev(restOfArgs);  //Signed off: Michael Towsey, 27th July 2012
-                        break;
-                    case "audio2sonogram":        // produces a sonogram from an audio file. Can reduce dimensionality of the image.
-                        Audio2Sonogram.Main(restOfArgs);
                         break;
                     case "createtemplate_felt":  // extract an acoustic event and make a template for FELT
                         FeltTemplate_Create.Dev(restOfArgs);

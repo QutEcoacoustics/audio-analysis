@@ -298,7 +298,7 @@
         }
 
         /// <summary>
-        /// The get analysers.
+        /// Get analysers using a method that is compatible with MONO environment..
         /// </summary>
         /// <param name="assembly">
         /// The assembly.

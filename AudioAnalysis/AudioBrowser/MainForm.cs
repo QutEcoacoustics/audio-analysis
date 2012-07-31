@@ -534,7 +534,7 @@
             this.labelCSVHeaders.Text = labelText;
 
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
-            Bitmap tracksImage = AudioBrowserTools.ConstructVisualIndexImage(dt2Display, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay, imagePath);
+            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, AudioBrowserTools.IMAGE_TITLE_TEXT, browserSettings.TrackNormalisedDisplay, imagePath);
             this.pictureBoxVisualIndex.Image = tracksImage;
 
             int error = 0;

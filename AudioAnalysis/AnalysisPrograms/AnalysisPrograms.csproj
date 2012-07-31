@@ -135,6 +135,7 @@
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="Human1.cs" />
+    <Compile Include="IndicesCsv2Display.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="LewinsRail3.cs" />
     <Compile Include="LSKiwi1.cs">
