@@ -1,0 +1,134 @@
+====================================
+USER MANUAL FOR AnalysisPrograms.exe
+====================================
+Stored in the repository at: \AudioAnalysis\AnalysisConfigFiles\UserManualForAnalysisPrograms.txt
+
+Author: Michael Towsey
+Started: 31st July 2012
+Latest Update: 31st July 2012
+
+AnalysisPrograms.exe currently perform four tasks via a command line:
+Task A) Analyses an audio file according to parameters specified in a config file and outputs the analysis results in a .csv file.   
+Task B) Produces a sonogram from an audio file.
+Task C) Produces an image from the .csv file of analysis indices output by task 1.
+Task D) Produces a list of the available analyses in the current build.
+
+For each task the command line takes the following form:
+AnalysisPrograms.exe  taskIdentifier  input FilePath  configFilePath  otherArguments
+
+This manual describes how to perform each of these tasks.
+
+Task A) AUDIO FILE 2 INDICES
+	Task identifier = "audio2csv"
+	The command line requires four arguments as follows:
+			AnalysisPrograms.exe  audio2csv  Path\audiofile  Path\configfile.cfg  OutputDirectory
+
+	Argument 1: The task identifier - a short string.
+			
+	Argument 2: Path to the audio file.
+			The audiofile may be in .wav, .mp3 or other ???  formats.
+			The audio file is expected to be over one minute long and will typically be analysed in one - five minute chunks.
+			The task has not been tested on files shorter than 30 seconds nor longer than 24 hours.
+			An error is reported if the passed audio file does not exist.
+
+	Argument 3: Path to the configuration file. 
+			Currently there are configuration files for nine distinct analyses.
+			All the config files are stored in the repository at: \AudioAnalysis\AnalysisConfigFiles
+			The analysis performed on the audio file is determined by an entry in the config file having key = "ANALYSIS_NAME".
+			The analysis name is expected ot be the same as the stem of the config file name.
+			If an analyser cannot be found in the current software build that matches this name an error is returned.
+			An error is reported if the passed config file does not exist.
+			All the config files corrently contain values suitable for a "normal" analysis.
+			Sensitivity and specificity for call detection are typically determined by adjusting threshold values.
+			The nine analyses are:
+				(1) Towsey.Canetoad
+				(2) Towsey.Crow      - the crow 'caw' not the crow 'sigh'
+				(3) Towsey.KoalaMale
+				(4) Towsey.human     - both male and female voice
+				(5) Towsey.LSKiwi3   - the lesser spotted kiwi of New Zealand.
+				(6) Towsey.Lewinsrail
+				(7) Towsey.Machine   - tuned to the low frequency whine of airplanes and cars - trains possibly but not yet tested.
+				(8) Towsey.Acoustic  - outputs only a file of acoustic indices at one minute resolution.
+				(9) Towsey.MultiAnalyser - combines in one analyses for canetoad, human, crow, male koala and machine.
+				
+			NOTE 1: It is expected that those who write new analyses will prepend their name to the analysis name as shown above.
+			NOTE 2: When using the MultiAnalyser, the output is likely to contain confusions between species (for example between crow and human). This is inevitable and can be controlled to some extent by adjusting parameters. It is to be hoped others write better analysers.
+
+	Argument 4: Output directory.
+			Where the .csv files will be placed.
+			The software checks if the passed directory exists and if not, attempts to create it. An error is reported if the directory does not exist and cannot be created.
+			For most analyses two .csv files are produced: one containg events, the other indices.
+			Default names for these two files are: AudioStem.AnalysisName.Events.csv and AudioStem.AnalysisName.Indices.csv.
+			NOTE 1: There is an important difference between and 'event' and an 'index'. An 'event' is a brief episode of higher than background acoustic energy that can be attributed to a specific source (perhaps biological or not). A single bird or frog call (or syllable thereof) is an 'event'. An 'index' is a summary statistic derived from a fixed period of audio recording. Typically indices are derived from one minute chunks of audio. In most case only two indices are derived from files of events: (1) the number of detected events per minute and (2) the number of events per minute over a given intensity threshold.   
+			NOTE 2: The only current exception to Note 1 above is in the case of the 'Towsey.Acoustic' analysis. In this case, only acoutic indices are obtained at one minute resolution and hence no events file is produced.
+			
+			
+Task B) AUDIO FILE 2 SONOGRAM
+	Task identifier = "audio2sonogram"
+	The command line requires four arguments as follows:
+			AnalysisPrograms.exe  audio2sonogram  Path\audiofile  Path\configfile.cfg  OutputImagePath  startMinute  endMinute  verbose
+
+	Argument 1: The task identifier - a short string.
+			
+	Argument 2: Path to the audio file. (string)
+			The audiofile may be in .wav, .mp3 or other ???  formats.
+			The audio file is expected to be over ten seconds long but not longer than about five minutes.
+			The sonogram noise reduction algorithm is not guaranteed to produce good results for sonograms shorter than 10 seconds.
+			Audio files longer than 5 minutes will take too long to produce due to memory constraints.			
+			An error is reported if the passed audio file does not exist.
+			
+	Argument 3: Path of config file. (string) 
+			The only config file currently available is in the repository at: \AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg
+			An error is reported if the psased config file does not exist.
+			The config file contains parameters that determine the appearance of the sonogram.
+			In the absence of a required key-value-pair, the default value is adopted.
+
+	Argument 4: Path of the output image file. (string)
+			Typically the image is expected to be in .png format but .bmp and .jpg are also possible.
+			The software checks if the presribed directory for the output image exists and if not, attempts to create it. An error is reported if the directory does not exist and cannot be created.
+			
+	Argument 5: startMinute (integer) 
+			The start minute of the sonogram - offset from beginning of audio file.
+	
+	Argument 6: endMinute  (integer)
+			The end minute of the sonogram - offset from beginning of audio file.
+			
+	Argument 7: verbose (boolen = true/false or yes/no)
+			Determines whether information is written to Console. Also determines whether program waits for input piror to exit (in order to see the Console output. 		
+
+
+Task C) INDICES FILE 2 IMAGE
+	Task identifier = "indicesCsv2Image"
+	The command line requires four arguments as follows:
+			AnalysisPrograms.exe  indicesCsv2Image  Path\indicesCsvFile  Path\configfile.cfg  OutputImagePath
+
+	Argument 1: The task identifier - a short string.
+			
+	Argument 2: Path to the csv file of indices.
+			Csv files containg fewer than one hour of indices at one minute resolution (i.e. 60 lines) do not produce very meaningful images.
+			An error is reported if the passed csv file does not exist.
+
+	Argument 3:		
+			An error is reported if the psased config file does not exist.
+
+	Argument 4: Path of the output image file.
+			Typically the image is expected to be in .png format but .bmp is also possible. .jpg should definitely be avoided.
+			The software checks if the presribed directory for the output image exists and if not, attempts to create it. An error is reported if the directory does not exist and cannot be created.
+			
+			
+Task D) AVAILABLE ANALYSES IN CURRENT BUILD.
+	Task identifier = "analysesAvailable"		
+			The command line for this task has only two arguments:
+			AnalysisPrograms.exe  analysesAvailable  outpuPath
+			
+	Argument 1: The task identifier - a short string.
+
+	Argument 2: Path of the output text file.
+			The text file will contain a list of the avaible analyses in the current build. 
+			The software checks if the presribed directory for the output file exists and if not, attempts to create it. An error is reported if the directory does not exist and cannot be created.
+			The list of analysis identifiers is also written to the Console.
+			
+			
+			
+			
+			
