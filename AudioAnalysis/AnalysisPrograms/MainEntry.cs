@@ -43,6 +43,9 @@ namespace AnalysisPrograms
                     case "aed":           // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
+                    case "analysesAvailable":           // acoustic event detection
+                        AnalysesAvailable.Main(restOfArgs);
+                        break;
                     case "canetoad":      // IAnalyser - detects canetoad calls as acoustic events
                         Canetoad.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;

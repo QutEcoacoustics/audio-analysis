@@ -44,30 +44,42 @@ namespace AnalysisPrograms
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
-                Console.WriteLine("# MAKE A IMAGE FROM CSV FILE OF ACOUSTIC INDICES");
+                Console.WriteLine("# MAKE AN IMAGE FROM A CSV FILE OF INDICES DERIVED FROM AN AUDIO RECORDING");
                 Console.WriteLine(date);
-                Console.WriteLine("# Input  audio file: " + Path.GetFileName(csvPath));
-                Console.WriteLine("# Output image file: " + imagePath);
+                Console.WriteLine("# Input  audio  file: " + csvPath);
+                Console.WriteLine("# Configuration file: " + configPath);
+                Console.WriteLine("# Output image  file: " + imagePath);
             }
 
-
+            string analysisIdentifier = null;
             var fiConfig = new FileInfo(configPath);
-            var configuration = new ConfigDictionary(fiConfig.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
+            if (fiConfig.Exists)
+            {
+                var configuration = new ConfigDictionary(fiConfig.FullName);
+                Dictionary<string, string> configDict = configuration.GetTable();
+                analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
+            }
+            else
+            {
+                Console.WriteLine("\nWARNING: Config file does not exist: " + fiConfig.FullName);
+            }
+            var output = Tuple.Create(new DataTable(), new DataTable() );
 
-            string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
             {
-                Console.WriteLine("\nWARNING: Could not construct image from CSV file. Analysis name not recognized: " + analysisIdentifier);
-                Console.WriteLine("\nPress <ENTER> key to exit.");
-                Console.ReadLine();
-                return 1;
+                Console.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
+                Console.WriteLine("\t\t Will construct default image");
+                output = DisplayIndices.ProcessCsvFile(new FileInfo(csvPath));
+            }
+            else
+            {
+                output = analyser.ProcessCsvFile(new FileInfo(csvPath), fiConfig);
+
             }
 
             //#########################################################################################################
-            var output = analyser.ProcessCsvFile(new FileInfo(csvPath), fiConfig);
             if (output == null) return 3;
             //DataTable dtRaw = output.Item1;
             DataTable dt2Display = output.Item2;
@@ -133,9 +145,9 @@ namespace AnalysisPrograms
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
-                status = 2;
-                return status;
+                Console.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); //LET THIS BE OK. Proceed anyway with default 
+                //status = 2;
+                //return status;
             }
 
             DirectoryInfo diOP = new DirectoryInfo(Path.GetDirectoryName(outputPath));

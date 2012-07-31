@@ -41,11 +41,11 @@ namespace AnalysisPrograms
         //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi3\";
 
         // THE COMMAND LINES DERIVED FROM ABOVE for the <audio2csv> task. 
-        // MULTIANLAYSER and CROWS
+        //FOR  MULTI-ANALYSER and CROWS
         //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
-        // LITTLE SPOTTED KIWI3
+        //FOR  LITTLE SPOTTED KIWI3
         //audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
-        //ACOUSTIC INDICES
+        //FOR  ACOUSTIC INDICES
         //audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" C:\SensorNetworks\Output\LSKiwi3\
 
         public const int RESAMPLE_RATE = 17640;
