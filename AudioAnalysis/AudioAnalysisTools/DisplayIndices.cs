@@ -109,6 +109,11 @@ namespace AudioAnalysisTools
             return compositeBmp;
         }
 
+        public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile)
+        {
+            FileInfo fiConfigFile = null;
+            return ProcessCsvFile(fiCsvFile, fiConfigFile);
+        }
 
         public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -125,7 +130,7 @@ namespace AudioAnalysisTools
 
             List<string> displayHeaders = null;
             //check if config file contains list of display headers
-            if (fiConfigFile != null)
+            if ((fiConfigFile != null) && (fiConfigFile.Exists))
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
