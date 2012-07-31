@@ -43,6 +43,7 @@ namespace AnalysisPrograms
                 Console.WriteLine("# WRITE FILE OF THE AVAILABLE ANALYSIS IDENTIFIERS.");
                 Console.WriteLine(date);
                 Console.WriteLine("# Output  file: " + outputPath);
+                Console.WriteLine("\n#######################################################################\n");
             }
 
 
