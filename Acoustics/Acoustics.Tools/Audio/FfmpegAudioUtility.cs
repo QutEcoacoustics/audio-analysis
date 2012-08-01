@@ -16,9 +16,6 @@
     /// </summary>
     public class FfmpegAudioUtility : AbstractAudioUtility, IAudioUtility
     {
-        private readonly FileInfo ffmpegExe;
-        private readonly FileInfo ffprobeExe;
-
         private const string Format = "hh\\:mm\\:ss\\.fff";
 
         // -y answer yes to overwriting "Overwrite output files without asking."
@@ -64,227 +61,81 @@
         /// <param name="ffmpegExe">
         /// The ffmpeg exe.
         /// </param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        public FfmpegAudioUtility(FileInfo ffmpegExe)
-        {
-            this.CheckExe(ffmpegExe, "ffmpeg.exe");
-            this.ffmpegExe = ffmpegExe;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class. 
-        /// </summary>
-        /// <param name="ffmpegExe">
-        /// The ffmpeg exe.
-        /// </param>
         /// <param name="ffprobeExe">The ffprobe exe.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public FfmpegAudioUtility(FileInfo ffmpegExe, FileInfo ffprobeExe)
-            : this(ffmpegExe)
         {
-            this.CheckExe(ffprobeExe, "ffprobe.exe");
-            this.ffprobeExe = ffprobeExe;
+            this.CheckExe(ffprobeExe, "ffprobe");
+            this.ExecutableInfo = ffprobeExe;
+
+            this.CheckExe(ffmpegExe, "ffmpeg");
+            this.ExecutableModify = ffmpegExe;
         }
 
         #region Implementation of IAudioUtility
 
         /// <summary>
-        /// Segment a <paramref name="source"/> audio file.
-        /// <paramref name="output"/> file will be created.
+        /// Gets the valid source media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidSourceMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid source media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidSourceMediaTypes
+        {
+            get
+            {
+                return new[] { MediaTypes.MediaTypeWavpack };
+            }
+        }
+
+        /// <summary>
+        /// Gets the valid output media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidOutputMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid output media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidOutputMediaTypes
+        {
+            get
+            {
+                return new[] { MediaTypes.MediaTypeWavpack };
+            }
+        }
+
+        /// <summary>
+        /// The construct modify args.
         /// </summary>
         /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
+        /// The source.
         /// </param>
         /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        /// <param name="request">
-        /// The request.
-        /// </param>
-        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
-        {
-            this.CheckFile(source);
-
-            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            request.ValidateChecked();
-
-            this.CheckRequestValidForOutput(output, outputMimeType, request);
-
-            this.CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
-
-            this.CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
-
-            var process = new ProcessRunner(this.ffmpegExe.FullName);
-
-            string args = ConstructArgs(source, output, request);
-
-            this.RunExe(process, args, output.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-            }
-
-            this.CheckFile(output);
-        }
-
-        /// <summary>
-        /// Calculate duration of <paramref name="source"/> audio file.
-        /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <returns>
-        /// Duration of <paramref name="source"/> audio file.
-        /// </returns>
-        /// <exception cref="ArgumentException"><c>ArgumentException</c>.</exception>
-        public TimeSpan Duration(FileInfo source, string sourceMimeType)
-        {
-            this.ValidateMimeTypeExtension(source, sourceMimeType);
-
-            this.CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
-
-            var process = new ProcessRunner(this.ffmpegExe.FullName);
-
-            string args = string.Format(ArgsOverwriteSource, source.FullName);
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.OutputContains(process, "No such file or directory"))
-            {
-                throw new ArgumentException("Could not find source file: " + source.FullName);
-            }
-
-            Match match = Regex.Match(process.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-            return Parse(match.Groups[1].Value);
-        }
-
-        /// <summary>
-        /// Get metadata for the given file.
-        /// </summary>
-        /// <param name="source">File to get metadata from. This should be an audio file.</param>
-        /// <returns>A dictionary containing metadata for the given file.</returns>
-        public AudioUtilityInfo Info(FileInfo source)
-        {
-            var result = new AudioUtilityInfo();
-
-            if (this.ffprobeExe != null)
-            {
-                var process = new ProcessRunner(this.ffprobeExe.FullName);
-                const string ArgsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
-                var args = string.Format(ArgsFormat, source.FullName);
-
-                this.RunExe(process, args, source.DirectoryName);
-
-                // parse output
-                ////var err = process.ErrorOutput;
-                var std = process.StandardOutput;
-                string currentBlockName = string.Empty;
-                foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (line.StartsWith("[/") && line.EndsWith("]"))
-                    {
-                        // end of a block
-                    }
-                    else if (line.StartsWith("[") && line.EndsWith("]"))
-                    {
-                        // start of a block
-                        currentBlockName = line.Trim('[', ']');
-                    }
-                    else
-                    {
-                        // key=value
-                        var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
-                        var value = line.Substring(line.IndexOf('=') + 1);
-                        result.RawData.Add(key.Trim(), value.Trim());
-                    }
-                }
-
-                // parse info info class
-                var keyDuration = "FORMAT duration";
-                var keyBitRate = "FORMAT bit_rate";
-                var keySampleRate = "STREAM sample_rate";
-                var keyChannels = "STREAM channels";
-
-
-                if (result.RawData.ContainsKey(keyDuration))
-                {
-                    var stringDuration = result.RawData[keyDuration];
-
-                    var formats = new[]
-                        {
-                            @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
-                            @"hh:mm:ss.ffffff"
-                        };
-
-                    TimeSpan tsresult;
-                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
-                    {
-                        result.Duration = tsresult;
-                    }
-                }
-
-                result.BitsPerSecond = GetBitRate(result.RawData);
-
-                if (result.RawData.ContainsKey(keyBitRate))
-                {
-                    result.BitsPerSecond = int.Parse(result.RawData[keyBitRate]);
-                }
-
-                if (result.RawData.ContainsKey(keySampleRate))
-                {
-                    result.SampleRate = int.Parse(result.RawData[keySampleRate]);
-                }
-
-                if (result.RawData.ContainsKey(keyChannels))
-                {
-                    result.ChannelCount = int.Parse(result.RawData[keyChannels]);
-                }
-
-                result.MediaType = FfmpegFormatToMediaType(result.RawData, source.Extension);
-            }
-            else
-            {
-                result.Duration = this.Duration(source, MediaTypes.GetMediaType(source.Extension));
-            }
-
-            return result;
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Construct ffmpeg arguments.
-        /// </summary>
-        /// <param name="source">
-        /// The source file.
-        /// </param>
-        /// <param name="output">
-        /// The output file.
+        /// The output.
         /// </param>
         /// <param name="request">
         /// The request.
         /// </param>
         /// <returns>
-        /// The argument string.
+        /// The System.String.
         /// </returns>
-        private static string ConstructArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
+        protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             string codec;
             var ext = MediaTypes.CanonicaliseExtension(output.Extension);
@@ -319,7 +170,7 @@
                 args.AppendFormat(" -af aresample={0} ", request.SampleRate.Value);
             }
 
-            if (request.MixDownToMono)
+            if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
                 args.AppendFormat(ArgsChannelCount, 1);
             }
@@ -348,6 +199,166 @@
 
             return args.ToString();
         }
+
+        /// <summary>
+        /// The construct info args.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructInfoArgs(FileInfo source)
+        {
+            const string ArgsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
+            var args = string.Format(ArgsFormat, source.FullName);
+            return args;
+        }
+
+        /// <summary>
+        /// The get info.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="process">
+        /// The process.
+        /// </param>
+        /// <returns>
+        /// The Acoustics.Tools.AudioUtilityInfo.
+        /// </returns>
+        protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
+        {
+            var result = new AudioUtilityInfo();
+
+            // parse output
+            ////var err = process.ErrorOutput;
+            var std = process.StandardOutput;
+            string currentBlockName = string.Empty;
+            foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (line.StartsWith("[/") && line.EndsWith("]"))
+                {
+                    // end of a block
+                }
+                else if (line.StartsWith("[") && line.EndsWith("]"))
+                {
+                    // start of a block
+                    currentBlockName = line.Trim('[', ']');
+                }
+                else
+                {
+                    // key=value
+                    var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
+                    var value = line.Substring(line.IndexOf('=') + 1);
+                    result.RawData.Add(key.Trim(), value.Trim());
+                }
+            }
+
+            // parse info info class
+            var keyDuration = "FORMAT duration";
+            var keyBitRate = "FORMAT bit_rate";
+            var keySampleRate = "STREAM sample_rate";
+            var keyChannels = "STREAM channels";
+
+
+            if (result.RawData.ContainsKey(keyDuration))
+            {
+                var stringDuration = result.RawData[keyDuration];
+
+                var formats = new[]
+                        {
+                            @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
+                            @"hh:mm:ss.ffffff"
+                        };
+
+                TimeSpan tsresult;
+                if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
+                {
+                    result.Duration = tsresult;
+                }
+            }
+
+            result.BitsPerSecond = GetBitRate(result.RawData);
+
+            if (result.RawData.ContainsKey(keyBitRate))
+            {
+                result.BitsPerSecond = int.Parse(result.RawData[keyBitRate]);
+            }
+
+            if (result.RawData.ContainsKey(keySampleRate))
+            {
+                result.SampleRate = int.Parse(result.RawData[keySampleRate]);
+            }
+
+            if (result.RawData.ContainsKey(keyChannels))
+            {
+                result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+            }
+
+            result.MediaType = FfmpegFormatToMediaType(result.RawData, source.Extension);
+
+            return result;
+        }
+
+        /// <summary>
+        /// The check audioutility request.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="sourceMimeType">
+        /// The source Mime Type.
+        /// </param>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output media type.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        {
+            // check that if output is mp3, the bit rate and sample rate are set valid amounts.
+            if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
+            {
+               
+                if (request.SampleRate.HasValue)
+                {
+                    // sample rate is set - check it
+                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                }
+                else
+                {
+                    // sample rate is not set, get it from the source file
+                    var info = this.Info(source);
+                    if (!info.SampleRate.HasValue)
+                    {
+                        throw new ArgumentException("Sample rate for output mp3 may not be correct, as sample rate is not set, and cannot be determined from source file.");
+                    }
+
+                    this.CheckMp3SampleRate(info.SampleRate.Value);
+                }
+            }
+
+            // check that a channel number, if set, is available
+            if (request != null && request.Channel.HasValue && request.Channel.Value > 1)
+            {
+                var info = this.Info(source);
+                if (info.ChannelCount > request.Channel.Value)
+                {
+                    var msg = "Requested channel number was out of range. Requested channel " + request.Channel.Value
+                              + " but there are only " + info.ChannelCount + " channels in " + source + ".";
+
+                    throw new ArgumentOutOfRangeException("request", request.Channel.Value, msg);
+                }
+            }
+        }
+
+        #endregion
 
         private static string FormatTimeSpan(TimeSpan value)
         {

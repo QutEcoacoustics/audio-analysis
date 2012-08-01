@@ -1,6 +1,7 @@
 ﻿namespace Acoustics.Tools.Audio
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
 
@@ -81,58 +82,99 @@
         }
 
         /// <summary>
+        /// Gets the valid source media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidSourceMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid source media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidSourceMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the valid output media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidOutputMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid output media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidOutputMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Segment a <paramref name="source"/> audio file.
         /// <paramref name="output"/> file will be created.
         /// </summary>
         /// <param name="source">
         /// The source audio file.
         /// </param>
-        /// <param name="sourceMimeType">
+        /// <param name="sourceMediaType">
         /// The source Mime Type.
         /// </param>
         /// <param name="output">
         /// The output audio file.
         /// </param>
-        /// <param name="outputMimeType">
+        /// <param name="outputMediaType">
         /// The output Mime Type.
         /// </param>
         /// <param name="request">
         /// The request.
         /// </param>
-        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        public override void Modify(FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            sourceMimeType = MediaTypes.CanonicaliseMediaType(sourceMimeType);
-            outputMimeType = MediaTypes.CanonicaliseMediaType(outputMimeType);
-
-            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            request.ValidateChecked();
+            var segmentRequest = new AudioUtilityRequest
+                {
+                    OffsetStart = request.OffsetStart,
+                    OffsetEnd = request.OffsetEnd,
+                    MixDownToMono = false
+                };
 
             FileInfo soxSourceFile = source;
             var soxRequest = request;
 
             // do specialised convert and/or segment
-            if (sourceMimeType == MediaTypes.MediaTypeWavpack)
+            if (sourceMediaType == MediaTypes.MediaTypeWavpack)
             {
                 // convert and segment wavpack file to wav
-                var wavpackRequest = new AudioUtilityRequest { OffsetStart = request.OffsetStart, OffsetEnd = request.OffsetEnd };
-                soxSourceFile = this.SegmentWavpackToWav(source, wavpackRequest);
+                soxSourceFile = this.SegmentWavpackToWav(source, segmentRequest);
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
-            else if (sourceMimeType == MediaTypes.MediaTypeMp3)
+            else if (sourceMediaType == MediaTypes.MediaTypeMp3)
             {
                 // segment mp3 file
-                var mp3Request = new AudioUtilityRequest { OffsetStart = request.OffsetStart, OffsetEnd = request.OffsetEnd };
-                soxSourceFile = this.SegmentMp3(source, sourceMimeType, mp3Request);
+                soxSourceFile = this.SegmentMp3(source, sourceMediaType, segmentRequest);
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
-            else if (sourceMimeType != MediaTypes.MediaTypeWav)
+            else if (sourceMediaType != MediaTypes.MediaTypeWav && sourceMediaType != MediaTypes.MediaTypeMp3)
             {
                 // convert to wav using ffmpeg
-                var audioFileRequest = new AudioUtilityRequest { OffsetStart = request.OffsetStart, OffsetEnd = request.OffsetEnd };
-                soxSourceFile = this.ConvertNonWav(source, sourceMimeType, audioFileRequest);
+                soxSourceFile = this.ConvertNonWavOrMp3(source, sourceMediaType, segmentRequest);
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
@@ -148,13 +190,19 @@
             }
 
             // ensure result is in correct format
-            if (MediaTypes.GetMediaType(soxOutputFile.Extension) != outputMimeType)
+            if (MediaTypes.GetMediaType(soxOutputFile.Extension) != outputMediaType)
             {
                 // if format is not correct, convert it
-                this.ffmpegUtility.Modify(soxOutputFile, MediaTypes.MediaTypeWav, output, outputMimeType, new AudioUtilityRequest());
+                this.ffmpegUtility.Modify(soxOutputFile, MediaTypes.MediaTypeWav, output, outputMediaType, new AudioUtilityRequest { MixDownToMono = false });
             }
             else
             {
+                // create output dir if it does not exist.
+                if (!Directory.Exists(output.DirectoryName))
+                {
+                    Directory.CreateDirectory(output.DirectoryName);
+                }
+
                 // if output is correct, just copy it.
                 File.Copy(soxOutputFile.FullName, output.FullName);
             }
@@ -176,26 +224,99 @@
         /// </summary>
         /// <param name="source">File to get metadata from. This should be an audio file.</param>
         /// <returns>A dictionary containing metadata for the given file.</returns>
-        public AudioUtilityInfo Info(FileInfo source)
+        public override AudioUtilityInfo Info(FileInfo source)
         {
-            AudioUtilityInfo info = null;
+            var mediaType = MediaTypes.GetMediaType(source.Extension);
+            AudioUtilityInfo info;
 
-            if (MediaTypes.GetMediaType(source.Extension) == MediaTypes.MediaTypeWavpack)
+            if (mediaType == MediaTypes.MediaTypeWavpack)
             {
                 info = this.wvunpackUtility.Info(source);
             }
-
-            if (this.soxUtility != null)
+            else if (mediaType == MediaTypes.MediaTypeMp3 || mediaType == MediaTypes.MediaTypeWav)
             {
-                info = this.Combine(info, this.soxUtility.Info(source));
+                info = this.Combine(this.soxUtility.Info(source), this.ffmpegUtility.Info(source));
             }
-
-            if (this.ffmpegUtility != null)
+            else
             {
-                info = this.Combine(info, this.ffmpegUtility.Info(source));
+                info = this.ffmpegUtility.Info(source);
             }
 
             return info;
+        }
+
+        /// <summary>
+        /// The construct modify args.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// The construct info args.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructInfoArgs(FileInfo source)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// The get info.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="process">
+        /// The process.
+        /// </param>
+        /// <returns>
+        /// The Acoustics.Tools.AudioUtilityInfo.
+        /// </returns>
+        protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// The check audioutility request.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="sourceMimeType">
+        /// The source Mime Type.
+        /// </param>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output media type.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        {
+            // no restrictions
         }
 
         private static WavPackAudioUtility InitWavUnpack(DirectoryInfo baseDir)
@@ -217,33 +338,17 @@
         private static FfmpegAudioUtility InitFfmpeg(DirectoryInfo baseDir)
         {
             var ffmpegExe = Path.Combine(baseDir.FullName, AppConfigHelper.FfmpegExe);
+            var ffprobeExe = Path.Combine(baseDir.FullName, AppConfigHelper.FfprobeExe);
 
-            var ffprobeExeName = AppConfigHelper.FfprobeExe;
-            FfmpegAudioUtility ffmpegUtility;
-
-            if (!string.IsNullOrEmpty(ffprobeExeName))
-            {
-                var ffprobeExe = Path.Combine(baseDir.FullName, ffprobeExeName);
-                ffmpegUtility = new FfmpegAudioUtility(new FileInfo(ffmpegExe), new FileInfo(ffprobeExe));
-            }
-            else
-            {
-                ffmpegUtility = new FfmpegAudioUtility(new FileInfo(ffmpegExe));
-            }
+            var ffmpegUtility = new FfmpegAudioUtility(new FileInfo(ffmpegExe), new FileInfo(ffprobeExe));
 
             return ffmpegUtility;
         }
 
         private static SoxAudioUtility InitSox(DirectoryInfo baseDir)
         {
-            var soxExeName = AppConfigHelper.SoxExe;
-            if (!string.IsNullOrEmpty(soxExeName))
-            {
-                var soxExe = Path.Combine(baseDir.FullName, soxExeName);
-                return new SoxAudioUtility(new FileInfo(soxExe));
-            }
-
-            return null;
+            var soxExe = Path.Combine(baseDir.FullName, AppConfigHelper.SoxExe);
+            return new SoxAudioUtility(new FileInfo(soxExe));
         }
 
         private FileInfo SegmentWavpackToWav(FileInfo source, AudioUtilityRequest request)
@@ -278,7 +383,7 @@
             return mp3SpltTempFile;
         }
 
-        private FileInfo ConvertNonWav(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
+        private FileInfo ConvertNonWavOrMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to segment.
             var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));

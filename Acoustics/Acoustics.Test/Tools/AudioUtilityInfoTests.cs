@@ -1,18 +1,13 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Acoustics.Test.Tools
+﻿namespace Acoustics.Test.Tools
 {
-    using System.IO;
+    using System;
 
     using Acoustics.Shared;
     using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
 
     using EcoSounds.Mvc.Tests;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class AudioUtilityInfoTests
@@ -218,25 +213,34 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        public void InfoWv2Master()
+        {
+            var util = TestHelper.GetAudioUtility();
+
+            var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
+            var info = util.Info(source);
+
+            var expected = new AudioUtilityInfo
+            {
+                Duration = TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(0),
+                SampleRate = 22050,
+                ChannelCount = 1,
+                BitsPerSecond = 158000,
+                MediaType = MediaTypes.MediaTypeWavpack,
+            };
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
         public void InfoAsfSox()
         {
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("06Sibylla.asf");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
-                SampleRate = 44100,
-                ChannelCount = 2,
-                BitsPerSecond = 128000,
-                MediaType = MediaTypes.MediaTypeAsf,
-            };
-
-            TestHelper.ExceptionMatches<AssertFailedException>(
-                () => TestHelper.CheckAudioUtilityInfo(expected, info),
-                "Assert.Fail failed. BitsPerSecond");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -285,18 +289,9 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(32.173),
-                SampleRate = 32000,
-                ChannelCount = 2,
-                BitsPerSecond = 84000,
-                MediaType = MediaTypes.MediaTypeOggAudio,
-            };
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -365,20 +360,9 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.7),
-                SampleRate = 22050,
-                ChannelCount = 1,
-                BitsPerSecond = 43032,
-                MediaType = MediaTypes.MediaTypeWebMAudio,
-            };
-
-            TestHelper.ExceptionMatches<AssertFailedException>(
-                () => TestHelper.CheckAudioUtilityInfo(expected, info),
-                "Assert.Fail failed. BitsPerSecond");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -387,20 +371,9 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("06Sibylla.wma");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
-                SampleRate = 44100,
-                ChannelCount = 2,
-                BitsPerSecond = 128000,
-                MediaType = MediaTypes.MediaTypeWma,
-            };
-
-            TestHelper.ExceptionMatches<AssertFailedException>(
-                () => TestHelper.CheckAudioUtilityInfo(expected, info),
-                "Assert.Fail failed. BitsPerSecond");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -409,18 +382,9 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(0),
-                SampleRate = 22050,
-                ChannelCount = 1,
-                BitsPerSecond = 171000,
-                MediaType = MediaTypes.MediaTypeWavpack,
-            };
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -429,18 +393,9 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilitySox();
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
-            var info = util.Info(source);
-
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(0),
-                SampleRate = 22050,
-                ChannelCount = 1,
-                BitsPerSecond = 158000,
-                MediaType = MediaTypes.MediaTypeWavpack,
-            };
-
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
         }
 
         [TestMethod]
@@ -629,6 +584,258 @@ namespace Acoustics.Test.Tools
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Invalid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoAsfMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("06Sibylla.asf");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoMp3Mp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
+            var info = util.Info(source);
+
+            var expected = new AudioUtilityInfo
+            {
+                Duration = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(59.987),
+                SampleRate = 22050,
+                ChannelCount = 1,
+                BitsPerSecond = 96000,
+                MediaType = MediaTypes.MediaTypeMp3,
+            };
+
+            TestHelper.ExceptionMatches<NullReferenceException>(
+                () => TestHelper.CheckAudioUtilityInfo(expected, info),
+                "Object reference not set to an instance of an object.");
+        }
+
+        [TestMethod]
+        public void InfoMp32Mp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
+            var info = util.Info(source);
+
+            var expected = new AudioUtilityInfo
+            {
+                Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(41.6),
+                SampleRate = 44100,
+                ChannelCount = 2,
+                BitsPerSecond = 160000,
+                MediaType = MediaTypes.MediaTypeMp3,
+            };
+
+            TestHelper.ExceptionMatches<NullReferenceException>(
+                () => TestHelper.CheckAudioUtilityInfo(expected, info),
+                "Object reference not set to an instance of an object.");
+        }
+
+        [TestMethod]
+        public void InfoOggMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWavMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWav2Mp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWav3Mp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("geckos.wav");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWebmMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWmaMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("06Sibylla.wma");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWvMp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoAsfWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("06Sibylla.asf");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+
+        }
+
+        [TestMethod]
+        public void InfoMp3Wavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoMp32Wavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("A French Fiddle Speaks.mp3");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoOggWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("ocioncosta-lindamenina.ogg");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWavWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWav2Wavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWav3Wavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("geckos.wav");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWebmWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.webm");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWmaWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("06Sibylla.wma");
+            AudioUtilityInfo info;
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => info = util.Info(source),
+                "cannot be processed.  Valid formats are: wv (audio/x-wv).");
+        }
+
+        [TestMethod]
+        public void InfoWvWavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
             var info = util.Info(source);
 
             var expected = new AudioUtilityInfo
@@ -637,6 +844,26 @@ namespace Acoustics.Test.Tools
                 SampleRate = 22050,
                 ChannelCount = 1,
                 BitsPerSecond = 171000,
+                MediaType = MediaTypes.MediaTypeWavpack,
+            };
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
+        public void InfoWv2Wavunpack()
+        {
+            var util = TestHelper.GetAudioUtilityWavunpack();
+
+            var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
+            var info = util.Info(source);
+
+            var expected = new AudioUtilityInfo
+            {
+                Duration = TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(0),
+                SampleRate = 22050,
+                ChannelCount = 1,
+                BitsPerSecond = 158000,
                 MediaType = MediaTypes.MediaTypeWavpack,
             };
 

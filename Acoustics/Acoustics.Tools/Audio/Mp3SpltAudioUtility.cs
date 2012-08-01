@@ -20,8 +20,6 @@
     /// </remarks>
     public class Mp3SpltAudioUtility : AbstractAudioUtility, IAudioUtility
     {
-        private readonly FileInfo mp3SpltExe;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Mp3SpltAudioUtility"/> class.
         /// </summary>
@@ -32,75 +30,59 @@
         /// <exception cref="ArgumentNullException"><paramref name="mp3SpltExe" /> is <c>null</c>.</exception>
         public Mp3SpltAudioUtility(FileInfo mp3SpltExe)
         {
-            this.CheckExe(mp3SpltExe, "mp3splt.exe");
-            this.mp3SpltExe = mp3SpltExe;
+            this.CheckExe(mp3SpltExe, "mp3splt");
+            this.ExecutableModify = mp3SpltExe;
+            this.ExecutableInfo = mp3SpltExe;
         }
 
         #region Implementation of IAudioUtility
 
         /// <summary>
-        /// Segment a <paramref name="source"/> audio file.
-        /// <paramref name="output"/> file will be created.
+        /// Gets the valid source media types.
         /// </summary>
-        /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
-        /// </param>
-        /// <param name="output">
-        /// The output audio file.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
-        /// </param>
-        /// <param name="request">
-        /// The request.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// </exception>
-        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
+        protected override IEnumerable<string> ValidSourceMediaTypes
         {
-            this.CheckFile(source);
-
-            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            request.ValidateChecked();
-
-            this.CanProcess(source, new[] { MediaTypes.MediaTypeMp3 }, null);
-
-            this.CanProcess(output, new[] { MediaTypes.MediaTypeMp3 }, null);
-
-            var process = new ProcessRunner(this.mp3SpltExe.FullName);
-
-            string args = CreateSingleSegmentArguments(source, output, request);
-
-            this.RunExe(process, args, output.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
+            get
             {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+                return new[] { MediaTypes.MediaTypeMp3 };
             }
-
-            this.CheckFile(output);
         }
 
         /// <summary>
-        /// Get metadata for the given file.
+        /// Gets the invalid source media types.
         /// </summary>
-        /// <param name="source">File to get metadata from. This should be an audio file.</param>
-        /// <returns>A dictionary containing metadata for the given file.</returns>
-        /// <exception cref="NotSupportedException"><c>NotSupportedException</c>.</exception>
-        public AudioUtilityInfo Info(FileInfo source)
+        protected override IEnumerable<string> InvalidSourceMediaTypes
         {
-            return null;
+            get
+            {
+                return null;
+            }
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the valid output media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidOutputMediaTypes
+        {
+            get
+            {
+                return new[] { MediaTypes.MediaTypeMp3 };
+            }
+        }
 
         /// <summary>
-        /// Create arguments to make one segment.
+        /// Gets the invalid output media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidOutputMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The construct modify args.
         /// </summary>
         /// <param name="source">
         /// The source.
@@ -112,9 +94,9 @@
         /// The request.
         /// </param>
         /// <returns>
-        /// Argument string.
+        /// The System.String.
         /// </returns>
-        private static string CreateSingleSegmentArguments(FileInfo source, FileInfo output, AudioUtilityRequest request)
+        protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             var sb = new StringBuilder();
 
@@ -185,6 +167,70 @@
             return args;
             */
         }
+
+        /// <summary>
+        /// The construct info args.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructInfoArgs(FileInfo source)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// The get info.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="process">
+        /// The process.
+        /// </param>
+        /// <returns>
+        /// The Acoustics.Tools.AudioUtilityInfo.
+        /// </returns>
+        protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// The check audioutility request.
+        /// </summary>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output media type.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <exception cref="ArgumentException">Mp3Splt cannot perform this type of request.</exception>
+        protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        {
+            if (request.Channel.HasValue)
+            {
+                throw new ArgumentException("Mp3Splt cannot modify the channel.", "request");
+            }
+
+            if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
+            {
+                throw new ArgumentException("Mp3Splt cannot mix down the channels to mono.", "request");
+            }
+
+            if (request.SampleRate.HasValue)
+            {
+                throw new ArgumentException("Mp3Splt cannot modify the sample rate.", "request");
+            }
+        }
+
+        #endregion
 
         private static string FormatTimeSpan(TimeSpan value)
         {
@@ -402,7 +448,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
                     WindowStyle = ProcessWindowStyle.Hidden,
                     WorkingDirectory = this.WorkingDirectory.FullName,
                     Arguments = args,
-                    FileName = this.mp3SpltExe.FullName,
+                    FileName = this.ExecutableModify.FullName,
                 };
 
                 worker.EnableRaisingEvents = true;
