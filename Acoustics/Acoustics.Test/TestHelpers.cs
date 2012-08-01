@@ -5,6 +5,8 @@
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -276,6 +278,112 @@
                    Path.Combine(
                        GetResourcesBaseDir().FullName, AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
 
+        }
+
+        public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual)
+        {
+            if (expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
+            {
+                Assert.AreEqual(expected.BitsPerSample.Value, actual.BitsPerSample.Value);
+            }
+
+            if (expected.BitsPerSample.HasValue && !actual.BitsPerSample.HasValue)
+            {
+                Assert.Fail("BitsPerSample");
+            }
+
+            if (!expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
+            {
+                Assert.Fail("BitsPerSample");
+            }
+
+            if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
+            {
+                Assert.AreEqual(expected.BitsPerSecond.Value, actual.BitsPerSecond.Value, 1700);
+            }
+
+            if (expected.BitsPerSecond.HasValue && !actual.BitsPerSecond.HasValue)
+            {
+                Assert.Fail("BitsPerSecond");
+            }
+
+            if (!expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
+            {
+                Assert.Fail("BitsPerSecond");
+            }
+
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(expected.MediaType));
+            Assert.IsTrue(expected.ChannelCount.HasValue);
+            Assert.IsTrue(expected.Duration.HasValue);
+            Assert.IsTrue(expected.SampleRate.HasValue);
+
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(actual.MediaType));
+            Assert.IsTrue(actual.ChannelCount.HasValue);
+            Assert.IsTrue(actual.Duration.HasValue);
+            Assert.IsTrue(actual.SampleRate.HasValue);
+
+            Assert.AreEqual(expected.MediaType, actual.MediaType);
+            Assert.AreEqual(expected.ChannelCount.Value, actual.ChannelCount.Value);
+            Assert.AreEqual(expected.Duration.Value.TotalMilliseconds, actual.Duration.Value.TotalMilliseconds, TimeSpan.FromMilliseconds(150).TotalMilliseconds);
+            Assert.AreEqual(expected.SampleRate.Value, actual.SampleRate.Value);
+        }
+
+        public static FileInfo GetAudioFile(string filename)
+        {
+            var source = TestHelper.GetTestAudioFile(filename);
+            return source;
+        }
+
+        public static IAudioUtility GetAudioUtility()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
+            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
+            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
+            var wvunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
+            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
+
+            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
+            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
+            var wvunpack = new WavPackAudioUtility(wvunpackExe);
+            var sox = new SoxAudioUtility(soxExe);
+
+            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
+        }
+
+        public static IAudioUtility GetAudioUtilitySox()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
+
+            var sox = new SoxAudioUtility(soxExe);
+
+            return sox;
+        }
+
+        public static IAudioUtility GetAudioUtilityFfmpeg()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
+            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
+           
+            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
+
+            return ffmpeg;
+        }
+
+        public static IAudioUtility GetAudioUtilityWavunpack()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var wavunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
+
+            var ffmpeg = new WavPackAudioUtility(wavunpackExe);
+
+            return ffmpeg;
         }
     }
 

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -275,6 +276,15 @@
             }
         }
 
+        /// <summary>
+        /// The build file debugging output.
+        /// </summary>
+        /// <param name="file">
+        /// The file.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
         protected string BuildFileDebuggingOutput(FileInfo file)
         {
             var sb = new StringBuilder();
@@ -295,6 +305,18 @@
             return sb.ToString();
         }
 
+        /// <summary>
+        /// The output contains.
+        /// </summary>
+        /// <param name="runner">
+        /// The runner.
+        /// </param>
+        /// <param name="compareString">
+        /// The compare string.
+        /// </param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         protected bool OutputContains(ProcessRunner runner, string compareString)
         {
             compareString = compareString.ToLowerInvariant().Trim();
@@ -304,7 +326,6 @@
                 && runner.ErrorOutput.ToLowerInvariant().Trim().Contains(compareString))
             {
                 return true;
-
             }
 
             if (runner != null
@@ -354,5 +375,99 @@
                 processRunner.Run(arguments, workingDirectory);
             }
         }
+
+        /// <summary>
+        /// The check file.
+        /// </summary>
+        /// <param name="file">
+        /// The file.
+        /// </param>
+        /// <exception cref="ArgumentNullException">file</exception>
+        /// <exception cref="ArgumentException">file</exception>
+        protected void CheckFile(FileInfo file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException("file");
+            }
+
+            if (!File.Exists(file.FullName))
+            {
+                throw new ArgumentException("File does not exist: " + file, "file");
+            }
+
+            if (file.Length < 1)
+            {
+                throw new ArgumentException("File exists, but does not contain anything: " + file, "file");
+            }
+        }
+
+        /// <summary>
+        /// The check mp 3 bit rate.
+        /// </summary>
+        /// <param name="value">
+        /// The value.
+        /// </param>
+        /// <exception cref="ArgumentException">The value.</exception>
+        protected void CheckMp3BitRate(int value)
+        {
+            // https://en.wikipedia.org/wiki/MP3#Bit_rate
+            var bitRates = new[] { 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 192, 224, 256, 320 };
+            if (!bitRates.Contains(value))
+            {
+                throw new ArgumentException(
+                    "Bit rate " + value + " is not valid for mp3. Must be one of: "
+                    + string.Join(", ", bitRates.Select(i => i.ToString(CultureInfo.InvariantCulture))),
+                    "value");
+            }
+        }
+
+        /// <summary>
+        /// The check mp 3 sample rate.
+        /// </summary>
+        /// <param name="value">
+        /// The value.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// The value.
+        /// </exception>
+        protected void CheckMp3SampleRate(int value)
+        {
+            // https://en.wikipedia.org/wiki/MP3#Bit_rate
+            var sampleRates = new[] { 8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000 };
+            if (!sampleRates.Contains(value))
+            {
+                throw new ArgumentException(
+                    "Sample rate " + value + " is not valid for mp3. Must be one of: "
+                    + string.Join(", ", sampleRates.Select(i => i.ToString(CultureInfo.InvariantCulture))),
+                    "value");
+            }
+        }
+
+        /// <summary>
+        /// The check request valid for output.
+        /// </summary>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output media type.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        protected void CheckRequestValidForOutput(FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        {
+            var mediaType = MediaTypes.CanonicaliseMediaType(outputMediaType);
+
+            if (mediaType == MediaTypes.MediaTypeMp3)
+            {
+                if (request.SampleRate.HasValue)
+                {
+                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                }
+            }
+        }
+
     }
 }
