@@ -99,13 +99,13 @@ namespace AnalysisPrograms
             }
 
             //get sonogram image
-            using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, configDict))
-            {
-                if (image == null) return 666;
-                if (fiImage.Exists) fiImage.Delete();
-                image.Save(fiImage.FullName, ImageFormat.Png);
-            }
-            //SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+            //using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, configDict))
+            //{
+            //    if (image == null) return 666;
+            //    if (fiImage.Exists) fiImage.Delete();
+            //    image.Save(fiImage.FullName, ImageFormat.Png);
+            //}
+            SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
 
 
             if (verbose)
