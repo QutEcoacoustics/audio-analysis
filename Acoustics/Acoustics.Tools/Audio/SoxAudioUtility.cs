@@ -22,8 +22,6 @@
          * fir - FFT with fir coefficients
          */
 
-        private readonly FileInfo soxExe;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SoxAudioUtility"/> class.
         /// </summary>
@@ -38,8 +36,9 @@
         /// </exception>
         public SoxAudioUtility(FileInfo soxExe)
         {
-            this.CheckExe(soxExe, "sox.exe");
-            this.soxExe = soxExe;
+            this.CheckExe(soxExe, "sox");
+            this.ExecutableModify = soxExe;
+            this.ExecutableInfo = soxExe;
             this.ResampleQuality = SoxResampleQuality.VeryHigh;
         }
 
@@ -95,104 +94,65 @@
         public SoxResampleQuality? ResampleQuality { get; private set; }
 
         /// <summary>
-        /// Segment a <paramref name="source"/> audio file.
-        /// <paramref name="output"/> file will be created.
+        /// Gets the valid source media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidSourceMediaTypes
+        {
+            get
+            {
+                return new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid source media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidSourceMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the valid output media types.
+        /// </summary>
+        protected override IEnumerable<string> ValidOutputMediaTypes
+        {
+            get
+            {
+                return new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
+            }
+        }
+
+        /// <summary>
+        /// Gets the invalid output media types.
+        /// </summary>
+        protected override IEnumerable<string> InvalidOutputMediaTypes
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The construct modify args.
         /// </summary>
         /// <param name="source">
-        /// The source audio file.
-        /// </param>
-        /// <param name="sourceMimeType">
-        /// The source Mime Type.
+        /// The source.
         /// </param>
         /// <param name="output">
-        /// The output audio file. Ensure the file does not exist.
-        /// </param>
-        /// <param name="outputMimeType">
-        /// The output Mime Type.
+        /// The output.
         /// </param>
         /// <param name="request">
         /// The request.
         /// </param>
-        public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
-        {
-            this.CheckFile(source);
-
-            this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
-
-            request.Validate();
-
-            this.CheckRequestValidForOutput(output, outputMimeType, request);
-
-            this.CanProcess(source, new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 }, null);
-
-            this.CanProcess(output, new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 }, null);
-
-            var process = new ProcessRunner(this.soxExe.FullName);
-
-            string args = this.ConstructResamplingArgs(source, output, request);
-
-            this.RunExe(process, args, output.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-            }
-
-            this.CheckFile(output);
-        }
-
-        /// <summary>
-        /// Get metadata for the given file.
-        /// </summary>
-        /// <param name="source">File to get metadata from. This should be an audio file.</param>
-        /// <returns>A dictionary containing metadata for the given file.</returns>
-        public AudioUtilityInfo Info(FileInfo source)
-        {
-            //var stats = this.SoxStats(source);
-            var info = this.SoxInfo(source);
-
-            return info;
-        }
-
-        private static string GetResampleQuality(SoxResampleQuality rq)
-        {
-            switch (rq)
-            {
-                case SoxResampleQuality.Quick:
-                    return "q";
-                case SoxResampleQuality.Low:
-                    return "l";
-                case SoxResampleQuality.Medium:
-                    return "m";
-                case SoxResampleQuality.High:
-                    return "h";
-                case SoxResampleQuality.VeryHigh:
-                    return "v";
-                default:
-                    return "m";
-            }
-        }
-
-        private static TimeSpan Parse(string timeToParse)
-        {
-            try
-            {
-                string hours = timeToParse.Substring(0, 2);
-                string minutes = timeToParse.Substring(3, 2);
-                string seconds = timeToParse.Substring(6, 2);
-                string fractions = timeToParse.Substring(9, 2);
-
-                return new TimeSpan(
-                    0, int.Parse(hours), int.Parse(minutes), int.Parse(seconds), int.Parse(fractions) * 10);
-            }
-            catch
-            {
-                return TimeSpan.Zero;
-            }
-        }
-
-        private string ConstructResamplingArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
             // resample - sox specific
             var resampleQuality = this.ResampleQuality.HasValue
@@ -212,7 +172,7 @@
 
             // mix down to mono
             var remix = string.Empty;
-            if (request.MixDownToMono)
+            if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
                 /*
                  * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are 
@@ -250,130 +210,35 @@
             return string.Format(" -V4 \"{0}\" \"{1}\" {2} {3} {4}", source.FullName, output.FullName, trim, rate, remix);
         }
 
-        private AudioUtilityInfo SoxStats(FileInfo source)
+        /// <summary>
+        /// The construct info args.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <returns>
+        /// The System.String.
+        /// </returns>
+        protected override string ConstructInfoArgs(FileInfo source)
         {
-            /*
-             * −w name 
-             * Window: Hann (default), Hamming, Bartlett, Rectangular or Kaiser
-             * 
-             * 
-            sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n 
-             * stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o 
-             * "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" 
-             * stats stat
-             * 
-             * sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" stats stat
-
-sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
-
-sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" -n spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.png" stats stat
-
-I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
-a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
-             * 
-             * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
-            */
-
-            CanProcess(source, null, null);
-
-            var process = new ProcessRunner(this.soxExe.FullName);
-
-            string args = "\"" + source.FullName + "\" -n stat stats";
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            }
-
-            IEnumerable<string> lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // if no lines, or any line contains "no handler for file extension", return empty
-            if (!lines.Any() || lines.Any(l => l.Contains("no handler for file extension")))
-            {
-                return new AudioUtilityInfo();
-            }
-
-            // 
-
-            // first 15 are split by colon (:)
-            var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));
-            var statOutput = statOutputRaw.Select(i => new KeyValuePair<string, string>(i.First(), i.Skip(1).First()));
-
-            var results = statOutput.ToDictionary(item => item.Key, item => item.Value);
-
-            lines = lines.Skip(15);
-
-            // if there is a line that starts with 'Overall' (after being trimed), then count the number of words.
-            // next 11 may have 1 value, may have more than one
-            var isMoreThanOneChannel = lines.First().Trim().Contains("Overall");
-
-            if (isMoreThanOneChannel)
-            {
-                var header = lines.First();
-                var headerNames = header.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var numValues = headerNames.Count();
-
-                lines = lines.Skip(1);
-
-                string[] currentLine;
-                string keyName;
-
-                for (var index = 0; index < 11; index++)
-                {
-                    currentLine = lines.First().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    keyName = lines.First();
-                    var tempHeaderCount = numValues;
-
-                    while (tempHeaderCount > 0)
-                    {
-                        keyName = keyName.Substring(0, keyName.LastIndexOf(' ')).Trim();
-                        tempHeaderCount--;
-                    }
-
-                    for (var headerIndex = 0; headerIndex < numValues; headerIndex++)
-                    {
-                        var value = currentLine[currentLine.Length - 1 - headerIndex];
-                        var channelName = headerNames[numValues - 1 - headerIndex];
-                        results.Add(keyName + " " + channelName, value);
-                    }
-
-                    lines = lines.Skip(1);
-                }
-
-            }
-
-            // next 4 always 1 value
-
-            foreach (var line in lines)
-            {
-                var index = line.Trim().LastIndexOf(' ');
-                var keyName = line.Substring(0, index).Trim();
-                var value = line.Substring(index).Trim();
-
-                results.Add(keyName, value);
-            }
-
-            return new AudioUtilityInfo { RawData = results };
+            string args = " --info -V4 \"" + source.FullName + "\"";
+            return args;
         }
 
-        private AudioUtilityInfo SoxInfo(FileInfo source)
+        /// <summary>
+        /// The get info.
+        /// </summary>
+        /// <param name="source">
+        /// The source.
+        /// </param>
+        /// <param name="process">
+        /// The process.
+        /// </param>
+        /// <returns>
+        /// The Acoustics.Tools.AudioUtilityInfo.
+        /// </returns>
+        protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
         {
-            this.CanProcess(source, null, null);
-
-            var process = new ProcessRunner(this.soxExe.FullName);
-
-            string args = " --info -V4 \"" + source.FullName + "\"";
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            }
-
             IEnumerable<string> errorlines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
             // if no lines, or any line contains "no handler for file extension", return empty
@@ -493,11 +358,193 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             return result;
         }
 
+        protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        {
+            // check that if output is mp3, the bit rate and sample rate are set valid amounts.
+            if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
+            {
+
+                if (request.SampleRate.HasValue)
+                {
+                    // sample rate is set - check it
+                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                }
+                else
+                {
+                    // sample rate is not set, get it from the source file
+                    var info = this.Info(source);
+                    if (!info.SampleRate.HasValue)
+                    {
+                        throw new ArgumentException("Sample rate for output mp3 may not be correct, as sample rate is not set, and cannot be determined from source file.");
+                    }
+
+                    this.CheckMp3SampleRate(info.SampleRate.Value);
+                }
+            }
+
+            // check that a channel number, if set, is available
+            if (request != null && request.Channel.HasValue && request.Channel.Value > 1)
+            {
+                var info = this.Info(source);
+                if (info.ChannelCount > request.Channel.Value)
+                {
+                    var msg = "Requested channel number was out of range. Requested channel " + request.Channel.Value
+                              + " but there are only " + info.ChannelCount + " channels in " + source + ".";
+
+                    throw new ArgumentOutOfRangeException("request", request.Channel.Value, msg);
+                }
+            }
+        }
+
+        private static string GetResampleQuality(SoxResampleQuality rq)
+        {
+            switch (rq)
+            {
+                case SoxResampleQuality.Quick:
+                    return "q";
+                case SoxResampleQuality.Low:
+                    return "l";
+                case SoxResampleQuality.Medium:
+                    return "m";
+                case SoxResampleQuality.High:
+                    return "h";
+                case SoxResampleQuality.VeryHigh:
+                    return "v";
+                default:
+                    return "m";
+            }
+        }
+
+        private static TimeSpan Parse(string timeToParse)
+        {
+            try
+            {
+                string hours = timeToParse.Substring(0, 2);
+                string minutes = timeToParse.Substring(3, 2);
+                string seconds = timeToParse.Substring(6, 2);
+                string fractions = timeToParse.Substring(9, 2);
+
+                return new TimeSpan(
+                    0, int.Parse(hours), int.Parse(minutes), int.Parse(seconds), int.Parse(fractions) * 10);
+            }
+            catch
+            {
+                return TimeSpan.Zero;
+            }
+        }
+
+        private AudioUtilityInfo SoxStats(FileInfo source)
+        {
+            /*
+             * −w name 
+             * Window: Hann (default), Hamming, Bartlett, Rectangular or Kaiser
+             * 
+             * 
+            sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n 
+             * stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o 
+             * "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" 
+             * stats stat
+             * 
+             * sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" stats stat
+
+sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
+
+sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" -n spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.png" stats stat
+
+I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
+a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
+             * 
+             * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
+            */
+
+            CanProcess(source, null, null);
+
+            var process = new ProcessRunner(this.ExecutableInfo.FullName);
+
+            string args = "\"" + source.FullName + "\" -n stat stats";
+
+            this.RunExe(process, args, source.DirectoryName);
+
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            }
+
+            IEnumerable<string> lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // if no lines, or any line contains "no handler for file extension", return empty
+            if (!lines.Any() || lines.Any(l => l.Contains("no handler for file extension")))
+            {
+                return new AudioUtilityInfo();
+            }
+
+            // 
+
+            // first 15 are split by colon (:)
+            var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));
+            var statOutput = statOutputRaw.Select(i => new KeyValuePair<string, string>(i.First(), i.Skip(1).First()));
+
+            var results = statOutput.ToDictionary(item => item.Key, item => item.Value);
+
+            lines = lines.Skip(15);
+
+            // if there is a line that starts with 'Overall' (after being trimed), then count the number of words.
+            // next 11 may have 1 value, may have more than one
+            var isMoreThanOneChannel = lines.First().Trim().Contains("Overall");
+
+            if (isMoreThanOneChannel)
+            {
+                var header = lines.First();
+                var headerNames = header.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var numValues = headerNames.Count();
+
+                lines = lines.Skip(1);
+
+                string[] currentLine;
+                string keyName;
+
+                for (var index = 0; index < 11; index++)
+                {
+                    currentLine = lines.First().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    keyName = lines.First();
+                    var tempHeaderCount = numValues;
+
+                    while (tempHeaderCount > 0)
+                    {
+                        keyName = keyName.Substring(0, keyName.LastIndexOf(' ')).Trim();
+                        tempHeaderCount--;
+                    }
+
+                    for (var headerIndex = 0; headerIndex < numValues; headerIndex++)
+                    {
+                        var value = currentLine[currentLine.Length - 1 - headerIndex];
+                        var channelName = headerNames[numValues - 1 - headerIndex];
+                        results.Add(keyName + " " + channelName, value);
+                    }
+
+                    lines = lines.Skip(1);
+                }
+
+            }
+
+            // next 4 always 1 value
+
+            foreach (var line in lines)
+            {
+                var index = line.Trim().LastIndexOf(' ');
+                var keyName = line.Substring(0, index).Trim();
+                var value = line.Substring(index).Trim();
+
+                results.Add(keyName, value);
+            }
+
+            return new AudioUtilityInfo { RawData = results };
+        }
+
         private TimeSpan? Duration(FileInfo source)
         {
-            this.CanProcess(source, null, null);
-
-            var process = new ProcessRunner(this.soxExe.FullName);
+            var process = new ProcessRunner(this.ExecutableInfo.FullName);
 
             string args = " --info -D \"" + source.FullName + "\"";
 

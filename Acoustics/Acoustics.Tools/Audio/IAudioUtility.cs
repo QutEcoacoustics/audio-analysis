@@ -16,19 +16,19 @@
         /// <param name="source">
         /// The <paramref name="source"/> audio file.
         /// </param>
-        /// <param name="sourceMimeType">
+        /// <param name="sourceMediaType">
         /// The <paramref name="source"/> Mime Type.
         /// </param>
         /// <param name="output">
         /// The <paramref name="output"/> audio file. Ensure the file does not exist.
         /// </param>
-        /// <param name="outputMimeType">
+        /// <param name="outputMediaType">
         /// The <paramref name="output"/> Mime Type.
         /// </param>
         /// <param name="request">
         /// The segment <paramref name="request"/>.
         /// </param>
-        void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request);
+        void Modify(FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request);
 
         /// <summary>
         /// Get meta data for the given file.

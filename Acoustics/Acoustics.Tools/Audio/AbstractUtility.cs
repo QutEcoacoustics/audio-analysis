@@ -270,9 +270,9 @@
                 throw new FileNotFoundException("Could not find exe: " + file.FullName, file.FullName);
             }
 
-            if (file.Name != expectedFileName)
+            if (!file.Name.Contains(expectedFileName))
             {
-                throw new ArgumentException("Expected file name to be " + expectedFileName + ", but was: " + file.Name, "file");
+                throw new ArgumentException("Expected file name to contain " + expectedFileName + ", but was: " + file.Name, "file");
             }
         }
 
@@ -456,7 +456,7 @@
         /// <param name="request">
         /// The request.
         /// </param>
-        protected void CheckRequestValidForOutput(FileInfo output, string outputMediaType, AudioUtilityRequest request)
+        protected void CheckRequestValidForMediaType(FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
             var mediaType = MediaTypes.CanonicaliseMediaType(outputMediaType);
 

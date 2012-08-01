@@ -381,9 +381,20 @@
 
             var wavunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
 
-            var ffmpeg = new WavPackAudioUtility(wavunpackExe);
+            var util = new WavPackAudioUtility(wavunpackExe);
 
-            return ffmpeg;
+            return util;
+        }
+
+        public static IAudioUtility GetAudioUtilityMp3Splt()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
+            
+            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
+
+            return mp3Splt;
         }
     }
 

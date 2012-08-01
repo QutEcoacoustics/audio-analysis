@@ -45,7 +45,9 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             {
                 ChannelCount = 1,
                 SampleRate = 22050,
-                Duration = TimeSpan.FromSeconds(240)
+                Duration = TimeSpan.FromSeconds(240.031),
+                BitsPerSecond = 96000,
+                MediaType = MediaTypes.MediaTypeMp3
             };
 
             Modify(
@@ -66,7 +68,9 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             {
                 ChannelCount = 1,
                 SampleRate = 22050,
-                Duration = TimeSpan.FromSeconds(240)
+                Duration = TimeSpan.FromSeconds(240.031),
+                BitsPerSecond = 96000,
+                MediaType = MediaTypes.MediaTypeWav
             };
 
             Modify(
@@ -162,21 +166,6 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         }
 
         /// <summary>
-        /// The detects media type file ext mismatch.
-        /// </summary>
-        [TestMethod]
-        public void DetectsMediaTypeFileExtMismatch()
-        {
-            var combined = GetAudioUtility();
-
-            TestHelper.ExceptionMatches<ArgumentException>(
-                () =>
-                combined.Info(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")),
-                "does not match File extension");
-        }
-
-        /// <summary>
         /// The one is one.
         /// </summary>
         [TestMethod]
@@ -199,18 +188,18 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         public void RejectsExistingButIncorrectExePaths()
         {
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => new FfmpegAudioUtility(GetAudioUtilityExe(AppConfigHelper.WvunpackExe)),
-                "Expected file name to be");
+                () => new FfmpegAudioUtility(GetAudioUtilityExe(AppConfigHelper.WvunpackExe), GetAudioUtilityExe(AppConfigHelper.WvunpackExe)),
+                "Expected file name to contain ");
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => new Mp3SpltAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)), "Expected file name to be");
+                () => new Mp3SpltAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)), "Expected file name to contain ");
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () => new WavPackAudioUtility(GetAudioUtilityExe(AppConfigHelper.Mp3SpltExe)),
-                "Expected file name to be");
+                "Expected file name to contain ");
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => new SoxAudioUtility(GetAudioUtilityExe(AppConfigHelper.Mp3SpltExe)), "Expected file name to be");
+                () => new SoxAudioUtility(GetAudioUtilityExe(AppConfigHelper.Mp3SpltExe)), "Expected file name to contain ");
         }
 
         /// <summary>
@@ -223,37 +212,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             TestHelper.ExceptionMatches<ArgumentException>(
                 () => combined.Info(TestHelper.GetTestAudioFile("does not exist.wav")),
-                "Could not find source file");
-        }
-
-        /// <summary>
-        /// The rejects unknown file ext.
-        /// </summary>
-        [TestMethod]
-        public void RejectsUnknownFileExt()
-        {
-            var combined = GetAudioUtility();
-
-            TestHelper.ExceptionMatches<ArgumentException>(
-                () =>
-                combined.Info(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.unknown")),
-                "is not recognised");
-        }
-
-        /// <summary>
-        /// The rejects unknown media type.
-        /// </summary>
-        [TestMethod]
-        public void RejectsUnknownMediaType()
-        {
-            var combined = GetAudioUtility();
-
-            TestHelper.ExceptionMatches<ArgumentException>(
-                () =>
-                combined.Info(
-                    TestHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3")),
-                " does not match File extension");
+                "File does not exist");
         }
 
         /// <summary>
@@ -341,23 +300,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 TimeSpan.FromMilliseconds(0));
         }
 
-        /// <summary>
-        /// The test master utility no ff probe.
-        /// </summary>
-        [TestMethod]
-        public void TestMasterUtilityNoFfProbe()
-        {
-            GetAudioUtilityNoFfprobe();
-        }
-
-        /// <summary>
-        /// The test master utility no sox.
-        /// </summary>
-        [TestMethod]
-        public void TestMasterUtilityNoSox()
-        {
-            GetAudioUtilityNoSox();
-        }
+       
 
         /// <summary>
         /// The test sox.
@@ -377,7 +320,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var randomFile = new FileInfo(@"X:\hello-my-dear\where-are-you\hey-its-adirectory\blah.exe");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
-                () => new FfmpegAudioUtility(randomFile), "Could not find exe");
+                () => new FfmpegAudioUtility(randomFile, randomFile), "Could not find exe");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
                 () => new Mp3SpltAudioUtility(randomFile), "Could not find exe");
@@ -396,7 +339,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         public void ValidatesNullExePaths()
         {
             TestHelper.ExceptionMatches<ArgumentNullException>(
-                () => new FfmpegAudioUtility(null), "Value cannot be null");
+                () => new FfmpegAudioUtility(null,null), "Value cannot be null");
 
             TestHelper.ExceptionMatches<ArgumentNullException>(
                 () => new Mp3SpltAudioUtility(null), "Value cannot be null");
@@ -436,43 +379,10 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
         }
 
-        private static IAudioUtility GetAudioUtilityNoFfprobe()
-        {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
-            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
-            var wvunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
-            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
-
-            var ffmpeg = new FfmpegAudioUtility(ffmpegExe);
-            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
-            var wvunpack = new WavPackAudioUtility(wvunpackExe);
-            var sox = new SoxAudioUtility(soxExe);
-
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
-        }
-
-        private static IAudioUtility GetAudioUtilityNoSox()
-        {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
-            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
-            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
-            var wvunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
-
-            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
-            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
-            var wvunpack = new WavPackAudioUtility(wvunpackExe);
-
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, null);
-        }
-
         private static void CalculatesCorrectDurationTest(
             string filename, string mediatype, TimeSpan expectedDuration, TimeSpan range)
         {
-            foreach (var combined in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            foreach (var combined in new[] { GetAudioUtility() })
             {
                 var utilInfo = combined.Info(TestHelper.GetTestAudioFile(filename));
                 var info = GetDurationInfo(utilInfo);
@@ -496,7 +406,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         private static void ConvertsCorrectly(
             string filename, string mimetype, string outputMimeType, TimeSpan expectedDuration, TimeSpan maxVariance)
         {
-            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            foreach (var util in new[] { GetAudioUtility() })
             {
                 var dir = TestHelper.GetTempDir();
                 var output =
@@ -599,7 +509,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         private static void SegmentsCorrectly(
             string filename, string mimetype, TimeSpan start, TimeSpan end, TimeSpan maxVariance)
         {
-            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            foreach (var util in new[] { GetAudioUtility()})
             {
                 var dir = TestHelper.GetTempDir();
 
@@ -651,7 +561,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             var destExtension = MediaTypes.GetExtension(outputMimeType);
             var outputFilename = Path.GetFileNameWithoutExtension(filename) + "_modified." + destExtension;
 
-            foreach (var util in new[] { GetAudioUtility(), GetAudioUtilityNoFfprobe(), GetAudioUtilityNoSox() })
+            foreach (var util in new[] { GetAudioUtility() })
             {
                 var dir = TestHelper.GetTempDir();
                 var output = new FileInfo(Path.Combine(dir.FullName, outputFilename));

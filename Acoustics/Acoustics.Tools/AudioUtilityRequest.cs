@@ -11,14 +11,6 @@
     public class AudioUtilityRequest
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AudioUtilityRequest"/> class.
-        /// </summary>
-        public AudioUtilityRequest()
-        {
-            this.MixDownToMono = true;
-        }
-
-        /// <summary>
         /// Gets or sets the offset start.
         /// </summary>
         public TimeSpan? OffsetStart { get; set; }
@@ -41,7 +33,7 @@
         /// <summary>
         /// Gets or sets a value indicating whether to mix down to mono.
         /// </summary>
-        public bool MixDownToMono { get; set; }
+        public bool? MixDownToMono { get; set; }
 
         /// <summary>
         /// Validate this Audio Reading Request.
@@ -155,7 +147,7 @@
                 return false;
             }
 
-            if (this.Channel.HasValue && this.MixDownToMono)
+            if (this.Channel.HasValue && this.MixDownToMono.HasValue && this.MixDownToMono.Value)
             {
                 // can't mix down to mono and select a channel
                 if (throwExceptions)
@@ -200,11 +192,16 @@
                 duration);
 
             var channels = this.Channel.HasValue ? " Using channel number " + this.Channel.Value + "." : string.Empty;
+
             var sampleRate = this.SampleRate.HasValue
                                  ? " Sample rate of " + this.SampleRate.Value + " hertz."
                                  : string.Empty;
 
-            return segment + channels + sampleRate;
+            var mixDown = this.MixDownToMono.HasValue && this.MixDownToMono.Value ? "Mix channels down to mono." : string.Empty;
+
+            var channel = this.Channel.HasValue ? "Extract channel " + this.Channel.Value + "." : string.Empty;
+
+            return segment + channels + sampleRate + mixDown + channel;
         }
     }
 }
