@@ -202,38 +202,36 @@ namespace AudioAnalysisTools
             //string outputMimeType = "png";
             //Acoustics.Tools.SpectrogramRequest request = new Acoustics.Tools.SpectrogramRequest();
             string soxPath = @"C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe";
-            //var soxExe = new FileInfo(soxPath);
-            //IAudioUtility audioUtility;
-            //MasterAudioUtility.Segment(
-            //                            fiAudio,
-            //                            fiOutputSegment,
-            //                            new AudioUtilityRequest
-            //                            {
-            //                                SampleRate = resampleRate,
-            //                                OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-            //                                OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
-            //                                //Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
-            //                                //MixDownToMono  =true
-            //                            });
 
-            //Path\sox.exe  -V "sourcefile.wav" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o "imagefile.png"
-            //string soxCommandLineArguments = String.Format("-V {1}   -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100  -o {2}", soxPath, fiAudio.FullName, output.FullName);
-            //string soxCommandLineArguments = String.Format("-V {0} -o {1}", fiAudio.FullName, output.FullName);
-            //string soxCommandLineArguments = String.Format("-V {0}", fiAudio.FullName);
-            string soxCommandLineArguments = String.Format(fiAudio.FullName);
+            //          Path\sox.exe  -V "sourcefile.wav" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o "imagefile.png"
+            //string soxCommandLineArguments = " -V \"{0}\" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o \"{1}\"";  //greyscale only
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -l -o \"{1}\"";  //greyscale with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -o \"{1}\"";     //reverse image greyscale with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l -o \"{1}\"";     //colour with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
+            string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -t Sonogram -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
 
+            //FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
+            //−a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
+            //-l     Print firendly monochrome spectrogram.
+            //−m     Creates a monochrome spectrogram (the default is colour).
+            //-q     Number of intensity quanitisation levels/colors - try -q 64
+            //−r     Raw spectrogram: suppress the display of axes and legends.
+            //−t text  Set the image title - text to display above the spectrogram.
+            //−c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
+
+            //trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
 
             var fiSox = new FileInfo(soxPath);
             if (!fiSox.Exists)
             {
-                Console.WriteLine("SOX ERROR");
+                Console.WriteLine("SOX ERROR: file does not exist.");
                 return;
             }
-            ProcessRunner process = new ProcessRunner(soxPath);
-            process.Run(soxCommandLineArguments, output.DirectoryName, false);
-
-            //var soxUtility = new SoxSpectrogramUtility(audioUtility, soxExe);
-            //soxUtility.Create(fiAudio, sourceMimeType, output, outputMimeType, request);
+            string soxExe = "" + soxPath + ""; //must quote the path because has a space in it.
+            var args = string.Format(soxCommandLineArguments, fiAudio.FullName, output.FullName);
+            var process = new ProcessRunner(soxExe);
+            process.Run(args, output.DirectoryName);
         }
 
 
