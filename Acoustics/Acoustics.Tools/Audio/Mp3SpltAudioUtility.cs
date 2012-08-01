@@ -61,6 +61,8 @@
         /// </exception>
         public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
+            this.CheckFile(source);
+
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
             request.ValidateChecked();
@@ -80,6 +82,8 @@
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
                 this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
             }
+
+            this.CheckFile(output);
         }
 
         /// <summary>

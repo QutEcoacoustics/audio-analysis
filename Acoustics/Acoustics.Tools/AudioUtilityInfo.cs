@@ -2,9 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text;
     using System.Linq;
+    using System.Text;
 
     /// <summary>
     /// Audio file Info from Utility.
@@ -49,6 +48,11 @@
         public TimeSpan? Duration { get; set; }
 
         /// <summary>
+        /// Gets or sets the media type.
+        /// </summary>
+        public string MediaType { get; set; }
+
+        /// <summary>
         /// Gets or sets the raw data.
         /// </summary>
         public Dictionary<string, string> RawData { get; set; }
@@ -81,6 +85,11 @@
             if (this.Duration.HasValue)
             {
                 sb.Append("Duration: " + this.Duration.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.MediaType))
+            {
+                sb.Append("Media type: " + this.MediaType);
             }
 
             if (this.RawData != null && this.RawData.Count > 0)

@@ -369,6 +369,16 @@
                 result.Duration = extra.Duration;
             }
 
+            // media type
+            if (!string.IsNullOrWhiteSpace(info.MediaType))
+            {
+                result.MediaType = info.MediaType;
+            }
+            else if (!string.IsNullOrWhiteSpace(extra.MediaType))
+            {
+                result.MediaType = extra.MediaType;
+            }
+
             // sample rate
             if (info.SampleRate.HasValue)
             {

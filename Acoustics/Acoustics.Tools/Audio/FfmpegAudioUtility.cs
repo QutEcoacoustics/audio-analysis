@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
 
@@ -112,9 +113,13 @@
         /// </param>
         public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
+            this.CheckFile(source);
+
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
             request.ValidateChecked();
+
+            this.CheckRequestValidForOutput(output, outputMimeType, request);
 
             this.CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
 
@@ -131,6 +136,8 @@
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
                 this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
             }
+
+            this.CheckFile(output);
         }
 
         /// <summary>
@@ -191,7 +198,7 @@
                 string currentBlockName = string.Empty;
                 foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (line.StartsWith("[\\") && line.EndsWith("]"))
+                    if (line.StartsWith("[/") && line.EndsWith("]"))
                     {
                         // end of a block
                     }
@@ -233,6 +240,8 @@
                     }
                 }
 
+                result.BitsPerSecond = GetBitRate(result.RawData);
+
                 if (result.RawData.ContainsKey(keyBitRate))
                 {
                     result.BitsPerSecond = int.Parse(result.RawData[keyBitRate]);
@@ -247,6 +256,8 @@
                 {
                     result.ChannelCount = int.Parse(result.RawData[keyChannels]);
                 }
+
+                result.MediaType = FfmpegFormatToMediaType(result.RawData, source.Extension);
             }
             else
             {
@@ -302,12 +313,11 @@
             var args = new StringBuilder()
                 .AppendFormat(ArgsOverwriteSource, source.FullName);
 
-            // TODO: sox is much better than ffmpeg at resampling
-            //if (request.SampleRate.HasValue)
-            //{
-
-            //args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
-            //}
+            if (request.SampleRate.HasValue)
+            {
+                //args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
+                args.AppendFormat(" -af aresample={0} ", request.SampleRate.Value);
+            }
 
             if (request.MixDownToMono)
             {
@@ -363,6 +373,173 @@
             {
                 return TimeSpan.Zero;
             }
+        }
+
+        private static string FfmpegFormatToMediaType(Dictionary<string, string> rawData, string extension)
+        {
+            var ext = extension.Trim('.');
+
+            // separate stream and format
+            var formats =
+                rawData.Where(item => item.Key.Contains("format_long_name") || item.Key.Contains("format_name"));
+
+            var codec = FfmpegCodecToMediaType(rawData, extension);
+
+            foreach (var item in formats)
+            {
+                switch (item.Value)
+                {
+                    case "wv":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "matroska,webm":
+                        return MediaTypes.MediaTypeWebMAudio;
+                    case "wavpack":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "ogg": // must come after webm
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "wav":
+                        return MediaTypes.MediaTypeWav;
+                    case "asf": // might be .wma or .asf, can only tell from extension
+                        if (ext == MediaTypes.ExtAsf)
+                        {
+                            return MediaTypes.MediaTypeAsf;
+                        }
+
+                        return MediaTypes.MediaTypeWma;
+                    case "ASF format":
+                        return MediaTypes.MediaTypeAsf;
+                    case "mp3":
+                        return MediaTypes.MediaTypeMp3;
+                    case "MP3 (MPEG audio layer 3)":
+                        return MediaTypes.MediaTypeMp3;
+                    case "MPEG audio layer 2/3":
+                        return MediaTypes.MediaTypeMp3;
+                    case "WAV format":
+                        return MediaTypes.MediaTypeWav;
+                    case "pcm_s16le":
+                        return MediaTypes.MediaTypeWav;
+                    case "PCM signed 16-bit little-endian":
+                        return MediaTypes.MediaTypeWav;
+                    case "0x0001":
+                        return MediaTypes.MediaTypeWav;
+                    case "WavPack":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "Matroska/WebM file format":
+                        return MediaTypes.MediaTypeWebMAudio;
+                    case "Ogg":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "vorbis":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "Vorbis":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "wmav2": // must come after asf
+                        return MediaTypes.MediaTypeWma;
+                    case "Windows Media Audio 2":
+                        return MediaTypes.MediaTypeWma;
+                    case "0x0161":
+                        return MediaTypes.MediaTypeWma;
+                    default:
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
+        private static string FfmpegCodecToMediaType(Dictionary<string, string> rawData, string extension)
+        {
+            var codecs = rawData.Where(item => item.Key.Contains("codec_name") || item.Key.Contains("codec_long_name") || item.Key.Contains("codec_tag"));
+
+            foreach (var item in codecs)
+            {
+                switch (item.Value)
+                {
+                    case "wavpack":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "asf": // might be .wma or .asf, can only tell from extension
+                        return MediaTypes.MediaTypeAsf;
+                    case "wmav2": // must come after asf
+                        return MediaTypes.MediaTypeWma;
+                    case "pcm_s16le":
+                        return MediaTypes.MediaTypeWav;
+                    case "vorbis":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "mp3":
+                        return MediaTypes.MediaTypeMp3;
+                    case "ASF format":
+                        return MediaTypes.MediaTypeAsf;
+                    case "MP3 (MPEG audio layer 3)":
+                        return MediaTypes.MediaTypeMp3;
+                    case "MPEG audio layer 2/3":
+                        return MediaTypes.MediaTypeMp3;
+                    case "wav":
+                        return MediaTypes.MediaTypeWav;
+                    case "WAV format":
+                        return MediaTypes.MediaTypeWav;
+                    case "PCM signed 16-bit little-endian":
+                        return MediaTypes.MediaTypeWav;
+                    case "0x0001":
+                        return MediaTypes.MediaTypeWav;
+                    case "wv":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "WavPack":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "matroska,webm":
+                        return MediaTypes.MediaTypeWebMAudio;
+                    case "Matroska/WebM file format":
+                        return MediaTypes.MediaTypeWebMAudio;
+                    case "ogg": // must come after webm
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "Ogg":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "Vorbis":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "Windows Media Audio 2":
+                        return MediaTypes.MediaTypeWma;
+                    case "0x0161":
+                        return MediaTypes.MediaTypeWma;
+                    default:
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
+        private static int GetSampleFormat(Dictionary<string, string> rawData)
+        {
+            const string SampleFormatKey = "sample_fmt";
+
+            if (rawData.ContainsKey(SampleFormatKey))
+            {
+                var newValue = rawData[SampleFormatKey].Replace("s", string.Empty);
+                var parsedValue = int.Parse(newValue);
+                return parsedValue;
+            }
+
+            return 0;
+        }
+
+        private static int? GetBitRate(Dictionary<string, string> rawData)
+        {
+            var items = rawData
+                .Where(item => item.Key.Contains("bit_rate") || item.Key.Contains("bit_rate"))
+                .Where(item => !item.Value.Contains("N/A") && item.Value != "0")
+                .ToList();
+
+            if (!items.Any())
+            {
+                return null;
+            }
+
+            return Convert.ToInt32(Math.Floor(items.Average(i => int.Parse(i.Value))));
+
+            //foreach (var item in items)
+            //{
+            //    return int.Parse(item.Value);
+            //}
+
+            //return 0;
         }
     }
 }

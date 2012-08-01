@@ -115,7 +115,13 @@
         /// </param>
         public void Modify(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, AudioUtilityRequest request)
         {
+            this.CheckFile(source);
+
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
+
+            request.Validate();
+
+            this.CheckRequestValidForOutput(output, outputMimeType, request);
 
             this.CanProcess(source, new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 }, null);
 
@@ -132,6 +138,8 @@
                 this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
                 this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
             }
+
+            this.CheckFile(output);
         }
 
         /// <summary>
@@ -188,17 +196,19 @@
         {
             // resample - sox specific
             var resampleQuality = this.ResampleQuality.HasValue
-                                     ? "-" + GetResampleQuality(this.ResampleQuality.Value)
-                                     : string.Empty;
+                                      ? "-" + GetResampleQuality(this.ResampleQuality.Value)
+                                      : string.Empty;
 
             // allow aliasing/imaging above the pass-band: -a
             // steep filter: -s
 
             // resample
-            var targetSampleRateHz = request.SampleRate.HasValue
-                                        ? request.SampleRate.Value.ToString(CultureInfo.InvariantCulture)
-                                        : string.Empty;
-            var rate = string.Format("rate -s -a {0} {1}", resampleQuality, targetSampleRateHz);
+            string rate = string.Empty;
+            if (request.SampleRate.HasValue)
+            {
+                var targetSampleRateHz = request.SampleRate.Value.ToString(CultureInfo.InvariantCulture);
+                rate = string.Format("rate {0} -s -a {1}", resampleQuality, targetSampleRateHz);
+            }
 
             // mix down to mono
             var remix = string.Empty;
@@ -231,13 +241,13 @@
             }
             else if (request.OffsetStart.HasValue && request.OffsetEnd.HasValue)
             {
-                trim = "trim " + request.OffsetStart.Value.TotalSeconds + " " + request.OffsetEnd.Value.TotalSeconds;
+                trim = "trim " + request.OffsetStart.Value.TotalSeconds + " " + (request.OffsetEnd.Value.TotalSeconds - request.OffsetStart.Value.TotalSeconds);
             }
 
             // example
             // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
             // sox input.wav output.wav remix - rate -m -s 11025
-            return string.Format(" \"{0}\" \"{1}\" {2} {3} {4}", source.FullName, output.FullName, trim, remix, rate);
+            return string.Format(" -V4 \"{0}\" \"{1}\" {2} {3} {4}", source.FullName, output.FullName, trim, rate, remix);
         }
 
         private AudioUtilityInfo SoxStats(FileInfo source)
@@ -355,7 +365,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
             var process = new ProcessRunner(this.soxExe.FullName);
 
-            string args = " --info \"" + source.FullName + "\"";
+            string args = " --info -V4 \"" + source.FullName + "\"";
 
             this.RunExe(process, args, source.DirectoryName);
 
@@ -379,25 +389,29 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             foreach (var line in lines)
             {
                 var firstColon = line.IndexOf(':');
-                var key = line.Substring(0, firstColon).Trim();
-                var value = line.Substring(firstColon + 1).Trim();
 
-                if (key == "Duration")
+                if (firstColon > -1)
                 {
-                    var values = value.Split('=', '~');
+                    var key = line.Substring(0, firstColon).Trim();
+                    var value = line.Substring(firstColon + 1).Trim();
 
-                    // duration
-                    result.RawData.Add(key, values[0].Trim());
+                    if (key == "Duration")
+                    {
+                        var values = value.Split('=', '~');
 
-                    // sample count
-                    result.RawData.Add("Samples", values[1].Replace("samples", string.Empty).Trim());
+                        // duration
+                        result.RawData.Add(key, values[0].Trim());
 
-                    // approx. CDDA sectors
-                    result.RawData.Add("CDDA sectors", values[2].Replace("CDDA sectors", string.Empty).Trim());
-                }
-                else
-                {
-                    result.RawData.Add(key, value);
+                        // sample count
+                        result.RawData.Add("Samples", values[1].Replace("samples", string.Empty).Trim());
+
+                        // approx. CDDA sectors
+                        result.RawData.Add("CDDA sectors", values[2].Replace("CDDA sectors", string.Empty).Trim());
+                    }
+                    else
+                    {
+                        result.RawData.Add(key, value);
+                    }
                 }
             }
 
@@ -442,11 +456,23 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                     hadK = true;
                 }
 
+                var hadM = false;
+                if (stringValue.Contains("M"))
+                {
+                    stringValue = stringValue.Replace("M", string.Empty);
+                    hadM = true;
+                }
+
                 var value = double.Parse(stringValue);
 
                 if (hadK)
                 {
                     value = value * 1000;
+                }
+
+                if (hadM)
+                {
+                    value = value * 1000 * 1000;
                 }
 
                 result.BitsPerSecond = Convert.ToInt32(value);
@@ -461,6 +487,8 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             {
                 result.ChannelCount = int.Parse(result.RawData[keyChannels]);
             }
+
+            result.MediaType = GetMediaType(result.RawData, source.Extension);
 
             return result;
         }
@@ -491,6 +519,33 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             IEnumerable<string> lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
             return TimeSpan.FromSeconds(double.Parse(lines.First()));
+        }
+
+        private static string GetMediaType(Dictionary<string, string> rawData, string extension)
+        {
+            var ext = extension.Trim('.');
+
+            // separate stream and format
+            var formats = rawData.Where(item => item.Key.Contains("Sample Encoding"));
+
+            foreach (var item in formats)
+            {
+                switch (item.Value)
+                {
+                    case "MPEG audio (layer I, II or III)":
+                        return MediaTypes.MediaTypeMp3;
+                    case "Vorbis":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "16-bit Signed Integer PCM":
+                        return MediaTypes.MediaTypeWav;
+                    case "16-bit WavPack":
+                        return MediaTypes.MediaTypeWavpack;
+                    default:
+                        return null;
+                }
+            }
+
+            return null;
         }
     }
 }
