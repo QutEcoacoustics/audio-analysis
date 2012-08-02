@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             else
             {
                 analyser = null;
-                Image image = MakeSonogram(fiAudio, config.GetDictionary());
+                Image image = Audio2SonogramImage(fiAudio, config.GetDictionary());
                 if (image != null)
                 {
                     if (fiImage.Exists) fiImage.Delete();
@@ -70,6 +70,23 @@ namespace AudioAnalysisTools
                 return image;
             }
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiAudio"></param>
+        /// <param name="fiConfig"></param>
+        /// <returns></returns>
+        public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
+        {
+            BaseSonogram sonogram = Audio2Sonogram(fiAudio, configDict);
+            var mti = Sonogram2MultiTrackImage(sonogram, configDict);
+            var image = mti.GetImage();
+            return image;
+
+        }
+
 
 
         public static double[,] ReduceDimensionalityOfSpectrogram(double[,] data, int timeRedFactor, int freqRedFactor)
@@ -110,15 +127,7 @@ namespace AudioAnalysisTools
         }//end AI_DimRed
 
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="fiAudio"></param>
-        /// <param name="fiConfig"></param>
-        /// <param name="fiImage"></param>
-        /// <returns></returns>
-        public static Image MakeSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
+        public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
             int frameLength = 512;
             if (configDict.ContainsKey(Keys.FRAME_LENGTH))
@@ -128,34 +137,45 @@ namespace AudioAnalysisTools
             if (configDict.ContainsKey(Keys.FRAME_OVERLAP))
                 frameOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, configDict);
 
-            //double smoothWindow = Double.Parse(configDict[Keys.SMOOTHING_WINDOW]);   //smoothing window (seconds) before segmentation
-            //double thresholdSD = Double.Parse(configDict[Keys.THRESHOLD]);           //segmentation threshold in noise SD
-            //int lowFrequencyBound = Double.Int(configDict[Keys.LOW_FREQ_BOUND]);     //lower bound of the freq band to be displayed
-            //int hihFrequencyBound = Double.Int(configDict[Keys.HIGH_FREQ_BOUND]);    //upper bound of the freq band to be displayed
-
             AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recordingSegment.FileName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recordingSegment.GetWavReader());
+            return sonogram;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fiAudio"></param>
+        /// <param name="fiConfig"></param>
+        /// <param name="fiImage"></param>
+        /// <returns></returns>
+        public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
+        {
+            //double smoothWindow = Double.Parse(configDict[Keys.SMOOTHING_WINDOW]);   //smoothing window (seconds) before segmentation
+            //double thresholdSD = Double.Parse(configDict[Keys.THRESHOLD]);           //segmentation threshold in noise SD
+            //int lowFrequencyBound = Double.Int(configDict[Keys.LOW_FREQ_BOUND]);     //lower bound of the freq band to be displayed
+            //int hihFrequencyBound = Double.Int(configDict[Keys.HIGH_FREQ_BOUND]);    //upper bound of the freq band to be displayed
+
             bool doHighlightSubband = false;
-            bool addScale = false;
-            bool add1kHzLines = false;
 
 
             //check if doing a reduced sonogram
-            int timeReductionFactor = 1;
-            if (configDict.ContainsKey(Keys.TIME_REDUCTION_FACTOR))
-                timeReductionFactor = ConfigDictionary.GetInt(Keys.TIME_REDUCTION_FACTOR, configDict);
-            int freqReductionFactor = 1;
-            if (configDict.ContainsKey(Keys.FREQ_REDUCTION_FACTOR))
-                freqReductionFactor = ConfigDictionary.GetInt(Keys.FREQ_REDUCTION_FACTOR, configDict);
-            if (!((timeReductionFactor == 1) && (freqReductionFactor == 1)))
-            {
-                sonogram.Data = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor);               
-                return sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            }
+            //int timeReductionFactor = 1;
+            //if (configDict.ContainsKey(Keys.TIME_REDUCTION_FACTOR))
+            //    timeReductionFactor = ConfigDictionary.GetInt(Keys.TIME_REDUCTION_FACTOR, configDict);
+            //int freqReductionFactor = 1;
+            //if (configDict.ContainsKey(Keys.FREQ_REDUCTION_FACTOR))
+            //    freqReductionFactor = ConfigDictionary.GetInt(Keys.FREQ_REDUCTION_FACTOR, configDict);
+            //if (!((timeReductionFactor == 1) && (freqReductionFactor == 1)))
+            //{
+            //    sonogram.Data = ReduceDimensionalityOfSpectrogram(sonogram.Data, timeReductionFactor, freqReductionFactor);               
+            //    return sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            //}
 
             
             // (iii) NOISE REDUCTION
@@ -172,12 +192,12 @@ namespace AudioAnalysisTools
                 sonogram.Data = tuple.Item1;   // store data matrix
             }
 
-            //prepare the image
             //ADD time and frequency scales
-            if (configDict.ContainsKey(Keys.ADD_TIME_SCALE))
-                addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
-            if (addScale) add1kHzLines = true;
-
+            bool addScale = false;
+            if (configDict.ContainsKey(Keys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
+            else
+            if (configDict.ContainsKey(Keys.ADD_AXES))       addScale = ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict);
+            bool add1kHzLines = addScale;
 
 
             System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
@@ -189,19 +209,76 @@ namespace AudioAnalysisTools
             if (configDict.ContainsKey(Keys.ADD_SEGMENTATION_TRACK))
                 addSegmentationTrack = ConfigDictionary.GetBoolean(Keys.ADD_SEGMENTATION_TRACK, configDict);
             if (addSegmentationTrack) mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
-            var image = mti.GetImage();
-
-            return image;
-        }//MakeSonogram()
+            return mti;
+        }//Sonogram2MultiTrackImage()
 
 
+        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, 
+                                           double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        {
+            Image_MultiTrack image = Sonogram2MultiTrackImage(sonogram, configDict);
 
-        public static void MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
+            if (scores != null)
+            {
+                foreach (Plot plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
+
+            if (hits != null) 
+                image.OverlayRainbowTransparency(hits);
+
+            if (predictedEvents.Count > 0) 
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+
+            return image.GetImage();
+        } //Sonogram2Image()
+
+
+
+        public static int MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
             //string sourceMimeType = "wav";
             //string outputMimeType = "png";
             //Acoustics.Tools.SpectrogramRequest request = new Acoustics.Tools.SpectrogramRequest();
+            
             string soxPath = @"C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe";
+            if (configDict.ContainsKey(Keys.SOX_PATH))
+            {
+                soxPath = configDict[Keys.SOX_PATH];
+                var fiSOX = new FileInfo(soxPath);
+                if (!fiSOX.Exists)
+                {
+                    Console.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
+                    return 1;
+                }
+            }
+            string soxCmd = "" + soxPath + ""; //must quote the path because has a space in it.
+
+            string title = "";
+            if (configDict.ContainsKey(Keys.SONOGRAM_TITLE))
+            {
+                title = " -t " + configDict[Keys.SONOGRAM_TITLE];
+            }
+            string comment = "";
+            if (configDict.ContainsKey(Keys.SONOGRAM_COMMENT))
+            {
+                comment = " -c " + configDict[Keys.SONOGRAM_COMMENT];
+            }
+            string axes = "";
+            if (configDict.ContainsKey(Keys.ADD_AXES) && (! ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict)))
+            {
+                axes = " -r ";
+            }
+            string coloured = " -m "; //default
+            if (configDict.ContainsKey(Keys.SONOGRAM_COLOURED) && (ConfigDictionary.GetBoolean(Keys.SONOGRAM_COLOURED, configDict)))
+            {
+                coloured = "";
+            }
+            string quantisation = " -q 64 "; //default
+            if (configDict.ContainsKey(Keys.SONOGRAM_QUANTISATION))
+            {
+                quantisation = " -q " + ConfigDictionary.GetInt(Keys.SONOGRAM_QUANTISATION, configDict);
+            }
 
             //          Path\sox.exe  -V "sourcefile.wav" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o "imagefile.png"
             //string soxCommandLineArguments = " -V \"{0}\" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o \"{1}\"";  //greyscale only
@@ -209,7 +286,7 @@ namespace AudioAnalysisTools
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -o \"{1}\"";     //reverse image greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l -o \"{1}\"";     //colour with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
-            string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -t Sonogram -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
+            string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
 
             //FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
             //−a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
@@ -219,45 +296,14 @@ namespace AudioAnalysisTools
             //−r     Raw spectrogram: suppress the display of axes and legends.
             //−t text  Set the image title - text to display above the spectrogram.
             //−c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
-
             //trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
 
-            var fiSox = new FileInfo(soxPath);
-            if (!fiSox.Exists)
-            {
-                Console.WriteLine("SOX ERROR: file does not exist.");
-                return;
-            }
-            string soxExe = "" + soxPath + ""; //must quote the path because has a space in it.
-            var args = string.Format(soxCommandLineArguments, fiAudio.FullName, output.FullName);
-            var process = new ProcessRunner(soxExe);
+            var args = string.Format(soxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
+            var process = new ProcessRunner(soxCmd);
             process.Run(args, output.DirectoryName);
-        }
+            return 0;
+        } //MakeSonogramWithSox
 
-
-      //public static Image MakeSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
-        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
-        {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            int maxFreq = sonogram.NyquistFrequency / 2;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
-
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            //if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-            if (scores != null)
-            {
-                foreach (Plot plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-            }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            return image.GetImage();
-        } //DrawSonogram()
 
     } //class
 }

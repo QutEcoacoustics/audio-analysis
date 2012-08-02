@@ -382,7 +382,7 @@ namespace AnalysisPrograms
             List<double[]> scores = new List<double[]>();
 
             bool returnSonogramInfo = false;
-            if (config.ContainsKey(Keys.SAVE_SONOGRAM_FILES)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAM_FILES, config);
+            if (config.ContainsKey(Keys.SAVE_SONOGRAMS)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, config);
             bool doNoiseReduction = false;
             if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
 
@@ -960,50 +960,8 @@ namespace AnalysisPrograms
         }
 
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="parmasFile_Separator"></param>
-        ///// <param name="fileCount"></param>
-        ///// <param name="elapsedTime">elapsed time in minutes to end of current segment</param>
-        ///// <param name="indices"></param>
-        //public static string FormatOneLineOfIndices(string parmasFile_Separator, int count, double startMin, double sec_duration, AcousticIndicesExtraction.Indices2 indices)
-        //{
-        //    string reportSeparator = "\t";
-        //    if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-
-        //    //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-        //    string line = String.Format(FORMAT_STR_DATA, reportSeparator,
-        //                               count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
-        //                               indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, indices.temporalEntropy,
-        //                               indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
-        //                               indices.clusterCount, indices.avClusterDuration);
-        //    return line;
-        //}
-
-
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="opPath"></param>
-        ///// <param name="parmasFile_Separator"></param>
-        ///// <param name="fileCount"></param>
-        ///// <param name="elapsedTime">elapsed time in minutes to end of current segment</param>
-        ///// <param name="indices"></param>
-        //public static void AppendIndicesToReportFile(string opPath, string parmasFile_Separator, int count, double startMin, double sec_duration, AcousticIndicesExtraction.Indices2 indices)
-        //{
-        //    string line = FormatOneLineOfIndices(parmasFile_Separator, count, startMin, sec_duration, indices);
-        //    FileTools.Append2TextFile(opPath, line);
-        //}
-
-
-
-
-
-
-
+        //############################################################################################################################################################
 
         /// <summary>
         /// this method used to process Jason Wimmer's original xls spreadsheet that did not have a row for silent minutes

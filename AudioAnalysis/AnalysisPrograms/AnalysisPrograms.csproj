@@ -149,6 +149,7 @@
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="AnalyseLongRecording.cs" />
     <Compile Include="Production\Runner.cs" />
+    <Compile Include="Rain.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
     <Compile Include="FrogRibit.cs" />

@@ -40,23 +40,23 @@ namespace AnalysisPrograms
                 switch (args[0])
                 {
                     // READY TO BE USED - REQUIRE CONFIG FILE
-                    case "aed":           // acoustic event detection
+                    case "aed":                    // acoustic event detection
                         AED.Dev(restOfArgs);
                         break;
-                    case "analysesAvailable":           // acoustic event detection
-                        AnalysesAvailable.Main(restOfArgs);
+                    case "analysesAvailable":      // returns list of available analyses
+                        AnalysesAvailable.Main(restOfArgs); //Signed off: Michael Towsey 1st August 2012
                         break;
-                    case "canetoad":      // IAnalyser - detects canetoad calls as acoustic events
+                    case "canetoad":               // IAnalyser - detects canetoad calls as acoustic events
                         Canetoad.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "audio2csv":     // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
+                    case "audio2csv":              // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
                         AnalyseLongRecording.Main(restOfArgs);   //Signed off: Michael Towsey 27th July 2012
                         break;
-                    case "audio2sonogram":        // produces a sonogram from an audio file. Can reduce dimensionality of the image.
+                    case "audio2sonogram":         // produces a sonogram from an audio file. Can reduce dimensionality of the image.
                         Audio2Sonogram.Main(restOfArgs);   //Signed off: Michael Towsey 31st July 2012
                         break;
-                    case "crow":               // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
-                        Crow.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
+                    case "crow":                   // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
+                        Crow.Dev(restOfArgs);      //Signed off: Michael Towsey 27th July 2012
                         break;
                     case "indicesCsv2Image":        // produces a tracks image of column values in a csv file - one track per csv column.
                         IndicesCsv2Display.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
@@ -115,6 +115,9 @@ namespace AnalysisPrograms
                         break;
                     case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(restOfArgs);
+                        break;
+                    case "rain":      // IAnalyser - detects rain
+                        Rain.Dev(restOfArgs);  
                         break;
                     case "segment":  // segmentation of a recording
                         Segment.Dev(restOfArgs);
