@@ -53,6 +53,7 @@ namespace AnalysisPrograms
 
         public static int Main(string[] args)
         {
+            bool debug = false;
             int status = 0;
             string title = "# PROCESS LONG RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -65,8 +66,11 @@ namespace AnalysisPrograms
 
             if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
             {
-                Console.WriteLine("\nPress <ENTER> key to exit.");
-                Console.ReadLine();
+                if (debug)
+                {
+                    Console.WriteLine("\nPress <ENTER> key to exit.");
+                    Console.ReadLine();
+                }
                 System.Environment.Exit(1);
             }
 
@@ -96,8 +100,8 @@ namespace AnalysisPrograms
                 saveIntermediateWavFiles = ConfigDictionary.GetBoolean(Keys.SAVE_INTERMEDIATE_WAV_FILES, configDict);
 
             bool saveSonograms = false;
-            if (configDict.ContainsKey(Keys.SAVE_SONOGRAM_FILES))
-                saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAM_FILES, configDict);
+            if (configDict.ContainsKey(Keys.SAVE_SONOGRAMS))
+                saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, configDict);
 
             
             bool doParallelProcessing = false;
@@ -230,8 +234,10 @@ namespace AnalysisPrograms
                 Console.WriteLine("\tNumber of indices = " + indicesCount);
             }
             Console.WriteLine("\n##### FINSHED FILE ###################################################\n");
-            Console.ReadLine();
-            
+            if(debug)
+            {
+                Console.ReadLine();
+            }            
             return status;
         } //Main(string[] args)
 

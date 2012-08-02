@@ -46,34 +46,41 @@ namespace AudioAnalysisTools
         public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
         public static string THRESHOLD = "THRESHOLD";
 
-        // KEYS To SONOGRAMS
-        //public static string DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
-        public static string SAVE_SONOGRAM_FILES    = "SAVE_SONOGRAM_FILES";
+        // KEYS to SONOGRAMS
+        public static string SAVE_SONOGRAMS         = "SAVE_SONOGRAM_FILES";
         public static string TIME_REDUCTION_FACTOR  = "TIME_REDUCTION_FACTOR";
         public static string FREQ_REDUCTION_FACTOR  = "FREQ_REDUCTION_FACTOR";
+        public static string ADD_AXES               = "ADD_AXES";
         public static string ADD_TIME_SCALE         = "ADD_TIME_SCALE";
         public static string ADD_SEGMENTATION_TRACK = "ADD_SEGMENTATION_TRACK";
+        public static string MAKE_SOX_SONOGRAM      = "MAKE_SOX_SONOGRAM";
+        public static string SONOGRAM_TITLE         = "SONOGRAM_TITLE";
+        public static string SONOGRAM_COMMENT       = "SONOGRAM_COMMENT";
+        public static string SONOGRAM_COLOURED      = "SONOGRAM_COLOURED";
+        public static string SONOGRAM_QUANTISATION  = "SONOGRAM_QUANTISATION";
+        public static string SOX_PATH               = "SOX_PATH";
+
 
 
         //KEYS TO OUTPUT INDICES HEADERS
-        public static string INDICES_COUNT    = "Indices Count";
+        public static string INDICES_COUNT    = "IndicesCount";
         public static string SEGMENT_TIMESPAN = "SegTimeSpan";
-        public static string AV_AMPLITUDE = "avAmp-dB";
-        public static string START_MIN    = "start-min";
-        public static string CALL_DENSITY = "CallDensity";
+        public static string AV_AMPLITUDE     = "avAmp-dB";
+        public static string START_MIN        = "start-min";
+        public static string CALL_DENSITY     = "CallDensity";
 
         //KEYS TO OUTPUT EVENT HEADERS
-        public static string EVENT_COUNT     = "Event Count";
-        public static string EVENT_DURATION = "EvDuration";
+        public static string EVENT_COUNT     = "EventCount";
+        public static string EVENT_DURATION  = "EvDuration";
         public static string EVENT_INTENSITY = "EvIntensity";
-        public static string EVENT_NAME      = "Event Name";
+        public static string EVENT_NAME      = "EventName";
         public static string EVENT_NORMSCORE = "EvScoreNorm";
         public static string EVENT_SCORE     = "EvScore";
         public static string EVENT_START_ABS = "EvStartAbs";
         public static string EVENT_START_SEC = "EvStartSec";
         public static string EVENT_START_MIN = "EvStartMin";
         public static string EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string EVENT_TOTAL     = "# events";
+        public static string EVENT_TOTAL     = "EventTotal";
 
         public static string SNR_SCORE       = "SNRscore";
 

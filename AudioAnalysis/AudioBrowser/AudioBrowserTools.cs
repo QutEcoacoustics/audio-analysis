@@ -114,14 +114,14 @@ namespace AudioBrowser
             settings.AnalysisRunDirectory = new DirectoryInfo(runDirectory);
             if (!settings.AnalysisRunDirectory.Exists) Directory.CreateDirectory(runDirectory);
 
-            bool saveSonograms = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_SONOGRAM_FILES, settings.ConfigDict);
+            bool saveSonograms = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_SONOGRAMS, settings.ConfigDict);
             bool saveIntermediateFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_CSV_FILES, settings.ConfigDict);
 
             if (analysisCoordinator.IsParallel)
             {
                 //a fudge becaues parallel mode cannot save images at the moment
                 saveSonograms = false;
-                settings.ConfigDict[Keys.SAVE_SONOGRAM_FILES] = false.ToString();
+                settings.ConfigDict[Keys.SAVE_SONOGRAMS] = false.ToString();
                 saveIntermediateFiles = false;
                 settings.ConfigDict[Keys.SAVE_INTERMEDIATE_CSV_FILES] = false.ToString();
                 //settings.ConfigDict[Keys.SAVE_INTERMEDIATE_WAV_FILES] = saveIntermediateFiles.ToString();

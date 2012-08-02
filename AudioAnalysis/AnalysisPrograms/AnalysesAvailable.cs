@@ -24,13 +24,17 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static int Main(string[] args)
         {
+            bool debug = true;
             int status = 0;
             bool verbose = true;
 
             if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
             {
-                Console.WriteLine("\nPress <ENTER> key to exit.");
-                Console.ReadLine();
+                if (debug)
+                {
+                    Console.WriteLine("\nPress <ENTER> key to exit.");
+                    Console.ReadLine();
+                }
                 System.Environment.Exit(1);
             }
 
@@ -58,7 +62,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(outputPath, list);
             //#########################################################################################################
 
-            if (verbose)
+            if (debug)
             {
                 Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
                 Console.ReadLine();

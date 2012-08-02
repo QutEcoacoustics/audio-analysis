@@ -98,15 +98,21 @@ namespace AnalysisPrograms
                 AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, configDict, fiOutputSegment);
             }
 
-            //get sonogram image
-            //using (Image image = SonogramTools.MakeSonogram(fiOutputSegment, configDict))
-            //{
-            //    if (image == null) return 666;
-            //    if (fiImage.Exists) fiImage.Delete();
-            //    image.Save(fiImage.FullName, ImageFormat.Png);
-            //}
-            SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
-
+            //###### get sonogram image ##############################################################################################
+            if ((configDict.ContainsKey(Keys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(Keys.MAKE_SOX_SONOGRAM, configDict)))
+            {
+                status = SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+            }
+            else
+            {
+                using (Image image = SonogramTools.Audio2SonogramImage(fiOutputSegment, configDict))
+                {
+                    if (image == null) return 1;
+                    if (fiImage.Exists) fiImage.Delete();
+                    image.Save(fiImage.FullName, ImageFormat.Png);
+                }
+            }
+            //###### get sonogram image ##############################################################################################
 
             if (verbose)
             {

@@ -26,13 +26,17 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static int Main(string[] args)
         {
+            bool debug = false;
             int status = 0;
             bool verbose = true;
 
             if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
             {
-                Console.WriteLine("\nPress <ENTER> key to exit.");
-                Console.ReadLine();
+                if (debug)
+                {
+                    Console.WriteLine("\nPress <ENTER> key to exit.");
+                    Console.ReadLine();
+                }
                 System.Environment.Exit(1);
             }
 
@@ -90,7 +94,7 @@ namespace AnalysisPrograms
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, imagePath);
             //#########################################################################################################
 
-            if (verbose)
+            if (debug)
             {
                 Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
                 Console.ReadLine();
