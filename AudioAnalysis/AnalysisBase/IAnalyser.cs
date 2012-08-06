@@ -14,7 +14,7 @@ namespace AnalysisBase
         string DisplayName { get; }
 
         /// <summary>
-        /// Gets Identifier.
+        /// Gets Identifier. This should be a dotted uniquely identifying name. E.g. Towsey.MultiAnalyser.
         /// </summary>
         string Identifier { get; }
 

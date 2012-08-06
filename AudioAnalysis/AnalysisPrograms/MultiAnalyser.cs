@@ -20,9 +20,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-
-
-    ///This class is a combination of analysers
+    /// This class is a combination of analysers
     /// When adding a new analyser to this class need to modify two methods:
     ///    1) ConvertEvents2Indices();  and
     ///    2) Analyse()
@@ -340,9 +338,9 @@ namespace AnalysisPrograms
             var recordingTimeSpan = new TimeSpan();
             var scores = new List<Plot>();
 
-            //######################################################################
-            //HUMAN
-            //######################################################################
+            // ######################################################################
+            // HUMAN
+            // ######################################################################
             newDict = new Dictionary<string, string>();
             string filter = "HUMAN";
             var keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, filter);
@@ -373,7 +371,7 @@ namespace AnalysisPrograms
                 recordingTimeSpan = results1.Item5;
             }
             //######################################################################
-            //CROW
+            // CROW
             //######################################################################
             newDict = new Dictionary<string, string>();
             filter = "CROW";
