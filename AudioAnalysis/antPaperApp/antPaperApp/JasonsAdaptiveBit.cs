@@ -30,9 +30,14 @@ namespace antPaperApp
     {
         public static Tuple<string, DateTime>[] SiteDayCombos(List<SiteDaySpeciesProfile> testProfiles)
         {
-            return
-                testProfiles.GroupBy(sdp => new { sdp.Day, sdp.Site }).Select(
+            Tuple<string, DateTime>[] result = null;
+            
+            // hard coded assertion because I know these comb
+            Contract.Ensures(!result.Contains(Tuple.Create("NE", new DateTime(2010, 10, 13))) && !result.Contains(Tuple.Create("NE", new DateTime(2010, 10, 14))));
+
+            result = testProfiles.GroupBy(sdp => new { sdp.Day, sdp.Site }).Select(
                     grp => Tuple.Create(grp.Key.Site, grp.Key.Day)).ToArray();
+            return result;
         }
 
 

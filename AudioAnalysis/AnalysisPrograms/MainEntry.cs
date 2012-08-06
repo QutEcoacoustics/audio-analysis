@@ -10,6 +10,7 @@
 namespace AnalysisPrograms
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
 
     using AnalysisPrograms.Production;
@@ -29,6 +30,15 @@ namespace AnalysisPrograms
         {
             //var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             //analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+
+#if DEBUG
+            if (!Debugger.IsAttached)
+            {
+                Console.WriteLine("Do you wish to debug? Attach now or press any key to continue.");
+                Console.ReadKey(true);
+            }
+#endif
+
 
             if (args.Length == 0)
             {

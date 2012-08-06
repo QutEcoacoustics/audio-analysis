@@ -8,8 +8,13 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.IO;
     using System.Linq;
+
+    using Acoustics.Shared;
+
+    using AnalysisBase;
 
     using AudioAnalysisTools;
 
@@ -20,30 +25,30 @@ namespace AnalysisPrograms
     /// <summary>
     /// Acoustic Event Detection.
     /// </summary>
-    public class AED
+    public class AED : IAnalyser
     {
         // Keys to recognise identifiers in PARAMETERS - INI file. 
         #region Constants and Fields
 
         /// <summary>
-        /// The key_ smallare a_ threshold.
+        /// The key_ smallarea_ threshold.
         /// </summary>
-        public static string KeyBandpassMaximum = "BANDPASS_MAXIMUM";
+        public const string KeyBandpassMaximum = "BANDPASS_MAXIMUM";
 
         /// <summary>
-        /// The key_ intensit y_ threshold.
+        /// The key_ intensity_ threshold.
         /// </summary>
-        public static string KeyBandpassMinimum = "BANDPASS_MINIMUM";
+        public const string KeyBandpassMinimum = "BANDPASS_MINIMUM";
 
         /// <summary>
-        /// The key_ intensit y_ threshold.
+        /// The key_ intensity_ threshold.
         /// </summary>
-        public static string KeyIntensityThreshold = "INTENSITY_THRESHOLD";
+        public const string KeyIntensityThreshold = "INTENSITY_THRESHOLD";
 
         /// <summary>
-        /// The key_ smallare a_ threshold.
+        /// The key_ smallarea_ threshold.
         /// </summary>
-        public static string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
+        public const string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
 
         #endregion
 
@@ -364,7 +369,8 @@ namespace AnalysisPrograms
         {
             if (!File.Exists(args[0]))
             {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
+                Log.WriteLine("Cannot find recording file <" + args[0] + ">");
+                
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
                 Environment.Exit(1);
@@ -382,18 +388,17 @@ namespace AnalysisPrograms
 
         private static void Usage()
         {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("AnalysisPrograms.exe aed recordingPath iniPath outputFileName");
-            Console.WriteLine("where:");
-            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
             Console.WriteLine(
-                "iniPath:-          (string) The path of the ini file containing all required parameters.");
-            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
-            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
-            Console.WriteLine();
-            Console.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
+           @"INCORRECT COMMAND LINE.
+           USAGE:
+           AnalysisPrograms.exe aed recordingPath iniPath outputFileName
+           where:
+           recordingFileName:-(string) The path of the audio file to be processed.
+           iniPath:-          (string) The path of the ini file containing all required parameters.
+           outputFileName:-   (string) The name of the output file.
+                                       By default, the output dir is that containing the ini file.
+           ");
+            
             Environment.Exit(1);
 
             /*
@@ -409,5 +414,66 @@ namespace AnalysisPrograms
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the name to display for the analysis.
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                return "AED";
+            }
+        }
+
+        /// <summary>
+        /// Gets Identifier.
+        /// </summary>
+        public string Identifier
+        {
+            get
+            {
+                return "MQUTeR.AED";
+            }
+        }
+
+        /// <summary>
+        /// Gets the initial (default) settings for the analysis.
+        /// </summary>
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings()
+                    {
+                        SegmentMediaType = MediaTypes.MediaTypeWav,
+                        SegmentOverlapDuration = TimeSpan.Zero
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Run analysis using the given analysis settings.
+        /// </summary>
+        /// <param name="analysisSettings">
+        /// The analysis Settings.
+        /// </param>
+        /// <returns>
+        /// The results of the analysis.
+        /// </returns>
+        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
