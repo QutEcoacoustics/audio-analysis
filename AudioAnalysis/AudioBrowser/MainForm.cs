@@ -35,7 +35,7 @@
 
     public partial class MainForm : Form
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MainForm));
         private readonly TextWriter consoleWriter;
         private readonly IAudioUtility audioUtilityForDurationColumn;
 

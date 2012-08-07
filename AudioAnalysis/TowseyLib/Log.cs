@@ -1,40 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Log.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the Log type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace TowseyLib
 {
-	public static class Log
-	{
-		public static int Verbosity = 0;
-        public static string mesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
+    using System;
 
-		public static void Write(string format, params object[] args)
-		{
-#if LOGTOCONSOLE
-			Console.Write(format, args);
-#endif
-		}
-		public static void WriteLine(string format, params object[] args)
-		{
-#if LOGTOCONSOLE
-            Console.WriteLine(mesgFormat, DateTime.Now, String.Format(format, args));
-#endif
-		}
+    public static class Log
+    {
+        private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
 
-		public static void WriteLine(object o)
-		{
-#if LOGTOCONSOLE
-            Console.WriteLine(mesgFormat, DateTime.Now, o);
-#endif
-		}
+        static Log()
+        {
+            Verbosity = 0;
+        }
 
-		public static void WriteIfVerbose(string format, params object[] args)
-		{
+        public static int Verbosity { get; set; }
+
+        public static void Write(string format, params object[] args)
+        {
+#if LOGTOCONSOLE
+            Console.Write(format, args);
+#endif
+        }
+
+        public static void WriteLine(string format, params object[] args)
+        {
+#if LOGTOCONSOLE
+            Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+#endif
+        }
+
+        public static void WriteLine(object o)
+        {
+#if LOGTOCONSOLE
+            Console.WriteLine(MesgFormat, DateTime.Now, o);
+#endif
+        }
+
+        public static void WriteIfVerbose(string format, params object[] args)
+        {
 #if LOGTOCONSOLE
             if (Verbosity > 0)
-                Console.WriteLine(mesgFormat, DateTime.Now, String.Format(format, args));
+            {
+                Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+            }
 #endif
-		}
-	}
+        }
+    }
 }

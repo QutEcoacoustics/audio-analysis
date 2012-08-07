@@ -10,6 +10,7 @@
 namespace AnalysisPrograms
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
 
@@ -20,6 +21,126 @@ namespace AnalysisPrograms
     /// </summary>
     public class MainEntry
     {
+        private static readonly Dictionary<string, Action<string[]>> KnownAnalyses;
+
+        static MainEntry()
+        {
+            KnownAnalyses = new Dictionary<string, Action<string[]>>
+                {
+                    // acoustic event detection
+                    { "aed", AED.Dev },
+
+                    // returns list of available analyses
+                    // Signed off: Michael Towsey 1st August 2012
+                    { "analysesAvailable", strings => AnalysesAvailable.Main(strings) },
+
+                    // IAnalyser - detects canetoad calls as acoustic events
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "canetoad", Canetoad.Dev },
+
+                    // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "audio2csv", strings => AnalyseLongRecording.Main(strings) },
+
+                    // produces a sonogram from an audio file. Can reduce dimensionality of the image.
+                    // Signed off: Michael Towsey 31st July 2012
+                    { "audio2sonogram", strings => Audio2Sonogram.Main(strings) },
+
+                    // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "crow", Crow.Dev },
+
+                    // produces a tracks image of column values in a csv file - one track per csv column.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "indicesCsv2Image", strings => IndicesCsv2Display.Main(strings) },
+
+                    // event pattern recognition - used for ground-parrots (BRAD)
+                    { "epr", GroundParrotRecogniser.Dev },
+
+                    // IAnalyser - detects the oscillating portion of a male koala bellow
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "koalaMale", KoalaMale.Dev },
+
+                    // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "multiAnalyser", MultiAnalyser.Dev },
+
+                    // IAnalyser - recognises human speech but not word recognition
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "human", Human1.Dev },
+
+                    // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "kiwi", LSKiwi3.Dev },
+
+                    // little spotted kiwi calls from Andrew @ Victoria university.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "kiwiROC", LSKiwiROC.Main },
+
+                    // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "LewinsRail", LewinsRail3.Dev },
+
+                    // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
+                    // Signed off: Michael Towsey 27th July 2012
+                    { "machines", PlanesTrainsAndAutomobiles.Dev },
+
+                    // calculates signal to noise ratio
+                    // Signed off: Anthony, 25th July 2012
+                    { "snr", SnrAnalysis.Dev },
+
+                    // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
+
+                    // extracts acoustic indices from one minute segment - for dev purposes only
+                    // Signed off: Michael Towsey, 27th July 2012
+                    { "acousticIndices", Acoustic.Dev },
+
+                    // extract an acoustic event and make a template for FELT
+                    { "createtemplate_felt", FeltTemplate_Create.Dev },
+
+                    // edits the FELT template created above
+                    { "edittemplate_felt", FeltTemplate_Edit.Dev },
+
+                    // event pattern recognition - used for ground-parrots (TOWSEY)
+                    { "epr2", EPR.Dev },
+
+                    // find other acoustic events like this
+                    { "felt", FeltTemplates_Use.Dev },
+
+                    // frog calls
+                    { "frog_ribbit", FrogRibit.Dev },
+
+                    // grid recognition
+                    { "gratings", GratingDetection.Dev },
+
+                    // Oscillation Recogniser
+                    { "od", OscillationRecogniser.Dev },
+
+                    // IAnalyser - detects rain
+                    { "rain", Rain.Dev },
+
+                    // segmentation of a recording
+                    { "segment", Segment.Dev },
+
+                    // species accumulation curves
+                    // SpeciesAccumulationCurve.Executable
+                    { "species_accumulation_curves", SpeciesAccumulationCurve.Dev },
+                    
+                    // spectral peak tracking
+                    /////{ "spt", SPT.Dev },
+
+                    // syntactic pattern recognition
+                    ////{ "spr", SPR.Dev },
+
+                    // ???
+                    { "test", AnalysisTemplate.Dev },
+
+                    // Production Analysis runs
+                    // for running on mono or to run as fast as possible
+                    { "production", Runner.Run },
+                };
+        }
+
         /// <summary>
         /// Program entry.
         /// </summary>
@@ -36,130 +157,60 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("Do you wish to debug? Attach now or press any key to continue.");
                 Console.ReadKey(true);
+                if (Debugger.IsAttached)
+                {
+                    Console.WriteLine("\t >>> Attach sucessful");
+                }
+                Console.WriteLine();
             }
 #endif
-
+            
 
             if (args.Length == 0)
             {
                 Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
+                Usage();
             }
             else
             {
+                var firstArg = args[0].ToLower();
                 string[] restOfArgs = args.Skip(1).ToArray();
-                switch (args[0])
+
+                if (KnownAnalyses.ContainsKey(firstArg))
                 {
-                    // READY TO BE USED - REQUIRE CONFIG FILE
-                    case "aed":                    //IAnalyser - acoustic event detection
-                        AED.Dev(restOfArgs);       //Signed off: ############# ???????????? 7th August 2012
-                        break;
-                    case "analysesAvailable":      // returns list of available analyses
-                        AnalysesAvailable.Main(restOfArgs); //Signed off: Michael Towsey 1st August 2012
-                        break;
-                    case "canetoad":               // IAnalyser - detects canetoad calls as acoustic events
-                        Canetoad.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "audio2csv":              // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
-                        AnalyseLongRecording.Main(restOfArgs);   //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "audio2sonogram":         // produces a sonogram from an audio file. Can reduce dimensionality of the image.
-                        Audio2Sonogram.Main(restOfArgs);   //Signed off: Michael Towsey 31st July 2012
-                        break;
-                    case "crow":                   // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
-                        Crow.Dev(restOfArgs);      //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "indicesCsv2Image":        // produces a tracks image of column values in a csv file - one track per csv column.
-                        IndicesCsv2Display.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "epr":           // event pattern recognition - used for ground-parrots (BRAD)
-                        GroundParrotRecogniser.Dev(restOfArgs);
-                        break;
-                    case "koalaMale":     // IAnalyser - detects the oscillating portion of a male koala bellow
-                        KoalaMale.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "multiAnalyser": // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-                        MultiAnalyser.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "human":         // IAnalyser - recognises human speech but not word recognition
-                        Human1.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "kiwi":          // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
-                        LSKiwi3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "kiwiROC":       // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwiROC.Main(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "LewinsRail":    // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
-                        LewinsRail3.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "machines":      // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
-                        PlanesTrainsAndAutomobiles.Dev(restOfArgs);  //Signed off: Michael Towsey 27th July 2012
-                        break;
-                    case "snr":           // calculates signal to noise ratio
-                        SnrAnalysis.Dev(restOfArgs);  //Signed off: Anthony, 25th July 2012
-                        break;
-
-
-
-                    // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
-                    case "acousticIndices":      // extracts acoustic indices from one minute segment - for dev purposes only
-                        Acoustic.Dev(restOfArgs);  //Signed off: Michael Towsey, 27th July 2012
-                        break;
-                    case "createtemplate_felt":  // extract an acoustic event and make a template for FELT
-                        FeltTemplate_Create.Dev(restOfArgs);
-                        break;
-                    case "edittemplate_felt":    // edits the FELT template created above
-                        FeltTemplate_Edit.Dev(restOfArgs);
-                        break;
-                    case "epr2":                 // event pattern recognition - used for ground-parrots (TOWSEY)
-                        EPR.Dev(restOfArgs);
-                        break;
-                    case "felt":                 // find other acoustic events like this
-                        FeltTemplates_Use.Dev(restOfArgs);
-                        break;
-                    case "frog_ribbit":          // frog calls
-                        FrogRibit.Dev(restOfArgs);
-                        break;
-                    case "gratings":      // grid recognition
-                        GratingDetection.Dev(restOfArgs);
-                        break;
-                    case "od":   // Oscillation Recogniser
-                        OscillationRecogniser.Dev(restOfArgs);
-                        break;
-                    case "rain":      // IAnalyser - detects rain
-                        Rain.Dev(restOfArgs);  
-                        break;
-                    case "segment":  // segmentation of a recording
-                        Segment.Dev(restOfArgs);
-                        break;
-                    case "species_accumulation_curves":      // species accumulation curves
-                        SpeciesAccumulationCurve.Dev(restOfArgs);
-                        //SpeciesAccumulationCurve.Executable(restOfArgs);
-                        break;
-                    //case "spt":  // spectral peak tracking
-                    //    SPT.Dev(restOfArgs);
-                    //    break;
-                    //case "spr":  // syntactic pattern recognition
-                    //    SPR.Dev(restOfArgs);
-                    //    break;
-                    case "test":      //
-                        AnalysisTemplate.Dev(restOfArgs);
-                        break;
-
-
-
-                    // Production Analysis runs
-                    case "production": // for running on mono or to run as fast as possible
-                        Runner.Run(restOfArgs);
-                        break;
-
-                    default:
-                        Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
-                        Console.WriteLine("Press any key to exit...");
-                        Console.ReadLine();
-                        break;
+                    var analysisFunc = KnownAnalyses[firstArg];
+                    analysisFunc(restOfArgs);
+                }
+                else
+                {
+                    // default
+                    Console.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
+                    Usage();
                 }
             }
+
+#if DEBUG
+            // if Michael is debugging with visual studio, this will prevent the window closing.
+            Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
+            if (parentProcess.ProcessName == "devenv")
+            {
+                Console.WriteLine("Exit hung, press any key to quit.");
+                Console.ReadLine();
+            }
+#endif
+        }
+
+        private static void Usage()
+        {
+            Console.Write(
+@"
+USAGE:
+>   analysisPrograms.exe analysisOption [...]
+
+Valid analysis options are:
+");
+            Console.WriteLine("\t" + string.Join(", ", KnownAnalyses.Keys));
+            Console.WriteLine();
         }
     }
 }

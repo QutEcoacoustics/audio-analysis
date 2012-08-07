@@ -57,7 +57,7 @@
         /// </returns>
         protected bool CheckMimeTypeExtension(FileInfo file, string mimeType)
         {
-            string fileExtension = GetExtension(file);
+            string fileExtension = this.GetExtension(file);
 
             return MediaTypes.GetExtension(mimeType).ToUpperInvariant() == fileExtension;
         }

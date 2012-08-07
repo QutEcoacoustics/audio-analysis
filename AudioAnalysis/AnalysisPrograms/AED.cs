@@ -20,6 +20,8 @@ namespace AnalysisPrograms
 
     using QutSensors.AudioAnalysis.AED;
 
+    using ServiceStack.Text;
+
     using TowseyLib;
 
     /// <summary>
@@ -193,9 +195,10 @@ namespace AnalysisPrograms
             string opFName = args[2];
             string opPath = outputDir + opFName;
 
-            Log.WriteIfVerbose("# Output folder =" + outputDir);
-            Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+            ////Log.WriteIfVerbose("# Output folder =" + outputDir);
+            ////Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            ////FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+            Log.WriteLine("WARN: output file writing disabled in build");
 
             // READ PARAMETER VALUES FROM INI FILE
             double intensityThreshold;
@@ -214,15 +217,25 @@ namespace AnalysisPrograms
                 recordingPath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
             List<AcousticEvent> events = result.Item2;
 
-            Console.WriteLine();
-            foreach (AcousticEvent ae in events)
+            string destPathBase = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
+            string destPath = destPathBase;
+            var inc = 0;
+            while (File.Exists(destPath + ".csv"))
             {
-                Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                inc++;
+                destPath = destPathBase + "_{0:000}".FormatWith(inc);
             }
 
-            Console.WriteLine();
+            var csvEvents = CsvSerializer.SerializeToCsv(events);
+            File.WriteAllText(destPath + ".csv", csvEvents);
 
-            GenerateImage(recordingPath, outputDir, result.Item1, events);
+            Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
+            ////foreach (AcousticEvent ae in events)
+            ////{
+            ////    Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+            ////}
+
+            GenerateImage(destPath + ".png", result.Item1, events);
             Log.WriteLine("Finished");
         }
 
@@ -251,6 +264,29 @@ namespace AnalysisPrograms
         /// <summary>
         /// Create and save sonogram image.
         /// </summary>
+        /// <param name="imagePath"> </param>
+        /// <param name="sonogram">
+        /// Existing sonogram.
+        /// </param>
+        /// <param name="events">
+        /// Acoustic events.
+        /// </param>
+        public static void GenerateImage(
+            string imagePath, BaseSonogram sonogram, List<AcousticEvent> events)
+        {
+            Log.WriteIfVerbose("imagePath = " + imagePath);
+            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+
+            ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, image.));
+            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
+            ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
+            image.Save(imagePath);
+        }
+
+        /// <summary>
+        /// Create and save sonogram image.
+        /// </summary>
         /// <param name="wavFilePath">
         /// path to audio file.
         /// </param>
@@ -267,14 +303,7 @@ namespace AnalysisPrograms
             string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
         {
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
-            Log.WriteIfVerbose("imagePath = " + imagePath);
-            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-
-            ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
-            image.Save(imagePath);
+            GenerateImage(imagePath, sonogram, events);
         }
 
         #endregion
@@ -370,9 +399,6 @@ namespace AnalysisPrograms
             if (!File.Exists(args[0]))
             {
                 Log.WriteLine("Cannot find recording file <" + args[0] + ">");
-                
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
                 Environment.Exit(1);
             }
 
@@ -380,8 +406,14 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
+                Environment.Exit(1);
+            }
+
+            var output = args[2];
+            if (!Path.HasExtension(output))
+            {
+                Console.WriteLine("the output path should really lead to a file (i.e. have an extension)");
+                Usage();
                 Environment.Exit(1);
             }
         }

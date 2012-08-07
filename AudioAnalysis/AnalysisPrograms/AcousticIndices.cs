@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLib;
-using AudioAnalysisTools;
-
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Shared;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+
+    using AnalysisBase;
+
+    using AudioAnalysisTools;
+
+    using TowseyLib;
+
     public class Acoustic : IAnalyser
     {
         //TASK IDENTIFIERS
@@ -119,8 +119,8 @@ namespace AnalysisPrograms
             //}
 
             Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+  
+        } // Dev()
 
         /// <summary>
         /// Directs task to the appropriate method based on the first argument in the command line string.
@@ -162,14 +162,10 @@ namespace AnalysisPrograms
             return status;
         } //Execute()
 
-
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
         public static int ExecuteAnalysis(string[] args)
         {
             int status = 0;
@@ -179,7 +175,8 @@ namespace AnalysisPrograms
                 status = 1;
                 return status;
             }
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
@@ -190,6 +187,7 @@ namespace AnalysisPrograms
                 status = 2;
                 return status;
             }
+
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
@@ -197,18 +195,19 @@ namespace AnalysisPrograms
                 status = 2;
                 return status;
             }
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
-            if (!diOP.Exists)
+
+            DirectoryInfo outputDirectory = new DirectoryInfo(outputDir);
+            if (!outputDirectory.Exists)
             {
                 Console.WriteLine("Output directory does not exist: " + recordingPath);
                 status = 2;
                 return status;
             }
 
-            //INIT SETTINGS
+            // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile = fiConfig;
-            analysisSettings.AnalysisRunDirectory = diOP;
+            analysisSettings.AnalysisRunDirectory = outputDirectory;
             analysisSettings.AudioFile = null;
             analysisSettings.EventsFile = null;
             analysisSettings.IndicesFile = null;
@@ -216,7 +215,7 @@ namespace AnalysisPrograms
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
 
-            //PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
+            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
                 string[] parts = args[i].Split(':');
@@ -234,13 +233,13 @@ namespace AnalysisPrograms
                     else
                         if (parts[0].StartsWith("-start"))
                         {
-                            int s = Int32.Parse(parts[1]);
+                            int s = int.Parse(parts[1]);
                             tsStart = new TimeSpan(0, 0, s);
                         }
                         else
                             if (parts[0].StartsWith("-duration"))
                             {
-                                int s = Int32.Parse(parts[1]);
+                                int s = int.Parse(parts[1]);
                                 tsDuration = new TimeSpan(0, 0, s);
                                 if (tsDuration.TotalMinutes > 10)
                                 {
@@ -251,30 +250,31 @@ namespace AnalysisPrograms
                             }//if
             } //for
 
-            //EXTRACT THE REQUIRED RECORDING SEGMENT
+            // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tsDuration.TotalSeconds == 0)   //Process entire file
+            if (tsDuration.TotalSeconds == 0)   
             {
+                // Process entire file
                 AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE });
-                //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
+                ////var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
                 AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
-                //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
+                ////var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
-            //DO THE ANALYSIS
-            //#############################################################################################################################################
+            // DO THE ANALYSIS
+            // #############################################################################################################################################
             IAnalyser analyser = new Acoustic();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
-            //#############################################################################################################################################
+            // #############################################################################################################################################
 
-            //ADD IN ADDITIONAL INFO TO RESULTS TABLE
+            // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             if (dt != null)
             {
-                int iter = 0; //dummy - iteration number would ordinarily be available at this point.
+                int iter = 0; // dummy - iteration number would ordinarily be available at this point.
                 int startMinute = (int)tsStart.TotalMinutes;
                 foreach (DataRow row in dt.Rows)
                 {
@@ -294,11 +294,11 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            //Dictionary<string, string> configDict = configuration.GetTable();
-            //string key_GET_ANNOTATED_SONOGRAM = "ANNOTATE_SONOGRAM";
-            //configDict.Add(key_GET_ANNOTATED_SONOGRAM, Boolean.FalseString);
-            //if (analysisSettings.ImageFile != null) configDict[key_GET_ANNOTATED_SONOGRAM] = Boolean.TrueString;
+            ////var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            ////Dictionary<string, string> configDict = configuration.GetTable();
+            ////string key_GET_ANNOTATED_SONOGRAM = "ANNOTATE_SONOGRAM";
+            ////configDict.Add(key_GET_ANNOTATED_SONOGRAM, Boolean.FalseString);
+            ////if (analysisSettings.ImageFile != null) configDict[key_GET_ANNOTATED_SONOGRAM] = Boolean.TrueString;
 
             var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
