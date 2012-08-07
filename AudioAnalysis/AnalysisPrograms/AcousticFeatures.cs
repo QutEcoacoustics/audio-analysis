@@ -304,7 +304,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// Extracts indices from a single  segment of recording
         /// EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-        //  EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+        /// EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
@@ -314,34 +314,37 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
         {
-            //get parameters for the analysis
+            // get parameters for the analysis
             int frameSize = AcousticFeatures.DEFAULT_WINDOW_SIZE;
             if (config.ContainsKey(Keys.FRAME_LENGTH)) frameSize = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
             if (config.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config);
             if (config.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config);
             double windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
 
-            //get recording segment
+            // get recording segment
             AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
             int signalLength     = recording.GetWavReader().Samples.Length;
             TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
             double frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
 
 
-            //i: EXTRACT ENVELOPE and FFTs
+            // i: EXTRACT ENVELOPE and FFTs
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
+            ////double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             double[] envelope   = results2.Item2;
-            double[,] spectrogram = results2.Item3;  //amplitude spectrogram
+
+            // amplitude spectrogram
+            double[,] spectrogram = results2.Item3;  
 
 
-            //ii: FRAME ENERGIES - 
-            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
+            // ii: FRAME ENERGIES - 
+            // use Lamel et al. Only search in range 10dB above min dB.
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
 
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticFeatures.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= DEFAULT_activityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
@@ -352,23 +355,23 @@ namespace AnalysisPrograms
             indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
 
-            //calculate boundary between hi and low frequency spectrum
+            // calculate boundary between hi and low frequency spectrum
             double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
             int excludeLoFreqBins = (int)Math.Ceiling(lowFreqBound / binWidth);
 
-            //iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
+            // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, excludeLoFreqBins);
             indices.entropyOfAvSpectrum = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
-            //iv: remove background noise from the spectrogram
+            // iv: remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
             modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
             spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
+            // v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
             var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;

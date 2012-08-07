@@ -18,7 +18,7 @@
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
-            //Application.Run(new AudioBrowser1(System.Environment.GetCommandLineArgs()));
+            //Application.Run(new AudioBrowser1(System.Environment.GetCommandLineArgs())); 
         }
     }
 }

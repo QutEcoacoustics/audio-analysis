@@ -21,10 +21,12 @@ namespace AudioAnalysisTools
         /// <summary>in seconds</summary>
         public double TimeEnd { get; set; }   //within current recording
         /// <summary>units = Hertz</summary>
-        public int MinFreq;
+        public int MinFreq { get; set; }
+
         /// <summary>units = Hertz</summary>
-        public int MaxFreq;
-        public int FreqRange { get { return (MaxFreq - MinFreq + 1); } }
+        public int MaxFreq { get; set; }
+
+        public int FreqRange { get { return (this.MaxFreq - this.MinFreq + 1); } }
         public bool IsMelscale { get; set; }
         public Oblong oblong { get; set; }
 
@@ -196,7 +198,7 @@ namespace AudioAnalysisTools
 
         public string WriteProperties()
         {
-            return " min-max=" + MinFreq + "-" + MaxFreq + ",  " + oblong.c1 + "-" + oblong.c2;
+            return " min-max=" + this.MinFreq + "-" + this.MaxFreq + ",  " + oblong.c1 + "-" + oblong.c2;
         }
 
         /// <summary>
