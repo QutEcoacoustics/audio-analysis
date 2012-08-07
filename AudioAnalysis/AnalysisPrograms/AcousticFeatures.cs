@@ -469,6 +469,41 @@ namespace AnalysisPrograms
         } //Analysis()
 
 
+
+        public static double CalculateSpikeIndex(double[] envelope, double spikeThreshold)
+        {
+            int length = envelope.Length;
+            int isolatedSpikeCount = 0;
+
+            //int spikeCount = 0;
+            //for (int i = 1; i < length-1; i++)
+            //{
+            //    if (envelope[i] < spikeThreshold) continue; //count spikes
+            //    spikeCount++;
+            //    if ((envelope[i-1] < spikeThreshold) && (envelope[i+1] < spikeThreshold)) 
+            //        isolatedSpikeCount++; //count isolated spikes
+            //}
+            //if (spikeCount == 0) return 0.0;
+            //else
+            //    //return isolatedSpikeCount / (double)spikeCount;
+            //    return isolatedSpikeCount / (double)length;
+
+            var peaks = DataTools.GetPeaks(envelope);
+            int peakCount = 0;
+            for (int i = 1; i < length - 1; i++)
+            {
+                if (!peaks[i]) continue; //count spikes
+                peakCount++;
+                double diffMinus1 = envelope[i] - envelope[i - 1];
+                double diffPlus1  = envelope[i] - envelope[i + 1];
+                if ((diffMinus1 > spikeThreshold) && (diffPlus1 > spikeThreshold))
+                    isolatedSpikeCount++; //count isolated spikes
+            }
+            if (peakCount == 0) return 0.0;
+            if (isolatedSpikeCount == 0) return 0.0;
+            return isolatedSpikeCount / (double)peakCount;
+        }
+
         /// <summary>
         /// reutrns the number of acoustic segments and their average duration in milliseconds
         /// only counts a segment if it is LONGER than one frame. 

@@ -109,7 +109,9 @@ namespace TowseyLib
             if (end >= A.Length)
             {
                 //Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
-                return null;
+                //return null;
+                end = A.Length - 1;
+                length = end - start + 1;
             }
             double[] sa = new double[length];
 

@@ -50,8 +50,8 @@ namespace AnalysisPrograms
                 switch (args[0])
                 {
                     // READY TO BE USED - REQUIRE CONFIG FILE
-                    case "aed":                    // acoustic event detection
-                        AED.Dev(restOfArgs);
+                    case "aed":                    //IAnalyser - acoustic event detection
+                        AED.Dev(restOfArgs);       //Signed off: ############# ???????????? 7th August 2012
                         break;
                     case "analysesAvailable":      // returns list of available analyses
                         AnalysesAvailable.Main(restOfArgs); //Signed off: Michael Towsey 1st August 2012
