@@ -46,28 +46,33 @@ namespace AnalysisPrograms
         public const string header_HAvSpectrum  = "H[avSpectrum]";
         //public const string header_HVarSpectrum = "H[varSpectrum]";
 
+        private const bool verbose = true;
+        private const bool writeOutputFile = true;
+
+
 
         /// <summary>
         /// a set of indices derived from each recording.
         /// </summary>
         public struct Indices
         {
-            public double snr, bgNoise, activity, avSig_dB, temporalEntropy; //amplitude indices
-            public double lowFreqCover, midFreqCover, hiFreqCover, entropyOfAvSpectrum;  //, entropyOfVarianceSpectrum; //spectral indices
+            public double snr, bgNoise, activity, spikes, avSig_dB, temporalEntropy; //amplitude indices
+            public double lowFreqCover, midFreqCover, hiFreqCover, spectralEntropy;  //, entropyOfVarianceSpectrum; //spectral indices
 
-            public Indices(double _snr, double _bgNoise, double _activity, double _avSig_dB,
+            public Indices(double _snr, double _bgNoise, double _avSig_dB, double _activity, double _spikes,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _entropyOfAvSpectrum  /*, double _entropyOfVarianceSpectrum*/ )
             {
                 snr = _snr;
                 bgNoise = _bgNoise;
                 activity = _activity;
+                spikes   = _spikes;
                 avSig_dB = _avSig_dB;
                 temporalEntropy = _entropyAmp;
                 hiFreqCover = _hiFreqCover;
                 midFreqCover = _midFreqCover;
                 lowFreqCover = _lowFreqCover;
-                entropyOfAvSpectrum = _entropyOfAvSpectrum;
+                spectralEntropy = _entropyOfAvSpectrum;
                 //entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
             }
         } //struct Indices2
@@ -80,10 +85,10 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Rain Indices"; }
+            get { return "Rain Indices (DEV)"; }
         }
 
-        private static string identifier = "Towsey." + ANALYSIS_NAME;
+        private static string identifier = "Towsey." + ANALYSIS_NAME + ".DEV";
         public string Identifier
         {
             get { return identifier; }
@@ -95,10 +100,22 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             bool DEBUG = true;
 
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min944.wav";   //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1031.wav";  //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1036.wav";  //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1101.wav";  //rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\Jackaroo_20080715-103940.wav";   //koala
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";   //koala & mobile spikes
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   //walking on dry leaves
+            //string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1081.wav";   //cicada
+            string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1076.wav";
             string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Rain.cfg";
             string outputDir     = @"C:\SensorNetworks\Output\Rain\";
             //string csvPath       = @"C:\SensorNetworks\Output\Rain\RainIndices.csv";
+
 
             string title = "# FOR EXTRACTION OF RAIN Indices";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -107,6 +124,17 @@ namespace AnalysisPrograms
             Console.WriteLine("# Output folder:  " + outputDir);
             Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
+
+            if (true)
+            {
+                string path = @"C:\SensorNetworks\Output\Rain\TrainingExamplesForRain.csv";
+                //read csv ifle
+                var dt = CsvTools.ReadCSVToTable(path, true);
+                //write as SEE5 files.
+                string fileStem = "SOMETHING";
+                WriteSee5DataFiles(dt, diOutputDir, fileStem);
+                System.Environment.Exit(0);
+            }
 
             int startMinute     = 0;
             int durationSeconds = 0; //set zero to get entire recording
@@ -360,7 +388,8 @@ namespace AnalysisPrograms
             double   frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
             int chunkDuration = 10; //seconds
             double framesPerSeconds = 1 / frameDuration;
-            int chunkCount = (int)(audioDuration.TotalSeconds / (double)chunkDuration);
+            int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
+            int chunkLength = (int)(chunkDuration * framesPerSeconds);
 
 
             //i: EXTRACT ENVELOPE and FFTs
@@ -368,22 +397,49 @@ namespace AnalysisPrograms
             //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             double[]  envelope    = results2.Item2;
             double[,] spectrogram = results2.Item3;  //amplitude spectrogram
+            int colCount = spectrogram.GetLength(1);
 
+            //set up the output
+            if (verbose)
+                Console.WriteLine("{0:d2}, {1},  {2},    {3},    {4},    {5},   {6},     {7},     {8},    {9},   {10},   {11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
+            StringBuilder sb =  null;
+            if (writeOutputFile)
+            {
+                string header = String.Format("{0:d2},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
+                sb = new StringBuilder(header+"\n");
+            }
+            
             //get acoustic indices and convert to rain indices.
             for (int i=0; i<chunkCount; i++)
             {
                 int startSecond = i * chunkDuration;
-                int endSecond   = startSecond + chunkDuration;  //end second
                 int start = (int)(startSecond * framesPerSeconds);
-                int end   = (int)(endSecond   * framesPerSeconds);
+                int end   = start + chunkLength;
                 if (end >= envelope.Length) end = envelope.Length - 1;
-                double[] array = DataTools.Subarray(envelope, start, end);
+                double[]  array  = DataTools.Subarray(envelope, start, chunkLength);
+                if (array.Length < 50) continue;  //an arbitrary minimum length
+                double[,] matrix = DataTools.Submatrix(spectrogram, start, 0, end, (colCount - 1));
 
-                Indices indices = GetIndices(array, spectrogram, recording.Nyquist, lowFreqBound, midFreqBound);
+                Indices indices = GetIndices(array, matrix, recording.Nyquist, lowFreqBound, midFreqBound);
                 double[] rainIndices = ConvertAcousticIndices2RainIndices(indices);
-                Console.WriteLine("{0} {1} {2} {3}", startSecond, endSecond, rainIndices[0], rainIndices[1]);
+                string separator = ",";
+                if (verbose)
+                    Console.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f2}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}{0}   {14}", separator,
+                                      startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes, 
+                                      indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
+                                      indices.temporalEntropy, indices.spectralEntropy, rainIndices[0], rainIndices[1]);
+
+
+                string line = String.Format("{1:d2}{0}{2}{0}{3:f1}{0}{4:f1}{0}{5:f1}{0}{6:f2}{0}{7:f2}{0}{8:f2}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13}{0}{14}", separator,
+                      startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes,
+                      indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
+                      indices.temporalEntropy, indices.spectralEntropy, rainIndices[0], rainIndices[1]);
+                sb.AppendLine(line);
             }
 
+            string opDir = @"C:\SensorNetworks\Output\Rain";
+            string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
+            FileTools.WriteTextFile(opPath, sb.ToString());
 
             DataTable dt = new DataTable();
             //#V#####################################################################################################################################################
@@ -429,12 +485,16 @@ namespace AnalysisPrograms
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
+            double spikeThreshold = 0.1;
+            double spikeIndex = AcousticFeatures.CalculateSpikeIndex(envelope, spikeThreshold);
+
             Indices indices; // struct in which to store all indices
-            indices.activity = activeFrameCount / (double)dBarray.Length;   //fraction of frames having acoustic activity 
-            indices.bgNoise = results3.Item2;                              //bg noise in dB
-            indices.snr = results3.Item5;                              //snr
-            indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
+            indices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity 
+            indices.bgNoise  = results3.Item2;                             //bg noise in dB
+            indices.snr      = results3.Item5;                             //snr
+            indices.avSig_dB = 20 * Math.Log10(envelope.Average());        //10 times log of amplitude squared 
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
+            indices.spikes = spikeIndex;
 
             //calculate boundary between hi and low frequency spectrum
             double binWidth = nyquist / (double)spectrogram.GetLength(1);
@@ -442,7 +502,7 @@ namespace AnalysisPrograms
 
             //iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(spectrogram, excludeLoFreqBins);
-            indices.entropyOfAvSpectrum = tuple.Item1;
+            indices.spectralEntropy = tuple.Item1;
             //indices.entropyOfVarianceSpectrum = tuple.Item2;
 
             //iv: remove background noise from the spectrogram
@@ -464,7 +524,7 @@ namespace AnalysisPrograms
         public static double[] ConvertAcousticIndices2RainIndices(Indices indices)
         {
             double[] rainIndices = new double[2];
-            if ((indices.bgNoise > 2.0) && (indices.snr < 1.0)) rainIndices[0] = 1.0;
+            if ((indices.bgNoise > -30.0) /*&& (indices.snr < 10.0)*/) rainIndices[0] = 1.0;
             return rainIndices;
         }
 
@@ -479,7 +539,7 @@ namespace AnalysisPrograms
                         indices.avSig_dB, indices.snr, indices.bgNoise,
                         indices.activity, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover,
                         indices.temporalEntropy, 
-                        indices.entropyOfAvSpectrum //, indices.entropyOfVarianceSpectrum
+                        indices.spectralEntropy //, indices.entropyOfVarianceSpectrum
                         );
             return dt;
         }
@@ -845,6 +905,58 @@ namespace AnalysisPrograms
             return processedtable;
         }
 
+
+        public static void WriteSee5DataFiles(DataTable dt, DirectoryInfo diOutputDir, string fileStem)
+        {
+            string namesFilePath = Path.Combine(diOutputDir.FullName, fileStem + ".See5.names");
+            string dataFilePath  = Path.Combine(diOutputDir.FullName, fileStem + ".See5.data");
+
+            string class1Name = "none";
+            string class2Name = "cicada";
+            string class3Name = "rain";
+            string class4Name = "koala";
+            string class5Name = "mobile";
+
+            var nameContent = new List<string>();
+            nameContent.Add("|   THESE ARE THE CLASS NAMES FOR RAIN Classification.");
+            nameContent.Add(String.Format("{0},  {1},  {2},  {3},  {4}", class1Name, class2Name, class3Name, class4Name, class5Name));
+            nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR RAIN Classification.");
+            //nameContent.Add(String.Format("{0}: ignore", "start"));
+            //nameContent.Add(String.Format("{0}: ignore", "end"));
+            nameContent.Add(String.Format("{0}: continuous", "avDB"));
+            nameContent.Add(String.Format("{0}: continuous", "BG"));
+            nameContent.Add(String.Format("{0}: continuous", "SNR"));
+            nameContent.Add(String.Format("{0}: continuous", "activity"));
+            nameContent.Add(String.Format("{0}: continuous", "spikes"));
+            nameContent.Add(String.Format("{0}: continuous", "lf"));
+            nameContent.Add(String.Format("{0}: continuous", "mf"));
+            nameContent.Add(String.Format("{0}: continuous", "hf"));
+            nameContent.Add(String.Format("{0}: continuous", "H[t]"));
+            nameContent.Add(String.Format("{0}: continuous", "H[s]"));
+            //nameContent.Add(String.Format("{0}: ignore",     "class"));
+            FileTools.WriteTextFile(namesFilePath, nameContent);
+
+
+            var dataContent = new List<string>();
+            foreach (DataRow row in dt.Rows)
+            {
+                double avDB = (double)row["avDB"];
+                double BG   = (double)row["BG"];
+                double SNR  = (double)row["SNR"];
+                double activity = (double)row["activity"];
+                double spikes = (double)row["spikes"];
+                double lf = (double)row["lf"];
+                double mf = (double)row["mf"]; //average peak
+                double hf = (double)row["hf"];
+                double H_t = (double)row["H[t]"];
+                double H_s = (double)row["H[s]"];
+                string name = (string)row["class"];
+
+                string line = String.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}", avDB, BG, SNR, activity, spikes, lf, mf, hf, H_t, H_s, name);
+                dataContent.Add(line);
+            }
+            FileTools.WriteTextFile(dataFilePath, dataContent);
+        }
 
 
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
