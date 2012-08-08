@@ -9,48 +9,48 @@
 
 namespace TowseyLib
 {
-    using System;
+    using log4net;
 
     public static class Log
     {
-        private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
+        //private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
+
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(Log));
 
         static Log()
         {
             Verbosity = 0;
         }
 
+        public static ILog Logger
+        {
+            get
+            {
+                return _logger;
+            }
+        }
+
         public static int Verbosity { get; set; }
 
-        public static void Write(string format, params object[] args)
-        {
-#if LOGTOCONSOLE
-            Console.Write(format, args);
-#endif
-        }
 
         public static void WriteLine(string format, params object[] args)
         {
-#if LOGTOCONSOLE
-            Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
-#endif
-        }
+            _logger.InfoFormat(format, args);
 
-        public static void WriteLine(object o)
-        {
-#if LOGTOCONSOLE
-            Console.WriteLine(MesgFormat, DateTime.Now, o);
-#endif
+            //#if LOGTOCONSOLE
+            //Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+            //#endif
         }
 
         public static void WriteIfVerbose(string format, params object[] args)
         {
-#if LOGTOCONSOLE
+            //#if LOGTOCONSOLE
             if (Verbosity > 0)
             {
-                Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+                _logger.InfoFormat(format, args);
+                //Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
             }
-#endif
+            //#endif
         }
     }
 }
