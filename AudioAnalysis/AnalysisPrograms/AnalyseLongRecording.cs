@@ -54,6 +54,10 @@ namespace AnalysisPrograms
         public static int Main(string[] args)
         {
             bool debug = false;
+#if DEBUG
+            debug = true;
+#endif
+
             int status = 0;
             string title = "# PROCESS LONG RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -71,7 +75,8 @@ namespace AnalysisPrograms
                     Console.WriteLine("\nPress <ENTER> key to exit.");
                     Console.ReadLine();
                 }
-                System.Environment.Exit(1);
+                return 1;
+                //System.Environment.Exit(1);
             }
 
             string recordingPath = args[0];
@@ -233,11 +238,7 @@ namespace AnalysisPrograms
                 Console.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
                 Console.WriteLine("\tNumber of indices = " + indicesCount);
             }
-            Console.WriteLine("\n##### FINSHED FILE ###################################################\n");
-            if(debug)
-            {
-                Console.ReadLine();
-            }            
+            Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
             return status;
         } //Main(string[] args)
 

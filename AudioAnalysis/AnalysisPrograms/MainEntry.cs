@@ -25,7 +25,9 @@ namespace AnalysisPrograms
 
         static MainEntry()
         {
-            KnownAnalyses = new Dictionary<string, Action<string[]>>
+            // STATIC CONSTRUCTOR
+            
+            KnownAnalyses = new Dictionary<string, Action<string[]>> (StringComparer.InvariantCultureIgnoreCase)
                 {
                     // acoustic event detection
                     { "aed", AED.Dev },

@@ -29,22 +29,26 @@ namespace AnalysisPrograms
         private static Type[] COL_TYPES = new Type[COL_NUMBER];
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
-        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
         public static string header_count = Keys.INDICES_COUNT;
         //public const string  = count;
         public const string header_startMin = "start-min";
-        public const string header_SecondsDuration = "SegTimeSpan";
+        //public const string header_SecondsDuration = "SegTimeSpan";
         public const string header_avAmpdB  = "avAmp-dB";
         public const string header_snrdB    = "snr-dB";
         public const string header_bgdB     = "bg-dB";
         public const string header_activity = "activity";
+        public const string header_spikes   = "spikes";
         public const string header_hfCover  = "hfCover";
         public const string header_mfCover  = "mfCover";
         public const string header_lfCover  = "lfCover";
-        public const string header_HAmpl    = "H[ampl]";
-        public const string header_HAvSpectrum  = "H[avSpectrum]";
-        //public const string header_HVarSpectrum = "H[varSpectrum]";
+        public const string header_HAmpl    = "H[t]";
+        public const string header_HAvSpectrum  = "H[s]";
+
+        public const string header_rain     = "rain";
+        public const string header_cicada   = "cicada";
+        public const string header_negative = "none";
+
 
         private const bool verbose = true;
         private const bool writeOutputFile = true;
@@ -125,13 +129,13 @@ namespace AnalysisPrograms
             Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
-            if (true)
+            if (false)
             {
-                string path = @"C:\SensorNetworks\Output\Rain\TrainingExamplesForRain.csv";
+                string path = @"C:\SensorNetworks\Output\Rain\TrainingExamplesForRain_3class.csv";
                 //read csv ifle
                 var dt = CsvTools.ReadCSVToTable(path, true);
                 //write as SEE5 files.
-                string fileStem = "SOMETHING";
+                string fileStem = "3Class9features_RainCicadaNone";
                 WriteSee5DataFiles(dt, diOutputDir, fileStem);
                 System.Environment.Exit(0);
             }
@@ -336,21 +340,22 @@ namespace AnalysisPrograms
             var results = RainAnalyser(fiAudioF, analysisSettings.ConfigDict);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null)  return analysisResults; //nothing to process 
+
             analysisResults.Data = results.Item1;
             analysisResults.AudioDuration = results.Item2;
-            var sonogram = results.Item3;
-            var scores = results.Item4;
+            //var sonogram = results.Item3;
+            //var scores = results.Item4;
 
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
-            {
-                string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(sonogram, scores);
-                var fiImage = new FileInfo(imagePath);
-                if (fiImage.Exists) fiImage.SafeDeleteFile();
-                image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = new FileInfo(imagePath);
-            }
+            //if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            //{
+            //    string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
+            //    var image = DrawSonogram(sonogram, scores);
+            //    var fiImage = new FileInfo(imagePath);
+            //    if (fiImage.Exists) fiImage.SafeDeleteFile();
+            //    image.Save(imagePath, ImageFormat.Png);
+            //    analysisResults.ImageFile = new FileInfo(imagePath);
+            //}
 
             if ((analysisSettings.IndicesFile != null) && (analysisResults.Data != null))
             {
@@ -361,7 +366,7 @@ namespace AnalysisPrograms
 
 
 
-        public static Tuple<DataTable, TimeSpan, BaseSonogram, List<Plot>> RainAnalyser(FileInfo fiAudioFile, Dictionary<string, string> config)
+        public static System.Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, Dictionary<string, string> config)
         {
 
             //get parameters for the analysis
@@ -390,6 +395,7 @@ namespace AnalysisPrograms
             double framesPerSeconds = 1 / frameDuration;
             int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
             int chunkLength = (int)(chunkDuration * framesPerSeconds);
+            string[] classifications = new string[chunkCount];
 
 
             //i: EXTRACT ENVELOPE and FFTs
@@ -421,53 +427,34 @@ namespace AnalysisPrograms
                 double[,] matrix = DataTools.Submatrix(spectrogram, start, 0, end, (colCount - 1));
 
                 Indices indices = GetIndices(array, matrix, recording.Nyquist, lowFreqBound, midFreqBound);
-                double[] rainIndices = ConvertAcousticIndices2RainIndices(indices);
+                string classification = ConvertAcousticIndices2Classifcations(indices);
+                classifications[i] = classification;
+
+                //write indices and clsasification info to console
                 string separator = ",";
                 if (verbose)
-                    Console.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f2}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}{0}   {14}", separator,
+                    Console.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f3}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}", separator,
                                       startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes, 
                                       indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
-                                      indices.temporalEntropy, indices.spectralEntropy, rainIndices[0], rainIndices[1]);
+                                      indices.temporalEntropy, indices.spectralEntropy, classification);
 
 
-                string line = String.Format("{1:d2}{0}{2}{0}{3:f1}{0}{4:f1}{0}{5:f1}{0}{6:f2}{0}{7:f2}{0}{8:f2}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13}{0}{14}", separator,
-                      startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes,
-                      indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
-                      indices.temporalEntropy, indices.spectralEntropy, rainIndices[0], rainIndices[1]);
-                sb.AppendLine(line);
+                //FOR PREPARING SEE.5 DATA  -------  write indices and clsasification info to file
+                //string line = String.Format("{1:d2}{0}{2}{0}{3:f1}{0}{4:f1}{0}{5:f1}{0}{6:f2}{0}{7:f2}{0}{8:f2}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13}{0}{14}", separator,
+                //      startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes,
+                //      indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
+                //      indices.temporalEntropy, indices.spectralEntropy, classification);
+                //sb.AppendLine(line);
             }
 
-            string opDir = @"C:\SensorNetworks\Output\Rain";
-            string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
-            FileTools.WriteTextFile(opPath, sb.ToString());
+            //FOR PREPARING SEE.5 DATA   ------    write indices and clsasification info to file
+            //string opDir = @"C:\SensorNetworks\Output\Rain";
+            //string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
+            //FileTools.WriteTextFile(opPath, sb.ToString());
 
-            DataTable dt = new DataTable();
-            //#V#####################################################################################################################################################
-            //set up other info to return
-            BaseSonogram sonogram = null;
-            var scores = new List<Plot>();
+            var dt = ConvertClassifcations2Datatable(classifications);
 
-            //bool returnSonogramInfo = false;
-            //if (config.ContainsKey(Keys.SAVE_SONOGRAMS)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, config);
-            //bool doNoiseReduction = false;
-            //if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
-
-            //if (returnSonogramInfo)
-            //{
-            //    SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            //    sonoConfig.SourceFName = recording.FileName;
-            //    sonoConfig.WindowSize = 1024;
-            //    sonoConfig.WindowOverlap = 0.0;
-            //    sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
-            //    if (doNoiseReduction) sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            //    sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //    //scores.Add(new Plot("dB", DataTools.normalise(dBarray), 0.0));                     //array1
-            //    //scores.Add(new Plot("activeFrames", DataTools.Bool2Binary(activeFrames), 0.0));    //array2
-            //}
-
-            
-            //#V#####################################################################################################################################################
-            return Tuple.Create(dt, audioDuration, sonogram, scores);
+            return System.Tuple.Create(dt, audioDuration);
         } //Analysis()
 
 
@@ -520,47 +507,66 @@ namespace AnalysisPrograms
             return indices;
         }
 
-
-        public static double[] ConvertAcousticIndices2RainIndices(Indices indices)
+        /// <summary>
+        /// The values in this class were derived from See5 runs data extracted from 
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <returns></returns>
+        public static string ConvertAcousticIndices2Classifcations(Indices indices)
         {
-            double[] rainIndices = new double[2];
-            if ((indices.bgNoise > -30.0) /*&& (indices.snr < 10.0)*/) rainIndices[0] = 1.0;
-            return rainIndices;
+            string classification = header_negative;
+            if (indices.spikes > 0.0)
+            {
+                if (indices.hiFreqCover > 0.24) return header_rain;
+                else return header_negative;
+            }
+            else
+            {
+                if (indices.spectralEntropy < 0.61) return header_cicada;
+                if (indices.bgNoise > -24)          return header_cicada;
+            }
+            return classification;
         }
 
-        
-        public static DataTable Indices2DataTable(Indices indices)
+
+        public static DataTable ConvertClassifcations2Datatable(string[] classifications)
         {
-            var parameters = InitOutputTableColumns();
-            var headers = parameters.Item1;
-            var types = parameters.Item2;
+            string[] headers = { Keys.INDICES_COUNT, Keys.START_MIN, Keys.SEGMENT_TIMESPAN, header_rain,    header_cicada };
+            Type[] types     = { typeof(int),        typeof(double),     typeof(double),    typeof(double), typeof(double) };
+
+            int length = classifications.Length;
+            int rainCount = 0;
+            int cicadaCount = 0;
+            for (int i = 0; i < length; i++)
+            {
+                if(classifications[i] == header_rain)   rainCount++;
+                if(classifications[i] == header_cicada) cicadaCount++;
+            }
+
             var dt = DataTableTools.CreateTable(headers, types);
-            dt.Rows.Add(0, 0.0, 0.0, //add dummy values to the first two columns. These will be entered later.
-                        indices.avSig_dB, indices.snr, indices.bgNoise,
-                        indices.activity, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover,
-                        indices.temporalEntropy, 
-                        indices.spectralEntropy //, indices.entropyOfVarianceSpectrum
+            dt.Rows.Add(0, 0.0, 0.0,  //add dummy values to the first three columns. These will be entered later.
+                        (rainCount/(double)length), (cicadaCount/(double)length)
                         );
             return dt;
         }
 
-        private static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
-        {
-            HEADERS[0] = header_count;    COL_TYPES[0] = typeof(int); DISPLAY_COLUMN[0] = false; COMBO_WEIGHTS[0] = 0.0;
-            HEADERS[1] = header_startMin; COL_TYPES[1] = typeof(double); DISPLAY_COLUMN[1] = false; COMBO_WEIGHTS[1] = 0.0;
-            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false; COMBO_WEIGHTS[2] = 0.0;
-            HEADERS[3] = header_avAmpdB; COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = true; COMBO_WEIGHTS[3] = 0.0;
-            HEADERS[4] = header_snrdB; COL_TYPES[4] = typeof(double); DISPLAY_COLUMN[4] = true; COMBO_WEIGHTS[4] = 0.0;
-            HEADERS[5] = header_bgdB; COL_TYPES[5] = typeof(double); DISPLAY_COLUMN[5] = true; COMBO_WEIGHTS[5] = 0.0;
-            HEADERS[6] = header_activity; COL_TYPES[6] = typeof(double); DISPLAY_COLUMN[6] = true; COMBO_WEIGHTS[6] = 0.0;
-            HEADERS[7] = header_hfCover; COL_TYPES[7] = typeof(double); DISPLAY_COLUMN[7] = true; COMBO_WEIGHTS[7] = 0.0;
-            HEADERS[8] = header_mfCover; COL_TYPES[8] = typeof(double); DISPLAY_COLUMN[8] = true; COMBO_WEIGHTS[8] = 0.0;
-            HEADERS[9] = header_lfCover; COL_TYPES[9] = typeof(double); DISPLAY_COLUMN[9] = true; COMBO_WEIGHTS[9] = 0.0;
-            HEADERS[10] = header_HAmpl; COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true; COMBO_WEIGHTS[10] = 0.0;
-            HEADERS[11] = header_HAvSpectrum; COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true; COMBO_WEIGHTS[11] = 0.4;
-            //HEADERS[12] = header_HVarSpectrum; COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = false; COMBO_WEIGHTS[12] = 0.1;
-            return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
-        }
+        //private static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
+        //{
+        //    HEADERS[0] = header_count;    COL_TYPES[0] = typeof(int); DISPLAY_COLUMN[0] = false; COMBO_WEIGHTS[0] = 0.0;
+        //    HEADERS[1] = header_startMin; COL_TYPES[1] = typeof(double); DISPLAY_COLUMN[1] = false; COMBO_WEIGHTS[1] = 0.0;
+        //    HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false; COMBO_WEIGHTS[2] = 0.0;
+        //    HEADERS[3] = header_avAmpdB; COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = true; COMBO_WEIGHTS[3] = 0.0;
+        //    HEADERS[4] = header_snrdB; COL_TYPES[4] = typeof(double); DISPLAY_COLUMN[4] = true; COMBO_WEIGHTS[4] = 0.0;
+        //    HEADERS[5] = header_bgdB; COL_TYPES[5] = typeof(double); DISPLAY_COLUMN[5] = true; COMBO_WEIGHTS[5] = 0.0;
+        //    HEADERS[6] = header_activity; COL_TYPES[6] = typeof(double); DISPLAY_COLUMN[6] = true; COMBO_WEIGHTS[6] = 0.0;
+        //    HEADERS[7] = header_hfCover; COL_TYPES[7] = typeof(double); DISPLAY_COLUMN[7] = true; COMBO_WEIGHTS[7] = 0.0;
+        //    HEADERS[8] = header_mfCover; COL_TYPES[8] = typeof(double); DISPLAY_COLUMN[8] = true; COMBO_WEIGHTS[8] = 0.0;
+        //    HEADERS[9] = header_lfCover; COL_TYPES[9] = typeof(double); DISPLAY_COLUMN[9] = true; COMBO_WEIGHTS[9] = 0.0;
+        //    HEADERS[10] = header_HAmpl; COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true; COMBO_WEIGHTS[10] = 0.0;
+        //    HEADERS[11] = header_HAvSpectrum; COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true; COMBO_WEIGHTS[11] = 0.4;
+        //    //HEADERS[12] = header_HVarSpectrum; COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = false; COMBO_WEIGHTS[12] = 0.1;
+        //    return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
+        //}
 
 
 
@@ -914,16 +920,17 @@ namespace AnalysisPrograms
             string class1Name = "none";
             string class2Name = "cicada";
             string class3Name = "rain";
-            string class4Name = "koala";
-            string class5Name = "mobile";
+            //string class4Name = "koala";
+            //string class5Name = "mobile";
 
             var nameContent = new List<string>();
             nameContent.Add("|   THESE ARE THE CLASS NAMES FOR RAIN Classification.");
-            nameContent.Add(String.Format("{0},  {1},  {2},  {3},  {4}", class1Name, class2Name, class3Name, class4Name, class5Name));
+            nameContent.Add(String.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
+            //nameContent.Add(String.Format("{0},  {1},  {2},  {3},  {4}", class1Name, class2Name, class3Name, class4Name, class5Name));
             nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR RAIN Classification.");
             //nameContent.Add(String.Format("{0}: ignore", "start"));
             //nameContent.Add(String.Format("{0}: ignore", "end"));
-            nameContent.Add(String.Format("{0}: continuous", "avDB"));
+            nameContent.Add(String.Format("{0}: ignore", "avDB"));
             nameContent.Add(String.Format("{0}: continuous", "BG"));
             nameContent.Add(String.Format("{0}: continuous", "SNR"));
             nameContent.Add(String.Format("{0}: continuous", "activity"));
