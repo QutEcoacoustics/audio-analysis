@@ -155,11 +155,15 @@ namespace AnalysisPrograms
 #if DEBUG
             if (!Debugger.IsAttached)
             {
-                Console.WriteLine("Do you wish to debug? Attach now or press any key to continue.");
-                Console.ReadKey(true);
+                Console.WriteLine("Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
+                if (Console.ReadKey(true).KeyChar.ToString().ToLower() == "y")
+                {
+                    Debugger.Launch();
+                }
+
                 if (Debugger.IsAttached)
                 {
-                    Console.WriteLine("\t >>> Attach sucessful");
+                    Console.WriteLine("\t>>> Attach sucessful");
                 }
                 Console.WriteLine();
             }
