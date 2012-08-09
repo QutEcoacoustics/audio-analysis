@@ -102,7 +102,12 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             Log.Verbosity = 1;
-            bool DEBUG = true;
+
+
+            bool debug = false;
+#if DEBUG
+            debug = true;
+#endif
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //rain
@@ -168,11 +173,12 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("\n\n# EXECUTE RETURNED ERROR STATUS. CANNOT PROCEED!");
 
-                if (DEBUG)
+                if (debug)
                 {
                     Console.ReadLine();
                 }
-                System.Environment.Exit(99);
+                return;
+                //System.Environment.Exit(99);
             }
             //#############################################################################################################################################
 

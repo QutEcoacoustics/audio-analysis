@@ -204,7 +204,7 @@
                 }
 
                 // if output is correct, just copy it.
-                File.Copy(soxOutputFile.FullName, output.FullName);
+                File.Copy(soxOutputFile.FullName, output.FullName, true);
             }
 
             // tidy up

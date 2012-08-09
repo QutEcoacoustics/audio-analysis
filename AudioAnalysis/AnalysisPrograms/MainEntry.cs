@@ -91,6 +91,9 @@ namespace AnalysisPrograms
                     // Signed off: Anthony, 25th July 2012
                     { "snr", SnrAnalysis.Dev },
 
+
+
+
                     // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
 
                     // extracts acoustic indices from one minute segment - for dev purposes only
@@ -120,6 +123,9 @@ namespace AnalysisPrograms
 
                     // IAnalyser - detects rain
                     { "rain", Rain.Dev },
+
+                    // IAnalyser - detects Gastric Brooding Frog
+                    { "rheobatrachus", RheobatrachusSilus.Dev },
 
                     // segmentation of a recording
                     { "segment", Segment.Dev },

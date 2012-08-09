@@ -14,7 +14,7 @@ namespace AnalysisPrograms
     {
 
         //use the following for the command line for the <analysesAvailable> task. 
-        //analysesAvailable  C:\SensorNetworks\Output\temp\analysesAvailable.txt
+        //AnalysisPrograms.exe analysesAvailable  C:\SensorNetworks\Output\temp\analysesAvailable.txt
 
         /// <summary>
         /// returns a text file of the available analyses
@@ -24,7 +24,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static int Main(string[] args)
         {
-            bool debug = true;
+            bool debug = false;
             int status = 0;
             bool verbose = true;
 

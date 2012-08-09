@@ -358,7 +358,7 @@ namespace AnalysisPrograms
             int upperBandMaxHz = Int32.Parse(configDict[key_UPPERFREQBAND_TOP]);
             int lowerBandMinHz = Int32.Parse(configDict[key_LOWERFREQBAND_BTM]);
             int lowerBandMaxHz = Int32.Parse(configDict[key_LOWERFREQBAND_TOP]);
-            //double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
+            double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
             double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
             double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
