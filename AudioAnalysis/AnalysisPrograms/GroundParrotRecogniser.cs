@@ -160,7 +160,8 @@ namespace AnalysisPrograms
                 Console.WriteLine("Please supply a .wav recording as a command line argument.");
                 Console.WriteLine(
                     "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\"");
-                Environment.Exit(1);
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
             else
             {

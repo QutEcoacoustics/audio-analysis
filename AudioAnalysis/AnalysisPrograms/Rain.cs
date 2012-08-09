@@ -142,7 +142,11 @@ namespace AnalysisPrograms
                 //write as SEE5 files.
                 string fileStem = "3Class9features_RainCicadaNone";
                 WriteSee5DataFiles(dt, diOutputDir, fileStem);
-                System.Environment.Exit(0);
+
+                // TODO: MIKE! check to make sure the "return" here is a suitable replacement for "Exit(0)"
+                throw new NotImplementedException();
+                ////System.Environment.Exit(0);
+                return;
             }
 
             int startMinute     = 0;
@@ -168,18 +172,8 @@ namespace AnalysisPrograms
             }
 
             //#############################################################################################################################################
-            int status = Execute(cmdLineArgs.ToArray());
-            if (status != 0)
-            {
-                Console.WriteLine("\n\n# EXECUTE RETURNED ERROR STATUS. CANNOT PROCEED!");
+            Execute(cmdLineArgs.ToArray());
 
-                if (debug)
-                {
-                    Console.ReadLine();
-                }
-                return;
-                //System.Environment.Exit(99);
-            }
             //#############################################################################################################################################
 
             string indicesPath = Path.Combine(outputDir, indicesFname);
@@ -207,16 +201,16 @@ namespace AnalysisPrograms
         /// <param name="sourcePath"></param>
         /// <param name="configPath"></param>
         /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static void Execute(string[] args)
         {
-            int status = 0;
             if (args.Length < 4)
             {
                 Console.WriteLine("Require at least 4 command line arguments.");
-                status = 1;
-                return status;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
@@ -224,25 +218,25 @@ namespace AnalysisPrograms
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
                 Console.WriteLine("Output directory does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
 
-            //INIT SETTINGS
+            // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile = fiConfig;
             var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
@@ -255,7 +249,7 @@ namespace AnalysisPrograms
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
 
-            //PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
+            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
                 string[] parts = args[i].Split(':');
@@ -264,31 +258,28 @@ namespace AnalysisPrograms
                     var outputWavPath = Path.Combine(outputDir, parts[1]);
                     analysisSettings.AudioFile = new FileInfo(outputWavPath);
                 }
-                else
-                    if (parts[0].StartsWith("-indices"))
+                else if (parts[0].StartsWith("-indices"))
+                {
+                    string indicesPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                }
+                else if (parts[0].StartsWith("-start"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsStart = new TimeSpan(0, 0, s);
+                }
+                else if (parts[0].StartsWith("-duration"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsDuration = new TimeSpan(0, 0, s);
+                    if (tsDuration.TotalMinutes > 10)
                     {
-                        string indicesPath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        
+                        throw new AnalysisOptionInvalidDurationException();
                     }
-                    else
-                        if (parts[0].StartsWith("-start"))
-                        {
-                            int s = Int32.Parse(parts[1]);
-                            tsStart = new TimeSpan(0, 0, s);
-                        }
-                        else
-                            if (parts[0].StartsWith("-duration"))
-                            {
-                                int s = Int32.Parse(parts[1]);
-                                tsDuration = new TimeSpan(0, 0, s);
-                                if (tsDuration.TotalMinutes > 10)
-                                {
-                                    Console.WriteLine("Segment duration cannot exceed 10 minutes.");
-                                    status = 3;
-                                    return status;
-                                }
-                            }//if
-            } //for
+                } // if
+            } // for
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
@@ -327,7 +318,6 @@ namespace AnalysisPrograms
                 //DataTableTools.WriteTable2Console(dt);
             }
 
-            return status;
         }
 
 
@@ -372,7 +362,7 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, Dictionary<string, string> config)
+        public static Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, Dictionary<string, string> config)
         {
 
             //get parameters for the analysis
@@ -417,7 +407,7 @@ namespace AnalysisPrograms
             StringBuilder sb =  null;
             if (writeOutputFile)
             {
-                string header = String.Format("{0:d2},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
+                string header = string.Format("{0:d2},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
                 sb = new StringBuilder(header+"\n");
             }
             
@@ -931,21 +921,21 @@ namespace AnalysisPrograms
 
             var nameContent = new List<string>();
             nameContent.Add("|   THESE ARE THE CLASS NAMES FOR RAIN Classification.");
-            nameContent.Add(String.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
+            nameContent.Add(string.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
             //nameContent.Add(String.Format("{0},  {1},  {2},  {3},  {4}", class1Name, class2Name, class3Name, class4Name, class5Name));
             nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR RAIN Classification.");
             //nameContent.Add(String.Format("{0}: ignore", "start"));
             //nameContent.Add(String.Format("{0}: ignore", "end"));
-            nameContent.Add(String.Format("{0}: ignore", "avDB"));
-            nameContent.Add(String.Format("{0}: continuous", "BG"));
-            nameContent.Add(String.Format("{0}: continuous", "SNR"));
-            nameContent.Add(String.Format("{0}: continuous", "activity"));
-            nameContent.Add(String.Format("{0}: continuous", "spikes"));
-            nameContent.Add(String.Format("{0}: continuous", "lf"));
-            nameContent.Add(String.Format("{0}: continuous", "mf"));
-            nameContent.Add(String.Format("{0}: continuous", "hf"));
-            nameContent.Add(String.Format("{0}: continuous", "H[t]"));
-            nameContent.Add(String.Format("{0}: continuous", "H[s]"));
+            nameContent.Add(string.Format("{0}: ignore", "avDB"));
+            nameContent.Add(string.Format("{0}: continuous", "BG"));
+            nameContent.Add(string.Format("{0}: continuous", "SNR"));
+            nameContent.Add(string.Format("{0}: continuous", "activity"));
+            nameContent.Add(string.Format("{0}: continuous", "spikes"));
+            nameContent.Add(string.Format("{0}: continuous", "lf"));
+            nameContent.Add(string.Format("{0}: continuous", "mf"));
+            nameContent.Add(string.Format("{0}: continuous", "hf"));
+            nameContent.Add(string.Format("{0}: continuous", "H[t]"));
+            nameContent.Add(string.Format("{0}: continuous", "H[s]"));
             //nameContent.Add(String.Format("{0}: ignore",     "class"));
             FileTools.WriteTextFile(namesFilePath, nameContent);
 
@@ -965,7 +955,7 @@ namespace AnalysisPrograms
                 double H_s = (double)row["H[s]"];
                 string name = (string)row["class"];
 
-                string line = String.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}", avDB, BG, SNR, activity, spikes, lf, mf, hf, H_t, H_s, name);
+                string line = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}", avDB, BG, SNR, activity, spikes, lf, mf, hf, H_t, H_s, name);
                 dataContent.Add(line);
             }
             FileTools.WriteTextFile(dataFilePath, dataContent);

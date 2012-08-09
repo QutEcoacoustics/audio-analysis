@@ -30,16 +30,8 @@ namespace AnalysisPrograms
             int status = 0;
             bool verbose = true;
 
-            if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
-            {
-                if (debug)
-                {
-                    Console.WriteLine("\nPress <ENTER> key to exit.");
-                    Console.ReadLine();
-                }
-                System.Environment.Exit(1);
-            }
-
+            CheckArguments(args); //checks validity of the first 3 path arguments
+ 
             string csvPath    = args[0];
             string configPath = args[1];
             string imagePath  = args[2];
@@ -105,7 +97,7 @@ namespace AnalysisPrograms
 
 
 
-        public static int CheckArguments(string[] args)
+        public static void CheckArguments(string[] args)
         {
             if (args.Length != 3)
             {
@@ -114,20 +106,20 @@ namespace AnalysisPrograms
                 foreach (string arg in args) Console.WriteLine(arg + "  ");
                 Console.WriteLine("\nYOU REQUIRE 4 COMMAND LINE ARGUMENTS\n");
                 Usage();
-                return 666;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            if (CheckPaths(args) != 0) return 999;
-            return 0;
+
+            CheckPaths(args);
         }
 
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
         /// <param name="args"></param>
-        public static int CheckPaths(string[] args)
+        public static void CheckPaths(string[] args)
         {
-            int status = 0;
-            //GET THREE OBLIGATORY COMMAND LINE ARGUMENTS
+            // GET THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string csvPath    = args[0];
             string configPath = args[1];
             string outputPath = args[2];
@@ -135,21 +127,23 @@ namespace AnalysisPrograms
             if (!diSource.Exists)
             {
                 Console.WriteLine("Source directory does not exist: " + diSource.FullName);
-                status = 2;
-                return status;
+                
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiSource = new FileInfo(csvPath);
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source directory exists: " + diSource.FullName);
                 Console.WriteLine("\t but the source file does not exist: " + csvPath);
-                status = 2;
-                return status;
+                
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); //LET THIS BE OK. Proceed anyway with default 
+                Console.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); // LET THIS BE OK. Proceed anyway with default 
                 //status = 2;
                 //return status;
             }
@@ -172,11 +166,10 @@ namespace AnalysisPrograms
                 if (!success)
                 {
                     Console.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
-                    status = 2;
-                    return status;
+
+                    throw new AnalysisOptionInvalidPathsException();
                 }
             }
-            return status;
         }
 
 

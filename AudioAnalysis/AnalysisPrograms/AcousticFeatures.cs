@@ -229,8 +229,8 @@ namespace AnalysisPrograms
             if (false)
             {
                 MASSAGE_CSV_DATA();
-                Console.ReadLine();
-                Environment.Exit(666);
+
+                throw new AnalysisOptionDevilException();
             }
 
             //READ CSV FILE TO MASSAGE DATA
@@ -241,12 +241,12 @@ namespace AnalysisPrograms
 
 
                 //VISUALIZE_CSV_DATA(csvFileName);  //THIS METHOD NOW DELETED
-                Console.ReadLine();
-                Environment.Exit(666);
+
+                throw new AnalysisOptionDevilException();
             }
 
 
-            //i: Set up the dir and file names
+            // i: Set up the dir and file names
             string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp1\";
             string imagePath     = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
 
@@ -262,19 +262,20 @@ namespace AnalysisPrograms
             string opFileName = "Results_ARI_" + FileTools.TimeStamp2FileName(datetime) + ".csv";
             string opPath = outputDir + opFileName; // .csv file
 
-            //write header to results file
-            if (!File.Exists(opPath)) // if file does not exist already, create the file and write a HEADER .
+            // write header to results file
+            // if file does not exist already, create the file and write a HEADER .
+            if (!File.Exists(opPath)) 
             {
                 WriteHeaderToReportFile(opPath, reportFormat);
             }
 
 
-            //i GET RECORDING
-            //int resampleRate = 17640;
-            //AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
-            //double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
+            // i GET RECORDING
+            // int resampleRate = 17640;
+            // AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
+            // double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
 
-            //ii: EXTRACT INDICES 
+            // ii: EXTRACT INDICES 
             Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
             dict.Add(Keys.FRAME_LENGTH, AcousticFeatures.DEFAULT_WINDOW_SIZE.ToString());
             dict.Add(key_LOW_FREQ_BOUND, "500");
@@ -284,20 +285,19 @@ namespace AnalysisPrograms
             var fiRecording = new FileInfo(recordingPath);
             dict.Add(Keys.SAVE_INTERMEDIATE_CSV_FILES, "false");
 
-            //######################################################
+            // ######################################################
             var results = Analysis(fiRecording, dict);
-            //######################################################
+            // ######################################################
 
             double segmentDuration = ConfigDictionary.GetDouble(Keys.SEGMENT_DURATION, dict);
             double segmentStartMinute = segmentDuration * iterationNumber;
 
             Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
-        } //DEV()
+        } // DEV()
 
 
 
-        //#########################################################################################################################################################
+        // #########################################################################################################################################################
 
 
 

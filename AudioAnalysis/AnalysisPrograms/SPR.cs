@@ -56,7 +56,7 @@ namespace AnalysisPrograms
                 Console.WriteLine("Ini File:       in directory where output files and images will be placed.");
                 Console.WriteLine("Output File:    where events will be written");
                 Console.ReadLine();
-                Environment.Exit(1);
+                throw new AnalysisOptionInvalidArgumentsException();
             }
 
             string recordingPath = args[0];

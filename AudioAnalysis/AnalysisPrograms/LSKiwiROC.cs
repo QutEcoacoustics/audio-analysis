@@ -37,12 +37,8 @@ namespace AnalysisPrograms
                 Console.WriteLine(date);
             }
 
-            if (CheckArguments(args) != 0)
-            {
-                Console.WriteLine("\nPress <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
+            CheckArguments(args);
+
 
             //GET COMMAND LINE ARGUMENTS
             string eventsCsvPath          = args[0];
@@ -78,8 +74,8 @@ namespace AnalysisPrograms
             }
 
             Console.WriteLine("FINSIHED");
-            Console.ReadLine();
-            System.Environment.Exit(0);
+            
+            return;
         }  //Main()
 
 
@@ -409,7 +405,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(dataFilePath, dataContent);
         }
 
-        public static int CheckArguments(string[] args)
+        public static void CheckArguments(string[] args)
         {
             int requiredArgumentCount = 2; //start with three command line arguments but at this point only have 2.
             if (args.Length != requiredArgumentCount)
@@ -418,37 +414,37 @@ namespace AnalysisPrograms
                 foreach (string arg in args) Console.WriteLine(".......... " + arg);
                 Console.WriteLine("YOU REQUIRE 3 COMMAND LINE ARGUMENTS\n");
                 Usage();
-                return 666;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            if (CheckPaths(args) != 0) return 999;
-            return 0;
+
+            CheckPaths(args);
+
         }
 
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
         /// <param name="args"></param>
-        public static int CheckPaths(string[] args)
+        public static void CheckPaths(string[] args)
         {
-            int status = 0;
-            //GET the OBLIGATORY COMMAND LINE ARGUMENTS
+            // GET the OBLIGATORY COMMAND LINE ARGUMENTS
             string eventsCsvPath = args[0];
             string selectionsCsvPath = args[1];
             FileInfo fiPath1 = new FileInfo(eventsCsvPath);
             if (!fiPath1.Exists)
             {
                 Console.WriteLine("The csv file of potential kiwi events does not exist: " + eventsCsvPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiConfig = new FileInfo(selectionsCsvPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
-            return status;
         }
 
 

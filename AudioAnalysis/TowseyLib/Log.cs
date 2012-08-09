@@ -9,24 +9,29 @@
 
 namespace TowseyLib
 {
+    using System.IO;
+
     using log4net;
+    using log4net.Config;
 
     public static class Log
     {
-        //private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
+        ////private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
 
-        private static readonly ILog _logger = LogManager.GetLogger(typeof(Log));
+        private static readonly ILog Log4Net = LogManager.GetLogger(typeof(Log));
 
         static Log()
         {
             Verbosity = 0;
+            XmlConfigurator.ConfigureAndWatch(
+                new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(Log).Assembly.Location), "log4net.config")));
         }
 
         public static ILog Logger
         {
             get
             {
-                return _logger;
+                return Log4Net;
             }
         }
 
@@ -35,7 +40,7 @@ namespace TowseyLib
 
         public static void WriteLine(string format, params object[] args)
         {
-            _logger.InfoFormat(format, args);
+            Log4Net.InfoFormat(format, args);
 
             //#if LOGTOCONSOLE
             //Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
@@ -47,7 +52,7 @@ namespace TowseyLib
             //#if LOGTOCONSOLE
             if (Verbosity > 0)
             {
-                _logger.InfoFormat(format, args);
+                Log4Net.InfoFormat(format, args);
                 //Console.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
             }
             //#endif

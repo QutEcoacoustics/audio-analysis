@@ -12,6 +12,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
 
     using AnalysisPrograms.Production;
@@ -21,13 +22,15 @@ namespace AnalysisPrograms
     /// </summary>
     public class MainEntry
     {
+
+
         private static readonly Dictionary<string, Action<string[]>> KnownAnalyses;
 
         static MainEntry()
         {
             // STATIC CONSTRUCTOR
             
-            KnownAnalyses = new Dictionary<string, Action<string[]>> (StringComparer.InvariantCultureIgnoreCase)
+            KnownAnalyses = new Dictionary<string, Action<string[]>>(StringComparer.InvariantCultureIgnoreCase)
                 {
                     // acoustic event detection
                     { "aed", AED.Dev },
@@ -155,7 +158,7 @@ namespace AnalysisPrograms
         /// <param name="args">
         /// Analysis Program arguments.
         /// </param>
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             //var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             //analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
@@ -164,7 +167,7 @@ namespace AnalysisPrograms
             if (!Debugger.IsAttached)
             {
                 Console.WriteLine("Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
-                if (Console.ReadKey(true).KeyChar.ToString().ToLower() == "y")
+                if (Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y")
                 {
                     Debugger.Launch();
                 }
@@ -173,32 +176,50 @@ namespace AnalysisPrograms
                 {
                     Console.WriteLine("\t>>> Attach sucessful");
                 }
+
                 Console.WriteLine();
             }
 #endif
-            
-
-            if (args.Length == 0)
+            int returnCode = 0;
+            try
             {
-                Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
-                Usage();
-            }
-            else
-            {
-                var firstArg = args[0].ToLower();
-                string[] restOfArgs = args.Skip(1).ToArray();
-
-                if (KnownAnalyses.ContainsKey(firstArg))
+                if (args.Length == 0)
                 {
-                    var analysisFunc = KnownAnalyses[firstArg];
-                    analysisFunc(restOfArgs);
+                    var msg =
+                        "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
+                    Console.WriteLine(msg);
+                    Usage();
+                    throw new CommandMainArgumentMissingException();
                 }
                 else
                 {
-                    // default
-                    Console.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
-                    Usage();
+                    var firstArg = args[0].ToLower();
+                    string[] restOfArgs = args.Skip(1).ToArray();
+
+                    if (KnownAnalyses.ContainsKey(firstArg))
+                    {
+                        var analysisFunc = KnownAnalyses[firstArg];
+                        analysisFunc(restOfArgs);
+                    }
+                    else
+                    {
+                        // default
+                        Console.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
+                        Usage();
+
+                        throw new AnalysisOptionUnknownCommandException();
+                    }
                 }
+            }
+            catch (CommandLineException cex)
+            {
+                returnCode = (int)cex.ReturnCode;
+                //Console.WriteLine(cex.Message);
+            }
+            catch (Exception ex)
+            {
+                TowseyLib.Log.Logger.Fatal("Unhandled exception", ex);
+                returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
             }
 
 #if DEBUG
@@ -210,6 +231,9 @@ namespace AnalysisPrograms
                 Console.ReadLine();
             }
 #endif
+
+            // finally return error level
+            return returnCode;
         }
 
         private static void Usage()
