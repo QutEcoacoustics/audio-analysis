@@ -154,7 +154,7 @@
                 }
             }
 
-            tempFile.SafeDeleteFile();
+            tempFile.Delete();
         }
 
         /// <summary>

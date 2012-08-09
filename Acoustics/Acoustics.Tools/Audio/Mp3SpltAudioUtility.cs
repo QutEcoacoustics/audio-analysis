@@ -602,7 +602,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
 
                     byte[] bytes = File.ReadAllBytes(segmentedFile);
 
-                    tempFile.SafeDeleteFile();
+                    tempFile.Delete();
 
                     return bytes;
                 }
