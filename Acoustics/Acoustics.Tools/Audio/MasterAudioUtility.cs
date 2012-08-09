@@ -128,6 +128,7 @@
         /// <summary>
         /// Segment a <paramref name="source"/> audio file.
         /// <paramref name="output"/> file will be created.
+        /// Will not delete the output.
         /// </summary>
         /// <param name="source">
         /// The source audio file.
@@ -153,7 +154,7 @@
                     MixDownToMono = false
                 };
 
-            FileInfo soxSourceFile = source;
+            FileInfo soxSourceFile;
             var soxRequest = request;
 
             // do specialised convert and/or segment
@@ -178,16 +179,18 @@
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
+            else
+            {
+                // TODO: this is dangerous
+                soxSourceFile = source;
+            }
 
             // audio file is now in either mp3 or wav
-            FileInfo soxOutputFile = soxSourceFile;
+            FileInfo soxOutputFile;
 
             // apply modifications using sox
-            if (this.soxUtility != null)
-            {
-                soxOutputFile = this.ConvertAndSegmentUsingSox(
-                    soxSourceFile, MediaTypes.GetMediaType(soxSourceFile.Extension), soxRequest);
-            }
+            soxOutputFile = this.ConvertAndSegmentUsingSox(
+                soxSourceFile, MediaTypes.GetMediaType(soxSourceFile.Extension), soxRequest);
 
             // ensure result is in correct format
             if (MediaTypes.GetMediaType(soxOutputFile.Extension) != outputMediaType)
@@ -204,7 +207,9 @@
                 }
 
                 // if output is correct, just copy it.
-                File.Copy(soxOutputFile.FullName, output.FullName, true);
+                // will not overwrite, will throw exception if the output file already exists.
+                // do not overwrite!!!
+                File.Copy(soxOutputFile.FullName, output.FullName);
             }
 
             // tidy up
