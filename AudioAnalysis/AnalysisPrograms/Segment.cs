@@ -194,6 +194,8 @@ namespace AnalysisPrograms
                 foreach (string arg in args) Log.WriteLine(arg + "  ");
                 Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
                 Usage();
+
+                throw new AnalysisOptionInvalidArgumentsException();
             }
             CheckPaths(args);
         }
@@ -208,16 +210,16 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("Cannot find recording file <" + args[0] + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
+
+                throw new AnalysisOptionInvalidPathsException();
             }
             if (!File.Exists(args[1]))
             {
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
                 Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
+
+                throw new AnalysisOptionInvalidPathsException();
             }
         }
 
@@ -234,8 +236,6 @@ namespace AnalysisPrograms
             Console.WriteLine("                            By default, the output dir is that containing the ini file.");
             Console.WriteLine("");
             Console.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
-            System.Environment.Exit(1);
         }
 
 

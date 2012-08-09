@@ -110,14 +110,8 @@ namespace AnalysisPrograms
             }
 
             //#############################################################################################################################################
-            int status = Execute(cmdLineArgs.ToArray());
-            if (status != 0)
-            {
-                Console.WriteLine("\n\n# FATAL ERROR. CANNOT PROCEED!");
-                Console.WriteLine("# ANALYSIS RETURNED STATUS CODE: " + status);
-                Console.ReadLine();
-                System.Environment.Exit(99);
-            }
+            Execute(cmdLineArgs.ToArray());
+
             //#############################################################################################################################################
 
             string eventsPath = Path.Combine(outputDir, eventsFname);
@@ -162,19 +156,16 @@ namespace AnalysisPrograms
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static void Execute(string[] args)
         {
-            int status = 0;
             if (args.Length < 4)
             {
                 Console.WriteLine("Require at least 4 command line arguments.");
-                status = 1;
-                return status;
+
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
@@ -182,33 +173,36 @@ namespace AnalysisPrograms
             if (!diSource.Exists)
             {
                 Console.WriteLine("Source directory does not exist: " + diSource.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source directory exists: " + diSource.FullName);
                 Console.WriteLine("\t but the source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
                 Console.WriteLine("Output directory does not exist: " + diOP.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
 
-            //INIT SETTINGS
+            // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile = fiConfig;
             analysisSettings.AnalysisRunDirectory = diOP;
@@ -222,7 +216,7 @@ namespace AnalysisPrograms
             analysisSettings.ConfigDict = configuration.GetTable();
 
 
-            //PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
+            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
                 string[] parts = args[i].Split(':');
@@ -231,42 +225,37 @@ namespace AnalysisPrograms
                     var outputWavPath = Path.Combine(outputDir, parts[1]);
                     analysisSettings.AudioFile = new FileInfo(outputWavPath);
                 }
-                else
-                    if (parts[0].StartsWith("-events"))
+                else if (parts[0].StartsWith("-events"))
+                {
+                    string eventsPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.EventsFile = new FileInfo(eventsPath);
+                }
+                else if (parts[0].StartsWith("-indices"))
+                {
+                    string indicesPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                }
+                else if (parts[0].StartsWith("-sgram"))
+                {
+                    string sonoImagePath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.ImageFile = new FileInfo(sonoImagePath);
+                }
+                else if (parts[0].StartsWith("-start"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsStart = new TimeSpan(0, 0, s);
+                }
+                else if (parts[0].StartsWith("-duration"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsDuration = new TimeSpan(0, 0, s);
+                    if (tsDuration.TotalMinutes > 10)
                     {
-                        string eventsPath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.EventsFile = new FileInfo(eventsPath);
+                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        
+                        throw new AnalysisOptionInvalidDurationException();
                     }
-                    else
-                        if (parts[0].StartsWith("-indices"))
-                        {
-                            string indicesPath = Path.Combine(outputDir, parts[1]);
-                            analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                        }
-                        else
-                            if (parts[0].StartsWith("-sgram"))
-                            {
-                                string sonoImagePath = Path.Combine(outputDir, parts[1]);
-                                analysisSettings.ImageFile = new FileInfo(sonoImagePath);
-                            }
-                            else
-                                if (parts[0].StartsWith("-start"))
-                                {
-                                    int s = Int32.Parse(parts[1]);
-                                    tsStart = new TimeSpan(0, 0, s);
-                                }
-                                else
-                                    if (parts[0].StartsWith("-duration"))
-                                    {
-                                        int s = Int32.Parse(parts[1]);
-                                        tsDuration = new TimeSpan(0, 0, s);
-                                        if (tsDuration.TotalMinutes > 10)
-                                        {
-                                            Console.WriteLine("Segment duration cannot exceed 10 minutes.");
-                                            status = 3;
-                                            return status;
-                                        }
-                                    }
+                }
             }
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
@@ -298,10 +287,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                return -993;  //error!!
+                throw new InvalidOperationException("Data table is null");
             }
-
-            return status;
         }
 
 
@@ -394,19 +381,18 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], Plot, List<AcousticEvent>, TimeSpan>
-                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
-            int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
-            int maxHz = Int32.Parse(configDict[Keys.MAX_HZ]);
+            int minHz = int.Parse(configDict[Keys.MIN_HZ]);
+            int maxHz = int.Parse(configDict[Keys.MAX_HZ]);
             //double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);    //BETTER TO CALUCLATE THIS. IGNORE USER!
-            double dctDuration = Double.Parse(configDict[Keys.DCT_DURATION]);       //duration of DCT in seconds 
-            double dctThreshold = Double.Parse(configDict[Keys.DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-            int minOscilFreq = Int32.Parse(configDict[Keys.MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
-            int maxOscilFreq = Int32.Parse(configDict[Keys.MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
-            double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);       //min duration of event in seconds 
-            double maxDuration = Double.Parse(configDict[Keys.MAX_DURATION]);       //max duration of event in seconds 
-            double eventThreshold = Double.Parse(configDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
+            double dctDuration = double.Parse(configDict[Keys.DCT_DURATION]);       //duration of DCT in seconds 
+            double dctThreshold = double.Parse(configDict[Keys.DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
+            int minOscilFreq = int.Parse(configDict[Keys.MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
+            int maxOscilFreq = int.Parse(configDict[Keys.MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
+            double minDuration = double.Parse(configDict[Keys.MIN_DURATION]);       //min duration of event in seconds 
+            double maxDuration = double.Parse(configDict[Keys.MAX_DURATION]);       //max duration of event in seconds 
+            double eventThreshold = double.Parse(configDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -446,7 +432,7 @@ namespace AnalysisPrograms
             //ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             double[] scores;                      //predefinition of score array
             List<AcousticEvent> events;
-            Double[,] hits;
+            double[,] hits;
             OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
                                         minDuration, maxDuration, out scores, out events, out hits);
             events = KoalaMale.FilterMaleKoalaEvents(events); //remove isolated koala events - 

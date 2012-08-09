@@ -85,13 +85,7 @@ namespace AnalysisPrograms
             cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
 
             //#############################################################################################################################################
-            int status = Execute(cmdLineArgs.ToArray());
-            if (status != 0)
-            {
-                Console.WriteLine("\n\n# FATAL ERROR. CANNOT PROCEED!");
-                Console.ReadLine();
-                System.Environment.Exit(99);
-            }
+            Execute(cmdLineArgs.ToArray());
             //#############################################################################################################################################
 
 
@@ -107,6 +101,7 @@ namespace AnalysisPrograms
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
+
             string indicesPath = Path.Combine(outputDir, indicesFname);
             FileInfo fiCsvIndices = new FileInfo(indicesPath);
             if (!fiCsvIndices.Exists)
@@ -119,6 +114,7 @@ namespace AnalysisPrograms
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
+
             string imagePath = Path.Combine(outputDir, sonogramFname);
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
@@ -129,7 +125,7 @@ namespace AnalysisPrograms
 
             Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
-        } //Dev()
+        } // Dev()
 
 
 
@@ -140,16 +136,17 @@ namespace AnalysisPrograms
         /// <param name="sourcePath"></param>
         /// <param name="configPath"></param>
         /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static void Execute(string[] args)
         {
             int status = 0;
             if (args.Length < 4)
             {
                 Console.WriteLine("Require at least 4 command line arguments.");
-                status = 1;
-                return status;
+               
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
@@ -157,25 +154,27 @@ namespace AnalysisPrograms
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+                
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
                 Console.WriteLine("Output directory does not exist: " + recordingPath);
-                status = 2;
-                return status;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
+
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidArgumentsException();
             }
 
-            //INIT SETTINGS
+            // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile = fiConfig;
             analysisSettings.AnalysisRunDirectory = diOP;
@@ -187,7 +186,7 @@ namespace AnalysisPrograms
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
 
 
-            //PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
+            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
                 string[] parts = args[i].Split(':');
@@ -217,19 +216,19 @@ namespace AnalysisPrograms
                             else
                                 if (parts[0].StartsWith("-start"))
                                 {
-                                    int s = Int32.Parse(parts[1]);
+                                    int s = int.Parse(parts[1]);
                                     tsStart = new TimeSpan(0, 0, s);
                                 }
                                 else
                                     if (parts[0].StartsWith("-duration"))
                                     {
-                                        int s = Int32.Parse(parts[1]);
+                                        int s = int.Parse(parts[1]);
                                         tsDuration = new TimeSpan(0, 0, s);
                                         if (tsDuration.TotalMinutes > 10)
                                         {
                                             Console.WriteLine("Segment duration cannot exceed 10 minutes.");
-                                            status = 3;
-                                            return status;
+                                            
+                                            throw new AnalysisOptionInvalidDurationException();
                                         }
                                     }
             }
@@ -261,8 +260,6 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
                 //DataTableTools.WriteTable(dt);
             }
-
-            return status;
         }
 
 
@@ -348,18 +345,17 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], Plot, List<AcousticEvent>, TimeSpan>
-                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             string analysisName = configDict[Keys.ANALYSIS_NAME];
-            int minFormantgap = Int32.Parse(configDict[Keys.MIN_FORMANT_GAP]);
-            int maxFormantgap = Int32.Parse(configDict[Keys.MAX_FORMANT_GAP]);
-            int minHz = Int32.Parse(configDict[Keys.MIN_HZ]);
-            double intensityThreshold = Double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
-            double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);  // seconds
+            int minFormantgap = int.Parse(configDict[Keys.MIN_FORMANT_GAP]);
+            int maxFormantgap = int.Parse(configDict[Keys.MAX_FORMANT_GAP]);
+            int minHz = int.Parse(configDict[Keys.MIN_HZ]);
+            double intensityThreshold = double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
+            double minDuration = double.Parse(configDict[Keys.MIN_DURATION]);  // seconds
             int frameLength = 2048;
             if (configDict.ContainsKey(Keys.FRAME_LENGTH))
-                frameLength = Int32.Parse(configDict[Keys.FRAME_LENGTH]);
+                frameLength = int.Parse(configDict[Keys.FRAME_LENGTH]);
             double windowOverlap = 0.0;
             if (frameLength == 1024) //this is to make adjustment with other harmonic methods that use frame length = 1024
             {
@@ -397,7 +393,7 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> DetectHarmonics(AudioRecording recording, double intensityThreshold,
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>> DetectHarmonics(AudioRecording recording, double intensityThreshold,
                                                               int minHz, int minFormantgap, int maxFormantgap, double minDuration, int windowSize, double windowOverlap)
         {
             //i: MAKE SONOGRAM

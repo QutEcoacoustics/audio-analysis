@@ -101,6 +101,7 @@
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\..\Extra Assemblies\FSharp\FSharpPowerPack\FSharp.PowerPack.dll</HintPath>
     </Reference>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL" />
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.3\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -137,6 +138,7 @@
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="Canetoad.cs" />
+    <Compile Include="MainExceptions.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="Human1.cs" />
@@ -201,6 +203,10 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="log4net.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

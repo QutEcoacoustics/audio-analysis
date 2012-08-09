@@ -28,15 +28,8 @@ namespace AnalysisPrograms
             int status = 0;
             bool verbose = true;
 
-            if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
-            {
-                if (debug)
-                {
-                    Console.WriteLine("\nPress <ENTER> key to exit.");
-                    Console.ReadLine();
-                }
-                System.Environment.Exit(1);
-            }
+            CheckArguments(args); //checks validity of the first 3 path arguments
+
 
             string outputPath = args[0];
 
@@ -62,18 +55,15 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(outputPath, list);
             //#########################################################################################################
 
-            if (debug)
-            {
+
                 Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
-                Console.ReadLine();
-            }
 
             return status;
         } //LoadIndicesCsvFileAndDisplayTracksImage()
 
 
 
-        public static int CheckArguments(string[] args)
+        public static void CheckArguments(string[] args)
         {
             if (args.Length != 1)
             {
@@ -82,20 +72,20 @@ namespace AnalysisPrograms
                 foreach (string arg in args) Console.WriteLine(arg + "  ");
                 Console.WriteLine("\nYOU REQUIRE 2 COMMAND LINE ARGUMENTS\n");
                 Usage();
-                return 666;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            if (CheckPaths(args) != 0) return 999;
-            return 0;
+
+            CheckPaths(args);
         }
 
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
         /// <param name="args"></param>
-        public static int CheckPaths(string[] args)
+        public static void CheckPaths(string[] args)
         {
-            int status = 0;
-            //GET ONE OBLIGATORY COMMAND LINE ARGUMENTS
+            // GET ONE OBLIGATORY COMMAND LINE ARGUMENTS
             string outputPath = args[0];
             DirectoryInfo diOP = new DirectoryInfo(Path.GetDirectoryName(outputPath));
             if (!diOP.Exists)
@@ -115,11 +105,10 @@ namespace AnalysisPrograms
                 if (!success)
                 {
                     Console.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
-                    status = 2;
-                    return status;
+                  
+                    throw new AnalysisOptionInvalidPathsException();
                 }
             }
-            return status;
         }
 
 

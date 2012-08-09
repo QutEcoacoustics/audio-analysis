@@ -1,26 +1,32 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using Acoustics.Shared;
-using AnalysisBase;
-using AnalysisRunner;
-//using AudioBrowser;
-using AudioAnalysisTools;
-using TowseyLib;
-
+﻿
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Diagnostics.Contracts;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+    using Acoustics.Shared;
+
+    using AnalysisBase;
+
+    //using AudioBrowser;
+
+    using AnalysisRunner;
+
+    using AudioAnalysisTools;
+
+    using TowseyLib;
+
     class AnalyseLongRecording
     {
         //use the following paths for the command line.
@@ -68,16 +74,8 @@ namespace AnalysisPrograms
                 Console.WriteLine(date);
             }
 
-            if (CheckArguments(args) != 0) //checks validity of the first 3 path arguments
-            {
-                if (debug)
-                {
-                    Console.WriteLine("\nPress <ENTER> key to exit.");
-                    Console.ReadLine();
-                }
-                return 1;
-                //System.Environment.Exit(1);
-            }
+            CheckArguments(args); //checks validity of the first 3 path arguments
+
 
             string recordingPath = args[0];
             string configPath    = args[1];
@@ -244,7 +242,7 @@ namespace AnalysisPrograms
 
 
 
-        public static int CheckArguments(string[] args)
+        public static void CheckArguments(string[] args)
         {
             if ((args.Length != 3) && (args.Length != 5))
             {
@@ -253,20 +251,20 @@ namespace AnalysisPrograms
                 foreach (string arg in args) Console.WriteLine(arg + "  ");
                 Console.WriteLine("\nYOU REQUIRE 3 OR 5 COMMAND LINE ARGUMENTS\n");
                 Usage();
-                return 666;
+                
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            if (CheckPaths(args) != 0) return 999;
-            return 0;
+
+            CheckPaths(args);
         }
 
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
         /// <param name="args"></param>
-        public static int CheckPaths(string[] args)
+        public static void CheckPaths(string[] args)
         {
-            int status = 0;
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
             string outputDir = args[2];
@@ -274,24 +272,27 @@ namespace AnalysisPrograms
             if (!diSource.Exists)
             {
                 Console.WriteLine("Source directory does not exist: " + diSource.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source directory exists: " + diSource.FullName);
                 Console.WriteLine("\t but the source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
+
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
@@ -309,11 +310,10 @@ namespace AnalysisPrograms
                 if (!success)
                 {
                     Console.WriteLine("Output directory does not exist: " + diOP.FullName);
-                    status = 2;
-                    return status;
+
+                    throw new AnalysisOptionInvalidPathsException();
                 }
             }
-            return status;
         }
 
 

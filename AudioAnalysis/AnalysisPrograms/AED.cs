@@ -383,6 +383,7 @@ namespace AnalysisPrograms
 
                 Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
                 Usage();
+                throw new AnalysisOptionInvalidArgumentsException();
             }
 
             CheckPaths(args);
@@ -399,14 +400,14 @@ namespace AnalysisPrograms
             if (!File.Exists(args[0]))
             {
                 Log.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Environment.Exit(1);
+                throw new AnalysisOptionInvalidPathsException();
             }
 
             if (!File.Exists(args[1]))
             {
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
-                Environment.Exit(1);
+                throw new AnalysisOptionInvalidPathsException();
             }
 
             var output = args[2];
@@ -414,7 +415,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("the output path should really lead to a file (i.e. have an extension)");
                 Usage();
-                Environment.Exit(1);
+                throw new AnalysisOptionInvalidPathsException();
             }
         }
 
@@ -431,7 +432,6 @@ namespace AnalysisPrograms
                                        By default, the output dir is that containing the ini file.
            ");
             
-            Environment.Exit(1);
 
             /*
             Console.WriteLine("The arguments for AED are: wavFile [intensityThreshold smallAreaThreshold]");
@@ -441,7 +441,7 @@ namespace AnalysisPrograms
             Console.WriteLine("                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\BAC2_20071015-045040.wav\"");
             Console.WriteLine("intensityThreshold: mandatory if smallAreaThreshold specified, otherwise default used");
             Console.WriteLine("smallAreaThreshold: mandatory if intensityThreshold specified, otherwise default used");
-            Environment.Exit(1);
+
             */
         }
 

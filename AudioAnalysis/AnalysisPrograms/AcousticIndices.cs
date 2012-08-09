@@ -88,15 +88,10 @@
                 //cmdLineArgs.Add(indicesImagePath);
             }
 
-            //#############################################################################################################################################
-            int status = Execute(cmdLineArgs.ToArray());
-            if (status != 0)
-            {
-                Console.WriteLine("\n\n# FATAL ERROR. CANNOT PROCEED!");
-                Console.ReadLine();
-                System.Environment.Exit(99);
-            }
-            //#############################################################################################################################################
+            // #############################################################################################################################################
+            Execute(cmdLineArgs.ToArray());
+
+            // #############################################################################################################################################
 
             string indicesPath = Path.Combine(outputDir, indicesFname);
             FileInfo fiCsvIndices = new FileInfo(indicesPath);
@@ -119,7 +114,6 @@
             //}
 
             Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
-  
         } // Dev()
 
         /// <summary>
@@ -127,15 +121,14 @@
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static int Execute(string[] args)
+        public static void Execute(string[] args)
         {
-            int status = 0;
             if (args.Length < 2)
             {
                 Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
                 Console.WriteLine("Require at least 2 command line arguments.");
-                status = 1;
-                return status;
+
+                throw new AnalysisOptionInvalidArgumentsException();
             }
             else
             {
@@ -156,24 +149,22 @@
                         break;
                     default:
                         Console.WriteLine("Task unrecognised>>>" + args[0]);
-                        return 999;
-                } //switch
-            } //if-else
-            return status;
-        } //Execute()
+                        throw new AnalysisOptionInvalidArgumentsException();
+                } // switch
+            } // if-else
+        } // Execute()
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        public static int ExecuteAnalysis(string[] args)
+        public static void ExecuteAnalysis(string[] args)
         {
-            int status = 0;
             if (args.Length < 4)
             {
                 Console.WriteLine("Require at least 4 command line arguments.");
-                status = 1;
-                return status;
+
+                throw new AnalysisOptionInvalidArgumentsException();
             }
 
             // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
@@ -184,24 +175,24 @@
             if (!fiSource.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
 
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
                 Console.WriteLine("Source file does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
 
             DirectoryInfo outputDirectory = new DirectoryInfo(outputDir);
             if (!outputDirectory.Exists)
             {
                 Console.WriteLine("Output directory does not exist: " + recordingPath);
-                status = 2;
-                return status;
+
+                throw new AnalysisOptionInvalidPathsException();
             }
 
             // INIT SETTINGS
@@ -224,35 +215,32 @@
                     var outputWavPath = Path.Combine(outputDir, parts[1]);
                     analysisSettings.AudioFile = new FileInfo(outputWavPath);
                 }
-                else
-                    if (parts[0].StartsWith("-indices"))
+                else if (parts[0].StartsWith("-indices"))
+                {
+                    string indicesPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                }
+                else if (parts[0].StartsWith("-start"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsStart = new TimeSpan(0, 0, s);
+                }
+                else if (parts[0].StartsWith("-duration"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsDuration = new TimeSpan(0, 0, s);
+                    if (tsDuration.TotalMinutes > 10)
                     {
-                        string indicesPath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+
+                        throw new AnalysisOptionInvalidDurationException();
                     }
-                    else
-                        if (parts[0].StartsWith("-start"))
-                        {
-                            int s = int.Parse(parts[1]);
-                            tsStart = new TimeSpan(0, 0, s);
-                        }
-                        else
-                            if (parts[0].StartsWith("-duration"))
-                            {
-                                int s = int.Parse(parts[1]);
-                                tsDuration = new TimeSpan(0, 0, s);
-                                if (tsDuration.TotalMinutes > 10)
-                                {
-                                    Console.WriteLine("Segment duration cannot exceed 10 minutes.");
-                                    status = 3;
-                                    return status;
-                                }
-                            }//if
-            } //for
+                } // if
+            } // for
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tsDuration.TotalSeconds == 0)   
+            if (tsDuration.TotalSeconds == 0)
             {
                 // Process entire file
                 AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE });
@@ -286,8 +274,6 @@
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
-
-            return status;
         }
 
 

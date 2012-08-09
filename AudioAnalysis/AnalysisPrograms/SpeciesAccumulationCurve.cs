@@ -83,8 +83,8 @@ namespace AnalysisPrograms
                 Console.WriteLine("remaining species ="+totalSum);
 
 
-                Console.ReadLine();
-                Environment.Exit(666);
+                throw new AnalysisOptionDevilException();
+
             }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
             //RANDOM SAMPLING OVER ENTIRE 24 HOURS
@@ -121,8 +121,8 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
                 Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
-                Console.ReadLine();
-                Environment.Exit(666);
+               
+                throw new AnalysisOptionDevilException();
             }
 
 
@@ -511,8 +511,7 @@ namespace AnalysisPrograms
             {
                 Console.WriteLine("Cannot find recording file <" + args[0] + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
+                throw new AnalysisOptionInvalidPathsException();
             }
             string opDir = Path.GetDirectoryName(args[1]);
             if (!Directory.Exists(opDir))
@@ -520,8 +519,7 @@ namespace AnalysisPrograms
                 Console.WriteLine("Cannot find output directory: <" + opDir + ">");
                 Usage();
                 Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
+                throw new AnalysisOptionInvalidPathsException();
             }
         }
 
@@ -536,8 +534,7 @@ namespace AnalysisPrograms
             Console.WriteLine("outputFileName:-(string) Path of the output file to store results.");
             Console.WriteLine("");
             Console.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
-            System.Environment.Exit(1);
+            throw new AnalysisOptionInvalidArgumentsException();
         }
 
 

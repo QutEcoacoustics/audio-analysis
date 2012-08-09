@@ -31,13 +31,13 @@ namespace AnalysisPrograms
 
             if (args.Length != 3)
             {
-                Console.WriteLine("The arguments for SPT are: wavFile intensityThreshold");
-                Console.WriteLine();
-                Console.WriteLine("wavFile:            path to recording file.");
-                Console.WriteLine("output dir:         where output files and images will be placed.");
-                Console.WriteLine("intensityThreshold: is mandatory");
-                Console.ReadLine();
-                Environment.Exit(1);
+                Console.WriteLine(
+                @"The arguments for SPT are: wavFile intensityThreshold
+                
+                wavFile:            path to recording file.
+                output dir:         where output files and images will be placed.
+                intensityThreshold: is mandatory");
+                throw new AnalysisOptionInvalidArgumentsException();
             }
 
             string wavFilePath = args[0];
