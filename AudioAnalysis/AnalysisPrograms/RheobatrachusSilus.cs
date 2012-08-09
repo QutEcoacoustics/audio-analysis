@@ -58,8 +58,8 @@ namespace AnalysisPrograms
 
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "RheobatrachusSilus";
-        public const int RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
+        //public const int RESAMPLE_RATE = 17640;
+        public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
@@ -252,6 +252,7 @@ namespace AnalysisPrograms
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo sourceF = new FileInfo(recordingPath);
             FileInfo tempF   = analysisSettings.AudioFile;
+            if (tempF.Exists) tempF.Delete();
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
                 AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
@@ -340,7 +341,7 @@ namespace AnalysisPrograms
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;
-                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
                 image.Save(imagePath, ImageFormat.Png);
             }
 
@@ -362,11 +363,11 @@ namespace AnalysisPrograms
         /// <param name="fiSegmentOfSourceFile"></param>
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan>
+        public static System.Tuple<BaseSonogram, Double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
-            //set default values - ignor those set by user
-            int frameSize = 256;
+            //set default values - ignore those set by user
+            int frameSize        = 256;
             double windowOverlap = 0.0;
 
             //int upperBandMinHz = Int32.Parse(configDict[key_UPPERFREQBAND_BTM]);
@@ -377,8 +378,8 @@ namespace AnalysisPrograms
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
             double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
             double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
-            double minPeriod = Double.Parse(configDict[key_MIN_PERIOD]);      // seconds
-            double maxPeriod = Double.Parse(configDict[key_MAX_PERIOD]);      // seconds
+            double minPeriod   = Double.Parse(configDict[key_MIN_PERIOD]);      // seconds
+            double maxPeriod   = Double.Parse(configDict[key_MAX_PERIOD]);      // seconds
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
@@ -392,8 +393,8 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
+            //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
@@ -414,10 +415,11 @@ namespace AnalysisPrograms
             // Therefore do a Xcorrelation between bins 21 and 22.
             // Number of frames to span must power of 2. Try 16 frames which covers 232ms - almost 1/4 second.
 
-            int lowerHz = 1450;
-            int upperHz = 1550; 
-            int lowerBin = 22;
-            int upperBin = 23; //extra bin because bin[0] = DC.
+            int midHz    = 1500;
+            int lowerBin = (int)(midHz / freqBinWidth) + 1;  //because bin[0] = DC
+            int upperBin = lowerBin + 4;
+            int lowerHz = (int)Math.Floor((lowerBin-1) * freqBinWidth);
+            int upperHz = (int)Math.Ceiling((upperBin - 1) * freqBinWidth); ;
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             int rowCount = sonogram.Data.GetLength(0);
@@ -433,6 +435,7 @@ namespace AnalysisPrograms
 
             double[] lowerArray = MatrixTools.GetColumn(sonogram.Data, lowerBin);
             double[] upperArray = MatrixTools.GetColumn(sonogram.Data, upperBin);
+            //upperArray = lowerArray;
 
             int step = (int)(framesPerSecond /10); //take one/tenth second steps
             int stepCount = rowCount / step;
@@ -450,7 +453,8 @@ namespace AnalysisPrograms
                 if ((lowerSubarray == null) || (upperSubarray == null)) break;
                 if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
                 var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
-                int zeroCount = 1;
+                //DataTools.writeBarGraph(spectrum);
+                int zeroCount = 2;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
                 spectrum = DataTools.NormaliseArea(spectrum);
                 int maxId = DataTools.GetMaxIndex(spectrum);
@@ -465,13 +469,20 @@ namespace AnalysisPrograms
             //######################################################################
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            intensity = DataTools.filterMovingAverage(intensity, 5);
+            //intensity = DataTools.filterMovingAverage(intensity, 3);
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
             CropEvents(predictedEvents, upperArray);
             var hits = new double[rowCount, colCount];
 
-            return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
+            var plots = new List<Plot>();
+            //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
+            //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
+            plots.Add(new Plot("lowerArray", DataTools.normalise(lowerArray), 0.5));
+            plots.Add(new Plot("upperArray", DataTools.normalise(upperArray), 0.5));
+            plots.Add(new Plot("intensity", intensity, intensityThreshold));
+
+            return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
         public static void CropEvents(List<AcousticEvent> events, double[] intensity)
@@ -498,7 +509,7 @@ namespace AnalysisPrograms
         }
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> plots, List<AcousticEvent> predictedEvents)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             //int maxFreq = sonogram.NyquistFrequency / 2;
@@ -511,8 +522,8 @@ namespace AnalysisPrograms
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 0.5, eventThreshold));
-            //if (hits != null) image.OverlayRedTransparency(hits);
+            if (plots != null)
+                foreach (Plot plot in plots) image.AddTrack(Image_Track.GetScoreTrack(plot.data, 0.0, 0.5, plot.threshold));
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
