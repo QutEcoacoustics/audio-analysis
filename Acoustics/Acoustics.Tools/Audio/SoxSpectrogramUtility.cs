@@ -98,7 +98,7 @@
                 this.Spectrogram(wavFile, originalSoxFile);
             }
 
-            wavFile.SafeDeleteFile();
+            wavFile.Delete();
 
             // modify the original image to match the request
             using (var sourceImage = Image.FromFile(originalSoxFile.FullName))
@@ -141,7 +141,7 @@
                 }
             }
 
-            originalSoxFile.SafeDeleteFile();
+            originalSoxFile.Delete();
         }
 
         private void Spectrogram(FileInfo sourceAudioFile, FileInfo outputImageFile)

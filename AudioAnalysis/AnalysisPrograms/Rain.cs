@@ -292,7 +292,7 @@ namespace AnalysisPrograms
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tempF.Exists) tempF.SafeDeleteFile();
+            if (tempF.Exists) tempF.Delete();
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
                 AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { SampleRate = AcousticFeatures.RESAMPLE_RATE });

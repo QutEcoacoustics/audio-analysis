@@ -74,21 +74,6 @@
             return new FileInfo(Path.Combine(TempDir.FullName, tempFile));
         }
 
-        public static void SafeDeleteFile(this FileInfo file)
-        {
-            //try
-            //{
-                //if (file != null)
-                //{
-                    File.Delete(file.FullName);
-                //}
-            //}
-            //catch
-            //{
-                // if we can't delete, that's ok.
-            //}
-        }
-
         /// <summary>
         /// Copy from <paramref name="source"/> Stream to Working File.
         /// </summary>

@@ -147,6 +147,21 @@
         /// </param>
         public override void Modify(FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (output == null)
+            {
+                throw new ArgumentNullException("output");
+            }
+
+            if (source.FullName == output.FullName)
+            {
+                throw new ArgumentException("Source and output cannot be the same path: " + source.FullName);
+            }
+
             var segmentRequest = new AudioUtilityRequest
                 {
                     OffsetStart = request.OffsetStart,
