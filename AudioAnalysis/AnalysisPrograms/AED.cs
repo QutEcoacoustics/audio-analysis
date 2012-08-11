@@ -11,6 +11,7 @@ namespace AnalysisPrograms
     using System.Data;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
 
     using Acoustics.Shared;
 
@@ -24,11 +25,16 @@ namespace AnalysisPrograms
 
     using TowseyLib;
 
+    using log4net;
+
     /// <summary>
     /// Acoustic Event Detection.
     /// </summary>
     public class AED : IAnalyser
     {
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         // Keys to recognise identifiers in PARAMETERS - INI file. 
         #region Constants and Fields
 
@@ -118,17 +124,17 @@ namespace AnalysisPrograms
             double bandPassMinimum, 
             double bandPassMaximum)
         {
-            Log.WriteLine("AED start");
+            TowseyLib.Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
                 intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum, sonogram.Data);
-            Log.WriteLine("AED finished");
+            TowseyLib.Log.WriteLine("AED finished");
 
             SonogramConfig config = sonogram.Configuration;
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
 
             List<AcousticEvent> events =
                 oblongs.Select(o => new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth)).ToList();
-            Log.WriteIfVerbose("AED # events: " + events.Count);
+            TowseyLib.Log.WriteIfVerbose("AED # events: " + events.Count);
             return events;
         }
 
@@ -183,9 +189,9 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine("# Running acoustic event detection.");
-            Log.WriteLine(date);
-            Log.Verbosity = 1;
+            TowseyLib.Log.WriteLine("# Running acoustic event detection.");
+            TowseyLib.Log.WriteLine(date);
+            TowseyLib.Log.Verbosity = 1;
 
             CheckArguments(args);
 
@@ -198,7 +204,7 @@ namespace AnalysisPrograms
             ////Log.WriteIfVerbose("# Output folder =" + outputDir);
             ////Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             ////FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
-            Log.WriteLine("WARN: output file writing disabled in build");
+            TowseyLib.Log.WriteLine("WARN: output file writing disabled in build");
 
             // READ PARAMETER VALUES FROM INI FILE
             double intensityThreshold;
@@ -229,14 +235,14 @@ namespace AnalysisPrograms
             var csvEvents = CsvSerializer.SerializeToCsv(events);
             File.WriteAllText(destPath + ".csv", csvEvents);
 
-            Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
+            TowseyLib.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
             ////foreach (AcousticEvent ae in events)
             ////{
-            ////    Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+            ////    LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             ////}
 
             GenerateImage(destPath + ".png", result.Item1, events);
-            Log.WriteLine("Finished");
+            TowseyLib.Log.WriteLine("Finished");
         }
 
         /// <summary>
@@ -274,7 +280,7 @@ namespace AnalysisPrograms
         public static void GenerateImage(
             string imagePath, BaseSonogram sonogram, List<AcousticEvent> events)
         {
-            Log.WriteIfVerbose("imagePath = " + imagePath);
+            TowseyLib.Log.WriteIfVerbose("imagePath = " + imagePath);
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
 
             ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, image.));
@@ -368,20 +374,20 @@ namespace AnalysisPrograms
                 propertyUsageCount++;
             }
 
-            Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
+            TowseyLib.Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
         }
 
         private static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
             {
-                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
+                TowseyLib.Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
                 foreach (string arg in args)
                 {
-                    Log.WriteLine(arg + "  ");
+                    TowseyLib.Log.WriteLine(arg + "  ");
                 }
 
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
+                TowseyLib.Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
                 Usage();
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -399,13 +405,13 @@ namespace AnalysisPrograms
         {
             if (!File.Exists(args[0]))
             {
-                Log.WriteLine("Cannot find recording file <" + args[0] + ">");
+                TowseyLib.Log.WriteLine("Cannot find recording file <" + args[0] + ">");
                 throw new AnalysisOptionInvalidPathsException();
             }
 
             if (!File.Exists(args[1]))
             {
-                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
+                LoggedConsole.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -413,7 +419,7 @@ namespace AnalysisPrograms
             var output = args[2];
             if (!Path.HasExtension(output))
             {
-                Console.WriteLine("the output path should really lead to a file (i.e. have an extension)");
+                LoggedConsole.WriteLine("the output path should really lead to a file (i.e. have an extension)");
                 Usage();
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -421,7 +427,7 @@ namespace AnalysisPrograms
 
         private static void Usage()
         {
-            Console.WriteLine(
+            LoggedConsole.WriteLine(
            @"INCORRECT COMMAND LINE.
            USAGE:
            AnalysisPrograms.exe aed recordingPath iniPath outputFileName
@@ -434,13 +440,13 @@ namespace AnalysisPrograms
             
 
             /*
-            Console.WriteLine("The arguments for AED are: wavFile [intensityThreshold smallAreaThreshold]");
-            Console.WriteLine();
+            LoggedConsole.WriteLine("The arguments for AED are: wavFile [intensityThreshold smallAreaThreshold]");
+            LoggedConsole.WriteLine();
 
-            Console.WriteLine("wavFile:            path to .wav recording.");
-            Console.WriteLine("                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\BAC2_20071015-045040.wav\"");
-            Console.WriteLine("intensityThreshold: mandatory if smallAreaThreshold specified, otherwise default used");
-            Console.WriteLine("smallAreaThreshold: mandatory if intensityThreshold specified, otherwise default used");
+            LoggedConsole.WriteLine("wavFile:            path to .wav recording.");
+            LoggedConsole.WriteLine("                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\BAC2_20071015-045040.wav\"");
+            LoggedConsole.WriteLine("intensityThreshold: mandatory if smallAreaThreshold specified, otherwise default used");
+            LoggedConsole.WriteLine("smallAreaThreshold: mandatory if intensityThreshold specified, otherwise default used");
 
             */
         }

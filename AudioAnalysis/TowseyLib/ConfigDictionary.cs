@@ -57,7 +57,7 @@ namespace TowseyLib
                 foreach (var item in ConfigDictionary.ReadPropertiesFile(file))
                 {
                     dictionary[item.Key] = item.Value;
-                    ////if (item.Key.StartsWith("VERBOSITY")) Console.WriteLine("VERBOSITY = " + item.Value);
+                    ////if (item.Key.StartsWith("VERBOSITY")) LoggedConsole.WriteLine("VERBOSITY = " + item.Value);
                 }
             }
         }
@@ -189,9 +189,9 @@ namespace TowseyLib
             }
             catch (System.FormatException ex)
             {
-                System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
-                System.Console.WriteLine(ex);
+                System.LoggedConsole.WriteLine("ERROR READING PROPERTIES FILE");
+                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                System.LoggedConsole.WriteLine(ex);
                 return false;
             }
         } //end getBoolean()
@@ -204,7 +204,7 @@ namespace TowseyLib
             if (! dict.ContainsKey(key))
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
+                System.LoggedConsole.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
                 return -Double.NaN;
             }
             string value = dict[key].ToString();
@@ -218,7 +218,7 @@ namespace TowseyLib
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return -Double.NaN;
             }
         }
@@ -237,7 +237,7 @@ namespace TowseyLib
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return null;
             }
         }
@@ -259,7 +259,7 @@ namespace TowseyLib
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return Int32.MaxValue;
             }
             return Int32.MaxValue;
@@ -280,7 +280,7 @@ namespace TowseyLib
             catch
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                System.LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return null;
             }
             return null;

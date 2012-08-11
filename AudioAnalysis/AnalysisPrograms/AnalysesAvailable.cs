@@ -10,6 +10,7 @@ using TowseyLib;
 
 namespace AnalysisPrograms
 {
+
     class AnalysesAvailable
     {
 
@@ -37,10 +38,10 @@ namespace AnalysisPrograms
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
-                Console.WriteLine("# WRITE FILE OF THE AVAILABLE ANALYSIS IDENTIFIERS.");
-                Console.WriteLine(date);
-                Console.WriteLine("# Output  file: " + outputPath);
-                Console.WriteLine("\n#######################################################################\n");
+                LoggedConsole.WriteLine("# WRITE FILE OF THE AVAILABLE ANALYSIS IDENTIFIERS.");
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Output  file: " + outputPath);
+                LoggedConsole.WriteLine("\n#######################################################################\n");
             }
 
 
@@ -49,14 +50,14 @@ namespace AnalysisPrograms
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             foreach (IAnalyser analyser in analysers)
             {
-                Console.WriteLine(analyser.Identifier);
+                LoggedConsole.WriteLine(analyser.Identifier);
                 list.Add(analyser.Identifier);
             }
             FileTools.WriteTextFile(outputPath, list);
             //#########################################################################################################
 
 
-                Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+                LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
 
             return status;
         } //LoadIndicesCsvFileAndDisplayTracksImage()
@@ -67,10 +68,10 @@ namespace AnalysisPrograms
         {
             if (args.Length != 1)
             {
-                Console.WriteLine("\nINCORRECT COMMAND LINE.");
-                Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", (args.Length + 1));
-                foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("\nYOU REQUIRE 2 COMMAND LINE ARGUMENTS\n");
+                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
+                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", (args.Length + 1));
+                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
+                LoggedConsole.WriteLine("\nYOU REQUIRE 2 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -104,7 +105,7 @@ namespace AnalysisPrograms
 
                 if (!success)
                 {
-                    Console.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
+                    LoggedConsole.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
                   
                     throw new AnalysisOptionInvalidPathsException();
                 }
@@ -114,14 +115,14 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("AnalysisPrograms.exe  analysesAvailable  outputPath");
-            Console.WriteLine("where:");
-            Console.WriteLine("analysesAvailable:- (string) a short string that identifies the process to be performed.");
-            Console.WriteLine("output File:-       (string) Path of the analysisIdentifiers.txt file.");
-            //            Console.WriteLine("The following argument is OPTIONAL.");
-            //            Console.WriteLine("verbosity:   (boolean) true/false");
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  analysesAvailable  outputPath");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("analysesAvailable:- (string) a short string that identifies the process to be performed.");
+            LoggedConsole.WriteLine("output File:-       (string) Path of the analysisIdentifiers.txt file.");
+            //            LoggedConsole.WriteLine("The following argument is OPTIONAL.");
+            //            LoggedConsole.WriteLine("verbosity:   (boolean) true/false");
+            LoggedConsole.WriteLine("");
         } // Usage()
 
     }

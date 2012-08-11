@@ -296,8 +296,8 @@ namespace TowseyLib
                 foreach (double value in newSig)
                 {
                     int count = (int)(value * 50);
-                    for (int i = 0; i < count; i++) Console.Write("=");
-                    Console.WriteLine("=");
+                    for (int i = 0; i < count; i++) LoggedConsole.Write("=");
+                    LoggedConsole.WriteLine("=");
                 }
         }
 
@@ -307,13 +307,13 @@ namespace TowseyLib
 
             for (int n = 0; n < sig.Length; n++)
             {
-                if (showIndex) Console.Write(n.ToString("D3") + "|");
+                if (showIndex) LoggedConsole.Write(n.ToString("D3") + "|");
                 int count = (int)(newSig[n] * 50);
                 for (int i = 0; i < count; i++)
                 {
-                    Console.Write("=");
+                    LoggedConsole.Write("=");
                 }
-                Console.WriteLine("=");
+                LoggedConsole.WriteLine("=");
             }
         }
 
@@ -322,7 +322,7 @@ namespace TowseyLib
 
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DSP_Frames");
+            LoggedConsole.WriteLine("TESTING METHODS IN CLASS DSP_Frames");
 
 
 
@@ -330,7 +330,7 @@ namespace TowseyLib
             bool doit1 = false;
             if (doit1) //test Method(parameters)
             {   
-                System.Console.WriteLine("\nTest of METHOD)");
+                System.LoggedConsole.WriteLine("\nTest of METHOD)");
             }//end test Method(string fName)
 
 
@@ -338,7 +338,7 @@ namespace TowseyLib
             //bool doit2 = true;
             //if (doit2) //test Method(parameters)
             //{
-            //    System.Console.WriteLine("\nTest of Filter_DecayingSinusoid()");
+            //    System.LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
             //    double sf = 100;
             //    double tHalf = 0.2;//seconds
             //    double period = 0.2; //seconds
@@ -357,7 +357,7 @@ namespace TowseyLib
             //bool doit3 = false;
             //if (doit3) //test Filter_DecayingSinusoid()
             //{
-            //    System.Console.WriteLine("\nTest of Filter_DecayingSinusoid()");
+            //    System.LoggedConsole.WriteLine("\nTest of Filter_DecayingSinusoid()");
             //    int signalLength= 100;
             //    //set up the impulse signal
             //    double[] signal = new double[signalLength];
@@ -371,7 +371,7 @@ namespace TowseyLib
             //    DisplaySignal(newSig, true);
             //}
 
-            Console.WriteLine("FINISHED!!");
+            LoggedConsole.WriteLine("FINISHED!!");
             Console.ReadLine();
         }//end Main()
 

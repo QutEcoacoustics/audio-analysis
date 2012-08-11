@@ -115,7 +115,7 @@
             double minDuration = 3.0;
             if (this.Duration.TotalSeconds < minDuration)
             {
-                Console.WriteLine("Signal must at least {0} seconds long iin order to produce a sonogram!", minDuration);
+                LoggedConsole.WriteLine("Signal must at least {0} seconds long iin order to produce a sonogram!", minDuration);
                 return;
             }
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
@@ -608,7 +608,7 @@
             int freqRange = maxFreq - minFreq + 1;
             double pixelPerHz = imageHt / (double)freqRange;
             int[] vScale = new int[imageHt];
-            //Console.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
+            //LoggedConsole.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {
@@ -617,7 +617,7 @@
                     int hzOffset = f - minFreq;
                     int pixelID = (int)(hzOffset * pixelPerHz) + 1;
                     if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //Console.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
+                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
                     vScale[pixelID] = 1;
                 }
             }
@@ -638,7 +638,7 @@
             //double pixelPerHz = imageHt / (double)freqRange;
             double pixelPerMel = imageHt / (double)melRange;
             int[] vScale = new int[imageHt];
-            //Console.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
+            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
 
             for (int f = minFreq + 1; f < maxFreq; f++)
             {
@@ -648,7 +648,7 @@
                     int melOffset = (int)(Speech.Mel(f) - minMel);
                     int pixelID = (int)(melOffset * pixelPerMel) + 1;
                     if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //Console.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
+                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
                     vScale[pixelID] = 1;
                 }
             }

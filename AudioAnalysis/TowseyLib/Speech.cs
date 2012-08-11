@@ -41,7 +41,7 @@ namespace TowseyLib
             //double max = dct[maxIndex]; 
             //DataTools.MinMax(dct, out min, out max);
             DataTools.writeBarGraph(dct);
-            Console.WriteLine("FINISHED");
+            LoggedConsole.WriteLine("FINISHED");
             Console.ReadLine();
         }
 
@@ -178,7 +178,7 @@ namespace TowseyLib
                 else
                     if (state[i] == 2)
                     {
-                        //Console.WriteLine("count["+i+"]="+count);
+                        //LoggedConsole.WriteLine("count["+i+"]="+count);
                         if ((sig == false) && (count < syllableGap))
                             for (int j = 1; j <= count; j++) state[i - j] = 1;//fill gap with state = 1;
                         sig = true;
@@ -284,7 +284,7 @@ namespace TowseyLib
             double[,] outData = new double[M, filterBankCount];
             double ipBand = freqRange / (double)N;                //width of input freq band
             double opBand = freqRange / (double)filterBankCount;  //width of output freq band
-            //Console.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
+            //LoggedConsole.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < filterBankCount; j++) //for all output bands in the frequency range
@@ -297,7 +297,7 @@ namespace TowseyLib
                     int ipAint = (int)Math.Ceiling(ipA);
                     int ipBint = (int)Math.Floor(ipB);
                     double sum = 0.0;
-                    //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": ai=" + ipAint + " bi=" + ipBint + " b-a=" + (ipBint - ipAint));
+                    //if (i < 2) LoggedConsole.WriteLine("i=" + i + " j=" + j + ": ai=" + ipAint + " bi=" + ipBint + " b-a=" + (ipBint - ipAint));
 
                     if (ipAint > 0)
                     {
@@ -347,7 +347,7 @@ namespace TowseyLib
             double[,] outData = new double[M, filterBankCount];
             double linBand = Nyquist / (double)N;
             double melBand = Speech.Mel(Nyquist) / (double)filterBankCount;  //width of mel band
-            //Console.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
+            //LoggedConsole.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands
@@ -427,8 +427,8 @@ namespace TowseyLib
             double[,] outData = new double[M, filterBankCount];
             double linBand = freqRange / (N-1); //(N-1) because have additional DC band
             double melBand = melRange / (double)filterBankCount;  //width of mel band
-            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
-            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
+            //LoggedConsole.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
+            //LoggedConsole.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
@@ -440,7 +440,7 @@ namespace TowseyLib
                     double ipB = (Speech.InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
                     int ai = (int)Math.Ceiling(ipA);
                     int bi = (int)Math.Floor(ipB);
-                    //if (i < 2) Console.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
+                    //if (i < 2) LoggedConsole.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
                     double sum = 0.0;
 
                     if (bi < ai) //a and b are in same Hz band
@@ -460,7 +460,7 @@ namespace TowseyLib
                         }
                         for (int k = ai; k < bi; k++)
                         {
-                            //if ((k + 1) >= N) Console.WriteLine("k=" + k + "  N=" + N);
+                            //if ((k + 1) >= N) LoggedConsole.WriteLine("k=" + k + "  N=" + N);
                             if ((k + 1) > N) break;//to prevent out of range index
                             sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
@@ -487,7 +487,7 @@ namespace TowseyLib
 
         //public static double[,] MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist)
         //{
-        //    Console.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
+        //    LoggedConsole.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
         //    int M = matrix.GetLength(0); //number of spectra or time steps
         //    int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
         //    int FFTbins = N - 1;
@@ -515,7 +515,7 @@ namespace TowseyLib
         //{
         //    double hzGap = Nyquist / FFTbins;
         //    double melGap = Speech.Mel(Nyquist) / (double)(filterBankCount);  //mel gap between filter centres
-        //    //Console.WriteLine(" melNyquist=" + Speech.Mel(Nyquist) + " melGap=" + melGap);
+        //    //LoggedConsole.WriteLine(" melNyquist=" + Speech.Mel(Nyquist) + " melGap=" + melGap);
 
         //    double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
         //    for (int i = 1; i <= filterBankCount+1; i++) filterCentres[i] = Speech.InverseMel(i * melGap);
@@ -540,14 +540,14 @@ namespace TowseyLib
         //        for (int j = lowerIndex; j < centreIndex; j++)
         //        {
         //            filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
-        //            //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+        //            //LoggedConsole.WriteLine(i + "  " + j + "  " + filters[i, j]);
         //        }
         //        //set up decending side of triangle
         //        halfBase = upperIndex - centreIndex;
         //        for (int j = centreIndex; j < upperIndex; j++)
         //        {
         //            filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
-        //            //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+        //            //LoggedConsole.WriteLine(i + "  " + j + "  " + filters[i, j]);
         //        }
 
         //    }//end over all filters
@@ -738,7 +738,7 @@ namespace TowseyLib
             int dim = coeffcount; //
             if (includeDelta)       dim += coeffcount;
             if (includeDoubleDelta) dim += coeffcount;
-            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+            //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
 
             double[,] acousticM = new double[frameCount, dim];
             for (int t = 0; t < frameCount; t++) //for all spectra or time steps
@@ -759,7 +759,7 @@ namespace TowseyLib
             int dim = coeffcount; //
             if (includeDelta) dim += coeffcount;
             if (includeDoubleDelta) dim += coeffcount;
-            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+            //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
 
             double[] acousticV = new double[dim];
             double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
@@ -781,7 +781,7 @@ namespace TowseyLib
             int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
             int featureCount = coeffcount;
             if (deltaT > 0) featureCount *= 3;
-            //Console.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
+            //LoggedConsole.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
             double[] fv = new double[featureCount];
 
             if (deltaT == 0)

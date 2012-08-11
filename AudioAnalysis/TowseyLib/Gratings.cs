@@ -25,7 +25,7 @@ namespace TowseyLib
         static void Main(string[] args)
         {
             string title = "Home experiments";
-            Console.WriteLine(title);
+            LoggedConsole.WriteLine(title);
 
             //BarsAndStripes.TestCrossCorrelation();
             //BarsAndStripes.Test_DetectLocalizedPeriodicity();
@@ -34,7 +34,7 @@ namespace TowseyLib
             //Test_DetectPeriod2Grating();
             Test_ScanArrayForGridPattern1();
 
-            Console.WriteLine("FINISHED!");
+            LoggedConsole.WriteLine("FINISHED!");
             Console.Read();
         }
 
@@ -52,7 +52,7 @@ namespace TowseyLib
             //double[] template = { 2.0, 0.0, 0.7, 0.0, 0.6, 0.0, 0.7, 0.0 };
             //double[] template = { 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double score = DetectPeriod2Grating(template);
-            Console.WriteLine("score: {0:f4}", score);
+            LoggedConsole.WriteLine("score: {0:f4}", score);
         }
 
 
@@ -100,11 +100,11 @@ namespace TowseyLib
                 scoreSum += output[maxLocation];
                 if ((maxLocation > (locationOfSignalStart - errorTolerance)) && (maxLocation < (locationOfSignalStart + errorTolerance)))
                 {
-                    //Console.WriteLine("{0}\tscore: {1:f2}", iter, output[maxLocation]);
+                    //LoggedConsole.WriteLine("{0}\tscore: {1:f2}", iter, output[maxLocation]);
                     count++;
                 }
             }//end iterations
-            Console.WriteLine("% correct = {0:f1}   Avg score = {1:f4}", 100 * count / (double)maxIterations, scoreSum / (double)maxIterations);
+            LoggedConsole.WriteLine("% correct = {0:f1}   Avg score = {1:f4}", 100 * count / (double)maxIterations, scoreSum / (double)maxIterations);
         }//Test_ScanArrayForGridPattern1()
 
 
@@ -197,7 +197,7 @@ namespace TowseyLib
 
                 //if (i == 100)
                 //{
-                //    Console.WriteLine("iter=" + i + "    period=" + cyclePeriod + "    score=" + score);
+                //    LoggedConsole.WriteLine("iter=" + i + "    period=" + cyclePeriod + "    score=" + score);
                 //    DataTools.writeBarGraph(extract);
                 //    DataTools.writeBarGraph(reducedSegment);
                 //}

@@ -207,33 +207,33 @@ namespace NeuralNets
     //public static void DisplayConfiguration()  //display on the screen}
 //{
 //  ClrScr;
-//  Console.WriteLine; Console.WriteLine ("      CURRENT ART CONFIGURATION");
-//  Console.WriteLine;
-//  Console.WriteLine ("Task             = ", TaskStr[task]);
-//  Console.WriteLine ("Wts file to use  = ", WtsFPath);
-//  Console.WriteLine ("Output directory = ", OutputDir);
-//  Console.WriteLine ("ART version      = ", versionID," or ",
+//  LoggedConsole.WriteLine; LoggedConsole.WriteLine ("      CURRENT ART CONFIGURATION");
+//  LoggedConsole.WriteLine;
+//  LoggedConsole.WriteLine ("Task             = ", TaskStr[task]);
+//  LoggedConsole.WriteLine ("Wts file to use  = ", WtsFPath);
+//  LoggedConsole.WriteLine ("Output directory = ", OutputDir);
+//  LoggedConsole.WriteLine ("ART version      = ", versionID," or ",
 //                                  versionNames[versionID]);
 //  write   ("Size of F1 Net a = ", F1sizeOfNeta:2);
-//  Console.WriteLine ("        Size of F2 Net a = ", F2sizeOfNeta);
+//  LoggedConsole.WriteLine ("        Size of F2 Net a = ", F2sizeOfNeta);
 //  write   ("Size of F1 Net b = ", F1sizeOfNetb:2);
-//  Console.WriteLine ("        Size of F2 Net b = ", F2sizeOfNetb);
-//  Console.WriteLine ("Dim of input data= ", DataDim);
-//  Console.WriteLine ("Train set size   = ", trnSetSize);
-//  Console.WriteLine ("Train set path   = ", trnSetFpath);
-//  Console.WriteLine ("Training targets = ", trnTarFpath);
-//  Console.WriteLine ("Test set size    = ", tstSetSize);
-//  Console.WriteLine ("Test set path    = ", tstSetFpath);
-//  Console.WriteLine ("Test set targets = ", tstTarFpath);
-//  Console.WriteLine ("Number of classes= ", NoClasses);
-//  Console.WriteLine ("Number of repeats= ", norepeats);
-//  Console.WriteLine ("Max no iterations= ", MaxIterations);
+//  LoggedConsole.WriteLine ("        Size of F2 Net b = ", F2sizeOfNetb);
+//  LoggedConsole.WriteLine ("Dim of input data= ", DataDim);
+//  LoggedConsole.WriteLine ("Train set size   = ", trnSetSize);
+//  LoggedConsole.WriteLine ("Train set path   = ", trnSetFpath);
+//  LoggedConsole.WriteLine ("Training targets = ", trnTarFpath);
+//  LoggedConsole.WriteLine ("Test set size    = ", tstSetSize);
+//  LoggedConsole.WriteLine ("Test set path    = ", tstSetFpath);
+//  LoggedConsole.WriteLine ("Test set targets = ", tstTarFpath);
+//  LoggedConsole.WriteLine ("Number of classes= ", NoClasses);
+//  LoggedConsole.WriteLine ("Number of repeats= ", norepeats);
+//  LoggedConsole.WriteLine ("Max no iterations= ", MaxIterations);
 //  write   ("DisplayOn= ",displayOn);
-//  Console.WriteLine ("  Print Test Results= ", printTestResults);
+//  LoggedConsole.WriteLine ("  Print Test Results= ", printTestResults);
 //  write   ("Print decision matrix= ", printDecisionMatrix);
-//  Console.WriteLine ("  Pause After Repeats= ", pauseAfterRepeat);
-//  Console.WriteLine ("Preprocess type  = ", PreprocessStr[preprocess]);
-//  Console.WriteLine;
+//  LoggedConsole.WriteLine ("  Pause After Repeats= ", pauseAfterRepeat);
+//  LoggedConsole.WriteLine ("Preprocess type  = ", PreprocessStr[preprocess]);
+//  LoggedConsole.WriteLine;
 //  write   ("                                press any key to continue .... ");
 //  repeat until keypressed;
 //}  //end;
@@ -247,9 +247,9 @@ namespace NeuralNets
 //        if (! PrinterOn)
 //        {
 //            clrScr;
-//            Console.WriteLine; Console.WriteLine; Console.WriteLine;
-//            Console.WriteLine (" WARNING:- Printer is (! on !!!!");
-//            Console.WriteLine ("           Turn on-line now if desired. Press any key to continue...");
+//            LoggedConsole.WriteLine; LoggedConsole.WriteLine; LoggedConsole.WriteLine;
+//            LoggedConsole.WriteLine (" WARNING:- Printer is (! on !!!!");
+//            LoggedConsole.WriteLine ("           Turn on-line now if desired. Press any key to continue...");
 //            key = Console.ReadKey();
 //            //repeat until keypressed;
 //            //key = readkey;
@@ -268,12 +268,12 @@ namespace NeuralNets
 //    if (fileExists (WtsFPath) ) code = 6;
 //    else
 //    {
-//      clrScr; Console.WriteLine; Console.WriteLine; Console.WriteLine;
-//      Console.WriteLine ("(!E:- Will create a new weights file - ",wtsFPath);
-//      Console.WriteLine ("       New wts file created for every simulation. ");
-//      Console.WriteLine ("       Default ext is .wnn where nn is the simulation number");
-//      Console.WriteLine;
-//      Console.WriteLine (" Press any key to return to main menu.");
+//      clrScr; LoggedConsole.WriteLine; LoggedConsole.WriteLine; LoggedConsole.WriteLine;
+//      LoggedConsole.WriteLine ("(!E:- Will create a new weights file - ",wtsFPath);
+//      LoggedConsole.WriteLine ("       New wts file created for every simulation. ");
+//      LoggedConsole.WriteLine ("       Default ext is .wnn where nn is the simulation number");
+//      LoggedConsole.WriteLine;
+//      LoggedConsole.WriteLine (" Press any key to return to main menu.");
 //      key = readkey;
 //    }  //end;
 //  if (trnSetSize > maxTrnSetSize) ) code = 7;
@@ -283,22 +283,22 @@ namespace NeuralNets
 //  if (code <> 0)   //     {messages concerning fatal errors}
 //    {
 //    clrScr;
-//    Console.WriteLine; Console.WriteLine ("            CONFIGURATION ERROR!");
-//    Console.WriteLine; Console.WriteLine (" Must edit configuration file in main menu");
-//    Console.WriteLine;
+//    LoggedConsole.WriteLine; LoggedConsole.WriteLine ("            CONFIGURATION ERROR!");
+//    LoggedConsole.WriteLine; LoggedConsole.WriteLine (" Must edit configuration file in main menu");
+//    LoggedConsole.WriteLine;
 //    case code of
-//    1: Console.WriteLine (" Cannot find training set file ",   trnSetFPath);
-//    2: Console.WriteLine (" Cannot find training target file ",trnTarFPath);
-//    3: Console.WriteLine (" Cannot find test set file ",       tstSetFPath);
-//    4: Console.WriteLine (" Cannot find test target file ",    tstTarFPath);
-//    5: Console.WriteLine (" Cannot find wts file ",            wtsFPath);
-//    6: Console.WriteLine (" Cannot train over an existing wts file ie ", wtsFPath);
-//    7: Console.WriteLine (" Train set size exceeds maximum of ",maxTrnSetSize, " declared in source code.");
-//    8: Console.WriteLine (" F1 layer size exceeds maximum of ",maxF1size, " declared in source code.");
-//    9: Console.WriteLine (" F2 layer size exceeds maximum of ",maxF2size, " declared in source code.");
+//    1: LoggedConsole.WriteLine (" Cannot find training set file ",   trnSetFPath);
+//    2: LoggedConsole.WriteLine (" Cannot find training target file ",trnTarFPath);
+//    3: LoggedConsole.WriteLine (" Cannot find test set file ",       tstSetFPath);
+//    4: LoggedConsole.WriteLine (" Cannot find test target file ",    tstTarFPath);
+//    5: LoggedConsole.WriteLine (" Cannot find wts file ",            wtsFPath);
+//    6: LoggedConsole.WriteLine (" Cannot train over an existing wts file ie ", wtsFPath);
+//    7: LoggedConsole.WriteLine (" Train set size exceeds maximum of ",maxTrnSetSize, " declared in source code.");
+//    8: LoggedConsole.WriteLine (" F1 layer size exceeds maximum of ",maxF1size, " declared in source code.");
+//    9: LoggedConsole.WriteLine (" F2 layer size exceeds maximum of ",maxF2size, " declared in source code.");
 //    }  //end; {of case statement}
-//    Console.WriteLine;
-//    Console.WriteLine (" Press any key to return to main menu.");
+//    LoggedConsole.WriteLine;
+//    LoggedConsole.WriteLine (" Press any key to return to main menu.");
 //    key = readkey;
 //        }  //}  //end;
 //    }  //}  //end;
@@ -360,9 +360,9 @@ namespace NeuralNets
 
     //    TextBackGround (1); //  {blue background}
     //    ClrScr;
-    //    Console.WriteLine;
-    //    Console.WriteLine ("  CHECKING PARAMETER VALUES for Net version ",ARTversion);
-    //    Console.WriteLine;
+    //    LoggedConsole.WriteLine;
+    //    LoggedConsole.WriteLine ("  CHECKING PARAMETER VALUES for Net version ",ARTversion);
+    //    LoggedConsole.WriteLine;
 
     //    assign (ParamsF, ParamsFPath);       // {prepare parameters file}
     //    reset  (ParamsF);
@@ -371,16 +371,16 @@ namespace NeuralNets
     //    for (int simul= 0; simul < noSimulationsInRun; simul++)
     //    {
     //        ReadParameterValues(noValues, ParamsF, parameters);
-    //        Console.WriteLine ("  Line "+simul+ " is OK");
+    //        LoggedConsole.WriteLine ("  Line "+simul+ " is OK");
 
     //        //if (noValues != MaxARTparamsNo-1 )
     //        //{
     //        //    for (pn = 1 to maxARTParamsNo-1)    //  {display all 8 parameter values}
-    //        //    Console.WriteLine ("  (",pn,") ",paramNames[versionID, pn]:10,"  = ",parameters[pn]:7:4);
-    //        //    Console.WriteLine;
-    //        //    Console.WriteLine ("  Fault in values for simulation ",simul);
-    //        //    Console.WriteLine ("  Must have exactly  ",maxARTparamsNo-1, " parameter values.");
-    //        //    Console.WriteLine ("  Press any key to return to main menu.");
+    //        //    LoggedConsole.WriteLine ("  (",pn,") ",paramNames[versionID, pn]:10,"  = ",parameters[pn]:7:4);
+    //        //    LoggedConsole.WriteLine;
+    //        //    LoggedConsole.WriteLine ("  Fault in values for simulation ",simul);
+    //        //    LoggedConsole.WriteLine ("  Must have exactly  ",maxARTparamsNo-1, " parameter values.");
+    //        //    LoggedConsole.WriteLine ("  Press any key to return to main menu.");
     //        //    key = readkey;
     //        //    ParamvaluesOK = false;
     //        //    exit;
@@ -392,12 +392,12 @@ namespace NeuralNets
     //        //{
     //        //    parameters[Theta] = (1/Sqrt(F1SizeofNeta) - 0.01);
     //        //    //for (pn = 1 to maxARTParamsNo-1)  //{display first 7 parameter values}
-    //        //    //Console.WriteLine ("  (",pn,") ",paramNames[versionID, pn]:10,"  = ",parameters[pn]:7:4);
-    //        //    Console.WriteLine;
-    //        //    Console.WriteLine ("  Fault in values for simulation " + simul);
-    //        //    Console.WriteLine ("  Theta must be < 1/sqrtM ie 1/sqrt(F1size of net a)");
-    //        //    Console.WriteLine ("  Have automatically set  theta = 1/sqrtM - 0.01");
-    //        //    Console.WriteLine ("  Press any key to continue.");
+    //        //    //LoggedConsole.WriteLine ("  (",pn,") ",paramNames[versionID, pn]:10,"  = ",parameters[pn]:7:4);
+    //        //    LoggedConsole.WriteLine;
+    //        //    LoggedConsole.WriteLine ("  Fault in values for simulation " + simul);
+    //        //    LoggedConsole.WriteLine ("  Theta must be < 1/sqrtM ie 1/sqrt(F1size of net a)");
+    //        //    LoggedConsole.WriteLine ("  Have automatically set  theta = 1/sqrtM - 0.01");
+    //        //    LoggedConsole.WriteLine ("  Press any key to continue.");
     //        //    key = readkey;
     //        //}  //end;
 
@@ -408,11 +408,11 @@ namespace NeuralNets
     //            if (sigma > 1)
     //            {
     //                //for (pn = 1 to maxARTParamsNo-1)  //{display first 7 parameter values}
-    //                //Console.WriteLine ("  ("+pn+") "+paramNames[versionID, pn]:10+"  = "+parameters[pn]:7:4);
-    //                Console.WriteLine;
-    //                Console.WriteLine ("  Fault in values for simulation ",simul);
-    //                Console.WriteLine ("  Sigma = cd/1-d > 1.0. Choose proper values for c & d");
-    //                Console.WriteLine ("  Press any key to continue.");
+    //                //LoggedConsole.WriteLine ("  ("+pn+") "+paramNames[versionID, pn]:10+"  = "+parameters[pn]:7:4);
+    //                LoggedConsole.WriteLine;
+    //                LoggedConsole.WriteLine ("  Fault in values for simulation ",simul);
+    //                LoggedConsole.WriteLine ("  Sigma = cd/1-d > 1.0. Choose proper values for c & d");
+    //                LoggedConsole.WriteLine ("  Press any key to continue.");
     //                key = readkey;
     //                ParamvaluesOK = false;
     //                exit;
@@ -425,7 +425,7 @@ namespace NeuralNets
     //    Close (ParamsF);
     //    if (AllOK )
     //    {
-    //        Console.WriteLine; write ("  ALL OK! Press any key to continue ... ");
+    //        LoggedConsole.WriteLine; write ("  ALL OK! Press any key to continue ... ");
     //        key = readkey;
     //        clrscr;
     //    }  //end;
@@ -463,8 +463,8 @@ namespace NeuralNets
 //    classLabel[0] = 0; {zero index will be used to indicate unmatched test sig}
 ////(***
 ////for cNo = 1 to noClasses do write (lst, F2ScoreMatrix^[uNo, cNo]:4);
-////Console.WriteLine (lst);
-////Console.WriteLine (lst, " max=",maxValue:3, " lbl=",classLabel[uNo]:3, " prob=",ClassProb[uNo]:4:1);
+////LoggedConsole.WriteLine (lst);
+////LoggedConsole.WriteLine (lst, " max=",maxValue:3, " lbl=",classLabel[uNo]:3, " prob=",ClassProb[uNo]:4:1);
 ////***)
 //  }  //}  //end;  {of all units}
 
@@ -533,21 +533,21 @@ namespace NeuralNets
 //    //var
 //  sigNum, rep, i  : word; {counter}
 
-//  Console.WriteLine(F, "THE DECISION MATRIX");
+//  LoggedConsole.WriteLine(F, "THE DECISION MATRIX");
 //  write  (F, "sig#  vote");
 //  for rep = 1 to norepeats do write(lst, rep:5);
-//  Console.WriteLine (F, "   target");
-//  for i = 1 to 100 do write (F,"-"); Console.WriteLine(F);  {draw horiz line}
+//  LoggedConsole.WriteLine (F, "   target");
+//  for i = 1 to 100 do write (F,"-"); LoggedConsole.WriteLine(F);  {draw horiz line}
 
 //  for sigNum = 1 to tstSetSize do
 //  {
 //    write (F, sigNum:4,"|");
 //    for rep = 0 to norepeats do
 //      write (F, decisionMatrix^[sigNum, rep]:5);
-//    Console.WriteLine (F, "  |", tstSetTargets^[sigNum]:4);
+//    LoggedConsole.WriteLine (F, "  |", tstSetTargets^[sigNum]:4);
 //  }  //end;
-//  Console.WriteLine (F);
-//  Console.WriteLine (F, formfeed);
+//  LoggedConsole.WriteLine (F);
+//  LoggedConsole.WriteLine (F, formfeed);
 //} // }  //end; WriteDecisionMatrix
 
 
@@ -561,98 +561,98 @@ namespace NeuralNets
 //  min, max : word;
 
 
-//  Console.WriteLine (F, "TEST RESULTS/Score from file: ",ResultsFPath);
+//  LoggedConsole.WriteLine (F, "TEST RESULTS/Score from file: ",ResultsFPath);
 //  printDateAndTime (F);
-//  Console.WriteLine (F, "ART VERSION = ",versionNames[versionID]);
+//  LoggedConsole.WriteLine (F, "ART VERSION = ",versionNames[versionID]);
 //  write   (F, "Training Set file = ",TrnSetFPath);
-//  Console.WriteLine (F, "   Train set size = ",trnSetSize, " signals");
-//  Console.WriteLine (F, "Train target file = ",TrnTarFPath);
+//  LoggedConsole.WriteLine (F, "   Train set size = ",trnSetSize, " signals");
+//  LoggedConsole.WriteLine (F, "Train target file = ",TrnTarFPath);
 //  write   (F, "Test Set     file = ",TstSetFPath);
-//  Console.WriteLine (F, "   Test  set size = ",tstSetSize, " signals");
-//  Console.WriteLine (F, "Test  target file = ",TstTarFPath);
-//  Console.WriteLine (F, "Weights file      = ",wtsFpath);
+//  LoggedConsole.WriteLine (F, "   Test  set size = ",tstSetSize, " signals");
+//  LoggedConsole.WriteLine (F, "Test  target file = ",TstTarFPath);
+//  LoggedConsole.WriteLine (F, "Weights file      = ",wtsFpath);
 //  for k = 1 to MaxARTparamsNo do
 //    write (F, paramNames[versionID, k]:9);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 //  for k = 1 to MaxARTparamsNo do write (F, ARTparams[k]:9:4);
-//  Console.WriteLine (F);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write  (F, "rep number  ");
 //  for rep = 1 to norepeats do write(F, rep:6);
-//  Console.WriteLine (F, "   av");
-//  for k = 1 to 80 do write (F,"-"); Console.WriteLine(F);  {draw horiz line}
+//  LoggedConsole.WriteLine (F, "   av");
+//  for k = 1 to 80 do write (F,"-"); LoggedConsole.WriteLine(F);  {draw horiz line}
 //  write  (F, "categories  ");
 //  for rep = 1 to norepeats do write(F, noOfCommittedF2[rep]:6);
 //  moment(noOfCommittedF2, norepeats, mean, sd, min, max);
-//  Console.WriteLine (F, mean:6:1,"+/-",sd:3:1);
+//  LoggedConsole.WriteLine (F, mean:6:1,"+/-",sd:3:1);
 //  write  (F, "iter to conv");
 //  for rep = 1 to norepeats do write(F, iterToConv[rep]:6);
 //  moment(iterToConv, norepeats, mean, sd, min, max);
-//  Console.WriteLine (F, mean:6:1,"+/-",sd:3:1);
+//  LoggedConsole.WriteLine (F, mean:6:1,"+/-",sd:3:1);
 //  write  (F, "# skipped   ");
 //  for rep = 1 to norepeats do write(F, SkippedBecauseFull[rep]:6);
-//  Console.WriteLine (F);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 
 
 //  size = tstResult^[noClasses+1].tot; {ie size of the test set or tstSetSize}
-//  Console.WriteLine(F, "THE TEST Score MATRIX");
+//  LoggedConsole.WriteLine(F, "THE TEST Score MATRIX");
 //  write  (F, "class   vote");
 //  for rep = 1 to norepeats do write(F, rep:6);
-//  Console.WriteLine (F);
-//  for k = 1 to 80 do write (F,"-"); Console.WriteLine(F);  {draw horiz line}
+//  LoggedConsole.WriteLine (F);
+//  for k = 1 to 80 do write (F,"-"); LoggedConsole.WriteLine(F);  {draw horiz line}
 //  for cls= 0 to noClasses+1 do
 //  {
 //    write (F, cls:6);
 //    for rep = 0 to norepeats do
 //      write (F, tstScoreMatrix^[cls, rep]:6);
-//    if cls = 0 ) Console.WriteLine (F, " <- no match")
+//    if cls = 0 ) LoggedConsole.WriteLine (F, " <- no match")
 //    else
-//    if cls = noClasses+1 ) Console.WriteLine (F," <- total correct")
-//    else Console.WriteLine (F, " <- num correct in class");
+//    if cls = noClasses+1 ) LoggedConsole.WriteLine (F," <- total correct")
+//    else LoggedConsole.WriteLine (F, " <- num correct in class");
 //  }  //end; {end of all classes}
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 ////(****
-////  Console.WriteLine(lst);
-////  Console.WriteLine(lst,"Rep No:","":12,"No match   Classes 1 to ",noClasses,"  Total");
+////  LoggedConsole.WriteLine(lst);
+////  LoggedConsole.WriteLine(lst,"Rep No:","":12,"No match   Classes 1 to ",noClasses,"  Total");
 ////  for rep=1 to norepeats do
 ////  {
 ////    write(lst, rep:2,"":9);
 ////    for cls = 0 to noClasses+1 do write (lst, tstScoreMatrix^[cls, rep]:5);
-////    Console.WriteLine(lst);
+////    LoggedConsole.WriteLine(lst);
 ////  }  //end;
-////  Console.WriteLine(lst); Console.WriteLine(lst);
+////  LoggedConsole.WriteLine(lst); LoggedConsole.WriteLine(lst);
 ////****)
-//  Console.WriteLine (F,"No match":21, "Classes 1 to ":30, noClasses, "Total":20);
+//  LoggedConsole.WriteLine (F,"No match":21, "Classes 1 to ":30, noClasses, "Total":20);
 //  write   (F,"totals  ");
 //  for cls= 0 to noClasses+1 do  write (F, tstResult^[cls].tot:14);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write   (F, "mean    ");
 //  for cls= 0 to noClasses+1 do
 //    write (F, tstResult^[cls].mean:7:1,"(",pc(tstResult^[cls].mean, size):4:1,"%)");
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write   (F, "std dev ");
 //  for cls= 0 to noClasses+1 do
 //    write (F, tstResult^[cls].sd:7:1,  "(",pc(tstResult^[cls].sd,   size):4:1,"%)");
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write   (F, "minimum ");
 //  for cls= 0 to noClasses+1 do write (F, tstResult^[cls].min:14);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write   (F, "maximum ");
 //  for cls= 0 to noClasses+1 do write (F, tstResult^[cls].max:14);
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write   (F, "VOTE    ");
 //  for cls= 0 to noClasses+1 do
 //    write (F, tstResult^[cls].vote:7,"(",pc(tstResult^[cls].vote, size):4:1,"%)");
-//  Console.WriteLine (F);
+//  LoggedConsole.WriteLine (F);
 
 //  write (F, formFeed);
 //}  //}  //end;  writeTestResults (var F:text)
@@ -670,18 +670,18 @@ namespace NeuralNets
     //        ReadConfigFile;
     //        //TextBackGround (1);   //{blue background}
     //        //ClrScr;
-    //        Console.WriteLine();
-    //        Console.WriteLine ("                   ART MAIN MENU");
-    //        Console.WriteLine ("  All setting up to be entered in CONFIG file.");
-    //        Console.WriteLine();
-    //        Console.WriteLine ("  C) edit  CONFIGURATION file:- ",ConfigFpath);
-    //        Console.WriteLine ("  R) edit  PARAMETERS file   :- ",ParamsFpath);
-    //        Console.WriteLine ("  P) PRINT configuration file.");
-    //        Console.WriteLine ("  D) Display contents of OUTPUT directory.");
-    //        Console.WriteLine ("  T) Print TEXT file.");
-    //        Console.WriteLine ("  M) Print decision MATRIX.");
-    //        Console.WriteLine();
-    //        Console.WriteLine ("  O) OK, continue            Esc) HALT program");
+    //        LoggedConsole.WriteLine();
+    //        LoggedConsole.WriteLine ("                   ART MAIN MENU");
+    //        LoggedConsole.WriteLine ("  All setting up to be entered in CONFIG file.");
+    //        LoggedConsole.WriteLine();
+    //        LoggedConsole.WriteLine ("  C) edit  CONFIGURATION file:- ",ConfigFpath);
+    //        LoggedConsole.WriteLine ("  R) edit  PARAMETERS file   :- ",ParamsFpath);
+    //        LoggedConsole.WriteLine ("  P) PRINT configuration file.");
+    //        LoggedConsole.WriteLine ("  D) Display contents of OUTPUT directory.");
+    //        LoggedConsole.WriteLine ("  T) Print TEXT file.");
+    //        LoggedConsole.WriteLine ("  M) Print decision MATRIX.");
+    //        LoggedConsole.WriteLine();
+    //        LoggedConsole.WriteLine ("  O) OK, continue            Esc) HALT program");
 
         //    Repeat
         //        Choice = Upcase(readkey);
@@ -692,7 +692,7 @@ namespace NeuralNets
         //        SwapVectors;
         //        Exec("c:\\DOS\\edit.com", ConfigFPath);
         //        SwapVectors;
-        //        If DOSError <> 0 ) Console.WriteLine ("DOS Error # ",DosError);
+        //        If DOSError <> 0 ) LoggedConsole.WriteLine ("DOS Error # ",DosError);
         //        ClrScr;
         //        ReadConfigFile;
         //        DisplayConfiguration;
@@ -701,15 +701,15 @@ namespace NeuralNets
         //        SwapVectors;
         //        Exec("c:\\DOS\\edit.com", ParamsFPath);
         //        SwapVectors;
-        //        If DOSError <> 0 ) Console.WriteLine ("DOS Error # ",DosError);
+        //        If DOSError <> 0 ) LoggedConsole.WriteLine ("DOS Error # ",DosError);
         //        ClrScr;
         //      }  //end;
         //    "P":if (! printerOn ) Printer(!OnMessage
         //        else PrintTextFile(ConfigFName);
         //    "D":{
         //        ClrScr;
-        //        Console.WriteLine ("List of files in the directory :- ", OUTPUTdir);
-        //        Console.WriteLine;
+        //        LoggedConsole.WriteLine ("List of files in the directory :- ", OUTPUTdir);
+        //        LoggedConsole.WriteLine;
         //        FindFirst (OUTPUTdir+"/*.*", AnyFile, DirInfo);
         //        i = 0;
         //        while (DosError = 0)  do
@@ -717,19 +717,19 @@ namespace NeuralNets
         //          inc (i);
         //          write (DirInfo.name:15);
         //          FindNext (DirInfo);
-        //          if (i MOD 5 = 0) ) Console.WriteLine;
+        //          if (i MOD 5 = 0) ) LoggedConsole.WriteLine;
         //        }  //end;
-        //        Console.WriteLine;
-        //        Console.WriteLine ("Press <space bar> to return to main menu");
+        //        LoggedConsole.WriteLine;
+        //        LoggedConsole.WriteLine ("Press <space bar> to return to main menu");
         //        key = readKey;
         //      }  //end;
         //    "T": {
-        //        Console.WriteLine;
+        //        LoggedConsole.WriteLine;
         //        write ("   Enter full path name of text file to print -> ");
         //        readln (FPath);
         //        if (! FileExists(FPath) )
         //        {
-        //          Console.WriteLine;
+        //          LoggedConsole.WriteLine;
         //          write (" File does (! exist!!   Press any key ->");
         //          key = readkey;
         //        end else
@@ -839,9 +839,9 @@ namespace NeuralNets
 
         //if (code != 0)
         //{
-        //    Console.WriteLine("WARNING!!!!!!!! ERROR READING WTS FILE.");
-        //    Console.WriteLine(" F1 & F2 sizes in config file and wts file are NOT equal");
-        //    Console.WriteLine(" Press any key to return to main menu");
+        //    LoggedConsole.WriteLine("WARNING!!!!!!!! ERROR READING WTS FILE.");
+        //    LoggedConsole.WriteLine(" F1 & F2 sizes in config file and wts file are NOT equal");
+        //    LoggedConsole.WriteLine(" Press any key to return to main menu");
         //    key = readkey;
         //    goto TheBeginning;
         //}
@@ -871,7 +871,7 @@ namespace NeuralNets
             //{********** DO REPEATS ***********}
             for (int rep = 0; rep < ART.numberOfRepeats; rep++)
             {
-                Console.WriteLine ("RUN=",simul, " rep=",rep);
+                LoggedConsole.WriteLine ("RUN=",simul, " rep=",rep);
 
                 //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
                 if (task == Tasks.TRAIN)
@@ -887,7 +887,7 @@ namespace NeuralNets
 
                     wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
                     //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
-                    if (DEBUG) Console.WriteLine("wts= "+wtsFpath +"  train set= "+trnSetFpath);
+                    if (DEBUG) LoggedConsole.WriteLine("wts= "+wtsFpath +"  train set= "+trnSetFpath);
                 } 
 
 
@@ -896,7 +896,7 @@ namespace NeuralNets
                     //{wts file was loaded above.
                     //art2a.TestNet(testData, simul, rep, code) ;
                     //if (code != 0) goto EndOfSimulations;
-                    //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  test set= " + tstSetFpath);
+                    //if (DEBUG) LoggedConsole.WriteLine("wts= " + wtsFpath + "  test set= " + tstSetFpath);
                 } 
 
 
@@ -926,7 +926,7 @@ namespace NeuralNets
 
                     //art2a.TestNet(testData, simul, rep, code);
                     //if (code != 0) goto EndOfSimulations;
-                    if (DEBUG) Console.WriteLine("wts= "+wtsFpath+"  test set= " +tstSetFpath +"  Press any key");
+                    if (DEBUG) LoggedConsole.WriteLine("wts= "+wtsFpath+"  test set= " +tstSetFpath +"  Press any key");
                 } 
 
 
@@ -935,7 +935,7 @@ namespace NeuralNets
                     //for F2uNo = 1 to F2SizeOfNeta do   {Calculate the average signal values}
                     //{
                     //  {for j = 0 to noClasses+1 do write (lst, F2ScoreMatrix^[F2uNo][j]:4);
-                    //  Console.WriteLine (lst);}
+                    //  LoggedConsole.WriteLine (lst);}
                     //  Score = F2ScoreMatrix^[F2uNo][noClasses+1];
                     //  for F1uNo = 1 to F1SizeOfNeta do
                     //    if  Score = 0 )

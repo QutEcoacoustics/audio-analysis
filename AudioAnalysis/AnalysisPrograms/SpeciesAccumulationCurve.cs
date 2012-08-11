@@ -44,7 +44,7 @@ namespace AnalysisPrograms
             //READ CSV FILE TO MASSAGE DATA
             var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFilePath);
             List<string> speciesList = results1.Item1;
-            Console.WriteLine("Unique Species Count = " + speciesList.Count);
+            LoggedConsole.WriteLine("Unique Species Count = " + speciesList.Count);
 
             //the speciesList contains N species names from columns 3 to N+2. Some species will not call in a particular day i.e. column sum = zero.
             byte[,] occurenceMatrix = results1.Item2;
@@ -69,7 +69,7 @@ namespace AnalysisPrograms
                     speciesCount += count;
                     string line = String.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
                     text.Add(line);
-                    Console.WriteLine(line);
+                    LoggedConsole.WriteLine(line);
 
                     for(int i = 0; i < row.Length; i++) if(row[i] == 1) DataTools.SetColumnZero(occurenceMatrix, i);
 
@@ -80,7 +80,7 @@ namespace AnalysisPrograms
 
                 int[] finalRowSums = DataTools.GetRowSums(occurenceMatrix);
                 int totalSum = finalRowSums.Sum();
-                Console.WriteLine("remaining species ="+totalSum);
+                LoggedConsole.WriteLine("remaining species ="+totalSum);
 
 
                 throw new AnalysisOptionDevilException();
@@ -104,14 +104,14 @@ namespace AnalysisPrograms
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
                     System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
-                    //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
+                    //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
                     s75array[i] = results.Item3;
                     s100array[i] = results.Item4;
                     fixedsampleArray[i] = results.Item5;
 
-                    if (i % 100 == 0) Console.WriteLine("trial "+ i);
+                    if (i % 100 == 0) LoggedConsole.WriteLine("trial "+ i);
                 } //over all trials
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
@@ -119,8 +119,8 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
-                Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
+                LoggedConsole.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
                
                 throw new AnalysisOptionDevilException();
             }
@@ -151,13 +151,13 @@ namespace AnalysisPrograms
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
                     System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
-                    //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
+                    //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
                     s75array[i] = results.Item3;
                     s100array[i] = results.Item4;
                     fixedsampleArray[i] = results.Item5;
-                    if (i % 100 == 0) Console.WriteLine("trial " + i);
+                    if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
                 } //over all trials
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
@@ -165,8 +165,8 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
-                Console.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
+                LoggedConsole.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
             }
 
 
@@ -179,7 +179,7 @@ namespace AnalysisPrograms
 
                 //######################## use following two lines to rank by just a single column of acoustic indices matrix.
                 //int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
-                //Console.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
+                //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
@@ -191,8 +191,8 @@ namespace AnalysisPrograms
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
                 System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
-                Console.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
-                Console.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
+                LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
             }
 
             
@@ -242,7 +242,7 @@ namespace AnalysisPrograms
                 if (!lastLine[1].Equals("minutes")) Double.TryParse(lastLine[1], out elapsedTime);
             }
 
-            //Console.WriteLine("\n\n");
+            //LoggedConsole.WriteLine("\n\n");
             Log.WriteLine("###### " + fileCount + " #### Process Recording: " + fileName + " ###############################");
 
 
@@ -269,9 +269,9 @@ namespace AnalysisPrograms
 
         //    //double[] sort = results2.Item2;
         //    //for (int i = 0; i < array.Length; i++)
-        //    //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+        //    //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
         //    //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-        //    //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+        //    //LoggedConsole.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
 
         //    return results2.Item1;   
         //}
@@ -331,12 +331,12 @@ namespace AnalysisPrograms
             double wt6 = 0.1;//av cluster duration
 
 
-            Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
+            LoggedConsole.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
                                                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
-            Console.WriteLine("Chorus Bias wt  ="+ chorusBiasWeight);
-            Console.WriteLine("BG threshold    =" + bgThreshold+" dB");
-            Console.WriteLine("BG var threshold=" + bgVarianceThreshold + " dB");
-            Console.WriteLine("Noise bias  wt  =" + noiseBias);
+            LoggedConsole.WriteLine("Chorus Bias wt  ="+ chorusBiasWeight);
+            LoggedConsole.WriteLine("BG threshold    =" + bgThreshold+" dB");
+            LoggedConsole.WriteLine("BG var threshold=" + bgVarianceThreshold + " dB");
+            LoggedConsole.WriteLine("Noise bias  wt  =" + noiseBias);
 
             double[] combined = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
@@ -352,9 +352,9 @@ namespace AnalysisPrograms
 
             //double[] sort = results2.Item2;
             //for (int i = 0; i < array.Length; i++)
-            //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+            //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
             //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-            //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+            //LoggedConsole.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
 
             return rankOrder;
         }
@@ -373,7 +373,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < oneHourCount; i++) oneHourArray[i] = bgArray[(b * oneHourCount)+i];
                 double av, sd;
                 NormalDist.AverageAndSD(oneHourArray, out av, out sd);
-                Console.WriteLine("Hour {0}:  av={1:f2}   sd={2:f2}", b, av, sd);
+                LoggedConsole.WriteLine("Hour {0}:  av={1:f2}   sd={2:f2}", b, av, sd);
                 for (int i = 0; i < oneHourCount; i++) bgVariance[(b * oneHourCount)+i] = sd;
             }
             bgVariance = DataTools.filterMovingAverage(bgVariance, 5);
@@ -407,7 +407,7 @@ namespace AnalysisPrograms
             int speciesCount = 0;
             for (int j = 0; j < C; j++) if (cumulativeSpeciesRichness[j] > 0) speciesCount++;
             accumlationCurve[0] = speciesCount;
-            //Console.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", 1, randomOrder[0], speciesCount, speciesCount);
+            //LoggedConsole.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", 1, randomOrder[0], speciesCount, speciesCount);
 
             int cummulativeCount = 0;
             sampleID = 1; // sample ID
@@ -421,7 +421,7 @@ namespace AnalysisPrograms
                 cummulativeCount = 0;
                 for (int j = 0; j < C; j++) if (cumulativeSpeciesRichness[j] > 0) cummulativeCount++;
                 accumlationCurve[sampleID] = cummulativeCount;
-                //Console.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", sampleID + 1, randomOrder[sampleID], speciesCount, cummulativeCount);
+                //LoggedConsole.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", sampleID + 1, randomOrder[sampleID], speciesCount, cummulativeCount);
                 sampleID++;
             }
             return accumlationCurve;
@@ -470,7 +470,7 @@ namespace AnalysisPrograms
             string[] headerLine = text[0].Split(',');                    // read and split the first line
             int[] columnSums = DataTools.GetColumnSums(occurenceMatrix);
             for (int j = 0; j < columnSums.Length; j++) if (columnSums[j] > 0) speciesList.Add(headerLine[startColumn + j]);
-            //Console.WriteLine("Unique Species Count = " + speciesList.Count);
+            //LoggedConsole.WriteLine("Unique Species Count = " + speciesList.Count);
             
 
             //now cross check that all is OK - this code now needs debugging
@@ -478,11 +478,11 @@ namespace AnalysisPrograms
             //{
             //    int rowSum = DataTools.GetRowSum(occurenceMatrix, i);
             //    if (speciesCounts[i] != rowSum)
-            //        Console.WriteLine("WARNING: ROW {0}: Matrix row sum != Species count i.e. {1} != {2}", (i+1), rowSum, speciesCounts[i]);
+            //        LoggedConsole.WriteLine("WARNING: ROW {0}: Matrix row sum != Species count i.e. {1} != {2}", (i+1), rowSum, speciesCounts[i]);
             //}
             //check the species names
             int count = 0;
-            foreach (string name in speciesList) Console.WriteLine(++count +"\t"+ name);
+            foreach (string name in speciesList) LoggedConsole.WriteLine(++count +"\t"+ name);
 
             return Tuple.Create(speciesList, occurenceMatrix);
         }
@@ -509,16 +509,16 @@ namespace AnalysisPrograms
         {
             if (!File.Exists(args[0]))
             {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Cannot find recording file <" + args[0] + ">");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
                 throw new AnalysisOptionInvalidPathsException();
             }
             string opDir = Path.GetDirectoryName(args[1]);
             if (!Directory.Exists(opDir))
             {
-                Console.WriteLine("Cannot find output directory: <" + opDir + ">");
+                LoggedConsole.WriteLine("Cannot find output directory: <" + opDir + ">");
                 Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
                 throw new AnalysisOptionInvalidPathsException();
             }
         }
@@ -526,14 +526,14 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("SpeciesAccumulation.exe inputFilePath outputFilePath");
-            Console.WriteLine("where:");
-            Console.WriteLine("inputFileName:- (string) Path of the input  file to be processed.");
-            Console.WriteLine("outputFileName:-(string) Path of the output file to store results.");
-            Console.WriteLine("");
-            Console.WriteLine("\nPress <ENTER> key to exit.");
+            LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("SpeciesAccumulation.exe inputFilePath outputFilePath");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("inputFileName:- (string) Path of the input  file to be processed.");
+            LoggedConsole.WriteLine("outputFileName:-(string) Path of the output file to store results.");
+            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
             throw new AnalysisOptionInvalidArgumentsException();
         }
 

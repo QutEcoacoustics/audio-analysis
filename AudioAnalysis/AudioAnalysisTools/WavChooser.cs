@@ -142,12 +142,12 @@ namespace AudioAnalysisTools
             //process the recording name
             recordingName = recordingName.Replace('/', '_');
             recordingName = recordingName.Replace("+", "");
-            Console.WriteLine("Get recording:- " + recordingName);
+            LoggedConsole.WriteLine("Get recording:- " + recordingName);
             fileName = Path.GetFileNameWithoutExtension(recordingName);
 
             //get bytes and write them to file and then read it.
             byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
-            Console.WriteLine("Recording size=" + bytes.Length+ " bytes");
+            LoggedConsole.WriteLine("Recording size=" + bytes.Length+ " bytes");
             string opPath = opDir + recordingName;
             File.WriteAllBytes(opPath, bytes);
             recording = new AudioRecording(opPath);

@@ -410,7 +410,7 @@
         public void Dispose()
         {
             Console.SetOut(_originalConsoleOutput);
-            Console.Write(this.ToString());
+            LoggedConsole.Write(this.ToString());
             this._consoleOutput.Dispose();
         }
         public override string ToString()

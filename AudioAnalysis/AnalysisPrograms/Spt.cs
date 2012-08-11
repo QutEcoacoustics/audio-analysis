@@ -31,7 +31,7 @@ namespace AnalysisPrograms
 
             if (args.Length != 3)
             {
-                Console.WriteLine(
+                LoggedConsole.WriteLine(
                 @"The arguments for SPT are: wavFile intensityThreshold
                 
                 wavFile:            path to recording file.
@@ -65,7 +65,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("imagePath = " + newPath);
             im.Save(newPath);
 
-            Console.WriteLine("\nFINISHED!");
+            LoggedConsole.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }//end Main
 

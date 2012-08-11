@@ -87,10 +87,10 @@ namespace AnalysisPrograms
 
             string title = "# FOR DETECTION OF LEWIN'S RAIL using CROSS-CORRELATION & FFT";
             string date  = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -140,7 +140,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -153,7 +153,7 @@ namespace AnalysisPrograms
             }
 
 
-            Console.WriteLine("\n\n# Finished recording:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("\n\n# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -171,7 +171,7 @@ namespace AnalysisPrograms
             int status = 0;
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
                 status = 1;
                 return status;
             }
@@ -227,7 +227,7 @@ namespace AnalysisPrograms
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
                         status = 3;
                         return status;
                     }
@@ -368,7 +368,7 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
             {
-                Console.WriteLine("AudioRecording == null. Analysis not possible.");
+                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
                 return null;
             }
 

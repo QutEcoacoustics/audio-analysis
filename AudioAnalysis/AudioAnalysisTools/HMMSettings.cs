@@ -63,12 +63,12 @@ namespace AudioAnalysisTools.HTKTools
                 }
                 catch (IOException e)
                 {
-                    Console.WriteLine("Could not create codetrain file.");
+                    LoggedConsole.WriteLine("Could not create codetrain file.");
                     throw (e);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    LoggedConsole.WriteLine(e);
                     throw (e);
                 }
                 finally
@@ -83,7 +83,7 @@ namespace AudioAnalysisTools.HTKTools
             }
             catch (IOException e)
             {
-                Console.WriteLine("Could not find configuration file: {0}", mfcConfFN);
+                LoggedConsole.WriteLine("Could not find configuration file: {0}", mfcConfFN);
                 throw (e);
             }
             finally
@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.HTKTools
             StreamReader objReader = null;
             try
             {
-                Console.WriteLine("Reading Main    Config file: " + mainConfigFN);
+                LoggedConsole.WriteLine("Reading Main    Config file: " + mainConfigFN);
                 objReader = new StreamReader(mainConfigFN);
                 while ((txtLine = objReader.ReadLine()) != null)
                 {
@@ -144,23 +144,23 @@ namespace AudioAnalysisTools.HTKTools
 
                 }
                 //print config file
-                Console.WriteLine("Main Configuration File");
-                Console.WriteLine("=======================");
-                Console.WriteLine("{0,-18}{1,-1}", "Parameter", "Value");
-                Console.WriteLine("-----------------------");
+                LoggedConsole.WriteLine("Main Configuration File");
+                LoggedConsole.WriteLine("=======================");
+                LoggedConsole.WriteLine("{0,-18}{1,-1}", "Parameter", "Value");
+                LoggedConsole.WriteLine("-----------------------");
                 foreach (KeyValuePair<string, string> pair in confParam)
                 {
-                    Console.WriteLine("{0,-18}{1,-1:D}", pair.Key, pair.Value);
+                    LoggedConsole.WriteLine("{0,-18}{1,-1:D}", pair.Key, pair.Value);
                 }
             }
             catch (IOException e)
             {
-                Console.WriteLine("Could not find configuration file: {0}", mainConfigFN);
+                LoggedConsole.WriteLine("Could not find configuration file: {0}", mainConfigFN);
                 throw (e);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LoggedConsole.WriteLine(e);
                 throw (e);
             }
             finally
@@ -177,9 +177,9 @@ namespace AudioAnalysisTools.HTKTools
         //public static void ReadPCF(string protoCfgDir, Dictionary<string, string> settings)
         public static void ReadPCF(string protoCfgDir)
         {
-            Console.WriteLine("\nStarting static method: HMMBuilder.HMMSettings.ReadPCF()");
+            LoggedConsole.WriteLine("\nStarting static method: HMMBuilder.HMMSettings.ReadPCF()");
             //read configuration for each file in protoConfigs directory
-            Console.WriteLine(" Read prototype configuration (.pcf) files in directory: " + protoCfgDir);
+            LoggedConsole.WriteLine(" Read prototype configuration (.pcf) files in directory: " + protoCfgDir);
 
             string pcfWildCard = "*.pcf";
 
@@ -241,14 +241,14 @@ namespace AudioAnalysisTools.HTKTools
                     }
 
                     //print config file
-                    Console.WriteLine("===========================");
-                    Console.WriteLine("Configuration for {0}", Path.GetFileNameWithoutExtension(FI.FullName));
-                    Console.WriteLine("===========================");
-                    Console.WriteLine("{0,-18}{1,-1}", "Parameter", "Value");
-                    Console.WriteLine("-----------------------");
+                    LoggedConsole.WriteLine("===========================");
+                    LoggedConsole.WriteLine("Configuration for {0}", Path.GetFileNameWithoutExtension(FI.FullName));
+                    LoggedConsole.WriteLine("===========================");
+                    LoggedConsole.WriteLine("{0,-18}{1,-1}", "Parameter", "Value");
+                    LoggedConsole.WriteLine("-----------------------");
                     foreach (KeyValuePair<string, string> pair in confProto)
                     {
-                        Console.WriteLine("{0,-18}{1,-1:D}", pair.Key, pair.Value);
+                        LoggedConsole.WriteLine("{0,-18}{1,-1:D}", pair.Key, pair.Value);
                     }
 
                     confProtoDict.Add(Path.GetFileNameWithoutExtension(FI.FullName), confProto);
@@ -263,11 +263,11 @@ namespace AudioAnalysisTools.HTKTools
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LoggedConsole.WriteLine(e);
                 throw (e);
             }
 
-            //Console.Write("\nPress ENTER key to continue:");
+            //LoggedConsole.Write("\nPress ENTER key to continue:");
             //Console.ReadLine();
         } //end METHOD ReadPCF() to read and train prototype configurations
 
@@ -278,10 +278,10 @@ namespace AudioAnalysisTools.HTKTools
 
         public static void WriteHMMprototypeFile(string prototypeHMM)
         {
-            Console.WriteLine("\nStarting static method: HMMBuilder.HMMSettings.WriteHMMprototypeFile()");
+            LoggedConsole.WriteLine("\nStarting static method: HMMBuilder.HMMSettings.WriteHMMprototypeFile()");
 
             //Create prototype HMM based on the call (non-SIL) parameters
-            Console.WriteLine(" Create prototype HMM based on the call (non-SIL) parameters in file <" + prototypeHMM + ">");
+            LoggedConsole.WriteLine(" Create prototype HMM based on the call (non-SIL) parameters in file <" + prototypeHMM + ">");
 
             string prototypeDir = Path.GetDirectoryName(prototypeHMM);
             StreamWriter protoWriter = null;
@@ -290,11 +290,11 @@ namespace AudioAnalysisTools.HTKTools
                 // Create prototype dir if it does not exist.
                 if (!Directory.Exists(prototypeDir))
                 {
-                    Console.WriteLine(" Create prototype dir: " + prototypeDir);
+                    LoggedConsole.WriteLine(" Create prototype dir: " + prototypeDir);
                     Directory.CreateDirectory(prototypeDir);
                 }
 
-                Console.WriteLine(" Create HMM prototype file: " + prototypeHMM);
+                LoggedConsole.WriteLine(" Create HMM prototype file: " + prototypeHMM);
                 protoWriter = File.CreateText(prototypeHMM);
 
                 //try to get the key 'proto' from the dictionary
@@ -314,14 +314,14 @@ namespace AudioAnalysisTools.HTKTools
                     }
                     else
                     {
-                        Console.WriteLine("Parameter 'ParmKind' not specified in 'proto.pcf'");
+                        LoggedConsole.WriteLine("Parameter 'ParmKind' not specified in 'proto.pcf'");
                         //TO DO: create custom exception. For now throw something :-)
                         throw new Exception("Parameter 'ParmKind' not specified in 'proto.pcf'");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Parameter 'VecSize' not specified in 'proto.pcf'");
+                    LoggedConsole.WriteLine("Parameter 'VecSize' not specified in 'proto.pcf'");
                     //TO DO: create custom exception. For now throw something :-)
                     throw new Exception("Parameter 'VecSize' not specified in 'proto.pcf'");
 
@@ -336,7 +336,7 @@ namespace AudioAnalysisTools.HTKTools
                 }
                 else
                 {
-                    Console.WriteLine("Parameter 'nStates' not specified in 'proto.pcf'");
+                    LoggedConsole.WriteLine("Parameter 'nStates' not specified in 'proto.pcf'");
                     //TO DO: create custom exception. For now throw something :-)
                     throw new Exception("Parameter 'nStates' not specified in 'proto.pcf'");
                 }
@@ -367,7 +367,7 @@ namespace AudioAnalysisTools.HTKTools
                 }
                 else
                 {
-                    Console.WriteLine("Parameter 'sWidths' not specified in 'proto.pcf'");
+                    LoggedConsole.WriteLine("Parameter 'sWidths' not specified in 'proto.pcf'");
                     //TO DO: create custom exception. For now throw something :-)
                     throw new Exception("Parameter 'sWidths' not specified in 'proto.pcf'");
                 }
@@ -407,8 +407,8 @@ namespace AudioAnalysisTools.HTKTools
             } //end try for writing the HMM prototype file
             catch (IOException e)
             {
-                Console.WriteLine("Could not create the 'proto' file.");
-                Console.WriteLine(e.ToString());
+                LoggedConsole.WriteLine("Could not create the 'proto' file.");
+                LoggedConsole.WriteLine(e.ToString());
                 throw (e);
             }
             finally

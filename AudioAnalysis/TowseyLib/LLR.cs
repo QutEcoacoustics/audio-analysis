@@ -29,9 +29,9 @@ namespace TowseyLib
         {
             double value = ColumnRelativeFrequency(table, column, totalCount)* RowRelativeFrequency(table, row, totalCount) * totalCount;
 
-            //Console.WriteLine("ColRelativeFrequency(matrix, " + column + ", " + sequences + ") = " + ColumnRelativeFrequency(matrix, column, sequences));
-            //Console.WriteLine("RowRelativeFrequency(matrix, " + row + ", " + sequences + ") = " + RowRelativeFrequency(matrix, row, sequences));		
-            //Console.WriteLine("e(" + row + "," + column + ") = " + value + ", sequences = " + sequences);		
+            //LoggedConsole.WriteLine("ColRelativeFrequency(matrix, " + column + ", " + sequences + ") = " + ColumnRelativeFrequency(matrix, column, sequences));
+            //LoggedConsole.WriteLine("RowRelativeFrequency(matrix, " + row + ", " + sequences + ") = " + RowRelativeFrequency(matrix, row, sequences));		
+            //LoggedConsole.WriteLine("e(" + row + "," + column + ") = " + value + ", sequences = " + sequences);		
             return value;
         }
 
@@ -52,7 +52,7 @@ namespace TowseyLib
                 for(int col = 0; col < colNum; col++) totalCount += contingencyTable[row, col];
 		    }	
 			
-		    //Console.WriteLine("sequences: " + sequences);
+		    //LoggedConsole.WriteLine("sequences: " + sequences);
 		    double[,] llrs = new double[rowNum, colNum];
 		    for(int row = 0; row < rowNum; row++)
 		    {
@@ -123,7 +123,7 @@ namespace TowseyLib
     {
         if (df < 1)
         {
-            Console.WriteLine("WARNING!! LLR.ChiSquare_DFn(): DF ="+df+" <1");
+            LoggedConsole.WriteLine("WARNING!! LLR.ChiSquare_DFn(): DF ="+df+" <1");
             return 0.0;
         }
         //table of chi2 distribution critical values

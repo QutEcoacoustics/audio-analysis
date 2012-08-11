@@ -23,7 +23,7 @@ namespace TowseyLib
                 string fName = testDir + "testTextFile.txt";
                 var array = ReadTextFile(fName);
                 foreach (string line in array)
-                    Console.WriteLine(line);
+                    LoggedConsole.WriteLine(line);
             }//end test ReadTextFile(string fName)
 
             bool doit2 = false;
@@ -46,7 +46,7 @@ namespace TowseyLib
                 double[,] matrix = ReadDoubles2Matrix(fName);
                 int rowCount = matrix.GetLength(0);//height
                 int colCount = matrix.GetLength(1);//width
-                //Console.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
+                //LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 DataTools.writeMatrix(matrix);
             }//end test ReadDoubles2Matrix(string fName)
 
@@ -59,7 +59,7 @@ namespace TowseyLib
                     {0.9,1.0,1.1,1.2,1.3,1.4}
                 };
                 WriteMatrix2File(matrix, fName);
-                Console.WriteLine("Wrote following matrix to file " + fName);
+                LoggedConsole.WriteLine("Wrote following matrix to file " + fName);
                 DataTools.writeMatrix(matrix);
             }//end test Method(string fName)
 
@@ -122,7 +122,7 @@ namespace TowseyLib
             split[0] = dir + @"\";
             split[1] = stem.Substring(0, nameLength);
             split[2] = ext;
-            //Console.WriteLine("SPLIT FILE NAME = " + dir + "   " + split[1] + "    " + ext);
+            //LoggedConsole.WriteLine("SPLIT FILE NAME = " + dir + "   " + split[1] + "    " + ext);
             return split;
         }
 
@@ -130,7 +130,7 @@ namespace TowseyLib
         {
             string[] split = SplitFileName(path);
             string newName = split[0] + split[1] + newExt;
-            //Console.WriteLine("NEW NAME = " + newName);
+            //LoggedConsole.WriteLine("NEW NAME = " + newName);
             return newName;
         }
 
@@ -182,8 +182,8 @@ namespace TowseyLib
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("ERROR! WriteTextFile(string path, byte[] array) failed to write array.");
+                LoggedConsole.WriteLine(ex.Message);
+                LoggedConsole.WriteLine("ERROR! WriteTextFile(string path, byte[] array) failed to write array.");
             }
         }
 
@@ -228,7 +228,7 @@ namespace TowseyLib
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LoggedConsole.WriteLine(e);
                 throw (e);
             }
             finally
@@ -274,7 +274,7 @@ namespace TowseyLib
             for (int i = 0; i < count; i++)
             {
                 double value = Double.Parse((string)lines[i]);
-                //Console.WriteLine("i=" + i + lines[i] + " " + value);
+                //LoggedConsole.WriteLine("i=" + i + lines[i] + " " + value);
                 V[i] = value;
             }
 
@@ -302,7 +302,7 @@ namespace TowseyLib
                 for (int j = 0; j < colCount; j++)
                 {
                     double value = Double.Parse(words[j]);
-                    //Console.WriteLine("i,j=" + i + "," + j + " " + words[j] + " " + value);
+                    //LoggedConsole.WriteLine("i,j=" + i + "," + j + " " + words[j] + " " + value);
                     matrix[i, j] = value;
                 }
             }
@@ -475,7 +475,7 @@ namespace TowseyLib
         //    ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
         //    UnZip(Target, OutZipFile, true);
 
-        //    Console.WriteLine("FINISHED");
+        //    LoggedConsole.WriteLine("FINISHED");
         //    Console.ReadLine();
 
         //} //end method Main()
@@ -518,7 +518,7 @@ namespace TowseyLib
                     {
 
                         // Using Path.GetFileName() makes the result compatible with XP as the resulting path is not absolute.
-                        Console.WriteLine("file=" + file);
+                        LoggedConsole.WriteLine("file=" + file);
                         ZipEntry entry = new ZipEntry(Path.GetFileName(file));
 
                         // Setup the entry data as required.
@@ -555,13 +555,13 @@ namespace TowseyLib
                 if (File.Exists(OutZipFile))
                 {
                     FileInfo fi = new FileInfo(OutZipFile);
-                    Console.WriteLine("Zipped file has been created at " + fi.FullName);
+                    LoggedConsole.WriteLine("Zipped file has been created at " + fi.FullName);
                 }
-                else Console.WriteLine("Zipped File WAS NOT CREATED.");
+                else LoggedConsole.WriteLine("Zipped File WAS NOT CREATED.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception during processing {0}", ex);
+                LoggedConsole.WriteLine("Exception during processing {0}", ex);
 
                 // No need to rethrow the exception as for our purposes its handled.
             }

@@ -20,8 +20,8 @@ namespace AudioAnalysisTools
         /*
         public static void Main(string[] args)
         {
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("DATE AND TIME:" + DateTime.Now);
+            LoggedConsole.WriteLine("");
 
             //string wavDirName = @"C:\SensorNetworks\Templates\Template_3\TrainingSet1";
             string wavDirName = @"C:\SensorNetworks\Templates\Template_CURLEW1\data\train";
@@ -30,7 +30,7 @@ namespace AudioAnalysisTools
             {
                 if (!Directory.Exists(wavDirName))
                 {
-                    Console.WriteLine("YOU NEED A COMMAND LINE ARGUEMENT!");
+                    LoggedConsole.WriteLine("YOU NEED A COMMAND LINE ARGUEMENT!");
                     Usage();
                     throw new Exception("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                 }
@@ -42,7 +42,7 @@ namespace AudioAnalysisTools
                     if (!Directory.Exists(wavDirName))
                     {
                         Usage();
-                        Console.WriteLine("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
+                        LoggedConsole.WriteLine("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                         throw new Exception("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                     }
                 }
@@ -51,8 +51,8 @@ namespace AudioAnalysisTools
             int verbosity = 0;
             Execute(wavDirName, wavDirName, verbosity);  //put output into same dir as vocalisations
 
-            //Console.WriteLine("\nAv Duration = " + (avDuration / count));
-            Console.WriteLine("\nFINISHED AUDIO SEGMENTATION!");
+            //LoggedConsole.WriteLine("\nAv Duration = " + (avDuration / count));
+            LoggedConsole.WriteLine("\nFINISHED AUDIO SEGMENTATION!");
             Console.ReadLine();
         } //end method Main()
         */
@@ -84,8 +84,8 @@ namespace AudioAnalysisTools
             }
             catch (Exception e)
             {
-                Console.WriteLine("ERROR: Error initialising the SonogramConfig() class");
-                Console.WriteLine(e.ToString());
+                LoggedConsole.WriteLine("ERROR: Error initialising the SonogramConfig() class");
+                LoggedConsole.WriteLine(e.ToString());
             }
 
             //B: NOISE REDUCE ALL RECORDINGS IN DIR
@@ -130,20 +130,20 @@ namespace AudioAnalysisTools
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE: VocalSegmentation.exe VocalisationDirectory");
-            Console.WriteLine("\t where VocalisationDirectory is the directory containing the vocalisations to be segmented.");
-            Console.WriteLine("\t The VocalisationDirectory must ALSO contain a file called 'segmentation.ini' ");
-            Console.WriteLine("\n\t The segmentation.ini file must contain all the parameters for segmentation, as shown in example file given.");
-            Console.WriteLine("\t In particular, it must contain the path of a .WAV file that is to be used to extract a SILENCE/NOISE model.");
-            Console.WriteLine("\t NOTE: The .wav silence file MUST NOT be in same directory as the vocalisations.");
-            Console.WriteLine("\t OUTPUT 1: The directory containing the silence .wav file will contain a .png file, a segmentation.txt file ...");
-            Console.WriteLine("\t           and a .noiseModel file, all of which have been obtained from the .wav silence file.");
-            Console.WriteLine("\t           These may be used to help you check the effects of the noise reduction and the silence model extracted.");
-            Console.WriteLine("\t OUTPUT 2: The directory containing the vocalisation files will contain a .png file and a .segmentation.txt file ...");
-            Console.WriteLine("\t           for each vocalisation .wav file.");
-            Console.WriteLine("\t           The .segmentation.txt file is to be used to build the HMM model.");
-            Console.WriteLine("\t           The .png files offer a visual check on the effect of the noise removal and segmentation.");
-            Console.WriteLine();
+            LoggedConsole.WriteLine("USAGE: VocalSegmentation.exe VocalisationDirectory");
+            LoggedConsole.WriteLine("\t where VocalisationDirectory is the directory containing the vocalisations to be segmented.");
+            LoggedConsole.WriteLine("\t The VocalisationDirectory must ALSO contain a file called 'segmentation.ini' ");
+            LoggedConsole.WriteLine("\n\t The segmentation.ini file must contain all the parameters for segmentation, as shown in example file given.");
+            LoggedConsole.WriteLine("\t In particular, it must contain the path of a .WAV file that is to be used to extract a SILENCE/NOISE model.");
+            LoggedConsole.WriteLine("\t NOTE: The .wav silence file MUST NOT be in same directory as the vocalisations.");
+            LoggedConsole.WriteLine("\t OUTPUT 1: The directory containing the silence .wav file will contain a .png file, a segmentation.txt file ...");
+            LoggedConsole.WriteLine("\t           and a .noiseModel file, all of which have been obtained from the .wav silence file.");
+            LoggedConsole.WriteLine("\t           These may be used to help you check the effects of the noise reduction and the silence model extracted.");
+            LoggedConsole.WriteLine("\t OUTPUT 2: The directory containing the vocalisation files will contain a .png file and a .segmentation.txt file ...");
+            LoggedConsole.WriteLine("\t           for each vocalisation .wav file.");
+            LoggedConsole.WriteLine("\t           The .segmentation.txt file is to be used to build the HMM model.");
+            LoggedConsole.WriteLine("\t           The .png files offer a visual check on the effect of the noise removal and segmentation.");
+            LoggedConsole.WriteLine();
         }
 
 

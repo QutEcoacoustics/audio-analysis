@@ -144,7 +144,7 @@ namespace AnalysisPrograms
     ///       var mp = m1 * m2; 
     ///       // convert the F# output back to C# type. 
     ///       var output = mp.ToArray2(); 
-    ///       Console.WriteLine(output.ToString()); 
+    ///       LoggedConsole.WriteLine(output.ToString()); 
     ///       Console.ReadKey(); 
     ///     } 
     /// } 

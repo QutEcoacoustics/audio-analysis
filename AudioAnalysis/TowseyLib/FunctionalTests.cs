@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-
-namespace TowseyLib
+﻿namespace TowseyLib
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
     public static class FunctionalTests
     {
 
@@ -51,7 +51,7 @@ namespace TowseyLib
             if (listA.Count != listB.Count)
             {
                 if (throwException) throw new Exception("Files do not have the same number of lines: " + listA.Count + " != " + listB.Count);
-                else Console.WriteLine("#### WARNING: Files do NOT have same number of lines: " + listA.Count + " != " + listB.Count);
+                else LoggedConsole.WriteLine("#### WARNING: Files do NOT have same number of lines: " + listA.Count + " != " + listB.Count);
             }
 
             for (int i = 1; i < listA.Count; i++) //skip first line
@@ -59,7 +59,7 @@ namespace TowseyLib
                 if (String.Compare(listA[i], listB[i]) != 0) // if (listA[i] != listB[i])
                 {    
                     if (throwException) throw new Exception("Line " + i + " of files a and b not same: " + listA[i] + " != " + listB[i]);
-                    else Console.WriteLine("#### WARNING: Line " + i + " of files a and b not same: " + listA[i] + " != " + listB[i]);
+                    else LoggedConsole.WriteLine("#### WARNING: Line " + i + " of files a and b not same: " + listA[i] + " != " + listB[i]);
                 }
             }
             Log.WriteLine("\t\t\t###################### PASS SIMILARITY TEST:- " + A.Name + "  and  " + B.Name + "\n");

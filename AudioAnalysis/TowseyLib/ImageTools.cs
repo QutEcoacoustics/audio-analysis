@@ -182,7 +182,7 @@ namespace TowseyLib
                 {
                     Color color = bitmap.GetPixel(c, r);
                     //double value = (255 - color.R) / (double)255;
-                    //if (value > 0.0) Console.WriteLine(value);
+                    //if (value > 0.0) LoggedConsole.WriteLine(value);
                     matrix[r, c] = (255 - color.R) / (double)255;
                 }
             return matrix;
@@ -213,32 +213,32 @@ namespace TowseyLib
                 case Kernal.HighPass1: kernal = highPassKernal1;
                     break;
                 case Kernal.HighPass2: kernal = highPassKernal2;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied highPassKernal2 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied highPassKernal2 Kernal");
                     break;
                 case Kernal.HorizontalLine3: kernal = horiLineKernal3;
                     break;
                 case Kernal.HorizontalLine5: kernal = horiLineKernal5;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Horizontal Line5 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Horizontal Line5 Kernal");
                     break;
                 case Kernal.VerticalLine: kernal = vertLineKernal;
                     break;
                 case Kernal.DiagLine1: kernal = diagLineKernal1;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied diagLine1 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied diagLine1 Kernal");
                     break;
                 case Kernal.DiagLine2: kernal = diagLineKernal2;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied diagLine2 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied diagLine2 Kernal");
                     break;
                 case Kernal.Laplace1: kernal = Laplace1Kernal;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace1 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace1 Kernal");
                     break;
                 case Kernal.Laplace2: kernal = Laplace2Kernal;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace2 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace2 Kernal");
                     break;
                 case Kernal.Laplace3: kernal = Laplace3Kernal;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace3 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace3 Kernal");
                     break;
                 case Kernal.Laplace4: kernal = Laplace4Kernal;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace4 Kernal");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace4 Kernal");
                     break;
                     
 
@@ -318,19 +318,19 @@ namespace TowseyLib
             switch (name)
             {
                 case Kernal.Grid2: kernal = grid2;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid3: kernal = grid3;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid4: kernal = grid4;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid2Wave: kernal = grid2Wave;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Wave Kernal 2");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Wave Kernal 2");
                     break;
                 case Kernal.Grid3Wave: kernal = grid3Wave;
-                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Wave Kernal 3");
+                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Wave Kernal 3");
                     break;
 
 
@@ -364,7 +364,7 @@ namespace TowseyLib
             }
             double noiseAv; double noiseSd;
             NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
-            if (ImageTools.Verbose) Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
 
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
 
@@ -467,11 +467,11 @@ namespace TowseyLib
                             X   +=  matrix[i, j];
                             Xe2 += (matrix[i, j] * matrix[i, j]);
                             count++;
-                            //Console.WriteLine(i+"  "+j+"   count="+count);
+                            //LoggedConsole.WriteLine(i+"  "+j+"   count="+count);
                             //Console.ReadLine();
                         }
                     }
-                    //Console.WriteLine("End NH count="+count);
+                    //LoggedConsole.WriteLine("End NH count="+count);
                     //calculate variance of the neighbourhood
                     double mean     =  X / count;
                     double variance = (Xe2 / count) - (mean * mean);
@@ -484,7 +484,7 @@ namespace TowseyLib
 
                     
 
-                   // Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
+                   // LoggedConsole.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
                    // Console.ReadLine();
                 }
             }
@@ -705,7 +705,7 @@ namespace TowseyLib
             int cols = matrix.GetLength(1);
             int cNH = cWindow / 2;
             int rNH = rWindow / 2;
-            //Console.WriteLine("cNH=" + cNH + ", rNH" + rNH);
+            //LoggedConsole.WriteLine("cNH=" + cNH + ", rNH" + rNH);
             int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
             double[,] newMatrix = new double[rows, cols];//init new matrix to return
 
@@ -740,7 +740,7 @@ namespace TowseyLib
                     double sum = 0.0;
                     for (int y = (r - rNH); y <= (r + rNH); y++)
                     {
-                        //System.Console.WriteLine(r+", "+c+ "  y="+y);
+                        //System.LoggedConsole.WriteLine(r+", "+c+ "  y="+y);
                         for (int x = (c - cNH); x <= (c + cNH); x++)
                         {
                             sum += matrix[y, x];
@@ -792,7 +792,7 @@ namespace TowseyLib
             lowerThreshold = min + (j * binWidth);
 
             //DataTools.writeBarGraph(powerHisto);
-            //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
+            //LoggedConsole.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
         }
 
 
@@ -954,7 +954,7 @@ namespace TowseyLib
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 double av; double sd;
                 NormalDist.AverageAndSD(subMatrix, out av, out sd);
-                //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
+                //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
                 for (int y = 0; y < height; y++)
                 {
@@ -1003,7 +1003,7 @@ namespace TowseyLib
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
                 double lowerThreshold; double upperThreshold;
                 PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
-                //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
+                //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
 
                 for (int x = start; x < stop; x++)
@@ -1224,16 +1224,16 @@ namespace TowseyLib
             }//end rows
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 5.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
             shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
             //shapes = Shape.RemoveEnclosedShapes(shapes);
             shapes = Oblong.RemoveOverlappingShapes(shapes);
             int minArea = 14;
             shapes = Oblong.RemoveSmall(shapes, minArea);
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
 
@@ -1322,16 +1322,16 @@ namespace TowseyLib
             }//end rows
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 4.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
             shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
             shapes = Oblong.RemoveEnclosedShapes(shapes);
             //shapes = Shape.RemoveOverlappingShapes(shapes);
             int minArea = 30;
             shapes = Oblong.RemoveSmall(shapes, minArea);
-            if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
+            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
         
@@ -1523,7 +1523,7 @@ namespace TowseyLib
             int width = m.GetLength(1);
             //double[,] M = new double[height, width];
             int area = ((2*cNH)+1)*((2*rNH)+1);
-            //Console.WriteLine("area=" + area);
+            //LoggedConsole.WriteLine("area=" + area);
 
             for (int x = cNH; x < width - cNH; x++)
             {
@@ -1642,8 +1642,8 @@ namespace TowseyLib
 
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
-            //Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            //Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+            //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
             Color[] grayScale = GrayScale();
 
@@ -1659,13 +1659,13 @@ namespace TowseyLib
                     int greyId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (XpixelsPerCell * c);
                     int yOffset = (YpixelsPerCell * r);
-                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
                             bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
                         }
                     }
@@ -1705,8 +1705,8 @@ namespace TowseyLib
 
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
-            //Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            //Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+            //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
             Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
@@ -1719,13 +1719,13 @@ namespace TowseyLib
                     int greyId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (XpixelsPerCell * c);
                     int yOffset = (YpixelsPerCell * r);
-                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
                             //bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
                             bmp.SetPixel(xOffset + x, yOffset + y, pens[(int)(paletteSize * norm[r, c])].Color);
                         }
@@ -1761,13 +1761,13 @@ namespace TowseyLib
                     int colorId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (cellXpixels * c);
                     int yOffset = (cellYpixels * r);
-                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
                     for (int x = 0; x < cellXpixels; x++)
                     {
                         for (int y = 0; y < cellYpixels; y++)
                         {
-                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
                             bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
                         }
                     }

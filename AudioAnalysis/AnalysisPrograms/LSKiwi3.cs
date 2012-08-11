@@ -70,10 +70,10 @@ namespace AnalysisPrograms
 
             string title = "# FOR DETECTION OF THE LITTLE SPOTTED KIWI - version 3 - started 23rd June 2012";
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
             //Log.Verbosity = 1;
@@ -116,7 +116,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -140,7 +140,7 @@ namespace AnalysisPrograms
                 process.Run(imagePath, outputDir);
             }
 
-            Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -156,7 +156,7 @@ namespace AnalysisPrograms
         {
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
 
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -168,14 +168,14 @@ namespace AnalysisPrograms
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + configPath);
+                LoggedConsole.WriteLine("Config file does not exist: " + configPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -185,8 +185,8 @@ namespace AnalysisPrograms
             if (!diOP.Exists)
             {
                 //diOP.CreateSubdirectory(fName);
-                Console.WriteLine("Output directory did not exist!");
-                Console.WriteLine("     Create new directory: " + outputDir);
+                LoggedConsole.WriteLine("Output directory did not exist!");
+                LoggedConsole.WriteLine("     Create new directory: " + outputDir);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -240,7 +240,7 @@ namespace AnalysisPrograms
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
 
                         throw new AnalysisOptionInvalidDurationException();
                     }
@@ -401,13 +401,13 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
             {
-                Console.WriteLine("AudioRecording == null. Analysis not possible.");
+                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
                 return null;
             }
             TimeSpan tsRecordingtDuration = recording.Duration();
             if (tsRecordingtDuration.TotalSeconds < 15)
             {
-                Console.WriteLine("Audio recording must be atleast 15 seconds long for analysis.");
+                LoggedConsole.WriteLine("Audio recording must be atleast 15 seconds long for analysis.");
                 return null;
             }
 
@@ -557,7 +557,7 @@ namespace AnalysisPrograms
         //    for (int i = 0; i < periodicity.Length; i++)
         //    {
         //        //if (i > 100) 
-        //        //    Console.WriteLine("{0}      {1}",  periodicity[i], ((periodicity[i] - minFramePeriod) / range));
+        //        //    LoggedConsole.WriteLine("{0}      {1}",  periodicity[i], ((periodicity[i] - minFramePeriod) / range));
         //        if (periodicity[i] <= 0.0) continue;
         //        periodicity[i] = (periodicity[i] - minFramePeriod) / range;
         //    }

@@ -260,7 +260,7 @@ namespace AudioAnalysisTools
             var k1_k2delay = (int)(K1K2Latency / frameOffset);    //=5  frames delay between signal reaching k1 and k2 thresholds
             var frameGap   = (int)(VocalGap / frameOffset);  //=10 frames delay required to separate vocalisations 
             var minPulse   = (int)(MinPulseDuration / frameOffset); //=2  frames is min vocal length
-            //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
+            //LoggedConsole.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
             return Speech.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
         }
 

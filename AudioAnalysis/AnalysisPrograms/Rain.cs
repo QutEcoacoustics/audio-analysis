@@ -128,10 +128,10 @@ namespace AnalysisPrograms
 
             string title = "# FOR EXTRACTION OF RAIN Indices";
             string date  = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
             if (false)
@@ -184,12 +184,12 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
 
-            Console.WriteLine("\n\n# Finished analysis for RAIN:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("\n\n# Finished analysis for RAIN:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -205,7 +205,7 @@ namespace AnalysisPrograms
         {
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
                 
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -217,21 +217,21 @@ namespace AnalysisPrograms
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
-                Console.WriteLine("Output directory does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Output directory does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -274,7 +274,7 @@ namespace AnalysisPrograms
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
                         
                         throw new AnalysisOptionInvalidDurationException();
                     }
@@ -403,7 +403,7 @@ namespace AnalysisPrograms
 
             //set up the output
             if (verbose)
-                Console.WriteLine("{0:d2}, {1},  {2},    {3},    {4},    {5},   {6},     {7},     {8},    {9},   {10},   {11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
+                LoggedConsole.WriteLine("{0:d2}, {1},  {2},    {3},    {4},    {5},   {6},     {7},     {8},    {9},   {10},   {11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
             StringBuilder sb =  null;
             if (writeOutputFile)
             {
@@ -429,7 +429,7 @@ namespace AnalysisPrograms
                 //write indices and clsasification info to console
                 string separator = ",";
                 if (verbose)
-                    Console.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f3}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}", separator,
+                    LoggedConsole.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f3}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}", separator,
                                       startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes, 
                                       indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
                                       indices.temporalEntropy, indices.spectralEntropy, classification);

@@ -60,10 +60,10 @@ namespace AnalysisPrograms
                 {
                     string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
                     string date  = "# DATE AND TIME: " + DateTime.Now;
-                    Console.WriteLine(title);
-                    Console.WriteLine(date);
-                    Console.WriteLine("# Input  audio file: " + Path.GetFileName(recordingPath));
-                    Console.WriteLine("# Output image file: " + outputPath);
+                    LoggedConsole.WriteLine(title);
+                    LoggedConsole.WriteLine(date);
+                    LoggedConsole.WriteLine("# Input  audio file: " + Path.GetFileName(recordingPath));
+                    LoggedConsole.WriteLine("# Output image file: " + outputPath);
                 }
             }
             
@@ -80,10 +80,10 @@ namespace AnalysisPrograms
 
             if (verbose)
             {
-                Console.WriteLine("\nPARAMETERS");
+                LoggedConsole.WriteLine("\nPARAMETERS");
                 foreach (KeyValuePair<string, string> kvp in configDict)
                 {
-                    Console.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
             }
 
@@ -115,7 +115,7 @@ namespace AnalysisPrograms
 
             if (verbose)
             {
-                Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+                LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
                 Console.ReadLine();
             }
         } // Main(string[] args)
@@ -126,10 +126,10 @@ namespace AnalysisPrograms
         {
             if ((args.Length != 5) && (args.Length != 6))
             {
-                Console.WriteLine("\nINCORRECT COMMAND LINE.");
-                Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("\nYOU REQUIRE 5 OR 6 COMMAND LINE ARGUMENTS\n");
+                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
+                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
+                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
+                LoggedConsole.WriteLine("\nYOU REQUIRE 5 OR 6 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -151,7 +151,7 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             if (!diSource.Exists)
             {
-                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -159,8 +159,8 @@ namespace AnalysisPrograms
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source directory exists: " + diSource.FullName);
-                Console.WriteLine("\t but the source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
+                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -168,7 +168,7 @@ namespace AnalysisPrograms
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
+                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -190,7 +190,7 @@ namespace AnalysisPrograms
 
                 if (!success)
                 {
-                    Console.WriteLine("Output directory does not exist: " + diOP.FullName);
+                    LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
                     
                     throw new AnalysisOptionInvalidPathsException();
                 }
@@ -199,19 +199,19 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("AnalysisPrograms.exe  audio2sonogram  audioPath  configPath  outputDirectory  startOffset  endOffset");
-            Console.WriteLine("where:");
-            Console.WriteLine("audio2sonogram:- (string) a short string that selects the analysis/process to be performed.");
-            Console.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
-            Console.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
-            Console.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
-            Console.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
-            Console.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
-            Console.WriteLine("In order to analyse the entire file, set start and end times both equal to zero.");
-            Console.WriteLine("The following argument is OPTIONAL.");
-            Console.WriteLine("verbosity:   (boolean) true/false");
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  audio2sonogram  audioPath  configPath  outputDirectory  startOffset  endOffset");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("audio2sonogram:- (string) a short string that selects the analysis/process to be performed.");
+            LoggedConsole.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
+            LoggedConsole.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
+            LoggedConsole.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
+            LoggedConsole.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
+            LoggedConsole.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
+            LoggedConsole.WriteLine("In order to analyse the entire file, set start and end times both equal to zero.");
+            LoggedConsole.WriteLine("The following argument is OPTIONAL.");
+            LoggedConsole.WriteLine("verbosity:   (boolean) true/false");
+            LoggedConsole.WriteLine("");
         }
 
     } //class Audio2Sonogram

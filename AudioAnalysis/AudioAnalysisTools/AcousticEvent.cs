@@ -510,10 +510,10 @@ namespace AudioAnalysisTools
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
             string line = "\nList of LABELLED events in file: " + Path.GetFileName(path);
-            //Console.WriteLine(line);
+            //LoggedConsole.WriteLine(line);
             sb.Append(line + "\n");
             line = "  #   #  \ttag \tstart  ...   end  intensity quality  file";
-            //Console.WriteLine(line);
+            //LoggedConsole.WriteLine(line);
             sb.Append(line + "\n");
             int count = 0;
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
@@ -535,7 +535,7 @@ namespace AudioAnalysisTools
                 count++;
                 line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}",
                                         count, i, tag, start, end, intensity, quality, file);
-                //Console.WriteLine(line);
+                //LoggedConsole.WriteLine(line);
                 sb.Append(line + "\n");
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
@@ -608,7 +608,7 @@ namespace AudioAnalysisTools
             int count = 0;
             List<string> resultsSourceFiles = new List<string>();
             string header = String.Format("\nScore Category:    #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
-            Console.WriteLine(header);
+            LoggedConsole.WriteLine(header);
             string line = null;
             var sb = new StringBuilder(header + "\n");
             string previousSourceFile = "  ";
@@ -633,13 +633,13 @@ namespace AudioAnalysisTools
                 }
                 if (previousSourceFile != ae.SourceFileName)
                 {
-                    Console.WriteLine(line + "\t" + ae.SourceFileName);
+                    LoggedConsole.WriteLine(line + "\t" + ae.SourceFileName);
                     sb.Append(line + "\t" + ae.SourceFileName + "\n");
                     previousSourceFile = ae.SourceFileName;
                 }
                 else
                 {
-                    Console.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
+                    LoggedConsole.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
                     sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
                 }
 
@@ -649,7 +649,7 @@ namespace AudioAnalysisTools
 
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
-            Console.WriteLine();
+            LoggedConsole.WriteLine();
             sb.Append("\n");
             fn = 0;
             count = 0;
@@ -668,13 +668,13 @@ namespace AudioAnalysisTools
                                          count, ae.TimeStart, ae.TimeEnd, ae.Intensity, ae.Quality, ae.Name);
                     if (previousSourceFile != ae.SourceFileName)
                     {
-                        Console.WriteLine(line + "\t" + ae.SourceFileName + " " + hitFile);
+                        LoggedConsole.WriteLine(line + "\t" + ae.SourceFileName + " " + hitFile);
                         sb.Append(line + "\t" + ae.SourceFileName + " " + hitFile + "\n");
                         previousSourceFile = ae.SourceFileName;
                     }
                     else
                     {
-                        Console.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
+                        LoggedConsole.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
                         sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
                     }
                 }
@@ -683,7 +683,7 @@ namespace AudioAnalysisTools
             if (fn == 0) line = "NO FALSE NEGATIVES.";
             else
                 line = "** This FN event occured in a recording which also scored a tp or fp hit.";
-            Console.WriteLine(line);
+            LoggedConsole.WriteLine(line);
             sb.Append(line + "\n");
 
             if (((tp + fp) == 0)) precision = 0.0;
@@ -725,7 +725,7 @@ namespace AudioAnalysisTools
             int count = 0;
             List<string> resultsSourceFiles = new List<string>();
             string header = String.Format("PREDICTED EVENTS:  #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
-            //Console.WriteLine(header);
+            //LoggedConsole.WriteLine(header);
             string line = null;
             var sb = new StringBuilder(header + "\n");
 
@@ -754,7 +754,7 @@ namespace AudioAnalysisTools
 
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
-            //Console.WriteLine();
+            //LoggedConsole.WriteLine();
             sb.Append("\n");
             count = 0;
             foreach (AcousticEvent ae in labels)

@@ -95,10 +95,10 @@ namespace AnalysisPrograms
 
             string title = "# FOR DETECTION OF 'Rheobatrachus silus' using CROSS-CORRELATION & FFT";
             string date  = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
 
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
             int status = Execute(cmdLineArgs.ToArray());
             if (status != 0)
             {
-                Console.WriteLine("\n\n# EXECUTE RETURNED ERROR STATUS. CANNOT PROCEED!");
+                LoggedConsole.WriteLine("\n\n# EXECUTE RETURNED ERROR STATUS. CANNOT PROCEED!");
 
                 if (debug)
                 {
@@ -148,7 +148,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -160,7 +160,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -172,7 +172,7 @@ namespace AnalysisPrograms
                 process.Run(imagePath, outputDir);
             }
 
-            Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
             return;
         } //Dev()
 
@@ -190,7 +190,7 @@ namespace AnalysisPrograms
             int status = 0;
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
                 status = 1;
                 return status;
             }
@@ -246,7 +246,7 @@ namespace AnalysisPrograms
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
                         status = 3;
                         return status;
                     }
@@ -388,7 +388,7 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)
             {
-                Console.WriteLine("AudioRecording == null. Analysis not possible.");
+                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
                 return null;
             }
 

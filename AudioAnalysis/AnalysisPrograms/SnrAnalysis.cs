@@ -129,26 +129,26 @@ namespace AnalysisPrograms
             Log.WriteLine("Segment Thresholds K1: {0:f2}.  K2: {1:f2}  (See Note 8)", segK1, segK2);
 
             
-            Console.WriteLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
-            Console.WriteLine("\n\tNote 2:      The acoustic power per frame is calculated in decibels: dB = 10 * log(Frame energy)");
-            Console.WriteLine("\t             where frame energy = average of the amplitude squared of all 512 values in a frame.");
-            Console.WriteLine("\n\tNote 3:      At this stage all dB values are <= 0.0. A dB value = 0.0 could only occur if the average frame amplitude = 1.0");
-            Console.WriteLine("\t             In practice, the largest av. frame amplitude we have encountered = 0.55 for a recording of a nearby cicada.");
-            Console.WriteLine("\n\tNote 4:        A minimum value for dB is truncated at -70 dB, which allowes for very quiet background noise.");
-            Console.WriteLine("\t             A typical background noise dB value for Brisbane Airport (BAC2) recordings is -45 dB.");
-            Console.WriteLine("\t             Log energy values are converted to decibels by multiplying by 10.");
-            Console.WriteLine("\n\tNote 5:      The modal background noise per frame is calculated using an algorithm of Lamel et al, 1981, called 'Adaptive Level Equalisatsion'.");
-            Console.WriteLine("\t             Subtracting this value from each frame dB value sets the modal background noise level to 0 dB. Values < 0.0 are clipped to 0.0 dB.");
-            Console.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.SnrFullband.NoiseRange.ToString("F2")+" dB either side of zero.");
-            Console.WriteLine("\n\tNote 7:      Here are some dB comparisons. NOTE! They are with reference to the auditory threshold at 1 kHz.");
-            Console.WriteLine("\t             Our estimates of SNR are with respect to background environmental noise which is typically much higher than hearing threshold!");
-            Console.WriteLine("\t             Leaves rustling, calm breathing:  10 dB");
-            Console.WriteLine("\t             Very calm room:                   20 - 30 dB");
-            Console.WriteLine("\t             Normal talking at 1 m:            40 - 60 dB");
-            Console.WriteLine("\t             Major road at 10 m:               80 - 90 dB");
-            Console.WriteLine("\t             Jet at 100 m:                    110 -140 dB");
-            Console.WriteLine("\n\tNote 8:      dB above the background (modal) noise, which has been set to zero dB. These thresholds are used to segment acoustic events.");
-            Console.WriteLine("\n");
+            LoggedConsole.WriteLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
+            LoggedConsole.WriteLine("\n\tNote 2:      The acoustic power per frame is calculated in decibels: dB = 10 * log(Frame energy)");
+            LoggedConsole.WriteLine("\t             where frame energy = average of the amplitude squared of all 512 values in a frame.");
+            LoggedConsole.WriteLine("\n\tNote 3:      At this stage all dB values are <= 0.0. A dB value = 0.0 could only occur if the average frame amplitude = 1.0");
+            LoggedConsole.WriteLine("\t             In practice, the largest av. frame amplitude we have encountered = 0.55 for a recording of a nearby cicada.");
+            LoggedConsole.WriteLine("\n\tNote 4:        A minimum value for dB is truncated at -70 dB, which allowes for very quiet background noise.");
+            LoggedConsole.WriteLine("\t             A typical background noise dB value for Brisbane Airport (BAC2) recordings is -45 dB.");
+            LoggedConsole.WriteLine("\t             Log energy values are converted to decibels by multiplying by 10.");
+            LoggedConsole.WriteLine("\n\tNote 5:      The modal background noise per frame is calculated using an algorithm of Lamel et al, 1981, called 'Adaptive Level Equalisatsion'.");
+            LoggedConsole.WriteLine("\t             Subtracting this value from each frame dB value sets the modal background noise level to 0 dB. Values < 0.0 are clipped to 0.0 dB.");
+            LoggedConsole.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.SnrFullband.NoiseRange.ToString("F2")+" dB either side of zero.");
+            LoggedConsole.WriteLine("\n\tNote 7:      Here are some dB comparisons. NOTE! They are with reference to the auditory threshold at 1 kHz.");
+            LoggedConsole.WriteLine("\t             Our estimates of SNR are with respect to background environmental noise which is typically much higher than hearing threshold!");
+            LoggedConsole.WriteLine("\t             Leaves rustling, calm breathing:  10 dB");
+            LoggedConsole.WriteLine("\t             Very calm room:                   20 - 30 dB");
+            LoggedConsole.WriteLine("\t             Normal talking at 1 m:            40 - 60 dB");
+            LoggedConsole.WriteLine("\t             Major road at 10 m:               80 - 90 dB");
+            LoggedConsole.WriteLine("\t             Jet at 100 m:                    110 -140 dB");
+            LoggedConsole.WriteLine("\n\tNote 8:      dB above the background (modal) noise, which has been set to zero dB. These thresholds are used to segment acoustic events.");
+            LoggedConsole.WriteLine("\n");
 
 
 
@@ -326,16 +326,16 @@ namespace AnalysisPrograms
         {
             if (!File.Exists(args[0]))
             {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Cannot find recording file <" + args[0] + ">");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
             if (!File.Exists(args[1]))
             {
-                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
+                LoggedConsole.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -344,16 +344,16 @@ namespace AnalysisPrograms
 
         private static void Usage()
         {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("SnrAnalysis.exe recordingPath iniPath outputFileName");
-            Console.WriteLine("where:");
-            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
-            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
-            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
-            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
-            Console.WriteLine("");
-            Console.WriteLine("\nPress <ENTER> key to exit.");
+            LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("SnrAnalysis.exe recordingPath iniPath outputFileName");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
+            LoggedConsole.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
+            LoggedConsole.WriteLine("outputFileName:-   (string) The name of the output file.");
+            LoggedConsole.WriteLine("                            By default, the output dir is that containing the ini file.");
+            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
 
             
         } //end Usage();

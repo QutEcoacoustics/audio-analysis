@@ -8,8 +8,6 @@ using System.Drawing.Imaging;
 namespace TowseyLib
 {
 
-
-
     public class Oblong
     {
         /// <summary>
@@ -82,7 +80,7 @@ namespace TowseyLib
         {
             //if ((rowNumber >= r1) && (rowNumber <= r2) && (colNumber >= c1) && (colNumber <= c2))
             //{
-            //    Console.WriteLine(" true");
+            //    LoggedConsole.WriteLine(" true");
             //}
             if ((rowNumber >= this.r1) && (rowNumber <= this.r2) && (colNumber >= this.c1) && (colNumber <= this.c2)) return true;
             else return false;
@@ -226,11 +224,11 @@ namespace TowseyLib
 
         public void WriteBounds()
         {
-            Console.WriteLine(" r1=" + this.r1 + " c1=" + this.c1 + " r2=" + this.r2 + " c2=" + this.c2);
+            LoggedConsole.WriteLine(" r1=" + this.r1 + " c1=" + this.c1 + " r2=" + this.r2 + " c2=" + this.c2);
         }
         public void WriteProperties()
         {
-            Console.WriteLine("Row count=" + this.RowWidth + "\tCol bandwidth=" + this.ColWidth + "\t ColCentroid=" + this.col_Centroid());
+            LoggedConsole.WriteLine("Row count=" + this.RowWidth + "\tCol bandwidth=" + this.ColWidth + "\t ColCentroid=" + this.col_Centroid());
         }
 
         public static List<Oblong> SortByColumnCentroid(List<Oblong> list1){
@@ -285,7 +283,7 @@ namespace TowseyLib
             colCentroid_FS[0] = 0;
             colCentroid_FS[countColCentroid_FS - 1] = maxCol;
             for (int i = 1; i < countColCentroid_FS - 1; i++) colCentroid_FS[i] = (i * space);
-            //Console.WriteLine("Array of " + countColCentroid_FS + " Fuzzy Set Centres");
+            //LoggedConsole.WriteLine("Array of " + countColCentroid_FS + " Fuzzy Set Centres");
             //DataTools.writeArray(colCentroid_FS);
             //Console.ReadLine();
         }
@@ -344,7 +342,7 @@ namespace TowseyLib
                             FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
                         }
             }//end for loop
-            //Console.WriteLine("For row "+row+" memberships are:");
+            //LoggedConsole.WriteLine("For row "+row+" memberships are:");
             //DataTools.writeArray(FM);
             //Console.ReadLine();
             return FM;
@@ -354,7 +352,7 @@ namespace TowseyLib
         {
             if((x3 < x1)||(x3 > x2)||(x1>x2))
             {
-                Console.WriteLine("ERROR with Linear Interpolation! ((x3 < x1)||(x3 > x2)||(x1>x2))!!");
+                LoggedConsole.WriteLine("ERROR with Linear Interpolation! ((x3 < x1)||(x3 > x2)||(x1>x2))!!");
                 return Double.MaxValue;
             }
             double slope = (y2 - y1) / (double)(x2 - x1);
@@ -430,8 +428,8 @@ namespace TowseyLib
                     shape.RandomNumber = random.GetInt(200); //set random number for id and color purposes
 
                     int[] centroid = shape.Centroid();
-                    //Console.WriteLine("Centroid=" + centroid[0] + ", " + centroid[1]);
-                    //Console.WriteLine("RowWidth=" + shape.RowWidth + "  ColWidth=" + shape.ColWidth);
+                    //LoggedConsole.WriteLine("Centroid=" + centroid[0] + ", " + centroid[1]);
+                    //LoggedConsole.WriteLine("RowWidth=" + shape.RowWidth + "  ColWidth=" + shape.ColWidth);
                     shapes.Add(shape);
                     //more to end of shape
                     y = shape.r2;
@@ -439,7 +437,7 @@ namespace TowseyLib
                 x += 4; //jump through 5 lines at a time.
             }
 
-            if (Oblong.Verbose) Console.WriteLine("Number of shapes=" + shapes.Count);
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Number of shapes=" + shapes.Count);
             shapes = ProcessShapes(shapes);
 
             //Console.ReadLine();
@@ -484,7 +482,7 @@ namespace TowseyLib
             //foreach (Shape shape in shapes)
             //{
             //    areas[id++] = shape.Area();
-            //    Console.WriteLine("Area["+(id-1)+"]="+areas[id-1]);
+            //    LoggedConsole.WriteLine("Area["+(id-1)+"]="+areas[id-1]);
             //}
 
             //int binCount = 200;
@@ -496,7 +494,7 @@ namespace TowseyLib
             //int maxIndex; 
             //DataTools.getMaxIndex(histo, out maxIndex);
             //int valueAtMaxindex = (int)((double)maxIndex*binWidth);
-            //Console.WriteLine("Value AtMaxindex=" + valueAtMaxindex);
+            //LoggedConsole.WriteLine("Value AtMaxindex=" + valueAtMaxindex);
 
             int areaThreshold = 10;
 
@@ -536,7 +534,7 @@ namespace TowseyLib
         public static ArrayList MergeShapesWhoseEndsOverlap(ArrayList shapes, int dyThreshold)
         {
             // merge shapes whose ends overlap
-            if (Oblong.Verbose) Console.WriteLine("Merge shapes whose ends overlap.");
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Merge shapes whose ends overlap.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -546,9 +544,9 @@ namespace TowseyLib
                     Oblong s2 = (Oblong)shapes[j];
                     if (!s1.Overlaps(s2)) continue;
                     double dy = s1.RowShift(s2);
-                    if (Oblong.Verbose) Console.WriteLine("dy=" + dy);
+                    if (Oblong.Verbose) LoggedConsole.WriteLine("dy=" + dy);
                     if (Math.Abs(dy) > dyThreshold) continue;
-                    //Console.WriteLine("dy=" + dy);
+                    //LoggedConsole.WriteLine("dy=" + dy);
 
                     s2.r1 = (s1.r1 + s2.r1) / 2;
                     s2.r2 = (s1.r2 + s2.r2) / 2;
@@ -573,7 +571,7 @@ namespace TowseyLib
         public static ArrayList MergeShapesWithAdjacentRows(ArrayList shapes, int dxThreshold, double ratio)
         {
             // merge shapes whose ends overlap
-            if (Oblong.Verbose) Console.WriteLine("Merge shapes whose sides are adjacent.");
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Merge shapes whose sides are adjacent.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -584,7 +582,7 @@ namespace TowseyLib
                     if (!s1.AdjacentRows(s2)) continue; //not adjacent
 
                     double dx = s1.ColumnShift(s2);
-                    //Console.WriteLine("dx=" + dx);
+                    //LoggedConsole.WriteLine("dx=" + dx);
                     if (Math.Abs(dx) > dxThreshold) continue; //too much centroid displacement
 
                     if (((s1.ColWidth / (double)s2.ColWidth) > ratio) || ((s2.ColWidth / (double)s1.ColWidth) > ratio)) continue; //too much difference in shape width  
@@ -607,7 +605,7 @@ namespace TowseyLib
                         s2.r2 = s1.r2;
                         s2.RowWidth = s2.r2 - s2.r1 + 1;
                     }
-                    //Console.WriteLine("size="+shapes.Count+"  i="+i);
+                    //LoggedConsole.WriteLine("size="+shapes.Count+"  i="+i);
                     shapes.RemoveAt(i);  //remove s1
                     //shapes[j] = s2;    //keep s2
                     break; //break inner loop if get to here
@@ -618,7 +616,7 @@ namespace TowseyLib
 
         public static ArrayList RemoveOverlappingShapes(ArrayList shapes)
         {
-            if (Oblong.Verbose) Console.WriteLine("Remove the smaller of any pair of overlapping shapes.");
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Remove the smaller of any pair of overlapping shapes.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -641,7 +639,7 @@ namespace TowseyLib
 
         public static ArrayList RemoveEnclosedShapes(ArrayList shapes)
         {
-            if (Oblong.Verbose) Console.WriteLine("Remove enclosed shapes.");
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Remove enclosed shapes.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -678,9 +676,9 @@ namespace TowseyLib
         public static ArrayList ProcessShapes(ArrayList shapes)
         {
             shapes = RemoveSmallShapes(shapes);
-            if (Oblong.Verbose) Console.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
             shapes = MergeCloseShapes(shapes);
-            if (Oblong.Verbose) Console.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
             return shapes;
         }
 
@@ -785,8 +783,8 @@ namespace TowseyLib
                 if (bin >= binCount) bin = binCount - 1;
                 distribution[bin]++;
             }
-            if (Oblong.Verbose) Console.WriteLine("Number of data columns = "+Oblong.maxCol);
-            if (Oblong.Verbose) Console.WriteLine("One bin = " + binWidth + " of the original data columns.");
+            if (Oblong.Verbose) LoggedConsole.WriteLine("Number of data columns = "+Oblong.maxCol);
+            if (Oblong.Verbose) LoggedConsole.WriteLine("One bin = " + binWidth + " of the original data columns.");
             if (Oblong.Verbose) WriteDistribution(distribution, binWidth);
             return distribution;
         }
@@ -794,22 +792,22 @@ namespace TowseyLib
         public static void WriteDistribution(int[] distribution, double binWidth)
         {
             int binCount = distribution.Length; //number of bins
-            Console.WriteLine("\nDistribution over "+binCount+" bins");
+            LoggedConsole.WriteLine("\nDistribution over "+binCount+" bins");
             for (int i = 0; i < binCount; i++)
             {
-                Console.Write(i+"\t");
+                LoggedConsole.Write(i+"\t");
             }
-            Console.WriteLine();
+            LoggedConsole.WriteLine();
             for (int i = 0; i < binCount; i++)
             {
-                Console.Write((int)(i*binWidth) + "\t");
+                LoggedConsole.Write((int)(i*binWidth) + "\t");
             }
-            Console.WriteLine("(Total " + (int)(binWidth * binCount) + " bins)");
+            LoggedConsole.WriteLine("(Total " + (int)(binWidth * binCount) + " bins)");
             for (int i = 0; i < binCount; i++)
             {
-                Console.Write(distribution[i] + "\t");
+                LoggedConsole.Write(distribution[i] + "\t");
             }
-            Console.WriteLine("Total instances=" + DataTools.Sum(distribution));
+            LoggedConsole.WriteLine("Total instances=" + DataTools.Sum(distribution));
         }
 
 
@@ -862,36 +860,36 @@ namespace TowseyLib
 
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DataTools");
+            LoggedConsole.WriteLine("TESTING METHODS IN CLASS DataTools");
 
             //string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
             Boolean doit1 = false;
             if (doit1) //test1 method AREA, CENTROID and CENTROID-DISTANCE()
             {
-                Console.WriteLine("Test Method Name()");
+                LoggedConsole.WriteLine("Test Method Name()");
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
                 Oblong s1 = new Oblong(r1, c1, r2, c2);
                 s1.WriteBounds();
                 int[] centroid1 = s1.Centroid();
-                Console.WriteLine("Centroid1: r=" + centroid1[0] + "  c=" + centroid1[1]);
-                Console.WriteLine("Area 1=" + s1.Area());
-                Console.WriteLine();
+                LoggedConsole.WriteLine("Centroid1: r=" + centroid1[0] + "  c=" + centroid1[1]);
+                LoggedConsole.WriteLine("Area 1=" + s1.Area());
+                LoggedConsole.WriteLine();
 
                 r1 = 17; c1 = 16; r2 = 23; c2 = 24;
                 Oblong s2 = new Oblong(r1, c1, r2, c2);
                 s2.WriteBounds();
                 int[] centroid2 = s2.Centroid();
-                Console.WriteLine("Centroid2: r=" + centroid2[0] + "  c=" + centroid2[1]);
-                Console.WriteLine("Area 2=" + s2.Area());
+                LoggedConsole.WriteLine("Centroid2: r=" + centroid2[0] + "  c=" + centroid2[1]);
+                LoggedConsole.WriteLine("Area 2=" + s2.Area());
                 double dist = s1.CentroidDistance(s2);
-                Console.WriteLine("Distance="+dist);
+                LoggedConsole.WriteLine("Distance="+dist);
 
             } //end test1
 
             Boolean doit2 = false;
             if (doit2) //test2 method IncludesRow(), IncludesColumn(), PointInside()
             {
-                Console.WriteLine("Test Method Name()");
+                LoggedConsole.WriteLine("Test Method Name()");
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
                 Oblong s1 = new Oblong(r1, c1, r2, c2);
                 s1.WriteBounds();
@@ -902,35 +900,35 @@ namespace TowseyLib
                 Oblong s3 = new Oblong(r1, c1, r2, c2);
                 s3.WriteBounds();
 
-                Console.WriteLine();
-                Console.WriteLine("Row10 in s1=" + s1.IncludesRow(10));
-                Console.WriteLine("Row15 in s1=" + s1.IncludesRow(15));
-                Console.WriteLine("Row20 in s1=" + s1.IncludesRow(20));
-                Console.WriteLine("Row25 in s1=" + s1.IncludesRow(25));
-                Console.WriteLine("Col05 in s1=" + s1.IncludesColumn(5));
-                Console.WriteLine("Col10 in s1=" + s1.IncludesColumn(10));
-                Console.WriteLine("Col15 in s1=" + s1.IncludesColumn(15));
-                Console.WriteLine("Col20 in s1=" + s1.IncludesColumn(20));
+                LoggedConsole.WriteLine();
+                LoggedConsole.WriteLine("Row10 in s1=" + s1.IncludesRow(10));
+                LoggedConsole.WriteLine("Row15 in s1=" + s1.IncludesRow(15));
+                LoggedConsole.WriteLine("Row20 in s1=" + s1.IncludesRow(20));
+                LoggedConsole.WriteLine("Row25 in s1=" + s1.IncludesRow(25));
+                LoggedConsole.WriteLine("Col05 in s1=" + s1.IncludesColumn(5));
+                LoggedConsole.WriteLine("Col10 in s1=" + s1.IncludesColumn(10));
+                LoggedConsole.WriteLine("Col15 in s1=" + s1.IncludesColumn(15));
+                LoggedConsole.WriteLine("Col20 in s1=" + s1.IncludesColumn(20));
 
                 int py = 23;
                 int px = 25;
                 bool inside = s1.PointInside(py,px);
-                Console.WriteLine("\nPoint ("+py+","+px+ ") inside s1 =" + inside);
+                LoggedConsole.WriteLine("\nPoint ("+py+","+px+ ") inside s1 =" + inside);
                 inside = s2.PointInside(py, px);
-                Console.WriteLine("Point (" + py + "," + px + ") inside s2 =" + inside);
+                LoggedConsole.WriteLine("Point (" + py + "," + px + ") inside s2 =" + inside);
                 inside = s3.PointInside(py, px);
-                Console.WriteLine("Point (" + py + "," + px + ") inside s3 =" + inside);
+                LoggedConsole.WriteLine("Point (" + py + "," + px + ") inside s3 =" + inside);
 
                 bool overlapped = s1.Overlaps(s3);
-                Console.WriteLine("\ns1 and s3 overlap =" + overlapped);
+                LoggedConsole.WriteLine("\ns1 and s3 overlap =" + overlapped);
                 overlapped = s1.Overlaps(s2);
-                Console.WriteLine("s1 and s2 overlap =" + overlapped);
+                LoggedConsole.WriteLine("s1 and s2 overlap =" + overlapped);
 
             } //end test2
 
             if (true) //test Method MergeShapes()
             {
-                Console.WriteLine("Test MergeShapes()");
+                LoggedConsole.WriteLine("Test MergeShapes()");
                 ArrayList list = new ArrayList();
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
                 Oblong s1 = new Oblong(r1, c1, r2, c2);
@@ -945,12 +943,12 @@ namespace TowseyLib
                 s3.WriteBounds();
                 list.Add(s3);
 
-                Console.WriteLine(" dy(s2-s1)= " + s1.RowShift(s2));
-                Console.WriteLine(" dy(s3-s2)= " + s2.RowShift(s3));
+                LoggedConsole.WriteLine(" dy(s2-s1)= " + s1.RowShift(s2));
+                LoggedConsole.WriteLine(" dy(s3-s2)= " + s2.RowShift(s3));
 
                 int dyThreshold = 6;
                 list = MergeShapesWhoseEndsOverlap(list, dyThreshold);
-                Console.WriteLine("List size="+list.Count);
+                LoggedConsole.WriteLine("List size="+list.Count);
                 foreach (Oblong s in list)
                 {
                     s.WriteBounds();
@@ -962,11 +960,11 @@ namespace TowseyLib
 
             //if (false) //test Method()
             //{
-            //    Console.WriteLine("Test Method Name()");
+            //    LoggedConsole.WriteLine("Test Method Name()");
             //} //end test4
 
 
-            Console.WriteLine("\nFINISHED!!");
+            LoggedConsole.WriteLine("\nFINISHED!!");
             Console.ReadLine();
         }// end Main()
 

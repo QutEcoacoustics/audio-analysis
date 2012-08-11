@@ -45,7 +45,7 @@ namespace NeuralNets
         {
             int id = randomIntegers[i];
             wts.Add(trainingData[id]);
-            //Console.WriteLine("Sum of wts[" + i + "]= " + wts[i].Sum());
+            //LoggedConsole.WriteLine("Sum of wts[" + i + "]= " + wts[i].Sum());
         }//end all templates
 
         //set committed nodes = false
@@ -63,7 +63,7 @@ namespace NeuralNets
 
     public void WriteParameters()
     {
-        Console.WriteLine("\n  BinaryCluster:-  Vigilance=" + this.vigilance_rho +  "   Momentum=" + this.momentum_beta);
+        LoggedConsole.WriteLine("\n  BinaryCluster:-  Vigilance=" + this.vigilance_rho +  "   Momentum=" + this.momentum_beta);
     }
 
 
@@ -127,7 +127,7 @@ namespace NeuralNets
                 if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
 
             if(BinaryCluster.Verbose)
-                Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+                LoggedConsole.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -229,7 +229,7 @@ namespace NeuralNets
         } //end UNTIL matchFound; //{max unit is good match OR no committed unit is good match}
 
 
-        Console.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
+        LoggedConsole.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
         return -1; //something is wrong!!!
     }
 
@@ -299,25 +299,25 @@ namespace NeuralNets
     public static void DisplayClusterWeights(List<double[]> clusterWts, int[] clusterHits)
     {
         int clusterCount = 0;
-        Console.WriteLine("                              wts               wtSum\t wins");
+        LoggedConsole.WriteLine("                              wts               wtSum\t wins");
         for (int i = 0; i < clusterWts.Count; i++)
         {
             int wins = 0;
-            Console.Write("wts{0:D3}   ", (i+1)); //write the cluster number
+            LoggedConsole.Write("wts{0:D3}   ", (i+1)); //write the cluster number
             if (clusterWts[i] == null)
             {
-                for (int j = 0; j < 32; j++) Console.Write(" ");
-                Console.WriteLine("     null");
+                for (int j = 0; j < 32; j++) LoggedConsole.Write(" ");
+                LoggedConsole.WriteLine("     null");
             }
             else
             {
-                for (int j = 0; j < clusterWts[i].Length; j++) if (clusterWts[i][j] > 0.0) Console.Write("1"); else Console.Write("0");
+                for (int j = 0; j < clusterWts[i].Length; j++) if (clusterWts[i][j] > 0.0) LoggedConsole.Write("1"); else LoggedConsole.Write("0");
                 for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) wins++;
-                Console.WriteLine("     {0}\t\t{1}", clusterWts[i].Sum(), wins);
+                LoggedConsole.WriteLine("     {0}\t\t{1}", clusterWts[i].Sum(), wins);
                 clusterCount++;
             }
         }
-        Console.WriteLine("Cluster Count = {0}", clusterCount);
+        LoggedConsole.WriteLine("Cluster Count = {0}", clusterCount);
     } // end DisplayClusterWeights()
 
 
@@ -403,9 +403,9 @@ namespace NeuralNets
                     }
             clusterCount_final++; //count number of remaining clusters
 
-            //Console.WriteLine("cluster {0}: isolatedHitCount={1}  %={2}%", i, +cluster_isolatedHits[i], percent);
-            //if (wtVectors[i] == null) Console.WriteLine("{0}:    null", i);
-            //else                      Console.WriteLine("{0}: isolatedHitCount={1}", i, cluster_isolatedHits[i]);
+            //LoggedConsole.WriteLine("cluster {0}: isolatedHitCount={1}  %={2}%", i, +cluster_isolatedHits[i], percent);
+            //if (wtVectors[i] == null) LoggedConsole.WriteLine("{0}:    null", i);
+            //else                      LoggedConsole.WriteLine("{0}: isolatedHitCount={1}", i, cluster_isolatedHits[i]);
         }
 
         int percentIsolatedHitCount = 0;
@@ -465,8 +465,8 @@ namespace NeuralNets
 
         if (BinaryCluster.Verbose)
         {
-            Console.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
-            Console.WriteLine("\n BEGIN TRAINING");
+            LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
+            LoggedConsole.WriteLine("\n BEGIN TRAINING");
         }
         var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialWtCount);
         int iterCount     = output.Item1;
@@ -475,7 +475,7 @@ namespace NeuralNets
         var clusterWts    = output.Item4;
         if (BinaryCluster.Verbose)
         {
-            Console.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
+            LoggedConsole.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
         }
         return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
 

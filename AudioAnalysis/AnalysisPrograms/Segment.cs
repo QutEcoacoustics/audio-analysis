@@ -208,16 +208,16 @@ namespace AnalysisPrograms
         {
             if (!File.Exists(args[0]))
             {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Cannot find recording file <" + args[0] + ">");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             if (!File.Exists(args[1]))
             {
-                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
+                LoggedConsole.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
+                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -226,16 +226,16 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("OscillationDetection.exe recordingPath iniPath outputFileName");
-            Console.WriteLine("where:");
-            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
-            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
-            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
-            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
-            Console.WriteLine("");
-            Console.WriteLine("\nPress <ENTER> key to exit.");
+            LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("OscillationDetection.exe recordingPath iniPath outputFileName");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
+            LoggedConsole.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
+            LoggedConsole.WriteLine("outputFileName:-   (string) The name of the output file.");
+            LoggedConsole.WriteLine("                            By default, the output dir is that containing the ini file.");
+            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
         }
 
 

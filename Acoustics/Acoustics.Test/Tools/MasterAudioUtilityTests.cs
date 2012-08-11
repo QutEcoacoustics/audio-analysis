@@ -176,7 +176,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 Assert.IsFalse(cr.ToString().Contains("New text"));
 
                 /* call some method that writes "New text" to stdout */
-                Console.Write("New text");
+                LoggedConsole.Write("New text");
                 Assert.IsTrue(cr.ToString().Contains("New text"));
             }
         }
@@ -393,7 +393,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 using (ConsoleRedirector cr = new ConsoleRedirector())
                 {
-                    Console.WriteLine(compareResult);
+                    LoggedConsole.WriteLine(compareResult);
                 }
 
                 Assert.IsTrue(
@@ -437,7 +437,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 using (ConsoleRedirector cr = new ConsoleRedirector())
                 {
-                    Console.WriteLine(compareResult);
+                    LoggedConsole.WriteLine(compareResult);
                 }
 
                 Assert.IsTrue(
@@ -500,7 +500,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             //using (var cr = new ConsoleRedirector())
             //{
-            //    Console.WriteLine(durationText);
+            //    LoggedConsole.WriteLine(durationText);
             //}
 
             return durationText;
@@ -542,7 +542,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 using (var cr = new ConsoleRedirector())
                 {
-                    Console.WriteLine(compareResult);
+                    LoggedConsole.WriteLine(compareResult);
                 }
 
                 Assert.IsTrue(

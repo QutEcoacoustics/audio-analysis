@@ -196,8 +196,8 @@
             this.browserSettings.fiAnalysisConfig = op.Item1;
             this.analysisParams = op.Item2;
 
-            Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            Console.WriteLine(DateTime.Now);
+            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+            LoggedConsole.WriteLine(DateTime.Now);
             this.browserSettings.WriteSettings2Console();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
@@ -213,8 +213,8 @@
             Dictionary<string, string> dict = null;
             if ((analysisName == "None") || (analysisName == "none"))
             {
-                Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
-                Console.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
+                LoggedConsole.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
+                LoggedConsole.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
                 return Tuple.Create(fi, dict);
             }
 
@@ -223,7 +223,7 @@
             var fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("#######  WARNING: The CONFIG file does not exist: <" + configPath + ">");
+                LoggedConsole.WriteLine("#######  WARNING: The CONFIG file does not exist: <" + configPath + ">");
                 return Tuple.Create(fi, dict);
             }
 
@@ -232,12 +232,12 @@
 
         private static void WriteAnalysisParameters2Console(Dictionary<string, string> dict, string analysisName)
         {
-            Console.WriteLine("# Parameters for Analysis: " + analysisName);
+            LoggedConsole.WriteLine("# Parameters for Analysis: " + analysisName);
             foreach (KeyValuePair<string, string> kvp in dict)
             {
-                Console.WriteLine("\t{0} = {1}", kvp.Key, kvp.Value);
+                LoggedConsole.WriteLine("\t{0} = {1}", kvp.Key, kvp.Value);
             }
-            Console.WriteLine("####################################################################################");
+            LoggedConsole.WriteLine("####################################################################################");
         }
 
         private static bool CheckForConsistencyOfAnalysisTypes(string currentAnalysisName, Dictionary<string, string> dict)
@@ -245,10 +245,10 @@
             string analysisName = dict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
             if (!currentAnalysisName.Equals(analysisName))
             {
-                Console.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", currentAnalysisName, analysisName);
+                LoggedConsole.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", currentAnalysisName, analysisName);
                 return false;
             }
-            Console.WriteLine("Analysis type: " + currentAnalysisName);
+            LoggedConsole.WriteLine("Analysis type: " + currentAnalysisName);
             return true;
         }
 
@@ -286,9 +286,9 @@
                     var audioFileName = item.FileName;
                     var fiSourceRecording = item.FullName;
                     browserSettings.fiSourceRecording = fiSourceRecording;
-                    Console.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
-                    Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-                    Console.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+                    LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
+                    LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
+                    LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
 
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
@@ -308,9 +308,9 @@
 
                     if (analyserResults == null)
                     {
-                        Console.WriteLine("###################################################");
-                        Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                        Console.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
+                        LoggedConsole.WriteLine("###################################################");
+                        LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                        LoggedConsole.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
                         return;
                     }
 
@@ -375,27 +375,27 @@
 
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
                     TimeSpan ts = stopwatch.Elapsed;
-                    Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+                    LoggedConsole.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
                     int outputCount = eventsCount;
                     if (eventsCount == 0) outputCount = indicesCount;
-                    Console.WriteLine("Number of units of output: {0}", outputCount);
+                    LoggedConsole.WriteLine("Number of units of output: {0}", outputCount);
                     if (outputCount == 0) outputCount = 1;
-                    Console.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
+                    LoggedConsole.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
 
-                    Console.WriteLine("###################################################");
-                    Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                    Console.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+                    LoggedConsole.WriteLine("###################################################");
+                    LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                    LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
                     if (fiEventsCSV != null)
                     {
-                        Console.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
-                        Console.WriteLine("\tNumber of events = " + eventsCount);
+                        LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                        LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
                     }
                     if (fiIndicesCSV != null)
                     {
-                        Console.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
-                        Console.WriteLine("\tNumber of indices = " + indicesCount);
+                        LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                        LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
                     }
-                    Console.WriteLine("###################################################\n");
+                    LoggedConsole.WriteLine("###################################################\n");
 
                 }// if checked
             } //foreach
@@ -415,9 +415,9 @@
 
             this.textBoxConsole.Clear();
 
-            Console.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(date);
+            LoggedConsole.WriteLine(date);
 
             foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
             {
@@ -437,7 +437,7 @@
                         new FileInfo(
                             Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
-                    //Console.WriteLine("# Display tracks in csv file: " + csvFileName);
+                    //LoggedConsole.WriteLine("# Display tracks in csv file: " + csvFileName);
 
                     this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                     this.labelSonogramFileName.Text = "File Name";
@@ -450,10 +450,10 @@
                     if (status != 0)
                     {
                         this.tabControlMain.SelectTab("tabPageConsole");
-                        Console.WriteLine("FATAL ERROR: Error opening csv file");
-                        Console.WriteLine("\t\tfile name:" + csvFilePath.FullName);
-                        if (status == 1) Console.WriteLine("\t\tfile exists but could not extract values.");
-                        if (status == 2) Console.WriteLine("\t\tfile exists but contains no values.");
+                        LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                        LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
+                        if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                        if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
                     }
                     else
                     {
@@ -498,8 +498,8 @@
             IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
             if (analyser == null)
             {
-                Console.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
-                Console.WriteLine("\t Using default analysis module.");
+                LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
+                LoggedConsole.WriteLine("\t Using default analysis module.");
                 analyser = new AnalysisTemplate();
             }
 
@@ -582,23 +582,23 @@
             this.textBoxConsole.Clear();
             this.tabControlMain.SelectTab("tabPageConsole");
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
             //Infer source file name from CSV file name
             FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
             if (inferredSourceFile == null)
             {
                 browserSettings.fiSourceRecording = null;
-                Console.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
-                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
+                LoggedConsole.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
+                LoggedConsole.WriteLine("    Cannot proceed with display of segment sonogram.");
                 return;
             }
             else
             {
                 browserSettings.fiSourceRecording = inferredSourceFile;
-                Console.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
-                Console.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
+                LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
+                LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
             }
 
 
@@ -639,9 +639,9 @@
             string sourceFName = Path.GetFileNameWithoutExtension(fiSource.FullName);
             string segmentFName = sourceFName + "_min" + (int)startMinute.TotalMinutes + ".wav"; //want a wav file
             string outputSegmentPath = Path.Combine(browserSettings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
-            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
-            Console.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
-            Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
+            LoggedConsole.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
+            LoggedConsole.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
+            LoggedConsole.WriteLine("\n\t\t\tFile Name: " + segmentFName);
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
             //if (!fiOutputSegment.Exists) //extract the segment
             //{
@@ -650,14 +650,14 @@
 
             if (!fiOutputSegment.Exists) //still has not been extracted
             {
-                Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
+                LoggedConsole.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
                 this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
                 return;
             }
 
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
-            Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
+            LoggedConsole.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
  
             //store info
             this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
@@ -666,7 +666,7 @@
 
             if (image == null)
             {
-                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiOutputSegment.FullName);
+                LoggedConsole.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiOutputSegment.FullName);
                 this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
             }
@@ -679,7 +679,7 @@
 
                 this.pictureBoxSonogram.Image = image;
                 //this.panelDisplaySpectrogram.Height = image.Height;
-                Console.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
+                LoggedConsole.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
                 this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
                 string title = fiOutputSegment.Name;
                 if (title.Length > 23)
@@ -708,8 +708,8 @@
             int status = 0;
             if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists))
             {
-                Console.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
-                Console.WriteLine("It does not exist!");
+                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
+                LoggedConsole.WriteLine("It does not exist!");
                 this.tabControlMain.SelectTab("tabPageConsole");
                 status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
             }
@@ -718,8 +718,8 @@
 
             if (status != 0)
             {
-                Console.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
-                Console.WriteLine("   Check Audacity path in the app.config.");
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
+                LoggedConsole.WriteLine("   Check Audacity path in the app.config.");
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);     
             }
 
@@ -1281,7 +1281,7 @@
         {
             if (browserSettings.fiSegmentRecording == null)
             {
-                Console.WriteLine("YOU MUST SELECT A SEGMENT OF AUDIO BY CLICKING ON THE 'TRACKS' IMAGE.");
+                LoggedConsole.WriteLine("YOU MUST SELECT A SEGMENT OF AUDIO BY CLICKING ON THE 'TRACKS' IMAGE.");
                 this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
@@ -1289,7 +1289,7 @@
             Image image = GetSonogram(browserSettings.fiSegmentRecording);
             if (image == null)
             {
-                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + browserSettings.fiSegmentRecording.FullName);
+                LoggedConsole.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + browserSettings.fiSegmentRecording.FullName);
                 this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
@@ -1302,7 +1302,7 @@
                 }
 
                 this.pictureBoxSonogram.Image = image;
-                Console.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
+                LoggedConsole.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
                 //this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
                 //this.labelSonogramFileName.Text = browserSettings.fiSegmentRecording.Name;
                 //attempt to deal with variable height of spectrogram
@@ -1316,9 +1316,9 @@
             //check recording segment exists
             if ((fiAudio == null) || (!fiAudio.Exists))
             {
-                if (fiAudio == null) Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
+                if (fiAudio == null) LoggedConsole.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
                 else
-                    Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + fiAudio.FullName);
+                    LoggedConsole.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + fiAudio.FullName);
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return null;
             }
@@ -1326,7 +1326,7 @@
             string analysisName = this.CurrentSourceFileAnalysisType;
             if ((this.checkBoxSonogramAnnotate.Checked) && (analysisName == "none"))
             {
-                Console.WriteLine("#######  CANNOT ANNOTATE SONOGRAM because SOURCE ANALYSIS TYPE = \"none\".");
+                LoggedConsole.WriteLine("#######  CANNOT ANNOTATE SONOGRAM because SOURCE ANALYSIS TYPE = \"none\".");
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return null;
             }
@@ -1338,7 +1338,7 @@
 
             if (!(new FileInfo(configPath)).Exists)
             {
-                Console.WriteLine("Config file does not exists: {0}", configPath);
+                LoggedConsole.WriteLine("Config file does not exists: {0}", configPath);
                 return null;
             }
 
@@ -1351,7 +1351,7 @@
             var fiTempConfig = new FileInfo(Path.Combine(opDir, "temp.cfg"));
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
-            Console.WriteLine("\n\tPreparing sonogram of audio segment");
+            LoggedConsole.WriteLine("\n\tPreparing sonogram of audio segment");
             FileInfo fiImage = new FileInfo(Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiAudio.FullName) + ".png"));
             IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
             Image image = SonogramTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);

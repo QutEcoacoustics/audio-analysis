@@ -37,7 +37,7 @@ namespace AudioAnalysisTools
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude);
             if (hits == null)
             {
-                Console.WriteLine("###### WARNING: DCT length too short to detect the maxOscilFreq");
+                LoggedConsole.WriteLine("###### WARNING: DCT length too short to detect the maxOscilFreq");
                 scores = null;
                 events = null;
                 return;
@@ -263,7 +263,7 @@ namespace AudioAnalysisTools
                         //double duration = endTime - startTime;
                         double duration = (i - startFrame + 1)  * frameOffset;
                         if (duration < durationThreshold) continue; //skip events with duration shorter than threshold
-                        //Console.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
+                        //LoggedConsole.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);

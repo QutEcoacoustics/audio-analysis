@@ -70,8 +70,8 @@ namespace AnalysisPrograms
             bool verbose = true;
             if (verbose)
             {
-                Console.WriteLine(title);
-                Console.WriteLine(date);
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
             }
 
             CheckArguments(args); //checks validity of the first 3 path arguments
@@ -83,8 +83,8 @@ namespace AnalysisPrograms
 
             if (verbose)
             {
-                Console.WriteLine("# Output folder:  " + outputDir);
-                Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             }
 
             //1. set up the necessary files
@@ -142,11 +142,11 @@ namespace AnalysisPrograms
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
             {
-                Console.WriteLine("###################################################\n");
-                Console.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
-                Console.WriteLine("Available analysers are:");
-                foreach(IAnalyser anal in analysers) Console.WriteLine("\t  " + anal.Identifier);
-                Console.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
+                LoggedConsole.WriteLine("Available analysers are:");
+                foreach(IAnalyser anal in analysers) LoggedConsole.WriteLine("\t  " + anal.Identifier);
+                LoggedConsole.WriteLine("###################################################\n");
                 return 1;
             }
 
@@ -162,7 +162,7 @@ namespace AnalysisPrograms
             //    double dummy = 0.0;
             //    DataTable dt1 = analyser.ConvertEvents2Indices(dt, unitTime, source, dummy);
             //    CsvTools.DataTable2CSV(dt1, opPath);
-            //    Console.WriteLine("FINISHED");
+            //    LoggedConsole.WriteLine("FINISHED");
             //    Console.ReadLine();
             //}
 
@@ -177,9 +177,9 @@ namespace AnalysisPrograms
             //8. PROCESS THE RESULTS
             if (analyserResults == null)
             {
-                Console.WriteLine("###################################################\n");
-                Console.WriteLine("The Analysis Run Coordinator has returned a null result.");
-                Console.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a null result.");
+                LoggedConsole.WriteLine("###################################################\n");
                 return 666;
             }
 
@@ -187,9 +187,9 @@ namespace AnalysisPrograms
             DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
             if ((datatable == null) || (datatable.Rows.Count == 0))
             {
-                Console.WriteLine("###################################################\n");
-                Console.WriteLine("The Analysis Run Coordinator has returned a data table with zero rows.");
-                Console.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a data table with zero rows.");
+                LoggedConsole.WriteLine("###################################################\n");
                 return 666;
             }
 
@@ -212,31 +212,31 @@ namespace AnalysisPrograms
             var fiEventsCSV  = op2.Item1;
             var fiIndicesCSV = op2.Item2;
 
-            Console.WriteLine("\n###################################################");
-            Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-            //Console.WriteLine("Output  to  directory: " + diOP.FullName);
-            Console.WriteLine("\n");
+            LoggedConsole.WriteLine("\n###################################################");
+            LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+            //LoggedConsole.WriteLine("Output  to  directory: " + diOP.FullName);
+            LoggedConsole.WriteLine("\n");
 
             if (fiEventsCSV == null)
             {
-                Console.WriteLine("An Events CSV file was NOT returned.");
+                LoggedConsole.WriteLine("An Events CSV file was NOT returned.");
             }
             else
             {
-                Console.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
-                Console.WriteLine("\tNumber of events = " + eventsCount);
+                LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
-            Console.WriteLine("\n");
+            LoggedConsole.WriteLine("\n");
             if (fiIndicesCSV == null)
             {
-                Console.WriteLine("An Indices CSV file was NOT returned.");
+                LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
             }
             else
             {
-                Console.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
-                Console.WriteLine("\tNumber of indices = " + indicesCount);
+                LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
             }
-            Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
             return status;
         } //Main(string[] args)
 
@@ -246,10 +246,10 @@ namespace AnalysisPrograms
         {
             if ((args.Length != 3) && (args.Length != 5))
             {
-                Console.WriteLine("\nINCORRECT COMMAND LINE.");
-                Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("\nYOU REQUIRE 3 OR 5 COMMAND LINE ARGUMENTS\n");
+                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
+                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
+                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
+                LoggedConsole.WriteLine("\nYOU REQUIRE 3 OR 5 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -271,7 +271,7 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             if (!diSource.Exists)
             {
-                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -279,8 +279,8 @@ namespace AnalysisPrograms
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source directory exists: " + diSource.FullName);
-                Console.WriteLine("\t but the source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
+                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -288,7 +288,7 @@ namespace AnalysisPrograms
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
+                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -309,7 +309,7 @@ namespace AnalysisPrograms
 
                 if (!success)
                 {
-                    Console.WriteLine("Output directory does not exist: " + diOP.FullName);
+                    LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
 
                     throw new AnalysisOptionInvalidPathsException();
                 }
@@ -319,17 +319,17 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
-            Console.WriteLine("where:");
-            Console.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
-            Console.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
-            Console.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
-            Console.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
-            Console.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
-            Console.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
-            Console.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
+            LoggedConsole.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
+            LoggedConsole.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
+            LoggedConsole.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
+            LoggedConsole.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
+            LoggedConsole.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
+            LoggedConsole.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
+            LoggedConsole.WriteLine("");
         }
 
     } //class AnalyseLongRecording

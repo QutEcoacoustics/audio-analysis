@@ -198,7 +198,7 @@ namespace AudioAnalysisTools
                         int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                         double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
                               //DataTools.writeBarGraph(dct);
-                              //Console.WriteLine("oscilFreq ={0:f2}  (max index={1})  Amp={2:f2}", oscilFreq, indexOfMaxValue, dct[indexOfMaxValue]);
+                              //LoggedConsole.WriteLine("oscilFreq ={0:f2}  (max index={1})  Amp={2:f2}", oscilFreq, indexOfMaxValue, dct[indexOfMaxValue]);
                               
                         //calculate specificity i.e. what other oscillations are present.
                         //double offMaxAmplitude = 0.0;
@@ -206,7 +206,7 @@ namespace AudioAnalysisTools
                         //offMaxAmplitude -= (dct[indexOfMaxValue-1] + dct[indexOfMaxValue] + dct[indexOfMaxValue+1]);
                         //offMaxAmplitude /= (dctLength - lowFreqBuffer - 3); //get average
                         //double specificity = 2 * (0.5 - (offMaxAmplitude / dct[indexOfMaxValue]));
-                        ////Console.WriteLine("avOffAmp={0:f2}   specificity ={1:f2}", offMaxAmplitude, specificity);
+                        ////LoggedConsole.WriteLine("avOffAmp={0:f2}   specificity ={1:f2}", offMaxAmplitude, specificity);
                         //double threshold = dctThreshold + dctThreshold;
 
                         //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
@@ -357,7 +357,7 @@ namespace AudioAnalysisTools
                 int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                 double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
                 //      DataTools.writeBarGraph(dct);
-                //Console.WriteLine("oscilFreq = " + oscilFreq);
+                //LoggedConsole.WriteLine("oscilFreq = " + oscilFreq);
 
                 //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                 if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
@@ -617,7 +617,7 @@ namespace AudioAnalysisTools
                 else                              period[i] = dctLength / (double)indexOfMaxValue * 2;
                 dct[indexOfMaxValue] = 0.0; // remove value for next iteration
             }
-            Console.WriteLine("Max indices = {0:f0},  {1:f0},  {2:f0}.", maxIndex[0] ,maxIndex[1] ,maxIndex[2] );
+            LoggedConsole.WriteLine("Max indices = {0:f0},  {1:f0},  {2:f0}.", maxIndex[0] ,maxIndex[1] ,maxIndex[2] );
             return period;
         }
 

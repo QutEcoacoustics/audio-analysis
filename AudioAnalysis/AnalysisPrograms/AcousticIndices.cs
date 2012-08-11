@@ -50,10 +50,10 @@
 
             string title = "# FOR EXTRACTION OF Acoustic Indices";
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
@@ -101,7 +101,7 @@
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -113,7 +113,7 @@
             //    process.Run(imagePath, outputDir);
             //}
 
-            Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
         } // Dev()
 
         /// <summary>
@@ -125,8 +125,8 @@
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
-                Console.WriteLine("Require at least 2 command line arguments.");
+                LoggedConsole.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
+                LoggedConsole.WriteLine("Require at least 2 command line arguments.");
 
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -148,7 +148,7 @@
                         //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
                         break;
                     default:
-                        Console.WriteLine("Task unrecognised>>>" + args[0]);
+                        LoggedConsole.WriteLine("Task unrecognised>>>" + args[0]);
                         throw new AnalysisOptionInvalidArgumentsException();
                 } // switch
             } // if-else
@@ -162,7 +162,7 @@
         {
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
 
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -174,7 +174,7 @@
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -182,7 +182,7 @@
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -190,7 +190,7 @@
             DirectoryInfo outputDirectory = new DirectoryInfo(outputDir);
             if (!outputDirectory.Exists)
             {
-                Console.WriteLine("Output directory does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Output directory does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -231,7 +231,7 @@
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
 
                         throw new AnalysisOptionInvalidDurationException();
                     }

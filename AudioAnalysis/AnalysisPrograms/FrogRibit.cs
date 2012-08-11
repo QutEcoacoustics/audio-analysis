@@ -192,7 +192,7 @@ namespace AnalysisPrograms
 
             //vi: CONVERSIONS: convert sample std deviations to milliseconds - then NORMALIZE to PROBs
             double[] tsd = DSP_Frames.ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
-            //for (int i = 0; i < tsd.Length; i++) if (tsd[i]) Console.WriteLine(i + " = " + tsd[i]);
+            //for (int i = 0; i < tsd.Length; i++) if (tsd[i]) LoggedConsole.WriteLine(i + " = " + tsd[i]);
             //filter the freq array to remove values derived from frames with high standard deviation
             double[] tsdScores = NormalDist.Values2Probabilities(tsd);
 
@@ -200,7 +200,7 @@ namespace AnalysisPrograms
             double[] rawOscillations = OscillationAnalysis.DetectOscillationsInScoreArray(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
             //normalise oscillation scores wrt scores obtained on a training.
             //double maxOscillationScore = rawOscillations[DataTools.GetMaxIndex(rawOscillations)];
-            //Console.WriteLine("maxOscillationScore=" + maxOscillationScore);
+            //LoggedConsole.WriteLine("maxOscillationScore=" + maxOscillationScore);
             var oscillations = new double[dBarray.Length];
             for (int i = 0; i < dBarray.Length; i++)
             {

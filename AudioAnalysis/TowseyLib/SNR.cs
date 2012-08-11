@@ -12,16 +12,16 @@ namespace TowseyLib
 
     public class SNR
     {
-        //CONSTANT
+        // CONSTANT
         // FIND MAX VALUE IN BOTTOM 80% OF RANGE.
         // this Constant sets an upper limit on the value returned as the modal noise.
-        public static double FRACTIONAL_BOUND_FOR_MODE = 0.8;
+        public const double FRACTIONAL_BOUND_FOR_MODE = 0.8;
 
 
         public struct key_Snr
         {
             public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-            public const string key_DYNAMIC_RANGE        = "DYNAMIC_RANGE";
+            public const string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
             //public const string Key_SilenceRecording   = "SILENCE_RECORDING_PATH"; //used to determin silence model.
         }
 
@@ -35,11 +35,11 @@ namespace TowseyLib
 
 
 
-        public double[] LogEnergy {get; set;}
-        public double[] Decibels {get; set;}
-        public double Min_dB {get; set;}
-        public double Max_dB {get; set;}
-        public double minEnergyRatio {get; set;}
+        public double[] LogEnergy { get; set; }
+        public double[] Decibels { get; set; }
+        public double Min_dB { get; set; }
+        public double Max_dB { get; set; }
+        public double minEnergyRatio { get; set; }
         public double NoiseSubtracted { get; set; } //the modal noise in dB
         public double Snr { get; set; }             //sig/noise ratio i.e. max dB - modal noise
         public double NoiseRange { get; set; }        //difference between min_dB and the modal noise dB
@@ -69,39 +69,39 @@ namespace TowseyLib
                 m = SNR.RemoveNeighbourhoodBackgroundNoise(m, backgroundThreshold);
             }
             else
-            if (nrt == NoiseReductionType.MODAL)
-            {
-                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile - any matrix of values
-                smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
-                m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
-            }
-            else
-            if (nrt == NoiseReductionType.BINARY)
-            {
-                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile
-                smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
-                m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray); //remove BG noise
-                double backgroundThreshold = parameter;
-                m = SNR.RemoveNeighbourhoodBackgroundNoise(m, backgroundThreshold);         //smooth background further
-                m = DataTools.Matrix2Binary(m, 2*backgroundThreshold);         //convert to binary 
-            }
-            else
-            if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter);
-                m = SNR.NoiseReduce_FixedRange(m, parameter);
-            }
-            else
-            if (nrt == NoiseReductionType.PEAK_TRACKING)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
-                m = SNR.NoiseReduce_PeakTracking(m, parameter);
-            }
-            else
-            if (nrt == NoiseReductionType.HARMONIC_DETECTION)
-            {
-                m = SNR.NoiseReduce_HarmonicDetection(m);
-            }
+                if (nrt == NoiseReductionType.MODAL)
+                {
+                    double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile - any matrix of values
+                    smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+                    m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
+                }
+                else
+                    if (nrt == NoiseReductionType.BINARY)
+                    {
+                        double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile
+                        smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+                        m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray); //remove BG noise
+                        double backgroundThreshold = parameter;
+                        m = SNR.RemoveNeighbourhoodBackgroundNoise(m, backgroundThreshold);         //smooth background further
+                        m = DataTools.Matrix2Binary(m, 2 * backgroundThreshold);         //convert to binary 
+                    }
+                    else
+                        if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
+                        {
+                            Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter);
+                            m = SNR.NoiseReduce_FixedRange(m, parameter);
+                        }
+                        else
+                            if (nrt == NoiseReductionType.PEAK_TRACKING)
+                            {
+                                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                                m = SNR.NoiseReduce_PeakTracking(m, parameter);
+                            }
+                            else
+                                if (nrt == NoiseReductionType.HARMONIC_DETECTION)
+                                {
+                                    m = SNR.NoiseReduce_HarmonicDetection(m);
+                                }
             var tuple = System.Tuple.Create(m, smoothedArray);
             return tuple;
         }
@@ -111,20 +111,45 @@ namespace TowseyLib
         /// <summary>
         /// Converts a string interpreted as a key to a NoiseReduction Type.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">The string to convert.</param>
+        /// <returns>A NoiseReductionType enumeration.</returns>
         public static NoiseReductionType Key2NoiseReductionType(string key)
         {
-            if (key.Equals("NONE")) return NoiseReductionType.NONE;
-            else
-                if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
-                else
-                    if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                    else
-                        if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
-                        else
-                            if (key.Equals("HARMONIC_DETECTION")) return NoiseReductionType.HARMONIC_DETECTION;
-            return NoiseReductionType.NONE;
+            NoiseReductionType result;
+            switch (key)
+            {
+                case "NONE":
+                    result = NoiseReductionType.NONE;
+                    break;
+                case "STANDARD":
+                    result = NoiseReductionType.STANDARD;
+                    break;
+                case "FIXED_DYNAMIC_RANGE":
+                    result = NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    break;
+                case "PEAK_TRACKING":
+                    result = NoiseReductionType.PEAK_TRACKING;
+                    break;
+                case "HARMONIC_DETECTION":
+                    result = NoiseReductionType.HARMONIC_DETECTION;
+                    break;
+                default:
+                    result = NoiseReductionType.NONE;
+                    break;
+            }
+
+            return result;
+
+            ////if (key.Equals("NONE")) return NoiseReductionType.NONE;
+            ////else
+            ////    if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
+            ////    else
+            ////        if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
+            ////        else
+            ////            if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
+            ////            else
+            ////                if (key.Equals("HARMONIC_DETECTION")) return NoiseReductionType.HARMONIC_DETECTION;
+            ////return NoiseReductionType.NONE;
         }
 
 
@@ -136,11 +161,12 @@ namespace TowseyLib
         public SNR(double[,] frames)
         {
             this.LogEnergy = SignalLogEnergy(frames);
-            this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
+            this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); // convert logEnergy to decibels.
             SubtractBackgroundNoise_dB();
             this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
-            //need an appropriate dB reference level for normalising dB arrays.
-            //this.MaxReference_dBWrtNoise = this.Snr;                        // OK
+
+            // need an appropriate dB reference level for normalising dB arrays.
+            ////this.MaxReference_dBWrtNoise = this.Snr;                        // OK
             this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
 
@@ -163,11 +189,11 @@ namespace TowseyLib
         /// The energy of a frame/window is the log of the summed energy of all the samples in the frame.
         /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
         /// BUT this method returns the AVERAGE sample energy, which therefore normalises for frame length / sample number. 
-        /// 
+        /// <para>
         /// Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
         /// Automatic Speech Recognition: From Theory to Practice.
         /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
-        /// 
+        /// </para>
         /// Calculate normalised energy of frame as  energy[i] = logEnergy - maxLogEnergy;
         /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
         /// </summary>
@@ -178,22 +204,22 @@ namespace TowseyLib
         public static double[] Signal2LogEnergy(double[] signal, int[,] frameIDs)
         {
             int frameCount = frameIDs.GetLength(0);
-            int N          = frameIDs[0,1] + 1; //window or frame width
+            int N = frameIDs[0, 1] + 1; //window or frame width
             double[] logEnergy = new double[frameCount];
             for (int i = 0; i < frameCount; i++) //foreach frame
             {
                 double sum = 0.0;
                 for (int j = 0; j < N; j++)  //foreach sample in frame
                 {
-                    sum += Math.Pow(signal[frameIDs[i,0] + j], 2); //sum the energy = amplitude squared
+                    sum += Math.Pow(signal[frameIDs[i, 0] + j], 2); //sum the energy = amplitude squared
                 }
                 double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
-                //Console.WriteLine("e=" + e);
-                //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
+                //LoggedConsole.WriteLine("e=" + e);
+                //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
                 if (e == Double.MinValue) //to guard against log(0) but this should never happen!
                 {
-                    Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+                    LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference; //normalise to absolute scale
                     continue;
                 }
@@ -223,14 +249,14 @@ namespace TowseyLib
             double[] energy = new double[L];
             for (int i = 0; i < L; i++) //foreach signal sample
             {
-                energy[i] =  signal[i] * signal[i]; //energy = amplitude squared
+                energy[i] = signal[i] * signal[i]; //energy = amplitude squared
             }
             return energy;
         }
 
         public static double Amplitude2Decibels(double value)
         {
-            return 20 * Math.Log10(value);   //10 times log of amplitude squared
+            return 20 * Math.Log10(value);   // 10 times log of amplitude squared
 
         }
 
@@ -264,12 +290,12 @@ namespace TowseyLib
                     sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
                 }
                 double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
-                //Console.WriteLine("e=" + e);
-                //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
+                //LoggedConsole.WriteLine("e=" + e);
+                //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
                 if (e == Double.MinValue) //to guard against log(0) but this should never happen!
                 {
-                    Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+                    LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference; //normalise to absolute scale
                     continue;
                 }
@@ -329,10 +355,10 @@ namespace TowseyLib
                 int startBin;
                 int endBin;
                 double sum = 0.0;
-                for (int j = 0; j < subbandCount-1; j++)  // foreach output band EXCEPT THE LAST
+                for (int j = 0; j < subbandCount - 1; j++)  // foreach output band EXCEPT THE LAST
                 {
                     startBin = j * binWidth;
-                    endBin   = startBin + binWidth;
+                    endBin = startBin + binWidth;
                     for (int b = startBin; b < endBin; b++)  // foreach output band
                     {
                         sum += inSpectro[i, b];              // sum the spectral values
@@ -340,12 +366,12 @@ namespace TowseyLib
                     outSpectro[i, j] = sum;
                 }
                 //now do the top most freq band
-                startBin = (subbandCount-1) * binWidth;
+                startBin = (subbandCount - 1) * binWidth;
                 for (int b = startBin; b < N; b++)  // foreach output band
                 {
                     sum += inSpectro[i, b];              // sum the spectral values
                 }
-                outSpectro[i, subbandCount-1] = sum;
+                outSpectro[i, subbandCount - 1] = sum;
             }
             return outSpectro;
         }
@@ -374,7 +400,7 @@ namespace TowseyLib
             {
                 if (array[i] < min) min = array[i];
                 else
-                if (array[i] > max) max = array[i];
+                    if (array[i] > max) max = array[i];
             }
 
             //set up Histogram
@@ -384,14 +410,14 @@ namespace TowseyLib
 
             for (int i = 0; i < L; i++)
             {
-                    int id = (int)((array[i] - min) / binWidth);
-                    if (id >= binCount)
-                    {
-                        id = binCount - 1;
-                    }
-                    else
-                        if (id < 0) id = 0;
-                    histo[id]++;
+                int id = (int)((array[i] - min) / binWidth);
+                if (id >= binCount)
+                {
+                    id = binCount - 1;
+                }
+                else
+                    if (id < 0) id = 0;
+                histo[id]++;
             }
             double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
             //DataTools.writeBarGraph(histo);
@@ -413,10 +439,10 @@ namespace TowseyLib
                 double dev = (peakID - i) * binWidth;
                 ssd += dev * dev; //sum of squared deviations
             }
-            
+
             if (peakID > 0) oneSD = Math.Sqrt(ssd / total);
-            else            oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
-            
+            else oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+
 
             // subtract modal noise and return array.
             double[] newArray = new double[L];
@@ -435,7 +461,7 @@ namespace TowseyLib
             for (int i = 0; i < L; i++) //foreach row
             {
                 if (inArray[i] < 0.0) outArray[i] = 0.0;
-                else                  outArray[i] = inArray[i];
+                else outArray[i] = inArray[i];
             }
             return outArray;
         }
@@ -446,10 +472,10 @@ namespace TowseyLib
             var M = new double[rows, cols];
             for (int r = 0; r < rows; r++) //foreach row
             {
-                for (int c = 0; c < cols; c++)  
+                for (int c = 0; c < cols; c++)
                 {
                     if (m[r, c] < 0.0) M[r, c] = 0.0;
-                    else               M[r, c] = m[r, c];
+                    else M[r, c] = m[r, c];
                 }
             }
             return M;
@@ -467,9 +493,9 @@ namespace TowseyLib
             var results = SubtractBackgroundNoise_dB(this.Decibels);
             this.Decibels = results.Item1;
             this.NoiseSubtracted = results.Item2; //Q
-            this.Min_dB   = results.Item3;   //min decibels of all frames 
-            this.Max_dB   = results.Item4;   //max decibels of all frames 
-            this.Snr      = results.Item5;   // = max_dB - Q;
+            this.Min_dB = results.Item3;   //min decibels of all frames 
+            this.Max_dB = results.Item4;   //max decibels of all frames 
+            this.Snr = results.Item5;   // = max_dB - Q;
         }
 
         /// </summary>
@@ -570,7 +596,7 @@ namespace TowseyLib
                     if (dBarray[i] > max)
                     {
                         max = dBarray[i];
-                        //Console.WriteLine("max="+max+"    at index "+i);
+                        //LoggedConsole.WriteLine("max="+max+"    at index "+i);
                     }
             }
             min_dB = min;  // return out
@@ -633,7 +659,7 @@ namespace TowseyLib
             double snr = max_dB - noise_mode;
             return System.Tuple.Create(dBFrames, noise_mode, min_dB, max_dB, snr, noise_SD);
         }
-       
+
 
 
 
@@ -731,7 +757,7 @@ namespace TowseyLib
             double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
             return NoiseReduce_Standard(smoothMatrix);
         }
-        
+
         /// <summary>
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
         /// </summary>
@@ -885,7 +911,7 @@ namespace TowseyLib
             double maxIntensity; // max value in matrix
             DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
-            // Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
+            // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -911,7 +937,7 @@ namespace TowseyLib
                 DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
                 if (maxindex > binLimit) maxindex = binLimit;
                 modalNoise[col] = minIntensity + (maxindex * binWidth);
-                //Console.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
+                //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
             return modalNoise;
         }// end of CalculateModalNoise(double[,] matrix)
@@ -936,7 +962,7 @@ namespace TowseyLib
                 }
             }//end for all cols
             for (int col = 0; col < colCount; col++) modalNoise[col] /= frameCount;
-            
+
             return modalNoise;
         }
 
@@ -1053,7 +1079,7 @@ namespace TowseyLib
                             count++;           //to accomodate edge effects
                             X += matrix[i, j];
                             //Xe2 += (matrix[i, j] * matrix[i, j]);                 
-                            //Console.WriteLine(i+"  "+j+"   count="+count);
+                            //LoggedConsole.WriteLine(i+"  "+j+"   count="+count);
                             //Console.ReadLine();
                         }
                     }//end local NH
@@ -1063,8 +1089,8 @@ namespace TowseyLib
                     //if ((c<(cols/5))&&(mean < (threshold+1.0))) outM[r, c] = min;
                     //else
                     if (mean < threshold) outM[r, c] = min;
-                    else                  outM[r, c] = matrix[r, c];
-                    //Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1") + "  mean=" + mean + "  variance=" + variance);
+                    else outM[r, c] = matrix[r, c];
+                    //LoggedConsole.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1") + "  mean=" + mean + "  variance=" + variance);
                     //Console.ReadLine();
                 }
             }
@@ -1115,14 +1141,14 @@ namespace TowseyLib
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
-            var smoothMatrix = new double[rows,cols];
+            var smoothMatrix = new double[rows, cols];
             for (int c = 0; c < cols; c++)
             {
                 var array = DataTools.GetColumn(matrix, c);
                 array = DataTools.filterMovingAverage(array, window);
                 DataTools.SetColumn(smoothMatrix, c, array);
             }
-            return smoothMatrix; 
+            return smoothMatrix;
         }
 
         public static byte[,] IdentifySpectralRidges(double[,] matrix)
@@ -1200,7 +1226,7 @@ namespace TowseyLib
                 for (int c = 3; c < cols - 3; c++)
                 {
                     //identify a peak
-                    if (   (row[c] > row[c - 1]) && (row[c] > row[c + 1])
+                    if ((row[c] > row[c - 1]) && (row[c] > row[c + 1])
                         && (row[c] > row[c - 2]) && (row[c] > row[c + 2])
                         && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
                         //&& (row[c] > row[c - 4]) && (row[c] > row[c + 4])
@@ -1213,35 +1239,35 @@ namespace TowseyLib
         }
 
 
-    /// <summary>
-    ///JOINS DISCONNECTED RIDGES
-    /// </summary>
-    /// <returns></returns>
+        /// <summary>
+        ///JOINS DISCONNECTED RIDGES
+        /// </summary>
+        /// <returns></returns>
         public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary, double[,] matrix)
         {
-            double threshold = 20.0; 
-        int rows = binary.GetLength(0);
-        int cols = binary.GetLength(1);
-        byte[,] newM = new byte[rows, cols];
-        
+            double threshold = 20.0;
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+            byte[,] newM = new byte[rows, cols];
+
             for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
             {
                 for (int c = 3; c < cols - 3; c++)
                 {
-                    if (binary[r, c] == 0)   continue;       //no peak to join
+                    if (binary[r, c] == 0) continue;       //no peak to join
                     if (matrix[r, c] < threshold)
                     {
                         binary[r, c] = 0;
-                        continue; //peak too weak to join
+                        continue; // peak too weak to join
                     }
 
-                    newM[r, c] = 1; //pixel r,c = 1.0
+                    newM[r, c] = 1; // pixel r,c = 1.0
                     // skip if adjacent pixels in next row also = 1.0
-                    if (binary[r + 1, c]     == 1) continue;
+                    if (binary[r + 1, c] == 1) continue;
                     if (binary[r + 1, c - 1] == 1) continue;
                     if (binary[r + 1, c + 1] == 1) continue;
 
-                    //fill in the same column
+                    // fill in the same column
                     if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1; //fill gap
                     if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1; //fill gap
 
@@ -1257,7 +1283,7 @@ namespace TowseyLib
                 }
             }
             return newM;
-    }
+        }
 
         public static byte[,] JoinDisconnectedRidgesInBinaryMatrix1(byte[,] binary, double[,] matrix)
         {
@@ -1295,8 +1321,8 @@ namespace TowseyLib
             return newM;
         }
 
-        
-        
+
+
         /// <summary>
         /// REMOVE ORPHAN PEAKS
         /// </summary>
@@ -1313,10 +1339,10 @@ namespace TowseyLib
                 {
                     if (binary[r, c] == 0.0) continue;
                     newM[r, c] = 1;
-                    if ((binary[r - 1, c] == 0)     && (binary[r + 1, c] == 0.0) &&  
+                    if ((binary[r - 1, c] == 0) && (binary[r + 1, c] == 0.0) &&
                         (binary[r + 1, c + 1] == 0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
                         (binary[r + 1, c - 1] == 0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
-                         newM[r, c] = 0;
+                        newM[r, c] = 0;
                 }
             }
             return newM;
@@ -1331,9 +1357,11 @@ namespace TowseyLib
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
-                    //Console.WriteLine("m[r, c]=" + m[r, c]);
+                    //LoggedConsole.WriteLine("m[r, c]=" + m[r, c]);
                     if (binary[r, c] == 0) continue;
-                    if (m[r, c] < threshold) { mOut[r, c] = 0;
+                    if (m[r, c] < threshold)
+                    {
+                        mOut[r, c] = 0;
                     }
                     else mOut[r, c] = 1;
                 }
@@ -1350,7 +1378,7 @@ namespace TowseyLib
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL PEAKS
             double[,] binary = new double[rows, cols];
-            for (int r = 2; r < rows-2; r++) //row at a time, each row = one frame.
+            for (int r = 2; r < rows - 2; r++) //row at a time, each row = one frame.
             {
                 for (int c = 2; c < cols - 2; c++)
                 {
@@ -1361,9 +1389,9 @@ namespace TowseyLib
                      && (matrix[r, c] > matrix[r - 1, c + 1] + buffer) && (matrix[r, c] > matrix[r + 1, c - 1] + buffer))//other diag
                     {
                         binary[r, c] = 1.0; // maxIntensity;
-                        binary[r-1, c-1] = 1.0; // maxIntensity;
-                        binary[r+1, c+1] = 1.0; // maxIntensity;
-                        binary[r-1, c+1] = 1.0; // maxIntensity;
+                        binary[r - 1, c - 1] = 1.0; // maxIntensity;
+                        binary[r + 1, c + 1] = 1.0; // maxIntensity;
+                        binary[r - 1, c + 1] = 1.0; // maxIntensity;
                         binary[r + 1, c - 1] = 1.0; // maxIntensity;
                         binary[r, c - 1] = 1.0; // maxIntensity;
                         binary[r, c + 1] = 1.0; // maxIntensity;
@@ -1381,7 +1409,7 @@ namespace TowseyLib
             return binary;
         }
 
-        
+
         /// <summary>
         /// CONVERTs a binary matrix of spectral peak tracks to an output matrix containing the acoustic intensity
         /// in the neighbourhood of those peak tracks.
@@ -1413,8 +1441,8 @@ namespace TowseyLib
             {
                 for (int c = cNH; c < cols - cNH; c++)
                 {
-                    if (binary[r, c] == 0.0)   continue;
-                    
+                    if (binary[r, c] == 0.0) continue;
+
                     localdb = sonogram[r, c] - 3.0; //local lower bound = twice min perceptible difference
                     //scan neighbourhood
                     for (int i = r - rNH; i <= (r + rNH); i++)
@@ -1436,16 +1464,16 @@ namespace TowseyLib
             int N = 7;
             int L = N - 1;
             int side = N / 2;
-            int threshold = N-1; //6 out 7 matches required
+            int threshold = N - 1; //6 out 7 matches required
 
             //initialise the syntactic elements - four straight line segments
-            int[,] LH00 = new int[2,L];     //{ {0,0,0,0,0,0 }, {-3,-2,-1,1,2,3 } };
+            int[,] LH00 = new int[2, L];     //{ {0,0,0,0,0,0 }, {-3,-2,-1,1,2,3 } };
             for (int i = 0; i < L; i++) LH00[0, i] = 0;
-            for (int i = 0; i < side; i++) LH00[1, i] = i-side;
-            for (int i = 0; i < side; i++) LH00[1, side+i] = i+1;
+            for (int i = 0; i < side; i++) LH00[1, i] = i - side;
+            for (int i = 0; i < side; i++) LH00[1, side + i] = i + 1;
 
             int[,] LV90 = new int[2, L];     // = { { -3, -2, -1, 1, 2, 3 }, { 0, 0, 0, 0, 0, 0 } };
-            for (int i = 0; i < L; i++)    LV90[1, i] = 0;
+            for (int i = 0; i < L; i++) LV90[1, i] = 0;
             for (int i = 0; i < side; i++) LV90[0, i] = i - side;
             for (int i = 0; i < side; i++) LV90[0, side + i] = i + 1;
 
@@ -1469,8 +1497,8 @@ namespace TowseyLib
                     {
                         if (binary[r + LH00[0, i], c + LH00[1, i]] == 1) HL00sum++;
                         if (binary[r + LV90[0, i], c + LV90[1, i]] == 1) VL90sum++;
-                  //      if (binary[r + Lm45[0, i], c + Lm45[1, i]] == 1) Lm45sum++;
-                  //      if (binary[r + Lp45[0, i], c + Lp45[1, i]] == 1) Lp45sum++;
+                        //      if (binary[r + Lm45[0, i], c + Lm45[1, i]] == 1) Lm45sum++;
+                        //      if (binary[r + Lp45[0, i], c + Lp45[1, i]] == 1) Lp45sum++;
                     }
 
                     int[] scores = new int[4];
