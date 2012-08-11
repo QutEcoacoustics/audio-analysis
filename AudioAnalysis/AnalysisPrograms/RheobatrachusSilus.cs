@@ -83,8 +83,12 @@ namespace AnalysisPrograms
             debug = true;
 #endif
 
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";
-            string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   //NEGATIVE walking on dry leaves
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //NEGATIVE  rain
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg";
             string outputDir     = @"C:\SensorNetworks\Output\Frogs\";
             //COMMAND LINE
             //AnalysisPrograms.exe Rheobatrachus "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
@@ -269,6 +273,7 @@ namespace AnalysisPrograms
             IAnalyser analyser = new RheobatrachusSilus();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
+            if (dt == null) return 6;
             //#############################################################################################################################################
 
             //ADD IN ADDITIONAL INFO TO TABLE
@@ -340,7 +345,6 @@ namespace AnalysisPrograms
             if (analysisSettings.ImageFile != null)
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
-                double eventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents);
                 image.Save(imagePath, ImageFormat.Png);
             }
@@ -367,8 +371,8 @@ namespace AnalysisPrograms
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values - ignore those set by user
-            int frameSize        = 256;
-            double windowOverlap = 0.0;
+            int frameSize        = 128;
+            double windowOverlap = 0.5;
 
             //int upperBandMinHz = Int32.Parse(configDict[key_UPPERFREQBAND_BTM]);
             //int upperBandMaxHz = Int32.Parse(configDict[key_UPPERFREQBAND_TOP]);
@@ -398,7 +402,8 @@ namespace AnalysisPrograms
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-            double framesPerSecond = freqBinWidth;
+            double frameOffset = sonoConfig.GetFrameOffset(sr);
+            double framesPerSecond = 1 / frameOffset;
 
 
 
@@ -436,10 +441,12 @@ namespace AnalysisPrograms
             double[] lowerArray = MatrixTools.GetColumn(sonogram.Data, lowerBin);
             double[] upperArray = MatrixTools.GetColumn(sonogram.Data, upperBin);
             //upperArray = lowerArray;
+            lowerArray = DataTools.NormaliseInZeroOne(lowerArray, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
+            upperArray = DataTools.NormaliseInZeroOne(upperArray, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
 
-            int step = (int)(framesPerSecond /10); //take one/tenth second steps
+            int step = (int)(framesPerSecond / 40); //take one/tenth second steps
             int stepCount = rowCount / step;
-            int sampleLength = 16; //16 frames = 232ms - almost 1/4 second.
+            int sampleLength = 32; //16 frames = 232ms - almost 1/4 second.
             double[] intensity   = new double[rowCount];
             double[] periodicity = new double[rowCount]; 
 
@@ -456,7 +463,7 @@ namespace AnalysisPrograms
                 //DataTools.writeBarGraph(spectrum);
                 int zeroCount = 2;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
-                spectrum = DataTools.NormaliseArea(spectrum);
+                //spectrum = DataTools.NormaliseArea(spectrum);
                 int maxId = DataTools.GetMaxIndex(spectrum);
                 double period = 2 * sampleLength / (double)maxId / framesPerSecond; //convert maxID to period in seconds
                 if ((period < minPeriod) || (period > maxPeriod)) continue;
@@ -469,7 +476,9 @@ namespace AnalysisPrograms
             //######################################################################
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            //intensity = DataTools.filterMovingAverage(intensity, 3);
+            intensity = DataTools.filterMovingAverage(intensity, 3);
+            intensity = DataTools.NormaliseInZeroOne(intensity, 0, 0.5); //## ABSOLUTE NORMALISATION 0-0.5 #######################################################################
+
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          intensityThreshold, minDuration, maxDuration);
             CropEvents(predictedEvents, upperArray);
@@ -478,8 +487,9 @@ namespace AnalysisPrograms
             var plots = new List<Plot>();
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
-            plots.Add(new Plot("lowerArray", DataTools.normalise(lowerArray), 0.5));
-            plots.Add(new Plot("upperArray", DataTools.normalise(upperArray), 0.5));
+            plots.Add(new Plot("lowerArray", DataTools.normalise(lowerArray), 0.25));
+            plots.Add(new Plot("upperArray", DataTools.normalise(upperArray), 0.25));
+            //plots.Add(new Plot("intensity",  DataTools.normalise(intensity), intensityThreshold));
             plots.Add(new Plot("intensity", intensity, intensityThreshold));
 
             return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
@@ -523,7 +533,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (plots != null)
-                foreach (Plot plot in plots) image.AddTrack(Image_Track.GetScoreTrack(plot.data, 0.0, 0.5, plot.threshold));
+                foreach (Plot plot in plots) image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
             if (hits != null) image.OverlayRainbowTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();

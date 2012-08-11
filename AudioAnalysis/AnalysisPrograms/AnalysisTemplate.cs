@@ -275,7 +275,6 @@ namespace AnalysisPrograms
             else
             {
                 throw new InvalidOperationException("Data table is null");
-                ////return -993;  //error!!
             }
         }
 
