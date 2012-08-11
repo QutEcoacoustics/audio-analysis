@@ -214,8 +214,8 @@
                 else                     wfDB[0, w] = 10 * Math.Log10(Math.Abs(wf[0, w]));
                 if (wf[1, w] <= 0.0001)  wfDB[1, w] = dBMin;
                 else                     wfDB[1, w] = 10 * Math.Log10(Math.Abs(wf[1, w]));
-                //Console.WriteLine(wf[0, w] + " >> " + (wfDB[0, w]).ToString("F5"));
-                //Console.WriteLine(wf[1, w] + " >> " + (wfDB[1, w]).ToString("F5"));
+                //LoggedConsole.WriteLine(wf[0, w] + " >> " + (wfDB[0, w]).ToString("F5"));
+                //LoggedConsole.WriteLine(wf[1, w] + " >> " + (wfDB[1, w]).ToString("F5"));
                 //Console.ReadLine();
             }
             return wfDB;
@@ -287,7 +287,7 @@
                         bmp.SetPixel(w, imageHeight - z - 1, b);
                     }
                 }
-                //Console.WriteLine(envelope[0, w] + " >> " + maxLinear);
+                //LoggedConsole.WriteLine(envelope[0, w] + " >> " + maxLinear);
                 //Console.ReadLine();
 
                 bmp.SetPixel(w, halfHeight, c); //set zero line in case it was missed
@@ -320,7 +320,7 @@
             double[] signal = new double[sampleCount];
             //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
             for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
-            //for (int i = 0; i < 100; i++) Console.WriteLine(signal[i]); //debug check for integers
+            //for (int i = 0; i < 100; i++) LoggedConsole.WriteLine(signal[i]); //debug check for integers
             int channels = 1;
             WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SampleRate);
             var ar = new AudioRecording(wav);

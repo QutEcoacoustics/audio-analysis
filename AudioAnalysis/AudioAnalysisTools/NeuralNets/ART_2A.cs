@@ -65,7 +65,7 @@ namespace NeuralNets
 
     public void WriteParameters()
     {
-        Console.WriteLine("alpha="+this.alpha+" beta="+this.beta+" rho="+this.rho+" theta="+this.theta+" rhoStar="+this.rhoStar);
+        LoggedConsole.WriteLine("alpha="+this.alpha+" beta="+this.beta+" rho="+this.rho+" theta="+this.theta+" rhoStar="+this.rhoStar);
     }
 
   //This procedure loads an existing wts file and puts into matrix of wts Zj.
@@ -142,7 +142,7 @@ namespace NeuralNets
         while (!trainSetLearned && (iterNum < maxIter))
         {
             iterNum++;
-            //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
+            //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
             SkippedBecauseFull[repNum] = 0;
             
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
@@ -163,7 +163,7 @@ namespace NeuralNets
                 if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
                 // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
-                //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
+                //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
                 
 
                 //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
@@ -179,7 +179,7 @@ namespace NeuralNets
                 if (index == -1)//{index = -1 if F2 full}
                 {
                     SkippedBecauseFull[repNum]++;
-                    Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
+                    LoggedConsole.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
                     break;
                 }
                 else
@@ -192,7 +192,7 @@ namespace NeuralNets
                         trainSetLearned = false;
                         changedCategory++;
                     }
-                    //Console.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
+                    //LoggedConsole.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
                 }
 
                 //scoring in case where have targets or labels for the training data
@@ -207,12 +207,12 @@ namespace NeuralNets
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
             //remove committed F2 nodes that are not having wins
             for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            if (ART.DEBUG) LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
             //Console.ReadLine();
 
             if (trainSetLearned)
             {   
-                Console.WriteLine("Training set learned after "+iterNum+" iterations");
+                LoggedConsole.WriteLine("Training set learned after "+iterNum+" iterations");
                 break;
             }
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -294,7 +294,7 @@ namespace NeuralNets
                 //  str (iterNum:1,  str1); // {iteration number}
                 //  str (sigNum:3,   str4);  //{signal number}
                 //  message("Simu"+str6+"  "+ taskStr[thisTask] +" rep"+str5 +" iter"+str1 +" sig"+str4);
-                //Console.WriteLine(" rep=" + str5 + " iter=" + str1 + " sig=" + str4);
+                //LoggedConsole.WriteLine(" rep=" + str5 + " iter=" + str1 + " sig=" + str4);
                 //}  //}  //end;
 
                 //{*************** PRE-PROCESS THE DATA VECTOR and TRANSFER VECTOR TO F0 of ART net ********}
@@ -432,7 +432,7 @@ namespace NeuralNets
         // 1:  max node committed BUT poor match so RESET to another node
         if ((! this.uncommittedJ[index])&&(OP[index] < this.rhoStar))
         {
-            //if (ART.DEBUG) Console.WriteLine("ChangeWts():- max node="+index+ " is committed. Reset because Tj < rho*");
+            //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node="+index+ " is committed. Reset because Tj < rho*");
             int newIndex = IndexOfFirstUncommittedNode();
             if (newIndex < 0) return newIndex;    //all nodes committed
             for (int F1uNo = 0; F1uNo < F1Size; F1uNo++) Zj[newIndex, F1uNo] = IP[F1uNo];
@@ -443,7 +443,7 @@ namespace NeuralNets
         // 2:  max node committed AND good match, therefore change the weights
         if ((! this.uncommittedJ[index])&&(OP[index] >= this.rhoStar))
         {
-            //if (ART.DEBUG) Console.WriteLine("ChangeWts():- max node "+ index+ " is committed and Tj >=rho*");
+            //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node "+ index+ " is committed and Tj >=rho*");
             CalculateWtsForCommittedNodes(IP, index);
             return index;
         }
@@ -452,12 +452,12 @@ namespace NeuralNets
 
         if (uncommittedJ[index])
         {
-            //if (ART.DEBUG) Console.WriteLine("ChangeWts():- max node"+ index+ " is uncommitted");
+            //if (ART.DEBUG) LoggedConsole.WriteLine("ChangeWts():- max node"+ index+ " is uncommitted");
             for (int F1uNo = 0; F1uNo < F1Size; F1uNo++) Zj[index, F1uNo] = IP[F1uNo];
             this.uncommittedJ[index] = false;
             return index;
         }
-        Console.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
+        LoggedConsole.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
         return -1; //something is wrong!!!
     }
 
@@ -564,7 +564,7 @@ namespace NeuralNets
         int F2Size = trnSetSize;
         int numberOfRepeats = 1;
         int maxIterations = 100;
-        if (Oblong.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
+        if (Oblong.Verbose) LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
         bool[] uncommittedJ = new bool[F2Size];               // : PtrToArrayOfBool;
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2Neta units}
         int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
@@ -608,8 +608,8 @@ namespace NeuralNets
                 //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
                 //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
                 //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
-                //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
-                if (Oblong.Verbose) Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+                //if (DEBUG) LoggedConsole.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                if (Oblong.Verbose) LoggedConsole.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
             } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
 
         }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}

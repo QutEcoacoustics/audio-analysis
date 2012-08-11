@@ -85,7 +85,7 @@ namespace NeuralNets
             for (int c = 0; c < CodeSize; c++)
             {
                 int id = this.rn.GetInt(vectorCount - 1); //pick a vector at random
-                //Console.WriteLine("Initialise cluster " + c + " with vector " + id);
+                //LoggedConsole.WriteLine("Initialise cluster " + c + " with vector " + id);
                 Clusters[c] = new Cluster(this.initialCluster.Vectors[id]);
             }
         }
@@ -97,7 +97,7 @@ namespace NeuralNets
         //    for (int c = 0; c < CodeSize; c++)
         //    {
         //        int id = this.rn.GetInt(vectorCount - 1);
-        //        //Console.WriteLine("Initialise cluster " + c + " with vector " + id);
+        //        //LoggedConsole.WriteLine("Initialise cluster " + c + " with vector " + id);
         //        Clusters[c] = new Cluster(this.initialCluster.Vectors[id]);
         //    }
         //}

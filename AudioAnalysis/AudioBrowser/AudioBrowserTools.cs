@@ -149,8 +149,8 @@ namespace AudioBrowser
                 var results = new List<AnalysisResult>();
                 foreach (var item in analysisSegments)
                 {
-                    Console.Write("{0}\t", count);
-                    if (count % 10 == 0) Console.WriteLine();
+                    LoggedConsole.Write("{0}\t", count);
+                    if (count % 10 == 0) LoggedConsole.WriteLine();
                     //try
                     //{
                     var result = AudioBrowserTools.PrepareFileAndRunAnalysis(analysisCoordinator, item, analyser, settings, saveSonograms, saveIntermediateFiles);
@@ -158,7 +158,7 @@ namespace AudioBrowser
                     //}
                     //catch(Exception ex)
                     //{
-                    //    Console.WriteLine("###################################### ERROR ##############################################");
+                    //    LoggedConsole.WriteLine("###################################### ERROR ##############################################");
                     //    DataTable datatable = AudioBrowserTools.MergeResultsIntoSingleDataTable(results);
                     //    var op1 = AudioBrowserTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
                     //    var eventsDatatable = op1.Item1;
@@ -166,11 +166,11 @@ namespace AudioBrowser
                     //    var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
                     //    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
                     //    var op2 = AudioBrowserTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-                    //    Console.WriteLine(ex);
+                    //    LoggedConsole.WriteLine(ex);
                     //}
                     count++;
                 }
-                Console.WriteLine();
+                LoggedConsole.WriteLine();
                 return results;
             }
         } //ProcessRecording()
@@ -240,7 +240,7 @@ namespace AudioBrowser
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Could not delete file <{0}>", preparedFile.OriginalFile.FullName);
+                    LoggedConsole.WriteLine("Could not delete file <{0}>", preparedFile.OriginalFile.FullName);
                     // this error is not fatal, but it does mean we'll be leaving an audio file behind.
                 }
             }

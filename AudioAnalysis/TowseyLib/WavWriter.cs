@@ -76,7 +76,7 @@ namespace TowseyLib
             //ONLY HANDLE bit rate = 16.
             if (bitRate != 16)
             {
-                System.Console.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
+                System.LoggedConsole.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
                 return;
             }
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
@@ -134,7 +134,7 @@ namespace TowseyLib
 
         public static void Main()
         {
-            Console.WriteLine("RUNNING FROM TowseyLib.Main()");
+            LoggedConsole.WriteLine("RUNNING FROM TowseyLib.Main()");
 
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             const string fName = "SineSignal.wav";
@@ -146,7 +146,7 @@ namespace TowseyLib
             int[] harmonics = { 500, 1000, 2000, 4000 };
             double[] signal = DSP_Filters.GetSignal(sampleRate, duration, harmonics);
             Write16bitWavFile(signal, sampleRate, path);
-            Console.WriteLine("FINISHED!");
+            LoggedConsole.WriteLine("FINISHED!");
             Console.ReadLine();
 
         } //end Main method
@@ -208,23 +208,23 @@ namespace TowseyLib
             {
                 using (BinaryWriter writer = BeginWrite(stream, wavInfo, path))
                 {
-                    Console.WriteLine("Writing started...");
+                    LoggedConsole.WriteLine("Writing started...");
 
                     // write data
                     int sampleCount = (int)Math.Floor(wavInfo.Duration.TotalSeconds * wavInfo.SampleRate);
 
-                    Console.WriteLine("Writing samples...");
+                    LoggedConsole.WriteLine("Writing samples...");
                     for (int i = 0; i < sampleCount; i++)
                     {
                         double signalItem = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / wavInfo.SampleRate);
                         writer.Write((short)signalItem);
                     }
 
-                    Console.WriteLine("Writing size...");
+                    LoggedConsole.WriteLine("Writing size...");
 
                     EndWrite(writer, wavInfo, sampleCount);
 
-                    Console.WriteLine("Writing complete.");
+                    LoggedConsole.WriteLine("Writing complete.");
                 }
             }
         }

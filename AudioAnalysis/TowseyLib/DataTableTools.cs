@@ -222,7 +222,7 @@ namespace TowseyLib
                         DataRow[] result = table.Select("Size >= 230 AND Sex = 'm'");
                         foreach (DataRow row in result)
                         {
-                            Console.WriteLine("{0}, {1}", row[0], row[1]);
+                            LoggedConsole.WriteLine("{0}, {1}", row[0], row[1]);
                         }
 
                     The syntax to the Select method is somewhat tricky. 
@@ -440,13 +440,13 @@ namespace TowseyLib
        {
            if (dt == null) return;
            string[] headers = DataTableTools.GetColumnNames(dt);
-           foreach(string name in headers) Console.Write(" {0,-10}", name);
-           Console.WriteLine();
+           foreach(string name in headers) LoggedConsole.Write(" {0,-10}", name);
+           LoggedConsole.WriteLine();
             var rows = dt.Rows;
             foreach(DataRow row in rows)
             {
-                for (int i = 0; i < headers.Length; i++) Console.Write(" {0:f2}{1,-7}", row[headers[i]], " ");
-                Console.WriteLine();
+                for (int i = 0; i < headers.Length; i++) LoggedConsole.Write(" {0:f2}{1,-7}", row[headers[i]], " ");
+                LoggedConsole.WriteLine();
             }
        }
 

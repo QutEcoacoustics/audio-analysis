@@ -262,7 +262,7 @@ public class Distribution
    */
   public void writeIC()
   { 
-    for (int i=0; i< IC.Length; i++) Console.WriteLine(i+"   "+IC[i]);
+    for (int i=0; i< IC.Length; i++) LoggedConsole.WriteLine(i+"   "+IC[i]);
   }
   
   
@@ -378,11 +378,11 @@ public class Distribution
     Distribution d = new Distribution(var, max, true);
     
     for(int i=-3; i<= +20; i++)
-      Console.WriteLine("p("+i+")="+d.getProbability(i));
-    Console.WriteLine("Sum="+d.getSum());
-    Console.WriteLine("Sum="+d.getProbability(-3,40));
-    Console.WriteLine("TotalIC="+d.getTotalIC());
-    Console.WriteLine("ExpecIC="+d.getExpectedIC());
+      LoggedConsole.WriteLine("p("+i+")="+d.getProbability(i));
+    LoggedConsole.WriteLine("Sum="+d.getSum());
+    LoggedConsole.WriteLine("Sum="+d.getProbability(-3,40));
+    LoggedConsole.WriteLine("TotalIC="+d.getTotalIC());
+    LoggedConsole.WriteLine("ExpecIC="+d.getExpectedIC());
   }
 
 

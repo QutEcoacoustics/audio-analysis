@@ -40,6 +40,9 @@
     <Reference Include="ImpromptuInterface.FSharp">
       <HintPath>..\..\AudioAnalysis\FELT\packages\ImpromptuInterface.FSharp.1.2.6\lib\net40\ImpromptuInterface.FSharp.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="System" />
@@ -77,6 +80,7 @@
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
+    <Compile Include="Logging\Logging.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
@@ -101,6 +105,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

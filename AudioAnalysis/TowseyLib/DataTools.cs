@@ -13,28 +13,28 @@ namespace TowseyLib
 
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DataTools");
+            LoggedConsole.WriteLine("TESTING METHODS IN CLASS DataTools");
 
             bool doit1 = false;
             if (doit1) //test Submatrix()
             {
-                Console.WriteLine(""); 
+                LoggedConsole.WriteLine(""); 
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
                 //int rowCount = matrix.GetLength(0);//height
                 //int colCount = matrix.GetLength(1);//width
-                //Console.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
+                //LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 DataTools.writeMatrix(matrix);
-                Console.WriteLine("");
+                LoggedConsole.WriteLine("");
                 int r1 = 2;
                 int c1 = 3;
                 int r2 = 4;
                 int c2 = 6;
-                Console.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
-                Console.WriteLine("Indices start at [0,0] in top left.");
+                LoggedConsole.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
+                LoggedConsole.WriteLine("Indices start at [0,0] in top left.");
                 int smRows = r2 - r1 + 1;
                 int smCols = c2 - c1 + 1;
-                Console.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
+                LoggedConsole.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
                 double[,] sub = Submatrix(matrix, r1, c1, r2, c2);
                 DataTools.writeMatrix(sub);
             }//end test ReadDoubles2Matrix(string fName)
@@ -44,15 +44,15 @@ namespace TowseyLib
             {   
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTools.writeMatrix(matrix);
                 double normMin=-2.0;
                 double normMax= 1.0;
                 matrix = Normalise(matrix, normMin, normMax);
-                Console.WriteLine("\n\n");
+                LoggedConsole.WriteLine("\n\n");
                 DataTools.writeMatrix(matrix);
                 matrix = Normalise(matrix, 0, 1);
-                Console.WriteLine("\n\n");
+                LoggedConsole.WriteLine("\n\n");
                 DataTools.writeMatrix(matrix);
 
             }//end test normalise(double[,] m, double normMin, double normMax)
@@ -64,8 +64,8 @@ namespace TowseyLib
             }//end test Method(string fName)
 
 
-            Console.WriteLine("FINISHED"); //end
-            Console.WriteLine("FINISHED"); //end
+            LoggedConsole.WriteLine("FINISHED"); //end
+            LoggedConsole.WriteLine("FINISHED"); //end
         }//end of MAIN
 
         //***************************************************************************
@@ -92,7 +92,7 @@ namespace TowseyLib
             int end = start + length - 1;
             if(end >= A.Length)
             {
-                //Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
             int[] sa = new int[length];
@@ -108,7 +108,7 @@ namespace TowseyLib
             int end = start + length - 1;
             if (end >= A.Length)
             {
-                //Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 //return null;
                 end = A.Length - 1;
                 length = end - start + 1;
@@ -311,8 +311,8 @@ namespace TowseyLib
              
             // now that length = 1.0;
             double L = VectorLength(Vnorm);
-            if (L > 1.00001) Console.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
-            if (L < 0.99999) Console.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+            if (L > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+            if (L < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
 
             return Vnorm;
         }
@@ -334,7 +334,7 @@ namespace TowseyLib
             for (int i = 0; i < V.Length; i++)
             {
                 Vnorm[i] = (V[i] - min) / range;
-                //Console.WriteLine(i + ", " + Vnorm[i]);
+                //LoggedConsole.WriteLine(i + ", " + Vnorm[i]);
             }
             return Vnorm;
         }
@@ -475,7 +475,7 @@ namespace TowseyLib
                 rankOrder[i] = maxIndex;
                 sort[i] = array[maxIndex];
                 //if(i % 100==0)
-                //    Console.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
+                //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 array[maxIndex] = -Double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
@@ -912,8 +912,8 @@ namespace TowseyLib
   	// check total sums to 1.0;
   	double p = 0.0;
   	for (int i=0; i<L; i++) p += rf[i];
-  	if(p > 1.00001) Console.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
-  	if(p < 0.99999) Console.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	if(p > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	if(p < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
 
   	return rf;
   }
@@ -932,8 +932,8 @@ namespace TowseyLib
   	// check total sums to 1.0;
   	double p = 0.0;
   	for (int i=0; i<length; i++) p += rf[i];
-  	if(p > 1.00001) Console.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
-  	if(p < 0.99999) Console.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	if(p > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
+  	if(p < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob="+p);
 
   	return rf;
   }
@@ -943,20 +943,20 @@ namespace TowseyLib
   public static void WriteArrayList(List<string> list)
   {
       for (int i = 0; i < list.Count; i++)
-          Console.WriteLine(i + "  " + list[i]);
+          LoggedConsole.WriteLine(i + "  " + list[i]);
   }
 
   public static void writeArray(string[] array)
   {
       for (int i = 0; i < array.Length; i++)
       {
-          Console.WriteLine(i + "  " + array[i]);
+          LoggedConsole.WriteLine(i + "  " + array[i]);
       }
   }
   public static void writeArray(int[] array)
   {
       for (int i = 0; i < array.Length; i++)
-          Console.WriteLine(i + "  " + array[i]);
+          LoggedConsole.WriteLine(i + "  " + array[i]);
   }
   public static string writeArray2String(int[] array)
   {
@@ -972,12 +972,12 @@ namespace TowseyLib
   public static void writeArray(double[] array, string format)
   {
       for (int i = 0; i < array.Length; i++)
-          Console.WriteLine(i + "  " + array[i].ToString(format));
+          LoggedConsole.WriteLine(i + "  " + array[i].ToString(format));
   }
   public static void writeArray(bool[] array)
   {
       for (int i = 0; i < array.Length; i++)
-          Console.WriteLine(i + "  " + array[i]);
+          LoggedConsole.WriteLine(i + "  " + array[i]);
   }
 
   public static void WriteArrayInLine(double[] array, string format)
@@ -985,9 +985,9 @@ namespace TowseyLib
       int count = array.Length;//dimension
       for (int i = 0; i < count; i++)
       {
-          Console.Write(" " + array[i].ToString(format));
+          LoggedConsole.Write(" " + array[i].ToString(format));
       }
-      Console.WriteLine();
+      LoggedConsole.WriteLine();
   }
 
   public static void writeMatrix(double[,] matrix, string format)
@@ -998,10 +998,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j].ToString(format));
-              if(j<colCount-1)Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j].ToString(format));
+              if(j<colCount-1)LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
   public static void writeMatrix(double[,] matrix)
@@ -1017,10 +1017,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j]);
-              if (j < colCount - 1) Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j]);
+              if (j < colCount - 1) LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
 
@@ -1032,10 +1032,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j].ToString("F2"));
-              if (j < colCount - 1) Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j].ToString("F2"));
+              if (j < colCount - 1) LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
 
@@ -1047,7 +1047,7 @@ namespace TowseyLib
         /// <param name="data"></param>
   public static void writeBarGraph(double[] data)
   {
-      Console.WriteLine("BAR GRAPH OF DOUBLES DATA");
+      LoggedConsole.WriteLine("BAR GRAPH OF DOUBLES DATA");
       double min;
       double max;
       MinMax(data, out min, out max);
@@ -1094,17 +1094,17 @@ namespace TowseyLib
     for (int i=0; i < data.Length; i++)
     {
       if(max<20) data[i]*=2;
-      if(i<10)Console.Write(" ");// formatting only
-      Console.Write(" "+i+"|");
+      if(i<10)LoggedConsole.Write(" ");// formatting only
+      LoggedConsole.Write(" "+i+"|");
       double v = data[i] / (double)sf;
       int ht = (int)Math.Floor(v);
       if((v>0.00)&&(v<1.00)) ht = 1;
-      for (int j = 0; j <ht; j++) Console.Write("=");
-      Console.WriteLine();
+      for (int j = 0; j <ht; j++) LoggedConsole.Write("=");
+      LoggedConsole.WriteLine();
       //if(i % 50 == 0) Console.ReadLine();
     }
-    Console.WriteLine("Min="+min+" Max="+max+"  Scaling factor="+sf);
-    Console.WriteLine();
+    LoggedConsole.WriteLine("Min="+min+" Max="+max+"  Scaling factor="+sf);
+    LoggedConsole.WriteLine();
   }
 
         static public void writeConciseHistogram(int[] data)
@@ -1118,8 +1118,8 @@ namespace TowseyLib
                 histo[data[i]]++;
             }
             for (int i = min; i <= max; i++)
-                Console.WriteLine(" " + i + "|" + histo[i]);
-            Console.WriteLine();
+                LoggedConsole.WriteLine(" " + i + "|" + histo[i]);
+            LoggedConsole.WriteLine();
         }
 
 
@@ -1136,9 +1136,9 @@ namespace TowseyLib
     { 
       for (int c=0; c<max; c++)
       {
-          if (matrix[r,c] > 0) Console.WriteLine(r + "|" + c + "|" + matrix[r,c] + "  "); 
+          if (matrix[r,c] > 0) LoggedConsole.WriteLine(r + "|" + c + "|" + matrix[r,c] + "  "); 
       }
-      Console.WriteLine();
+      LoggedConsole.WriteLine();
     }
   }
 
@@ -1278,7 +1278,7 @@ namespace TowseyLib
       double max;
       DataTools.MinMax(data, out min, out max);
       double binWidth = (max - min + 1) / (double)binCount;
-      Console.WriteLine("data min="+min+"  data max="+ max + " binwidth="+binWidth);
+      LoggedConsole.WriteLine("data min="+min+"  data max="+ max + " binwidth="+binWidth);
 
       return Histo(data, binCount, min, max, binWidth);
   }
@@ -1578,7 +1578,7 @@ namespace TowseyLib
       }
       //sum = 0.0;
       //for (int j = 0; j < cols; j++) sum += colSums[j];
-      //Console.WriteLine("sum="+sum.ToString("F5"));
+      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
       return colSums;
   }
 
@@ -2099,7 +2099,7 @@ namespace TowseyLib
                 }
             double range = max - min;
             double normRange = normMax - normMin;
-            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
@@ -2134,7 +2134,7 @@ namespace TowseyLib
             }
             double range = max - min;
             double normRange = normMax - normMin;
-            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < length; i++)
             {
@@ -2321,7 +2321,7 @@ namespace TowseyLib
 
             double range = max - min;
             double normRange = normMax - normMin;
-            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             double[,] ret = new double[rows, cols];
             for (int i = 0; i < rows; i++)
@@ -2348,7 +2348,7 @@ namespace TowseyLib
     }
     // square root of sum to get vector mapLength
     double norm = Math.Sqrt(SS);
-    //Console.WriteLine("SS="+SS+"  norm="+norm);
+    //LoggedConsole.WriteLine("SS="+SS+"  norm="+norm);
     
     double[] ret = new double[length]; // vector to return
     for(int i=0; i<length; i++) 
@@ -2367,7 +2367,7 @@ namespace TowseyLib
       
       // square root of sum to get vector mapLength
       double norm = Math.Sqrt(SS);
-      //Console.WriteLine("SS=" + SS + "  norm=" + norm);
+      //LoggedConsole.WriteLine("SS=" + SS + "  norm=" + norm);
 
       double[] ret = new double[length]; // vector to return
       for (int i = 0; i < length; i++)
@@ -2528,7 +2528,7 @@ namespace TowseyLib
     { if(data[i] < min) min = data[i];
       if(data[i] > max) max = data[i];
     }
-    //Console.WriteLine(data.Length+"  min="+min+" max="+max);
+    //LoggedConsole.WriteLine(data.Length+"  min="+min+" max="+max);
   }
 
 //=============================================================================
@@ -2623,7 +2623,7 @@ namespace TowseyLib
       double min;
       double max;
       MinMax(data, out min, out max);
-      Console.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
+      LoggedConsole.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
   }
 
 
@@ -2639,7 +2639,7 @@ namespace TowseyLib
       {
           double[] column = GetColumn(m, i);
           MinMaxAv(column, out min, out max, out av);
-          Console.WriteLine("Column:{0:D} min={1:F4}  max={2:F4}  av={3:F4}", i, min, max, av);
+          LoggedConsole.WriteLine("Column:{0:D} min={1:F4}  max={2:F4}  av={3:F4}", i, min, max, av);
       }
   }
   static public void WriteMinMaxOfArray(string arrayname, double[] data)
@@ -2647,7 +2647,7 @@ namespace TowseyLib
       double min;
       double max;
       MinMax(data, out min, out max);
-      Console.WriteLine(arrayname+":  Min={0:F5}  Max={1:F5}", min, max);
+      LoggedConsole.WriteLine(arrayname+":  Min={0:F5}  Max={1:F5}", min, max);
   }
 
 
@@ -2688,7 +2688,7 @@ namespace TowseyLib
     { if(data[i] > max)
       {  max = data[i];
          indexMax = i;
-         //Console.WriteLine("max="+max+"@ i="+i);
+         //LoggedConsole.WriteLine("max="+max+"@ i="+i);
       }
     }
   }
@@ -2750,7 +2750,7 @@ namespace TowseyLib
     { if(data[i] > max)
       { max = data[i];
         indexMax = i;
-        //Console.WriteLine("max="+max+"@ i="+i);
+        //LoggedConsole.WriteLine("max="+max+"@ i="+i);
       }
     }
   }
@@ -2795,7 +2795,7 @@ namespace TowseyLib
    */
   static public int[] Data2Bins(int[] data, int min, int binWidth, int numBins)
   {
-    //Console.WriteLine("numBins="+numBins);
+    //LoggedConsole.WriteLine("numBins="+numBins);
     // initialise bin counts
     int[] binCounts = new int[numBins];
     for(int i=0; i<numBins; i++) binCounts[i] = 0;
@@ -2824,7 +2824,7 @@ namespace TowseyLib
   { 
     double width = Math.Abs(x2-x1);
     double area = (width * y1)+ (width*(y2-y1)/2);
-    //Console.WriteLine(x1+"  "+y1+"  "+x2+"  "+y2+"  area="+area);
+    //LoggedConsole.WriteLine(x1+"  "+y1+"  "+x2+"  "+y2+"  area="+area);
   	return area;
   }
 		
@@ -2859,7 +2859,7 @@ namespace TowseyLib
     if(K == 0) return 0;
     if(K >  N) return 0;
     if(K == N) return 1;
-    //Console.WriteLine("N="+N+", K="+K);
+    //LoggedConsole.WriteLine("N="+N+", K="+K);
 
     // COMB(N,K)  = COMB(N, N-K);
     // more efficient to compute combinations if use K < N/2
@@ -2872,12 +2872,12 @@ namespace TowseyLib
 
     //  first component of C(N,K)
     double comb = N/(double)(N-K);
-    //Console.WriteLine("c=0  comb="+comb);
+    //LoggedConsole.WriteLine("c=0  comb="+comb);
 
     // now multiply by remaining components of C(N,K)
     for(int c=1; c<(N-K); c++)
     { comb *= ((N-c)/(double)(N-K-c));
-      //Console.WriteLine("c="+c+"  NOM  ="+(N-c)+"  DENOM="+(N-K-c)+"   comb="+comb);
+      //LoggedConsole.WriteLine("c="+c+"  NOM  ="+(N-c)+"  DENOM="+(N-K-c)+"   comb="+comb);
     }
     return (long)comb;
   }
@@ -3106,8 +3106,8 @@ namespace TowseyLib
       }
       catch (System.FormatException ex)
       {
-          System.Console.WriteLine("DataTools.String2Int(string str): WARNING! INVALID INTEGER=" + str);
-          System.Console.WriteLine(ex);
+          System.LoggedConsole.WriteLine("DataTools.String2Int(string str): WARNING! INVALID INTEGER=" + str);
+          System.LoggedConsole.WriteLine(ex);
           int32 = 0;
       }
       return int32;

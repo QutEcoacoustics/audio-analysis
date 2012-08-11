@@ -176,7 +176,7 @@ namespace AudioAnalysisTools
             int minDeltaIndex = (int)(hzWidth / (double)maxPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
             int maxDeltaIndex = (int)(hzWidth / (double)minPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
             // double period = hzWidth / (double)indexOfMaxValue * 2;   // Times 2 because index = Pi and not 2Pi
-            Console.WriteLine("minPeriod={0}    maxPeriod={1}", minDeltaIndex, maxDeltaIndex);
+            LoggedConsole.WriteLine("minPeriod={0}    maxPeriod={1}", minDeltaIndex, maxDeltaIndex);
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);

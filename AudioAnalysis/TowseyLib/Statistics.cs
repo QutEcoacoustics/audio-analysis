@@ -35,7 +35,7 @@ namespace TowseyLib
             expectedHits = (double)hitCount * window / (double)frameCount;
             sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
 
-            //Console.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
+            //LoggedConsole.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
             int offset = (int)(window * 0.5); //assign score to position in window
             int sum = 0;
             for (int i = 0; i < window; i++) if (hits[i] > 0) sum++;  //set up the song window
@@ -181,12 +181,12 @@ namespace TowseyLib
                     double meanC2  =  8.0; 
                     double sdC2    =  2.7;
                 double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
-                Console.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
+                LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
             */
 
             /*	
                 double[] roots = NormalDist.quadraticRoots(6, -13, 6);
-                    Console.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
+                    LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
             */
 
             //calculating the t-statistic.
@@ -197,9 +197,9 @@ namespace TowseyLib
             double sd2 = 0.782;
             int count2 = 50;
             double t = tStatistic(av1, sd1, count1, av2, sd2, count2);
-            Console.WriteLine("t=" + t);
+            LoggedConsole.WriteLine("t=" + t);
             int df = count1 + count2 - 2;
-            Console.WriteLine("alpha=" + tStatisticAlpha(t, df));
+            LoggedConsole.WriteLine("alpha=" + tStatisticAlpha(t, df));
 
 
             //calculate a lot of t-statistics taken from two files.
@@ -229,20 +229,20 @@ namespace TowseyLib
                   String[] sd2array = line2sd.split(" +");
       
                   String title = av1array[0];
-                  Console.WriteLine(line1av);
-                  Console.WriteLine(line2av);
+                  LoggedConsole.WriteLine(line1av);
+                  LoggedConsole.WriteLine(line2av);
                   for(int n=1;n<av1array.mapLength;n++)
                   { 
                     double m1  = Double.parseDouble(av1array[n]);
                     double sd1 = Double.parseDouble(sd1array[n]);
                     double m2  = Double.parseDouble(av2array[n]);
                     double sd2 = Double.parseDouble(sd2array[n]);
-                    Console.WriteLine(tStatistic(m1,sd1,count1,m2,sd2,count2));
+                    LoggedConsole.WriteLine(tStatistic(m1,sd1,count1,m2,sd2,count2));
                     try{
                       bw.write(title+" "+m1+" "+m2+" "+tStatistic(m1,sd1,count1,m2,sd2,count2));
                     } catch(Exception e)
                     {
-                      Console.WriteLine(e); 
+                      LoggedConsole.WriteLine(e); 
                     }
                   }
             
@@ -258,10 +258,10 @@ namespace TowseyLib
                     double meanC2  =  8.0; 
                     double sdC2    =  2.7;
                 double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
-                Console.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
+                LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
             */
 
-            Console.WriteLine("FINISHED");
+            LoggedConsole.WriteLine("FINISHED");
         }//end MAIN()
 
     }//end class

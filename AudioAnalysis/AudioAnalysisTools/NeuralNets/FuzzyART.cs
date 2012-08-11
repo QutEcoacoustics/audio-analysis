@@ -73,7 +73,7 @@ namespace NeuralNets
 
     public void WriteParameters()
     {
-        Console.WriteLine("\nFUZZY ART:- alpha=" + this.alpha + " beta=" + this.beta + " rho=" + this.rho + " theta=" + this.theta + " rhoStar=" + this.rhoStar);
+        LoggedConsole.WriteLine("\nFUZZY ART:- alpha=" + this.alpha + " beta=" + this.beta + " rho=" + this.rho + " theta=" + this.theta + " rhoStar=" + this.rhoStar);
     }
 
   //This procedure loads an existing wts file and puts into matrix of wts Zj.
@@ -169,15 +169,15 @@ namespace NeuralNets
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if (FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
-        if (FuzzyART.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine("\n BEGIN TRAINING");
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
         while (!trainSetLearned && (iterNum < maxIter))
         {
             iterNum++;
-            if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
+            if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
             SkippedBecauseFull[repNum-1] = 0;
 
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
@@ -198,7 +198,7 @@ namespace NeuralNets
                 if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
                 // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
-                //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
+                //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
 
 
                 //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
@@ -213,7 +213,7 @@ namespace NeuralNets
                 if (index == -1)
                 {
                     SkippedBecauseFull[repNum-1]++;
-                    Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
+                    LoggedConsole.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
                     break;
                 }
                 else
@@ -226,7 +226,7 @@ namespace NeuralNets
                         trainSetLearned = false;
                         changedCategory++;
                     }
-                    //Console.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
+                    //LoggedConsole.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
                 }
 
                 //scoring in case where have targets or labels for the training data
@@ -241,12 +241,12 @@ namespace NeuralNets
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
             //remove committed F2 nodes that are not having wins
             for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            if (ART.DEBUG) LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
             //Console.ReadLine();
 
             if (trainSetLearned)
             {
-                if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
+                if (FuzzyART.Verbose) LoggedConsole.WriteLine("Training set learned after " + iterNum + " iterations");
                 break;
             }
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -265,8 +265,8 @@ namespace NeuralNets
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if (FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
-        if (FuzzyART.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine("\n BEGIN TRAINING");
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
@@ -304,7 +304,7 @@ namespace NeuralNets
                 if (index == -1)
                 {
                     skippedBecauseFull = true;
-                    Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
+                    LoggedConsole.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
                     break;
                 }
                 else
@@ -317,7 +317,7 @@ namespace NeuralNets
                         trainSetLearned = false;
                         changedCategory++;
                     }
-                    //Console.WriteLine("sigNum=" + sigNum);
+                    //LoggedConsole.WriteLine("sigNum=" + sigNum);
                 }
 
                 //scoring in case where have targets or labels for the training data
@@ -329,12 +329,12 @@ namespace NeuralNets
 
             //remove committed F2 nodes that are not having wins
             for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+            if (ART.DEBUG) LoggedConsole.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
             //Console.ReadLine();
 
             if (trainSetLearned)
             {
-                //if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
+                //if (FuzzyART.Verbose) LoggedConsole.WriteLine("Training set learned after " + iterNum + " iterations");
                 //return System.Tuple.Create(iterNum, CountCommittedF2Nodes());
                 break;
             }
@@ -355,11 +355,11 @@ namespace NeuralNets
             OP[i] = IP[i];
             OP[this.F1Size-1-i] = 1 - OP[i];
         }
-        //Console.WriteLine("INPUT:- length=" + this.IPSize);
-        //for (int i = 0; i < IP.Length; i++) Console.Write(IP[i].ToString("F4") + " ");
-        //Console.WriteLine("\nOUTPUT COMPLEMENT:- length=" + this.F1Size);
-        //for (int i = 0; i < OP.Length; i++) Console.Write(OP[i].ToString("F4") + " ");
-        //Console.WriteLine();
+        //LoggedConsole.WriteLine("INPUT:- length=" + this.IPSize);
+        //for (int i = 0; i < IP.Length; i++) LoggedConsole.Write(IP[i].ToString("F4") + " ");
+        //LoggedConsole.WriteLine("\nOUTPUT COMPLEMENT:- length=" + this.F1Size);
+        //for (int i = 0; i < OP.Length; i++) LoggedConsole.Write(OP[i].ToString("F4") + " ");
+        //LoggedConsole.WriteLine();
         //Console.ReadLine();
 
         return OP;
@@ -489,7 +489,7 @@ namespace NeuralNets
         } //end UNTIL matchFound; //{max unit is good match OR no committed unit is good match}
 
 
-        Console.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
+        LoggedConsole.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
         return -1; //something is wrong!!!
     }
 
@@ -586,7 +586,7 @@ namespace NeuralNets
         int length2 = vect2.Length;
         if(length1 != length2)
         {
-            Console.WriteLine("ERROR in method FuzzyAND(): vectors not of same length!!");
+            LoggedConsole.WriteLine("ERROR in method FuzzyAND(): vectors not of same length!!");
             return null;
         }
         double[] vect3 = new double[length1];
@@ -614,7 +614,7 @@ namespace NeuralNets
         int IPSize = trainingData.GetLength(1);
         int F2Size = trnSetSize;
         int maxIterations = 100;
-        if (FuzzyART.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
 
         //************************** INITIALISE PARAMETER VALUES *************************
         double alpha = 0.57;   //increasing alpha proliferates categories - 0.57 is good value
@@ -636,7 +636,7 @@ namespace NeuralNets
         int iterNum = output.Item1;
         noOfCommittedF2Nodes = output.Item2;
 
-        if (FuzzyART.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
         
         return fuzzyART.inputCategory;  //keepScore;
 
@@ -647,7 +647,7 @@ namespace NeuralNets
     {
         if (trainingData == null)
         {
-            Console.WriteLine("WARNING: ClusterWithFuzzyART() PASSED NULL TRAINING DATA!");
+            LoggedConsole.WriteLine("WARNING: ClusterWithFuzzyART() PASSED NULL TRAINING DATA!");
             committedNodeCount = 0;
             return null;
         }
@@ -657,7 +657,7 @@ namespace NeuralNets
         int F2Size = trnSetSize;
         int numberOfRepeats = 1;
         int maxIterations = 100;
-        if (FuzzyART.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        if (FuzzyART.Verbose) LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
         //int[] iterToConv = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# training iterations}
 
@@ -698,8 +698,8 @@ namespace NeuralNets
             //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
             //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
             //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
-            //if (ART.DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
-            Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+            //if (ART.DEBUG) LoggedConsole.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+            LoggedConsole.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
         } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
 
         committedNodeCount = noOfCommittedF2[0];

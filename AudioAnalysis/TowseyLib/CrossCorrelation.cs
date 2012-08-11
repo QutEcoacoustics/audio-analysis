@@ -87,8 +87,8 @@ out double[] r)
             alglib.corrr1d(v1, n, v2, n, out r);
             //alglib.complex[] f;
             //alglib.fftr1d(newOp, out f);
-            //System.Console.WriteLine("{0}", alglib.ap.format(f, 3));
-            //for (int i = 0; i < op.Length; i++) Console.WriteLine("{0}   {1:f2}", i, op[i]);
+            //System.LoggedConsole.WriteLine("{0}", alglib.ap.format(f, 3));
+            //for (int i = 0; i < op.Length; i++) LoggedConsole.WriteLine("{0}   {1:f2}", i, op[i]);
 
             //rearrange corr output and normalise
             int xcorrLength = 2 * n;
@@ -101,8 +101,8 @@ out double[] r)
 
             //add extra value at end so have length = power of 2 for FFT
             //xCorr[xCorr.Length - 1] = xCorr[xCorr.Length - 2];
-            //Console.WriteLine("xCorr length = " + xCorr.Length);
-            //for (int i = 0; i < xCorr.Length; i++) Console.WriteLine("{0}   {1:f2}", i, xCorr[i]);
+            //LoggedConsole.WriteLine("xCorr length = " + xCorr.Length);
+            //for (int i = 0; i < xCorr.Length; i++) LoggedConsole.WriteLine("{0}   {1:f2}", i, xCorr[i]);
             //DataTools.writeBarGraph(xCorr);
 
             xCorr = DataTools.DiffFromMean(xCorr);
@@ -133,7 +133,7 @@ out double[] r)
             double[] pattern10 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
             double[] pattern16 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-            Console.WriteLine("Signal length = {0}", n);
+            LoggedConsole.WriteLine("Signal length = {0}", n);
             int smoothWindow = 3;
             double[] signal  = DataTools.filterMovingAverage(signal16,  smoothWindow);
             double[] pattern = DataTools.filterMovingAverage(pattern16, smoothWindow);
@@ -145,11 +145,11 @@ out double[] r)
             int maxId = DataTools.GetMaxIndex(spectrum);
             double intensityValue = spectrum[maxId];
 
-            if (maxId == 0) Console.WriteLine("max id = 0");
+            if (maxId == 0) LoggedConsole.WriteLine("max id = 0");
             else
             {
                 double period = 2 * n / (double)maxId;
-                Console.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensityValue);
+                LoggedConsole.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensityValue);
             }
          }//TestCrossCorrelation()
 

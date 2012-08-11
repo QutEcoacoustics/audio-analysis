@@ -34,7 +34,7 @@ namespace TowseyLib
             if (filterName.StartsWith("Chebyshev_Lowpass_5000")) return Chebyshev_Lowpass_5000();
             else
                 {
-                    System.Console.WriteLine("\nWARNING! There is no filter with name: " + filterName);
+                    System.LoggedConsole.WriteLine("\nWARNING! There is no filter with name: " + filterName);
                     System.Console.ReadLine();
                 }
             return null;
@@ -285,7 +285,7 @@ namespace TowseyLib
 
         public static void Main(string[] args)
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DSP_IIRFilter");
+            LoggedConsole.WriteLine("TESTING METHODS IN CLASS DSP_IIRFilter");
 
 
 
@@ -293,7 +293,7 @@ namespace TowseyLib
             bool doit1 = true;
             if (doit1) //test Method(parameters)
             {
-                System.Console.WriteLine("\nTest of METHOD ApplyIIRFilter()");
+                System.LoggedConsole.WriteLine("\nTest of METHOD ApplyIIRFilter()");
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.wav";
                 //AudioRecording recording = new AudioRecording(recordingPath);
                 //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
@@ -310,7 +310,7 @@ namespace TowseyLib
                 string filterName = "Chebyshev_Lowpass_3000";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
-                System.Console.WriteLine("\nTest " + filterName + ", order=" + order);
+                System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
 
                 // create impulse
                 int inputLength = 400;
@@ -330,16 +330,16 @@ namespace TowseyLib
                     //myGain += (y[i] * y[i]); //power
                     y[i] *= 100;
                 }
-                System.Console.WriteLine("\nMy Gain (area under impulse response curve after DC gain removal.) = " + myGain);
+                System.LoggedConsole.WriteLine("\nMy Gain (area under impulse response curve after DC gain removal.) = " + myGain);
 
                 DataTools.writeBarGraph(y);
 
-                System.Console.WriteLine("\nEnd Test");
+                System.LoggedConsole.WriteLine("\nEnd Test");
             }//end test Method(string fName)
 
 
 
-            Console.WriteLine("FINISHED!!");
+            LoggedConsole.WriteLine("FINISHED!!");
             Console.ReadLine();
         }//end Main()
 

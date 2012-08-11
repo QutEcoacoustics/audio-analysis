@@ -12,28 +12,28 @@ namespace TowseyLib
 
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DataTools");
+            LoggedConsole.WriteLine("TESTING METHODS IN CLASS DataTools");
 
             bool doit1 = false;
             if (doit1) //test Submatrix()
             {
-                Console.WriteLine(""); 
+                LoggedConsole.WriteLine(""); 
                 //string fName = testDir + "testOfReadingMatrixFile.txt";
                 //double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
                 ////int rowCount = matrix.GetLength(0);//height
                 ////int colCount = matrix.GetLength(1);//width
-                ////Console.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
+                ////LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 //DataTools.writeMatrix(matrix);
-                //Console.WriteLine("");
+                //LoggedConsole.WriteLine("");
                 //int r1 = 2;
                 //int c1 = 3;
                 //int r2 = 4;
                 //int c2 = 6;
-                //Console.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
-                //Console.WriteLine("Indices start at [0,0] in top left.");
+                //LoggedConsole.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
+                //LoggedConsole.WriteLine("Indices start at [0,0] in top left.");
                 //int smRows = r2 - r1 + 1;
                 //int smCols = c2 - c1 + 1;
-                //Console.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
+                //LoggedConsole.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
                 //double[,] sub = Submatrix(matrix, r1, c1, r2, c2);
                 //DataTools.writeMatrix(sub);
             }//end test ReadDoubles2Matrix(string fName)
@@ -43,15 +43,15 @@ namespace TowseyLib
             {   
                 //string fName = testDir + "testOfReadingMatrixFile.txt";
                 //double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
-                //Console.WriteLine("\n");
+                //LoggedConsole.WriteLine("\n");
                 //DataTools.writeMatrix(matrix);
                 //double normMin=-2.0;
                 //double normMax= 1.0;
                 //matrix = Normalise(matrix, normMin, normMax);
-                //Console.WriteLine("\n\n");
+                //LoggedConsole.WriteLine("\n\n");
                 //DataTools.writeMatrix(matrix);
                 //matrix = Normalise(matrix, 0, 1);
-                //Console.WriteLine("\n\n");
+                //LoggedConsole.WriteLine("\n\n");
                 //DataTools.writeMatrix(matrix);
 
             }//end test normalise(double[,] m, double normMin, double normMax)
@@ -63,8 +63,8 @@ namespace TowseyLib
             }//end test Method(string fName)
 
 
-            Console.WriteLine("FINISHED"); //end
-            Console.WriteLine("FINISHED"); //end
+            LoggedConsole.WriteLine("FINISHED"); //end
+            LoggedConsole.WriteLine("FINISHED"); //end
         }//end of MAIN
 
         //***************************************************************************
@@ -313,10 +313,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j].ToString(format));
-              if(j<colCount-1)Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j].ToString(format));
+              if(j<colCount-1)LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
   public static void writeMatrix(double[,] matrix)
@@ -332,10 +332,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j]);
-              if (j < colCount - 1) Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j]);
+              if (j < colCount - 1) LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
 
@@ -347,10 +347,10 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j].ToString("F2"));
-              if (j < colCount - 1) Console.Write(",");
+              LoggedConsole.Write(" " + matrix[i, j].ToString("F2"));
+              if (j < colCount - 1) LoggedConsole.Write(",");
           }
-          Console.WriteLine();
+          LoggedConsole.WriteLine();
       }
   }
 
@@ -473,7 +473,7 @@ namespace TowseyLib
       }
       //sum = 0.0;
       //for (int j = 0; j < cols; j++) sum += colSums[j];
-      //Console.WriteLine("sum="+sum.ToString("F5"));
+      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
       return colSums;
   }
 
@@ -839,7 +839,7 @@ namespace TowseyLib
                 }
             double range = max - min;
             double normRange = normMax - normMin;
-            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
@@ -894,7 +894,7 @@ namespace TowseyLib
 
             double range = max - min;
             double normRange = normMax - normMin;
-            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             double[,] ret = new double[rows, cols];
             for (int i = 0; i < rows; i++)

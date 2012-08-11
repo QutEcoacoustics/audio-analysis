@@ -151,13 +151,13 @@ namespace AudioAnalysisTools
 
                     // display percent onCount
                     //int pcOnCount = maxOnCount * 100 / positiveCount;
-                    //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    //if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
-                    if (r % 100 == 0) { Console.Write("."); }
+                    //if (r % 100 == 0) { LoggedConsole.WriteLine("{0} - {1:f3}", r, scores[r]); }
+                    //if (scores[r] >= dBThreshold) { LoggedConsole.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
+                    if (r % 100 == 0) { LoggedConsole.Write("."); }
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment
-                Console.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT."); 
+                LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT."); 
             } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
@@ -250,13 +250,13 @@ namespace AudioAnalysisTools
                     //following line yields score = av of PosCells - av of NegCells.
                     scores[r] = maxSimilarity;
 
-                    //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    //if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
-                    if (r % 100 == 0) { Console.Write("."); }
+                    //if (r % 100 == 0) { LoggedConsole.WriteLine("{0} - {1:f3}", r, scores[r]); }
+                    //if (scores[r] >= dBThreshold) { LoggedConsole.WriteLine("r={0} score={1}.", r, scores[r]); }
+                    if (r % 100 == 0) { LoggedConsole.Write("."); }
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment
-                Console.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
+                LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
@@ -297,7 +297,7 @@ namespace AudioAnalysisTools
                             //char c2 = template[i, j];
                             //int difference = (int)c1 - (int)c2;
                             int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
-                            //Console.WriteLine("{0},{1}  diff={2}", i,j, diff);
+                            //LoggedConsole.WriteLine("{0},{1}  diff={2}", i,j, diff);
                             onSum += ((90 - diff) / (double)90 * dataMatrix[i, j]);
                         }
                 }
@@ -532,7 +532,7 @@ namespace AudioAnalysisTools
 
         public static void WriteTemplate2Console(double[,] template)
         {
-            Console.WriteLine("\n############## TEMPLATE #################");
+            LoggedConsole.WriteLine("\n############## TEMPLATE #################");
             int rows = template.GetLength(0);
             int cols = template.GetLength(1);
             for (int r = 0; r < rows; r++)
@@ -544,7 +544,7 @@ namespace AudioAnalysisTools
                     else if (template[r, c] == 0) sb.Append('.');
                     else sb.Append('-');
                 }
-                Console.WriteLine(sb.ToString());
+                LoggedConsole.WriteLine(sb.ToString());
             }
 
         } // WriteTemplate2Console()

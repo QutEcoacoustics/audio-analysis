@@ -11,6 +11,7 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
+
     class LSKiwiROC
     {
 
@@ -33,8 +34,8 @@ namespace AnalysisPrograms
             {
                 string title = "# SOFTWARE TO CALCULATE SENSITIVITY, RECALL AND ROC INFO FOR DETECTION OF CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
                 string date  = "# DATE AND TIME: " + DateTime.Now;
-                Console.WriteLine(title);
-                Console.WriteLine(date);
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
             }
 
             CheckArguments(args);
@@ -70,10 +71,10 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("REPORT FILE WAS NOT PRODUCED: <{0}>", fiReport.FullName);
+                LoggedConsole.WriteLine("REPORT FILE WAS NOT PRODUCED: <{0}>", fiReport.FullName);
             }
 
-            Console.WriteLine("FINSIHED");
+            LoggedConsole.WriteLine("FINSIHED");
             
             return;
         }  //Main()
@@ -230,8 +231,8 @@ namespace AnalysisPrograms
 
             double recall = TP / (double)(TP + FN);
             double specificity = TP / (double)(TP + FP);
-            Console.WriteLine("TP={0},  FP={1},  FN={2}", TP, FP, FN);
-            Console.WriteLine("RECALL={0:f3},  SPECIFICITY={1:f3}", recall, specificity);
+            LoggedConsole.WriteLine("TP={0},  FP={1},  FN={2}", TP, FP, FN);
+            LoggedConsole.WriteLine("RECALL={0:f3},  SPECIFICITY={1:f3}", recall, specificity);
 
             //use normalised score as the threshold to determine area under ROC curve
             int totalPositiveCount = dtGroundTruth.Rows.Count;
@@ -330,10 +331,10 @@ namespace AnalysisPrograms
             if (ROC_Curve.Count > 0) 
             {
                 DataTools.writeBarGraph(ROC_Curve.ToArray());
-                Console.WriteLine("Area under ROC curve = {0:f4}", area);
-                Console.WriteLine("Max accuracy={0:f3} for score threshold={1:f3}", maxAccuracy, scoreAtMax);
-                Console.WriteLine("  where recall={0:f3}, precision={1:f3}, specifcity={2:f3}", recallAtMax, precisionAtMax, specificityAtMax);
-                //Console.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
+                LoggedConsole.WriteLine("Area under ROC curve = {0:f4}", area);
+                LoggedConsole.WriteLine("Max accuracy={0:f3} for score threshold={1:f3}", maxAccuracy, scoreAtMax);
+                LoggedConsole.WriteLine("  where recall={0:f3}, precision={1:f3}, specifcity={2:f3}", recallAtMax, precisionAtMax, specificityAtMax);
+                //LoggedConsole.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
             }
         }
 
@@ -410,9 +411,9 @@ namespace AnalysisPrograms
             int requiredArgumentCount = 2; //start with three command line arguments but at this point only have 2.
             if (args.Length != requiredArgumentCount)
             {
-                Console.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) Console.WriteLine(".......... " + arg);
-                Console.WriteLine("YOU REQUIRE 3 COMMAND LINE ARGUMENTS\n");
+                LoggedConsole.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
+                foreach (string arg in args) LoggedConsole.WriteLine(".......... " + arg);
+                LoggedConsole.WriteLine("YOU REQUIRE 3 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -434,14 +435,14 @@ namespace AnalysisPrograms
             FileInfo fiPath1 = new FileInfo(eventsCsvPath);
             if (!fiPath1.Exists)
             {
-                Console.WriteLine("The csv file of potential kiwi events does not exist: " + eventsCsvPath);
+                LoggedConsole.WriteLine("The csv file of potential kiwi events does not exist: " + eventsCsvPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiConfig = new FileInfo(selectionsCsvPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
+                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -450,16 +451,16 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("CORRECT USAGE:");
-            Console.WriteLine("     There must be three command line arguments:");
-            Console.WriteLine("");
-            Console.WriteLine(@"X:\\PATH\AnalysisPrograms.exe     kiwiROC     EventsFilePath     SelectionsFilePath");
-            Console.WriteLine("where:");
-            Console.WriteLine("kiwiROC is an analysis identifier;");
-            Console.WriteLine("EventsFilePath:-     Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.");
-            Console.WriteLine("SelectionsFilePath:- Full path of the csv file containing description of true kiwi calls. FIle must be in the correct format.");
-            Console.WriteLine("Note: The first argument <kiwiROC> is obligatory.");
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("CORRECT USAGE:");
+            LoggedConsole.WriteLine("     There must be three command line arguments:");
+            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine(@"X:\\PATH\AnalysisPrograms.exe     kiwiROC     EventsFilePath     SelectionsFilePath");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("kiwiROC is an analysis identifier;");
+            LoggedConsole.WriteLine("EventsFilePath:-     Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.");
+            LoggedConsole.WriteLine("SelectionsFilePath:- Full path of the csv file containing description of true kiwi calls. FIle must be in the correct format.");
+            LoggedConsole.WriteLine("Note: The first argument <kiwiROC> is obligatory.");
+            LoggedConsole.WriteLine("");
         }
 
 

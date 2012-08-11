@@ -140,8 +140,8 @@ namespace TowseyLib
                 else var = 0.0;
 
             sd = Math.Sqrt(var);
-            //Console.WriteLine("av="+av+" SD="+SD);
-            //Console.WriteLine("VAR="+var+" SD="+SD+"  N="+N);
+            //LoggedConsole.WriteLine("av="+av+" SD="+SD);
+            //LoggedConsole.WriteLine("VAR="+var+" SD="+SD+"  N="+N);
         }
 
 
@@ -178,7 +178,7 @@ namespace TowseyLib
 
             sd = Math.Sqrt(var);
 
-            //Console.WriteLine("av="+av+" SD="+SD);
+            //LoggedConsole.WriteLine("av="+av+" SD="+SD);
         }
 
         static public void AverageAndSD(List<double> data, out double av, out double sd)
@@ -550,12 +550,12 @@ namespace TowseyLib
     { counts[(data[i] / binWidth)]++;
     }
     
-        Console.WriteLine("\n DISTRIBUTION");
-        Console.WriteLine("bin width = "+binWidth);
-        Console.WriteLine("geneStart \tend \tcount");
+        LoggedConsole.WriteLine("\n DISTRIBUTION");
+        LoggedConsole.WriteLine("bin width = "+binWidth);
+        LoggedConsole.WriteLine("geneStart \tend \tcount");
         for(int i=0;i<counts.Length;i++)
         {
-        Console.WriteLine((i*binWidth)+" \t"+((i+1)*binWidth)+" \t"+counts[i]);   
+        LoggedConsole.WriteLine((i*binWidth)+" \t"+((i+1)*binWidth)+" \t"+counts[i]);   
         }
     }
 
@@ -569,11 +569,11 @@ namespace TowseyLib
         AverageAndSD(scores, out av, out sd);
 
         double[,] histo = get16binDistribution(scores,av,sd);
-        Console.WriteLine(" ===== SCORE STATISTICS =====");
-        Console.WriteLine("Average ="+av+"+/-"+sd);
-        Console.WriteLine("Min score ="+min+"  Max="+max);
-        Console.WriteLine(write16binDistribution(histo));
-        Console.WriteLine(" =============================");
+        LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
+        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
+        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine(write16binDistribution(histo));
+        LoggedConsole.WriteLine(" =============================");
     }
 
     public static void writeScoreDistribution(int[] scores)
@@ -585,11 +585,11 @@ namespace TowseyLib
         int max;
         DataTools.MinMax(scores, out min, out max);
         double[,] histo = get16binDistribution(scores, av, sd);
-        Console.WriteLine(" ===== SCORE STATISTICS =====");
-        Console.WriteLine("Average ="+av+"+/-"+sd);
-        Console.WriteLine("Min score ="+min+"  Max="+max);
-        Console.WriteLine(write16binDistribution(histo));
-        Console.WriteLine(" =============================");
+        LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
+        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
+        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine(write16binDistribution(histo));
+        LoggedConsole.WriteLine(" =============================");
     }
 
 
@@ -604,10 +604,10 @@ namespace TowseyLib
         double max;
         DataTools.MinMax(scores, out min, out max);
         //double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
-        Console.WriteLine(" ===== SCORE STATISTICS =====");
-        Console.WriteLine("Average ="+av+"+/-"+sd);
-        Console.WriteLine("Min score ="+min+"  Max="+max);
-        Console.WriteLine(" =============================");
+        LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
+        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
+        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine(" =============================");
     }
 
         public static String formatAvAndSD(double[] avsd, int places)
@@ -664,7 +664,7 @@ namespace TowseyLib
     
 /*	
   	double[] roots = NormalDist.quadraticRoots(6, -13, 6);
-		Console.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
+		LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
 */
 
 

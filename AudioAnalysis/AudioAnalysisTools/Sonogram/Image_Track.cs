@@ -90,14 +90,14 @@
             this.TrackType = type;
             this.intData = data;
             this.height = SetTrackHeight();
-            //if(SonoImage.Verbose)Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
+            //if(SonoImage.Verbose)LoggedConsole.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
         public Image_Track(TrackType type, double[] data)
         {
             this.TrackType = type;
             this.doubleData = data;
             this.height = SetTrackHeight();
-            //if (SonoImage.Verbose) Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
+            //if (SonoImage.Verbose) LoggedConsole.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
         /// <summary>
         /// used for showing the singal envelope track
@@ -222,11 +222,11 @@
             //Color red = Color.Red;
             if ((intData == null) || (intData.Length == 0))
             {
-                Console.WriteLine("#####WARNING!! AddScoreArrayTrack(Bitmap bmp):- Integer data does not exists!");
+                LoggedConsole.WriteLine("#####WARNING!! AddScoreArrayTrack(Bitmap bmp):- Integer data does not exists!");
                 return bmp;
             }
 
-            //Console.WriteLine("offset=" + this.offset);
+            //LoggedConsole.WriteLine("offset=" + this.offset);
             int bottom = topOffset + this.height - 1;
             for (int x = 0; x < Math.Min(bmp.Width, intData.Length); x++)
             {
@@ -319,7 +319,7 @@
         /// </summary>
         public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
-            //Console.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
+            //LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
             if (doubleData == null) return bmp;
             int dataLength = this.doubleData.Length;
             double range = this.scoreMax - this.scoreMin;

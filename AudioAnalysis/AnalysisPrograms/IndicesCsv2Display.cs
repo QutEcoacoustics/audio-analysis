@@ -40,11 +40,11 @@ namespace AnalysisPrograms
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
-                Console.WriteLine("# MAKE AN IMAGE FROM A CSV FILE OF INDICES DERIVED FROM AN AUDIO RECORDING");
-                Console.WriteLine(date);
-                Console.WriteLine("# Input  audio  file: " + csvPath);
-                Console.WriteLine("# Configuration file: " + configPath);
-                Console.WriteLine("# Output image  file: " + imagePath);
+                LoggedConsole.WriteLine("# MAKE AN IMAGE FROM A CSV FILE OF INDICES DERIVED FROM AN AUDIO RECORDING");
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Input  audio  file: " + csvPath);
+                LoggedConsole.WriteLine("# Configuration file: " + configPath);
+                LoggedConsole.WriteLine("# Output image  file: " + imagePath);
             }
 
             string analysisIdentifier = null;
@@ -57,7 +57,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\nWARNING: Config file does not exist: " + fiConfig.FullName);
+                LoggedConsole.WriteLine("\nWARNING: Config file does not exist: " + fiConfig.FullName);
             }
             var output = Tuple.Create(new DataTable(), new DataTable() );
 
@@ -65,8 +65,8 @@ namespace AnalysisPrograms
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
             {
-                Console.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
-                Console.WriteLine("\t\t Will construct default image");
+                LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
+                LoggedConsole.WriteLine("\t\t Will construct default image");
                 output = DisplayIndices.ProcessCsvFile(new FileInfo(csvPath));
             }
             else
@@ -88,7 +88,7 @@ namespace AnalysisPrograms
 
             if (debug)
             {
-                Console.WriteLine("\n##### FINISHED FILE ###################################################\n");
+                LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
                 Console.ReadLine();
             }
 
@@ -101,10 +101,10 @@ namespace AnalysisPrograms
         {
             if (args.Length != 3)
             {
-                Console.WriteLine("\nINCORRECT COMMAND LINE.");
-                Console.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", (args.Length+1));
-                foreach (string arg in args) Console.WriteLine(arg + "  ");
-                Console.WriteLine("\nYOU REQUIRE 4 COMMAND LINE ARGUMENTS\n");
+                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
+                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", (args.Length+1));
+                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
+                LoggedConsole.WriteLine("\nYOU REQUIRE 4 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -126,7 +126,7 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(csvPath));
             if (!diSource.Exists)
             {
-                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -134,8 +134,8 @@ namespace AnalysisPrograms
             FileInfo fiSource = new FileInfo(csvPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source directory exists: " + diSource.FullName);
-                Console.WriteLine("\t but the source file does not exist: " + csvPath);
+                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
+                LoggedConsole.WriteLine("\t but the source file does not exist: " + csvPath);
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -143,7 +143,7 @@ namespace AnalysisPrograms
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); // LET THIS BE OK. Proceed anyway with default 
+                LoggedConsole.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); // LET THIS BE OK. Proceed anyway with default 
                 //status = 2;
                 //return status;
             }
@@ -165,7 +165,7 @@ namespace AnalysisPrograms
 
                 if (!success)
                 {
-                    Console.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
+                    LoggedConsole.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
 
                     throw new AnalysisOptionInvalidPathsException();
                 }
@@ -175,16 +175,16 @@ namespace AnalysisPrograms
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("AnalysisPrograms.exe  indicesCsv2Display  csvPath  configPath  outputPath");
-            Console.WriteLine("where:");
-            Console.WriteLine("indicesCsv2Display:- (string) a short string that selects the process to be performed.");
-            Console.WriteLine("input  csv  File:-   (string) Path of the indices.csv file to be processed.");
-            Console.WriteLine("configuration File:- (string) Path of the configuration file containing relevant parameters.");
-            Console.WriteLine("output File:-        (string) Path of the image.png file.");
-//            Console.WriteLine("The following argument is OPTIONAL.");
-//            Console.WriteLine("verbosity:   (boolean) true/false");
-            Console.WriteLine("");
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  indicesCsv2Display  csvPath  configPath  outputPath");
+            LoggedConsole.WriteLine("where:");
+            LoggedConsole.WriteLine("indicesCsv2Display:- (string) a short string that selects the process to be performed.");
+            LoggedConsole.WriteLine("input  csv  File:-   (string) Path of the indices.csv file to be processed.");
+            LoggedConsole.WriteLine("configuration File:- (string) Path of the configuration file containing relevant parameters.");
+            LoggedConsole.WriteLine("output File:-        (string) Path of the image.png file.");
+//            LoggedConsole.WriteLine("The following argument is OPTIONAL.");
+//            LoggedConsole.WriteLine("verbosity:   (boolean) true/false");
+            LoggedConsole.WriteLine("");
         } // Usage()
 
     } //class

@@ -92,10 +92,10 @@ namespace AnalysisPrograms
 
             string title = "# RUNS MULTIPLE ANALYSES";
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             var diOutputDir = new DirectoryInfo(outputDir);
 
             Log.Verbosity = 1;
@@ -133,7 +133,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -145,7 +145,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                Console.WriteLine("\n");
+                LoggedConsole.WriteLine("\n");
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
@@ -157,7 +157,7 @@ namespace AnalysisPrograms
                 process.Run(imagePath, outputDir);
             }
 
-            Console.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -175,7 +175,7 @@ namespace AnalysisPrograms
         {
             if (args.Length < 4)
             {
-                Console.WriteLine("Require at least 4 command line arguments.");
+                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
 
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -187,15 +187,15 @@ namespace AnalysisPrograms
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             if (!diSource.Exists)
             {
-                Console.WriteLine("Source directory does not exist: " + diSource.FullName);
+                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
             FileInfo fiSource = new FileInfo(recordingPath);
             if (!fiSource.Exists)
             {
-                Console.WriteLine("Source directory exists: " + diSource.FullName);
-                Console.WriteLine("\t but the source file does not exist: " + recordingPath);
+                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
+                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -203,7 +203,7 @@ namespace AnalysisPrograms
             FileInfo fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                Console.WriteLine("Config file does not exist: " + fiConfig.FullName);
+                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -211,7 +211,7 @@ namespace AnalysisPrograms
             DirectoryInfo diOP = new DirectoryInfo(outputDir);
             if (!diOP.Exists)
             {
-                Console.WriteLine("Output directory does not exist: " + diOP.FullName);
+                LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
 
                 throw new AnalysisOptionInvalidPathsException();
             }
@@ -265,7 +265,7 @@ namespace AnalysisPrograms
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
-                        Console.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
                         
                         throw new AnalysisOptionInvalidDurationException();
                     }

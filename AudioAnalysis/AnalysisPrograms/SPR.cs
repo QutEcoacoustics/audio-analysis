@@ -40,8 +40,8 @@ namespace AnalysisPrograms
             //spr C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-210000.mp3  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
             //CURRAWONG
             //spr C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.wav  C:\SensorNetworks\Output\SPR_CURRAWONG\SPR_CURRAWONG_Params.txt events.txt  
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("Syntactic Pattern Recognition\n");
+            LoggedConsole.WriteLine("DATE AND TIME:" + DateTime.Now);
+            LoggedConsole.WriteLine("Syntactic Pattern Recognition\n");
             //StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
             //sb.Append("SCAN ALL RECORDINGS IN A DIRECTORY USING HTK-RECOGNISER\n");
             
@@ -49,12 +49,12 @@ namespace AnalysisPrograms
 
             if (args.Length != 3)
             {
-                Console.WriteLine("INCORRECT NUMBER OF ARGUMENTS, i.e. " + args.Length);
-                Console.WriteLine("The arguments for SPR are: wavFile intensityThreshold");
-                Console.WriteLine();
-                Console.WriteLine("Recording File: path to recording file.");
-                Console.WriteLine("Ini File:       in directory where output files and images will be placed.");
-                Console.WriteLine("Output File:    where events will be written");
+                LoggedConsole.WriteLine("INCORRECT NUMBER OF ARGUMENTS, i.e. " + args.Length);
+                LoggedConsole.WriteLine("The arguments for SPR are: wavFile intensityThreshold");
+                LoggedConsole.WriteLine();
+                LoggedConsole.WriteLine("Recording File: path to recording file.");
+                LoggedConsole.WriteLine("Ini File:       in directory where output files and images will be placed.");
+                LoggedConsole.WriteLine("Output File:    where events will be written");
                 Console.ReadLine();
                 throw new AnalysisOptionInvalidArgumentsException();
             }
@@ -272,7 +272,7 @@ namespace AnalysisPrograms
             //string newPath = savePath + suffix + ".jpg";
             //im.Save(newPath);
 
-            Console.WriteLine("\nFINISHED RECORDING!");
+            LoggedConsole.WriteLine("\nFINISHED RECORDING!");
             Console.ReadLine();
         }//end Main
 
@@ -406,7 +406,7 @@ namespace AnalysisPrograms
                 if ((whistleScores[i] > 0.3) && (whipScores[i] > 0.3))//impose score thresholds
                 {
                     scores[i] = (whistleScores[i] + whipScores[i]) / 2;
-                    //if (scores[i]>0.45) Console.WriteLine("{0}\t{1:f3}\t{2:f3}\t{3:f3}", i, whistleScores[i], whipScores[i], scores[i]);
+                    //if (scores[i]>0.45) LoggedConsole.WriteLine("{0}\t{1:f3}\t{2:f3}\t{3:f3}", i, whistleScores[i], whipScores[i], scores[i]);
                 }
             //scores = whipScores;
             var tuple = Tuple.Create(scores);

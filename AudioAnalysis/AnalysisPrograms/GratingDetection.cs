@@ -128,10 +128,10 @@ namespace AnalysisPrograms
 
             string title = "# FOR DETECTION OF ACOUSTIC EVENTS HAVING A GRID OR GRATING STRUCTURE";
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("# Output folder:  " + outputDir);
-            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
@@ -151,12 +151,12 @@ namespace AnalysisPrograms
                 Log.WriteLine("\n\n\n##############################\n WARNING! No events returned.");
             } else 
             {
-                //Console.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
-                Console.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
+                //LoggedConsole.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
+                LoggedConsole.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
                 DataTableTools.WriteTable2Console(dt);
             }
 
-            Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            LoggedConsole.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -182,7 +182,7 @@ namespace AnalysisPrograms
 
             if ((predictedEvents == null) || (predictedEvents.Count == 0))
             {
-                Console.WriteLine("############ WARNING: No acoustic events were returned from the analysis.");
+                LoggedConsole.WriteLine("############ WARNING: No acoustic events were returned from the analysis.");
             }
             else
             {
@@ -234,7 +234,7 @@ namespace AnalysisPrograms
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var recordingTimeSpan = results.Item5;
-            Console.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
+            LoggedConsole.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
 
             double eventThreshold = 0.1;
             Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
@@ -262,7 +262,7 @@ namespace AnalysisPrograms
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
             if (recording == null)
             {
-                Console.WriteLine("############ WARNING: Recording could not be obtained - likely file does not exist.");
+                LoggedConsole.WriteLine("############ WARNING: Recording could not be obtained - likely file does not exist.");
                 return null;
             }
             int sr = recording.SampleRate;

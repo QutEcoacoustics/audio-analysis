@@ -157,8 +157,8 @@ namespace AnalysisPrograms
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Please supply a .wav recording as a command line argument.");
-                Console.WriteLine(
+                LoggedConsole.WriteLine("Please supply a .wav recording as a command line argument.");
+                LoggedConsole.WriteLine(
                     "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\"");
                 
                 throw new AnalysisOptionInvalidArgumentsException();
@@ -181,13 +181,13 @@ namespace AnalysisPrograms
 
                 eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
 
-                Console.WriteLine();
+                LoggedConsole.WriteLine();
                 foreach (AcousticEvent ae in eprEvents)
                 {
-                    Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                    LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 }
 
-                Console.WriteLine();
+                LoggedConsole.WriteLine();
 
                 string outputFolder = Path.GetDirectoryName(iniPath) ?? @"C:\SensorNetworks\Output\";
                 AED.GenerateImage(wavFilePath, outputFolder, result.Item1, eprEvents);

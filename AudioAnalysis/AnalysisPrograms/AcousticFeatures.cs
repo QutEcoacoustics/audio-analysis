@@ -1,28 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Drawing;
-
-using TowseyLib;
-using NeuralNets;
-using AudioAnalysisTools;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AcousticFeatures.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the AcousticFeatures type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+
+    using AudioAnalysisTools;
+
+    using NeuralNets;
+
+    using TowseyLib;
 
     public class AcousticFeatures
     {
-        //public const string ANALYSIS_NAME = "Indices"; 
-        public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
+        ////public const string ANALYSIS_NAME = "Indices"; 
+        public const double DEFAULT_activityThreshold_dB = 3.0; // used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
-        public static int   lowFreqBound = 500; //arbitrary bounds between lf, mf and hf bands of the spectrum
+        public static int   lowFreqBound = 500; // arbitrary bounds between lf, mf and hf bands of the spectrum
         public static int   midFreqBound = 3500;
         public const  int   RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
+        ////public const int RESAMPLE_RATE = 22050;
 
-        //Keys to recognise identifiers in ANALYSIS CONFIG file. 
+        // Keys to recognise identifiers in ANALYSIS CONFIG file. 
         public static string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
         public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
         public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
@@ -34,7 +44,7 @@ namespace AnalysisPrograms
         private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
         public static string header_count = Keys.INDICES_COUNT;
-        //public const string  = count;
+        ////public const string  = count;
         public const string header_startMin  = "start-min";
         public const string header_SecondsDuration = "SegTimeSpan";
         public const string header_avAmpdB   = "avAmp-dB";
@@ -74,7 +84,7 @@ namespace AnalysisPrograms
             HEADERS[15] = header_HVarSpectrum; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; COMBO_WEIGHTS[15] = 0.1;
             HEADERS[16] = header_NumClusters;  COL_TYPES[16] = typeof(int); DISPLAY_COLUMN[16] = true; COMBO_WEIGHTS[16] = 0.4;
             HEADERS[17] = header_avClustDur;   COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true; COMBO_WEIGHTS[17] = 0.1;
-            //HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
+            ////HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
 
@@ -83,42 +93,45 @@ namespace AnalysisPrograms
             InitOutputTableColumns();
             return HEADERS;
         }
+
         public static Type[] GetTableTypes()
         {
             InitOutputTableColumns();
             return COL_TYPES;
         }
+
         public static bool[] GetDisplayColumns()
         {
             InitOutputTableColumns();
             return DISPLAY_COLUMN;
         }
+
         public static double[] GetComboWeights()
         {
             InitOutputTableColumns();
             return COMBO_WEIGHTS;
         }
        
-        public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
-        public static string FORMAT_STR_DATA    = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
+        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
+        public const string FORMAT_STR_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
 
 
-        /// Following is list of scaling originally applied to the Acoustic Indices Tracks
-        /// Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
-        /// Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
-        /// SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
-        /// draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
-        /// Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
-        /// avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
-        /// percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
-        /// percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
-        /// Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
-        /// H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
-        /// H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
-        /// H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
-        /// clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
-        /// av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
-        /// weightedIndex track 16:         title = "15: Weighted Index";  
+        // Following is list of scaling originally applied to the Acoustic Indices Tracks
+        // Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
+        // Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
+        // SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
+        // draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
+        // Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
+        // avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
+        // percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
+        // percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
+        // Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
+        // H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
+        // H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
+        // H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
+        // clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
+        // av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
+        // weightedIndex track 16:         title = "15: Weighted Index";  
 
 
 
@@ -126,28 +139,38 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// a set of parameters derived from ini file
+        /// a set of parameters derived from ini file.
         /// </summary>
         public struct Parameters
         {
-            public int frameLength, resampleRate, lowFreqBound, segmentOverlap;
-            public double segmentDuration, frameOverlap;
+            public int FrameLength;
+
+            public int ResampleRate;
+
+            public int LowFreqBound;
+
+            public int SegmentOverlap;
+
+            public double SegmentDuration;
+
+            public double FrameOverlap;
+
             //public int DRAW_SONOGRAMS;
             //public string reportFormat;
 
             public Parameters(double _segmentDuration, int _segmentOverlap, int _resampleRate,
                               int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
             {
-                segmentDuration = _segmentDuration;
-                segmentOverlap  = _segmentOverlap;
-                resampleRate    = _resampleRate;
-                frameLength     = _frameLength;
-                frameOverlap    = _frameOverlap;
-                lowFreqBound    = _lowFreqBound;
-                //DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
-                //reportFormat    = _fileFormat;
-            } //Parameters
-        } //struct Parameters
+                this.SegmentDuration = _segmentDuration;
+                this.SegmentOverlap  = _segmentOverlap;
+                this.ResampleRate    = _resampleRate;
+                this.FrameLength     = _frameLength;
+                this.FrameOverlap    = _frameOverlap;
+                this.LowFreqBound    = _lowFreqBound;
+                ////DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
+                ////reportFormat    = _fileFormat;
+            } // Parameters
+        } // struct Parameters
 
         /// <summary>
         /// a set of indices derived from each recording.
@@ -178,31 +201,33 @@ namespace AnalysisPrograms
                 clusterCount = _clusterCount;
                 avClusterDuration = _avClusterDuration; //av length of clusters > 1 frame.
             }
-        } //struct Indices2
+        } // struct Indices2
 
-        public static AcousticFeatures.Parameters ReadIniFile(string iniPath, int verbosity)
+        public static Parameters ReadIniFile(string iniPath, int verbosity)
         {
             var config = new ConfigDictionary(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            AcousticFeatures.Parameters paramaters; // st
-            paramaters.segmentDuration = Double.Parse(dict[Keys.SEGMENT_DURATION]);
-            paramaters.segmentOverlap = Int32.Parse(dict[Keys.SEGMENT_OVERLAP]);
-            paramaters.resampleRate = Int32.Parse(dict[Keys.RESAMPLE_RATE]);
-            paramaters.frameLength = Int32.Parse(dict[Keys.FRAME_LENGTH]);
-            paramaters.frameOverlap = Double.Parse(dict[Keys.FRAME_OVERLAP]);
-            paramaters.lowFreqBound = Int32.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
+            Parameters paramaters; // st
+            paramaters.SegmentDuration = Double.Parse(dict[Keys.SEGMENT_DURATION]);
+            paramaters.SegmentOverlap = Int32.Parse(dict[Keys.SEGMENT_OVERLAP]);
+            paramaters.ResampleRate = Int32.Parse(dict[Keys.RESAMPLE_RATE]);
+            paramaters.FrameLength = Int32.Parse(dict[Keys.FRAME_LENGTH]);
+            paramaters.FrameOverlap = Double.Parse(dict[Keys.FRAME_OVERLAP]);
+            paramaters.LowFreqBound = Int32.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
             //paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
             //paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
+
+            
 
             if (verbosity > 0)
             {
                 Log.WriteLine("# PARAMETER SETTINGS:");
-                Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.segmentDuration, paramaters.segmentOverlap);
-                Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
-                Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
-                Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
+                Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.SegmentDuration, paramaters.SegmentOverlap);
+                Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.ResampleRate, (paramaters.ResampleRate / 2));
+                Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.FrameLength, paramaters.FrameOverlap);
+                Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.LowFreqBound);
                 //Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
                 Log.WriteLine("####################################################################################");
             }
@@ -308,7 +333,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
-        /// <param name="int lowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
+        /// <param name="int LowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
@@ -736,7 +761,7 @@ namespace AnalysisPrograms
             int clusterCount = prunedClusterWts.Count;
 
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) Console.WriteLine("pruned cluster count = {0}", clusterCount);
+            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", clusterCount);
             
             //ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
@@ -851,7 +876,7 @@ namespace AnalysisPrograms
             int binCount = clusters[maxIndex] + 1;
             double binWidth;
             int[] histo = DataTools.Histo(clusters, binCount, out binWidth, out min, out max);
-            Console.WriteLine("Sum = " + histo.Sum());
+            LoggedConsole.WriteLine("Sum = " + histo.Sum());
             DataTools.writeArray(histo);
             //DataTools.writeBarGraph(histo);
 
@@ -1029,14 +1054,14 @@ namespace AnalysisPrograms
                     for (int j = minPrev + 1; j < minTotal; j++)
                     {
                         line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
-                        Console.WriteLine(line);
+                        LoggedConsole.WriteLine(line);
                         line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
                         FileTools.Append2TextFile(opFile, line);
                     }
                 }
 
                 line = String.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
-                Console.WriteLine(line);
+                LoggedConsole.WriteLine(line);
                 line = String.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
                 FileTools.Append2TextFile(opFile, line);
                 minPrev = minTotal;
@@ -1048,12 +1073,12 @@ namespace AnalysisPrograms
                 for (int j = minPrev + 1; j < minsIn24hrs; j++)
                 {
                     line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
-                    Console.WriteLine(line);
+                    LoggedConsole.WriteLine(line);
                     line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
                     FileTools.Append2TextFile(opFile, line);
                 }
             }
-            Console.WriteLine("speciesTotal= " + speciesTotal);
+            LoggedConsole.WriteLine("speciesTotal= " + speciesTotal);
         }
 
 

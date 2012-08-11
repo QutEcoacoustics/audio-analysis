@@ -263,7 +263,7 @@ namespace AnalysisPrograms
 
             // v: PROCESS SCORE ARRAY
             // scores = DataTools.filterMovingAverage(scores, 3);
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, User threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
+            LoggedConsole.WriteLine("Scores: min={0:f4}, max={1:f4}, User threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;  // Set (scores < 0.0) = 0.0;
 
             //vi: EXTRACT EVENTS
@@ -327,7 +327,7 @@ namespace AnalysisPrograms
 
             //v: PROCESS SCORE ARRAY
             //scores = DataTools.filterMovingAverage(scores, 3);
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
+            LoggedConsole.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
             //Set (scores < 0.0) = 0.0;
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
 
@@ -494,7 +494,7 @@ namespace AnalysisPrograms
                 }
                 else
                 {
-                    Console.WriteLine("WARNING: Score array has been recalculated from {0} items to {1} items for display.", scores.Length, frameCount);
+                    LoggedConsole.WriteLine("WARNING: Score array has been recalculated from {0} items to {1} items for display.", scores.Length, frameCount);
                     double ratio = scores.Length / frameCount;
                     for (int i = 0; i < frameCount; i++)
                     {
@@ -514,8 +514,8 @@ namespace AnalysisPrograms
         {
             foreach (double[] array in scoresList)
             {
-                Console.WriteLine("\n# SCORE ARRAY");
-                //Console.WriteLine(NormalDist.formatAvAndSD(array, 2));
+                LoggedConsole.WriteLine("\n# SCORE ARRAY");
+                //LoggedConsole.WriteLine(NormalDist.formatAvAndSD(array, 2));
                 NormalDist.writeScoreStatistics(array);
             }
         }

@@ -21,7 +21,7 @@ namespace TowseyLib
             ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
             UnZip(Target, OutZipFile, true);
 
-            Console.WriteLine("FINISHED");
+            LoggedConsole.WriteLine("FINISHED");
             Console.ReadLine();
 
         } //end method Main()
@@ -54,7 +54,7 @@ namespace TowseyLib
 
                         // Using GetFileName makes the result compatible with XP
                         // as the resulting path is not absolute.
-                        Console.WriteLine("file=" + file);
+                        LoggedConsole.WriteLine("file=" + file);
 
                         ZipEntry entry = new ZipEntry(Path.GetFileName(file));
 
@@ -91,13 +91,13 @@ namespace TowseyLib
                 if (File.Exists(OutZipFile))
                 {
                     FileInfo fi = new FileInfo(OutZipFile);
-                    Console.WriteLine("Zipped file has been created at " + fi.FullName);
+                    LoggedConsole.WriteLine("Zipped file has been created at " + fi.FullName);
                 }
-                else Console.WriteLine("Zipped File WAS NOT CREATED");
+                else LoggedConsole.WriteLine("Zipped File WAS NOT CREATED");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception during processing {0}", ex);
+                LoggedConsole.WriteLine("Exception during processing {0}", ex);
 
                 // No need to rethrow the exception as for our purposes its handled.
             }

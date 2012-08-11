@@ -13,9 +13,14 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
+
 
     using AnalysisPrograms.Production;
+
+    using log4net;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -29,7 +34,6 @@ namespace AnalysisPrograms
         static MainEntry()
         {
             // STATIC CONSTRUCTOR
-            
             KnownAnalyses = new Dictionary<string, Action<string[]>>(StringComparer.InvariantCultureIgnoreCase)
                 {
                     //########### FOUR TASKS ############
@@ -180,10 +184,12 @@ namespace AnalysisPrograms
             //var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             //analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
 
+            ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 #if DEBUG
             if (!Debugger.IsAttached)
             {
-                Console.WriteLine("Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
+                LoggedConsole.WriteLine("Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
                 if (Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y")
                 {
                     Debugger.Launch();
@@ -191,10 +197,10 @@ namespace AnalysisPrograms
 
                 if (Debugger.IsAttached)
                 {
-                    Console.WriteLine("\t>>> Attach sucessful");
+                    LoggedConsole.WriteLine("\t>>> Attach sucessful");
                 }
 
-                Console.WriteLine();
+                LoggedConsole.WriteLine();
             }
 #endif
             int returnCode = 0;
@@ -204,7 +210,7 @@ namespace AnalysisPrograms
                 {
                     var msg =
                         "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
-                    Console.WriteLine(msg);
+                    LoggedConsole.WriteLine(msg);
                     Usage();
                     throw new CommandMainArgumentMissingException();
                 }
@@ -221,7 +227,7 @@ namespace AnalysisPrograms
                     else
                     {
                         // default
-                        Console.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
+                        LoggedConsole.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
                         Usage();
 
                         throw new AnalysisOptionUnknownCommandException();
@@ -231,7 +237,7 @@ namespace AnalysisPrograms
             catch (CommandLineException cex)
             {
                 returnCode = (int)cex.ReturnCode;
-                //Console.WriteLine(cex.Message);
+                ////LoggedConsole.WriteLine(cex.Message);
             }
             catch (Exception ex)
             {
@@ -244,7 +250,7 @@ namespace AnalysisPrograms
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
             {
-                Console.WriteLine("Exit hung, press any key to quit.");
+                LoggedConsole.WriteLine("Exit hung, press any key to quit.");
                 Console.ReadLine();
             }
 #endif
@@ -255,15 +261,15 @@ namespace AnalysisPrograms
 
         private static void Usage()
         {
-            Console.Write(
+            LoggedConsole.Write(
 @"
 USAGE:
 >   analysisPrograms.exe analysisOption [...]
 
 Valid analysis options are:
 ");
-            Console.WriteLine("\t" + string.Join(", ", KnownAnalyses.Keys));
-            Console.WriteLine();
+            LoggedConsole.WriteLine("\t" + string.Join(", ", KnownAnalyses.Keys));
+            LoggedConsole.WriteLine();
         }
     }
 }

@@ -633,7 +633,7 @@
             double maxIntensity; // max value in matrix
             MinMax(matrix, out minIntensity, out maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
-            // Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
+            // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -659,7 +659,7 @@
                 GetMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
                 if (maxindex > binLimit) maxindex = binLimit;
                 modalNoise[col] = minIntensity + (maxindex * binWidth);
-                //Console.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
+                //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
             return modalNoise;
         }

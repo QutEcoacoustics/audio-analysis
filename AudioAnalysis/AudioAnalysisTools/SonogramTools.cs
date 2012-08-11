@@ -40,8 +40,8 @@ namespace AudioAnalysisTools
                 if (analyser == null)
                 {
                     string analyisName = config.GetString(Keys.ANALYSIS_NAME);
-                    Console.WriteLine("\nWARNING: Could not construct annotated image because analysis name not recognized:");
-                    Console.WriteLine("\t " + analyisName);
+                    LoggedConsole.WriteLine("\nWARNING: Could not construct annotated image because analysis name not recognized:");
+                    LoggedConsole.WriteLine("\t " + analyisName);
                     return null;
                 }
 
@@ -184,7 +184,7 @@ namespace AudioAnalysisTools
                 doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, configDict);
             if (doNoiseReduction)
             {
-                //Console.WriteLine("PERFORMING NOISE REDUCTION");
+                //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
                 double bgThreshold = 3.0;
                 if (configDict.ContainsKey(Keys.NOISE_BG_REDUCTION))
                     bgThreshold = ConfigDictionary.GetDouble(Keys.NOISE_BG_REDUCTION, configDict);
@@ -248,7 +248,7 @@ namespace AudioAnalysisTools
                 var fiSOX = new FileInfo(soxPath);
                 if (!fiSOX.Exists)
                 {
-                    Console.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
+                    LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
                     return 1;
                 }
             }

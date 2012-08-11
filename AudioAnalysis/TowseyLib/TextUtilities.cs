@@ -72,7 +72,7 @@ namespace TowseyLib
         //    {
         //        str.Append((String)it.next() + " ");
         //    }
-        //    //Console.WriteLine("CONCATENATE="+str);
+        //    //LoggedConsole.WriteLine("CONCATENATE="+str);
         //    return str.ToString();
         //}
 
@@ -89,7 +89,7 @@ namespace TowseyLib
         //    {
         //        str.Append((String)it.next() + "\n");
         //    }
-        //    //Console.WriteLine("CONCATENATE="+str);
+        //    //LoggedConsole.WriteLine("CONCATENATE="+str);
         //    return str.ToString();
         //}
 
@@ -110,7 +110,7 @@ namespace TowseyLib
         //    while (index >= 0)
         //    {
         //        count++;
-        //        //Console.WriteLine("c="+count+" i="+index);
+        //        //LoggedConsole.WriteLine("c="+count+" i="+index);
         //        index = str.indexOf(ch, index + 1);
         //    }
         //    return count;
@@ -349,14 +349,14 @@ namespace TowseyLib
         //    for (int c = 0; c <= (s1.length() - N); c++)
         //    {
         //        ss = s1.Substring(c, c + N);
-        //        //Console.WriteLine(ss);
+        //        //LoggedConsole.WriteLine(ss);
         //        if (h1.containsKey(ss)) h1.put(ss, DataUtilities.increment((Int32)h1.get(ss)));
         //        else h1.put(ss, new Int32(1));
         //    }
         //    for (int c = 0; c <= (s2.length() - N); c++)
         //    {
         //        ss = s2.substring(c, c + N);
-        //        //Console.WriteLine(ss);
+        //        //LoggedConsole.WriteLine(ss);
         //        if (h2.containsKey(ss)) h2.put(ss, DataUtilities.increment((Int32)h2.get(ss)));
         //        else h2.put(ss, new Int32(1));
         //    }
@@ -424,7 +424,7 @@ namespace TowseyLib
         //    }
         //    splitword[1] = word;
         //    splitword[2] = punc;
-        //    //Console.WriteLine(" splitword="+splitword[0]+" "+splitword[1]+" "+splitword[2]);
+        //    //LoggedConsole.WriteLine(" splitword="+splitword[0]+" "+splitword[1]+" "+splitword[2]);
         //    return splitword;
         //}
 
@@ -559,7 +559,7 @@ namespace TowseyLib
         //                bounds[0] = last;
         //                bounds[1] = current;
         //                words.add(bounds);
-        //                //Console.WriteLine("w="+text.substring(last, current)+" last="+last+" current="+current);
+        //                //LoggedConsole.WriteLine("w="+text.substring(last, current)+" last="+last+" current="+current);
         //                break;
         //            }
         //        }
@@ -597,7 +597,7 @@ namespace TowseyLib
   //     bound[0]=start;
   //     bound[1]=end;
   //     sb.add(bound);
-  //     //Console.WriteLine("s="+text.substring(geneStart,geneEnd));
+  //     //LoggedConsole.WriteLine("s="+text.substring(geneStart,geneEnd));
   //   }
 
   //   int[,] sentenceBounds = new int[sb.size(),2];
@@ -640,10 +640,10 @@ namespace TowseyLib
   //{
   //  // return first word only if it starts with a letter.
   //  if (Character.isLetter(text.charAt(0)))
-  //  { //Console.WriteLine(text.substring(0, last));
+  //  { //LoggedConsole.WriteLine(text.substring(0, last));
   //    int[] loc = {0, last};
   //    v.add(loc);
-  //    //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //  }
   //  int current = wb.next();
   //  while (current != BreakIterator.DONE)
@@ -651,10 +651,10 @@ namespace TowseyLib
   //     for (int p = last; p < current; p++)
   //     {  if (Character.isLetter(text.charAt(p)))
   //        {
-  //           //Console.WriteLine(text.substring(last, current));
+  //           //LoggedConsole.WriteLine(text.substring(last, current));
   //           int[] loc = {last, current};
   //           v.add(loc);
-  //           //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //           break;
   //        }
   //     }
@@ -667,10 +667,10 @@ namespace TowseyLib
   //{
   //  // return first word only if it starts with a letter or digit.
   //  if (Character.isLetterOrDigit(text.charAt(0)))
-  //  { //Console.WriteLine(text.substring(0, last));
+  //  { //LoggedConsole.WriteLine(text.substring(0, last));
   //    int[] loc = {0, last};
   //    v.add(loc);
-  //    //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //  }
   //  int current = wb.next();
   //  while (current != BreakIterator.DONE)
@@ -678,10 +678,10 @@ namespace TowseyLib
   //     for (int p = last; p < current; p++)
   //     {  if (Character.isLetterOrDigit(text.charAt(p)))
   //        {
-  //           //Console.WriteLine(text.substring(last, current));
+  //           //LoggedConsole.WriteLine(text.substring(last, current));
   //           int[] loc = {last, current};
   //           v.add(loc);
-  //           //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //           break;
   //        }
   //     }
@@ -699,14 +699,14 @@ namespace TowseyLib
   //    if ((! Character.isWhitespace(c))&&(isSpace)) //found geneStart of a word
   //    { isSpace = false;
   //      start = i;
-  //      //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //    }
   //    else
   //    if ((Character.isWhitespace(c))&&(! isSpace))  // found geneEnd of word
   //    { isSpace = true;
   //      int[] loc = {start, i}; // geneEnd of a word
   //      v.add(loc);   // add word bounds to vector
-  //      //Console.WriteLine(text.substring(loc[0], loc[1]));
+  //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
   //    } // geneEnd if
   //  } // geneEnd for one pass through text
   //  if (! isSpace) // ie the last char was not a space
@@ -720,7 +720,7 @@ namespace TowseyLib
   //  int[,] wordLoc = new int[v.size(),2];
   //  for (int i=0; i<v.size(); i++)
   //  { wordLoc[i] = (int[])v.get(i);
-  //    //Console.WriteLine("word"+i+"="+text.substring(wordLoc[i,0], wordLoc[i,1]) + "_");
+  //    //LoggedConsole.WriteLine("word"+i+"="+text.substring(wordLoc[i,0], wordLoc[i,1]) + "_");
   //  }
   //  return wordLoc;
   //}
@@ -864,7 +864,7 @@ namespace TowseyLib
 
             // if 'i' is the correct index then return it
             if ((N >= wordLoc[i,0]) && (N < wordLoc[i + 1,0]))
-            { //Console.WriteLine("initial word index ="+i);
+            { //LoggedConsole.WriteLine("initial word index ="+i);
                 return i;
             }
             // NOTE: above line means that if N lies between two words, index of first word is returned
@@ -876,7 +876,7 @@ namespace TowseyLib
             else
                 // if geneStart of current word is after N then jump back a word
                 if (wordLoc[i,0] > N) { while ((i > 0) && (wordLoc[i,0] > N)) i--; }
-            //Console.WriteLine("shifted word index ="+i);
+            //LoggedConsole.WriteLine("shifted word index ="+i);
             // i is now index to word that contains the N'th character.
             return i;
         }
@@ -915,32 +915,32 @@ namespace TowseyLib
         //=============================================================================
         public static void main(String[] args)
   {
-//    Console.WriteLine("cc="+getCharCount('c', "can you count ot crissc"));
-//    Console.WriteLine("trim="+ trimPunctuation("'l'"));
+//    LoggedConsole.WriteLine("cc="+getCharCount('c', "can you count ot crissc"));
+//    LoggedConsole.WriteLine("trim="+ trimPunctuation("'l'"));
 //    String text = "THis$$ begin%s ### a\n\tnew 2000 ma.cro-era for John O'Neil's' dog - after long ni7777ght!!  ";
-////    Console.WriteLine("words before="+getWordsBefore(9, 30, text));
-////    Console.WriteLine("words after="+getWordsAfter(8, 30, text));
+////    LoggedConsole.WriteLine("words before="+getWordsBefore(9, 30, text));
+////    LoggedConsole.WriteLine("words after="+getWordsAfter(8, 30, text));
 ////    String[,] words = getWordsInNeighbourhood(3, 27, 30, text);
-////    for (int i=0; i<3; i++) Console.WriteLine(" "+words[0,i]);
-////    for (int i=0; i<3; i++) Console.WriteLine(" "+words[1,i]);
+////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[0,i]);
+////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[1,i]);
 
 //    Locale locale = new Locale("en","US");
 ////    int[,] words = SplitString(text, locale, SPLIT_ON_SPACE_ONLY);
 ////    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_NUMBERS);
 //    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_ONLY);
-//    for (int i=0; i<words.length; i++) Console.WriteLine(" "+text.substring(words[i,0],words[i,1])+"_");
+//    for (int i=0; i<words.length; i++) LoggedConsole.WriteLine(" "+text.substring(words[i,0],words[i,1])+"_");
 
 
-//    Console.WriteLine("\nTEST OF WORD NEIGHBOURHOODS");
+//    LoggedConsole.WriteLine("\nTEST OF WORD NEIGHBOURHOODS");
 //    String txt = "\"This is a story\", said Bill A.B.C. Adam-Smith.\nAnd \"why? \"Because Adam's hat 01.01.03, that is the 1. January, is John's birthday. \n \nAnd that is why!\", says Mr. O'Neil's aunt.\n";
 //    words = SplitString(txt, locale, TextUtilities.SPLIT_ON_WORDS_NUMBERS);
-////    for (int i=0; i<words.mapLength; i++) Console.WriteLine("_"+txt.substring(words[i,0],words[i,1])+"_");
+////    for (int i=0; i<words.mapLength; i++) LoggedConsole.WriteLine("_"+txt.substring(words[i,0],words[i,1])+"_");
 //    int N = -1;
 //    int index = getWordIndex(N, words);
-//    Console.WriteLine("word index for char "+N+" = "+ index+" word="+txt.substring(words[index,0],words[index,1]));
+//    LoggedConsole.WriteLine("word index for char "+N+" = "+ index+" word="+txt.substring(words[index,0],words[index,1]));
 
 
-//    Console.WriteLine("FINISHED TEXT UTILITIES");
+//    LoggedConsole.WriteLine("FINISHED TEXT UTILITIES");
 //    System.exit(0);
   }//end main method
 
