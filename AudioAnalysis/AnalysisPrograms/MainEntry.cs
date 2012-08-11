@@ -32,82 +32,99 @@ namespace AnalysisPrograms
             
             KnownAnalyses = new Dictionary<string, Action<string[]>>(StringComparer.InvariantCultureIgnoreCase)
                 {
-                    // acoustic event detection
-                    { "aed", AED.Dev },
+                    //########### FOUR TASKS ############
 
-                    // returns list of available analyses
+                    // 1. Returns list of available analyses
                     // Signed off: Michael Towsey 1st August 2012
                     { "analysesAvailable", strings => AnalysesAvailable.Main(strings) },
 
-                    // IAnalyser - detects canetoad calls as acoustic events
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "canetoad", Canetoad.Dev },
-
-                    // extracts acoustic indices from an audio recording (mp3 or wav) and prodcues a indices.csv file
+                    // 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an indices.csv file
                     // Signed off: Michael Towsey 27th July 2012
                     { "audio2csv", strings => AnalyseLongRecording.Main(strings) },
 
-                    // produces a sonogram from an audio file. Can reduce dimensionality of the image.
+                    // 3. Produces a sonogram from an audio file - EITHER custom OR via SOX
                     // Signed off: Michael Towsey 31st July 2012
                     { "audio2sonogram", strings => Audio2Sonogram.Main(strings) },
 
-                    // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "crow", Crow.Dev },
-
-                    // produces a tracks image of column values in a csv file - one track per csv column.
+                    // 4. Produces a tracks image of column values in a csv file - one track per csv column.
                     // Signed off: Michael Towsey 27th July 2012
                     { "indicesCsv2Image", strings => IndicesCsv2Display.Main(strings) },
 
-                    // event pattern recognition - used for ground-parrots (BRAD)
-                    { "epr", GroundParrotRecogniser.Dev },
+
+
+                    //########### ANALYSES for INDIVIDUAL CALLS - Called through DEV() or EXCECUTE() ############
+
+                    // extracts acoustic indices from one minute segment
+                    // { "acousticIndices", Acoustic.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "acousticIndices", strings => Acoustic.Execute(strings) },
+
+                    // IAnalyser - detects canetoad calls as acoustic events
+                    // { "canetoad", Canetoad.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "canetoad", strings => Canetoad.Execute(strings) },
+
+                    // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
+                    // { "crow", Crow.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "crow", strings => Crow.Execute(strings) },
 
                     // IAnalyser - detects the oscillating portion of a male koala bellow
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "koalaMale", KoalaMale.Dev },
+                    //  { "koalaMale", KoalaMale.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "koalaMale", strings => KoalaMale.Execute(strings) },
 
                     // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "multiAnalyser", MultiAnalyser.Dev },
+                    // { "multiAnalyser", MultiAnalyser.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "multiAnalyser", strings => MultiAnalyser.Execute(strings) },
 
                     // IAnalyser - recognises human speech but not word recognition
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "human", Human1.Dev },
+                    // { "human", Human1.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "human", strings => Human1.Execute(strings) },
 
                     // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "kiwi", LSKiwi3.Dev },
+                    // { "kiwi", LSKiwi3.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "kiwi", strings => LSKiwi3.Execute(strings) },
+
+                    // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
+                    // { "LewinsRail", LewinsRail3.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "LewinsRail", strings => LewinsRail3.Execute(strings) },
+
+                    // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
+                    // { "machines", PlanesTrainsAndAutomobiles.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "machines", strings => PlanesTrainsAndAutomobiles.Execute(strings) },
+
+                    // calculates signal to noise ratio - CANNOT CALL FROM COMMAND LINE
+                    // Signed off:  Anthony, 25th July 2012
+                     { "snr", SnrAnalysis.Dev },
+
+
+                    //########### SEPARATE PROCESSING TASK FOR KIWI OUTPUT ###########
 
                     // little spotted kiwi calls from Andrew @ Victoria university.
                     // Signed off: Michael Towsey 27th July 2012
                     { "kiwiROC", LSKiwiROC.Main },
 
-                    // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "LewinsRail", LewinsRail3.Dev },
-
-                    // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
-                    // Signed off: Michael Towsey 27th July 2012
-                    { "machines", PlanesTrainsAndAutomobiles.Dev },
-
-                    // calculates signal to noise ratio
-                    // Signed off: Anthony, 25th July 2012
-                    { "snr", SnrAnalysis.Dev },
 
 
+                    //########### ANALYSES UNDER DEVELOPMENT - OUTPUT NOT GUARANTEED ###########
 
-
-                    // DEVELOPMENT PURPOSES ONLY - FOR MICHAEL'S USE
-
-                    // extracts acoustic indices from one minute segment - for dev purposes only
-                    // Signed off: Michael Towsey, 27th July 2012
-                    { "acousticIndices", Acoustic.Dev },
+                    // acoustic event detection
+                    { "aed", AED.Dev },
 
                     // extract an acoustic event and make a template for FELT
                     { "createtemplate_felt", FeltTemplate_Create.Dev },
 
                     // edits the FELT template created above
                     { "edittemplate_felt", FeltTemplate_Edit.Dev },
+
+                    // event pattern recognition - used for ground-parrots (BRAD)
+                    { "epr", GroundParrotRecogniser.Dev },
 
                     // event pattern recognition - used for ground-parrots (TOWSEY)
                     { "epr2", EPR.Dev },
@@ -123,6 +140,9 @@ namespace AnalysisPrograms
 
                     // Oscillation Recogniser
                     { "od", OscillationRecogniser.Dev },
+
+                    // Production Analysis runs - for running on mono or to run as fast as possible
+                    { "production", Runner.Run },
 
                     // IAnalyser - detects rain
                     { "rain", Rain.Dev },
@@ -143,12 +163,9 @@ namespace AnalysisPrograms
                     // syntactic pattern recognition
                     ////{ "spr", SPR.Dev },
 
-                    // ???
+                    // A template for producing IAnalysis classes.
                     { "test", AnalysisTemplate.Dev },
 
-                    // Production Analysis runs
-                    // for running on mono or to run as fast as possible
-                    { "production", Runner.Run },
                 };
         }
 
