@@ -183,7 +183,7 @@ namespace AnalysisPrograms
             Log.WriteLine("#   Normalize values.");
             //iv: FRAME ENERGIES
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.Item1);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
 
             //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
             int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, windowSize, sr);

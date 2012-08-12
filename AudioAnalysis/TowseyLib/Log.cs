@@ -29,14 +29,6 @@ namespace TowseyLib
             //XmlConfigurator.ConfigureAndWatch(new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(Log).Assembly.Location), "log4net.config")));
         }
 
-        public static ILog Logger
-        {
-            get
-            {
-                return Log4Net;
-            }
-        }
-
         public static int Verbosity { get; set; }
 
 

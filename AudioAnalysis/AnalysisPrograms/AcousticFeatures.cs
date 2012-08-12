@@ -210,12 +210,12 @@ namespace AnalysisPrograms
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
             Parameters paramaters; // st
-            paramaters.SegmentDuration = Double.Parse(dict[Keys.SEGMENT_DURATION]);
-            paramaters.SegmentOverlap = Int32.Parse(dict[Keys.SEGMENT_OVERLAP]);
-            paramaters.ResampleRate = Int32.Parse(dict[Keys.RESAMPLE_RATE]);
-            paramaters.FrameLength = Int32.Parse(dict[Keys.FRAME_LENGTH]);
-            paramaters.FrameOverlap = Double.Parse(dict[Keys.FRAME_OVERLAP]);
-            paramaters.LowFreqBound = Int32.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
+            paramaters.SegmentDuration = double.Parse(dict[Keys.SEGMENT_DURATION]);
+            paramaters.SegmentOverlap = int.Parse(dict[Keys.SEGMENT_OVERLAP]);
+            paramaters.ResampleRate = int.Parse(dict[Keys.RESAMPLE_RATE]);
+            paramaters.FrameLength = int.Parse(dict[Keys.FRAME_LENGTH]);
+            paramaters.FrameOverlap = double.Parse(dict[Keys.FRAME_OVERLAP]);
+            paramaters.LowFreqBound = int.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
             //paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
             //paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
 
@@ -340,10 +340,10 @@ namespace AnalysisPrograms
         public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
         {
             // get parameters for the analysis
-            int frameSize = AcousticFeatures.DEFAULT_WINDOW_SIZE;
-            if (config.ContainsKey(Keys.FRAME_LENGTH)) frameSize = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
-            if (config.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config);
-            if (config.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config);
+            int frameSize = DEFAULT_WINDOW_SIZE;
+            frameSize = config.ContainsKey(Keys.FRAME_LENGTH) ? ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config) : frameSize;
+            lowFreqBound = config.ContainsKey(key_LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config) : lowFreqBound;
+            midFreqBound = config.ContainsKey(key_MID_FREQ_BOUND) ? ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config) : midFreqBound;
             double windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
 
             // get recording segment
@@ -356,29 +356,36 @@ namespace AnalysisPrograms
             // i: EXTRACT ENVELOPE and FFTs
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             ////double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[] envelope   = results2.Item2;
+            double[] envelope   = results2.Envelope;
 
             // amplitude spectrogram
-            double[,] spectrogram = results2.Item3;  
+            double[,] spectrogram = results2.Spectrogram;  
 
 
             // ii: FRAME ENERGIES - 
             // use Lamel et al. Only search in range 10dB above min dB.
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));
-            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
+            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
 
+            bool[] activeFrames = new bool[dBarray.Length];
 
-            bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= DEFAULT_activityThreshold_dB) activeFrames[i] = true;
-            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
+            // record frames with activity >= threshold dB above background and count
+            for (int i = 0; i < dBarray.Length; i++)
+            {
+                if (dBarray[i] >= DEFAULT_activityThreshold_dB)
+                {
+                    activeFrames[i] = true;
+                }
+            }
+            ////int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
             Indices2 indices; // struct in which to store all indices
-            indices.activity = activeFrameCount / (double)dBarray.Length;   //fraction of frames having acoustic activity 
-            indices.bgNoise  = results3.Item2;                              //bg noise in dB
-            indices.snr      = results3.Item5;                              //snr
-            indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
-            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
+            indices.activity = activeFrameCount / (double)dBarray.Length;   // fraction of frames having acoustic activity 
+            indices.bgNoise  = results3.NoiseMode;                          // bg noise in dB
+            indices.snr      = results3.Snr;                                // snr
+            indices.avSig_dB = 20 * Math.Log10(envelope.Average());         // 10 times log of amplitude squared 
+            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); // ENTROPY of ENERGY ENVELOPE
 
             // calculate boundary between hi and low frequency spectrum
             double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
@@ -390,21 +397,21 @@ namespace AnalysisPrograms
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
             // iv: remove background noise from the spectrogram
-            double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
-            modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
+            const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+            double[] modalValues = SNR.CalculateModalValues(spectrogram); // calculate modal value for each freq bin.
+            modalValues = DataTools.filterMovingAverage(modalValues, 7);  // smooth the modal profile
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
-            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
+            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, SpectralBgThreshold);
 
             // v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
+            var tuple3 = CalculateSpectralCoverage(spectrogram, SpectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
 
 
-            //#V#####################################################################################################################################################
-            //set up other info to return
+            // #V#####################################################################################################################################################
+            // set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = null;
             List<double[]> scores = new List<double[]>();
@@ -462,7 +469,7 @@ namespace AnalysisPrograms
 
 
             //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.   NOTE: spectrogram is still a noise reduced amplitude spectrogram 
-            double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
+            double peakThreshold = SpectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
             var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeSegments, peakThreshold, recording.Nyquist);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
@@ -540,7 +547,7 @@ namespace AnalysisPrograms
         /// <param name="activeFrames"></param>
         /// <param name="frameDuration">frame duration in seconds</param>
         /// <returns></returns>
-        public static System.Tuple<int, double, bool[]> CalculateSegmentCount(bool[] activeFrames, double frameDuration)
+        public static Tuple<int, double, bool[]> CalculateSegmentCount(bool[] activeFrames, double frameDuration)
         {
             bool[] segments = activeFrames;
 
@@ -574,7 +581,7 @@ namespace AnalysisPrograms
         /// <param name="bgThreshold"></param>
         /// <param name="excludeBins"></param>
         /// <returns></returns>
-        public static System.Tuple<double, double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int lowFreqBound, int midFreqBound, int Nyquist)
+        public static Tuple<double, double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int lowFreqBound, int midFreqBound, int Nyquist)
         {
             //calculate boundary between hi, mid and low frequency spectrum
             int freqBinCount = spectrogram.GetLength(1);
@@ -623,7 +630,7 @@ namespace AnalysisPrograms
         /// <param name="peakThreshold">required amplitude threshold to qualify as peak</param>
         /// <param name="nyquistFreq"></param>
         /// <returns></returns>
-        public static System.Tuple<double, double[]> CalculateEntropyOfPeakLocations(double[,] spectrogram, bool[] activeFrames, double peakThreshold, int nyquistFreq)
+        public static Tuple<double, double[]> CalculateEntropyOfPeakLocations(double[,] spectrogram, bool[] activeFrames, double peakThreshold, int nyquistFreq)
         {
             int freqBinCount = spectrogram.GetLength(1);
 
@@ -660,7 +667,7 @@ namespace AnalysisPrograms
         /// <param name="spectrogram">this is an amplitude spectrum. Must square values to get power</param>
         /// <param name="excludeBins"></param>
         /// <returns></returns>
-        public static System.Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins)
+        public static Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins)
         {
             int freqBinCount = spectrogram.GetLength(1);
             double[] avSpectrum = new double[freqBinCount - excludeBins];   //for average  of the spectral bins
@@ -705,7 +712,7 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<int, double, bool[], List<double[]>, int[]> ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
+        public static Tuple<int, double, bool[], List<double[]>, int[]> ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
         {
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
@@ -841,7 +848,7 @@ namespace AnalysisPrograms
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int length = sonogram.FrameCount;
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //add time scale
@@ -997,7 +1004,7 @@ namespace AnalysisPrograms
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string line = String.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1], HEADERS[2], HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7],
+            string line = string.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1], HEADERS[2], HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7],
                                                                         HEADERS[8], HEADERS[9], HEADERS[10], HEADERS[11], HEADERS[12], HEADERS[13], HEADERS[14], HEADERS[15], HEADERS[16],HEADERS[17], HEADERS[18]);
             return line;
         }
@@ -1008,7 +1015,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(reportfileName, line);
         }
 
-        public static DataTable Indices2DataTable(AcousticFeatures.Indices2 indices)
+        public static DataTable Indices2DataTable(Indices2 indices)
         {
             var parameters = InitOutputTableColumns();
             var headers = parameters.Item1;
@@ -1040,47 +1047,49 @@ namespace AnalysisPrograms
             int minPrev = 0;
             int minTotal = 0;
             int speciesTotal = 0;
-            for (int i = 1; i < lines.Count - 1; i++) //ignore last line
+
+            // ignore last line
+            for (int i = 1; i < lines.Count - 1; i++) 
             {
                 string[] words = lines[i].Split(',');
-                int speciesCount = Int32.Parse(words[1]);
+                int speciesCount = int.Parse(words[1]);
                 speciesTotal += speciesCount;
                 string[] splitTime = words[0].Split(':');
-                int hour = Int32.Parse(splitTime[0]);
-                int min = Int32.Parse(splitTime[1]);
+                int hour = int.Parse(splitTime[0]);
+                int min = int.Parse(splitTime[1]);
                 minTotal = (hour * 60) + min;
                 if (minTotal > minPrev + 1)
                 {
                     for (int j = minPrev + 1; j < minTotal; j++)
                     {
-                        line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                        line = string.Format("{0}  time={1}:{2}   Count={3}", j, j / 60, j % 60, 0);
                         LoggedConsole.WriteLine(line);
-                        line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                        line = string.Format("{0},{1}:{2},{3}", j, j / 60, j % 60, 0);
                         FileTools.Append2TextFile(opFile, line);
                     }
                 }
 
-                line = String.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
+                line = string.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
                 LoggedConsole.WriteLine(line);
-                line = String.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
+                line = string.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
                 FileTools.Append2TextFile(opFile, line);
                 minPrev = minTotal;
             }
-            //fill in misisng minutes at end.
+
+            // fill in misisng minutes at end.
             int minsIn24hrs = 24 * 60;
             if (minsIn24hrs > minPrev + 1)
             {
                 for (int j = minPrev + 1; j < minsIn24hrs; j++)
                 {
-                    line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                    line = string.Format("{0}  time={1}:{2}   Count={3}", j, j / 60, j % 60, 0);
                     LoggedConsole.WriteLine(line);
-                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                    line = string.Format("{0},{1}:{2},{3}", j, j / 60, j % 60, 0);
                     FileTools.Append2TextFile(opFile, line);
                 }
             }
+
             LoggedConsole.WriteLine("speciesTotal= " + speciesTotal);
         }
-
-
-    } //class AcousticIndicesExtraction
+    } // class AcousticIndicesExtraction
 }

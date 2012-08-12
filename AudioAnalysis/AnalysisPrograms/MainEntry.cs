@@ -27,16 +27,15 @@ namespace AnalysisPrograms
     /// </summary>
     public class MainEntry
     {
-
-
         private static readonly Dictionary<string, Action<string[]>> KnownAnalyses;
 
+        // STATIC CONSTRUCTOR
         static MainEntry()
         {
-            // STATIC CONSTRUCTOR
+            // creation of known analyses dictionary, ignore case on the key for flexibility on matching in commandline
             KnownAnalyses = new Dictionary<string, Action<string[]>>(StringComparer.InvariantCultureIgnoreCase)
                 {
-                    //########### FOUR TASKS ############
+                    // ########### FOUR TASKS ############
 
                     // 1. Returns list of available analyses
                     // Signed off: Michael Towsey 1st August 2012
@@ -56,7 +55,7 @@ namespace AnalysisPrograms
 
 
 
-                    //########### ANALYSES for INDIVIDUAL CALLS - Called through DEV() or EXCECUTE() ############
+                    // ########### ANALYSES for INDIVIDUAL CALLS - Called through DEV() or EXCECUTE() ############
 
                     // extracts acoustic indices from one minute segment
                     // { "acousticIndices", Acoustic.Dev },
@@ -108,15 +107,13 @@ namespace AnalysisPrograms
                      { "snr", SnrAnalysis.Dev },
 
 
-                    //########### SEPARATE PROCESSING TASK FOR KIWI OUTPUT ###########
+                    // ########### SEPARATE PROCESSING TASK FOR KIWI OUTPUT ###########
 
                     // little spotted kiwi calls from Andrew @ Victoria university.
                     // Signed off: Michael Towsey 27th July 2012
                     { "kiwiROC", LSKiwiROC.Main },
 
-
-
-                    //########### ANALYSES UNDER DEVELOPMENT - OUTPUT NOT GUARANTEED ###########
+                    // ########### ANALYSES UNDER DEVELOPMENT - OUTPUT NOT GUARANTEED ###########
 
                     // acoustic event detection
                     { "aed", AED.Dev },
@@ -135,6 +132,10 @@ namespace AnalysisPrograms
 
                     // find other acoustic events like this
                     { "felt", FeltTemplates_Use.Dev },
+
+                    // anthony's attempt at FELT
+                    // this runs his suggestion tool, and the actual FELT analysis
+                    { "truskinger.felt", strings => FELT.Runner.Main.Entry(strings) },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -169,7 +170,6 @@ namespace AnalysisPrograms
 
                     // A template for producing IAnalysis classes.
                     { "test", AnalysisTemplate.Dev },
-
                 };
         }
 
@@ -179,10 +179,13 @@ namespace AnalysisPrograms
         /// <param name="args">
         /// Analysis Program arguments.
         /// </param>
+        /// <returns>
+        /// The exit code (error level) for the application.
+        /// </returns>
         public static int Main(string[] args)
         {
-            //var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
-            //analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+            ////var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
+            ////analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
 
             ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -203,14 +206,13 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
             }
 #endif
-            int returnCode = 0;
+            int returnCode = (int)CommandLineException.KnownReturnCodes.Ok;
             try
             {
                 if (args.Length == 0)
                 {
-                    var msg =
-                        "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
-                    LoggedConsole.WriteLine(msg);
+                    const string Msg = "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
+                    LoggedConsole.WriteErrorLine(Msg);
                     Usage();
                     throw new CommandMainArgumentMissingException();
                 }
@@ -241,7 +243,7 @@ namespace AnalysisPrograms
             }
             catch (Exception ex)
             {
-                TowseyLib.Log.Logger.Fatal("Unhandled exception", ex);
+                log.Fatal("Unhandled exception", ex);
                 returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
             }
 

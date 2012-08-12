@@ -189,8 +189,8 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             string date = "# DATE AND TIME: " + DateTime.Now;
-            TowseyLib.Log.WriteLine("# Running acoustic event detection.");
-            TowseyLib.Log.WriteLine(date);
+            Log.Info("# Running acoustic event detection.");
+            Log.Info(date);
             TowseyLib.Log.Verbosity = 1;
 
             CheckArguments(args);
@@ -381,13 +381,13 @@ namespace AnalysisPrograms
         {
             if (args.Length < 3)
             {
-                TowseyLib.Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
+                LoggedConsole.WriteErrorLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
                 foreach (string arg in args)
                 {
-                    TowseyLib.Log.WriteLine(arg + "  ");
+                    LoggedConsole.WriteError(arg + ",  ");
                 }
 
-                TowseyLib.Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
+                LoggedConsole.WriteErrorLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
                 Usage();
                 throw new AnalysisOptionInvalidArgumentsException();
             }

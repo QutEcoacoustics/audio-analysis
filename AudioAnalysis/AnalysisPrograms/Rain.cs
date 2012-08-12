@@ -397,8 +397,8 @@ namespace AnalysisPrograms
             //i: EXTRACT ENVELOPE and FFTs
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[]  envelope    = results2.Item2;
-            double[,] spectrogram = results2.Item3;  //amplitude spectrogram
+            double[]  envelope    = results2.Envelope;
+            double[,] spectrogram = results2.Spectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);
 
             //set up the output
@@ -460,7 +460,7 @@ namespace AnalysisPrograms
 
             //ii: FRAME ENERGIES - 
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
-            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
+            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
 
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
@@ -473,8 +473,8 @@ namespace AnalysisPrograms
 
             Indices indices; // struct in which to store all indices
             indices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity 
-            indices.bgNoise  = results3.Item2;                             //bg noise in dB
-            indices.snr      = results3.Item5;                             //snr
+            indices.bgNoise  = results3.NoiseMode;                             //bg noise in dB
+            indices.snr      = results3.Snr;                             //snr
             indices.avSig_dB = 20 * Math.Log10(envelope.Average());        //10 times log of amplitude squared 
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
             indices.spikes = spikeIndex;

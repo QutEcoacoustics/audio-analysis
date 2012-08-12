@@ -68,6 +68,13 @@ namespace System
             Console.Error.Write(str);
         }
 
+        public static void WriteErrorLine(string format, params object[] args)
+        {
+            var str = string.Format(format, args);
+            Log.Error(str);
+            Console.Error.WriteLine(str);
+        }
+
         public static void WriteErrorLine(string str)
         {
             Log.Error(str);

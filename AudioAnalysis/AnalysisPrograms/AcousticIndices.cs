@@ -1,4 +1,13 @@
-﻿namespace AnalysisPrograms
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AcousticIndices.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the Acoustic type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections;
@@ -22,11 +31,11 @@
 
     public class Acoustic : IAnalyser
     {
-        //TASK IDENTIFIERS
+        // TASK IDENTIFIERS
         public const string task_ANALYSE = "analysis";
         public const string task_LOAD_CSV = "loadCsv";
 
-        //OTHER CONSTANTS
+        // OTHER CONSTANTS
         public const string ANALYSIS_NAME = "Acoustic";
 
         public string DisplayName
@@ -294,11 +303,15 @@
             analysisResults.SettingsUsed = analysisSettings;
             analysisResults.Data = null;
 
-            //######################################################################
+            // ######################################################################
             var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings.ConfigDict);
-            //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            // ######################################################################
+            if (results == null)
+            {
+                return analysisResults; // nothing to process 
+            }
+
             analysisResults.Data = results.Item1;
             analysisResults.AudioDuration = results.Item2;
             var sonogram = results.Item3;
@@ -319,8 +332,9 @@
             {
                 CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.IndicesFile.FullName);
             }
+
             return analysisResults;
-        } //Analyse()
+        } // Analyse()
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<double[]> scores)
