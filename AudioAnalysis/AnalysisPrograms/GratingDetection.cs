@@ -276,10 +276,10 @@ namespace AnalysisPrograms
 
             //i: GET SONOGRAM AS MATRIX
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
+            double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
-            double[,] spectrogram = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            double windowPower = results2.Item4;
+            double[,] spectrogram = results2.Spectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double windowPower = results2.WindowPower;
 
             //############################ NEXT LINE FOR DEBUGGING ONLY
             //spectrogram = GetTestSpectrogram(spectrogram.GetLength(0), spectrogram.GetLength(1), 0.01, 0.03);

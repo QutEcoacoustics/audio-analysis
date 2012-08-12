@@ -75,8 +75,22 @@
     <Content Include="ExcelResultsSummationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="bin\Debug\ExcelResultsComputationTemplate.xlsx">
+      <Link>ExcelResultsComputationTemplate.xlsx</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
+      <Name>Acoustics.Shared</Name>
+      <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\FELT\FELT.fsproj">
+      <Name>FELT</Name>
+      <Project>{73b9c579-f539-426f-9852-1efcba75c0d5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Name>MQUTeR.FSharp.Shared</Name>
       <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
@@ -124,11 +138,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <ProjectReference Include="..\FELT\FELT.fsproj">
-      <Name>FELT</Name>
-      <Project>{73b9c579-f539-426f-9852-1efcba75c0d5}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Include="System.Xml" />
     <Reference Include="zlib.net">
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>

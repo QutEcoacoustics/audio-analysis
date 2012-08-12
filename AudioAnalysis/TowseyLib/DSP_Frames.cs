@@ -15,6 +15,24 @@ namespace TowseyLib
         public const double pi = Math.PI;
 
 
+        public class EnvelopeAndFFT
+        {
+            public double[] Envelope { get; set; }
+
+            public double[,] Spectrogram { get; set; }
+
+            public double WindowPower { get; set; }
+
+            public double[] Average { get; set; }
+
+            public EnvelopeAndFFT(double[] average, double[] envelope, double[,] spectrogram, double windowPower)
+            {
+                this.Envelope = envelope;
+                this.Spectrogram = spectrogram;
+                this.WindowPower = windowPower;
+                this.Average = average;
+            }
+        }
 
         /// <summary>
         /// returns the start and end index of all frames in a long audio signal
@@ -100,7 +118,7 @@ namespace TowseyLib
         /// <param name="windowSize"></param>
         /// <param name="overlap"></param>
         /// <returns></returns>
-        public static System.Tuple<double[], double[], double[,], double> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
         {
             int frameOffset = (int)(windowSize * (1 - overlap));
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
@@ -109,20 +127,20 @@ namespace TowseyLib
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
 
-            //set up the FFT parameters
+            // set up the FFT parameters
             TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(FFT.Key_HammingWindow);
             var fft = new TowseyLib.FFT(windowSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
-            double[,] spectrogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
-            double[] f1; //the fft
+            double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
+            double[] f1; // the fft
 
-            //cycle through the frames
+            // cycle through the frames
             for (int i = 0; i < frameCount; i++)
             {
                 List<int> periodList = new List<int>();
                 int start = i * frameOffset;
                 int end = start + windowSize;
 
-                //get average and envelope
+                // get average and envelope
                 double frameDC = signal[start];
                 double total = Math.Abs(signal[start]);
                 double maxValue = total;
@@ -137,22 +155,22 @@ namespace TowseyLib
                 average[i] = total / windowSize;
                 envelope[i] = maxValue;
 
-                //remove DC value from signal values
+                // remove DC value from signal values
                 double[] signalMinusAv = new double[windowSize];
                 for (int j = 0; j < windowSize; j++)
                     signalMinusAv[j] = signal[start + j] - frameDC;
 
-                //generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
-                f1 = fft.InvokeDotNetFFT(signalMinusAv);                 //returns fft amplitude spectrum
-                //f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-                //f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
+                // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
+                f1 = fft.InvokeDotNetFFT(signalMinusAv);                 // returns fft amplitude spectrum
+                ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
 
                 f1 = DataTools.filterMovingAverage(f1, 5); //smooth spectrum to reduce variance
                 for (int j = 0; j < fft.CoeffCount; j++)   //foreach freq bin
                     spectrogram[i, j] = f1[j];             //transfer amplitude
                 
             } // end frames
-            return System.Tuple.Create(average, envelope, spectrogram, fft.WindowPower);
+            return new EnvelopeAndFFT(average, envelope, spectrogram, fft.WindowPower);
         }
 
 

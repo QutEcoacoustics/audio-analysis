@@ -408,10 +408,10 @@ namespace AnalysisPrograms
             //int frameCount = (length - windowSize + frameOffset) / frameOffset;
 
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, windowSize, windowOverlap);
-            double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
+            double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
-            double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            double windowPower = results2.Item4;
+            double[,] matrix = results2.Spectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double windowPower = results2.WindowPower;
 
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
             // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
