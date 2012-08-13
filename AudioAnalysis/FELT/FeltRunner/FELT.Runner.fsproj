@@ -68,6 +68,12 @@
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Suggestion.config">
+      <Link>Truskinger.Felt.Suggestion.config</Link>
+    </None>
+    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
+      <Link>Truskinger.Felt.Search.config</Link>
+    </None>
     <Compile Include="CustomConfigAnalyses.fs" />
     <Compile Include="CustomConfig.fs" />
     <Compile Include="SummationReport.fs" />
@@ -137,6 +143,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="zlib.net">

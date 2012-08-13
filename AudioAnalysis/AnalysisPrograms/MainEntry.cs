@@ -258,6 +258,7 @@ namespace AnalysisPrograms
 #endif
 
             // finally return error level
+            log.Debug("ERRORLEVEL: " + returnCode);
             return returnCode;
         }
 

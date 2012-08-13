@@ -250,11 +250,15 @@
             #endif
 
             // determine analysis to run
-            let first = Seq.first args
+            let first = Seq.tryHead args
             let f : unit -> unit = 
                 match first with
-                    | "suggestion" -> suggestion
-                    | "search" -> search
+                    | Some "suggestion" -> 
+                        Info "Running suggestion tool."
+                        suggestion
+                    | Some "search" -> 
+                        Info "Running search tool."
+                        search
                     | _ -> usage
 
             f()

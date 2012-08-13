@@ -24,6 +24,8 @@
             type Count = int
             let ZeroCount:Count = 0
 
+            let tryHead xs = Seq.tryPick Some xs
+
             let first xs = Seq.nth 0 xs
             let second xs = Seq.nth 1 xs
             let third xs = Seq.nth 2 xs
