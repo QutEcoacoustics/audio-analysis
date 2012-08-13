@@ -75,6 +75,7 @@
     <Compile Include="WebsiteComputation.fs" />
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
+    <Compile Include="Search.fs" />
     <None Include="packages.config" />
     <Content Include="ExcelResultsComputationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
