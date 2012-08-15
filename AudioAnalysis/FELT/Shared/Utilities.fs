@@ -9,10 +9,22 @@ namespace System
     open System
 
 
-    type index = int
+    
+
+    [<AutoOpen>]
+    module Measures =
+        [<Measure>] type Hz
+        
+        [<Measure>] type Sample
+        
+
+    type Index = int
+    type Hertz = float<Hz>
 
     [<AutoOpen>]
     module Utilities =
+
+        
 
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
 

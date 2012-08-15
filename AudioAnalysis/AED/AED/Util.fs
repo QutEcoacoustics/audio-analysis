@@ -74,7 +74,7 @@ let matrixMapi2Unzip f (m:matrix) =
 /// A unit of measure for a Pixel
 [<Measure>] type px
 let px = 1.0<px>
-
+type Pixel = float<px>
     
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
 type Rectangle<'a, 'b> = {Left:'a; Top:'b; Right:'a; Bottom:'b; Width:'a; Height:'b;}

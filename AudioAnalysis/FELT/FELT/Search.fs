@@ -30,8 +30,6 @@
             
                 - for each template        
                     - calculate centroid
-            
-
                 
             - for each template (t)
                 
@@ -62,3 +60,35 @@
                     - return a list of likely ?species/calls?
 
     *)
+    open System
+    open QutSensors.AudioAnalysis.AED.Util
+
+    let centroid (ae: Rectangle<Pixel, Pixel>) =
+        ae.Left + (ae.Width / 2.0) , ae.Top  + (ae.Height /2.0)
+
+    let centerToEdges center width =
+        let h = width / 
+
+    let getNoiseProfile startOffset endOffset recordingID =
+        
+        raise <| new NotImplementedException()
+
+    let cutSnippet sourceFile (center:TimeSpan) (duration:TimeSpan) (lowBand:Hertz) (highBand:Hertz) =
+        
+        // returns a wav
+
+        raise <| new NotImplementedException()
+    
+    let snippetToSpectrogram wavSource =
+        
+        raise <| new NotImplementedException()
+
+    let extractFeatures snippet =
+
+        raise <| new NotImplementedException()
+
+    let getTemplates data workflow =
+
+        raise <| new NotImplementedException()
+
+
