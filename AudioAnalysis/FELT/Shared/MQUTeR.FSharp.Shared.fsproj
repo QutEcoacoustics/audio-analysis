@@ -49,7 +49,7 @@
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
     <Compile Include="Reflection.fs" />
-    <Compile Include="Operators.fs" />
+    <Compile Include="Utilities.fs" />
     <Compile Include="NumericLiteralG.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Seq.fs" />

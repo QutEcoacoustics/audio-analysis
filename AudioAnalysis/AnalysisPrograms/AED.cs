@@ -19,13 +19,13 @@ namespace AnalysisPrograms
 
     using AudioAnalysisTools;
 
+    using log4net;
+
     using QutSensors.AudioAnalysis.AED;
 
     using ServiceStack.Text;
 
     using TowseyLib;
-
-    using log4net;
 
     /// <summary>
     /// Acoustic Event Detection.

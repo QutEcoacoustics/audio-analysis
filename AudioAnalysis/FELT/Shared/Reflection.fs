@@ -35,7 +35,7 @@
 
 
         /// Get the type of a module. This works by using some member in the module type to refer to the module.
-        /// <example> typeofM SomeModule.someBinding returns typeof&gtSomeModule&lt </example>
+        /// <example> typeofM SomeModule.someBinding returns typeof<SomeModule> </example>
         let typeofM m =
             
             let t = m.GetType()
