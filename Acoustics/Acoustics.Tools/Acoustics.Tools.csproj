@@ -36,13 +36,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AForge, Version=2.2.4.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EcoSounds\packages\AForge.2.2.4\lib\AForge.dll</HintPath>
+    <Reference Include="AForge">
+      <HintPath>..\..\Extra Assemblies\Aforge.Net\AForge.dll</HintPath>
     </Reference>
-    <Reference Include="AForge.Imaging, Version=2.2.4.0, Culture=neutral, PublicKeyToken=ba8ddea9676ca48b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\EcoSounds\packages\AForge.Imaging.2.2.4\lib\AForge.Imaging.dll</HintPath>
+    <Reference Include="AForge.Imaging">
+      <HintPath>..\..\Extra Assemblies\Aforge.Net\AForge.Imaging.dll</HintPath>
     </Reference>
     <Reference Include="AForge.Math">
       <HintPath>..\..\EcoSounds\packages\AForge.Math.2.2.4\lib\AForge.Math.dll</HintPath>
