@@ -1,2 +1,0 @@
-# save a sonogram for each recording that contained a hit 
-DRAW_SONOGRAMS=0
