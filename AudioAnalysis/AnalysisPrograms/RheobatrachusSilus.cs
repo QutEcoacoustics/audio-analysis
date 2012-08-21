@@ -313,7 +313,8 @@ namespace AnalysisPrograms
 
             DataTable dataTable = null;
 
-            if ((predictedEvents != null) && (predictedEvents.Count != 0))
+            //if ((predictedEvents != null) && (predictedEvents.Count != 0))
+            if (predictedEvents != null)
             {
                 string analysisName = configDict[key_ANALYSIS_NAME];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
@@ -337,6 +338,8 @@ namespace AnalysisPrograms
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.01;
+                if (configDict.ContainsKey(Keys.INTENSITY_THRESHOLD)) 
+                    scoreThreshold = ConfigDictionary.GetDouble(Keys.INTENSITY_THRESHOLD, configDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
@@ -552,14 +555,14 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.Keys.EVENT_START_ABS,
                                  AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,
                                  AudioAnalysisTools.Keys.EVENT_DURATION, 
-                                 AudioAnalysisTools.Keys.EVENT_INTENSITY,
+                                 //AudioAnalysisTools.Keys.EVENT_INTENSITY,
                                  AudioAnalysisTools.Keys.EVENT_NAME,
                                  AudioAnalysisTools.Keys.EVENT_SCORE,
                                  AudioAnalysisTools.Keys.EVENT_NORMSCORE 
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), /*typeof(double), */ typeof(string), 
                              typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
@@ -570,8 +573,8 @@ namespace AnalysisPrograms
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
-                row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
+                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duration in seconds
+                //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
                 row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
                 row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
