@@ -128,14 +128,9 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TowseyLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\TowseyLib\obj\Debug\TowseyLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticFeatures.cs" />
-    <Compile Include="AED.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
@@ -162,18 +157,14 @@
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
     <Compile Include="FrogRibit.cs" />
-    <Compile Include="EPR.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
     <Compile Include="FeltTemplate_Create.cs" />
     <Compile Include="FeltTemplates_Use.cs" />
-    <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SPR.cs" />
-    <Compile Include="Spt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
@@ -183,10 +174,6 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
       <Name>Acoustics.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AED\AED\AED.fsproj">
-      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
-      <Name>AED</Name>
     </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
@@ -200,9 +187,9 @@
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FELT\FeltRunner\FELT.Runner.fsproj">
-      <Project>{372A71B7-7505-4A40-8139-BE6D89281C9B}</Project>
-      <Name>FELT.Runner</Name>
+    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
+      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
+      <Name>TowseyLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
