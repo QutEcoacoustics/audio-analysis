@@ -283,9 +283,9 @@ namespace AnalysisPrograms
             TowseyLib.Log.WriteIfVerbose("imagePath = " + imagePath);
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
 
-            ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, image.));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
             image.Save(imagePath);
         }

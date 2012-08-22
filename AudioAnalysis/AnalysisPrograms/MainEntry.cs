@@ -116,7 +116,7 @@ namespace AnalysisPrograms
                     // ########### ANALYSES UNDER DEVELOPMENT - OUTPUT NOT GUARANTEED ###########
 
                     // acoustic event detection
-                    // { "aed", AED.Dev },
+                    { "aed", AED.Dev },
 
                     // extract an acoustic event and make a template for FELT
                     { "createtemplate_felt", FeltTemplate_Create.Dev },

@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticFeatures.cs" />
+    <Compile Include="AED.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
@@ -170,6 +171,10 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
       <Name>Acoustics.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AED\AED\AED.fsproj">
+      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Name>AED</Name>
     </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
