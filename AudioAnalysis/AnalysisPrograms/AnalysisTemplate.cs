@@ -190,13 +190,13 @@ namespace AnalysisPrograms
 
             // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.ConfigFile = fiConfig;
+            analysisSettings.ConfigFile       = fiConfig;
             analysisSettings.AnalysisRunDirectory = diOP;
-            analysisSettings.AudioFile = null;
-            analysisSettings.EventsFile = null;
+            analysisSettings.AudioFile   = null;
+            analysisSettings.EventsFile  = null;
             analysisSettings.IndicesFile = null;
-            analysisSettings.ImageFile = null;
-            TimeSpan tsStart = new TimeSpan(0, 0, 0);
+            analysisSettings.ImageFile   = null;
+            TimeSpan tsStart    = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
             var configuration = new ConfigDictionary(fiConfig.FullName);
             analysisSettings.ConfigDict = configuration.GetTable();

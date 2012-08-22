@@ -200,7 +200,7 @@ namespace AnalysisPrograms
             string configPath = args[1];
             string outputDir = args[2];
            
-            //INIT SETTINGS
+            // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile       = new FileInfo(configPath);
             analysisSettings.AnalysisRunDirectory = new DirectoryInfo(outputDir); 
@@ -208,8 +208,10 @@ namespace AnalysisPrograms
             analysisSettings.EventsFile  = null;
             analysisSettings.IndicesFile = null;
             analysisSettings.ImageFile   = null;
-            TimeSpan tsStart    = new TimeSpan(0,0,0);
-            TimeSpan tsDuration = new TimeSpan(0,0,0);
+            TimeSpan tsStart    = new TimeSpan(0, 0, 0);
+            TimeSpan tsDuration = new TimeSpan(0, 0, 0);
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            analysisSettings.ConfigDict = configuration.GetTable();
 
             //PROCESS REMAINDER OF COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
@@ -290,8 +292,6 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF    = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisRunDirectory;
 
@@ -301,7 +301,7 @@ namespace AnalysisPrograms
             result.Data = null;
 
             //######################################################################
-            var results = Analysis(fiAudioF, configDict);
+            var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
             //######################################################################
 
             if (results == null) return result; //nothing to process 
@@ -313,7 +313,6 @@ namespace AnalysisPrograms
 
             DataTable dataTable = null;
 
-            //if ((predictedEvents != null) && (predictedEvents.Count != 0))
             if (predictedEvents != null)
             {
                 string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
@@ -340,8 +339,8 @@ namespace AnalysisPrograms
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.01;
-                if (configDict.ContainsKey(Keys.INTENSITY_THRESHOLD)) 
-                    scoreThreshold = ConfigDictionary.GetDouble(Keys.INTENSITY_THRESHOLD, configDict);
+                if (analysisSettings.ConfigDict.ContainsKey(Keys.INTENSITY_THRESHOLD))
+                    scoreThreshold = ConfigDictionary.GetDouble(Keys.INTENSITY_THRESHOLD, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
