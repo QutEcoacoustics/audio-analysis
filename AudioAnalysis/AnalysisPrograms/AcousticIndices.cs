@@ -31,12 +31,12 @@ namespace AnalysisPrograms
 
     public class Acoustic : IAnalyser
     {
-        // TASK IDENTIFIERS
-        public const string task_ANALYSE = "analysis";
-        public const string task_LOAD_CSV = "loadCsv";
-
         // OTHER CONSTANTS
         public const string ANALYSIS_NAME = "Acoustic";
+
+        // TASK IDENTIFIERS
+        public const string task_ANALYSE = ANALYSIS_NAME;
+        public const string task_LOAD_CSV = "loadCsv";
 
         public string DisplayName
         {
