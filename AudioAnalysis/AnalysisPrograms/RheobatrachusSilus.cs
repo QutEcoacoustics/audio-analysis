@@ -316,7 +316,7 @@ namespace AnalysisPrograms
             //if ((predictedEvents != null) && (predictedEvents.Count != 0))
             if (predictedEvents != null)
             {
-                string analysisName = configDict[key_ANALYSIS_NAME];
+                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
@@ -326,7 +326,7 @@ namespace AnalysisPrograms
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = key_START_SEC + " ASC";
+                string sortString = Keys.EVENT_START_ABS + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
@@ -334,6 +334,8 @@ namespace AnalysisPrograms
             {
                 CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
             }
+            else
+                result.EventsFile = null;
 
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
@@ -344,6 +346,8 @@ namespace AnalysisPrograms
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
+            else
+                result.IndicesFile = null;
 
             //save image of sonograms
             if (analysisSettings.ImageFile != null)
