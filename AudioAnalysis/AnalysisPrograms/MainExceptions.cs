@@ -9,29 +9,46 @@
 
 namespace AnalysisPrograms
 {
-
-
-
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
+    /// <summary>
+    /// A generic excetion construct thrown whenever an invalid command line argument is specified.
+    /// It is a unique form of exception, because it and each of its subtypes carry a unique ErrorLevel integer.
+    /// This allows the handler of these exceptions to set the errorlevel of the environment before exit - in an consistent manner.
+    /// <para>
+    /// This class also contains an enumerable of all the Known Returns Codes in use. If you have a new errorlevel you want to define you should list it there.
+    /// </para>
+    /// <para>
+    /// Even better, if you have a new type of errorlevel you want to define, create a new strongly typed exception for the case. See examples elswhere in this file.
+    /// </para>
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass",
+        Justification = "All of the classes in this file are related and quite small.")]
     public class CommandLineException : Exception
     {
-        private KnownReturnCodes errorCode = KnownReturnCodes.StandardErrorLevel;
+        private readonly KnownReturnCodes errorCode = KnownReturnCodes.StandardErrorLevel;
 
-        public enum  KnownReturnCodes : int
+        public enum KnownReturnCodes : int
         {
             Ok = 0,
+
             MainArgumentsMissing = 1,
-            MainAnalysisOptionUnknown =2,
+
+            MainAnalysisOptionUnknown = 2,
 
             AnalysisOptionInvalidArguments = 3,
+
             AnalysisOptionInvalidPath = 4,
+
             AnalysisOptionInvalidDuration = 6,
 
             AnalysisOptionFatalError = 99,
+
             AnalysisOptionDevilError = 666,
 
             StandardErrorLevel = 999,
+
             SpecialExceptionErrorLevel = 1000
         }
 
@@ -44,7 +61,7 @@ namespace AnalysisPrograms
         {
             this.errorCode = code;
         }
-        
+
         public CommandLineException(string message, int code)
             : base(message)
         {

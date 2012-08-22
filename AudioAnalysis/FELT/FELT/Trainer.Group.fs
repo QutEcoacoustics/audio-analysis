@@ -15,7 +15,7 @@
 
         let emptyDT = Map.empty<ColumnHeader, Value array> 
 
-        let grp index (state:Map<_, index list>) (ele: string) =
+        let grp index (state:Map<_, Index list>) (ele: string) =
             // ignore case and white space
             let ele' = txtInfo.ToTitleCase <| ele.Trim().ToLowerInvariant()
 
@@ -44,9 +44,9 @@
                 | _ -> failwith "not implemented"
 
         /// this function deals with the data from one column
-        member private this.aggregator (grps:Map<Class, index list>) (state:Map<ColumnHeader, Value array>) columnName (values: Value array) = 
+        member private this.aggregator (grps:Map<Class, Index list>) (state:Map<ColumnHeader, Value array>) columnName (values: Value array) = 
 
-            let avg (i: index list) =
+            let avg (i: Index list) =
                 (values.getValuesList i) |> this.AvgValue   
 
             // for each group, pick out all the values (by index) and average them
