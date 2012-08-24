@@ -140,6 +140,9 @@ namespace AnalysisPrograms
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
 
+                    // IAnalyser - detects Gastric Brooding Frog
+                    { "frogs", Frogs.Dev },
+
                     // grid recognition
                     { "gratings", GratingDetection.Dev },
 

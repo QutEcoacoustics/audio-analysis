@@ -20,7 +20,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    public class RheobatrachusSilus : IAnalyser
+    public class Frogs : IAnalyser
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -58,8 +58,8 @@ namespace AnalysisPrograms
 
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "RheobatrachusSilus";
-        //public const int RESAMPLE_RATE = 17640;
-        public const int RESAMPLE_RATE = 22050;
+        public const int RESAMPLE_RATE = 17640;
+        //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
@@ -274,7 +274,7 @@ namespace AnalysisPrograms
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
-            IAnalyser analyser = new RheobatrachusSilus();
+            IAnalyser analyser = new Frogs();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             if (dt == null) return 6;
@@ -379,14 +379,13 @@ namespace AnalysisPrograms
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values - ignore those set by user
-            int frameSize        = 128;
-            double windowOverlap = 0.5;
+            //int frameSize        = 128;
+            int frameSize = 32;
+            double windowOverlap = 0.0;
+            int sampleLength = 64; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
+            //int sampleLength = 16; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
 
-            //int upperBandMinHz = Int32.Parse(configDict[key_UPPERFREQBAND_BTM]);
-            //int upperBandMaxHz = Int32.Parse(configDict[key_UPPERFREQBAND_TOP]);
-            //int lowerBandMinHz = Int32.Parse(configDict[key_LOWERFREQBAND_BTM]);
-            //int lowerBandMaxHz = Int32.Parse(configDict[key_LOWERFREQBAND_TOP]);
-            //double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
+
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
             double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
             double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
@@ -406,7 +405,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");   //must do noise removal
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
@@ -418,119 +417,121 @@ namespace AnalysisPrograms
             int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();
 
-            //#############################################################################################################################################
-            //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-            // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-            // 256      17640       14.5ms          68.9        68.9    ms          hz          hz
-            // 512      17640       29.0ms          34.4        34.4    ms          hz          hz
-            // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-            // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
+            //set up a list of normalised arrays representing the spectrum - one array per freq bin
+            var listOfArrays = new List<double[]>();
+            for (int c = 0; c < colCount; c++)
+            {
+                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
+                array = DataTools.NormaliseInZeroOne(array, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
+                listOfArrays.Add(array);
+            }
 
-            //The Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
-            // Assuming sr=17640 and window=256, then binWidth = 68.9Hz and 1500Hz = bin 21.7..
-            // Therefore do a Xcorrelation between bins 21 and 22.
-            // Number of frames to span must power of 2. Try 16 frames which covers 232ms - almost 1/4 second.
 
-            int midHz    = 1500;
-            int lowerBin = (int)(midHz / freqBinWidth) + 1;  //because bin[0] = DC
-            int upperBin = lowerBin + 4;
-            int lowerHz = (int)Math.Floor((lowerBin-1) * freqBinWidth);
-            int upperHz = (int)Math.Ceiling((upperBin - 1) * freqBinWidth); ;
+            int halfSample = sampleLength / 2;
+            int topBin     = colCount / 2;
 
-            //ALTERNATIVE IS TO USE THE AMPLITUDE SPECTRUM
-            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            //double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            ////double[] envelope = results2.Item2;
-            //double windowPower = results2.Item4;
+            //set up List of score arrays.
+            var listOfScores = new List<double[]>();
+            for (int c = 0; c < topBin; c++)
+            {
+                listOfScores.Add(new double[rowCount]);
+            }
 
-            double[] lowerArray = MatrixTools.GetColumn(sonogram.Data, lowerBin);
-            double[] upperArray = MatrixTools.GetColumn(sonogram.Data, upperBin);
-            //upperArray = lowerArray;
-            lowerArray = DataTools.NormaliseInZeroOne(lowerArray, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
-            upperArray = DataTools.NormaliseInZeroOne(upperArray, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
-
-            int step = (int)(framesPerSecond / 40); //take one/tenth second steps
-            int stepCount = rowCount / step;
-            int sampleLength = 32; //16 frames = 232ms - almost 1/4 second.
-            double[] intensity   = new double[rowCount];
-            double[] periodicity = new double[rowCount]; 
+            //double[] intensity = new double[rowCount];
+            //double[] periodicity = new double[rowCount];
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
 
-            for (int i = 0; i < stepCount; i++)
+            var hits = new double[rowCount, colCount];
+            for (int r = halfSample; r < rowCount - halfSample; r++)
             {
-                int start = step * i;
-                double[] lowerSubarray = DataTools.Subarray(lowerArray, start, sampleLength);
-                double[] upperSubarray = DataTools.Subarray(upperArray, start, sampleLength);
+                //find local maxima and store in hits matrix.
+                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
+                spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
+                int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                if ((spectrum[maxFreqbin] > 9.0) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
+                    hits[r, maxFreqbin] = 1.0;
+
+                if (maxFreqbin >= topBin) continue;  // ignore high freq peaks - not frogs - we hope.
+
+                int lowerBin = maxFreqbin;
+                int upperBin = lowerBin + 2;
+                int sampleStart = r - halfSample;
+                double[] lowerSubarray = DataTools.Subarray(listOfArrays[lowerBin], sampleStart, sampleLength);
+                double[] upperSubarray = DataTools.Subarray(listOfArrays[upperBin], sampleStart, sampleLength);
+
                 if ((lowerSubarray == null) || (upperSubarray == null)) break;
                 if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
-                var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
+                var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
                 //DataTools.writeBarGraph(spectrum);
+
                 int zeroCount = 2;
-                for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                for (int s = 0; s < zeroCount; s++) xCorSpectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
                 //spectrum = DataTools.NormaliseArea(spectrum);
-                int maxId = DataTools.GetMaxIndex(spectrum);
-                double period = 2 * sampleLength / (double)maxId / framesPerSecond; //convert maxID to period in seconds
+                int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
+                double period = 2 * sampleLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
                 if ((period < minPeriod) || (period > maxPeriod)) continue;
                 for (int j = 0; j < sampleLength; j++) //lay down score for sample length
                 {
-                    if (intensity[start + j] < spectrum[maxId]) intensity[start + j] = spectrum[maxId];
-                    periodicity[start + j] = period;
+                    if (listOfScores[maxFreqbin][sampleStart] < xCorSpectrum[maxIdXcor])
+                        listOfScores[maxFreqbin][sampleStart] = xCorSpectrum[maxIdXcor];
+                    //periodicity[sampleStart] = period;
                 }
             }
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            intensity = DataTools.filterMovingAverage(intensity, 3);
-            intensity = DataTools.NormaliseInZeroOne(intensity, 0, 0.5); //## ABSOLUTE NORMALISATION 0-0.5 #######################################################################
-
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
-                                                                                         intensityThreshold, minDuration, maxDuration);
-            CropEvents(predictedEvents, upperArray);
-            var hits = new double[rowCount, colCount];
-
             var plots = new List<Plot>();
-            //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
-            //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
-            //plots.Add(new Plot("lowerArray", DataTools.normalise(lowerArray), 0.25));
-            //plots.Add(new Plot("upperArray", DataTools.normalise(upperArray), 0.25));
-            //plots.Add(new Plot("intensity",  DataTools.normalise(intensity), intensityThreshold));
-            plots.Add(new Plot("intensity", intensity, intensityThreshold));
+            for (int c = 1; c < topBin; c++) //ignore DC bin
+            {
+                double[] filteredScores = DataTools.filterMovingAverage(listOfScores[c], 7);
+                filteredScores = DataTools.NormaliseInZeroOne(filteredScores, 0, 0.5); //## ABSOLUTE NORMALISATION 0-0.5 #####################################
+                string title = ((int)Math.Round(c * freqBinWidth)).ToString();
+                plots.Add(new Plot(title+" Hz", filteredScores, intensityThreshold));
+            }
+
+            List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
+            //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
+            //                                                                             intensityThreshold, minDuration, maxDuration);
+            //CropEvents(predictedEvents, upperArray);
+
 
             return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
-        public static void CropEvents(List<AcousticEvent> events, double[] intensity)
-        {
-            double severity = 0.1;
-            int length = intensity.Length;
 
-            foreach (AcousticEvent ev in events)
-            {
-                int start = ev.oblong.r1;
-                int end   = ev.oblong.r2;
-                double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
-                int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
-                int newMinRow = start + bounds[0];
-                int newMaxRow = start + bounds[1];
-                if (newMaxRow >= length) newMaxRow = length - 1;
+        //public static void CropEvents(List<AcousticEvent> events, double[] intensity)
+        //{
+        //    double severity = 0.1;
+        //    int length = intensity.Length;
 
-                Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
-                ev.oblong = o;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd   = newMaxRow * ev.FrameOffset;
-            }
-        }
+        //    foreach (AcousticEvent ev in events)
+        //    {
+        //        int start = ev.oblong.r1;
+        //        int end   = ev.oblong.r2;
+        //        double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
+        //        int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
+
+        //        int newMinRow = start + bounds[0];
+        //        int newMaxRow = start + bounds[1];
+        //        if (newMaxRow >= length) newMaxRow = length - 1;
+
+        //        Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
+        //        ev.oblong = o;
+        //        ev.TimeStart = newMinRow * ev.FrameOffset;
+        //        ev.TimeEnd   = newMaxRow * ev.FrameOffset;
+        //    }
+        //}
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> plots, List<AcousticEvent> predictedEvents)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = false; bool add1kHzLines = false;
             //int maxFreq = sonogram.NyquistFrequency / 2;
-            int maxFreq = 6000;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+            //int maxFreq = 6000;
+            //Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
             //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -540,7 +541,8 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (plots != null)
                 foreach (Plot plot in plots) image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+            //if (hits != null) image.OverlayRainbowTransparency(hits);
+            if (hits != null) image.OverlayRedTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
@@ -774,5 +776,5 @@ namespace AnalysisPrograms
             }
         }
 
-    } //end class RheobatrachusSilus
+    } //end class Frogs
 }

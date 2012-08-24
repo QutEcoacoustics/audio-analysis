@@ -132,6 +132,7 @@
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="Canetoad.cs" />
+    <Compile Include="Frogs.cs" />
     <Compile Include="MainExceptions.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
