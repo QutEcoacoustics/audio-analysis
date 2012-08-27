@@ -384,6 +384,7 @@ namespace AnalysisPrograms
             double windowOverlap = 0.0;
             int sampleLength = 64; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             //int sampleLength = 16; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
+            double dBThreshold = 12.0;
 
 
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
@@ -427,10 +428,26 @@ namespace AnalysisPrograms
             }
 
 
-            int halfSample = sampleLength / 2;
-            int topBin     = colCount / 2;
+            var maxArray = new int[rowCount];
+            var hits     = new double[rowCount, colCount];
+            for (int r = 1; r < rowCount - 1; r++)
+            {
+                //find local maxima and store in hits matrix.
+                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
+                spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
+                int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                maxArray[r] = maxFreqbin;
+                if (spectrum[maxFreqbin] > dBThreshold)
+                    //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
+                    hits[r, maxFreqbin] = 1.0;
+            }
+
+            var tracks = SpectralTrack.GetSpectraltracks(maxArray);
+
+
 
             //set up List of score arrays.
+            int topBin = colCount / 2;
             var listOfScores = new List<double[]>();
             for (int c = 0; c < topBin; c++)
             {
@@ -443,15 +460,17 @@ namespace AnalysisPrograms
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
 
-            var hits = new double[rowCount, colCount];
+            int halfSample = sampleLength / 2;
             for (int r = halfSample; r < rowCount - halfSample; r++)
             {
-                //find local maxima and store in hits matrix.
-                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
-                spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
-                int maxFreqbin = DataTools.GetMaxIndex(spectrum);
-                if ((spectrum[maxFreqbin] > 9.0) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
-                    hits[r, maxFreqbin] = 1.0;
+                ////find local maxima and store in hits matrix.
+                //double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
+                //spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
+                //int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                //if (spectrum[maxFreqbin] > dBThreshold)
+                ////if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
+                //    hits[r, maxFreqbin] = 1.0;
+                int maxFreqbin = maxArray[r];
 
                 if (maxFreqbin >= topBin) continue;  // ignore high freq peaks - not frogs - we hope.
 
@@ -490,7 +509,8 @@ namespace AnalysisPrograms
                 plots.Add(new Plot(title+" Hz", filteredScores, intensityThreshold));
             }
 
-            List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
+            //List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
+            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks, framesPerSecond, freqBinWidth); 
             //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
             //                                                                             intensityThreshold, minDuration, maxDuration);
             //CropEvents(predictedEvents, upperArray);
@@ -542,7 +562,8 @@ namespace AnalysisPrograms
             if (plots != null)
                 foreach (Plot plot in plots) image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
             //if (hits != null) image.OverlayRainbowTransparency(hits);
-            if (hits != null) image.OverlayRedTransparency(hits);
+            //if (hits != null) image.OverlayRedTransparency(hits);
+            if (hits != null) image.OverlayRedMatrix(hits, 1.0);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
