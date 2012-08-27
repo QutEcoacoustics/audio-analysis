@@ -52,7 +52,7 @@ namespace AudioAnalysisTools
             this.framesPerSecond = _framesPerSecond;
         }
 
-        public void AddSuperimposedMatrix(Double[,] m, double maxScore)
+        public void OverlayRedMatrix(Double[,] m, double maxScore)
         {
             this.SuperimposedMatrix = m;
             this.superImposedMaxScore = maxScore;
@@ -113,8 +113,9 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.sonogramImage); // USE THIS CALL INSTEAD.
 
-                if (this.SuperimposedRedTransparency != null)     OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
-                if (this.SuperimposedMatrix != null)              OverlayMatrix(g);
+                if (this.SuperimposedMatrix != null) OverlayMatrix(g);
+                if (this.SuperimposedMatrix != null) OverlayMatrix(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedRedTransparency != null) OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
@@ -203,6 +204,66 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
+        /// Only draws lines on every second row so that the underling sonogram can be discerned
+        /// </summary>
+        /// <param name="g"></param>
+        void OverlayMatrix(Graphics g)
+        {
+            //int paletteSize = 256;
+            var pens = ImageTools.GetRedGradientPalette(); //size = 256
+
+            int rows = this.SuperimposedMatrix.GetLength(0);
+            int cols = this.SuperimposedMatrix.GetLength(1);
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
+
+            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    if (this.SuperimposedMatrix[r, c] == 0.0) continue;
+                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
+                    //int penID = (int)(paletteSize * normScore);
+                    //if (penID >= paletteSize) penID = paletteSize - 1;
+                    var brush = new SolidBrush(Color.Red);
+                    g.FillRectangle(brush, r, imageHt - c, 1, 1); //THIS DRAWS A PIXEL !!!!
+                }
+                //c++; //only draw on every second row.
+            }
+        } //OverlayMatrix()
+
+        /// superimposes a matrix of scores on top of a sonogram.
+        /// Only draws lines on every second row so that the underling sonogram can be discerned
+        /// </summary>
+        /// <param name="g"></param>
+        void OverlayMatrix(Graphics g, Bitmap bmp)
+        {
+            //int paletteSize = 256;
+            var pens = ImageTools.GetRedGradientPalette(); //size = 256
+
+            int rows = this.SuperimposedMatrix.GetLength(0);
+            int cols = this.SuperimposedMatrix.GetLength(1);
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
+
+            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    if (this.SuperimposedMatrix[r, c] == 0.0) continue;
+                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
+                    //int penID = (int)(paletteSize * normScore);
+                    //if (penID >= paletteSize) penID = paletteSize - 1;
+                    //g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
+                    //g.DrawLine(new Pen(Color.Red), r, imageHt - c, r + 1, imageHt - c);
+                    bmp.SetPixel(r, imageHt - c, Color.Red);
+                }
+            }
+        } //OverlayMatrix()
+
+
+        /// <summary>
+        /// superimposes a matrix of scores on top of a sonogram.
         /// </summary>
         /// <param name="g"></param>
         void OverlayRedTransparency(Graphics g, Bitmap bmp)
@@ -256,35 +317,6 @@ namespace AudioAnalysisTools
                 }
             }
         } //OverlayRainbowTransparency()
-
-        ///// <summary>
-        ///// superimposes a matrix of scores on top of a sonogram.
-        ///// Only draws lines on every second row so that the underling sonogram can be discerned
-        ///// </summary>
-        ///// <param name="g"></param>
-        void OverlayMatrix(Graphics g)
-        {
-            int paletteSize = 256;
-            var pens = ImageTools.GetRedGradientPalette(); //size = 256
-
-            int rows = this.SuperimposedMatrix.GetLength(0);
-            int cols = this.SuperimposedMatrix.GetLength(1);
-            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
-            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
-
-            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
-            {
-                for (int r = 0; r < rows; r++)
-                {
-                    if (this.SuperimposedMatrix[r, c] == 0.0) continue;
-                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
-                    int penID = (int)(paletteSize * normScore);
-                    if (penID >= paletteSize) penID = paletteSize - 1;
-                    g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
-                }
-                c++; //only draw on every second row.
-            }
-        } //DrawSuperimposedMatrix()
 
         #region IDisposable Members
 
