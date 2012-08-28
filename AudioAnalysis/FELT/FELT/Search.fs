@@ -52,7 +52,9 @@
                             (t.ID, ae.ID,distance)
                     - POSSIBLE IMPROVEMENT
                         - for every n (n=?) pixels P in ae.bounds
-                            - where
+                            - where template does not go over bounds
+                            - slide template across all available positions
+                            - minimum movement is n pixels (x / y) 
 
 
             - summarise results
@@ -62,13 +64,16 @@
     *)
     open System
     open QutSensors.AudioAnalysis.AED.Util
+    open Microsoft.FSharp.Core
 
     let centroid (ae: Rectangle<Pixel, Pixel>) =
         ae.Left + (ae.Width / 2.0) , ae.Top  + (ae.Height /2.0)
 
+
     let inline centerToEdges center width =
         let h = LanguagePrimitives.DivideByInt width 2
         center - h, center + h
+
 
     let getNoiseProfile startOffset endOffset recordingID =
         

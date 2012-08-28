@@ -14,3 +14,5 @@
     [<AutoOpen>]
     module LanguagePrimitives =
         let inline GenericN n = NumericLiteralG.FromInt32 n
+
+        let inline Generic2() = LanguagePrimitives.GenericOne + LanguagePrimitives.GenericOne
