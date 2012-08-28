@@ -251,7 +251,7 @@ namespace AnalysisPrograms
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
         {
-            var returnCode = int.MaxValue;
+            int returnCode;
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
             if (ex is CommandLineException)
             {
@@ -265,13 +265,20 @@ namespace AnalysisPrograms
                 returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
             }
 
-            if (!Debugger.IsAttached)
+            // finally return error level
+            Log.Debug("ERRORLEVEL: " + returnCode);
+
+            if (Debugger.IsAttached)
             {
-                Environment.Exit(returnCode);
+                // no dot exit, we want the exception to be raised to Window's Exception handling
+                // this will allow the debugger to appropriately break on the right line
+                Environment.ExitCode = returnCode;
             }
             else
             {
-                Environment.ExitCode = returnCode;    
+                // If debugger is not attached, we do not want to raise the error to the Windows level
+                // Everything has already been logged, just exit with appropriate errorlevel
+                Environment.Exit(returnCode);
             }
         }
 
