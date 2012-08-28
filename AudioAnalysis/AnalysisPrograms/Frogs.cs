@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "RheobatrachusSilus";
+        public const string ANALYSIS_NAME = "Frog";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
@@ -66,7 +66,7 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Gastric Broooding Frog - Rheobatrachus"; }
+            get { return "Frog"; }
         }
 
         private static string identifier = "Towsey." + ANALYSIS_NAME;
@@ -90,12 +90,12 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";  //NEGATIVE  noise
             string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg";
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
             string outputDir     = @"C:\SensorNetworks\Output\Frogs\";
             //COMMAND LINE
             //AnalysisPrograms.exe Rheobatrachus "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
 
-            string title = "# FOR DETECTION OF 'Rheobatrachus silus' using CROSS-CORRELATION & FFT";
+            string title = "# FOR DETECTION OF 'FROG SPECIES' ";
             string date  = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
@@ -321,7 +321,7 @@ namespace AnalysisPrograms
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.SourceFileName = fName;
-                    ev.Name = analysisName;
+                    //ev.Name = analysisName; //TEMPORARY DISABLE
                     ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
@@ -436,18 +436,21 @@ namespace AnalysisPrograms
                 double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
                 spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
                 int maxFreqbin = DataTools.GetMaxIndex(spectrum);
-                maxArray[r] = maxFreqbin;
+                if (spectrum[maxFreqbin] > dBThreshold) //only record spectral peak if it is above threshold.
+                {
+                    maxArray[r] = maxFreqbin;
+                }
                 if (spectrum[maxFreqbin] > dBThreshold)
                     //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
                     hits[r, maxFreqbin] = 1.0;
             }
 
-            var tracks = SpectralTrack.GetSpectraltracks(maxArray);
+            int topBin = (int)Math.Round(colCount * 0.7);
+            var tracks = SpectralTrack.GetSpectraltracks(maxArray, topBin);
 
 
 
             //set up List of score arrays.
-            int topBin = colCount / 2;
             var listOfScores = new List<double[]>();
             for (int c = 0; c < topBin; c++)
             {

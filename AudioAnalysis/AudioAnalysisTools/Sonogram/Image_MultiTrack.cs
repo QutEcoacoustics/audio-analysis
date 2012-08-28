@@ -151,6 +151,9 @@ namespace AudioAnalysisTools
             Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.eventList)
             {
+                if (e.colour != null) 
+                    p1 = new Pen(e.colour);
+
                 //if (e.oblong == null) continue;
                 //calculate top and bottom freq bins
                 int minFreqBin = (int)(e.MinFreq / freqBinWidth);

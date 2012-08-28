@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -84,6 +85,8 @@ namespace AudioAnalysisTools
         /// <para>Do not include Name, NormalisedScore, StartTime, EndTime, MinFreq or MaxFreq, as these are stored by default.</para>
         /// </summary>
         public List<ResultProperty> ResultPropertyList { get; set; }
+
+        public Color colour { get; set; }
 
         /// <summary>
         /// CONSTRUCTOR
