@@ -27,6 +27,7 @@ namespace AnalysisPrograms
     /// </summary>
     public class MainEntry
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly Dictionary<string, Action<string[]>> KnownAnalyses;
 
         // STATIC CONSTRUCTOR
@@ -190,12 +191,97 @@ namespace AnalysisPrograms
             ////var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             ////analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
 
-            ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+            AttachDebugger();
 
+            AttachExceptionHandler();
+
+
+            // note: Exception handling moved to CurrentDomainOnUnhandledException
+            if (args.Length == 0)
+            {
+                const string Msg = "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
+                LoggedConsole.WriteErrorLine(Msg);
+                Usage();
+                throw new CommandMainArgumentMissingException();
+            }
+            else
+            {
+                var firstArg = args[0].ToLower();
+                string[] restOfArgs = args.Skip(1).ToArray();
+
+                if (KnownAnalyses.ContainsKey(firstArg))
+                {
+                    var analysisFunc = KnownAnalyses[firstArg];
+                    analysisFunc(restOfArgs);
+                }
+                else
+                {
+                    // default
+                    LoggedConsole.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
+                    Usage();
+
+                    throw new AnalysisOptionUnknownCommandException();
+                }
+            }
+
+            HangBeforeExit();
+
+            // finally return error level
+            Log.Debug("ERRORLEVEL: " + (int)CommandLineException.KnownReturnCodes.Ok);
+            return (int)CommandLineException.KnownReturnCodes.Ok;
+        }
+
+        private static void HangBeforeExit()
+        {
+#if DEBUG
+            // if Michael is debugging with visual studio, this will prevent the window closing.
+            Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
+            if (parentProcess.ProcessName == "devenv")
+            {
+                LoggedConsole.WriteLine("Exit hung, press any key to quit.");
+                Console.ReadLine();
+            }
+#endif
+        }
+
+        private static void AttachExceptionHandler()
+        {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        {
+            var returnCode = int.MaxValue;
+            var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
+            if (ex is CommandLineException)
+            {
+                var cex = (CommandLineException)ex;
+                returnCode = (int)cex.ReturnCode;
+                ////LoggedConsole.WriteLine(cex.Message);
+            }
+            else 
+            {
+                Log.Fatal("Unhandled exception", ex);
+                returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
+            }
+
+            if (!Debugger.IsAttached)
+            {
+                Environment.Exit(returnCode);
+            }
+            else
+            {
+                Environment.ExitCode = returnCode;    
+            }
+        }
+
+        private static void AttachDebugger()
+        {
 #if DEBUG
             if (!Debugger.IsAttached)
             {
-                LoggedConsole.WriteLine("Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
+                LoggedConsole.WriteLine(
+                    "Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
                 if (Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y")
                 {
                     Debugger.Launch();
@@ -209,60 +295,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine();
             }
 #endif
-            int returnCode = (int)CommandLineException.KnownReturnCodes.Ok;
-            try
-            {
-                if (args.Length == 0)
-                {
-                    const string Msg = "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
-                    LoggedConsole.WriteErrorLine(Msg);
-                    Usage();
-                    throw new CommandMainArgumentMissingException();
-                }
-                else
-                {
-                    var firstArg = args[0].ToLower();
-                    string[] restOfArgs = args.Skip(1).ToArray();
-
-                    if (KnownAnalyses.ContainsKey(firstArg))
-                    {
-                        var analysisFunc = KnownAnalyses[firstArg];
-                        analysisFunc(restOfArgs);
-                    }
-                    else
-                    {
-                        // default
-                        LoggedConsole.WriteLine("ERROR: Analysis option unrecognised: " + args[0]);
-                        Usage();
-
-                        throw new AnalysisOptionUnknownCommandException();
-                    }
-                }
-            }
-            catch (CommandLineException cex)
-            {
-                returnCode = (int)cex.ReturnCode;
-                ////LoggedConsole.WriteLine(cex.Message);
-            }
-            catch (Exception ex)
-            {
-                log.Fatal("Unhandled exception", ex);
-                returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
-            }
-
-#if DEBUG
-            // if Michael is debugging with visual studio, this will prevent the window closing.
-            Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
-            if (parentProcess.ProcessName == "devenv")
-            {
-                LoggedConsole.WriteLine("Exit hung, press any key to quit.");
-                Console.ReadLine();
-            }
-#endif
-
-            // finally return error level
-            log.Debug("ERRORLEVEL: " + returnCode);
-            return returnCode;
         }
 
         private static void Usage()
