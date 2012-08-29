@@ -12,19 +12,38 @@ namespace AudioAnalysisTools
     {
         int startFrame;
         int endFrame;
+        public int Length { get {return (endFrame - startFrame + 1);} }
         int bottomBin;
         int topBin;
         double avBin;
         List<int> track;
-        int status = 0;  //0=closed;   1= open and active;
+        int status = 0;  // 0=closed;   1= open and active;
 
-        double tolerance = 2.0; //do not accept new track if new peak is > this distance from old track.
-        int maxGap = 10;
-        int maxFreqBin = 10;
+        double framesPerSecond;
+        double herzPerBin;
+
+        double tolerance = 3.0; // do not accept new track if new peak is > this distance from old track.
+        public  const int    MAX_FREQ_BOUND     = 6000;  // herz
+        private const int    MIN_GAP_DURATION   = 40;  // milliseconds
+        private const int    MIN_TRACK_DURATION = 10;  // milliseconds
+        private const double MIN_TRACK_DENSITY  = 0.25;
 
 
 
-        public SpectralTrack(int _start, int _bin)
+
+        //public SpectralTrack(int _start, int _bin)
+        //{
+        //    startFrame = _start;
+        //    endFrame   = _start;
+        //    bottomBin  = _bin;
+        //    topBin     = _bin;
+        //    avBin      = _bin;
+        //    status = 1;
+        //    track = new List<int>();
+        //    track.Add(_bin);
+        //}
+
+        public SpectralTrack(int _start, int _bin, double _framesPerSecond, double _herzPerBin)
         {
             startFrame = _start;
             endFrame   = _start;
@@ -34,14 +53,39 @@ namespace AudioAnalysisTools
             status = 1;
             track = new List<int>();
             track.Add(_bin);
+            SetTimeAndFreqScales(_framesPerSecond, _herzPerBin);
+        }
+
+        public void SetTimeAndFreqScales(double _framesPerSecond, double _herzPerBin)
+        {
+            framesPerSecond = _framesPerSecond;
+            herzPerBin      = _herzPerBin;
+        }
+
+        int FrameCount(int milliseconds)
+        {
+            return (int)Math.Round(framesPerSecond * milliseconds / (double)1000);
+        }
+
+        int BinCount(int herz)
+        {
+            return (int)Math.Round(herz / (double)herzPerBin);
         }
 
         public bool TrackTerminated(int currentFrame)
         {
             bool trackTerminated = true;
-            if ((this.endFrame + maxGap) > currentFrame) trackTerminated = false;
+            int minFrameGap = this.FrameCount(MIN_GAP_DURATION);
+            if ((this.endFrame + minFrameGap) > currentFrame) trackTerminated = false;
             return trackTerminated;
         }
+
+        public double Density()
+        {
+            double density = this.track.Count / (double)this.Length;
+            return density;
+        }
+
 
         public bool ExtendTrack(int currentFrame, int currentValue)
         {
@@ -66,26 +110,26 @@ namespace AudioAnalysisTools
         //#########################################################################################################################################################
         //#########################################################################################################################################################
         //#########################################################################################################################################################
-        
-        
-        public static List<SpectralTrack> GetSpectraltracks(int[] spectralPeakArray, int maxFreqBin)
+
+
+        public static List<SpectralTrack> GetSpectraltracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin)
         {
             var tracks = new List<SpectralTrack>();
             for (int r = 0; r < spectralPeakArray.Length - 1; r++)
             {
                 if (spectralPeakArray[r] == 0) continue;  //skip frames with below threshold peak.
-                PruneTracks(tracks, r, maxFreqBin);
-                if (!ExtendTrack(tracks, r, spectralPeakArray[r])) tracks.Add(new SpectralTrack(r, spectralPeakArray[r]));
+                PruneTracks(tracks, r);
+                if (!ExtendTrack(tracks, r, spectralPeakArray[r])) tracks.Add(new SpectralTrack(r, spectralPeakArray[r], _framesPerSecond, _herzPerBin));
             }
             return tracks;
         }
 
 
-        public static void PruneTracks(List<SpectralTrack> tracks, int currentFrame, int maxFreqBin)
+        public static void PruneTracks(List<SpectralTrack> tracks, int currentFrame)
         {
             if ((tracks == null) ||(tracks.Count == 0)) return;
 
-            int minTrackLength = 20;
+            int maxFreqBin = (int)(MAX_FREQ_BOUND / tracks[0].herzPerBin);
 
             for (int i = tracks.Count - 1; i >= 0; i--)
             {
@@ -94,8 +138,9 @@ namespace AudioAnalysisTools
                 if (tracks[i].TrackTerminated(currentFrame))  //this track has terminated
                 {
                     tracks[i].status = 0; //closed
-                    int length = tracks[i].endFrame - tracks[i].startFrame + 1;
-                    if ((length < minTrackLength)||(tracks[i].avBin > maxFreqBin)) 
+                    int length = tracks[i].Length;
+                    int minFrameLength = tracks[i].FrameCount(MIN_TRACK_DURATION);
+                    if ((length < minFrameLength) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY)) 
                         tracks.RemoveAt(i);
                 }
             }
@@ -114,13 +159,14 @@ namespace AudioAnalysisTools
             return false;
         } //ExtendTrack()
 
-        public static void ProcessNextFrame(List<SpectralTrack> tracks, int currentFrame, int currentValue)
-        {
-            if (!ExtendTrack(tracks, currentFrame, currentValue)) tracks.Add(new SpectralTrack(currentFrame, currentValue));
-        }
+        //public static void ProcessNextFrame(List<SpectralTrack> tracks, int currentFrame, int currentValue)
+        //{
+        //    if (!ExtendTrack(tracks, currentFrame, currentValue)) 
+        //        tracks.Add(new SpectralTrack(currentFrame, currentValue, _framesPerSecond, _herzPerBin));
+        //}
 
 
-        public static List<AcousticEvent> ConvertTracks2Events(List<SpectralTrack> tracks, double framesPerSecond, double herzPerBin)
+        public static List<AcousticEvent> ConvertTracks2Events(List<SpectralTrack> tracks /*, double framesPerSecond, double herzPerBin*/)
         {
             if (tracks == null) return null;
             var list = new List<AcousticEvent>();
@@ -128,13 +174,13 @@ namespace AudioAnalysisTools
 
             foreach (SpectralTrack track in tracks)
             {
-                double startTime = track.startFrame / framesPerSecond;
+                double startTime = track.startFrame / track.framesPerSecond;
                 int frameDuration = track.endFrame - track.startFrame + 1;
-                double duration = frameDuration / framesPerSecond;
-                double minFreq = herzPerBin * (track.avBin-1);
-                double maxFreq = herzPerBin * (track.avBin+1);
+                double duration = frameDuration / track.framesPerSecond;
+                double minFreq = track.herzPerBin * (track.avBin - 1);
+                double maxFreq = track.herzPerBin * (track.avBin + 1);
                 AcousticEvent ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
-                ae.SetTimeAndFreqScales(framesPerSecond, herzPerBin);
+                ae.SetTimeAndFreqScales(track.framesPerSecond, track.herzPerBin);
                 ae.Name = "";
                 ae.colour = Color.Blue;
                 list.Add(ae);

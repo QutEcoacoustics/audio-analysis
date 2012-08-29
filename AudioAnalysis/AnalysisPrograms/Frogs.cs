@@ -89,7 +89,11 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";  //NEGATIVE  noise
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  //FROGs AT SAMFORD
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";  //Crinia signifera
+
+
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
             string outputDir     = @"C:\SensorNetworks\Output\Frogs\";
             //COMMAND LINE
@@ -379,9 +383,8 @@ namespace AnalysisPrograms
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
         {
             //set default values - ignore those set by user
-            //int frameSize        = 128;
             int frameSize = 32;
-            double windowOverlap = 0.0;
+            double windowOverlap = 0.2;
             int sampleLength = 64; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             //int sampleLength = 16; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             double dBThreshold = 12.0;
@@ -414,9 +417,13 @@ namespace AnalysisPrograms
             double framesPerSecond = 1 / frameOffset;
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            recording.Dispose();
+
+            //var dBArray = sonogram.DecibelsPerFrame;
+            var peaks = DataTools.GetPeakValues(sonogram.DecibelsPerFrame);
+
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             //set up a list of normalised arrays representing the spectrum - one array per freq bin
             var listOfArrays = new List<double[]>();
@@ -428,28 +435,32 @@ namespace AnalysisPrograms
             }
 
 
-            var maxArray = new int[rowCount];
-            var hits     = new double[rowCount, colCount];
-            for (int r = 1; r < rowCount - 1; r++)
+            var maxFreqArray = new int[rowCount];
+            var hitsMatrix   = new double[rowCount, colCount];
+            for (int r = 3; r < rowCount - 3; r++)
             {
-                //find local maxima and store in hits matrix.
-                double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
-                spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
-                int maxFreqbin = DataTools.GetMaxIndex(spectrum);
-                if (spectrum[maxFreqbin] > dBThreshold) //only record spectral peak if it is above threshold.
+                if (peaks[r] < 3.0) continue;
+                //find local freq maxima and store in freqArray & hits matrix.
+                for (int nh = -3; nh < 3; nh++)
                 {
-                    maxArray[r] = maxFreqbin;
+                    double[] spectrum = MatrixTools.GetRow(sonogram.Data, r+nh);
+                    spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
+                    int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                    if (spectrum[maxFreqbin] > dBThreshold) //only record spectral peak if it is above threshold.
+                    {
+                        maxFreqArray[r + nh] = maxFreqbin;
+                    }
+                    if (spectrum[maxFreqbin] > dBThreshold)
+                        //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
+                        hitsMatrix[r + nh, maxFreqbin] = 1.0;
                 }
-                if (spectrum[maxFreqbin] > dBThreshold)
-                    //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
-                    hits[r, maxFreqbin] = 1.0;
             }
 
-            int topBin = (int)Math.Round(colCount * 0.7);
-            var tracks = SpectralTrack.GetSpectraltracks(maxArray, topBin);
+            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
 
 
-
+            int topBin = (int)Math.Round(SpectralTrack.MAX_FREQ_BOUND / (double)freqBinWidth);
+            
             //set up List of score arrays.
             var listOfScores = new List<double[]>();
             for (int c = 0; c < topBin; c++)
@@ -473,7 +484,7 @@ namespace AnalysisPrograms
                 //if (spectrum[maxFreqbin] > dBThreshold)
                 ////if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
                 //    hits[r, maxFreqbin] = 1.0;
-                int maxFreqbin = maxArray[r];
+                int maxFreqbin = maxFreqArray[r];
 
                 if (maxFreqbin >= topBin) continue;  // ignore high freq peaks - not frogs - we hope.
 
@@ -513,13 +524,13 @@ namespace AnalysisPrograms
             }
 
             //List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
-            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks, framesPerSecond, freqBinWidth); 
+            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks /*, framesPerSecond, freqBinWidth*/); 
             //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
             //                                                                             intensityThreshold, minDuration, maxDuration);
             //CropEvents(predictedEvents, upperArray);
 
 
-            return System.Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
+            return System.Tuple.Create(sonogram, hitsMatrix, plots, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
 
