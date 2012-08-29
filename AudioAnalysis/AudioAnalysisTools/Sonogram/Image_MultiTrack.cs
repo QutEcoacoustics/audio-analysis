@@ -113,12 +113,13 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.sonogramImage); // USE THIS CALL INSTEAD.
 
+                if (this.eventList != null) DrawEvents(g); //draw events first because its rectangle can cover other features
+                if (this.FreqHits != null) DrawFreqHits(g);
+
                 if (this.SuperimposedMatrix != null) OverlayMatrix(g);
                 if (this.SuperimposedMatrix != null) OverlayMatrix(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRedTransparency != null) OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
-                if (this.eventList != null) DrawEvents(g);
-                if (this.FreqHits != null) DrawFreqHits(g);
             }
 
             //now add tracks to the image
@@ -156,10 +157,10 @@ namespace AudioAnalysisTools
 
                 //if (e.oblong == null) continue;
                 //calculate top and bottom freq bins
-                int minFreqBin = (int)(e.MinFreq / freqBinWidth);
-                int maxFreqBin = (int)(e.MaxFreq / freqBinWidth);
+                int minFreqBin = (int)Math.Round(e.MinFreq / freqBinWidth);
+                int maxFreqBin = (int)Math.Round(e.MaxFreq / freqBinWidth);
                 int height = maxFreqBin - minFreqBin + 1;
-                int y = this.sonogramImage.Height - maxFreqBin;
+                int y = this.sonogramImage.Height - maxFreqBin - 1;
 
                 //calculate start and end time frames
                 int t1 = 0;

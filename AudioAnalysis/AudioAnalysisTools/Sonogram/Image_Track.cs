@@ -254,6 +254,7 @@
             Color white = Color.White;
             Color c = white;
             topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
+            var font = new Font("Tahoma", 8);
 
             for (int x = 0; x < width; x++)
             {
@@ -271,7 +272,8 @@
                 bmp.SetPixel(x, topOffset, black);                    // top line of scale
                 bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
                 //if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
-                if (hScale[x] == 0) g.DrawString(span.ToString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x-2, topOffset - 21));
+                if (hScale[x] == 0)
+                    g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 2, topOffset - 17));
             } //end of adding time grid
             return bmp;
         }
@@ -286,18 +288,24 @@
             for (int x = 0; x < width - 1; x++)
             {
                 double elapsedTime = x * period; // / (double)width;
-                double mod1sec = elapsedTime % 1.0000;
-                double mod10sec = elapsedTime % 10.0000;
+                double mod1sec  = elapsedTime % 1.00;
+                double mod5sec  = elapsedTime % 5.00;
+                double mod10sec = elapsedTime % 10.00;
                 if (mod10sec < period)//double black line
                 {
                     ba[x] = (byte)0;
                     ba[x + 1] = (byte)0;
                 }
                 else
-                    if (mod1sec <= period)
+                    if (mod5sec <= period)
                     {
-                        ba[x] = (byte)50;
+                        ba[x] = (byte)0;
                     }
+                    else
+                        if (mod1sec <= period)
+                        {
+                            ba[x] = (byte)50;
+                        }
             }
             return ba; //byte array
         }

@@ -42,9 +42,6 @@
     <Reference Include="AForge.Imaging">
       <HintPath>..\..\Extra Assemblies\Aforge.Net\AForge.Imaging.dll</HintPath>
     </Reference>
-    <Reference Include="AForge.Math">
-      <HintPath>..\..\EcoSounds\packages\AForge.Math.2.2.4\lib\AForge.Math.dll</HintPath>
-    </Reference>
     <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\..\EcoSounds\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
