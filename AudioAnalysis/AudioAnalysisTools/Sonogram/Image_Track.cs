@@ -64,7 +64,7 @@
         private double[,] doubleMatrix = null;
 
         TimeSpan timeSpan { set; get; }
-        double timeScale { set; get; } //pixels per second
+        double timeScale { set; get; } //pixels per second - not actually used from 30-08-2012
 
         private double[] doubleData1 = null;
         private double[] doubleData2 = null;
@@ -226,7 +226,6 @@
                 return bmp;
             }
 
-            //LoggedConsole.WriteLine("offset=" + this.offset);
             int bottom = topOffset + this.height - 1;
             for (int x = 0; x < Math.Min(bmp.Width, intData.Length); x++)
             {
@@ -245,36 +244,39 @@
             int width = bmp.Width;
             int height = bmp.Height;
 
-            Graphics g = Graphics.FromImage(bmp);
-            DateTime start = new DateTime(0); 
+            DateTime start = new DateTime(0);
+            double duration = this.timeSpan.TotalSeconds;
+            double period = duration / (double)width;
 
             byte[] hScale = CreateXaxis(width, this.timeSpan);
-            Color black = Color.Black;
-            Color gray = Color.Gray;
-            Color white = Color.White;
-            Color c = white;
             topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
+
+            Graphics g1 = Graphics.FromImage(bmp);
+            g1.FillRectangle(Brushes.White, 0, topOffset - timeScaleHt + 1, width, topOffset-13); //why -13??? I don't know! Quick & dirty fix!
+
             var font = new Font("Tahoma", 8);
 
             for (int x = 0; x < width; x++)
             {
-                c = white;
-                if (hScale[x] == 50) c = gray;
+                if (hScale[x] == 50) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Gray);
                 else
-                    if (hScale[x] == 0) c = black;
-
-                //top axis
-                int secs = (int)Math.Round(x / timeScale);
-                TimeSpan span = new TimeSpan(0, 0, secs);
-
-                //bottom axis tick marks
-                for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
-                bmp.SetPixel(x, topOffset, black);                    // top line of scale
-                bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
-                //if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
-                if (hScale[x] == 0)
-                    g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 2, topOffset - 17));
+                if (hScale[x] ==  0) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Black);
+                bmp.SetPixel(x, topOffset, Color.Black);                   // bottom line of scale
+                bmp.SetPixel(x, topOffset - timeScaleHt + 1, Color.Black); // top line of scale
             } //end of adding time grid
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (hScale[x] == 0)
+                    {
+                        int secs = (int)Math.Round(x * period);
+                        TimeSpan span = new TimeSpan(0, 0, secs);
+                        g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 1, topOffset-11));
+                    }
+                }
+            }
             return bmp;
         }
 
@@ -288,16 +290,17 @@
             for (int x = 0; x < width - 1; x++)
             {
                 double elapsedTime = x * period; // / (double)width;
-                double mod1sec  = elapsedTime % 1.00;
-                double mod5sec  = elapsedTime % 5.00;
-                double mod10sec = elapsedTime % 10.00;
+                double mod1sec  = elapsedTime %  1.00000;
+                double mod2sec  = elapsedTime %  2.00000;
+                //double mod5sec = elapsedTime % 5.00000;
+                double mod10sec = elapsedTime % 10.00000;
                 if (mod10sec < period)//double black line
                 {
                     ba[x] = (byte)0;
                     ba[x + 1] = (byte)0;
                 }
                 else
-                    if (mod5sec <= period)
+                    if (mod2sec <= period)
                     {
                         ba[x] = (byte)0;
                     }
@@ -314,11 +317,11 @@
         {
             DrawScoreArrayTrack(bmp);
             int length = bmp.Width;
-
+            var font = new Font("Tahoma", 8);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Red, new PointF(10, topOffset));
-            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Red, new PointF(length/2, topOffset));
-
+            g.DrawString(this.Name, font, Brushes.Red, new PointF(10, topOffset));
+            g.DrawString(this.Name, font, Brushes.Red, new PointF(length / 2, topOffset));
+            g.DrawString(this.Name, font, Brushes.Red, new PointF(length - 80, topOffset));
             return bmp;
         }
 

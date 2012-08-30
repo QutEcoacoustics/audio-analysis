@@ -187,7 +187,7 @@ namespace AudioAnalysisTools
         /// <returns>seconds</returns>
 		public double GetFrameDuration(int sampleRate)
 		{
-			return WindowSize / (double)sampleRate; 
+			return this.WindowSize / (double)sampleRate; 
 		}
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace AudioAnalysisTools
         public double GetFrameOffset()
         {
             double frameDuration = GetFrameDuration(this.fftConfig.SampleRate); // Duration of full frame or window in seconds
-            double frameOffset = frameDuration * (1 - WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
+            double frameOffset = frameDuration * (1 - this.WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
             return frameOffset; 
         }
 
@@ -212,9 +212,8 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double GetFrameOffset(int sampleRate)
         {
-            double frameDuration = GetFrameDuration(sampleRate);
-            double frameOffset = frameDuration * (1 - WindowOverlap);
-            return frameOffset;
+            int step = DSP_Frames.FrameStep(this.WindowSize, this.WindowOverlap);
+            return step / (double)sampleRate;
         }
 
 

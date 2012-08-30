@@ -57,7 +57,8 @@
         //following values are dependent on sampling rate.
         public int NyquistFrequency { get { return SampleRate / 2; } }
         public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     // Duration of full frame or window in seconds
-        public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
+        //public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } }
+        public double FrameOffset { get { return this.Configuration.GetFrameOffset(SampleRate); } } // Duration of non-overlapped part of window/frame in seconds
         public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
         public double FramesPerSecond { get { return 1 / FrameOffset; } }
         public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
@@ -112,10 +113,10 @@
             this.Configuration.Duration = wav.Time;
             this.Configuration.fftConfig.SampleRate = wav.SampleRate; //also set the Nyquist
             this.Duration = wav.Time;
-            double minDuration = 3.0;
+            double minDuration = 1.0;
             if (this.Duration.TotalSeconds < minDuration)
             {
-                LoggedConsole.WriteLine("Signal must at least {0} seconds long iin order to produce a sonogram!", minDuration);
+                LoggedConsole.WriteLine("Signal must at least {0} seconds long to produce a sonogram!", minDuration);
                 return;
             }
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();

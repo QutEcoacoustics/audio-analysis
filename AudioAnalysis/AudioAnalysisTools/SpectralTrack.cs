@@ -22,11 +22,11 @@ namespace AudioAnalysisTools
         double framesPerSecond;
         double herzPerBin;
 
-        double tolerance = 3.0; // do not accept new track if new peak is > this distance from old track.
-        public  const int    MAX_FREQ_BOUND     = 6000;  // herz
-        private const int    MIN_GAP_DURATION   = 40;  // milliseconds
-        private const int    MIN_TRACK_DURATION = 10;  // milliseconds
-        private const double MIN_TRACK_DENSITY  = 0.25;
+        double tolerance = 2.5; // do not accept new track if new peak is > this distance from old track.
+        public  const int    MAX_FREQ_BOUND        = 6000;  // herz
+        private const int    MAX_INTRASYLLABLE_GAP = 30;  // milliseconds
+        private const int    MIN_TRACK_DURATION    = 20;  // milliseconds
+        private const double MIN_TRACK_DENSITY     = 0.3;
 
 
 
@@ -75,7 +75,7 @@ namespace AudioAnalysisTools
         public bool TrackTerminated(int currentFrame)
         {
             bool trackTerminated = true;
-            int minFrameGap = this.FrameCount(MIN_GAP_DURATION);
+            int minFrameGap = this.FrameCount(MAX_INTRASYLLABLE_GAP);
             if ((this.endFrame + minFrameGap) > currentFrame) trackTerminated = false;
             return trackTerminated;
         }

@@ -34,12 +34,18 @@ namespace TowseyLib
             }
         }
 
+        public static int FrameStep(int windowSize, double windowOverlap)
+        {
+            int step = (int)(windowSize * (1 - windowOverlap));
+            return step;
+        }
+
         /// <summary>
         /// returns the start and end index of all frames in a long audio signal
         /// </summary>
         public static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
         {
-            int step = (int)(windowSize * (1 - windowOverlap));
+            int step = FrameStep(windowSize, windowOverlap);
 
             if (step < 1)
                 throw new ArgumentException("Frame Step must be at least 1");

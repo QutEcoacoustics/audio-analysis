@@ -89,9 +89,9 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";  //NEGATIVE  noise
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  //FROGs AT SAMFORD
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";  //Crinia signifera
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";  //Crinia signifera
 
 
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
@@ -384,7 +384,7 @@ namespace AnalysisPrograms
         {
             //set default values - ignore those set by user
             int frameSize = 32;
-            double windowOverlap = 0.2;
+            double windowOverlap = 0.3;
             int sampleLength = 64; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             //int sampleLength = 16; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             double dBThreshold = 12.0;
@@ -524,7 +524,7 @@ namespace AnalysisPrograms
             }
 
             //List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
-            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks /*, framesPerSecond, freqBinWidth*/); 
+            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks); 
             //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
             //                                                                             intensityThreshold, minDuration, maxDuration);
             //CropEvents(predictedEvents, upperArray);
