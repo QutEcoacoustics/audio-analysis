@@ -84,18 +84,19 @@ namespace AnalysisPrograms
 #endif
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   //NEGATIVE walking on dry leaves
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   // NEGATIVE walking on dry leaves
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";  //NEGATIVE  noise
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";  //FROG COMPILATION
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  //FROGs AT SAMFORD
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";  //Crinia signifera
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";               // NEGATIVE  noise
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";                          // FROG COMPILATION
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  // FROGs AT SAMFORD
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";                  // Crinia signifera
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_BridgeCreek_Night_Extract1-31-00.mp3";   // FROGs at Bridgecreek
 
 
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
-            string outputDir     = @"C:\SensorNetworks\Output\Frogs\";
+            string outputDir  = @"C:\SensorNetworks\Output\Frogs\";
             //COMMAND LINE
             //AnalysisPrograms.exe Rheobatrachus "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
 
@@ -425,23 +426,14 @@ namespace AnalysisPrograms
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            //set up a list of normalised arrays representing the spectrum - one array per freq bin
-            var listOfArrays = new List<double[]>();
-            for (int c = 0; c < colCount; c++)
-            {
-                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
-                array = DataTools.NormaliseInZeroOne(array, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
-                listOfArrays.Add(array);
-            }
-
-
+            int nhLimit = 3; //limit of neighbourhood around maximum
             var maxFreqArray = new int[rowCount];
             var hitsMatrix   = new double[rowCount, colCount];
-            for (int r = 3; r < rowCount - 3; r++)
+            for (int r = nhLimit; r < rowCount - nhLimit; r++)
             {
                 if (peaks[r] < 3.0) continue;
                 //find local freq maxima and store in freqArray & hits matrix.
-                for (int nh = -3; nh < 3; nh++)
+                for (int nh = -nhLimit; nh < nhLimit; nh++)
                 {
                     double[] spectrum = MatrixTools.GetRow(sonogram.Data, r+nh);
                     spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
@@ -449,92 +441,119 @@ namespace AnalysisPrograms
                     if (spectrum[maxFreqbin] > dBThreshold) //only record spectral peak if it is above threshold.
                     {
                         maxFreqArray[r + nh] = maxFreqbin;
-                    }
-                    if (spectrum[maxFreqbin] > dBThreshold)
                         //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
                         hitsMatrix[r + nh, maxFreqbin] = 1.0;
+                    }
                 }
             }
 
             var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
 
 
+            DetectFrogTracks(sonogram, tracks, sampleLength);
+            //if ((period < minPeriod) || (period > maxPeriod)) continue;
+
+
             int topBin = (int)Math.Round(SpectralTrack.MAX_FREQ_BOUND / (double)freqBinWidth);
-            
-            //set up List of score arrays.
-            var listOfScores = new List<double[]>();
-            for (int c = 0; c < topBin; c++)
-            {
-                listOfScores.Add(new double[rowCount]);
-            }
-
-            //double[] intensity = new double[rowCount];
-            //double[] periodicity = new double[rowCount];
-
-            //######################################################################
-            //ii: DO THE ANALYSIS AND RECOVER SCORES
-
-            int halfSample = sampleLength / 2;
-            for (int r = halfSample; r < rowCount - halfSample; r++)
-            {
-                ////find local maxima and store in hits matrix.
-                //double[] spectrum = MatrixTools.GetRow(sonogram.Data, r);
-                //spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
-                //int maxFreqbin = DataTools.GetMaxIndex(spectrum);
-                //if (spectrum[maxFreqbin] > dBThreshold)
-                ////if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
-                //    hits[r, maxFreqbin] = 1.0;
-                int maxFreqbin = maxFreqArray[r];
-
-                if (maxFreqbin >= topBin) continue;  // ignore high freq peaks - not frogs - we hope.
-
-                int lowerBin = maxFreqbin;
-                int upperBin = lowerBin + 2;
-                int sampleStart = r - halfSample;
-                double[] lowerSubarray = DataTools.Subarray(listOfArrays[lowerBin], sampleStart, sampleLength);
-                double[] upperSubarray = DataTools.Subarray(listOfArrays[upperBin], sampleStart, sampleLength);
-
-                if ((lowerSubarray == null) || (upperSubarray == null)) break;
-                if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
-                var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
-                //DataTools.writeBarGraph(spectrum);
-
-                int zeroCount = 2;
-                for (int s = 0; s < zeroCount; s++) xCorSpectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
-                //spectrum = DataTools.NormaliseArea(spectrum);
-                int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
-                double period = 2 * sampleLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
-                if ((period < minPeriod) || (period > maxPeriod)) continue;
-                for (int j = 0; j < sampleLength; j++) //lay down score for sample length
-                {
-                    if (listOfScores[maxFreqbin][sampleStart] < xCorSpectrum[maxIdXcor])
-                        listOfScores[maxFreqbin][sampleStart] = xCorSpectrum[maxIdXcor];
-                    //periodicity[sampleStart] = period;
-                }
-            }
+            var plots = CreateScorePlots(tracks, rowCount, topBin);
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            var plots = new List<Plot>();
-            for (int c = 1; c < topBin; c++) //ignore DC bin
-            {
-                double[] filteredScores = DataTools.filterMovingAverage(listOfScores[c], 7);
-                filteredScores = DataTools.NormaliseInZeroOne(filteredScores, 0, 0.5); //## ABSOLUTE NORMALISATION 0-0.5 #####################################
-                string title = ((int)Math.Round(c * freqBinWidth)).ToString();
-                plots.Add(new Plot(title+" Hz", filteredScores, intensityThreshold));
-            }
-
             //List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
             List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks); 
             //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
             //                                                                             intensityThreshold, minDuration, maxDuration);
             //CropEvents(predictedEvents, upperArray);
 
-
             return System.Tuple.Create(sonogram, hitsMatrix, plots, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
 
+        public static void DetectFrogTracks(BaseSonogram sonogram, List<SpectralTrack> tracks, int sampleLength)
+        {
+            int rowCount = sonogram.Data.GetLength(0);
+            int colCount = sonogram.Data.GetLength(1);
+            int halfSample = sampleLength / 2;
 
+            //set up a list of normalised arrays representing the spectrum - one array per freq bin
+            var listOfSpectralBins = new List<double[]>();
+            for (int c = 0; c < colCount; c++)
+            {
+                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
+                array = DataTools.NormaliseInZeroOne(array, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
+                listOfSpectralBins.Add(array);
+            }
+
+            foreach (SpectralTrack track in tracks)
+            {
+                int lowerBin = (int)Math.Round(track.AverageBin);
+                int upperBin = lowerBin + 1;
+                int length = track.Length;
+                //init score track and periodicity track
+                double[] score       = new double[length];
+                double[] periodicity = new double[length];
+
+                for (int r = 0; r < length; r++) // for each position in track
+                {
+                    int sampleStart = track.StartFrame - halfSample + r;
+                    if (sampleStart < 0) sampleStart = 0;
+                    double[] lowerSubarray = DataTools.Subarray(listOfSpectralBins[lowerBin], sampleStart, sampleLength);
+                    double[] upperSubarray = DataTools.Subarray(listOfSpectralBins[upperBin], sampleStart, sampleLength);
+                    upperSubarray = lowerSubarray;
+
+                    if ((lowerSubarray == null) || (upperSubarray == null)) break;
+                    if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
+                    var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub arrays already normalised
+
+                    int zeroCount = 2;
+                    for (int s = 0; s < zeroCount; s++) xCorSpectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                    int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
+                    periodicity[r] = 2 * sampleLength / (double)maxIdXcor / sonogram.FramesPerSecond; //convert maxID to period in seconds
+                    score[r]       = xCorSpectrum[maxIdXcor];
+                } // for loop
+
+                track.score = score;
+                track.period = periodicity;
+                //if (track.score.Average() < 0.3) track = null;
+            } // foreach track
+         
+        } // DetectFrogTracks()
+
+
+        public static List<Plot> CreateScorePlots(List<SpectralTrack> tracks, int rowCount, int topBin)
+        {
+            double herzPerBin = tracks[0].herzPerBin;
+            //init score arrays
+            var scores = new List<double[]>();
+            for (int c = 1; c < topBin; c++) //ignore DC bin
+            {
+                var array = new double[rowCount];
+                scores.Add(array);
+            }
+
+            //add in track scores
+            foreach (SpectralTrack track in tracks)
+            {
+                int sampleStart = track.StartFrame;
+                int bin = (int)Math.Round(track.AverageBin);
+                for (int r = 0; r < track.Length; r++) // for each position in track
+                {
+                    scores[bin][sampleStart + r] = track.score[r];
+                }
+            }
+
+            double intensityThreshold = 0.25;
+            var plots = new List<Plot>();
+            for (int c = 1; c < topBin; c++) //ignore DC bin
+            {
+                double[] filteredScores = DataTools.filterMovingAverage(scores[c-1], 3);
+                filteredScores = DataTools.NormaliseInZeroOne(filteredScores, 0, 2.0); //## ABSOLUTE NORMALISATION 0-0.75 #####################################
+                string title = ((int)Math.Round(c * herzPerBin)).ToString();
+                plots.Add(new Plot(title + " Hz", filteredScores, intensityThreshold));
+            }
+            return plots;
+        } // CreateScorePlots()
+
+        
         //public static void CropEvents(List<AcousticEvent> events, double[] intensity)
         //{
         //    double severity = 0.1;

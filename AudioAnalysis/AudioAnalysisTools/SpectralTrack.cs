@@ -10,17 +10,23 @@ namespace AudioAnalysisTools
 {
     public class SpectralTrack
     {
-        int startFrame;
-        int endFrame;
-        public int Length { get {return (endFrame - startFrame + 1);} }
+        private int startFrame;
+        public int StartFrame { get {return startFrame;} }
+        private int endFrame;
+        public int EndFrame { get { return endFrame; } }
+        public int Length { get { return (endFrame - startFrame + 1); } }
         int bottomBin;
         int topBin;
-        double avBin;
+        private double avBin;
+        public double AverageBin { get { return avBin; } }
         List<int> track;
         int status = 0;  // 0=closed;   1= open and active;
 
+        public double[] period;
+        public double[] score;
+
         double framesPerSecond;
-        double herzPerBin;
+        public double herzPerBin;
 
         double tolerance = 2.5; // do not accept new track if new peak is > this distance from old track.
         public  const int    MAX_FREQ_BOUND        = 6000;  // herz
