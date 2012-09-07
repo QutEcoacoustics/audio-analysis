@@ -7,13 +7,13 @@
 namespace System
 
     open System
+    open Microsoft.FSharp.Math.SI 
 
 
     
 
     [<AutoOpen>]
     module Measures =
-        [<Measure>] type Hz
         
         [<Measure>] type Sample
         
