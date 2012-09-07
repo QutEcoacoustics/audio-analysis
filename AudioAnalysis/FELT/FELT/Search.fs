@@ -65,15 +65,32 @@
     open System
     open QutSensors.AudioAnalysis.AED.Util
     open Microsoft.FSharp.Core
+    open Microsoft.FSharp.Math.SI
+    open FELT
+    open MQUTeR.FSharp.Shared
 
-    let centroid (ae: Rectangle<Pixel, Pixel>) =
-        ae.Left + (ae.Width / 2.0) , ae.Top  + (ae.Height /2.0)
+    type Point<'a, 'b> = { x : 'a; y: 'b}
+    
+    module Point =
+        let x p = p.x
+        let y p = p.y
+        let toTuple p = p.x, p.y
 
+    let centroid (ae: Rectangle<float<_>,float<_>>) =
+        {x = ae.Left + (ae.Width / 2.0) ; y = ae.Top  + (ae.Height / 2.0)}
 
     let inline centerToEdges center width =
         let h = LanguagePrimitives.DivideByInt width 2
         center - h, center + h
 
+    let inline centroidToRect point width height=
+        cornersToRect2 (centerToEdges point.x width) (centerToEdges point.y height)
+    
+    type EventRect = Rectangle<float<s>,float<Hz>>
+    type Event = {
+        AudioReadingId : Guid
+        Bounds : EventRect
+    }    
 
     let getNoiseProfile startOffset endOffset recordingID =
         
@@ -93,8 +110,50 @@
 
         raise <| new NotImplementedException()
 
-    let getTemplates data workflow =
+    let getTemplates data workflow : Data =
 
         raise <| new NotImplementedException()
 
 
+
+    let remapBoundsOfAnEvent bounds event =
+        let centerAndAlign bound =
+            // to do: sense checking
+            Some <| centroidToRect event (width bound) (height bound)
+        Array.map (centerAndAlign) bounds
+        |> Array.choose (id)
+
+
+    let compareEvents eventA eventB =
+        // some sort of classification
+
+        3.0
+
+    let compareTemplatesToEvent templates event =
+        // import boundaries
+        let bounds : Rectangle<float<s>,float<Hz>>[] = [||]
+        
+        // create copies of the "event" with different bounds
+        let overlays = remapBoundsOfAnEvent bounds event
+
+        // for each overlay, extract stats
+        let possibleEvents = Array.map extractFeatures 
+
+        ()
+
+    let main =
+        
+        let workflow = FELT.Workflows.Analyses.["???"]
+        let pathToTrainingData = ""
+        
+        // trained templates
+        let templates = getTemplates pathToTrainingData workflow
+
+        // run aed 
+        let aedEvents = [||]
+
+        let analysedEvents = Array.map (compareTemplatesToEvent templates) aedEvents
+         
+
+
+        ()
