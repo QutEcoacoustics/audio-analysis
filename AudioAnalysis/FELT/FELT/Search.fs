@@ -63,11 +63,13 @@
 
     *)
     open System
+    open System.IO
     open QutSensors.AudioAnalysis.AED.Util
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Math.SI
     open FELT
     open MQUTeR.FSharp.Shared
+    open Microsoft.FSharp.Collections
 
     type Point<'a, 'b> = { x : 'a; y: 'b}
     
@@ -77,7 +79,7 @@
         let toTuple p = p.x, p.y
 
     let centroid (ae: Rectangle<float<_>,float<_>>) =
-        {x = ae.Left + (ae.Width / 2.0) ; y = ae.Top  + (ae.Height / 2.0)}
+        {x = left ae + (ae.Width / 2.0) ; y = top ae  + (ae.Height / 2.0)}
 
     let inline centerToEdges center width =
         let h = LanguagePrimitives.DivideByInt width 2
@@ -110,9 +112,16 @@
 
         raise <| new NotImplementedException()
 
-    let getTemplates data workflow : Data =
+    let getTemplates path workflow =
+        let fip = new FileInfo(path)
+        if fip.Exists then
+            
+            use stream = fip.Open FileMode.Open
+            let data : Data = Serialization.deserializeBinaryStream stream
 
-        raise <| new NotImplementedException()
+            data
+        else
+            raise <| FileNotFoundException("The data file was not found: " + path, path)
 
 
 
@@ -129,9 +138,11 @@
 
         3.0
 
-    let compareTemplatesToEvent templates event =
+    let compareTemplatesToEvent (templateData:Data) event =
         // import boundaries
-        let bounds : Rectangle<float<s>,float<Hz>>[] = [||]
+        let getBound headers = cornersToRect 0.0<s> 0.0<s> 0.0<Hz> 0.0<Hz>
+            
+        let bounds : Rectangle<float<s>,float<Hz>>[] = templateData.Instances |> Map.scanAll |> snd |> Seq.map getBound |> Seq.toArray
         
         // create copies of the "event" with different bounds
         let overlays = remapBoundsOfAnEvent bounds event
@@ -146,13 +157,15 @@
         let workflow = FELT.Workflows.Analyses.["???"]
         let pathToTrainingData = ""
         
+
+
         // trained templates
-        let templates = getTemplates pathToTrainingData workflow
+        let templateData = getTemplates pathToTrainingData workflow
 
         // run aed 
         let aedEvents = [||]
 
-        let analysedEvents = Array.map (compareTemplatesToEvent templates) aedEvents
+        let analysedEvents = Array.map (compareTemplatesToEvent templateData) aedEvents
          
 
 
