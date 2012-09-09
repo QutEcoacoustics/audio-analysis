@@ -111,13 +111,13 @@ let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b; Width=r-l;
 let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1; Width=w; Height=h;}
 let inline cornersToRect2 (l, r) (t, b) = cornersToRect l r t b
 let fcornersToRect (l:float) r (t:float) b = cornersToRect l r t b // for C#
-let left r = r.Left
-let right r = r.Right
-let top r = r.Top
-let bottom r = r.Bottom
-let bottomLeft r = (r.Left, r.Bottom)
-let width r = r.Width
-let height r = r.Height
+let inline left r = r.Left
+let inline right r = r.Right
+let inline top r = r.Top
+let inline bottom r = r.Bottom
+let inline bottomLeft r = (r.Left, r.Bottom)
+let inline width r = r.Width
+let inline height r = r.Height
 let inline area r = r.Width * r.Height
     
 (* This is currently done the easy, inefficient way.
