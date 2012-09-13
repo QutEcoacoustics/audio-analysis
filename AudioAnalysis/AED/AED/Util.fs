@@ -82,7 +82,7 @@ type Rectangle<'a, 'b> = {Left:'a; Top:'b; Right:'a; Bottom:'b; Width:'a; Height
 //type Rectangle<[<Measure>]'b, [<Measure>]'c> = {Left:int<'b>; Top:int<'c>; Right:int<'b>; Bottom:int<'c>; Width:int<'b>; Height:int<'c>;}
 
 //let r = {Left=3.0<m>; Top=6.0<s>; Right=5.0<m>; Bottom=2.0<s>; Width=3.0<m>; Height=9.0<s>;}
-let r = {Left=3.0; Top=6.0; Right=5.0; Bottom=2.0; Width=3.0; Height=9.0;}
+//let r = {Left=3.0; Top=6.0; Right=5.0; Bottom=2.0; Width=3.0; Height=9.0;}
 
 let inline addDimensions (r:Rectangle<'a,'b>) (convertA:'c) (convertB:'d) : Rectangle<'c,'d> = 
     {
@@ -116,6 +116,7 @@ let inline right r = r.Right
 let inline top r = r.Top
 let inline bottom r = r.Bottom
 let inline bottomLeft r = (r.Left, r.Bottom)
+
 let inline width r = r.Width
 let inline height r = r.Height
 let inline area r = r.Width * r.Height
