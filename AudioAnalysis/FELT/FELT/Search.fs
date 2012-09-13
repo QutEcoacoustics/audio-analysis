@@ -63,6 +63,7 @@
 
     *)
     open System
+    open System.Diagnostics
     open System.IO
     open QutSensors.AudioAnalysis.AED.Util
     open Microsoft.FSharp.Core
@@ -72,11 +73,29 @@
     open Microsoft.FSharp.Collections
 
     type Point<'a, 'b> = { x : 'a; y: 'b}
+    type SpectrogramPoint = Point<float<s>, float<Hz>>
+
+    type Bound<'a, 'b> = {
+        duration : 'a;
+        startFrequency :'b;
+        endFrequency: 'b;
+        }
+        with
+            static member create d sf ef = {duration = d; startFrequency = sf; endFrequency = ef}
+
+    module Bound =
+        let inline width b = b.duration
+        let inline height b = b.endFrequency - b.startFrequency
+
+    open Bound
+
+    type SpectrogramBound = Bound<float<s>, float<Hz>>
     
     module Point =
         let x p = p.x
         let y p = p.y
         let toTuple p = p.x, p.y
+
 
     let centroid (ae: Rectangle<float<_>,float<_>>) =
         {x = left ae + (ae.Width / 2.0) ; y = top ae  + (ae.Height / 2.0)}
@@ -108,9 +127,11 @@
         
         raise <| new NotImplementedException()
 
-    let extractFeatures snippet =
+    let extractFeatures snippet : Data =
 
         raise <| new NotImplementedException()
+
+
 
     let getTemplates path workflow =
         let fip = new FileInfo(path)
@@ -138,17 +159,38 @@
 
         3.0
 
-    let compareTemplatesToEvent (templateData:Data) event =
-        // import boundaries
-        let getBound headers = cornersToRect 0.0<s> 0.0<s> 0.0<Hz> 0.0<Hz>
-            
-        let bounds : Rectangle<float<s>,float<Hz>>[] = templateData.Instances |> Map.scanAll |> snd |> Seq.map getBound |> Seq.toArray
+    let compareTemplatesToEvent (templateData:Data) (event:SpectrogramPoint) =
+        // import boundaries            
+        let bounds = 
+            let getBound headers = 
+                let dKey, sfKey, efKey = "duration", "startFreq", "endFreq" 
+                let g2 vs = 
+                    let get k = Array.findIndex ((=) k) headers |> Array.get vs |> DataHelpers.getNumber
+                    get dKey |> tou<s>, get sfKey |> tou<Hz>, get efKey |> tou<Hz>
+                (fun (values:Value[]) ->
+                    let dVal, sfVal, efVal = g2 values
+                    Bound<_,_>.create dVal sfVal efVal
+                )
+            templateData.Instances |> Map.scanAll |> fun (h,v) -> Seq.map (getBound h) v |> Seq.toArray
         
-        // create copies of the "event" with different bounds
+        // create copies of the "event" with different bounds, all centered on one POI
         let overlays = remapBoundsOfAnEvent bounds event
 
         // for each overlay, extract stats
-        let possibleEvents = Array.map extractFeatures 
+        let possibleEvents = extractFeatures overlays
+
+        Debug.Assert( possibleEvents.DataSet = DataSet.Test)
+
+        // now cross-join training samples with all the possible overlays
+        let distances =
+            
+            templateData.Instances |> Array.map (fun trainingTag -> Array.map (compareEvents) possibleEvents) 
+            
+        // order the results from highest match to lowest
+        //Array.sort ...
+
+        // run some filtering?
+
 
         ()
 
@@ -165,6 +207,7 @@
         // run aed 
         let aedEvents = [||]
 
+        // for each aed event, match it to each training sample
         let analysedEvents = Array.map (compareTemplatesToEvent templateData) aedEvents
          
 

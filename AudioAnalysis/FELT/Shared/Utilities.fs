@@ -11,15 +11,19 @@ namespace System
 
 
     
-
+    type Index = int
+    type Hertz = float<Hz>
+    
     [<AutoOpen>]
     module Measures =
         
         [<Measure>] type Sample
-        
 
-    type Index = int
-    type Hertz = float<Hz>
+        let tou<[<Measure>]'u> (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
+        let tou2 (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
+        let fromu (x:float<_>) = float x
+                       
+
 
     [<AutoOpen>]
     module Utilities =
