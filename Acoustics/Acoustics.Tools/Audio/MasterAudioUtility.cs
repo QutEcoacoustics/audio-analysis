@@ -1,4 +1,13 @@
-﻿namespace Acoustics.Tools.Audio
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MasterAudioUtility.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Combined audio utility that makes use of the most appropriate audio utility for the task.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;

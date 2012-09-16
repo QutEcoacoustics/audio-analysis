@@ -4,8 +4,10 @@ using System;
 
 namespace FELT.Tests
 {
-    
-    
+    using MQUTeR.FSharp.Shared;
+
+    using Microsoft.FSharp.Collections;
+
     /// <summary>
     ///This is a test class for OneForOneSelectorTest and is intended
     ///to contain all OneForOneSelectorTest Unit Tests
@@ -71,7 +73,32 @@ namespace FELT.Tests
         public void OneForOneSelectorConstructorTest()
         {
             OneForOneSelector target = new OneForOneSelector();
-            Assert.Inconclusive("TODO: Implement code to verify target");
+
+            var hdrs = new FSharpMap<string, DataType>(new[] { new Tuple<string, DataType>("name", DataType.Text), new Tuple<string, DataType>("age", DataType.Number) });
+
+            var col1 = new Tuple<string, Value[]>(
+                "name", new Value[] { new Text("billy"), new Text("billy"), new Text("ann") });
+
+            var col2 = new Tuple<string, Value[]>(
+                "age", new Value[] { new Number(3.0), new Number(4.0), new Number(5.0) });
+
+
+
+            var instances = new FSharpMap<string, Value[]>(new[] { col1, col2 });
+
+            var data = new Data(DataSet.Training, hdrs, instances, "Gender", new[] { "Boy", "Boy", "Girl" });
+
+            var result = target.Pick(data);
+
+            Assert.AreEqual(data, result);
+
+            foreach (var kvp in data.Instances)
+            {
+                var trKey = kvp.Key;
+
+                var testValues = result.Instances[trKey];
+                CollectionAssert.AreEqual(kvp.Value, testValues);
+            }
         }
     }
 }

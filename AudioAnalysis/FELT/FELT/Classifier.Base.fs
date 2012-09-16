@@ -14,7 +14,7 @@
 
     [<AbstractClass>]
     type ClassifierBase() = class
-        abstract member Classify : Data * Data -> ClassifierResult
+        abstract member Classify : Data -> Data -> ClassifierResult
         end
         
 

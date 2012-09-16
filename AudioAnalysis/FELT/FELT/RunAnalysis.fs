@@ -46,7 +46,7 @@
                     )
                 | Selection s -> (s.Pick(trData), teData, results, extraDataStore)
                 | Trainer t -> (t.Train(trData), teData, results, extraDataStore)
-                | Classifier c -> (trData, teData, c.Classify(trData, teData), extraDataStore)
+                | Classifier c -> (trData, teData, (c.Classify trData teData), extraDataStore)
                 | Result r ->
                     match r with
                         | Console rc -> 

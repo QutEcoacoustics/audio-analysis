@@ -45,8 +45,12 @@
     <OutputPath>bin\Release\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets'))" />
+  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
@@ -160,6 +164,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="zlib.net">
@@ -168,6 +173,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
+      <Name>Acoustics.Shared</Name>
+      <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
+      <Name>Acoustics.Tools</Name>
+      <Project>{0338570e-5a77-4a2e-8e17-7955c36ae1f7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Name>MQUTeR.FSharp.Shared</Name>
       <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
@@ -185,7 +200,14 @@
     <!-- C:\Program Files (x86)\CollabNet\Subversion Server\ -->
     <!-- ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\" -->
     <!-- C:\Program Files\CollabNet\Subversion Client -->
-    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\">
+    <PropertyGroup>
+      <ToolPath Condition="Exists('D:\boobs\')">D:\boobs\</ToolPath>
+      <ToolPath Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\')">$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\</ToolPath>
+      <ToolPath Condition="Exists('D:\Work\Sensors\Extra Assemblies\Subversion Server\')">D:\Work\Sensors\Extra Assemblies\Subversion Server\</ToolPath>
+      <ToolPath Condition="Exists('C:\Program Files (x86)\CollabNet\Subversion Server\')">C:\Program Files (x86)\CollabNet\Subversion Server\</ToolPath>
+      <ToolPath Condition="Exists('C:\Program Files\CollabNet\Subversion Client')">C:\Program Files\CollabNet\Subversion Client</ToolPath>
+    </PropertyGroup>
+    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(ToolPath)">
       <Output TaskParameter="Revision" PropertyName="Revision" />
     </SvnVersion>
     <PropertyGroup>

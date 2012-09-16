@@ -15,10 +15,10 @@ namespace FELT.Tests
     using Microsoft.FSharp.Core;
 
     /// <summary>
-    ///This is a test class for EuclideanClassifierTest and is intended
-    ///to contain all EuclideanClassifierTest Unit Tests
-    ///</summary>
-    [TestClass()]
+    /// This is a test class for EuclideanClassifierTest and is intended
+    /// to contain all EuclideanClassifierTest Unit Tests.
+    /// </summary>
+    [TestClass]
     public class ZScoreGlobalTransformerTest
     {
 
@@ -27,9 +27,9 @@ namespace FELT.Tests
         private TestContext testContextInstance;
 
         /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
+        /// Gets or sets the test context which provides
+        /// information about and functionality for the current test run.
+        /// </summary>
         public TestContext TestContext
         {
             get
