@@ -66,11 +66,16 @@
     open System.Diagnostics
     open System.IO
     open QutSensors.AudioAnalysis.AED.Util
+    open Acoustics.Shared
+    open Acoustics.Tools
+    open Acoustics.Tools.Audio
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Math.SI
     open FELT
+    open FELT.Classifiers
     open MQUTeR.FSharp.Shared
     open Microsoft.FSharp.Collections
+
 
     type Point<'a, 'b> = { x : 'a; y: 'b}
     type SpectrogramPoint = Point<float<s>, float<Hz>>
@@ -117,11 +122,31 @@
         
         raise <| new NotImplementedException()
 
-    let cutSnippet sourceFile (center:TimeSpan) (duration:TimeSpan) (lowBand:Hertz) (highBand:Hertz) =
-        
-        // returns a wav
+    let cutSnippet =
+        let mau = new MasterAudioUtility();
+        let inline round' (x:float<'a>) = 
+            x |> fromu |> round |> int |> LanguagePrimitives.Int32WithMeasure<'a>
 
-        raise <| new NotImplementedException()
+
+        (fun (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) (lowBand:Hertz) (highBand:Hertz) -> 
+            let left, right = 
+                let h = duration.TotalMilliseconds / 2.0 
+                let c = center.TotalMilliseconds
+                in round' <| c - h , c + h |> round'
+            let low, high = round' lowBand, round' highBand
+             
+            // check cache
+//            let outFileName = sourceFile.Name + (sprintf "_%i-%i_%iHz-%iHz." left right low high)
+//            let outputFile = Path.Combine(cacheDir, outFileName)
+//
+//            let request = new AudioUtilityRequest(OffsetStart = N(left), OffsetEnd = N(right))
+//            
+//            //! warning: mutation
+//            mau.Modify(sourceFile, MediaTypes.MediaTypeWav, "", MediaTypes.MediaTypeWav, request)
+//            // returns a wav
+
+            ()
+        )
     
     let snippetToSpectrogram wavSource =
         
@@ -159,6 +184,8 @@
 
         3.0
 
+    let classifier : ClassifierBase = upcast new EuclideanClassifier(true)
+
     let compareTemplatesToEvent (templateData:Data) (event:SpectrogramPoint) =
         // import boundaries            
         let bounds = 
@@ -182,17 +209,17 @@
         Debug.Assert( possibleEvents.DataSet = DataSet.Test)
 
         // now cross-join training samples with all the possible overlays
-        let distances =
+        let distancesFunc =
+            classifier.Classify templateData possibleEvents
+
             
-            templateData.Instances |> Array.map (fun trainingTag -> Array.map (compareEvents) possibleEvents) 
-            
-        // order the results from highest match to lowest
+        // ! order the results from highest match to lowest
         //Array.sort ...
 
         // run some filtering?
 
 
-        ()
+        distancesFunc
 
     let main =
         

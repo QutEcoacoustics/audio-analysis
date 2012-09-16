@@ -19,7 +19,7 @@ namespace System
         
         [<Measure>] type Sample
 
-        let tou<[<Measure>]'u> (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
+        let inline tou<[<Measure>]'u> (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
         let tou2 (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
         let fromu (x:float<_>) = float x
                        
@@ -29,7 +29,7 @@ namespace System
     module Utilities =
 
         
-
+        let inline (!>>) (arg:^b) : ^a = (^b : (static member op_Explicit: ^b -> ^a) arg)
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
 
         let inline (@@) (a: 'a) (b: 'a array) =
@@ -63,6 +63,9 @@ namespace System
 
         // http://stackoverflow.com/a/3928197/224512
         let inline isNull o = System.Object.ReferenceEquals(o, null)
+
+        type N<'a when 'a: (new: unit -> 'a) and 'a: struct and 'a :> ValueType> = Nullable<'a>
+        
 
         let transposeTR lst =
             let rec inner acc lst = 

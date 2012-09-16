@@ -457,7 +457,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
              * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
             */
 
-            CanProcess(source, null, null);
+            this.CanProcess(source, null, null);
 
             var process = new ProcessRunner(this.ExecutableInfo.FullName);
 
@@ -500,14 +500,11 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
                 lines = lines.Skip(1);
 
-                string[] currentLine;
-                string keyName;
-
                 for (var index = 0; index < 11; index++)
                 {
-                    currentLine = lines.First().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] currentLine = lines.First().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    keyName = lines.First();
+                    string keyName = lines.First();
                     var tempHeaderCount = numValues;
 
                     while (tempHeaderCount > 0)
@@ -529,7 +526,6 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             }
 
             // next 4 always 1 value
-
             foreach (var line in lines)
             {
                 var index = line.Trim().LastIndexOf(' ');

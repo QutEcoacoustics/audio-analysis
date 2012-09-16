@@ -210,7 +210,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <Shadow Include="Test References\FELT.accessor" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
