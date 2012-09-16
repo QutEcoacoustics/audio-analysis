@@ -34,7 +34,7 @@
             d
         
         
-        override this.Classify (trainingData, testData) =
+        override this.Classify trainingData testData =
 
             let colCount = trainingData.Instances.Count
             if colCount <> testData.Instances.Count then
