@@ -21,13 +21,13 @@ namespace System
 
         let inline tou<[<Measure>]'u> (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
         let tou2 (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
-        let fromu (x:float<_>) = float x
+        let fromU (x:float<_>) = float x
+        let fromUI (x:int<_>) = int x
                        
-
+        
 
     [<AutoOpen>]
     module Utilities =
-
         
         let inline (!>>) (arg:^b) : ^a = (^b : (static member op_Explicit: ^b -> ^a) arg)
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
@@ -65,7 +65,7 @@ namespace System
         let inline isNull o = System.Object.ReferenceEquals(o, null)
 
         type N<'a when 'a: (new: unit -> 'a) and 'a: struct and 'a :> ValueType> = Nullable<'a>
-        
+        let N x = N(x)
 
         let transposeTR lst =
             let rec inner acc lst = 

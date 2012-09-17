@@ -35,6 +35,15 @@
         /// </summary>
         public bool? MixDownToMono { get; set; }
 
+        public double? BandpassLow { get; set; }
+
+        public double? BandpassHigh { get; set; }
+
+        /// <summary>
+        /// Gets or sets the band pass type.
+        /// </summary>
+        public BandPassType BandPassType { get; set; }
+
         /// <summary>
         /// Validate this Audio Reading Request.
         /// </summary>
@@ -127,6 +136,11 @@
                 }
             }
 
+            if (!this.ValidateBandPass(throwExceptions))
+            {
+                return false;
+            }
+
             if (this.SampleRate.HasValue && this.SampleRate < 1)
             {
                 if (throwExceptions)
@@ -203,5 +217,101 @@
 
             return segment + channels + sampleRate + mixDown + channel;
         }
+
+        private bool ValidateBandPass(bool throwExceptions)
+        {
+            if (this.BandpassLow.HasValue && this.BandpassLow.Value < 0)
+            {
+                if (throwExceptions)
+                {
+                    throw new ArgumentOutOfRangeException("BandPassLow", "BandPassLow must be equal or greater than zero.");
+                }
+
+                return false;
+            }
+
+            if (this.BandpassHigh.HasValue && this.BandpassHigh.Value <= 0)
+            {
+                if (throwExceptions)
+                {
+                    throw new ArgumentOutOfRangeException("BandPassHigh", "End must be greater than zero.");
+                }
+
+                return false;
+            }
+
+
+            if (this.BandpassLow.HasValue || this.BandpassHigh.HasValue)
+            {
+                if (this.BandPassType == BandPassType.None)
+                {
+                    if (throwExceptions)
+                    {
+                        throw new ArgumentException("Bandpass type should be set if BandpassHigh or BandpassLow is set", "BandPassType");
+                    }
+
+                    return false;
+                }
+
+                if (!this.SampleRate.HasValue)
+                {
+                    if (throwExceptions)
+                    {
+                        throw new ArgumentException("Bandpass requires a sample rate to be set", "SampleRate");
+                    }
+
+                    return false;
+                }
+            }
+
+            if (this.BandpassLow.HasValue && this.BandpassHigh.HasValue)
+            {
+                
+                if (this.BandpassLow.Value > this.BandpassHigh.Value)
+                {
+                    var msg = string.Format(
+                        "Start ({0}) must be equal or less than End ({1}).",
+                        this.BandpassLow.Value,
+                        this.BandpassHigh.Value);
+
+                    if (throwExceptions)
+                    {
+                        throw new ArgumentOutOfRangeException("BandPassLow", msg);
+                    }
+
+                    return false;
+                }
+
+                if (this.BandpassLow.Value == this.BandpassHigh.Value)
+                {
+                    if (throwExceptions)
+                    {
+                        throw new ArgumentOutOfRangeException("BandPassHigh", "Start and end should not be equal.");
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+
+
+    public enum BandPassType
+    {
+        None = 0,
+
+        /// <summary>
+        /// Sinc kaiser-windowed low / high / band pass filter.
+        /// Very high attenuation. Steep shoulders.
+        /// </summary>
+        Sinc = 2,
+
+        /// <summary>
+        /// Two-pole butterworth band-pass, dropping off at 3dB per octave.
+        /// </summary>
+        Bandpass = 1
     }
 }

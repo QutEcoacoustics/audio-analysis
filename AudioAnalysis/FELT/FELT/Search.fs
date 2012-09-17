@@ -63,19 +63,22 @@
 
     *)
     open System
+    open System.Extensions
     open System.Diagnostics
     open System.IO
     open QutSensors.AudioAnalysis.AED.Util
     open Acoustics.Shared
     open Acoustics.Tools
     open Acoustics.Tools.Audio
+    open Acoustics.Tools.Wav
+    open AudioAnalysisTools
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Math.SI
     open FELT
     open FELT.Classifiers
     open MQUTeR.FSharp.Shared
     open Microsoft.FSharp.Collections
-
+    open TowseyLib
 
     type Point<'a, 'b> = { x : 'a; y: 'b}
     type SpectrogramPoint = Point<float<s>, float<Hz>>
@@ -122,11 +125,11 @@
         
         raise <| new NotImplementedException()
 
-    let cutSnippet =
+    let cutSnippet cacheDir =
         let mau = new MasterAudioUtility();
         let inline round' (x:float<'a>) = 
-            x |> fromu |> round |> int |> LanguagePrimitives.Int32WithMeasure<'a>
-
+            x |> fromU |> round |> int |> LanguagePrimitives.Int32WithMeasure<'a>
+        let sampleRate = 22050<Hz>
 
         (fun (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) (lowBand:Hertz) (highBand:Hertz) -> 
             let left, right = 
@@ -136,21 +139,43 @@
             let low, high = round' lowBand, round' highBand
              
             // check cache
-//            let outFileName = sourceFile.Name + (sprintf "_%i-%i_%iHz-%iHz." left right low high)
-//            let outputFile = Path.Combine(cacheDir, outFileName)
-//
-//            let request = new AudioUtilityRequest(OffsetStart = N(left), OffsetEnd = N(right))
-//            
-//            //! warning: mutation
-//            mau.Modify(sourceFile, MediaTypes.MediaTypeWav, "", MediaTypes.MediaTypeWav, request)
-//            // returns a wav
+            let outFileName = sourceFile.Name + (sprintf "_%i-%i_%iHz-%iHz." left right (fromUI low)  (fromUI high))
+            let outputFile = new FileInfo(Path.Combine(cacheDir, outFileName)) 
 
-            ()
+            if not outputFile.Exists then
+                let request = 
+                    new AudioUtilityRequest(
+                        OffsetStart = ( left |> TimeSpan.FromMilliseconds |> N), 
+                        OffsetEnd = (right |> TimeSpan.FromMilliseconds |> N),
+                        BandpassLow = (low |> float |> N),
+                        BandpassHigh = (high |> float |> N),
+                        SampleRate = (sampleRate |> fromUI |> N)
+                    )  
+                //! warning: io mutation
+                mau.Modify(sourceFile, MediaTypes.MediaTypeWav, outputFile, MediaTypes.MediaTypeWav, request)
+
+            // returns a wav
+            let ar = new AudioRecording(outputFile.FullName)
+            ar
         )
     
-    let snippetToSpectrogram wavSource =
+    let snippetToSpectrogram (wavSource:AudioRecording) =
+        // can enable noise reduction here
+        let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.NONE )
+
+        let sp = new SpectralSonogram(config, wavSource.GetWavReader());
+        sp
+
+    let spectrogramToMatrix (sonogram:SpectralSonogram) =
+        Math.Matrix.ofArray2D sonogram.Data |> mTranspose
+
+    let spectrogramBandpass (sonogram:SpectralSonogram) (low:int<px>) (high:int<px>) =
+        let spm = spectrogramToMatrix sonogram
         
-        raise <| new NotImplementedException()
+        let l, h = int low, int high
+
+        //? unsure if this is correct
+        spm.[l..h,*]
 
     let extractFeatures snippet : Data =
 

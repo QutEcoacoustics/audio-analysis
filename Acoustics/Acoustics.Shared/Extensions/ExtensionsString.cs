@@ -316,5 +316,10 @@ namespace System
                 return string.Empty;
             return items.Select(a => a.ToString()).Aggregate((a, b) => a + "," + b);
         }
+
+        public static string Format(this string format, params object[] args)
+        {
+            return string.Format(format, args);
+        }
     }
 }
