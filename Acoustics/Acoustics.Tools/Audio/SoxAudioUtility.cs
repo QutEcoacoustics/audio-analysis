@@ -204,10 +204,30 @@
                 trim = "trim " + request.OffsetStart.Value.TotalSeconds + " " + (request.OffsetEnd.Value.TotalSeconds - request.OffsetStart.Value.TotalSeconds);
             }
 
+            var bandpass = string.Empty;
+            if (request.BandPassType != BandPassType.None)
+            {
+                switch (request.BandPassType)
+                {
+                    case BandPassType.Sinc:
+                        bandpass += "sinc {0}k-{1}k".Format(request.BandpassLow.Value / 1000, request.BandpassHigh.Value / 1000);
+                        break;
+                    case BandPassType.Bandpass:
+                        double width = request.BandpassHigh.Value - request.BandpassLow.Value;
+                        var center = width / 2.0;
+                        bandpass += "bandpass {0}k width{k}".Format(center / 1000, width / 1000);
+                        break;
+                    case BandPassType.None:    
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+
             // example
             // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
             // sox input.wav output.wav remix - rate -m -s 11025
-            return string.Format(" -V4 \"{0}\" \"{1}\" {2} {3} {4}", source.FullName, output.FullName, trim, rate, remix);
+            return string.Format(" -V4 \"{0}\" \"{1}\" {2} {3} {4} {5}", source.FullName, output.FullName, trim, rate, remix, bandpass);
         }
 
         /// <summary>
