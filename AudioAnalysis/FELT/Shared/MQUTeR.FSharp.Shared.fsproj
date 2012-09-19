@@ -120,6 +120,10 @@
       <HintPath>..\packages\ImpromptuInterface.FSharp.1.2.6\lib\net40\ImpromptuInterface.FSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MathNet.Numerics">
       <HintPath>..\packages\MathNet.Numerics.2.1.2\lib\Net40\MathNet.Numerics.dll</HintPath>
       <Private>True</Private>

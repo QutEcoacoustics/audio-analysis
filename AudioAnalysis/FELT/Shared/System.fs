@@ -10,3 +10,7 @@ namespace System
                 ms |> float |> System.TimeSpan.FromMilliseconds
             static member FromSeconds (ms:int<_>) =
                 ms |> float |> System.TimeSpan.FromSeconds
+
+        // tuples
+        let map (x,y) f = (f x), (f y)
+        let apply (x,y) v  = (x v), (y v)

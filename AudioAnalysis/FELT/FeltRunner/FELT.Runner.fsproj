@@ -81,9 +81,12 @@
     <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
+    <None Include="..\..\AnalysisPrograms\log4net.config">
+      <Link>log4net.config</Link>
+    </None>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Suggestion.config">
+    <None Include="Truskinger.Felt.Suggestion.config">
       <Link>Truskinger.Felt.Suggestion.config</Link>
     </None>
     <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
@@ -92,7 +95,8 @@
     <Compile Include="CustomConfigAnalyses.fs" />
     <Compile Include="CustomConfig.fs" />
     <Compile Include="SummationReport.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Main.fsi" />
+    <Compile Include="Main.fs" />
     <Content Include="ExcelResultsSummationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -142,6 +146,10 @@
     </Reference>
     <Reference Include="ImpromptuInterface.FSharp">
       <HintPath>..\packages\ImpromptuInterface.FSharp.1.2.6\lib\net40\ImpromptuInterface.FSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MathNet.Numerics">

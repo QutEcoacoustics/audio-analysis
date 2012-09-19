@@ -136,7 +136,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    // { "truskinger.felt", strings => FELT.Runner.Main.Entry(strings) },
+                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -191,7 +191,7 @@ namespace AnalysisPrograms
             ////var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             ////analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
 
-            AttachDebugger();
+            AttachDebugger(ref args);
 
             AttachExceptionHandler();
 
@@ -261,7 +261,7 @@ namespace AnalysisPrograms
             }
             else 
             {
-                Log.Fatal("Unhandled exception", ex);
+                Log.Fatal("Unhandled exception ->", ex);
                 returnCode = (int)CommandLineException.KnownReturnCodes.SpecialExceptionErrorLevel;
             }
 
@@ -276,14 +276,20 @@ namespace AnalysisPrograms
             }
             else
             {
-                // If debugger is not attached, we do not want to raise the error to the Windows level
+                // If debugger is not attached, we *do not* want to raise the error to the Windows level
                 // Everything has already been logged, just exit with appropriate errorlevel
                 Environment.Exit(returnCode);
             }
         }
 
-        private static void AttachDebugger()
+        private static void AttachDebugger(ref string[] args)
         {
+            string noDebug = "-nodebug".ToLowerInvariant();
+            if (args.Length > 0 && args[0].ToLowerInvariant() == noDebug)
+            {
+                args = args.Skip(1).ToArray();
+                return;
+            }
 #if DEBUG
             if (!Debugger.IsAttached)
             {
@@ -309,7 +315,7 @@ namespace AnalysisPrograms
             LoggedConsole.Write(
 @"
 USAGE:
->   analysisPrograms.exe analysisOption [...]
+>   analysisPrograms.exe [-nodebug] analysisOption [...]
 
 Valid analysis options are:
 ");

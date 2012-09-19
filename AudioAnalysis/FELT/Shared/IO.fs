@@ -7,6 +7,7 @@ namespace MQUTeR.FSharp.Shared
     
     module IO =
 
+
         let readFileAsString filePath =
             let lines =
                 try
@@ -21,12 +22,18 @@ namespace MQUTeR.FSharp.Shared
                 Option.Some(lines)
             
                 
-
+    
     [<AutoOpen>]
     module Logger =
-        let mutable fName = null;
-        let tempMessages = new ResizeArray<string>()
+        open log4net
+        [<assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)>]
+        do
+            ()
 
+        let mutable fName:string = null;
+        //let tempMessages = new ResizeArray<string>()
+        let log4Net = LogManager.GetLogger("FSharpLog");
+        (*
         let create file =
             let lfi = new FileInfo(file)
             fName <- lfi.FullName
@@ -56,7 +63,16 @@ namespace MQUTeR.FSharp.Shared
         let Error str = logToFile " ERROR: " str|> ignore
         let ErrorFail str = 
                 logToFile " FATAL ERROR: " str 
+                *)
+        let Debug = log4Net.Debug
+        let Log   = log4Net.Info
+        let Info  = log4Net.Info
+        let Warn  = log4Net.Warn
+        let Error = log4Net.Error
+        let ErrorFail = 
+                log4Net.Fatal
 
+        let Debugf   fmt = Printf.ksprintf Log fmt 
         let Logf   fmt = Printf.ksprintf Log fmt 
         let Infof  fmt = Printf.ksprintf Info fmt 
         let Warnf  fmt = Printf.ksprintf Warn fmt
