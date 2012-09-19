@@ -16,7 +16,7 @@
     open MQUTeR.FSharp.Shared
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Reflection
-    
+    open System.Extensions
     
 
     // TODO: pipe/compose
@@ -76,7 +76,8 @@
             if (trainingData.Headers.ContainsKey(feature) && testData.Headers.ContainsKey(feature)) then
                 match operation.Trim() with
                     | "ModuloTime" -> WorkflowItem.Transformer (new Transformers.TimeOfDay.TimeOfDayTransformer(feature, newName)) 
-                    | _ -> ErrorFailf "No transform is known by the name %s" operation |> failwith; WorkflowItem.Dummy
+                    | _ -> 
+                    ignore <| apply (ErrorFail, failwith) (sprintf "No transform is known by the name %s" operation) ; WorkflowItem.Dummy
             else
                 Error "A transform was included for a feature not available in the data sets!"
                 WorkflowItem.Dummy

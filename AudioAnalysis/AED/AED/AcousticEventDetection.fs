@@ -73,7 +73,8 @@ let filterOutSmallEvents t rs =
     Seq.filter (fun r -> area r > t') rs
 
 let detectEventsMatlab intensityThreshold smallAreaThreshold m =
-    Matlab.wiener2 5 m 
+    m
+        |> Matlab.wiener2 5  
         |> removeSubbandModeIntensities
         |> toBlackAndWhite intensityThreshold
         |> joinVerticalLines

@@ -30,6 +30,8 @@
         open MQUTeR.FSharp.Shared.Logger
         open System
         open System.Configuration
+        open System.Collections
+        open System.Collections.Specialized
         open System.Diagnostics
         open System.IO
         open Linq.QuotationEvaluation
@@ -38,7 +40,7 @@
         open FELT.Results
         open FELT.Workflows
         open Microsoft.FSharp.Collections
-        
+        open log4net
 
         let fail() =
             Error "Exiting because of error!"
@@ -49,12 +51,18 @@
             Environment.Exit(1);
 
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
+        let config fileName = 
+            let full = Path.GetFullPath(fileName) |> ConfigurationManager.OpenExeConfiguration
+            let appSettings:obj = upcast full.GetSection("appSettings")  
+            match appSettings with
+                | :? NameValueCollection as nvc -> full, nvc
+                | _ -> raise <| new ConfigurationErrorsException("App settings not valid")
 
         let suggestion() =
             Info "Start: read configuration settings..."
 
-            let config = ConfigurationManager.AppSettings
-
+            let fullConfig, config = config "Truskinger.Felt.Suggestion.config"            
+            
             // settings
             let ResultsDirectory = config.["ResultsDirectory"]
             let WorkingDirectory = config.["WorkingDirectory"]
@@ -101,7 +109,7 @@
             let reportDateName (dt: DateTime) e analysis = 
                 dt, sprintf "%s\\%s %s.xls%s" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis e
 
-            let logger = Logger.create ((String.Empty |> reportDateName batchRunDate "x" |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
+            MQUTeR.FSharp.Shared.Logger.fName <- ((String.Empty |> reportDateName batchRunDate "x" |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
 
             let reportName analysis = reportDateName DateTime.Now "x" analysis 
 
@@ -200,7 +208,10 @@
                 let sumReport = 
                     if configs |> Seq.length > 1 then
                         Log "Creating summary report"
-                        let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "x" "Summary" |> snd)) (new FileInfo("ExcelResultsSummationTemplate.xlsx")) configs
+                        let dest = SummationReport.Write 
+                                    (new FileInfo(reportDateName batchRunDate "x" "Summary" |> snd)) 
+                                    (new FileInfo("ExcelResultsSummationTemplate.xlsx")) 
+                                    configs
                         Log "Finished summary report"    
                         Some(dest)
                     else
@@ -223,7 +234,19 @@
                     Process.Start(f.FullName) |> ignore
 
         let search() =
-            raise ( NotImplementedException())
+            
+            Info "Reading configurations settings"
+            let configFile, config = config "Truskinger.Felt.Suggestion.config"
+            Debugf "Loaded: %s" configFile.FilePath
+
+            let WorkingDirectory = config.["WorkingDirectory"]
+            let ResultsDirectory = Path.Combine( WorkingDirectory, config.["ResultsDirectory"])
+            let SourceAudio = Path.Combine(WorkingDirectory, config.["SourceAudio"])
+            
+            // execute analysis
+            FELT.Search.main SourceAudio
+            
+            Info "Search Completed"
             ()
 
         let usage() =
@@ -233,18 +256,28 @@
             Info "Valid options are: suggestion, search"
             ()
 
+        let copyLog _ =
+            let dest = Logger.fName
+            if not <| String.IsNullOrWhiteSpace dest then
+                let rootAppender = 
+                    (LogManager.GetRepository() :?> log4net.Repository.Hierarchy.Hierarchy).Root.Appenders 
+                    |> Seq.cast<obj>
+                    |> Seq.pick (fun ap -> if ap :? Appender.FileAppender then Some(ap :?> Appender.FileAppender) else None) 
+                let filename = rootAppender.File;
+                File.Copy(filename, dest)
         
-        [<EntryPoint>]
-        let Entry args =
-            let ad = AppDomain.CurrentDomain in
-                ad.UnhandledException.Add (fun (args:UnhandledExceptionEventArgs) -> Errorf "Unhandled exception:\n%A" args.ExceptionObject)
 
+        let Entry programEntry (args:string[]) =
+            let ad = AppDomain.CurrentDomain
+            if not programEntry then  ad.UnhandledException.Add (fun (args:UnhandledExceptionEventArgs) ->ErrorFailf "Unhandled exception:\n%A" args.ExceptionObject)
+            ad.ProcessExit.Add copyLog
+            ad.UnhandledException.Add copyLog
 
             Log "Welcome to felt version:"
             Logf "%s" version
 
             #if DEBUG
-            if not Debugger.IsAttached then
+            if not (Debugger.IsAttached || programEntry) then
                 Warn "Debug hook...  press any key to continue..."
                 Console.ReadKey(false) |> ignore
             #endif
@@ -264,10 +297,15 @@
             f()
 
             Info "Exiting"
-            Console.ReadKey(false) |> ignore
+            if not programEntry then Console.ReadKey(false) |> ignore
             0
 
+        let ProgramEntry args =
+            Entry true args
 
+        [<EntryPoint>]
+        let CommandEntry args =
+            Entry false args
 
 
 

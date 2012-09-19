@@ -86,7 +86,8 @@
                         let z = d.Value.TimeOfDay.TotalMinutes |> round |> int |> Z1440 
                         upcast( new ModuloMinute(z))
                     | _ -> 
-                        ErrorFail "Modulo tansformer was given date a date it could not decode! Boo!" |> failwith
+                        ignore <| apply (ErrorFail, failwith) "Modulo tansformer was given date a date it could not decode! Boo!"
+                        
                         upcast (new ModuloMinute(0Z))
 
                 
