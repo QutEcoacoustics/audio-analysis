@@ -24,7 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Debug\FeltRunner.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -86,11 +86,11 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Truskinger.Felt.Suggestion.config">
-      <Link>Truskinger.Felt.Suggestion.config</Link>
-    </None>
     <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
       <Link>Truskinger.Felt.Search.config</Link>
+    </None>
+    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Suggestion.config">
+      <Link>Truskinger.Felt.Suggestion.config</Link>
     </None>
     <Compile Include="CustomConfigAnalyses.fs" />
     <Compile Include="CustomConfig.fs" />

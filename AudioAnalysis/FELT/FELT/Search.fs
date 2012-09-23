@@ -122,34 +122,44 @@
             Bounds : EventRect
         }    
 
+        type SearchConfig =
+            {
+                WorkingDirectory : string;
+                ResultsDirectory : string;
+                SourceAudioDirectory : DirectoryInfo;
+                AudioStoreDirectory : DirectoryInfo;
+            }
+
         let getNoiseProfile startOffset endOffset recordingID =
         
             raise <| new NotImplementedException()
 
-        let cutSnippet cacheDir =
+        let cutSnippet (cacheDir: DirectoryInfo) =
             let mau = new MasterAudioUtility();
             let inline round' (x:float<'a>) = 
                 x |> fromU |> round |> int |> LanguagePrimitives.Int32WithMeasure<'a>
             let sampleRate = 22050<Hz>
+            let inline print x = if Option.isSome x then x.Value |> fromUI |> string else "--"
 
-            (fun (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) (lowBand:Hertz) (highBand:Hertz) -> 
+            (fun (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) (lowBand:Option<Hertz>) (highBand:Option<Hertz>) ->       
+
                 let left, right = 
                     let h = duration.TotalMilliseconds / 2.0 
                     let c = center.TotalMilliseconds
                     in round' <| c - h , c + h |> round'
-                let low, high = round' lowBand, round' highBand
+                let low, high = Option.applyifSome round' lowBand, Option.applyifSome round' highBand
              
                 // check cache
-                let outFileName = sourceFile.Name + (sprintf "_%i-%i_%iHz-%iHz." left right (fromUI low)  (fromUI high))
-                let outputFile = new FileInfo(Path.Combine(cacheDir, outFileName)) 
+                let outFileName = sourceFile.Name + (sprintf "_%i-%i_%sHz-%sHz." left right (print low)  (print high))
+                let outputFile = new FileInfo(Path.Combine(cacheDir.FullName, outFileName)) 
 
                 if not outputFile.Exists then
                     let request = 
                         new AudioUtilityRequest(
                             OffsetStart = ( left |> TimeSpan.FromMilliseconds |> N), 
                             OffsetEnd = (right |> TimeSpan.FromMilliseconds |> N),
-                            BandpassLow = (low |> float |> N),
-                            BandpassHigh = (high |> float |> N),
+                            BandpassLow = (Option.mapToNullable float low),
+                            BandpassHigh = (Option.mapToNullable float high),
                             SampleRate = (sampleRate |> fromUI |> N)
                         )  
                     //! warning: io mutation
@@ -159,6 +169,8 @@
                 let ar = new AudioRecording(outputFile.FullName)
                 ar
             )
+
+        
     
         let snippetToSpectrogram (wavSource:AudioRecording) =
             // can enable noise reduction here
@@ -247,22 +259,36 @@
 
             distancesFunc
 
-        let main sourceDirectory =
-        
-            let workflow = FELT.Workflows.Analyses.["???"]
-            let pathToTrainingData = ""
-        
+        let search templateData audioCutter (testAudioFile: FileInfo) =
+            Infof "Started analysis on file: %s" testAudioFile.FullName
 
+            
+            if  not testAudioFile.Exists then
+                failwithf "Tried to open file %s, it does not exist"  testAudioFile.FullName
 
-            // trained templates
-            let templateData = getTemplates pathToTrainingData workflow
+            //!+ Purposely broken!
+            let audioRecording = audioCutter testAudioFile TimeSpan.Zero TimeSpan.Zero None None
 
             // run aed 
             let aedEvents = [||]
 
             // for each aed event, match it to each training sample
             let analysedEvents = Array.map (compareTemplatesToEvent templateData) aedEvents
-         
+            ()
 
+        let main (config:SearchConfig) =
+        
+            let workflow = FELT.Workflows.Analyses.["???"]
+            let pathToTrainingData = ""
+        
+            // misc: partially apply the cutoff function
+            let cutSnippet = (cutSnippet config.AudioStoreDirectory)
+
+            // trained templates
+            let templateData = getTemplates pathToTrainingData workflow
+
+            // for each audio fule
+            let files = config.SourceAudioDirectory.GetFiles "*.mp3|*.wav"
+            let resultsForEachFile = Array.map (search templateData cutSnippet) files
 
             ()
