@@ -21,6 +21,7 @@ namespace MQUTeR.FSharp.Shared
                 // potentially very bad performance
                 Option.Some(lines)
             
+        let resolve path dir = let test = Path.Combine(dir, path) in if File.Exists test then true,test else false,test
                 
     
     [<AutoOpen>]

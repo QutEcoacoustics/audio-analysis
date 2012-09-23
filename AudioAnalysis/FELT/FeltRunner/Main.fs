@@ -34,10 +34,12 @@
         open System.Collections.Specialized
         open System.Diagnostics
         open System.IO
+        open System.Reflection
         open Linq.QuotationEvaluation
         open System.Reflection
         open FELT.FindEventsLikeThis
         open FELT.Results
+        open FELT.Search
         open FELT.Workflows
         open Microsoft.FSharp.Collections
         open log4net
@@ -51,12 +53,31 @@
             Environment.Exit(1);
 
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
-        let config fileName = 
-            let full = Path.GetFullPath(fileName) |> ConfigurationManager.OpenExeConfiguration
-            let appSettings:obj = upcast full.GetSection("appSettings")  
-            match appSettings with
-                | :? NameValueCollection as nvc -> full, nvc
-                | _ -> raise <| new ConfigurationErrorsException("App settings not valid")
+        let config filePath = 
+            if not <| File.Exists filePath then
+                raise <| FileNotFoundException("Cannot find the configuration file requested", filePath)
+
+            let full =
+                filePath
+                |> fun x -> let fm = new ExeConfigurationFileMap()  in fm.ExeConfigFilename <- x; fm
+                |> fun y -> System.Configuration.ConfigurationManager.OpenMappedExeConfiguration(y, ConfigurationUserLevel.None)
+            
+            let section = full.GetSection("appSettings") :?> AppSettingsSection
+            let nvc : NameValueCollection = Reflection.ReflectionHelpers.getPropertyInternal section "InternalSettings"
+            
+//            if section = null || not (section :? NameValueCollection) then
+//                raise <| new ConfigurationErrorsException("App settings not valid");
+//            else
+            full, nvc
+
+            //full, full.AppSettings.Settings
+//            let appSettings =   (full.GetSection("appSettings")  :> ConfigurationSection)  :?> AppSettingsSection
+//            full.
+//            let r = appSettings.["bbobs"]
+//            match appSettings with
+//                | :? NameValueCollection as nvc -> full, nvc
+//                | _ -> raise <| new ConfigurationErrorsException("App settings not valid")
+
 
         let suggestion() =
             Info "Start: read configuration settings..."
@@ -233,27 +254,31 @@
                     Infof "Opening file: %s" f.FullName
                     Process.Start(f.FullName) |> ignore
 
-        let search() =
+        let search analysisConfig () =
             
             Info "Reading configurations settings"
-            let configFile, config = config "Truskinger.Felt.Suggestion.config"
+            let configFile, config = config analysisConfig
             Debugf "Loaded: %s" configFile.FilePath
 
-            let WorkingDirectory = config.["WorkingDirectory"]
-            let ResultsDirectory = Path.Combine( WorkingDirectory, config.["ResultsDirectory"])
-            let SourceAudio = Path.Combine(WorkingDirectory, config.["SourceAudio"])
-            
+            // "Truskinger.Felt.Search.config"
+            let wd = config.["WorkingDirectory"]
+            let rd = Path.Combine( wd, config.["ResultsDirectory"])
+            let sad = new DirectoryInfo( Path.Combine(wd, config.["SourceAudio"]))
+            let asd = new DirectoryInfo(config.["AudioStoreDirectory"])
+            let config = { WorkingDirectory = wd; ResultsDirectory = rd; SourceAudioDirectory = sad; AudioStoreDirectory = asd}
             // execute analysis
-            FELT.Search.main SourceAudio
+            FELT.Search.main config
             
             Info "Search Completed"
             ()
 
-        let usage() =
+        let usage error () =
             Info "Incorrect paramters given"
+            if String.IsNullOrWhiteSpace error |> not then
+                Error error 
             Info "Usage: "
-            Info "      xxxxxx.exe [option]"
-            Info "Valid options are: suggestion, search"
+            Info "      xxxxxx.exe analysisOption pathToConfig"
+            Info "Valid analysisOptions are: suggestion, search"
             ()
 
         let copyLog _ =
@@ -284,15 +309,21 @@
 
             // determine analysis to run
             let first = Seq.tryHead args
-            let f : unit -> unit = 
+
+            let f = 
                 match first with
                     | Some "suggestion" -> 
                         Info "Running suggestion tool."
                         suggestion
                     | Some "search" -> 
                         Info "Running search tool."
-                        search
-                    | _ -> usage
+
+                        let configPath = Array.tryGet args 1
+                        if configPath.IsSome then
+                            (search configPath.Value)
+                        else
+                            usage "Not enough arguments supplied, missing the config path"
+                    | _ -> usage "Analysis option not valid"
 
             f()
 

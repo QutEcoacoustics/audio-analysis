@@ -18,6 +18,12 @@
                     printfn "%s: %O" prop.Name value
                 else
                     printfn "%s: ?" prop.Name)
+
+        let getPropertyInternal x prop : 'a =
+            let t = x.GetType()
+            let ps = t.GetProperties(BindingFlags.Instance ||| BindingFlags.NonPublic)
+            let p3 = Array.pick (fun (pi: PropertyInfo) -> if pi.Name = prop then Some(pi) else None) ps
+            p3.GetValue(x, null) :?> 'a
         
         let iterateProperties x f =
             let t = x.GetType()

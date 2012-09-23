@@ -28,7 +28,8 @@ namespace System
 
     [<AutoOpen>]
     module Utilities =
-        
+
+
         let inline (!>>) (arg:^b) : ^a = (^b : (static member op_Explicit: ^b -> ^a) arg)
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
 
@@ -40,6 +41,15 @@ namespace System
                     | 0 -> Option.None
                     | 1 -> Option.Some(input.[0], [||])
                     | _ -> Option.Some(input.[0], input.[1..]) 
+
+        let (|Even|Odd|) input = if input % 2 = 0 then Even else Odd
+
+        let (|LessThan|_|) y x =
+            if x < y then Some() else None
+        let (|EqualTo|_|) y x =
+            if x = y then Some() else None
+        let (|GreaterThan|_|) y x =
+            if x > y then Some() else None
         
         let (=~) input pattern =
             System.Text.RegularExpressions.Regex.IsMatch(input, pattern)
@@ -61,11 +71,21 @@ namespace System
         let curry f a b = f (a,b)
         let uncurry f (a,b) = f a b
 
+        let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
+
+        let orNone o v = if Option.isSome o then Option.get o else v
+
+        let (|?) = orNone
+
+        let (|?|) = defaultArg
+
         // http://stackoverflow.com/a/3928197/224512
         let inline isNull o = System.Object.ReferenceEquals(o, null)
 
         type N<'a when 'a: (new: unit -> 'a) and 'a: struct and 'a :> ValueType> = Nullable<'a>
         let N x = N(x)
+
+
 
         let transposeTR lst =
             let rec inner acc lst = 

@@ -39,6 +39,18 @@
         let inline mean xs = (Array.fold (+) 0.0<_> xs) / double (Array.length xs)
 
         let inline head (arr:'a array) = Seq.head arr
+        let tryGet arr index =
+            if arr = null then
+                None
+            else
+                let l = (Array.length arr) - 1
+                if l < 0 then
+                    None
+                else
+                    match index with
+                        | LessThan 0 -> None
+                        | GreaterThan l -> None
+                        | _ -> arr.[index] |> Some
 
         /// Apply a function to every element of a jagged arrray
         let mapJagged f = Array.map (Array.map f) 
