@@ -160,8 +160,8 @@ namespace AnalysisPrograms
         {
             if (args.Length < 4)
             {
-                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
-
+                LoggedConsole.WriteLine("You require at least 4 command line arguments after the analysis option.");
+                Usage();
                 throw new AnalysisOptionInvalidArgumentsException();
             }
 
@@ -739,6 +739,23 @@ namespace AnalysisPrograms
         }
 
 
+        public static void Usage()
+        {
+            LoggedConsole.WriteLine(
+            @"USAGE:
+            AnalysisPrograms.exe  koalaMale  audioPath  configPath  outputDirectory  startOffset  endOffset
+            where:
+            koalaMale:-       (string) This string identifies the analysis type as ""koalaMale"".
+            audioPath:-       (string) Path of the audio file to be processed.
+            configPath:-      (string) Path of the analysis configuration file.
+            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
+            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
+            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
+            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
+            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
+            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
+            ");
+        }
 
 
     } //end class KoalaMale

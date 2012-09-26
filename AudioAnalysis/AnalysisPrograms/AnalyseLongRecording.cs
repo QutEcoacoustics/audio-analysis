@@ -317,20 +317,38 @@ namespace AnalysisPrograms
         }
 
 
+        //public static void Usage()
+        //{
+        //    LoggedConsole.WriteLine("USAGE:");
+        //    LoggedConsole.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
+        //    LoggedConsole.WriteLine("where:");
+        //    LoggedConsole.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
+        //    LoggedConsole.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
+        //    LoggedConsole.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
+        //    LoggedConsole.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
+        //    LoggedConsole.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
+        //    LoggedConsole.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
+        //    LoggedConsole.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
+        //    LoggedConsole.WriteLine("");
+        //}
+
         public static void Usage()
         {
-            LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
-            LoggedConsole.WriteLine("where:");
-            LoggedConsole.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
-            LoggedConsole.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
-            LoggedConsole.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
-            LoggedConsole.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
-            LoggedConsole.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
-            LoggedConsole.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
-            LoggedConsole.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
-            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine(
+            @"USAGE:
+            AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset
+            where:
+            audioPath:-       (string) Path of the audio file to be processed.
+            configPath:-      (string) Path of the analysis configuration file.
+            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
+            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
+            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
+            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
+            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
+            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
+            ");
         }
+
 
     } //class AnalyseLongRecording
 }

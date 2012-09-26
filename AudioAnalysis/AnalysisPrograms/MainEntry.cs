@@ -73,16 +73,6 @@ namespace AnalysisPrograms
                     // Execute() signed off: Michael Towsey 27th July 2012
                     { "crow", strings => Crow.Execute(strings) },
 
-                    // IAnalyser - detects the oscillating portion of a male koala bellow
-                    //  { "koalaMale", KoalaMale.Dev },
-                    // Execute() signed off: Michael Towsey 27th July 2012
-                    { "koalaMale", strings => KoalaMale.Execute(strings) },
-
-                    // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-                    // { "multiAnalyser", MultiAnalyser.Dev },
-                    // Execute() signed off: Michael Towsey 27th July 2012
-                    { "multiAnalyser", strings => MultiAnalyser.Execute(strings) },
-
                     // IAnalyser - recognises human speech but not word recognition
                     // { "human", Human1.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
@@ -93,6 +83,11 @@ namespace AnalysisPrograms
                     // Execute() signed off: Michael Towsey 27th July 2012
                     { "kiwi", strings => LSKiwi3.Execute(strings) },
 
+                    // IAnalyser - detects the oscillating portion of a male koala bellow
+                    //  { "koalaMale", KoalaMale.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "koalaMale", strings => KoalaMale.Execute(strings) },
+
                     // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
                     // { "LewinsRail", LewinsRail3.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
@@ -102,6 +97,11 @@ namespace AnalysisPrograms
                     // { "machines", PlanesTrainsAndAutomobiles.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
                     { "machines", strings => PlanesTrainsAndAutomobiles.Execute(strings) },
+
+                    // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
+                    // { "multiAnalyser", MultiAnalyser.Dev },
+                    // Execute() signed off: Michael Towsey 27th July 2012
+                    { "multiAnalyser", strings => MultiAnalyser.Execute(strings) },
 
                     // calculates signal to noise ratio - CANNOT CALL FROM COMMAND LINE
                     // Signed off:  Anthony, 25th July 2012
@@ -136,7 +136,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -199,7 +199,7 @@ namespace AnalysisPrograms
             // note: Exception handling moved to CurrentDomainOnUnhandledException
             if (args.Length == 0)
             {
-                const string Msg = "ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.";
+                const string Msg = "ERROR: You have called the AnalysisPrograms.MainEntry() method without command line arguments.";
                 LoggedConsole.WriteErrorLine(Msg);
                 Usage();
                 throw new CommandMainArgumentMissingException();
@@ -321,6 +321,9 @@ Valid analysis options are:
 ");
             LoggedConsole.WriteLine("\t" + string.Join(", ", KnownAnalyses.Keys));
             LoggedConsole.WriteLine();
+            LoggedConsole.WriteLine("The first argument must be one of the above analysis options.");
+            LoggedConsole.WriteLine("The remaining arguments depend on your analysis option.");
+            //TowseyLib.FileTools.WriteTextFile(@"C:\temp.txt", string.Join(", ", KnownAnalyses.Keys));
         }
     }
 }
