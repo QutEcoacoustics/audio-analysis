@@ -648,6 +648,27 @@ namespace AnalysisPrograms
             }
         }
 
+        /// <summary>
+        /// NOTE: EDIT THE "Default" string to describethat indicates analysis type.
+        /// </summary>
+        public static void Usage()
+        {
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  " + ANALYSIS_NAME + "  audioPath  configPath  outputDirectory  startOffset  endOffset");
+            LoggedConsole.WriteLine(
+            @"
+            where:
+            ANALYSIS_NAME:-   (string) Identifies the analysis type.
+            audioPath:-       (string) Path of the audio file to be processed.
+            configPath:-      (string) Path of the analysis configuration file.
+            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
+            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
+            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
+            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
+            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
+            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
+            ");
+        }
 
 
 
