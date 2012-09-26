@@ -86,7 +86,7 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
+    <None Include="Truskinger.Felt.Search.config">
       <Link>Truskinger.Felt.Search.config</Link>
     </None>
     <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Suggestion.config">

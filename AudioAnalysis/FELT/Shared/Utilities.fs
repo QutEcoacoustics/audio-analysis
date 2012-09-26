@@ -33,6 +33,11 @@ namespace System
         let inline (!>>) (arg:^b) : ^a = (^b : (static member op_Explicit: ^b -> ^a) arg)
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
 
+        let castAs<'T> (o:obj) = 
+          match o with
+          | :? 'T as res -> res
+          | _ -> Unchecked.defaultof<'T>
+
         let inline (@@) (a: 'a) (b: 'a array) =
             Array.append [|a|] b
 

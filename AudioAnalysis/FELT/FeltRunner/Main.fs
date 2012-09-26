@@ -82,7 +82,7 @@
         let suggestion() =
             Info "Start: read configuration settings..."
 
-            let fullConfig, config = config "Truskinger.Felt.Suggestion.config"            
+            let fullConfig, config = config <| (Path.GetDirectoryName( (Assembly.GetExecutingAssembly()).Location )  +  "\\Truskinger.Felt.Suggestion.config")
             
             // settings
             let ResultsDirectory = config.["ResultsDirectory"]
@@ -97,7 +97,8 @@
 
             // ANALYSIS RUN SETTINGS
             let allKnownAnalyses = FELT.Workflows.Analyses
-            let analysesConfig = ConfigurationManager.GetSection("analyses") :?> FELT.Runner.AnalysesConfig
+            let ac = fullConfig.GetSection("analyses")
+            let analysesConfig =  castAs<AnalysesConfig> ac
             let analyses = analysesConfig.Analyses |> Seq.cast |> Seq.map (fun (ae:FELT.Runner.Analysis) -> ae.Name, allKnownAnalyses.TryFind(ae.Name) ) |> Seq.toArray
 
             if (analyses.Length = 0) then
@@ -111,7 +112,7 @@
                 fail()
 
             // Transforms settings
-            let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
+            let transform = castAs<TransformsConfig> <| fullConfig.GetSection("transformations")
             let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Features, tx.NewName, tx.Using) |> Seq.toList
 
 
@@ -262,10 +263,20 @@
 
             // "Truskinger.Felt.Search.config"
             let wd = config.["WorkingDirectory"]
-            let rd = Path.Combine( wd, config.["ResultsDirectory"])
-            let sad = new DirectoryInfo( Path.Combine(wd, config.["SourceAudio"]))
-            let asd = new DirectoryInfo(config.["AudioStoreDirectory"])
-            let config = { WorkingDirectory = wd; ResultsDirectory = rd; SourceAudioDirectory = sad; AudioStoreDirectory = asd}
+ 
+            let config = 
+                { 
+                    WorkingDirectory = wd; 
+                    ResultsDirectory =  Path.Combine( wd, config.["ResultsDirectory"]); 
+
+                    TrainingData = new FileInfo(Path.Combine(wd, config.["TrainingData"]))
+
+                    TestAudio = new DirectoryInfo(config.["TestAudio"]);
+
+                    // audio caches
+                    TrainingAudio = new DirectoryInfo(config.["TrainingAudio"]);
+                    AudioSnippetCache = new DirectoryInfo(config.["AudioStoreDirectory"]);
+                }
             // execute analysis
             FELT.Search.main config
             
