@@ -126,8 +126,10 @@
             {
                 WorkingDirectory : string;
                 ResultsDirectory : string;
-                SourceAudioDirectory : DirectoryInfo;
-                AudioStoreDirectory : DirectoryInfo;
+                TestAudio : DirectoryInfo;
+                TrainingData:  FileInfo;
+                TrainingAudio : DirectoryInfo;
+                AudioSnippetCache : DirectoryInfo;
             }
 
         let getNoiseProfile startOffset endOffset recordingID =
@@ -196,16 +198,18 @@
 
 
 
-        let getTemplates path workflow =
-            let fip = new FileInfo(path)
+        let getTemplates (fip:FileInfo) (*workflow*) =
+            
             if fip.Exists then
             
                 use stream = fip.Open FileMode.Open
                 let data : Data = Serialization.deserializeBinaryStream stream
 
+                Infof "Loaded serialised data file from %A" fip
+
                 data
             else
-                raise <| FileNotFoundException("The data file was not found: " + path, path)
+                raise <| FileNotFoundException("The data file was not found: " + fip.FullName, fip.FullName)
 
 
 
@@ -278,17 +282,18 @@
 
         let main (config:SearchConfig) =
         
-            let workflow = FELT.Workflows.Analyses.["???"]
-            let pathToTrainingData = ""
+            //let workflow = FELT.Workflows.Analyses.["???"]
+
         
             // misc: partially apply the cutoff function
-            let cutSnippet = (cutSnippet config.AudioStoreDirectory)
+            let cutSnippet = (cutSnippet config.AudioSnippetCache)
 
             // trained templates
-            let templateData = getTemplates pathToTrainingData workflow
+            let templateData = getTemplates config.TrainingData
 
             // for each audio fule
-            let files = config.SourceAudioDirectory.GetFiles "*.mp3|*.wav"
+            let files = config.TestAudio.GetFiles "*.mp3|*.wav"
+            Infof "%i files found in %A" files.Length config.TestAudio
             let resultsForEachFile = Array.map (search templateData cutSnippet) files
 
             ()
