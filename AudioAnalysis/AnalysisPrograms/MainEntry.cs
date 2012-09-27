@@ -195,6 +195,7 @@ namespace AnalysisPrograms
 
             AttachExceptionHandler();
 
+            Log.Debug("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
             // note: Exception handling moved to CurrentDomainOnUnhandledException
             if (args.Length == 0)

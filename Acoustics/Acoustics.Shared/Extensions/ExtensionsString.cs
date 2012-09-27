@@ -321,5 +321,9 @@ namespace System
         {
             return string.Format(format, args);
         }
+        public static string Format2(this string format, params object[] args)
+        {
+            return string.Format(format, args);
+        }
     }
 }
