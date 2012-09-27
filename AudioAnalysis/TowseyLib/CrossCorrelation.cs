@@ -5,7 +5,7 @@ using System.Text;
 using TowseyLib;
 
 
-namespace AnalysisPrograms
+namespace TowseyLib
 {
     public class CrossCorrelation
     {
@@ -474,4 +474,4 @@ out double[] r)
         }  //DetectXcorrelationInTwoArrays()
 
     } //class
-} //AnalysisPrograms
+} //TowseyLib
