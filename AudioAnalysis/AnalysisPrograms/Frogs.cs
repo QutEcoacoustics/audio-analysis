@@ -385,9 +385,9 @@ namespace AnalysisPrograms
         {
             //set default values - ignore those set by user
             int frameSize = 32;
-            double windowOverlap = 0.3;
-            int sampleLength = 64; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
-            //int sampleLength = 16; //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
+            double windowOverlap   = 0.3;
+            int xCorrelationLength   = 64;   //for Xcorrelation   - 64 frames @128 = 232ms, almost 1/4 second.
+            //int xCorrelationLength = 16;   //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             double dBThreshold = 12.0;
 
 
@@ -427,7 +427,7 @@ namespace AnalysisPrograms
             int colCount = sonogram.Data.GetLength(1);
 
             int nhLimit = 3; //limit of neighbourhood around maximum
-            var maxFreqArray = new int[rowCount];
+            var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
             var hitsMatrix   = new double[rowCount, colCount];
             for (int r = nhLimit; r < rowCount - nhLimit; r++)
             {
@@ -449,16 +449,12 @@ namespace AnalysisPrograms
 
             var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
 
+            DetectTrackPeriodicity(sonogram, tracks, xCorrelationLength); //adds score and periodicity to tracks
 
-            DetectFrogTracks(sonogram, tracks, sampleLength);
-            //if ((period < minPeriod) || (period > maxPeriod)) continue;
-
-
-            int topBin = (int)Math.Round(SpectralTrack.MAX_FREQ_BOUND / (double)freqBinWidth);
+            int topBin = SpectralTrack.UpperTrackBound(freqBinWidth);
             var plots = CreateScorePlots(tracks, rowCount, topBin);
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            //List<AcousticEvent> predictedEvents = new List<AcousticEvent>();
             List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks); 
             //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
             //                                                                             intensityThreshold, minDuration, maxDuration);
@@ -468,54 +464,25 @@ namespace AnalysisPrograms
         } //Analysis()
 
 
-        public static void DetectFrogTracks(BaseSonogram sonogram, List<SpectralTrack> tracks, int sampleLength)
+        public static void DetectTrackPeriodicity(BaseSonogram sonogram, List<SpectralTrack> tracks, int xCorrelationLength)
         {
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            int halfSample = sampleLength / 2;
 
             //set up a list of normalised arrays representing the spectrum - one array per freq bin
             var listOfSpectralBins = new List<double[]>();
             for (int c = 0; c < colCount; c++)
             {
                 double[] array = MatrixTools.GetColumn(sonogram.Data, c);
-                array = DataTools.NormaliseInZeroOne(array, 0, 60); //## ABSOLUTE NORMALISATION 0-60 dB #######################################################################
+                array = DataTools.NormaliseInZeroOne(array, 0, 60); //##IMPORTANT: ABSOLUTE NORMALISATION 0-60 dB #######################################
                 listOfSpectralBins.Add(array);
             }
 
             foreach (SpectralTrack track in tracks)
             {
-                int lowerBin = (int)Math.Round(track.AverageBin);
-                int upperBin = lowerBin + 1;
-                int length = track.Length;
-                //init score track and periodicity track
-                double[] score       = new double[length];
-                double[] periodicity = new double[length];
-
-                for (int r = 0; r < length; r++) // for each position in track
-                {
-                    int sampleStart = track.StartFrame - halfSample + r;
-                    if (sampleStart < 0) sampleStart = 0;
-                    double[] lowerSubarray = DataTools.Subarray(listOfSpectralBins[lowerBin], sampleStart, sampleLength);
-                    double[] upperSubarray = DataTools.Subarray(listOfSpectralBins[upperBin], sampleStart, sampleLength);
-                    upperSubarray = lowerSubarray;
-
-                    if ((lowerSubarray == null) || (upperSubarray == null)) break;
-                    if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
-                    var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub arrays already normalised
-
-                    int zeroCount = 2;
-                    for (int s = 0; s < zeroCount; s++) xCorSpectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
-                    int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
-                    periodicity[r] = 2 * sampleLength / (double)maxIdXcor / sonogram.FramesPerSecond; //convert maxID to period in seconds
-                    score[r]       = xCorSpectrum[maxIdXcor];
-                } // for loop
-
-                track.score = score;
-                track.period = periodicity;
-                //if (track.score.Average() < 0.3) track = null;
+                SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfSpectralBins, sonogram.FramesPerSecond);
             } // foreach track
-         
+
         } // DetectFrogTracks()
 
 
