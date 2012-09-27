@@ -207,6 +207,9 @@ namespace AnalysisPrograms
             // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile = fiConfig;
+
+            // added by anthony
+            analysisSettings.ConfigDict = ConfigDictionary.ReadPropertiesFile(fiConfig.FullName);
             analysisSettings.AnalysisRunDirectory = outputDirectory;
             analysisSettings.AudioFile = null;
             analysisSettings.EventsFile = null;
