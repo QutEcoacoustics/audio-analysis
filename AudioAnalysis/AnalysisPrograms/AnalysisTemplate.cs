@@ -146,15 +146,16 @@ namespace AnalysisPrograms
         {
             if (args.Length < 4)
             {
-                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
-                
+                LoggedConsole.WriteLine("You require at least 4 command line arguments after the analysis option.");
+                Usage();
                 throw new AnalysisOptionInvalidArgumentsException();
             }
 
             // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
+            string configPath    = args[1];
+            string outputDir     = args[2];
+
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             if (!diSource.Exists)
             {
@@ -211,37 +212,37 @@ namespace AnalysisPrograms
                     analysisSettings.AudioFile = new FileInfo(outputWavPath);
                 }
                 else
-                    if (parts[0].StartsWith("-events"))
+                if (parts[0].StartsWith("-events"))
+                {
+                    string eventsPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.EventsFile = new FileInfo(eventsPath);
+                }
+                else if (parts[0].StartsWith("-indices"))
+                {
+                    string indicesPath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                }
+                else if (parts[0].StartsWith("-sgram"))
+                {
+                    string sonoImagePath = Path.Combine(outputDir, parts[1]);
+                    analysisSettings.ImageFile = new FileInfo(sonoImagePath);
+                }
+                else if (parts[0].StartsWith("-start"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsStart = new TimeSpan(0, 0, s);
+                }
+                else if (parts[0].StartsWith("-duration"))
+                {
+                    int s = int.Parse(parts[1]);
+                    tsDuration = new TimeSpan(0, 0, s);
+                    if (tsDuration.TotalMinutes > 10)
                     {
-                        string eventsPath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.EventsFile = new FileInfo(eventsPath);
-                    }
-                    else if (parts[0].StartsWith("-indices"))
-                    {
-                        string indicesPath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                    }
-                    else if (parts[0].StartsWith("-sgram"))
-                    {
-                        string sonoImagePath = Path.Combine(outputDir, parts[1]);
-                        analysisSettings.ImageFile = new FileInfo(sonoImagePath);
-                    }
-                    else if (parts[0].StartsWith("-start"))
-                    {
-                        int s = int.Parse(parts[1]);
-                        tsStart = new TimeSpan(0, 0, s);
-                    }
-                    else if (parts[0].StartsWith("-duration"))
-                    {
-                        int s = int.Parse(parts[1]);
-                        tsDuration = new TimeSpan(0, 0, s);
-                        if (tsDuration.TotalMinutes > 10)
-                        {
-                            LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
+                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
 
-                            throw new AnalysisOptionInvalidDurationException();
-                        }
+                        throw new AnalysisOptionInvalidDurationException();
                     }
+                }
             }
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT

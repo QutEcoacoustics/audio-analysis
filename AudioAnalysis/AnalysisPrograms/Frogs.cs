@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Frog";
+        public const string ANALYSIS_NAME = "Frogs";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
@@ -66,7 +66,7 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Frog"; }
+            get { return ANALYSIS_NAME; }
         }
 
         private static string identifier = "Towsey." + ANALYSIS_NAME;
@@ -132,18 +132,7 @@ namespace AnalysisPrograms
             cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
             
             //#############################################################################################################################################
-            int status = Execute(cmdLineArgs.ToArray());
-            if (status != 0)
-            {
-                LoggedConsole.WriteLine("\n\n# EXECUTE RETURNED ERROR STATUS. CANNOT PROCEED!");
-
-                if (debug)
-                {
-                    Console.ReadLine();
-                    //System.Environment.Exit(99);
-                }
-                return;
-            }
+            Execute(cmdLineArgs.ToArray());
             //#############################################################################################################################################
 
 
@@ -192,19 +181,19 @@ namespace AnalysisPrograms
         /// <param name="sourcePath"></param>
         /// <param name="configPath"></param>
         /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static void Execute(string[] args)
         {
-            int status = 0;
             if (args.Length < 4)
             {
-                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
-                status = 1;
-                return status;
+                LoggedConsole.WriteLine("You require at least 4 command line arguments after the analysis option.");
+                Usage();
+                throw new AnalysisOptionInvalidArgumentsException();
             }
-            //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
+
+            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
+            string configPath    = args[1];
+            string outputDir     = args[2];
            
             // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
@@ -251,13 +240,13 @@ namespace AnalysisPrograms
                 else
                 if (parts[0].StartsWith("-duration"))
                 {
-                    int s = Int32.Parse(parts[1]);
+                    int s = int.Parse(parts[1]);
                     tsDuration = new TimeSpan(0, 0, s);
                     if (tsDuration.TotalMinutes > 10)
                     {
                         LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
-                        status = 3;
-                        return status;
+
+                        throw new AnalysisOptionInvalidDurationException();
                     }
                 }
             }
@@ -282,18 +271,20 @@ namespace AnalysisPrograms
             IAnalyser analyser = new Frogs();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
-            if (dt == null) return 6;
             //#############################################################################################################################################
 
             //ADD IN ADDITIONAL INFO TO TABLE
-            AddContext2Table(dt, tsStart, tsDuration);
-            CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
-            //DataTableTools.WriteTable(dt);
-
-            return status;
+            if (dt != null)
+            {
+                AddContext2Table(dt, tsStart, result.AudioDuration);
+                CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
+                //DataTableTools.WriteTable(augmentedTable);
+            }
+            else
+            {
+                throw new InvalidOperationException("Data table is null");
+            }
         } //Execute()
-
-
 
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
@@ -386,7 +377,9 @@ namespace AnalysisPrograms
             //set default values - ignore those set by user
             int frameSize = 32;
             double windowOverlap   = 0.3;
-            int xCorrelationLength   = 64;   //for Xcorrelation   - 64 frames @128 = 232ms, almost 1/4 second.
+            int xCorrelationLength = 256;   //for Xcorrelation   - 256 frames @801 = 320ms, almost 1/3 second.
+            //int xCorrelationLength = 128;   //for Xcorrelation   - 128 frames @801 = 160ms, almost 1/6 second.
+            //int xCorrelationLength = 64;   //for Xcorrelation   - 64 frames @128 = 232ms, almost 1/4 second.
             //int xCorrelationLength = 16;   //for Xcorrelation   - 16 frames @128 = 232ms, almost 1/4 second.
             double dBThreshold = 12.0;
 
@@ -447,43 +440,74 @@ namespace AnalysisPrograms
                 }
             }
 
+            //iii: GET TRACKS
             var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
 
-            DetectTrackPeriodicity(sonogram, tracks, xCorrelationLength); //adds score and periodicity to tracks
+            double dynamicRange = 50; // deciBels above background noise. BG noise has already been removed from each bin.
+            // convert sonogram to a list of frequency bin arrays
+            var listOfFrequencyBins = SonogramTools.Sonogram2ListOfFreqBinArrays(sonogram, dynamicRange);
+
+            foreach (SpectralTrack track in tracks) // find any periodicity in the track and calculate its score.
+            {
+                //track.CropTrack(listOfFrequencyBins);
+                SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfFrequencyBins, sonogram.FramesPerSecond);
+            } // foreach track
 
             int topBin = SpectralTrack.UpperTrackBound(freqBinWidth);
             var plots = CreateScorePlots(tracks, rowCount, topBin);
 
-            //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks); 
-            //List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerHz, upperHz, sonogram.FramesPerSecond, freqBinWidth,
-            //                                                                             intensityThreshold, minDuration, maxDuration);
-            //CropEvents(predictedEvents, upperArray);
+            //iv: CONVERT TRACKS TO ACOUSTIC EVENTS
+            List<AcousticEvent> predictedEvents = SpectralTrack.ConvertTracks2Events(tracks);
 
-            return System.Tuple.Create(sonogram, hitsMatrix, plots, predictedEvents, tsRecordingtDuration);
+            // v: GET FROG IDs
+            List<AcousticEvent> frogEvents = DetectFrogEvents(predictedEvents);
+            return System.Tuple.Create(sonogram, hitsMatrix, plots, frogEvents, tsRecordingtDuration);
         } //Analysis()
 
 
-        public static void DetectTrackPeriodicity(BaseSonogram sonogram, List<SpectralTrack> tracks, int xCorrelationLength)
+
+        public static List<AcousticEvent> DetectFrogEvents(List<AcousticEvent> events)
         {
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-
-            //set up a list of normalised arrays representing the spectrum - one array per freq bin
-            var listOfSpectralBins = new List<double[]>();
-            for (int c = 0; c < colCount; c++)
+            var frogEvents = new List<AcousticEvent>();
+            foreach (AcousticEvent ae in events)
             {
-                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
-                array = DataTools.NormaliseInZeroOne(array, 0, 60); //##IMPORTANT: ABSOLUTE NORMALISATION 0-60 dB #######################################
-                listOfSpectralBins.Add(array);
+                double periodicity = 1 / ae.Periodicity;
+                if ((ae.DominantFreq > 2350) && (ae.DominantFreq < 2750))
+                {
+                    if ((periodicity > 41) && (periodicity < 48) && (ae.Score > 2.00) && (ae.Duration > 0.3))
+                    {
+                        ae.Name = "GBF";
+                    }
+                }
+                else
+                if ((ae.DominantFreq > 600) && (ae.DominantFreq < 1000))
+                {
+                    if ((periodicity > 60) && (periodicity < 70) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                    {
+                        ae.Name = "Mixophyes fleayi";
+                    }
+                }
+                else
+                if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2450))
+                {
+                    if ((periodicity > 40) && (periodicity < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
+                    {
+                        ae.Name = "Uperoleia fusca";
+                    }
+                }
+                else
+                if ((ae.DominantFreq > 1900) && (ae.DominantFreq < 2300))
+                {
+                    if ((periodicity > 42) && (periodicity < 50) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                    {
+                        ae.Name = "Pseudophryne coriacea";
+                    }
+                }
+                frogEvents.Add(ae);
             }
+            return frogEvents;
+        }
 
-            foreach (SpectralTrack track in tracks)
-            {
-                SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfSpectralBins, sonogram.FramesPerSecond);
-            } // foreach track
-
-        } // DetectFrogTracks()
 
 
         public static List<Plot> CreateScorePlots(List<SpectralTrack> tracks, int rowCount, int topBin)
@@ -491,7 +515,7 @@ namespace AnalysisPrograms
             double herzPerBin = tracks[0].herzPerBin;
             //init score arrays
             var scores = new List<double[]>();
-            for (int c = 1; c < topBin; c++) //ignore DC bin
+            for (int c = 1; c <= topBin; c++) //ignore DC bin
             {
                 var array = new double[rowCount];
                 scores.Add(array);
@@ -501,10 +525,11 @@ namespace AnalysisPrograms
             foreach (SpectralTrack track in tracks)
             {
                 int sampleStart = track.StartFrame;
-                int bin = (int)Math.Round(track.AverageBin);
+                int bin = (int)Math.Round(track.AverageBin) - 1; //get the tracks frequency i.e. bin number
+                if(bin >= topBin) continue;
                 for (int r = 0; r < track.Length; r++) // for each position in track
                 {
-                    scores[bin][sampleStart + r] = track.score[r];
+                    scores[bin][sampleStart + r] = track.periodicityScore[r];
                 }
             }
 
@@ -519,30 +544,6 @@ namespace AnalysisPrograms
             }
             return plots;
         } // CreateScorePlots()
-
-        
-        //public static void CropEvents(List<AcousticEvent> events, double[] intensity)
-        //{
-        //    double severity = 0.1;
-        //    int length = intensity.Length;
-
-        //    foreach (AcousticEvent ev in events)
-        //    {
-        //        int start = ev.oblong.r1;
-        //        int end   = ev.oblong.r2;
-        //        double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
-        //        int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
-
-        //        int newMinRow = start + bounds[0];
-        //        int newMaxRow = start + bounds[1];
-        //        if (newMaxRow >= length) newMaxRow = length - 1;
-
-        //        Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
-        //        ev.oblong = o;
-        //        ev.TimeStart = newMinRow * ev.FrameOffset;
-        //        ev.TimeEnd   = newMaxRow * ev.FrameOffset;
-        //    }
-        //}
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> plots, List<AcousticEvent> predictedEvents)
@@ -574,21 +575,23 @@ namespace AnalysisPrograms
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,
-                                 AudioAnalysisTools.Keys.EVENT_START_MIN,
-                                 AudioAnalysisTools.Keys.EVENT_START_SEC, 
-                                 AudioAnalysisTools.Keys.EVENT_START_ABS,
-                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,
-                                 AudioAnalysisTools.Keys.EVENT_DURATION, 
+            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,        //1
+                                 AudioAnalysisTools.Keys.EVENT_START_MIN,    //2
+                                 AudioAnalysisTools.Keys.EVENT_START_SEC,    //3
+                                 AudioAnalysisTools.Keys.EVENT_START_ABS,    //4
+                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,   //5
+                                 AudioAnalysisTools.Keys.EVENT_DURATION,     //6
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.Keys.EVENT_NAME,
+                                 AudioAnalysisTools.Keys.EVENT_NAME,         //7
+                                 AudioAnalysisTools.Keys.DOMINANT_FREQUENCY,
+                                 AudioAnalysisTools.Keys.OSCILLATION_RATE,
                                  AudioAnalysisTools.Keys.EVENT_SCORE,
                                  AudioAnalysisTools.Keys.EVENT_NORMSCORE 
 
                                };
             //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), /*typeof(double), */ typeof(string), 
-                             typeof(double), typeof(double) };
+            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), 
+                             typeof(double), typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
             if (predictedEvents.Count == 0) return dataTable;
@@ -601,8 +604,10 @@ namespace AnalysisPrograms
                 row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duration in seconds
                 //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
                 row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
-                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
+                row[AudioAnalysisTools.Keys.DOMINANT_FREQUENCY] = (double)ev.DominantFreq;
+                row[AudioAnalysisTools.Keys.OSCILLATION_RATE] = 1 / (double)ev.Periodicity;
                 row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -796,6 +801,31 @@ namespace AnalysisPrograms
                 };
             }
         }
+
+
+        /// <summary>
+        /// NOTE: EDIT THE "Default" string to describethat indicates analysis type.
+        /// </summary>
+        public static void Usage()
+        {
+            LoggedConsole.WriteLine("USAGE:");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  " + ANALYSIS_NAME + "  audioPath  configPath  outputDirectory  startOffset  endOffset");
+            LoggedConsole.WriteLine(
+            @"
+            where:
+            ANALYSIS_NAME:-   (string) Identifies the analysis type.
+            audioPath:-       (string) Path of the audio file to be processed.
+            configPath:-      (string) Path of the analysis configuration file.
+            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
+            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
+            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
+            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
+            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
+            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
+            ");
+        }
+
+
 
     } //end class Frogs
 }

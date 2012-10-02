@@ -632,6 +632,8 @@ namespace TowseyLib
 
     //=============================================================================
 
+
+    
     static public int[] Peaks_CropLowAmplitude(double[] data, double severity)
     {
         int length = data.Length;
@@ -639,7 +641,7 @@ namespace TowseyLib
         double min, max;
         DataTools.MinMax(data, out min, out max);
         double range = max - min;
-        double threshold = min + (range * severity);      //must be 10% of max.
+        double threshold = min + (range * severity); //must be 10% of max.
 
         for (int i = 0; i < data.Length - 1; i++)
         {
@@ -659,6 +661,7 @@ namespace TowseyLib
         }
         return bounds;
     }
+
      /// Returns the location of the first and last peaks
     static public int[] Peaks_CropToFirstAndLast(double[] data, double severity)
     {

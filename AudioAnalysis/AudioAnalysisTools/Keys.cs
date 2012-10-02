@@ -16,7 +16,7 @@ namespace AudioAnalysisTools
         public static string DCT_DURATION = "DCT_DURATION";
         public static string DCT_THRESHOLD = "DCT_THRESHOLD";
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
-        public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
+        public static string DOMINANT_FREQUENCY = "DOMINANT_FREQUENCY";
         public static string DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string FRAME_LENGTH = "FRAME_LENGTH";
@@ -38,6 +38,8 @@ namespace AudioAnalysisTools
         public static string NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
         public static string NOISE_DO_REDUCTION = "DO_NOISE_REDUCTION";
         public static string NOISE_BG_REDUCTION = "BG_NOISE_REDUCTION";
+        public static string OSCILLATION_RATE = "OSCILLATION_RATE";
+        public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
         public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
