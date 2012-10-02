@@ -59,6 +59,11 @@ namespace AudioAnalysisTools
         public string Score2Name { get; set; }
         /// <summary> second score if required</summary>
         public double Score2 { get; set; } // e.g. for Birgits recognisers
+
+
+        public double Periodicity  { get; set; } // for events which have an oscillating acoustic energy - used for frog calls
+        public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
+
         // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         // double I1Var;    //,
         // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 

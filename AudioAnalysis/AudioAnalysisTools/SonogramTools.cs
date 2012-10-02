@@ -127,6 +127,24 @@ namespace AudioAnalysisTools
         }//end AI_DimRed
 
 
+        public static List<double[]> Sonogram2ListOfFreqBinArrays(BaseSonogram sonogram, double dynamicRange)
+        {
+            //int rowCount = sonogram.Data.GetLength(0);
+            int colCount = sonogram.Data.GetLength(1);
+
+            //set up a list of normalised arrays representing the spectrum - one array per freq bin
+            var listOfFrequencyBins = new List<double[]>();
+            for (int c = 0; c < colCount; c++)
+            {
+                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
+                array = DataTools.NormaliseInZeroOne(array, 0, 50); //##IMPORTANT: ABSOLUTE NORMALISATION 0-50 dB #######################################
+                listOfFrequencyBins.Add(array);
+            }
+            return listOfFrequencyBins;
+        } // Sonogram2ListOfFreqBinArrays()
+
+
+
         public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
             int frameLength = 512;
