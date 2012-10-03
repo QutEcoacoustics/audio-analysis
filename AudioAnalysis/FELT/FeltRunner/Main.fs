@@ -53,12 +53,27 @@
             Environment.Exit(1);
 
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
+        let sep = Path.DirectorySeparatorChar |> string
         let config filePath = 
-            if not <| File.Exists filePath then
-                raise <| FileNotFoundException("Cannot find the configuration file requested", filePath)
+            let filePath' = 
+                match filePath with
+                    | "" | null -> None
+                    | s when File.Exists s -> Some(s)
+                    | _ ->
+                        // okay try automatic resolution
+                        let fn = Path.GetFileName filePath
+                        let ed =  Path.GetDirectoryName <| Assembly.GetExecutingAssembly().Location
+                        let guess = [ ed + sep + fn; ed + sep + "ConfigFiles" + sep + fn]
+                        List.tryPick (fun p ->  if File.Exists p then Some(p) else None) guess
+                        
+
+            
+            if Option.isNone filePath' then
+                 raise  <| FileNotFoundException("Cannot find the configuration file requested", filePath)
 
             let full =
-                filePath
+                filePath'
+                |> Option.get
                 |> fun x -> let fm = new ExeConfigurationFileMap()  in fm.ExeConfigFilename <- x; fm
                 |> fun y -> System.Configuration.ConfigurationManager.OpenMappedExeConfiguration(y, ConfigurationUserLevel.None)
             
@@ -82,7 +97,7 @@
         let suggestion() =
             Info "Start: read configuration settings..."
 
-            let fullConfig, config = config <| (Path.GetDirectoryName( (Assembly.GetExecutingAssembly()).Location )  +  "\\Truskinger.Felt.Suggestion.config")
+            let fullConfig, config = config "Truskinger.Felt.Suggestion.config"
             
             // settings
             let ResultsDirectory = config.["ResultsDirectory"]
@@ -263,6 +278,9 @@
 
             // "Truskinger.Felt.Search.config"
             let wd = config.["WorkingDirectory"]
+
+            
+            
  
             let config = 
                 { 
@@ -276,6 +294,12 @@
                     // audio caches
                     TrainingAudio = new DirectoryInfo(config.["TrainingAudio"]);
                     AudioSnippetCache = new DirectoryInfo(config.["AudioStoreDirectory"]);
+
+                    AedConfig = 
+                        {
+                            SmallAreaThreshold = config.["aed_smallAreaThreshold"] |> int |> LanguagePrimitives.Int32WithMeasure;
+                            IntensityThreshold = config.["aed_intensityThreshold"] |> tou2;
+                        }
                 }
             // execute analysis
             FELT.Search.main config
@@ -333,7 +357,8 @@
                         if configPath.IsSome then
                             (search configPath.Value)
                         else
-                            usage "Not enough arguments supplied, missing the config path"
+                            Warn "Config path not specified, will attempt to load default"
+                            (search  "Truskinger.Felt.Search.config")
                     | _ -> usage "Analysis option not valid"
 
             f()

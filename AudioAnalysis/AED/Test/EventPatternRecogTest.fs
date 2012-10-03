@@ -8,7 +8,7 @@ open QutSensors.AudioAnalysis.AED.EventPatternRecog
 open QutSensors.AudioAnalysis.AED.EventPatternRecog.EprInternals
 open QutSensors.AudioAnalysis.AED.Util
 
-let convert s = Seq.map (fun r -> addDimensions r 1.0<s> 1.0<Hz>) s
+let convert s = Seq.map (fun r -> addDimensions 1.0<s> 1.0<Hz> r) s
 let rem r = removeDimensions r 1.0<s> 1.0<Hz>
 let unconvert s = Seq.map (fun r -> removeDimensions r 1.0<s> 1.0<Hz>) s
 let groundParrotTemplate = convert groundParrotTemplate

@@ -5,6 +5,7 @@ open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Common
 open FsCheckArbs
 open Xunit
+open QutSensors.AudioAnalysis.AED.Util
 
 [<Fact>]
 let testRemoveSubbandModeIntensities () =
@@ -68,7 +69,7 @@ let testJoinVerticalLines () =
     testAll f
 
 [<Fact>]
-let aeToMatrixBounds () = chk (fun ae -> let m = aeToMatrix ae in m.NumRows = ae.Bounds.Height && m.NumCols = ae.Bounds.Width)
+let aeToMatrixBounds () = chk (fun ae -> let m = aeToMatrix ae in m.NumRows = (height ae.Bounds) && m.NumCols = (width ae.Bounds))
     
 [<Fact>]
 let aeToMatrixElements () =

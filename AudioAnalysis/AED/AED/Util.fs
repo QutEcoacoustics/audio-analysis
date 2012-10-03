@@ -74,24 +74,29 @@ let matrixMapi2Unzip f (m:matrix) =
 /// A unit of measure for a Pixel
 [<Measure>] type px
 let px = 1.0<px>
+
 type Pixel = float<px>
     
+let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
-type Rectangle<'a, 'b> = {Left:'a; Top:'b; Right:'a; Bottom:'b; Width:'a; Height:'b;}
+type Rectangle<'a , 'b> = 
+    {Left:'a; Top:'b; Right:'a; Bottom:'b; }
+
+type Rectangle2<'a> = Rectangle<'a, 'a>
+
+
 //type RectangleF<[<Measure>]'b, [<Measure>]'c> = {Left:float<'b>; Top:float<'c>; Right:float<'b>; Bottom:float<'c>; Width:float<'b>; Height:float<'c>;}
 //type Rectangle<[<Measure>]'b, [<Measure>]'c> = {Left:int<'b>; Top:int<'c>; Right:int<'b>; Bottom:int<'c>; Width:int<'b>; Height:int<'c>;}
 
 //let r = {Left=3.0<m>; Top=6.0<s>; Right=5.0<m>; Bottom=2.0<s>; Width=3.0<m>; Height=9.0<s>;}
 //let r = {Left=3.0; Top=6.0; Right=5.0; Bottom=2.0; Width=3.0; Height=9.0;}
 
-let inline addDimensions (r:Rectangle<'a,'b>) (convertA:'c) (convertB:'d) : Rectangle<'c,'d> = 
+let inline addDimensions  (convertA:'c) (convertB:'d) (r:Rectangle<'a,'b>) : Rectangle<'c,'d> = 
     {
         Left= r.Left * convertA;
         Top= r.Top * convertB;
         Right= r.Right * convertA;
         Bottom= r.Bottom * convertB;
-        Width= r.Width * convertA;
-        Height= r.Height * convertB;
     }
 
 let inline removeDimensions (r:Rectangle<'a,'b>) (convertA:'a) (convertB:'b) : Rectangle<'c,'d> = 
@@ -100,15 +105,13 @@ let inline removeDimensions (r:Rectangle<'a,'b>) (convertA:'a) (convertB:'b) : R
         Top= r.Top / convertB;
         Right= r.Right / convertA;
         Bottom= r.Bottom / convertB;
-        Width= r.Width / convertA;
-        Height= r.Height / convertB;
     }
     
 type EventRect = Rectangle<float<s>, float<Hz>>
 type pxf = float<px>
 
-let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b; Width=r-l; Height=t-b;}
-let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1; Width=w; Height=h;}
+let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b}
+let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1}
 let inline cornersToRect2 (l, r) (t, b) = cornersToRect l r t b
 let fcornersToRect (l:float) r (t:float) b = cornersToRect l r t b // for C#
 let inline left r = r.Left
@@ -117,9 +120,12 @@ let inline top r = r.Top
 let inline bottom r = r.Bottom
 let inline bottomLeft r = (r.Left, r.Bottom)
 
-let inline width r = r.Width
-let inline height r = r.Height
-let inline area r = r.Width * r.Height
+let inline width r = (right r) - (left r)
+let inline height r = (top r) - (bottom r)
+let inline area r = (width r) - (height r)
+
+let inline toFloatRect r =
+    cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
     
 (* This is currently done the easy, inefficient way.
 

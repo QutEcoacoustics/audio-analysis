@@ -68,16 +68,19 @@
         open System.Diagnostics
         open System.IO
         open QutSensors.AudioAnalysis.AED.Util
+        open QutSensors.AudioAnalysis.AED
         open Acoustics.Shared
         open Acoustics.Tools
         open Acoustics.Tools.Audio
         open Acoustics.Tools.Wav
         open AudioAnalysisTools
         open Microsoft.FSharp.Core
+        open Microsoft.FSharp.Math
         open Microsoft.FSharp.Math.SI
         open FELT
         open FELT.Classifiers
         open MQUTeR.FSharp.Shared
+        open System.IO
         open Microsoft.FSharp.Collections
         open TowseyLib
 
@@ -95,6 +98,7 @@
         module Bound =
             let inline width b = b.duration
             let inline height b = b.endFrequency - b.startFrequency
+            let inline create d sf ef = {duration = d; startFrequency = sf; endFrequency = ef}
 
         open Bound
 
@@ -104,10 +108,10 @@
             let x p = p.x
             let y p = p.y
             let toTuple p = p.x, p.y
-
+            let create x y = {x = x; y = y}
 
         let centroid (ae: Rectangle<float<_>,float<_>>) =
-            {x = left ae + (ae.Width / 2.0) ; y = top ae  + (ae.Height / 2.0)}
+            {x = left ae + ((Util.width ae) / 2.0) ; y = top ae  + ((Util.height ae) / 2.0)}
 
         let inline centerToEdges center width =
             let h = LanguagePrimitives.DivideByInt width 2
@@ -122,6 +126,13 @@
             Bounds : EventRect
         }    
 
+
+        type AedConfig =  {
+            SmallAreaThreshold : int<px ^ 2>;
+            IntensityThreshold : float<dB>;
+
+        }
+
         type SearchConfig =
             {
                 WorkingDirectory : string;
@@ -130,20 +141,22 @@
                 TrainingData:  FileInfo;
                 TrainingAudio : DirectoryInfo;
                 AudioSnippetCache : DirectoryInfo;
+                AedConfig : AedConfig;
             }
 
         let getNoiseProfile startOffset endOffset recordingID =
         
             raise <| new NotImplementedException()
 
-        let cutSnippet (cacheDir: DirectoryInfo) =
+        type AudioCutterClosure = FileInfo -> TimeSpan -> TimeSpan -> Option<Hertz> -> Option<Hertz> -> AudioRecording
+        let cutSnippet (cacheDir: DirectoryInfo) : AudioCutterClosure =
             let mau = new MasterAudioUtility();
             let inline round' (x:float<'a>) = 
                 x |> fromU |> round |> int |> LanguagePrimitives.Int32WithMeasure<'a>
             let sampleRate = 22050<Hz>
             let inline print x = if Option.isSome x then x.Value |> fromUI |> string else "--"
 
-            (fun (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) (lowBand:Option<Hertz>) (highBand:Option<Hertz>) ->       
+            let f  (sourceFile:FileInfo) (center:TimeSpan) (duration:TimeSpan) lowBand highBand =
 
                 let left, right = 
                     let h = duration.TotalMilliseconds / 2.0 
@@ -170,8 +183,15 @@
                 // returns a wav
                 let ar = new AudioRecording(outputFile.FullName)
                 ar
-            )
+            // return closure
+            f
 
+        let getSnippetInfo =
+            let mau = new MasterAudioUtility();
+
+            (fun (sourceFile:FileInfo) ->
+                mau.Info(sourceFile)    
+            )
         
     
         let snippetToSpectrogram (wavSource:AudioRecording) =
@@ -203,7 +223,7 @@
             if fip.Exists then
             
                 use stream = fip.Open FileMode.Open
-                let data : Data = Serialization.deserializeBinaryStream stream
+                let data : MQUTeR.FSharp.Shared.CacheFormat = Serialization.deserializeBinaryStream stream
 
                 Infof "Loaded serialised data file from %A" fip
 
@@ -211,24 +231,42 @@
             else
                 raise <| FileNotFoundException("The data file was not found: " + fip.FullName, fip.FullName)
 
+        let inline rescale (oldRange:Interval<'a>) (newRange:Interval<'b>) (v:'a) : 'b =
+            let fraction : 'c = (v - oldRange.Lower) / (Interval.difference oldRange)
+            let newValue : 'b = (fraction  * (Interval.difference newRange)) + newRange.Lower
+            newValue
+
+        let nyquist = 11025.0<Hz>
+        let pixelMax = 256.0<px>
+        let rHertz = rescale (Interval.create 0G nyquist) (Interval.create 0.0<px> pixelMax)
+        let rSeconds duration horizPixels = rescale (Interval.create 0G duration) (Interval.create 0.0<px> horizPixels)
+        let rToHertz = rescale   (Interval.create 0.0<px> pixelMax) (Interval.create 0.0<Hz> nyquist)
+        let rToSeconds duration horizPixels = rescale (Interval.create 0.0<px> horizPixels) (Interval.create 0.0<s> duration)
+
+        let convertToPixels duration horizPixels (bound: Bound<float<s>, float<Hz>>) =
+            
+            
+            let u = rHertz bound.endFrequency
+            let l = rHertz bound.startFrequency
+            let d = rSeconds duration horizPixels bound.duration 
+            Bound.create d l u
+
+        let convertToDomainUnits duration horizPixels  bound= 
+
+                
+            Bound.create (rToSeconds duration horizPixels bound.duration) (rToHertz bound.startFrequency) (rToHertz bound.endFrequency)
 
 
-        let remapBoundsOfAnEvent bounds event =
+        let inline remapBoundsOfAnEvent bounds event =
             let centerAndAlign bound =
                 // to do: sense checking
                 Some <| centroidToRect event (width bound) (height bound)
             Array.map (centerAndAlign) bounds
             |> Array.choose (id)
 
-
-        let compareEvents eventA eventB =
-            // some sort of classification
-
-            3.0
-
         let classifier : ClassifierBase = upcast new EuclideanClassifier(true)
 
-        let compareTemplatesToEvent (templateData:Data) (event:SpectrogramPoint) =
+        let compareTemplatesToEvent (templateData:Data)  testAudioRecording (testSpectrogram: SpectralSonogram) (event: Rectangle2<float<px>>) =
             // import boundaries            
             let bounds = 
                 let getBound headers = 
@@ -243,7 +281,9 @@
                 templateData.Instances |> Map.scanAll |> fun (h,v) -> Seq.map (getBound h) v |> Seq.toArray
         
             // create copies of the "event" with different bounds, all centered on one POI
-            let overlays = remapBoundsOfAnEvent bounds event
+            Diagnostics.Debugger.Break() //! make sure params to conversion are correct
+            ////let event' = convertToDomainUnits (testSpectrogram.FrameDuration * testSpectrogram.FrameCount) (testSpectrogram.FrameCount |> tou2) event
+            let overlays = [||] //// remapBoundsOfAnEvent bounds event
 
             // for each overlay, extract stats
             let possibleEvents = extractFeatures overlays
@@ -263,21 +303,33 @@
 
             distancesFunc
 
-        let search templateData audioCutter (testAudioFile: FileInfo) =
-            Infof "Started analysis on file: %s" testAudioFile.FullName
-
+        let search templateData (audioCutter: AudioCutterClosure) (aedConfig: AedConfig)  testAudioFile =
+            Infof "Started analysis on file: %s"  <| IO.fullName testAudioFile
             
             if  not testAudioFile.Exists then
                 failwithf "Tried to open file %s, it does not exist"  testAudioFile.FullName
 
-            //!+ Purposely broken!
-            let audioRecording = audioCutter testAudioFile TimeSpan.Zero TimeSpan.Zero None None
+
+
+            // check that the file is not too big
+            let info = getSnippetInfo testAudioFile
+            if info.Duration.Value > 10.0.Minutes then
+                Warnf "Current test file (%A) is over 10 Minutes long (%f m) - this may take a while!"  testAudioFile info.Duration.Value.TotalMinutes
+
+            let audioRecording = audioCutter testAudioFile TimeSpan.Zero info.Duration.Value None None
+            let spectrogram = snippetToSpectrogram audioRecording
+            
 
             // run aed 
-            let aedEvents = [||]
+            Diagnostics.Debug.Assert( spectrogram.NyquistFrequency = 11025)
+
+            let aedEvents = 
+                AcousticEventDetection.detectEventsMinor (float aedConfig.IntensityThreshold) (int aedConfig.SmallAreaThreshold) (0.0, float spectrogram.NyquistFrequency) spectrogram.Data
+                |> Seq.map (toFloatRect >> addDimensions px px)
+                
 
             // for each aed event, match it to each training sample
-            let analysedEvents = Array.map (compareTemplatesToEvent templateData) aedEvents
+            let analysedEvents = Seq.map (compareTemplatesToEvent templateData audioRecording spectrogram) aedEvents
             ()
 
         let main (config:SearchConfig) =
@@ -291,9 +343,11 @@
             // trained templates
             let templateData = getTemplates config.TrainingData
 
+            
+
             // for each audio fule
-            let files = config.TestAudio.GetFiles "*.mp3|*.wav"
+            let files = config.TestAudio.GetFiles "*.wav"
             Infof "%i files found in %A" files.Length config.TestAudio
-            let resultsForEachFile = Array.map (search templateData cutSnippet) files
+            let resultsForEachFile = Array.map (search templateData.CachedData cutSnippet config.AedConfig ) files
 
             ()

@@ -178,7 +178,7 @@ module EprInternals =
     ///         any Rect whise score is greater then min result,
     ///             has its value and a ?normalised? score yielded            
     let detect template minScore aes = 
-        let convert r = addDimensions r 1.0<s> 1.0<Hz>
+        let convert r = addDimensions 1.0<s> 1.0<Hz> r
 
         let t' = Seq.map convert template
         let aes' = Seq.map convert aes

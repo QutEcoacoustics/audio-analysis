@@ -204,7 +204,7 @@ namespace AnalysisPrograms
             ////Log.WriteIfVerbose("# Output folder =" + outputDir);
             ////Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             ////FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
-            TowseyLib.Log.WriteLine("WARN: output file writing disabled in build");
+            Log.Warn("Output file writing disabled in build");
 
             // READ PARAMETER VALUES FROM INI FILE
             double intensityThreshold;
