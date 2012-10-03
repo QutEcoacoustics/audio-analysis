@@ -127,7 +127,6 @@
                 Classifier(new EuclideanClassifier())
                 ]
             );
-
             (
                 "WebsiteWorkFlow-SaveBinary", 
                 [ 
@@ -135,7 +134,17 @@
                 Selection(new OneForOneSelector());
                 Transformer(new Transformers.ZScoreNormalise());
                 Trainer(new GroupTrainer()); 
-                Result(OutFile(new FileInfo("D:\Work\Sensors\AudioDataStorage\suggestions\cachedFile.feltcache")))
+                Result(OutFile(new FileInfo("D:\\Work\\Sensors\\AudioDataStorage\\suggestions\\cachedFile.feltcache")))
+                //Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
+                "SearchWorkFlow-SaveBinary-Basic", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Trainer(new GroupTrainer()); 
+                Result(OutFile(new FileInfo("F:\\IF49\\Work\\Q2\\Large Scale\\Training Data\\cachedFile.feltcache")))
                 //Classifier(new EuclideanClassifier())
                 ]
             );

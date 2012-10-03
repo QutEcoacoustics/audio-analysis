@@ -86,7 +86,7 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Truskinger.Felt.Search.config">
+    <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
       <Link>Truskinger.Felt.Search.config</Link>
     </None>
     <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Suggestion.config">
@@ -109,6 +109,11 @@
     <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
       <Name>Acoustics.Shared</Name>
       <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AED\AED\AED.fsproj">
+      <Name>AED</Name>
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\FELT\FELT.fsproj">

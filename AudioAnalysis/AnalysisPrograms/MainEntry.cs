@@ -12,11 +12,12 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
 
+    using Acoustics.Shared.Debugging;
 
     using AnalysisPrograms.Production;
 
@@ -48,7 +49,7 @@ namespace AnalysisPrograms
 
                     // 3. Produces a sonogram from an audio file - EITHER custom OR via SOX
                     // Signed off: Michael Towsey 31st July 2012
-                    { "audio2sonogram", strings => Audio2Sonogram.Main(strings) },
+                    { "audio2sonogram", Audio2Sonogram.Main },
 
                     // 4. Produces a tracks image of column values in a csv file - one track per csv column.
                     // Signed off: Michael Towsey 27th July 2012
@@ -61,12 +62,12 @@ namespace AnalysisPrograms
                     // extracts acoustic indices from one minute segment
                     // { "acousticIndices", Acoustic.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "acousticIndices", strings => Acoustic.Execute(strings) },
+                    { "acousticIndices", Acoustic.Execute },
 
                     // IAnalyser - detects canetoad calls as acoustic events
                     // { "canetoad", Canetoad.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "canetoad", strings => Canetoad.Execute(strings) },
+                    { "canetoad", Canetoad.Execute },
 
                     // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
                     // { "crow", Crow.Dev },
@@ -81,12 +82,12 @@ namespace AnalysisPrograms
                     // IAnalyser - little spotted kiwi calls from Andrew @ Victoria university. Versions 1 and 2 are obsolete.
                     // { "kiwi", LSKiwi3.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "kiwi", strings => LSKiwi3.Execute(strings) },
+                    { "kiwi", LSKiwi3.Execute },
 
                     // IAnalyser - detects the oscillating portion of a male koala bellow
                     //  { "koalaMale", KoalaMale.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "koalaMale", strings => KoalaMale.Execute(strings) },
+                    { "koalaMale", KoalaMale.Execute },
 
                     // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
                     // { "LewinsRail", LewinsRail3.Dev },
@@ -96,12 +97,12 @@ namespace AnalysisPrograms
                     // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train soun 
                     // { "machines", PlanesTrainsAndAutomobiles.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "machines", strings => PlanesTrainsAndAutomobiles.Execute(strings) },
+                    { "machines", PlanesTrainsAndAutomobiles.Execute },
 
                     // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
                     // { "multiAnalyser", MultiAnalyser.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "multiAnalyser", strings => MultiAnalyser.Execute(strings) },
+                    { "multiAnalyser", MultiAnalyser.Execute },
 
                     // calculates signal to noise ratio - CANNOT CALL FROM COMMAND LINE
                     // Signed off:  Anthony, 25th July 2012
@@ -136,7 +137,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -283,6 +284,7 @@ namespace AnalysisPrograms
             }
         }
 
+        [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1027:TabsMustNotBeUsed", Justification = "Reviewed. Suppression is OK here.")]
         private static void AttachDebugger(ref string[] args)
         {
             string noDebug = "-nodebug".ToLowerInvariant();
@@ -298,7 +300,19 @@ namespace AnalysisPrograms
                     "Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
                 if (Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y")
                 {
-                    Debugger.Launch();
+                    var vsProcess =
+                        VisualStudioAttacher.GetVisualStudioForSolutions(
+                            new List<string>() { "AudioAnalysis2012.sln", "AudioAnalysis.sln" });
+
+                   	if (vsProcess != null) 
+                   	{
+                        VisualStudioAttacher.AttachVisualStudioToProcess(vsProcess, Process.GetCurrentProcess());
+                   	}
+                   	else
+                   	{
+                   		// try and attach the old fashioned way
+                   		Debugger.Launch();
+                   	}
                 }
 
                 if (Debugger.IsAttached)
@@ -324,7 +338,9 @@ Valid analysis options are:
             LoggedConsole.WriteLine();
             LoggedConsole.WriteLine("The first argument must be one of the above analysis options.");
             LoggedConsole.WriteLine("The remaining arguments depend on your analysis option.");
-            //TowseyLib.FileTools.WriteTextFile(@"C:\temp.txt", string.Join(", ", KnownAnalyses.Keys));
+
+            // I'll leave this note here for Michael, why do you do these things? just run the console app and copy the output... or pipe the output into a file... or open the most recent log file!
+            ////TowseyLib.FileTools.WriteTextFile(@"C:\temp.txt", string.Join(", ", KnownAnalyses.Keys));
         }
     }
 }

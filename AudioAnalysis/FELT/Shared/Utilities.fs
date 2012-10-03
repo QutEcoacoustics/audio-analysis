@@ -16,11 +16,12 @@ namespace System
     
     [<AutoOpen>]
     module Measures =
-        
+        [<Measure>] type dB
         [<Measure>] type Sample
 
         let inline tou<[<Measure>]'u> (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
-        let tou2 (x:float) : float<'u> = LanguagePrimitives.FloatWithMeasure x
+        let inline tou2 (x) : float<'u> = x |> float |> LanguagePrimitives.FloatWithMeasure
+
         let fromU (x:float<_>) = float x
         let fromUI (x:int<_>) = int x
                        
@@ -90,7 +91,13 @@ namespace System
         type N<'a when 'a: (new: unit -> 'a) and 'a: struct and 'a :> ValueType> = Nullable<'a>
         let N x = N(x)
 
-
+        type Nullable<'a when 'a : struct
+                  and 'a : (new : unit -> 'a)
+                  and 'a :> System.ValueType> with
+            member x.AsOption() =
+                match x.HasValue with
+                | true  -> Some(x.Value)
+                | false -> None
 
         let transposeTR lst =
             let rec inner acc lst = 
@@ -110,7 +117,3 @@ namespace System
                 state
             
 
-        type System.Array with
-            member this.zeroLength =
-                this.Length - 1
-            

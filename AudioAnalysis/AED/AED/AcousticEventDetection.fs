@@ -6,7 +6,7 @@ open TowseyLib
 open Util
 open Option
 
-let frequencyToPixels rndFunc f  : int = int (rndFunc ((255.0 * f) / Default.freqMax))
+let frequencyToPixels rndFunc f = int (rndFunc ((255.0 * f) / Default.freqMax))
 
 let removeSubbandModeIntensities (m:matrix) =
     let modes =
@@ -53,7 +53,7 @@ let separateLargeEvents aes =
                  |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1 + top b2) (width b2) (height b2))
         let m2 = m - m1
         rs @ (getAcousticEvents m2
-              |> List.filter (fun x -> (float) x.Bounds.Height * 100.0 / (float) m2.NumRows >= timet)
+              |> List.filter (fun x -> (float) (height x.Bounds ) * 100.0 / (float) m2.NumRows >= timet)
               |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1) (width b2) (height b1)))         
     Seq.collect (fun ae -> if area ae.Bounds < areat then [ae.Bounds] else f ae) aes
 
@@ -83,8 +83,7 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
         |> separateLargeEvents
         |> filterOutSmallEvents smallAreaThreshold
     
-// TODO it would be nicer if this returned an Option/Either rather than an exception
-let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*float) a =
+let detectEventsMinor intensityThreshold smallAreaThreshold (bandPassFilter:float*float) a =
     if (fst bandPassFilter > snd bandPassFilter) then failwith "bandPassFilter args invalid"
     let m = Math.Matrix.ofArray2D a |> mTranspose
     if m.NumRows = 257 
@@ -94,6 +93,11 @@ let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*flo
             let mPrime = m.Region (1 + min, 0, 1 + max - min, m.NumCols) 
             detectEventsMatlab intensityThreshold smallAreaThreshold mPrime
                 // transpose results back & compensate for removing first row & any bandpass
-                |> Seq.map (fun r -> new Oblong(r.Left, r.Top + 1 + min, right r, bottom r + 1 + min)) 
+                |> Seq.map (fun r -> cornersToRect r.Left (r.Top + 1 + min) (right r) (bottom r + 1 + min)) 
+                
         else 
             failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
+
+let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*float) a =
+    detectEventsMinor intensityThreshold smallAreaThreshold bandPassFilter a
+    |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) 
