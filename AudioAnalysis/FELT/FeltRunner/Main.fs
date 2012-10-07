@@ -93,6 +93,27 @@
 //                | :? NameValueCollection as nvc -> full, nvc
 //                | _ -> raise <| new ConfigurationErrorsException("App settings not valid")
 
+        /// Setup a basic run.
+        /// Warning, mutation occurs, the source directory for the log file is set here as a side affect
+        let setupRun (datestamp:DateTime) resultsDirectory extension =
+            let resultsDirectory =
+                try
+                     Directory.CreateDirectory (resultsDirectory + datestamp.ToString("yyyyMMdd_HHmmss") + "\\")
+                with
+                    | ex -> 
+                        eprintfn "%s" ex.Message
+                        fail()
+                        null
+
+            let reportDateName (dt: DateTime) e analysis = 
+                dt, (new FileInfo( sprintf "%s\\%s %s.%s" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis e))
+
+            //! Warning: mutation
+            MQUTeR.FSharp.Shared.Logger.fName <- ((String.Empty |> reportDateName datestamp extension |> snd |> fun x -> x).FullName + ".log")
+
+            let reportName analysis = reportDateName DateTime.Now extension analysis
+            resultsDirectory, reportDateName, reportName
+
 
         let suggestion() =
             Info "Start: read configuration settings..."
@@ -133,22 +154,7 @@
 
             // set up run
             let batchRunDate = DateTime.Now
-
-            let resultsDirectory =
-                try
-                     Directory.CreateDirectory (ResultsDirectory + batchRunDate.ToString("yyyyMMdd_HHmmss") + "\\")
-                with
-                    | ex -> 
-                        eprintfn "%s" ex.Message
-                        fail()
-                        null
-
-            let reportDateName (dt: DateTime) e analysis = 
-                dt, sprintf "%s\\%s %s.xls%s" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis e
-
-            MQUTeR.FSharp.Shared.Logger.fName <- ((String.Empty |> reportDateName batchRunDate "x" |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
-
-            let reportName analysis = reportDateName DateTime.Now "x" analysis 
+            let resultsDirectory, reportDateName, reportName = setupRun batchRunDate ResultsDirectory "xlsx"
 
             // load in features
             let features = new ResizeArray<string>(config.["Features"].Split(','))
@@ -216,7 +222,7 @@
                             AnalysisType = analysis;
                             TestDataBytes = (new FileInfo(TestData)).Length;
                             TrainingDataBytes = (new FileInfo(TrainingData)).Length;
-                            ReportDestination = (new FileInfo(dest));
+                            ReportDestination = dest;
                             ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
                             TestOriginalCount = teData.Classes.Length;
                             TrainingOriginalCount = trData.Classes.Length;
@@ -246,7 +252,7 @@
                     if configs |> Seq.length > 1 then
                         Log "Creating summary report"
                         let dest = SummationReport.Write 
-                                    (new FileInfo(reportDateName batchRunDate "x" "Summary" |> snd)) 
+                                    (reportDateName batchRunDate "x" "Summary" |> snd)
                                     (new FileInfo("ExcelResultsSummationTemplate.xlsx")) 
                                     configs
                         Log "Finished summary report"    
@@ -271,21 +277,24 @@
                     Process.Start(f.FullName) |> ignore
 
         let search analysisConfig () =
-            
+            let startSearchDate = DateTime.Now
+
             Info "Reading configurations settings"
             let configFile, config = config analysisConfig
             Debugf "Loaded: %s" configFile.FilePath
 
             // "Truskinger.Felt.Search.config"
             let wd = config.["WorkingDirectory"]
-
+            let rd = Path.Combine( wd, config.["ResultsDirectory"])
             
-            
+            let resultsDirectory, reportDateName, reportName = setupRun startSearchDate rd "json"
+            let runDate, reportNameFull = reportName "Search"
  
             let config = 
                 { 
                     WorkingDirectory = wd; 
-                    ResultsDirectory =  Path.Combine( wd, config.["ResultsDirectory"]); 
+                    ResultsDirectory = resultsDirectory ; 
+                    ResultsFile = reportNameFull
 
                     TrainingData = new FileInfo(Path.Combine(wd, config.["TrainingData"]))
 
@@ -304,7 +313,7 @@
             // execute analysis
             FELT.Search.main config
             
-            Info "Search Completed"
+            Infof "Search Completed, time taken: %A" (DateTime.Now - startSearchDate)
             ()
 
         let usage error () =
@@ -316,22 +325,25 @@
             Info "Valid analysisOptions are: suggestion, search"
             ()
 
-        let copyLog _ =
-            let dest = Logger.fName
-            if not <| String.IsNullOrWhiteSpace dest then
-                let rootAppender = 
+        let getLogFilePath() =
+            let rootAppender = 
                     (LogManager.GetRepository() :?> log4net.Repository.Hierarchy.Hierarchy).Root.Appenders 
                     |> Seq.cast<obj>
                     |> Seq.pick (fun ap -> if ap :? Appender.FileAppender then Some(ap :?> Appender.FileAppender) else None) 
-                let filename = rootAppender.File;
-                File.Copy(filename, dest)
+            rootAppender.File;
+
+        let copyLog source _ =
+            let dest = Logger.fName
+            if not <| String.IsNullOrWhiteSpace dest then
+                File.Copy(source, dest)
         
 
         let Entry programEntry (args:string[]) =
             let ad = AppDomain.CurrentDomain
+            let log4netFile = getLogFilePath()
             if not programEntry then  ad.UnhandledException.Add (fun (args:UnhandledExceptionEventArgs) ->ErrorFailf "Unhandled exception:\n%A" args.ExceptionObject)
-            ad.ProcessExit.Add copyLog
-            ad.UnhandledException.Add copyLog
+            ad.ProcessExit.Add (copyLog log4netFile)
+            ad.UnhandledException.Add (copyLog log4netFile)
 
             Log "Welcome to felt version:"
             Logf "%s" version

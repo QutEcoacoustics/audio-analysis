@@ -55,6 +55,7 @@
     <Compile Include="Reflection.fs" />
     <Compile Include="Utilities.fs" />
     <Compile Include="NumericLiteralG.fs" />
+      <Compile Include="Equality.fs" />
       <Compile Include="Interval.fs" />
       <Compile Include="System.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
@@ -62,7 +63,7 @@
     <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Set.fs" />
-    <Compile Include="Equality.fs" />
+    
     <Compile Include="Microsoft.FSharp.Numerics.ModuloInteger.fs" />
     <Compile Include="IO.fs" />
     <Compile Include="Math.fs" />

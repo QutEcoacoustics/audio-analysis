@@ -13,6 +13,8 @@ namespace System
                 ms |> float |> System.TimeSpan.FromSeconds
             member this.ToSeconds : float<s> =
                 LanguagePrimitives.FloatWithMeasure (this.TotalSeconds) 
+            member this.DivideBy x =
+                TimeSpan.FromTicks <| this.Ticks / x
 
         // tuples
         let map (x,y) f = (f x), (f y)

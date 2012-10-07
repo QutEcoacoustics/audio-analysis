@@ -30,7 +30,7 @@ namespace Acoustics.Shared
         public const int AccuracyLimit = 2;
 
         private const string AccuracyWarning =
-            "The accuracy of the measurements in this class is artificially modified for privacy reasons. Do not rely on this information";
+            "The accuracy of the measurements in this class have been artificially modified for privacy reasons. Do not rely on this information.";
 
         private static readonly double accuracySmallest = 1.0 / Math.Pow(10, AccuracyLimit);
 
