@@ -25,6 +25,12 @@
             jsonSerializer.WriteObject(stream, x)
             toString <| stream.ToArray()
 
+        let serializeJsonToFile<'a> (x :'a) file =
+            let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>)
+
+            use stream = File.Open(file, FileMode.CreateNew)
+            jsonSerializer.WriteObject(stream, x)
+
         let deserializeJson<'a> (json : string) =
             let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>)
 

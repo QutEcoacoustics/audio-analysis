@@ -214,6 +214,8 @@ namespace AnalysisPrograms
                 if (KnownAnalyses.ContainsKey(firstArg))
                 {
                     var analysisFunc = KnownAnalyses[firstArg];
+
+                    //! excute the analysis
                     analysisFunc(restOfArgs);
                 }
                 else
@@ -288,39 +290,57 @@ namespace AnalysisPrograms
         private static void AttachDebugger(ref string[] args)
         {
             string noDebug = "-nodebug".ToLowerInvariant();
-            if (args.Length > 0 && args[0].ToLowerInvariant() == noDebug)
+            string debug = "-debug".ToLowerInvariant();
+            var attach = false;
+            if (args.Length > 0)
             {
-                args = args.Skip(1).ToArray();
-                return;
+                if (args[0].ToLowerInvariant() == noDebug)
+                {
+                    args = args.Skip(1).ToArray();
+                    return;
+                }
+
+                // no conflict here, if it was nodebug this method would of exited already
+                if (args[0].ToLowerInvariant() == debug)
+                {
+                    args = args.Skip(1).ToArray();
+                    attach = true;
+                }
             }
 #if DEBUG
             if (!Debugger.IsAttached)
             {
-                LoggedConsole.WriteLine(
-                    "Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
-                if (Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y")
+                if (!attach)
+                {
+                    // then prompt manually
+                    LoggedConsole.WriteLine(
+                        "Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
+                    attach = Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y";
+                }
+
+                if (attach)
                 {
                     var vsProcess =
                         VisualStudioAttacher.GetVisualStudioForSolutions(
-                            new List<string>() { "AudioAnalysis2012.sln", "AudioAnalysis.sln" });
+                            new List<string> { "AudioAnalysis2012.sln", "AudioAnalysis.sln" });
 
-                   	if (vsProcess != null) 
-                   	{
+                    if (vsProcess != null)
+                    {
                         VisualStudioAttacher.AttachVisualStudioToProcess(vsProcess, Process.GetCurrentProcess());
-                   	}
-                   	else
-                   	{
-                   		// try and attach the old fashioned way
-                   		Debugger.Launch();
-                   	}
-                }
+                    }
+                    else
+                    {
+                        // try and attach the old fashioned way
+                        Debugger.Launch();
+                    }
 
-                if (Debugger.IsAttached)
-                {
-                    LoggedConsole.WriteLine("\t>>> Attach sucessful");
-                }
+                    if (Debugger.IsAttached)
+                    {
+                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                    }
 
-                LoggedConsole.WriteLine();
+                    LoggedConsole.WriteLine();
+                }
             }
 #endif
         }

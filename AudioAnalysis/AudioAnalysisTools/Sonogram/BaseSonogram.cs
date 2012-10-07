@@ -54,20 +54,22 @@
         public int SampleRate { get; set; }
         public TimeSpan Duration { get; protected set; }
 
-        //following values are dependent on sampling rate.
+        // the following values are dependent on sampling rate.
         public int NyquistFrequency { get { return SampleRate / 2; } }
-        public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     // Duration of full frame or window in seconds
-        //public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } }
+
+        /// Duration of full frame or window in seconds
+        public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     
+        ////public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } }
         public double FrameOffset { get { return this.Configuration.GetFrameOffset(SampleRate); } } // Duration of non-overlapped part of window/frame in seconds
         public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
         public double FramesPerSecond { get { return 1 / FrameOffset; } }
         public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
-        //energy and dB per frame
+        // energy and dB per frame
         public SNR SnrFullband { get; set; }
         public double[] DecibelsPerFrame { get { return SnrFullband.Decibels; } protected set { } }//decibels per signal frame
 
-        //energy and dB per frame sub-band
+        // energy and dB per frame sub-band
         protected int subBand_MinHz; //min freq (Hz) of the required subband
         protected int subBand_MaxHz; //max freq (Hz) of the required subband
         public SNR SnrSubband { get; private set; }
