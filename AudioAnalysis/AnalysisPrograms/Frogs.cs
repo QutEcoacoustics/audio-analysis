@@ -471,37 +471,51 @@ namespace AnalysisPrograms
             var frogEvents = new List<AcousticEvent>();
             foreach (AcousticEvent ae in events)
             {
-                double periodicity = 1 / ae.Periodicity;
-                if ((ae.DominantFreq > 2350) && (ae.DominantFreq < 2750))
+                double oscRate = 1 / ae.Periodicity;
+
+                if ((ae.DominantFreq > 600) && (ae.DominantFreq < 700) && (oscRate > 10) && (oscRate < 14) && (ae.Score > 1.00) && (ae.Duration > 0.3))
                 {
-                    if ((periodicity > 41) && (periodicity < 48) && (ae.Score > 2.00) && (ae.Duration > 0.3))
-                    {
-                        ae.Name = "GBF";
-                    }
+                        ae.Name = "Heleioporus australiacus";
                 }
                 else
-                if ((ae.DominantFreq > 600) && (ae.DominantFreq < 1000))
+                if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1650) && (oscRate > 27) && (oscRate < 33) && (ae.Score > 0.3) && (ae.Duration > 0.3))
                 {
-                    if ((periodicity > 60) && (periodicity < 70) && (ae.Score > 1.00) && (ae.Duration > 0.3))
-                    {
-                        ae.Name = "Mixophyes fleayi";
-                    }
+                    ae.Name = "GBH";
                 }
                 else
-                if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2450))
+                if ((ae.DominantFreq > 650) && (ae.DominantFreq < 750) && (oscRate > 13) && (oscRate < 15) && (ae.Score > 1.00) && (ae.Duration > 0.3))
                 {
-                    if ((periodicity > 40) && (periodicity < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
-                    {
-                        ae.Name = "Uperoleia fusca";
-                    }
+                    ae.Name = "Lechriodus fletcheri";
                 }
                 else
-                if ((ae.DominantFreq > 1900) && (ae.DominantFreq < 2300))
+                if ((ae.DominantFreq > 1600) && (ae.DominantFreq < 1900) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 0.50) && (ae.Duration < 0.5))
                 {
-                    if ((periodicity > 42) && (periodicity < 50) && (ae.Score > 1.00) && (ae.Duration > 0.3))
-                    {
-                        ae.Name = "Pseudophryne coriacea";
-                    }
+                    ae.Name = "Limnodynastes tasmaniensis";
+                }
+                else
+                if ((ae.DominantFreq > 600) && (ae.DominantFreq < 1000) && (oscRate > 60) && (oscRate < 70) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                {
+                    ae.Name = "Mixophyes fleayi";
+                }
+                else
+                if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1550) && (oscRate > 19) && (oscRate < 23) && (ae.Score > 1.00) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Neobatrachus sudelli";
+                }
+                else
+                if ((ae.DominantFreq > 1900) && (ae.DominantFreq < 2300) && (oscRate > 42) && (oscRate < 50) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                {
+                    ae.Name = "Pseudophryne coriacea";
+                }
+                else
+                if ((ae.DominantFreq > 2350) && (ae.DominantFreq < 2750) && (oscRate > 41) && (oscRate < 48) && (ae.Score > 2.00) && (ae.Duration > 0.3))
+                {
+                    ae.Name = "Pseudophryne raveni";
+                }
+                else
+                if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2450) && (oscRate > 40) && (oscRate < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
+                {
+                    ae.Name = "Uperoleia fusca";
                 }
                 frogEvents.Add(ae);
             }
