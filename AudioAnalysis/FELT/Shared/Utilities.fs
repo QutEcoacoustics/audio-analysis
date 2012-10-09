@@ -56,6 +56,12 @@ namespace System
             if x = y then Some() else None
         let (|GreaterThan|_|) y x =
             if x > y then Some() else None
+
+        let (|EqualsOut|_|) inputA inputB =
+            if inputA = inputB then
+                Some(inputB)
+            else
+                None
         
         let (=~) input pattern =
             System.Text.RegularExpressions.Regex.IsMatch(input, pattern)

@@ -123,7 +123,7 @@
         type EventRect = Rectangle<float<s>,float<Hz>>
         type Event = {
             AudioReadingId : Guid
-            Bounds : EventRect
+            Rectangle : EventRect
         }    
 
 
@@ -215,14 +215,58 @@
             spm.[l..h,*]
 
 
-        let extractFeatures snippet : Data =
+        /// extractFeatures ->  for every event, and then every feature selected, extract those features
+        let extractFeatures (snippets:EventRect array) featureList audioCutter sourceFile : Data =
 
             // three types of features
             //  - statistical (need no prior claculation)
             //  - time-domain (needs raw pcm signals) -> needs cut files
             //  - spectral (needs spectrogram) -> needs cut spectrograms (of cut files)
 
-            raise <| new NotImplementedException()
+            /// a mapping of feature names to functions and datatypes
+            let routeAction feature =
+                let action, headerName, dataType =
+                    match feature with
+                        | EqualsOut "" a -> id, a, DataType.Number;
+                        | _ -> raise <| new NotImplementedException()
+                action, (headerName, dataType)
+
+            // prep: the set of operations to apply to each event
+            let actions = List.map routeAction featureList
+                
+            // Prep: create the Instances data structure
+            let eventCount = Array.length snippets
+            let instances = List.fold (fun state (_, (name, _)) -> Map.add name (Array.zeroCreateUnchecked eventCount) state) Map.empty<ColumnHeader, Value[]> actions
+            let classes = Array.zeroCreateUnchecked eventCount
+
+            //+ execution
+
+
+            let applyActions (e:Index) (instanceMap, (classLabels:Class array)) event =
+                // pre-pare audio
+                let getAudio =
+                    (fun () ->
+                        ()
+                    )
+                let getSpectrogram() =
+                    (fun () ->
+                        ()
+                    )
+
+
+                List.iter () actions
+
+                
+                // lastly mutate the values in the storage mechanism
+                classLabels.[e] <- "Unknown_" + e.ToString("000000")
+                // return state
+                instanceMap, classLabels
+
+            // each event will remap to one "row" in the dataset
+            //! warning mutation of value and classes arrays is occuring
+            let instances, classes = Array.foldi applyActions (instances, classes) snippets
+            
+            {DataSet = DataSet.Test; Headers =  actions |> List.unzip |> snd |> Map.ofList; Instances = instances; ClassHeader = "Tag"; Classes = classes  }
 
 
 
@@ -285,7 +329,7 @@
                 templateData.Instances |> Map.scanAll |> fun (h,v) -> Seq.map (getBound h) v |> Seq.toArray
             
             // create copies of the "event" with different bounds, all centered on one POI
-            Diagnostics.Debugger.Break() //! make sure params to conversion are correct
+            //! make sure params to conversion are correct
             let event' = convertRectToDomainUnits (testSpectrogram.FrameDuration * (tou2 testSpectrogram.FrameCount)) (testSpectrogram.FrameCount |> tou2) event
             let overlays = remapBoundsOfAnEvent bounds event'
 
