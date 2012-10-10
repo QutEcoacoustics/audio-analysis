@@ -92,8 +92,8 @@ namespace Microsoft.FSharp.Math
                 | this when this.IsEmpty ->
                     emptySet                    
                 | _ ->
-                    let openChar = if intervalType this (this.LowerSafe) then  "(" else "["
-                    let closeChar =  if intervalType this (this.UpperSafe) then  ")" else "]"
+                    let openChar = if intervalType this (this.LowerSafe) then  "[" else "("
+                    let closeChar =  if intervalType this (this.UpperSafe) then  "]" else ")"
                     openChar +  (print l) + ", " + (print u) + closeChar
     and
         IntervalFunc<'a when 'a : comparison> = Interval<'a> -> ('a -> bool)
@@ -117,11 +117,14 @@ namespace Microsoft.FSharp.Math
         /// http://en.wikipedia.org/wiki/Interval_(mathematics)#Classification_of_intervals
         module IntervalTypes =
             open Limit
-            //let inline unboundedLeft i _ = unboundedLeft i
-            //let inline unboundedRight i _ = unboundedRight i
+            
+            /// (
             let inline leftOpen     i x =  x >  left i
+            /// [
             let inline leftClosed   i x =  x >= left i
+            /// )
             let inline rightOpen    i x =  x <  right i
+            /// ]
             let inline rightClosed  i x =  x <= right i
                                                                                                                   
             let inline bothOpen            i x = leftOpen   i x && rightOpen   i x
@@ -170,7 +173,8 @@ namespace Microsoft.FSharp.Math
                     abs (iv.Lower - iv.Upper) / 2G
 
         let inline isInRange i x = IntervalTypes.leftOpenRightClosed i (Finite x)
-        let inline isIn (i:Interval<_>) x = i.IsIn x
+        let inline isInLimit (i:Interval<_>) x = i.IsIn x
+        let inline isIn (i:Interval<_>) x = i.IsIn (Finite x)
         let inline isInThisBound (it:IntervalFunc<_>) i x = it i x
 
         let inline rescale (oldRange:Interval<'a>) (newRange:Interval<'b>) (v:'a) : 'b =

@@ -215,7 +215,7 @@ namespace AnalysisPrograms
                 {
                     var analysisFunc = KnownAnalyses[firstArg];
 
-                    //! excute the analysis
+                    //! execute the analysis
                     analysisFunc(restOfArgs);
                 }
                 else
