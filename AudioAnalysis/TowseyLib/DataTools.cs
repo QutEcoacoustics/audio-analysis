@@ -633,15 +633,20 @@ namespace TowseyLib
     //=============================================================================
 
 
-    
-    static public int[] Peaks_CropLowAmplitude(double[] data, double severity)
+    /// <summary>
+    /// prunes the start and end of an array to remove low values.
+    /// </summary>
+    /// <param name="data">an array of double</param>
+    /// <param name="severity">must be in range [0,1].</param>
+    /// <returns></returns>
+    static public int[] Peaks_CropLowAmplitude(double[] data, double threshold)
     {
         int length = data.Length;
         int[] bounds = new int[2];
-        double min, max;
-        DataTools.MinMax(data, out min, out max);
-        double range = max - min;
-        double threshold = min + (range * severity); //must be 10% of max.
+        //double min, max;
+        //DataTools.MinMax(data, out min, out max);
+        //double range = max - min;
+        //double threshold = min + (range * severity); //must be 10% of max.
 
         for (int i = 0; i < data.Length - 1; i++)
         {

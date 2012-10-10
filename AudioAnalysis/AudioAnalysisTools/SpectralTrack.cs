@@ -22,9 +22,14 @@ namespace AudioAnalysisTools
         List<int> track;
         int status = 0;  // 0=closed;   1= open and active;
 
+        //public double[] amplitude;
         public double[] periodicity;
         public double[] periodicityScore;
-        public double avPeriodicity { get { return periodicity.Average(); } }
+        public double avPeriodicity { get { // calculate periodicity form midpoint of the array
+            int midPoint = periodicity.Length /2;
+            double average = (periodicity[midPoint - 2] + periodicity[midPoint] + periodicity[midPoint+ 2]) / 3;
+            return average; 
+        } }
         public double avPeriodicityScore { get { return periodicityScore.Average(); } }
 
         double framesPerSecond;
@@ -33,8 +38,8 @@ namespace AudioAnalysisTools
         double tolerance = 2.5; // do not accept new track if new peak is > this distance from old track.
         public  const int    MAX_FREQ_BOUND        = 6000;  // herz
         private const int    MAX_INTRASYLLABLE_GAP = 30;  // milliseconds
-        private const int    MIN_TRACK_DURATION    = 20;  // milliseconds
         private const double MIN_TRACK_DENSITY     = 0.3;
+        public  const int MIN_TRACK_DURATION = 20;  // milliseconds
 
 
 
@@ -72,7 +77,7 @@ namespace AudioAnalysisTools
 
         int FrameCount(int milliseconds)
         {
-            return (int)Math.Round(framesPerSecond * milliseconds / (double)1000);
+            return ConvertMilliseconds2FrameCount(milliseconds, framesPerSecond);
         }
 
         int BinCount(int herz)
@@ -114,19 +119,31 @@ namespace AudioAnalysisTools
             return true;
         }
 
-        public void CropTrack(List<double[]> listOfFrequencyBins)
+        public void CropTrack(List<double[]> listOfFrequencyBins, double severity)
         {
-            double severity = 0.2;
             int length = listOfFrequencyBins[0].Length; // assume all bins of same length
             int binID  = (int)this.AverageBin;
 
             double[] subArray = DataTools.Subarray(listOfFrequencyBins[binID], this.StartFrame, this.Length);
+            subArray = DataTools.filterMovingAverage(subArray, 3); // smooth to remove aberrant peaks
             int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
             this.endFrame = this.StartFrame + bounds[1];
             this.startFrame += bounds[0];
         }
 
+        public void CropTrack(BaseSonogram sonogram, double threshold)
+        {
+            //int length = sonogram.FrameCount;
+            int binID = (int)this.AverageBin;
+            double[] freqBin = MatrixTools.GetColumn(sonogram.Data, binID);
+
+            double[] subArray = DataTools.Subarray(freqBin, this.StartFrame, this.Length);
+            int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, threshold);
+
+            this.endFrame = this.StartFrame + bounds[1];
+            this.startFrame += bounds[0];
+        }
 
 
         //#########################################################################################################################################################
@@ -154,9 +171,9 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Prunes a list of tracks - ONLY KEEPS TRACKS that satisfy THREE conditions.
+        /// Prunes a list of tracks.
         /// A track is a consecutive series of peaks in the same or adjacent frequency bins.
-        /// This method removes track that do not satisfy a set of conditions:
+        /// This method removes tracks that do not satisfy THREE conditions:
         /// 1: length is less than default number of frames (threshold given in seconds)
         /// 2: average freq of the track is below a threshold frequency
         /// 3: track density is lower than threshold - density means that over given duration, % frames having that freq max exceeds a threshold. 
@@ -216,31 +233,37 @@ namespace AudioAnalysisTools
             int lowerBin = (int)Math.Round(track.AverageBin);
             int upperBin = lowerBin + 1;
             int length = track.Length;
+            //only sample the middle third of track
+            int start = length / 3;
+            int end = start + start - 1; 
             //init score track and periodicity track
-            double[] score = new double[length];
-            double[] period = new double[length];
+            double[] score = new double[start];
+            double[] period = new double[start];
 
-            for (int r = 0; r < length; r++) // for each position in track
+            for (int r = start; r < end; r++) // for each position in centre third of track
             {
                 int sampleStart = track.StartFrame - halfSample + r;
                 if (sampleStart < 0) sampleStart = 0;
                 double[] lowerSubarray = DataTools.Subarray(listOfSpectralBins[lowerBin], sampleStart, xCorrelationLength);
                 double[] upperSubarray = DataTools.Subarray(listOfSpectralBins[upperBin], sampleStart, xCorrelationLength);
-                //upperSubarray = lowerSubarray;
 
                 if ((lowerSubarray == null) || (upperSubarray == null)) break; //reached end of array
                 if ((lowerSubarray.Length != xCorrelationLength) || (upperSubarray.Length != xCorrelationLength)) break; //reached end of array
+                lowerSubarray = DataTools.SubtractMean(lowerSubarray); // zero mean the arrays
+                upperSubarray = DataTools.SubtractMean(upperSubarray);
+                //upperSubarray = lowerSubarray;
+
                 var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub-arrays already normalised
                 //DataTools.writeBarGraph(xCorSpectrum);
 
                 //Set the minimum OscilFreq of interest = 8 per second. Therefore max period ~ 125ms;
                 //int 0.125sec = 2 * xCorrelationLength / minInterestingID / framesPerSecond; //
-                double maxPeriod = 0.125; //maximum period of interest
+                double maxPeriod = 0.05; //maximum period of interest
                 int minInterestingID = (int)Math.Round(2 * xCorrelationLength / maxPeriod / framesPerSecond); //
                 for (int s = 0; s <= minInterestingID; s++) xCorSpectrum[s] = 0.0;  //in real data these low freq/long period bins are dominant and hide other frequency content
                 int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
-                period[r] = 2 * xCorrelationLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
-                score[r] = xCorSpectrum[maxIdXcor];
+                period[r-start] = 2 * xCorrelationLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
+                score[r - start] = xCorSpectrum[maxIdXcor];
             } // for loop
             track.periodicityScore = score;
             track.periodicity      = period;
@@ -273,6 +296,12 @@ namespace AudioAnalysisTools
             }
 
             return list;
+        }
+
+
+        public static int ConvertMilliseconds2FrameCount(int milliseconds, double framesPerSecond)
+        {
+            return (int)Math.Round(framesPerSecond * milliseconds / (double)1000);
         }
 
 

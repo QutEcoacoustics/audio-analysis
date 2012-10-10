@@ -110,7 +110,8 @@ namespace AnalysisPrograms
 
 
 
-            int startMinute = 0;
+            //int startMinute = 0;
+            int startMinute = 1;
             int durationSeconds = 60; //set zero to get entire recording
             var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
             var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
@@ -424,7 +425,7 @@ namespace AnalysisPrograms
             var hitsMatrix   = new double[rowCount, colCount];
             for (int r = nhLimit; r < rowCount - nhLimit; r++)
             {
-                if (peaks[r] < 3.0) continue;
+                if (peaks[r] < dBThreshold) continue;
                 //find local freq maxima and store in freqArray & hits matrix.
                 for (int nh = -nhLimit; nh < nhLimit; nh++)
                 {
@@ -443,13 +444,24 @@ namespace AnalysisPrograms
             //iii: GET TRACKS
             var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
 
-            double dynamicRange = 50; // deciBels above background noise. BG noise has already been removed from each bin.
+            //double threshold = 9.0;
+            double severity = 0.5;
+
+            double dynamicRange = 60; // deciBels above background noise. BG noise has already been removed from each bin.
             // convert sonogram to a list of frequency bin arrays
             var listOfFrequencyBins = SonogramTools.Sonogram2ListOfFreqBinArrays(sonogram, dynamicRange);
 
+            int minFrameLength = SpectralTrack.ConvertMilliseconds2FrameCount(SpectralTrack.MIN_TRACK_DURATION, framesPerSecond);
+            for (int i = tracks.Count-1; i >= 0; i--)
+            {
+                tracks[i].CropTrack(listOfFrequencyBins, severity);
+                //track.CropTrack(sonogram, threshold);
+                if (tracks[i].Length < minFrameLength) tracks.Remove(tracks[i]);
+            } // foreach track
+
+
             foreach (SpectralTrack track in tracks) // find any periodicity in the track and calculate its score.
             {
-                //track.CropTrack(listOfFrequencyBins);
                 SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfFrequencyBins, sonogram.FramesPerSecond);
             } // foreach track
 
@@ -473,14 +485,34 @@ namespace AnalysisPrograms
             {
                 double oscRate = 1 / ae.Periodicity;
 
+                if ((ae.DominantFreq > 3350) && (ae.DominantFreq < 3550) && (oscRate > 160) && (oscRate < 190) && (ae.Score > 0.20) && (ae.Duration > 0.05) && (ae.Duration < 0.3))
+                {
+                    ae.Name = "Assa darlingtoni";
+                }
+                else
+                if ((ae.DominantFreq > 4600) && (ae.DominantFreq < 4900) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 0.20) && (ae.Duration > 0.05) && (ae.Duration < 0.5))
+                {
+                    ae.Name = "Crinia deserticola";
+                }
+                else
+                if ((ae.DominantFreq > 2600) && (ae.DominantFreq < 2800) && (oscRate > 20) && (oscRate < 30) && (ae.Score > 0.50) && (ae.Duration > 0.05) && (ae.Duration < 0.5))
+                {
+                    ae.Name = "Crinia signifera";
+                }
+                else
+                if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 145) && (oscRate < 165) && (ae.Score > 0.50) && (ae.Duration > 0.5))
+                {
+                    ae.Name = "Cyclorana brevipes";
+                }
+                else
                 if ((ae.DominantFreq > 600) && (ae.DominantFreq < 700) && (oscRate > 10) && (oscRate < 14) && (ae.Score > 1.00) && (ae.Duration > 0.3))
                 {
                         ae.Name = "Heleioporus australiacus";
                 }
                 else
-                if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1650) && (oscRate > 27) && (oscRate < 33) && (ae.Score > 0.3) && (ae.Duration > 0.3))
+                if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1650) && (oscRate > 40) && (oscRate < 80) && (ae.Score > 0.3) && (ae.Duration > 0.3))
                 {
-                    ae.Name = "GBH";
+                    ae.Name = "GBH"; // the oscillation rate of the GBF increases from slow to fast, 30 - 80
                 }
                 else
                 if ((ae.DominantFreq > 650) && (ae.DominantFreq < 750) && (oscRate > 13) && (oscRate < 15) && (ae.Score > 1.00) && (ae.Duration > 0.3))
@@ -488,14 +520,69 @@ namespace AnalysisPrograms
                     ae.Name = "Lechriodus fletcheri";
                 }
                 else
-                if ((ae.DominantFreq > 1600) && (ae.DominantFreq < 1900) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 0.50) && (ae.Duration < 0.5))
+                if ((ae.DominantFreq > 1400) && (ae.DominantFreq < 1700) && (oscRate > 68) && (oscRate < 88) && (ae.Score > 0.15) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Limnodynastes fletcheri";
+                }
+                else
+                if ((ae.DominantFreq > 1600) && (ae.DominantFreq < 1900) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 0.50) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
                 {
                     ae.Name = "Limnodynastes tasmaniensis";
                 }
                 else
-                if ((ae.DominantFreq > 600) && (ae.DominantFreq < 1000) && (oscRate > 60) && (oscRate < 70) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                if ((ae.DominantFreq > 1100) && (ae.DominantFreq < 1500) && (oscRate > 110) && (oscRate < 150) && (ae.Score > 0.3) && (ae.Duration > 0.2) && (ae.Duration < 1.0))
+                {
+                    ae.Name = "Litoria aurea";
+                }
+                else
+                if ((ae.DominantFreq > 2900) && (ae.DominantFreq < 3200) && (oscRate > 9) && (oscRate < 12) && (ae.Score > 1.00) && (ae.Duration > 0.2) && (ae.Duration < 1.5))
+                {
+                    ae.Name = "Litoria brevipalmata";
+                }
+                else
+                if ((ae.DominantFreq > 1500) && (ae.DominantFreq < 1700) && (oscRate > 35) && (oscRate < 55) && (ae.Score > 0.50) && (ae.Duration > 0.2) && (ae.Duration < 1.5))
+                {
+                    ae.Name = "Litoria citropa";
+                }
+                else
+                if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 1.00) && (ae.Duration > 0.2) && (ae.Duration < 1.0))
+                {
+                    ae.Name = "Litoria gracilenta";
+                }
+                else
+                if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1300) && (oscRate > 10) && (oscRate < 16) && (ae.Score > 1.00) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Litoria lesueuri";
+                }
+                else
+                if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2200) && (oscRate > 35) && (oscRate < 45) && (ae.Score > 1.00) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
+                {
+                    ae.Name = "Litoria littlejohni";
+                }
+                else
+                if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 14) && (oscRate < 20) && (ae.Score > 1.00) && (ae.Duration > 0.1) && (ae.Duration < 1.5))
+                {
+                    ae.Name = "Litoria olongburensis";
+                }
+                else
+                if ((ae.DominantFreq > 1750) && (ae.DominantFreq < 2050) && (oscRate > 15) && (oscRate < 25) && (ae.Score > 1.00) && (ae.Duration > 0.5) && (ae.Duration < 2.0))
+                {
+                    ae.Name = "Litoria peronii";
+                }
+                else
+                if ((ae.DominantFreq > 800) && (ae.DominantFreq < 1100) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.50) && (ae.Duration > 0.3))
                 {
                     ae.Name = "Mixophyes fleayi";
+                }
+                else
+                if ((ae.DominantFreq > 900) && (ae.DominantFreq < 1200) && (oscRate > 125) && (oscRate < 145) && (ae.Score >= 0.20) )
+                {
+                    ae.Name = "Mixophyes fasciolatus";
+                }
+                else
+                if ((ae.DominantFreq > 700) && (ae.DominantFreq < 800) && (oscRate > 80) && (oscRate < 90) && (ae.Score > 0.20) && (ae.Duration > 0.2))
+                {
+                    ae.Name = "Mixophyes iteratus";
                 }
                 else
                 if ((ae.DominantFreq > 1350) && (ae.DominantFreq < 1550) && (oscRate > 19) && (oscRate < 23) && (ae.Score > 1.00) && (ae.Duration > 0.1))
@@ -503,20 +590,61 @@ namespace AnalysisPrograms
                     ae.Name = "Neobatrachus sudelli";
                 }
                 else
-                if ((ae.DominantFreq > 1900) && (ae.DominantFreq < 2300) && (oscRate > 42) && (oscRate < 50) && (ae.Score > 1.00) && (ae.Duration > 0.3))
+                if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 90) && (oscRate < 120) && (ae.Score > 0.05) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Paracrinia haswelli";
+                }
+                else
+                if ((ae.DominantFreq > 450) && (ae.DominantFreq < 650) && (oscRate > 100) && (oscRate < 130) && (ae.Score > 0.5) && (ae.Duration > 0.01))
+                {
+                    ae.Name = "Philoria kundagungan";
+                }
+                else
+                if ((ae.DominantFreq > 400) && (ae.DominantFreq < 600) && (oscRate > 62) && (oscRate < 82) && (ae.Score > 0.5) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Philoria loveridgei";
+                }
+                else
+                if ((ae.DominantFreq > 960) && (ae.DominantFreq < 1250) && (oscRate > 20) && (oscRate < 45) && (ae.Score > 0.5) && (ae.Duration > 0.05))
+                {
+                    ae.Name = "Philoria sphagnicolus";
+                }
+                else
+                if ((ae.DominantFreq > 2650) && (ae.DominantFreq < 2950) && (oscRate > 67) && (oscRate < 85) && (ae.Score > 0.2) && (ae.Duration > 0.1))
+                {
+                    ae.Name = "Pseudophryne australis";
+                }
+                else
+                if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2600) && (oscRate > 45) && (oscRate < 55) && (ae.Score > 0.50) && (ae.Duration > 0.2))
                 {
                     ae.Name = "Pseudophryne coriacea";
                 }
                 else
-                if ((ae.DominantFreq > 2350) && (ae.DominantFreq < 2750) && (oscRate > 41) && (oscRate < 48) && (ae.Score > 2.00) && (ae.Duration > 0.3))
+                if ((ae.DominantFreq > 2400) && (ae.DominantFreq < 2700) && (oscRate > 40) && (oscRate < 50) && (ae.Score > 0.5) && (ae.Duration > 0.2))
                 {
                     ae.Name = "Pseudophryne raveni";
                 }
                 else
-                if ((ae.DominantFreq > 2050) && (ae.DominantFreq < 2450) && (oscRate > 40) && (oscRate < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
+                if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2400) && (oscRate > 35) && (oscRate < 48) && (ae.Score > 1.00) && (ae.Duration > 0.4))
                 {
                     ae.Name = "Uperoleia fusca";
                 }
+                else
+                if ((ae.DominantFreq > 2300) && (ae.DominantFreq < 2500) && (oscRate > 135) && (oscRate < 155) && (ae.Score > 0.30) && (ae.Duration > 0.1) && (ae.Duration < 0.5))
+                {
+                    ae.Name = "Uperoleia laevigata";
+                }
+                else
+                if ((ae.DominantFreq > 2100) && (ae.DominantFreq < 2300) && (oscRate > 27) && (oscRate < 37) && (ae.Score > 0.30) && (ae.Duration < 0.2))
+                {
+                    ae.Name = "Uperoleia rugosa";
+                }
+                else
+                if ((ae.DominantFreq > 2700) && (ae.DominantFreq < 3000) && (oscRate > 80) && (oscRate < 100) && (ae.Score > 0.10) && (ae.Duration < 1.0))
+                {
+                    ae.Name = "Uperoleia tyleri";
+                }
+
                 frogEvents.Add(ae);
             }
             return frogEvents;
@@ -541,9 +669,11 @@ namespace AnalysisPrograms
                 int sampleStart = track.StartFrame;
                 int bin = (int)Math.Round(track.AverageBin) - 1; //get the tracks frequency i.e. bin number
                 if(bin >= topBin) continue;
-                for (int r = 0; r < track.Length; r++) // for each position in track
+                int length = track.periodicity.Length;
+                int periodicityStart = sampleStart + (track.Length/3);
+                for (int r = 0; r < length; r++) // for each position in track
                 {
-                    scores[bin][sampleStart + r] = track.periodicityScore[r];
+                    scores[bin][periodicityStart + r] = track.periodicityScore[r];
                 }
             }
 
