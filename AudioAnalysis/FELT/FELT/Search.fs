@@ -240,9 +240,7 @@
             let classes = Array.zeroCreateUnchecked eventCount
 
             //+ execution
-
-
-            let applyActions (e:Index) (instanceMap, (classLabels:Class array)) event =
+            let applyActionsToAllEvents (e:Index) ((instanceMap:Map<ColumnHeader, Value[]>), (classLabels:Class array)) event =
                 // pre-pare audio
                 let getAudio =
                     (fun () ->
@@ -253,8 +251,11 @@
                         ()
                     )
 
+                let runAction (action, (headerName, dataType)) =
+                    let v = action()
+                    instanceMap.[headerName].[index] <- v
 
-                List.iter () actions
+                List.iter (runAction instanceMap e) actions
 
                 
                 // lastly mutate the values in the storage mechanism
@@ -264,7 +265,7 @@
 
             // each event will remap to one "row" in the dataset
             //! warning mutation of value and classes arrays is occuring
-            let instances, classes = Array.foldi applyActions (instances, classes) snippets
+            let instances, classes = Array.foldi applyActionsToAllEvents (instances, classes) snippets
             
             {DataSet = DataSet.Test; Headers =  actions |> List.unzip |> snd |> Map.ofList; Instances = instances; ClassHeader = "Tag"; Classes = classes  }
 
