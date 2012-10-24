@@ -44,6 +44,8 @@ namespace AudioAnalysisTools
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
         public string Name { get; set; }
+        public string Name2 { get; set; }
+
         public string SourceFileName { get; set; }
         public double SourceFileDuration { get; set; }
         /// <summary> Average score through the event.</summary>
