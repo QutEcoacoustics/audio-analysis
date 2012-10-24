@@ -255,5 +255,35 @@ namespace System
 
             return readable;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="roundingInterval"></param>
+        /// <param name="roundingType"></param>
+        /// <returns></returns>
+        /// <remarks>From: http://stackoverflow.com/questions/766626/is-there-a-better-way-in-c-sharp-to-round-a-datetime-to-the-nearest-5-seconds (Stackoverflow).</remarks>
+        public static TimeSpan Round(this TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType)
+        {
+            return new TimeSpan(
+                Convert.ToInt64(Math.Round(
+                    time.Ticks / (decimal)roundingInterval.Ticks,
+                    roundingType
+                )) * roundingInterval.Ticks
+            );
+        }
+
+        /// <remarks>From: http://stackoverflow.com/questions/766626/is-there-a-better-way-in-c-sharp-to-round-a-datetime-to-the-nearest-5-seconds (Stackoverflow).</remarks>
+        public static TimeSpan Round(this TimeSpan time, TimeSpan roundingInterval)
+        {
+            return Round(time, roundingInterval, MidpointRounding.ToEven);
+        }
+
+        /// <remarks>From: http://stackoverflow.com/questions/766626/is-there-a-better-way-in-c-sharp-to-round-a-datetime-to-the-nearest-5-seconds (Stackoverflow).</remarks>
+        public static DateTime Round(this DateTime datetime, TimeSpan roundingInterval)
+        {
+            return new DateTime((datetime - DateTime.MinValue).Round(roundingInterval).Ticks);
+        }
     }
 }
