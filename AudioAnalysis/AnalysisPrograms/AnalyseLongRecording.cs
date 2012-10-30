@@ -49,32 +49,39 @@ namespace AnalysisPrograms
         // THE COMMAND LINES DERIVED FROM ABOVE for the <audio2csv> task. 
         //FOR  MULTI-ANALYSER and CROWS
         //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
+        
         //FOR  LITTLE SPOTTED KIWI3
-        //audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
-        //FOR  ACOUSTIC INDICES
-        //audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" C:\SensorNetworks\Output\LSKiwi3\
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
+        
+        // FOR  ACOUSTIC INDICES
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav"                   "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
+        
+        // CHECKING SHILO'S PROBLEMS
+        // audio2csv  "C:\SensorNetworks\WavFiles\Frogs\Curramore\CorramoreSelection-mono16kHz.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\AudioToCSV"
+        // audio2csv  "C:\SensorNetworks\WavFiles\16HzRecording\CREDO1_20120607_063200.mp3"          "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\AudioToCSV"
+                                                                                        
 
-        public const int RESAMPLE_RATE = 17640;
+
+        //public const int RESAMPLE_RATE = 17640;
 
 
-        public static int Main(string[] args)
+        public static void Main(string[] args)
         {
-            bool debug = false;
+            bool verbose = true;
+            bool debug   = false;
 #if DEBUG
             debug = true;
 #endif
 
-            int status = 0;
-            string title = "# PROCESS LONG RECORDING";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            bool verbose = true;
             if (verbose)
             {
+                string title = "# PROCESS LONG RECORDING";
+                string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine(title);
                 LoggedConsole.WriteLine(date);
             }
 
-            CheckArguments(args); //checks validity of the first 3 path arguments
+            CheckArguments(args); // checks validity of arguments 2, 3, and 4. First argument already removed.
 
 
             string recordingPath = args[0];
@@ -83,8 +90,9 @@ namespace AnalysisPrograms
 
             if (verbose)
             {
-                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                LoggedConsole.WriteLine("# Recording file:     " + Path.GetFileName(recordingPath));
+                LoggedConsole.WriteLine("# Configuration file: " + configPath);
+                LoggedConsole.WriteLine("# Output folder:      " + outputDir);
             }
 
             //1. set up the necessary files
@@ -145,9 +153,11 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("###################################################\n");
                 LoggedConsole.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
                 LoggedConsole.WriteLine("Available analysers are:");
-                foreach(IAnalyser anal in analysers) LoggedConsole.WriteLine("\t  " + anal.Identifier);
+                foreach (IAnalyser anal in analysers)
+                {
+                    LoggedConsole.WriteLine("\t  " + anal.Identifier);
+                }
                 LoggedConsole.WriteLine("###################################################\n");
-                return 1;
             }
 
 
@@ -166,21 +176,21 @@ namespace AnalysisPrograms
             //    Console.ReadLine();
             //}
 
-            //6. initialise the analysis settings object
+            // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.SetUserConfiguration(fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
 
-            //7. ####################################### DO THE ANALYSIS ###################################
+            // 7. ####################################### DO THE ANALYSIS ###################################
             var analyserResults = analysisCoordinator.Run(new[] { fileSegment }, analyser, analysisSettings);
-            //   ###########################################################################################
+            //    ###########################################################################################
 
-            //8. PROCESS THE RESULTS
+            // 8. PROCESS THE RESULTS
             if (analyserResults == null)
             {
                 LoggedConsole.WriteLine("###################################################\n");
                 LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a null result.");
                 LoggedConsole.WriteLine("###################################################\n");
-                return 666;
+                throw new AnalysisOptionDevilException();
             }
 
             // write the results to file
@@ -188,9 +198,9 @@ namespace AnalysisPrograms
             if ((datatable == null) || (datatable.Rows.Count == 0))
             {
                 LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a data table with zero rows.");
+                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a null data table or one with zero rows.");
                 LoggedConsole.WriteLine("###################################################\n");
-                return 666;
+                throw new AnalysisOptionDevilException();
             }
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
@@ -237,8 +247,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
             }
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-            return status;
-        } //Main(string[] args)
+        } // Main(string[] args)
 
 
 
@@ -316,21 +325,6 @@ namespace AnalysisPrograms
             }
         }
 
-
-        //public static void Usage()
-        //{
-        //    LoggedConsole.WriteLine("USAGE:");
-        //    LoggedConsole.WriteLine("AnalysisPrograms.exe  audioPath  configPath  outputDirectory  startOffset  endOffset");
-        //    LoggedConsole.WriteLine("where:");
-        //    LoggedConsole.WriteLine("input  audio  File:- (string) Path of the audio file to be processed.");
-        //    LoggedConsole.WriteLine("configuration File:- (string) Path of the analysis configuration file.");
-        //    LoggedConsole.WriteLine("output   Directory:- (string) Path of the output directory in which to store .csv result files.");
-        //    LoggedConsole.WriteLine("THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. THE NEXT TWO ARGUMENTS ARE OPTIONAL:");
-        //    LoggedConsole.WriteLine("startOffset: (integer) The start (minutes) of that portion of the file to be analysed.");
-        //    LoggedConsole.WriteLine("endOffset:   (integer) The end   (minutes) of that portion of the file to be analysed.");
-        //    LoggedConsole.WriteLine("If arguments 4 and 5 are not included, the entire file is analysed.");
-        //    LoggedConsole.WriteLine("");
-        //}
 
         public static void Usage()
         {
