@@ -404,7 +404,7 @@
                 new FileInfo(opPath),
                 new AudioUtilityRequest
                     {
-                        SampleRate = resampleRate,
+                        TargetSampleRate = resampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
                         OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
                     });
@@ -441,7 +441,7 @@
                 fiOutputSegment,
                 new AudioUtilityRequest
                     {
-                        SampleRate = resampleRate,
+                        TargetSampleRate = resampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
                         OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
                         //Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!

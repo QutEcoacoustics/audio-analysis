@@ -67,15 +67,15 @@
         /// The prepare file.
         /// </summary>
         /// <param name="sourceF">
-        /// The source f.
+        ///   The source f.
         /// </param>
         /// <param name="outputF">
-        /// The output f.
+        ///   The output f.
         /// </param>
         /// <param name="request">
-        /// The request.
+        ///   The request.
         /// </param>
-        public static void PrepareFile(FileInfo sourceF, FileInfo outputF, AudioUtilityRequest request)
+        public static AudioUtilityModifiedInfo PrepareFile(FileInfo sourceF, FileInfo outputF, AudioUtilityRequest request)
         {
             var audioUtility = GetNewAudioUtility();
 
@@ -88,12 +88,18 @@
                 Directory.CreateDirectory(outputDirectory);
             }
 
+            var result = new AudioUtilityModifiedInfo { SourceInfo = audioUtility.Info(sourceF) };
+
             audioUtility.Modify(
                 sourceF,
                 sourceMimeType,
                 outputF,
                 outputMimeType,
                 request);
+
+            result.TargetInfo = audioUtility.Info(outputF);
+
+            return result;
         }
 
         /// <summary>

@@ -164,9 +164,9 @@
 
             // resample
             string rate = string.Empty;
-            if (request.SampleRate.HasValue)
+            if (request.TargetSampleRate.HasValue)
             {
-                var targetSampleRateHz = request.SampleRate.Value.ToString(CultureInfo.InvariantCulture);
+                var targetSampleRateHz = request.TargetSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 rate = string.Format("rate {0} -s -a {1}", resampleQuality, targetSampleRateHz);
             }
 
@@ -384,10 +384,10 @@
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
             {
 
-                if (request.SampleRate.HasValue)
+                if (request.TargetSampleRate.HasValue)
                 {
                     // sample rate is set - check it
-                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                    this.CheckMp3SampleRate(request.TargetSampleRate.Value);
                 }
                 else
                 {

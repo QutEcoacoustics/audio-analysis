@@ -84,7 +84,7 @@
                 MixDownToMono = true,
                 OffsetStart = request.Start,
                 OffsetEnd = request.End,
-                SampleRate = 22050
+                TargetSampleRate = 22050
             };
 
             this.audioUtility.Modify(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);

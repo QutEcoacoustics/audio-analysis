@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
 
@@ -17,6 +18,11 @@
         {
             this.RawData = new Dictionary<string, string>();
         }
+
+        /// <summary>
+        /// Gets or sets the source file.
+        /// </summary>
+        public FileInfo SourceFile { get; set; }
 
         /// <summary>
         /// Gets or sets the Sample Rate in hertz.
@@ -99,5 +105,21 @@
 
             return sb.ToString();
         }
+    }
+
+    /// <summary>
+    /// The audio utility modified info.
+    /// </summary>
+    public class AudioUtilityModifiedInfo
+    {
+        /// <summary>
+        /// Gets or sets the source info. This is the file info before it was modified.
+        /// </summary>
+        public AudioUtilityInfo SourceInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target info. This is the file info after is was modified.
+        /// </summary>
+        public AudioUtilityInfo TargetInfo { get; set; }
     }
 }

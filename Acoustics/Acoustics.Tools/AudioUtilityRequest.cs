@@ -23,7 +23,7 @@
         /// <summary>
         /// Gets or sets the target Sample Rate in hertz.
         /// </summary>
-        public int? SampleRate { get; set; }
+        public int? TargetSampleRate { get; set; }
 
         /// <summary>
         /// Gets or sets the target channel number (eg. 1,2,3 ... ).
@@ -35,8 +35,14 @@
         /// </summary>
         public bool? MixDownToMono { get; set; }
 
+        /// <summary>
+        /// Gets or sets the bandpass low.
+        /// </summary>
         public double? BandpassLow { get; set; }
 
+        /// <summary>
+        /// Gets or sets the bandpass high.
+        /// </summary>
         public double? BandpassHigh { get; set; }
 
         /// <summary>
@@ -141,7 +147,7 @@
                 return false;
             }
 
-            if (this.SampleRate.HasValue && this.SampleRate < 1)
+            if (this.TargetSampleRate.HasValue && this.TargetSampleRate < 1)
             {
                 if (throwExceptions)
                 {
@@ -207,8 +213,8 @@
 
             var channels = this.Channel.HasValue ? " Using channel number " + this.Channel.Value + "." : string.Empty;
 
-            var sampleRate = this.SampleRate.HasValue
-                                 ? " Sample rate of " + this.SampleRate.Value + " hertz."
+            var sampleRate = this.TargetSampleRate.HasValue
+                                 ? " Sample rate of " + this.TargetSampleRate.Value + " hertz."
                                  : string.Empty;
 
             var mixDown = this.MixDownToMono.HasValue && this.MixDownToMono.Value ? "Mix channels down to mono." : string.Empty;
@@ -253,7 +259,7 @@
                     return false;
                 }
 
-                if (!this.SampleRate.HasValue)
+                if (!this.TargetSampleRate.HasValue)
                 {
                     if (throwExceptions)
                     {
