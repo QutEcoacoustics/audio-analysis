@@ -64,10 +64,10 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_BridgeCreek_Night_Extract1-31-00.mp3";   // FROGs at Bridgecreek
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";                          // FROG COMPILATION
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Curramore\CorramoreSelection-mono16kHz.mp3";       // Curramore COMPILATION
-
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Curramore\CurramoreSelection-mono16kHz.mp3";       // Curramore COMPILATION
 
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
+
             string outputDir  = @"C:\SensorNetworks\Output\Frogs\";
             //COMMAND LINE
             //AnalysisPrograms.exe Rheobatrachus "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
@@ -383,8 +383,6 @@ namespace AnalysisPrograms
             // read frog data to datatable
             var dt = CsvTools.ReadCSVToTable(configDict[key_FROG_DATA], true); // read file contining parameters of frog calls to a table
 
-
-
             double intensityThreshold = Double.Parse(configDict[Keys.INTENSITY_THRESHOLD]); //in 0-1
             double minDuration = Double.Parse(configDict[Keys.MIN_DURATION]);     // seconds
             double maxDuration = Double.Parse(configDict[Keys.MAX_DURATION]);     // seconds
@@ -489,7 +487,13 @@ namespace AnalysisPrograms
         } //Analysis()
 
 
-
+        /// <summary>
+        /// Given the passed feature values (freq and oscRate) calculate p(Data|h[i]) for all hypotheses indexed by i.
+        /// </summary>
+        /// <param name="freq"></param>
+        /// <param name="oscRate"></param>
+        /// <param name="frogDataTable"></param>
+        /// <returns></returns>
         public static string[] ClassifyFrogEvent(double freq, double oscRate, DataTable frogDataTable)
         {
             int rowCount = frogDataTable.Rows.Count;
@@ -500,7 +504,7 @@ namespace AnalysisPrograms
 
             double[] probScore = new double[rowCount];
 
-            for (int i = 0; i < rowCount; i++)
+            for (int i = 0; i < rowCount; i++) // all rows in table = all frog hypotheses
             {
                 DataRow row = frogDataTable.Rows[i];
 
@@ -529,11 +533,12 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static double GetNaiveBayesScore(double[] targetMeans, double[] data)
         {
-            double SD_FACTOR = 10.0; // used to estimate the SD of the distribution associated with a single feature value 
+            // ASSUME that one SD of the distribution feature values = 1/10th of the mean. 
+            double SD_FACTOR = 0.1; 
             double dataProb = 1.0;
             for (int i = 0; i < data.Length; i++)
             {
-                double targetSD = targetMeans[i] / SD_FACTOR;
+                double targetSD = targetMeans[i] * SD_FACTOR;
                 double featureZScore = (data[i] - targetMeans[i]) / targetSD;
                 double featureProb = NormalDist.zScore2pValue(Math.Abs(featureZScore));
                 dataProb *= featureProb;

@@ -1,0 +1,31 @@
+ID,LatinName,CommonName,SyllableType,SyllableDuration-ms,DominantFreq-Hz,OscRate-cyclesPerSec,SyllableRepeatRate,Start-seconds
+1,Adelotus brevis,Tusked frog,toc,35,1200,1200,0,2.99
+2,Limnodynastes peronii,Striped marsh frog,toc,15,1600,1600,1,5.04
+2,Limnodynastes peronii,Striped marsh frog,toc,15,1600,1600,1,9.15
+3,Limnodynastes tasmaniensis,Spotted marsh frog,ribit,300,1580,20,0.2,14.57
+4,Limnodynastes terraereginae,Northern pobblebonk,toc,40,970,1000,1,19.42
+5,Assa darlingtoni,Couched frog,ribit,75,3400,180,5.5,23.31
+6,Crinia parinsignifera,Beeping froglet,ribit,200,4100,350,1,29.73
+7,Crinia signifera,Common eastern froglet,ribit,90,2600,25,5,34.07
+8,Mixophyes fasciolatus,Great barred frog,ribit,200,1200,139,0.5,39.85
+9,Pseudophryne raveni,Copper backed brood frog,ribit,370,2500,44,1,43.46
+10,Uperoleia fusca,Dusky toadlet,ribit,400,2300,42,1,48.08
+11,Uperoleia laevigata,Smooth toadlet,ribit,330,2300,145,0.5,52.87
+12,Uperoleia rugosa,Rugose toadlet,ribit,100,2200,30,0.5,56.95
+13,Litoria brevipalmata,Green tied frog,ribit,1000,3000,10,0.1,61.31
+14,Litoria caerulea,Common green tree frog,whistle,300,500,500,0.5,67.15
+15,Litoria chloris,Orange eyed green tree frog,ribit,800,1700,220,1,70.61
+16,Litoria dentata,Leaking tree frog,ribit,950,3440,55,0.5,74.71
+17,Litoria fallax,Eastern sedge frog,ribit,430,4750,70,0.2,79.54
+18,Litoria gracilenta,Dainty green tree frog,ribit,1400,2700,100,0.2,85.39
+19,Litoria latopalmata,Broad palmed rocket frog,toc,30,1400,210,5,91.12
+20,Litoria nasuta,Striped rocket frog,ribit,100,2800,160,4,96.33
+21,Litoria pearsoniana.mp3,Mountain stream tree frog,ribit,330,2900,340,3,100.82
+22,Litoria peronii.mp3,Emerald spotted tree frog,ribit,1400,1990,22,0.5,106.87
+23,Litoria rubella.mp3,Little red tree frog,ribit,500,2900,57,1,109.37
+24,Litoria tyleri.mp3,Southern laughing tree frog,ribit,700,2480,8,0.3,114.38
+25,Litoria verreauxii,Whistling tree frog,ribit,264,3100,123,3,121.72
+26,Rheobatrachus silus,Gastric brooding frog,ribit,510,1500,58,0.1,127.41
+27,Mixophyes flayei 1,Fley's barred frog 1,ribit,90,800,139,0.5,133.66
+28,Mixophyes flayei 2,Fley's barred frog 2,ribit,500,800,1,0.5,135.62
+29,Bufo marinus.mp3,Cane toad,ribit,5000,650,15,0.05,139.15
