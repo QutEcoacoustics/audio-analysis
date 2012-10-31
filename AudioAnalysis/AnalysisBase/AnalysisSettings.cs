@@ -188,6 +188,11 @@
         public int SegmentTargetSampleRate { get; set; }
 
         /// <summary>
+        /// Gets or sets the segment source sample rate.
+        /// </summary>
+        public int? SegmentSourceSampleRate { get; set; }
+
+        /// <summary>
         /// Gets or sets the media type the analysis expects.
         /// This should be set to an initial value by an analysis.
         /// </summary>

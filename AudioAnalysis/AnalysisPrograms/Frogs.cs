@@ -240,17 +240,25 @@ namespace AnalysisPrograms
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo sourceF = new FileInfo(recordingPath);
             FileInfo tempF   = analysisSettings.AudioFile;
-            if (tempF.Exists) tempF.Delete();
+            if (tempF.Exists)
+            {
+                tempF.Delete();
+            }
+
+            AudioUtilityModifiedInfo beforeAndAfterInfo;
+
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { SampleRate = RESAMPLE_RATE });
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE });
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF,new AudioUtilityRequest {SampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration)});
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
+
+            analysisSettings.SegmentSourceSampleRate = beforeAndAfterInfo.SourceInfo.SampleRate;
 
             //DO THE ANALYSIS
             //#############################################################################################################################################
@@ -284,7 +292,7 @@ namespace AnalysisPrograms
             result.Data = null;
 
             //######################################################################
-            var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
+            var results = Analysis(fiAudioF, analysisSettings);
             //######################################################################
 
             if (results == null) return result; //nothing to process 
@@ -358,8 +366,11 @@ namespace AnalysisPrograms
         /// <param name="configDict"></param>
         /// <param name="diOutputDir"></param>
         public static System.Tuple<BaseSonogram, Double[,], List<Plot>, List<AcousticEvent>, TimeSpan>
-                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
+                                                                                   Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings)
         {
+            Dictionary<string, string> configDict = analysisSettings.ConfigDict;
+            //analysisSettings.SegmentSourceSampleRate
+
             //set default values - ignore those set by user
             int frameSize = 32;
             double windowOverlap   = 0.3;

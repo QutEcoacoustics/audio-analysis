@@ -321,7 +321,7 @@
                 throw new ArgumentException("Wvunpack cannot mix down the channels to mono.", "request");
             }
 
-            if (request.SampleRate.HasValue)
+            if (request.TargetSampleRate.HasValue)
             {
                 throw new ArgumentException("Wvunpack cannot modify the sample rate.", "request");
             }

@@ -70,7 +70,7 @@
             var wavFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
             var originalSoxFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtPng);
 
-            var audioUtilRequest = new AudioUtilityRequest { OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, SampleRate = 22050 };
+            var audioUtilRequest = new AudioUtilityRequest { OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, TargetSampleRate = 22050 };
 
             this.audioUtility.Modify(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 

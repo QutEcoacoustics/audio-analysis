@@ -462,9 +462,9 @@
 
             if (mediaType == MediaTypes.MediaTypeMp3)
             {
-                if (request.SampleRate.HasValue)
+                if (request.TargetSampleRate.HasValue)
                 {
-                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                    this.CheckMp3SampleRate(request.TargetSampleRate.Value);
                 }
             }
         }

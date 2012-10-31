@@ -164,10 +164,10 @@
             var args = new StringBuilder()
                 .AppendFormat(ArgsOverwriteSource, source.FullName);
 
-            if (request.SampleRate.HasValue)
+            if (request.TargetSampleRate.HasValue)
             {
                 //args.AppendFormat(ArgsSampleRate, request.SampleRate.Value);
-                args.AppendFormat(" -af aresample={0} ", request.SampleRate.Value);
+                args.AppendFormat(" -af aresample={0} ", request.TargetSampleRate.Value);
             }
 
             if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
@@ -326,10 +326,10 @@
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
             {
                
-                if (request.SampleRate.HasValue)
+                if (request.TargetSampleRate.HasValue)
                 {
                     // sample rate is set - check it
-                    this.CheckMp3SampleRate(request.SampleRate.Value);
+                    this.CheckMp3SampleRate(request.TargetSampleRate.Value);
                 }
                 else
                 {

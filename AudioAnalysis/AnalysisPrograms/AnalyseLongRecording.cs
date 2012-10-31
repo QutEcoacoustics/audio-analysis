@@ -207,7 +207,7 @@ namespace AnalysisPrograms
             var audioUtility = new MasterAudioUtility();
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
-
+            
             var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
             var eventsDatatable  = op1.Item1;
             var indicesDatatable = op1.Item2;

@@ -33,7 +33,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -100,7 +100,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(0),
                 OffsetEnd = TimeSpan.FromSeconds(55),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -134,7 +134,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -167,7 +167,7 @@ namespace Acoustics.Test.Tools
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 44100
+                TargetSampleRate = 44100
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -201,7 +201,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = false,
                 Channel = 2,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 11025,
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilitySox();
@@ -235,7 +235,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -301,7 +301,7 @@ namespace Acoustics.Test.Tools
             {
                 MixDownToMono = true,
                 OffsetEnd = TimeSpan.FromSeconds(52),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -335,7 +335,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                SampleRate = 44100
+                TargetSampleRate = 44100
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -368,7 +368,7 @@ namespace Acoustics.Test.Tools
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 44100
+                TargetSampleRate = 44100
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -402,7 +402,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = false,
                 Channel = 2,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 11025,
+                TargetSampleRate = 11025,
             };
 
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -436,7 +436,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
-                SampleRate = 44100
+                TargetSampleRate = 44100
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -502,7 +502,7 @@ namespace Acoustics.Test.Tools
             {
                 MixDownToMono = true,
                 OffsetEnd = TimeSpan.FromSeconds(48),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -536,7 +536,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
-                SampleRate = 44100
+                TargetSampleRate = 44100
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -569,7 +569,7 @@ namespace Acoustics.Test.Tools
             {
                 MixDownToMono = true,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 11025
+                TargetSampleRate = 11025
             };
 
             var util = TestHelper.GetAudioUtility();
@@ -603,7 +603,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = false,
                 Channel = 2,
                 OffsetStart = TimeSpan.FromSeconds(27),
-                SampleRate = 44100,
+                TargetSampleRate = 44100,
             };
 
             var util = TestHelper.GetAudioUtility();

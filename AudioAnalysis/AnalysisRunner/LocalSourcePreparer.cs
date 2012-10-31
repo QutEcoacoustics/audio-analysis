@@ -45,7 +45,7 @@ namespace AnalysisRunner
         /// </returns>
         public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
-            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, SampleRate = targetSampleRateHz });
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz });
 
             var audioUtility = this.GetNewAudioUtility();
             var preparedFileInfo = audioUtility.Info(preparedFile);
@@ -225,7 +225,7 @@ namespace AnalysisRunner
                                 {
                                     OffsetStart = offset.Minimum,
                                     OffsetEnd = offset.Maximum,
-                                    SampleRate = analysisSettings.SegmentTargetSampleRate
+                                    TargetSampleRate = analysisSettings.SegmentTargetSampleRate
                                 });
                     }
 

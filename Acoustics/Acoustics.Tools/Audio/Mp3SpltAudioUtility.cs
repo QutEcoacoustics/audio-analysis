@@ -224,7 +224,7 @@
                 throw new ArgumentException("Mp3Splt cannot mix down the channels to mono.", "request");
             }
 
-            if (request.SampleRate.HasValue)
+            if (request.TargetSampleRate.HasValue)
             {
                 throw new ArgumentException("Mp3Splt cannot modify the sample rate.", "request");
             }
