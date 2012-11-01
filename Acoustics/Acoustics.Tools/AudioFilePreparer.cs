@@ -30,41 +30,7 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        //public static AudioUtilityModifiedInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request)
-        //{
-        //    var audioUtility = GetNewAudioUtility();
-        //    var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
-        //    var outputFileName = Path.GetFileNameWithoutExtension(fiSource.Name);
-
-        //    outputFileName = string.Format(
-        //        "{0}_{1:f0}min.{3}",
-        //        outputFileName,
-        //        request.OffsetStart.Value.TotalMinutes,
-        //        request.OffsetEnd.Value.TotalMilliseconds,
-        //        MediaTypes.GetExtension(outputMediaType));
-
-        //    if (!Directory.Exists(outputDirectory.FullName))
-        //    {
-        //        Directory.CreateDirectory(outputDirectory.FullName);
-        //    }
-
-        //    var fiOutput = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-        //    var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
-
-        //    audioUtility.Modify(
-        //        fiSource,
-        //        sourceMimeType,
-        //        fiOutput,
-        //        outputMimeType,
-        //        request);
-
-        //    var result = new AudioUtilityModifiedInfo();
-        //    result.SourceInfo = audioUtility.Info(fiSource);
-        //    result.TargetInfo = audioUtility.Info(fiOutput);
-
-        //    return result;
-        //}
-
+        /// 
         public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request)
         {
             var audioUtility = GetNewAudioUtility();
