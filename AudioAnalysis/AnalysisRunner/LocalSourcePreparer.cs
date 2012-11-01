@@ -79,6 +79,7 @@ namespace AnalysisRunner
                 var startOffset = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
                 var endOffset = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : info.Duration.Value;
                 fileSegment.OriginalFileDuration = info.Duration.Value;
+                fileSegment.OriginalFileSampleRate = info.SampleRate;
 
                 var fileSegmentDuration = (endOffset - startOffset).TotalMilliseconds;
 

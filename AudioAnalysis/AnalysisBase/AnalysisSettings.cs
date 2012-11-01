@@ -139,6 +139,11 @@
         public DirectoryInfo AnalysisRunDirectory { get; set; }
 
         /// <summary>
+        /// Gets or sets the original source file from which audio segments are extracted for analysis.
+        /// </summary>
+        public FileInfo SourceFile { get; set; }
+
+        /// <summary>
         /// Gets or sets the audio file for the analysis.
         /// Analysis implementations must not set this.
         /// </summary>

@@ -141,12 +141,12 @@
         /// </returns>
         private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser analyser, AnalysisSettings settings)
         {
-            Contract.Requires(settings != null, "Settings must not be null.");
-            Contract.Requires(fileSegment != null, "File Segments must not be null.");
+            Contract.Requires(settings != null,       "Settings must not be null.");
+            Contract.Requires(fileSegment != null,    "File Segments must not be null.");
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
             var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.OriginalFileDuration;
+            var end   = fileSegment.SegmentEndOffset.HasValue   ? fileSegment.SegmentEndOffset.Value   : fileSegment.OriginalFileDuration;
 
             // create directory for analysis run
             settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analyser, settings);
@@ -163,6 +163,8 @@
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;
 
+            // Store source sample rate - may need during the analysis if have upsampled the source.
+            //settings.SegmentSourceSampleRate = beforeAndAfterInfo.SourceInfo.SampleRate;
             settings.AudioFile = preparedFilePath;
 
             //if user requests, save the sonogram files 
