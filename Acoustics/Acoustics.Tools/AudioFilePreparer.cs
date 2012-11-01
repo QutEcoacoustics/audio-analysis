@@ -30,13 +30,46 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, AudioUtilityRequest request)
+        //public static AudioUtilityModifiedInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request)
+        //{
+        //    var audioUtility = GetNewAudioUtility();
+        //    var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
+        //    var outputFileName = Path.GetFileNameWithoutExtension(fiSource.Name);
+
+        //    outputFileName = string.Format(
+        //        "{0}_{1:f0}min.{3}",
+        //        outputFileName,
+        //        request.OffsetStart.Value.TotalMinutes,
+        //        request.OffsetEnd.Value.TotalMilliseconds,
+        //        MediaTypes.GetExtension(outputMediaType));
+
+        //    if (!Directory.Exists(outputDirectory.FullName))
+        //    {
+        //        Directory.CreateDirectory(outputDirectory.FullName);
+        //    }
+
+        //    var fiOutput = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
+        //    var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
+
+        //    audioUtility.Modify(
+        //        fiSource,
+        //        sourceMimeType,
+        //        fiOutput,
+        //        outputMimeType,
+        //        request);
+
+        //    var result = new AudioUtilityModifiedInfo();
+        //    result.SourceInfo = audioUtility.Info(fiSource);
+        //    result.TargetInfo = audioUtility.Info(fiOutput);
+
+        //    return result;
+        //}
+
+        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request)
         {
             var audioUtility = GetNewAudioUtility();
-
-            var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
-
-            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
+            var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
+            var outputFileName = Path.GetFileNameWithoutExtension(fiSource.Name);
 
             outputFileName = string.Format(
                 "{0}_{1:f0}min.{3}",
@@ -50,19 +83,24 @@
                 Directory.CreateDirectory(outputDirectory.FullName);
             }
 
-            var output = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-            var outputMimeType = MediaTypes.GetMediaType(output.Extension);
+            var fiOutput = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
+            var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
 
             audioUtility.Modify(
-                source,
+                fiSource,
                 sourceMimeType,
-                output,
+                fiOutput,
                 outputMimeType,
                 request);
 
-            return output;
+            var result = new AudioUtilityModifiedInfo();
+            result.SourceInfo = audioUtility.Info(fiSource);
+            result.TargetInfo = audioUtility.Info(fiOutput);
+
+            return fiOutput;
         }
 
+        
         /// <summary>
         /// The prepare file.
         /// </summary>
@@ -75,29 +113,27 @@
         /// <param name="request">
         ///   The request.
         /// </param>
-        public static AudioUtilityModifiedInfo PrepareFile(FileInfo sourceF, FileInfo outputF, AudioUtilityRequest request)
+        public static AudioUtilityModifiedInfo PrepareFile(FileInfo fiSource, FileInfo fiOutput, AudioUtilityRequest request)
         {
             var audioUtility = GetNewAudioUtility();
-
-            var sourceMimeType = MediaTypes.GetMediaType(sourceF.Extension);
-            var outputMimeType = MediaTypes.GetMediaType(outputF.Extension);
-            string outputDirectory = Path.GetDirectoryName(outputF.FullName);
+            var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
+            var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
+            string outputDirectory = Path.GetDirectoryName(fiOutput.FullName);
 
             if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            var result = new AudioUtilityModifiedInfo { SourceInfo = audioUtility.Info(sourceF) };
-
             audioUtility.Modify(
-                sourceF,
+                fiSource,
                 sourceMimeType,
-                outputF,
+                fiOutput,
                 outputMimeType,
                 request);
 
-            result.TargetInfo = audioUtility.Info(outputF);
+            var result = new AudioUtilityModifiedInfo { SourceInfo = audioUtility.Info(fiSource) };
+            result.TargetInfo = audioUtility.Info(fiOutput);
 
             return result;
         }

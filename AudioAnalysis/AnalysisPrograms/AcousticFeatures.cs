@@ -16,10 +16,10 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
 
+    using AnalysisBase;
+
     using AudioAnalysisTools;
-
     using NeuralNets;
-
     using TowseyLib;
 
     public class AcousticFeatures
@@ -203,128 +203,8 @@ namespace AnalysisPrograms
             }
         } // struct Indices2
 
-        public static Parameters ReadIniFile(string iniPath, int verbosity)
-        {
-            var config = new ConfigDictionary(iniPath);
-            Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
-
-            Parameters paramaters; // st
-            paramaters.SegmentDuration = double.Parse(dict[Keys.SEGMENT_DURATION]);
-            paramaters.SegmentOverlap = int.Parse(dict[Keys.SEGMENT_OVERLAP]);
-            paramaters.ResampleRate = int.Parse(dict[Keys.RESAMPLE_RATE]);
-            paramaters.FrameLength = int.Parse(dict[Keys.FRAME_LENGTH]);
-            paramaters.FrameOverlap = double.Parse(dict[Keys.FRAME_OVERLAP]);
-            paramaters.LowFreqBound = int.Parse(dict[AcousticFeatures.key_LOW_FREQ_BOUND]);
-            //paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
-            //paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
-
-            
-
-            if (verbosity > 0)
-            {
-                Log.WriteLine("# PARAMETER SETTINGS:");
-                Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.SegmentDuration, paramaters.SegmentOverlap);
-                Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.ResampleRate, (paramaters.ResampleRate / 2));
-                Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.FrameLength, paramaters.FrameOverlap);
-                Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.LowFreqBound);
-                //Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
-                Log.WriteLine("####################################################################################");
-            }
-            return paramaters;
-        }
-
-
-
-
-        public static void Dev(string[] args)
-        {
-            string title = "# SOFTWARE TO EXTRACT ACOUSTIC INDICES FROM SUNSHINE COAST DATA";
-            DateTime datetime = DateTime.Now;
-            string date = "# DATE AND TIME: " + datetime;
-            Log.WriteLine(title);
-            Log.WriteLine(date);
-
-            //SET VERBOSITY
-            Log.Verbosity = 1;
-            bool doStoreImages = true;
-            string reportFormat = "CSV";
-
-            //READ CSV FILE TO MASSAGE DATA
-            if (false)
-            {
-                MASSAGE_CSV_DATA();
-
-                throw new AnalysisOptionDevilException();
-            }
-
-            //READ CSV FILE TO MASSAGE DATA
-            if (false)
-            {
-                //string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
-                string csvFileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\SE_5days.csv";
-
-
-                //VISUALIZE_CSV_DATA(csvFileName);  //THIS METHOD NOW DELETED
-
-                throw new AnalysisOptionDevilException();
-            }
-
-
-            // i: Set up the dir and file names
-            string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp1\";
-            string imagePath     = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
-
-            var fileList         = Directory.GetFiles(recordingDir, "*.wav");
-            string recordingPath = fileList[0]; //get just one from list
-            string fileName      = Path.GetFileName(recordingPath);
-            string outputDir     = recordingDir;
-
-            Log.WriteLine("Directory:          " + recordingDir);
-            Log.WriteLine("Directory contains: " + fileList.Count() + " wav files.");
-            Log.WriteLine("Selected file:      " + fileName);
-            Log.WriteLine("Output folder:      " + outputDir);
-            string opFileName = "Results_ARI_" + FileTools.TimeStamp2FileName(datetime) + ".csv";
-            string opPath = outputDir + opFileName; // .csv file
-
-            // write header to results file
-            // if file does not exist already, create the file and write a HEADER .
-            if (!File.Exists(opPath)) 
-            {
-                WriteHeaderToReportFile(opPath, reportFormat);
-            }
-
-
-            // i GET RECORDING
-            // int resampleRate = 17640;
-            // AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
-            // double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
-
-            // ii: EXTRACT INDICES 
-            Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
-            dict.Add(Keys.FRAME_LENGTH, AcousticFeatures.DEFAULT_WINDOW_SIZE.ToString());
-            dict.Add(key_LOW_FREQ_BOUND, "500");
-            dict.Add(key_LOW_FREQ_BOUND, "3500");
-            //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
-            int iterationNumber = 1;
-            var fiRecording = new FileInfo(recordingPath);
-            dict.Add(Keys.SAVE_INTERMEDIATE_CSV_FILES, "false");
-
-            // ######################################################
-            var results = Analysis(fiRecording, dict);
-            // ######################################################
-
-            double segmentDuration = ConfigDictionary.GetDouble(Keys.SEGMENT_DURATION, dict);
-            double segmentStartMinute = segmentDuration * iterationNumber;
-
-            Log.WriteLine("# Finished everything!");
-        } // DEV()
-
-
 
         // #########################################################################################################################################################
-
-
 
         /// <summary>
         /// Extracts indices from a single  segment of recording
@@ -337,8 +217,11 @@ namespace AnalysisPrograms
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
+        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
+            Dictionary<string, string> config = analysisSettings.ConfigDict;
+            int sourceNyquist = (int)analysisSettings.SegmentSourceSampleRate / 2; // source sample rate can be 11 kHz up to 44.1 kHz.
+
             // get parameters for the analysis
             int frameSize = DEFAULT_WINDOW_SIZE;
             frameSize = config.ContainsKey(Keys.FRAME_LENGTH) ? ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config) : frameSize;
@@ -356,15 +239,15 @@ namespace AnalysisPrograms
             // i: EXTRACT ENVELOPE and FFTs
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             ////double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[] envelope   = results2.Envelope;
+            double[] signalEnvelope   = results2.Envelope;
 
             // amplitude spectrogram
-            double[,] spectrogram = results2.Spectrogram;  
+            double[,] spectrogramData = results2.Spectrogram;  
 
 
             // ii: FRAME ENERGIES - 
             // use Lamel et al. Only search in range 10dB above min dB.
-            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
 
             bool[] activeFrames = new bool[dBarray.Length];
@@ -384,27 +267,33 @@ namespace AnalysisPrograms
             indices.activity = activeFrameCount / (double)dBarray.Length;   // fraction of frames having acoustic activity 
             indices.bgNoise  = results3.NoiseMode;                          // bg noise in dB
             indices.snr      = results3.Snr;                                // snr
-            indices.avSig_dB = 20 * Math.Log10(envelope.Average());         // 10 times log of amplitude squared 
-            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); // ENTROPY of ENERGY ENVELOPE
+            indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());         // 10 times log of amplitude squared 
+            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
 
             // calculate boundary between hi and low frequency spectrum
-            double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
-            int excludeLoFreqBins = (int)Math.Ceiling(lowFreqBound / binWidth);
+            double binWidth = recording.Nyquist / (double)spectrogramData.GetLength(1);
+            int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+            // calculate bin of source nyquist - this may be greater or less than 17640 / 2.
+            int sourceNyquistBin = (int)Math.Floor(sourceNyquist / binWidth);
+            //if() 
+
+
+
 
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, excludeLoFreqBins);
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogramData, lowBinBound);
             indices.entropyOfAvSpectrum = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
             // iv: remove background noise from the spectrogram
             const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[] modalValues = SNR.CalculateModalValues(spectrogram); // calculate modal value for each freq bin.
+            double[] modalValues = SNR.CalculateModalValues(spectrogramData); // calculate modal value for each freq bin.
             modalValues = DataTools.filterMovingAverage(modalValues, 7);  // smooth the modal profile
-            spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
-            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, SpectralBgThreshold);
+            spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
+            spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
 
             // v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = CalculateSpectralCoverage(spectrogram, SpectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
+            var tuple3 = CalculateSpectralCoverage(spectrogramData, SpectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
@@ -470,7 +359,7 @@ namespace AnalysisPrograms
 
             //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.   NOTE: spectrogram is still a noise reduced amplitude spectrogram 
             double peakThreshold = SpectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
-            var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeSegments, peakThreshold, recording.Nyquist);
+            var tuple2 = CalculateEntropyOfPeakLocations(spectrogramData, activeSegments, peakThreshold, recording.Nyquist);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
             double[] freqPeaks = tuple2.Item2;
@@ -479,7 +368,7 @@ namespace AnalysisPrograms
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
-            var tuple6 = ClusterAnalysis(spectrogram, activeSegments, excludeLoFreqBins, binaryThreshold);
+            var tuple6 = ClusterAnalysis(spectrogramData, activeSegments, lowBinBound, binaryThreshold);
             indices.clusterCount = tuple6.Item1; 
             indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster duration in milliseconds
 

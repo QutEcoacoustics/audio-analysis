@@ -33,6 +33,12 @@
         public TimeSpan OriginalFileDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the original audio file Sample rate.
+        /// May be required when oding analysis
+        /// </summary>
+        public int? OriginalFileSampleRate { get; set; }
+
+        /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.
         /// </summary>
         /// <returns>

@@ -233,7 +233,11 @@ namespace Acoustics.Tools.Audio
                 // if output is correct, just copy it.
                 // will not overwrite, will throw exception if the output file already exists.
                 // do not overwrite!!!
-                File.Copy(soxOutputFile.FullName, output.FullName);
+                // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
+                if (!output.Exists)
+                {
+                    File.Copy(soxOutputFile.FullName, output.FullName);
+                }
             }
 
             // tidy up
