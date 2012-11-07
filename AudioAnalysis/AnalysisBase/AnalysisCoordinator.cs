@@ -180,6 +180,8 @@
                 }
             }
 
+            settings.SegmentSourceSampleRate = preparedFile.OriginalFileSampleRate;
+
             //##### RUN the ANALYSIS ################################################################
             var result = analyser.Analyse(settings);
             //#######################################################################################

@@ -50,7 +50,7 @@ namespace AnalysisRunner
             var audioUtility = this.GetNewAudioUtility();
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile };
+            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = preparedFileInfo.SampleRate };
         }
 
         /// <summary>
