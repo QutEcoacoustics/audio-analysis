@@ -219,6 +219,8 @@ namespace AudioBrowser
                 settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, (fName + ".png")));
             }
 
+            settings.SegmentSourceSampleRate = preparedFile.OriginalFileSampleRate;
+
             //##### RUN the ANALYSIS ################################################################
             var settings1 = settings;
             var result = analyser.Analyse(settings1);
