@@ -195,7 +195,7 @@ namespace AnalysisPrograms
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
-            analysisSettings.SegmentSourceSampleRate = beforeAndAfterInfo.SourceInfo.SampleRate;
+            analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
 
             // DO THE ANALYSIS
             // #############################################################################################################################################
@@ -301,7 +301,7 @@ namespace AnalysisPrograms
                                                                                    Analysis(FileInfo fiSegmentOfSourceFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> configDict = analysisSettings.ConfigDict;
-            //analysisSettings.SegmentSourceSampleRate
+            int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
 
             //set default values - ignore those set by user
             int frameSize = 32;

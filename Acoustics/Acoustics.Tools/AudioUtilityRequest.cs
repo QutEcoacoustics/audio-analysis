@@ -26,6 +26,15 @@
         public int? TargetSampleRate { get; set; }
 
         /// <summary>
+        /// Gets or sets the Sample Rate of the original audio file from which segment is extracted.
+        /// ###########  NOTE: THIS IS A HACK!!!!!!!!!!
+        /// this INFO should not be stored in the request.
+        /// TRYING TO PASS SourceSampleRate down to analysis level and this is quick and dirty way to do it.
+        /// MARK will have to do it more elegantly!
+        /// </summary>
+        public int? OriginalSampleRate { get; set; }
+        
+        /// <summary>
         /// Gets or sets the target channel number (eg. 1,2,3 ... ).
         /// </summary>
         public int? Channel { get; set; }

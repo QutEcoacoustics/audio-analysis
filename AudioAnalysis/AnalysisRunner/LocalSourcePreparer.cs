@@ -45,12 +45,13 @@ namespace AnalysisRunner
         /// </returns>
         public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
-            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz });
+            var request      = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz };
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request);
 
             var audioUtility = this.GetNewAudioUtility();
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = preparedFileInfo.SampleRate };
+            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = request.OriginalSampleRate };
         }
 
         /// <summary>

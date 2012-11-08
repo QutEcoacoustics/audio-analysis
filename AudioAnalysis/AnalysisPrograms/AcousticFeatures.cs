@@ -220,7 +220,6 @@ namespace AnalysisPrograms
         public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
-            int sourceNyquist = (int)analysisSettings.SegmentSourceSampleRate / 2; // source sample rate can be 11 kHz up to 44.1 kHz.
 
             // get parameters for the analysis
             int frameSize = DEFAULT_WINDOW_SIZE;
@@ -270,18 +269,27 @@ namespace AnalysisPrograms
             indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());         // 10 times log of amplitude squared 
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
 
+            int nyquistFreq = recording.Nyquist; 
+            int nyquistBin = spectrogramData.GetLength(1);
+            double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
+
             // calculate boundary between hi and low frequency spectrum
-            double binWidth = recording.Nyquist / (double)spectrogramData.GetLength(1);
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
-            // calculate bin of source nyquist - this may be greater or less than 17640 / 2.
-            int sourceNyquistBin = (int)Math.Floor(sourceNyquist / binWidth);
-            //if() 
+
+            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this iwll be less than 17640/2.
+            int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
+            if (recording.Nyquist > originalAudioNyquist)
+            {
+                nyquistFreq = originalAudioNyquist;
+                nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
+            }
+
 
 
 
 
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogramData, lowBinBound);
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogramData, lowBinBound, nyquistBin);
             indices.entropyOfAvSpectrum = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
@@ -293,7 +301,7 @@ namespace AnalysisPrograms
             spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
 
             // v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = CalculateSpectralCoverage(spectrogramData, SpectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
+            var tuple3 = CalculateSpectralCoverage(spectrogramData, SpectralBgThreshold, lowFreqBound, midFreqBound, nyquistFreq, binWidth);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
@@ -359,7 +367,7 @@ namespace AnalysisPrograms
 
             //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.   NOTE: spectrogram is still a noise reduced amplitude spectrogram 
             double peakThreshold = SpectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
-            var tuple2 = CalculateEntropyOfPeakLocations(spectrogramData, activeSegments, peakThreshold, recording.Nyquist);
+            var tuple2 = CalculateEntropyOfPeakLocations(spectrogramData, peakThreshold, lowFreqBound, nyquistFreq, binWidth);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
             double[] freqPeaks = tuple2.Item2;
@@ -464,42 +472,43 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// returns fraction coverage of the hi and lo frequency parts of the spectrogram
+        /// returns fraction coverage of the low, middle and high freq bands of the spectrum
         /// </summary>
         /// <param name="spectrogram"></param>
         /// <param name="bgThreshold"></param>
-        /// <param name="excludeBins"></param>
+        /// <param name="lowFreqBound">Herz</param>
+        /// <param name="midFreqBound">Herz</param>
+        /// <param name="nyquist">Herz</param>
+        /// <param name="binWidth">Herz per bin i.e. column in spectrogram - spectrogram rotated wrt to normal view.</param>
         /// <returns></returns>
-        public static Tuple<double, double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int lowFreqBound, int midFreqBound, int Nyquist)
+        public static Tuple<double, double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int lowFreqBound, int midFreqBound, int nyquist, double binWidth)
         {
             //calculate boundary between hi, mid and low frequency spectrum
-            int freqBinCount = spectrogram.GetLength(1);
-            double binWidth = Nyquist / (double)freqBinCount;
-            int lowFreqBinCount = (int)Math.Ceiling(lowFreqBound / binWidth);
-            int midFreqBinCount = (int)Math.Ceiling(midFreqBound / binWidth);
+            //int freqBinCount = spectrogram.GetLength(1);
+            int lowFreqBinIndex  = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int midFreqBinIndex  = (int)Math.Ceiling(midFreqBound / binWidth);
+            int highFreqBinIndex = (int)Math.Floor(nyquist        / binWidth);
 
-
-
-            int hfCoverage = 0;
-            int mfCoverage = 0;
-            int lfCoverage = 0;
+            int hfCoverage  = 0;
+            int mfCoverage  = 0;
+            int lfCoverage  = 0;
             int hfCellCount = 0;
             int mfCellCount = 0;
             int lfCellCount = 0;
             for (int i = 0; i < spectrogram.GetLength(0); i++) //for all rows of spectrogram
             {
-                for (int j = 0; j < lowFreqBinCount; j++) //caluclate coverage for low freq band
+                for (int j = 0; j < lowFreqBinIndex; j++) //caluclate coverage for low freq band
                 {
                     if (spectrogram[i, j] >= bgThreshold) lfCoverage++;
                     lfCellCount++;
                     spectrogram[i, j] = 0.0;
                 }
-                for (int j = lowFreqBinCount; j < midFreqBinCount; j++) //caluclate coverage for mid freq band
+                for (int j = lowFreqBinIndex; j < midFreqBinIndex; j++) //caluclate coverage for mid freq band
                 {
                     if (spectrogram[i, j] >= bgThreshold) mfCoverage++;
                     mfCellCount++;
                 }
-                for (int j = midFreqBinCount; j < freqBinCount; j++) //caluclate coverage for high freq band
+                for (int j = midFreqBinIndex; j < highFreqBinIndex; j++) //caluclate coverage for high freq band
                 {
                     if (spectrogram[i, j] >= bgThreshold) hfCoverage++;
                     hfCellCount++;
@@ -512,6 +521,8 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
+        /// In initial version selected ONLY peaks higher than threshold amplitude.
+        /// Now selecting any peak.
         /// returns ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS
         /// </summary>
         /// <param name="spectrogram"></param>
@@ -519,18 +530,24 @@ namespace AnalysisPrograms
         /// <param name="peakThreshold">required amplitude threshold to qualify as peak</param>
         /// <param name="nyquistFreq"></param>
         /// <returns></returns>
-        public static Tuple<double, double[]> CalculateEntropyOfPeakLocations(double[,] spectrogram, bool[] activeFrames, double peakThreshold, int nyquistFreq)
+        public static Tuple<double, double[]> CalculateEntropyOfPeakLocations(double[,] spectrogram, double peakThreshold, int lowFreqBound, int nyquistFreq, double binWidth)
         {
+            int frameCount   = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
+            int lowFreqBin = (int)Math.Ceiling(lowFreqBound / binWidth); 
+            int nyquistBin = (int)Math.Floor(nyquistFreq / binWidth);    
 
-            double[] freqPeaks = new double[activeFrames.Length]; //store frequency of peaks - return later for imaging purposes
+            double[] freqPeaks  = new double[frameCount];   //store frequency of peaks - return later for imaging purposes
             int[] freqHistogram = new int[freqBinCount];
             int peakCount = 0;
-            for (int i = 0; i < activeFrames.Length; i++)
+            for (int i = 0; i < frameCount; i++)
             {
-                if (! activeFrames[i]) continue; //select only frames having acoustic energy >= threshold
-             
-                int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i)); //locate maximum peak
+                double[] spectrum = DataTools.GetRow(spectrogram, i);
+                //set outside bins to zero
+                for (int b = 0; b < lowFreqBin; i++) spectrum[b] = 0.0;
+                for (int b = nyquistBin+1; b < freqBinCount; i++) spectrum[b] = 0.0;
+
+                int j = DataTools.GetMaxIndex(spectrum); //locate maximum peak
                 if (spectrogram[i, j] > peakThreshold) 
                 {
                     freqHistogram[j-1] ++;  //spectrogram has a DC freq column which want to ignore.           
@@ -538,9 +555,10 @@ namespace AnalysisPrograms
                     peakCount++;
                 }
             } // over all frames in dB array
+
             if (peakCount == 1) return System.Tuple.Create(0.0, freqPeaks); //energy concentrated in one peak i.e low entropy 
             else
-            if (peakCount == 0) return System.Tuple.Create(0.5, freqPeaks); //do not know distribution 
+                if (peakCount == 0) return System.Tuple.Create(0.5, freqPeaks); //do not know distribution 
 
             //DataTools.writeBarGraph(freqHistogram);
             freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
@@ -548,20 +566,22 @@ namespace AnalysisPrograms
             return System.Tuple.Create(entropy, freqPeaks);
         }
 
+
         /// <summary>
         /// Returns ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
         /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
-        /// Entropy is a measure of ENERGY dispersal.
+        /// Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
         /// </summary>
         /// <param name="spectrogram">this is an amplitude spectrum. Must square values to get power</param>
         /// <param name="excludeBins"></param>
+        /// <param name="nyquistBin">this is wrt the original audio file if up-sampled</param>
         /// <returns></returns>
-        public static Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins)
+        public static Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins, int nyquistBin)
         {
-            int freqBinCount = spectrogram.GetLength(1);
-            double[] avSpectrum = new double[freqBinCount - excludeBins];   //for average  of the spectral bins
-            double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
-            for (int j = excludeBins; j < freqBinCount; j++)                //for all frequency bins (excluding low freq)
+            //int freqBinCount = spectrogram.GetLength(1);
+            double[] avSpectrum  = new double[nyquistBin - excludeBins];   //for average  of the spectral bins
+            double[] varSpectrum = new double[nyquistBin - excludeBins];   //for variance of the spectral bins
+            for (int j = excludeBins; j < nyquistBin; j++)                 //for all frequency bins (excluding low freq and high if original audio upsampled)
             {
                 var bin = new double[spectrogram.GetLength(0)];      //set up a bin to take freq power
                 for (int i = 0; i < spectrogram.GetLength(0); i++)
@@ -576,28 +596,27 @@ namespace AnalysisPrograms
 
             //set up some safety checks but unlikely to happen
             int posCount = avSpectrum.Count(p => p > 0.0);
-            if (posCount == 1) return System.Tuple.Create(0.0, 0.0); //energy concentrated in one value - i.e. low entorpy
+            if (posCount == 1) return System.Tuple.Create(0.0, 0.0); //energy concentrated in one value - i.e. low entropy
             else
             if (posCount == 0) return System.Tuple.Create(0.5, 0.5); //low energy distributed - do not know entropy - select middle ground!
 
-            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);               //ENTROPY of spectral averages
+            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);         //ENTROPY of spectral averages
             //DataTools.writeBarGraph(avSpectrum);
             //Log.WriteLine("H(Spectral averages) =" + HSpectralAv);
 
             //sum = varSpectrum.Sum();
             posCount = varSpectrum.Count(p => p > 0.0);
-            //if ((sum < 0.00000001) && (posCount < 2))
             if (posCount == 0) return System.Tuple.Create(HSpectralAv, 0.5);       //flat spectrum - do not know entropy - select middle ground!
             else
             if (posCount == 1) return System.Tuple.Create(HSpectralAv, 0.0);       //variance concentrated in few values - i.e. low entropy
             else
             {
-                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);         //ENTROPY of spectral variances
+                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);   //ENTROPY of spectral variances
                 //DataTools.writeBarGraph(varSpectrum);
                 //Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
                 return System.Tuple.Create(HSpectralAv, HSpectralVar);
             }
-        }
+        } // CalculateEntropyOfSpectralAvAndVariance()
 
 
 

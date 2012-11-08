@@ -193,9 +193,11 @@
         public int SegmentTargetSampleRate { get; set; }
 
         /// <summary>
-        /// Gets or sets the segment source sample rate.
+        /// Gets or sets the sample rate of the original audio file from which segment was extracted.
+        /// THIS IS A HACK!!! IT IS A WAY OF STORING INFORMATION THAT WE WANT 
+        /// TO PASS DOWN INTO THE ANALYSIS LEVEL
         /// </summary>
-        public int? SegmentSourceSampleRate { get; set; }
+        public int? SampleRateOfOriginalAudioFile { get; set; }
 
         /// <summary>
         /// Gets or sets the media type the analysis expects.

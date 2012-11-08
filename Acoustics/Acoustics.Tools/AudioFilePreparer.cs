@@ -63,6 +63,9 @@
             result.SourceInfo = audioUtility.Info(fiSource);
             result.TargetInfo = audioUtility.Info(fiOutput);
 
+            // Next line is a HACK!!!!!! ############### MARK WILL HAVE TO DO MORE ELEGANTLY ONE DAY
+            request.OriginalSampleRate = result.SourceInfo.SampleRate;
+
             return fiOutput;
         }
 
