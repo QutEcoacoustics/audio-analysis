@@ -9,6 +9,10 @@
 
     /// <summary>
     /// Represents a file and a segment within the file.
+    /// 
+    /// TODO!! THERE IS A REAL PROBLEM HERE BECAUSE THE ONE CLASS MUST REPRESENT INFO ABOUT CURRENT FILE SEGMENT 
+    /// AND THE ORIGINAL FILE FROM WHICH THE SEGMENT WAS EXTRACTED. PERHAPS A SOLUTIOn IS TO HAVE 
+    /// a FileSegment member in the FileSegment class. SEE BELOW
     /// </summary>
     public class FileSegment
     {
@@ -37,6 +41,12 @@
         /// May be required when oding analysis
         /// </summary>
         public int? OriginalFileSampleRate { get; set; }
+
+        /// <summary>
+        /// This member may be way of dealing with the extraction history of segments.
+        /// However I have not used it.
+        /// </summary>
+        public FileSegment veryOriginalAudioFile { get; set; }
 
         /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.

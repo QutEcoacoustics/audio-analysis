@@ -17,7 +17,9 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Reflection;
 
-    using Acoustics.Shared.Debugging;
+    #if DEBUG
+        using Acoustics.Shared.Debugging;
+    #endif
 
     using AnalysisPrograms.Production;
 
@@ -137,7 +139,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -242,7 +244,7 @@ namespace AnalysisPrograms
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
             {
-                LoggedConsole.WriteLine("Exit hung, press any key to quit.");
+                LoggedConsole.WriteLine("FINISHED: Press RETURN key to exit.");
                 Console.ReadLine();
             }
 #endif

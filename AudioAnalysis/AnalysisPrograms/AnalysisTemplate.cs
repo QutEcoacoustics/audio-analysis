@@ -169,7 +169,7 @@ namespace AnalysisPrograms
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
-            analysisSettings.SegmentSourceSampleRate = beforeAndAfterInfo.SourceInfo.SampleRate;
+            analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
 
             // DO THE ANALYSIS
             //#############################################################################################################################################

@@ -163,8 +163,9 @@
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;
 
-            // Store source sample rate - may need during the analysis if have upsampled the source.
-            //settings.SegmentSourceSampleRate = beforeAndAfterInfo.SourceInfo.SampleRate;
+            // Store sample rate of original audio file in the Settings object.
+            // May need original SR during the analysis, esp if have upsampled from the original SR.
+            settings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
             settings.AudioFile = preparedFilePath;
 
             //if user requests, save the sonogram files 
@@ -179,8 +180,6 @@
                     settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, (fName + ".png")));
                 }
             }
-
-            settings.SegmentSourceSampleRate = preparedFile.OriginalFileSampleRate;
 
             //##### RUN the ANALYSIS ################################################################
             var result = analyser.Analyse(settings);
