@@ -2473,12 +2473,22 @@ namespace TowseyLib
     /// <returns></returns>
     public static double Entropy_normalised(double[] v)
     {
+        //some safety checks but unlikely to happen
+        int posCount = v.Count(p => p > 0.0);
+        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+        
         double[] pmf2 = DataTools.Normalise2Probabilites(v); //pmf = probability mass funciton
         double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
         return DataTools.Entropy(pmf2) / normFactor;
     }
     public static double Entropy_normalised(int[] v)
     {
+        //some safety checks but unlikely to happen
+        int posCount = v.Count(p => p > 0.0);
+        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+
         double[] pmf2 = DataTools.NormaliseArea(v); //pmf = probability mass funciton
         double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
         return DataTools.Entropy(pmf2) / normFactor;
@@ -2493,7 +2503,13 @@ namespace TowseyLib
  	 * The relative entropy is with respect to a uniform distribution. 
  	 */
   public static double RelativeEntropy(double[] distr)
- 	{   int length = distr.Length;
+ 	{
+        //some safety checks but unlikely to happen
+        int posCount = distr.Count(p => p > 0.0);
+        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+
+        int length = distr.Length;
  	    // generate a uniform reference distribution
  	 	double[] refDistr = new double[length];
         for(int i=0; i<length; i++)refDistr[i]= 1/(double)length;

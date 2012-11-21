@@ -654,6 +654,8 @@ namespace TowseyLib
 
         /// <summary>
         /// Calls method to implement "Adaptive Level Equalisatsion" (Lamel et al, 1981)
+        /// Assumes that passed signal is in deciBels.
+        /// But differs from Lamel et al because they only search in range 10dB above min dB.
         /// and then subtracts modal noise from the signal - so now zero dB = modal noise
         /// Sets default values for min dB value and the noise threshold. 10 dB is a default used by Lamel et al.
         /// DOES NOT TRUNCATE BELOW ZERO VALUES.

@@ -94,6 +94,7 @@ namespace TowseyLib
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
+        /// The returned submatrix includes the rows and column passed as bounds.
         /// Assume that r1 < r2, c1 < c2. 
         /// Row, column indices start at 0
         /// </summary>

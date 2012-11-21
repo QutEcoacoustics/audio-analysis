@@ -244,8 +244,8 @@ namespace AnalysisPrograms
             double[,] spectrogramData = results2.Spectrogram;  
 
 
-            // ii: FRAME ENERGIES - 
-            // use Lamel et al. Only search in range 10dB above min dB.
+            // ii: FRAME ENERGIES -
+            // convert signal to decibels and subtract background noise.
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
 
@@ -259,7 +259,7 @@ namespace AnalysisPrograms
                     activeFrames[i] = true;
                 }
             }
-            ////int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
+            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));  // this more elegant but want to keep active frame array
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
             Indices2 indices; // struct in which to store all indices
@@ -270,33 +270,35 @@ namespace AnalysisPrograms
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
 
             int nyquistFreq = recording.Nyquist; 
-            int nyquistBin = spectrogramData.GetLength(1);
+            int nyquistBin = spectrogramData.GetLength(1)-1;
             double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
 
-            // calculate boundary between hi and low frequency spectrum
+            // calculate the bin id of boundary between mid and low frequency spectrum
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
-            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this iwll be less than 17640/2.
+            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
-            if (recording.Nyquist > originalAudioNyquist)
+            if (nyquistFreq > originalAudioNyquist) // i.e. upsampling has been done
             {
                 nyquistFreq = originalAudioNyquist;
                 nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
             }
 
-
-
-
-
+            var subSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0)-1, nyquistBin);
+            
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogramData, lowBinBound, nyquistBin);
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(subSpectrogram);
             indices.entropyOfAvSpectrum = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
-            // iv: remove background noise from the spectrogram
+            // iv: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
+            double[] aciArray = AcousticComplexityIndex(subSpectrogram);
+            //indices.ACI = aciArray.Average;
+
+            // v: remove background noise from the spectrogram
             const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[] modalValues = SNR.CalculateModalValues(spectrogramData); // calculate modal value for each freq bin.
-            modalValues = DataTools.filterMovingAverage(modalValues, 7);  // smooth the modal profile
+            modalValues = DataTools.filterMovingAverage(modalValues, 7);      // smooth the modal profile
             spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
             spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
 
@@ -573,51 +575,68 @@ namespace AnalysisPrograms
         /// Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
         /// </summary>
         /// <param name="spectrogram">this is an amplitude spectrum. Must square values to get power</param>
-        /// <param name="excludeBins"></param>
-        /// <param name="nyquistBin">this is wrt the original audio file if up-sampled</param>
         /// <returns></returns>
-        public static Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins, int nyquistBin)
+        public static Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram)
         {
-            //int freqBinCount = spectrogram.GetLength(1);
-            double[] avSpectrum  = new double[nyquistBin - excludeBins];   //for average  of the spectral bins
-            double[] varSpectrum = new double[nyquistBin - excludeBins];   //for variance of the spectral bins
-            for (int j = excludeBins; j < nyquistBin; j++)                 //for all frequency bins (excluding low freq and high if original audio upsampled)
+            int frameCount   = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            double[] avSpectrum  = new double[freqBinCount];   // for average  of the spectral bins
+            double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
             {
-                var bin = new double[spectrogram.GetLength(0)];      //set up a bin to take freq power
-                for (int i = 0; i < spectrogram.GetLength(0); i++)
+                var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
+                for (int r = 0; r < frameCount; r++)
                 {
-                    bin[i] = spectrogram[i, j] * spectrogram[i, j];  //convert amplitude to energy or power.
+                    freqBin[r] = spectrogram[r, j] * spectrogram[r, j];  //convert amplitude to energy or power.
                 }
                 double av, sd;
-                NormalDist.AverageAndSD(bin, out av, out sd);
-                avSpectrum[j - excludeBins] = av;      //store average  of the bin
-                varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
+                NormalDist.AverageAndSD(freqBin, out av, out sd);
+                avSpectrum[j]  = av;      //store average  of the bin
+                varSpectrum[j] = sd * sd; //store variance of the bin
             }
 
-            //set up some safety checks but unlikely to happen
-            int posCount = avSpectrum.Count(p => p > 0.0);
-            if (posCount == 1) return System.Tuple.Create(0.0, 0.0); //energy concentrated in one value - i.e. low entropy
-            else
-            if (posCount == 0) return System.Tuple.Create(0.5, 0.5); //low energy distributed - do not know entropy - select middle ground!
-
-            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);         //ENTROPY of spectral averages
+            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);     //ENTROPY of spectral averages
+            if (double.IsNaN(HSpectralAv)) HSpectralAv = 0.5;
             //DataTools.writeBarGraph(avSpectrum);
             //Log.WriteLine("H(Spectral averages) =" + HSpectralAv);
 
-            //sum = varSpectrum.Sum();
-            posCount = varSpectrum.Count(p => p > 0.0);
-            if (posCount == 0) return System.Tuple.Create(HSpectralAv, 0.5);       //flat spectrum - do not know entropy - select middle ground!
-            else
-            if (posCount == 1) return System.Tuple.Create(HSpectralAv, 0.0);       //variance concentrated in few values - i.e. low entropy
-            else
-            {
-                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);   //ENTROPY of spectral variances
-                //DataTools.writeBarGraph(varSpectrum);
-                //Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
-                return System.Tuple.Create(HSpectralAv, HSpectralVar);
-            }
+            double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);   //ENTROPY of spectral variances
+            if (double.IsNaN(HSpectralVar)) HSpectralVar = 0.5;
+            //DataTools.writeBarGraph(varSpectrum);
+            //Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
+
+            return System.Tuple.Create(HSpectralAv, HSpectralVar);
         } // CalculateEntropyOfSpectralAvAndVariance()
 
+
+        /// <summary>
+        /// Returns an array of ACOUSTIC COMPLEXITY INDICES
+        /// This implements the index of N. Pieretti, A. Farina, D. Morri
+        /// in "A new methodology to infer the singing activity of an avian community: The Acoustic Complexity Index (ACI)"
+        /// in Ecological Indicators 11 (2011) pp868–873
+        /// </summary>
+        /// <param name="spectrogram">this is an amplitude spectrum.</param>
+        /// <returns></returns>
+        public static double[] AcousticComplexityIndex(double[,] spectrogram)
+        {
+            int frameCount   = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            double[] aciArray = new double[freqBinCount];      // array of acoustic complexity indices, one for each freq bin
+            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
+            {
+                var deltaI = 0.0;          // set up an array to take all values in a freq bin i.e. column of matrix
+                var sumI   = 0.0;
+                for (int r = 0; r < frameCount-1; r++)
+                {
+                    sumI   += spectrogram[r, j];
+                    deltaI += Math.Abs(spectrogram[r, j] - spectrogram[r + 1, j]);
+                }
+                aciArray[j] = deltaI / sumI;      //store normalised ACI value
+            }
+            DataTools.writeBarGraph(aciArray);
+
+            return aciArray;
+        } // AcousticComplexityIndex()
 
 
         public static Tuple<int, double, bool[], List<double[]>, int[]> ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
