@@ -471,8 +471,17 @@ namespace AnalysisPrograms
         } //Analysis()
 
 
-
-        public static Indices GetIndices(double[] envelope, double[,] spectrogram, int nyquist, int lowFreqBound, int midFreqBound, double binWidth)   
+        /// <summary>
+        /// NOTE: THIS METHOD NEEDS TOTAL REWORK FOR CHANGE IN NYQUIST FREQ
+        /// </summary>
+        /// <param name="envelope"></param>
+        /// <param name="spectrogramData"></param>
+        /// <param name="nyquistFreq"></param>
+        /// <param name="lowFreqBound"></param>
+        /// <param name="midFreqBound"></param>
+        /// <param name="binWidth"></param>
+        /// <returns></returns>
+        public static Indices GetIndices(double[] envelope, double[,] spectrogramData, int nyquistFreq, int lowFreqBound, int midFreqBound, double binWidth)   
         {
 
             //ii: FRAME ENERGIES - 
@@ -498,22 +507,48 @@ namespace AnalysisPrograms
 
             //calculate boundary between hi and low frequency spectrum
             int excludeLoFreqBins = (int)Math.Ceiling(lowFreqBound / binWidth);
-            int nyquistBin        = (int)Math.Ceiling(nyquist / binWidth);
+            int nyquistBin        = (int)Math.Ceiling(nyquistFreq  / binWidth);
 
-            //iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(spectrogram, excludeLoFreqBins, nyquistBin);
+
+
+            //int nyquistBin = spectrogramData.GetLength(1) - 1;
+            //double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
+
+            // calculate the bin id of boundary between mid and low frequency spectrum
+            int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+
+            // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
+            // int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
+            int originalAudioNyquist = nyquistFreq;  // ####################################### THIS LINE A HACK TO COMPLILE. NEED TO REWORK
+            if (nyquistFreq > originalAudioNyquist) // i.e. upsampling has been done
+            {
+                nyquistFreq = originalAudioNyquist;
+                nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
+            }
+
+            var subSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0) - 1, nyquistBin);
+
+            // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
+            var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(subSpectrogram);
             indices.spectralEntropy = tuple.Item1;
-            //indices.entropyOfVarianceSpectrum = tuple.Item2;
+
+
+
+
+
+
+
+
 
             //iv: remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
+            double[] modalValues = SNR.CalculateModalValues(spectrogramData); //calculate modal value for each freq bin.
             modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
-            spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
-            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
+            spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
+            spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, spectralBgThreshold);
 
             //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, nyquist, binWidth);
+            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogramData, spectralBgThreshold, lowFreqBound, midFreqBound, nyquistFreq, binWidth);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
