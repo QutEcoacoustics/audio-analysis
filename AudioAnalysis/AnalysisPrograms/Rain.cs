@@ -44,6 +44,8 @@ namespace AnalysisPrograms
         public const string header_lfCover  = "lfCover";
         public const string header_HAmpl    = "H[t]";
         public const string header_HAvSpectrum  = "H[s]";
+        public const string header_AcComplexity = "AcComplexity";
+
 
         public const string header_rain     = "rain";
         public const string header_cicada   = "cicada";
@@ -62,10 +64,11 @@ namespace AnalysisPrograms
         {
             public double snr, bgNoise, activity, spikes, avSig_dB, temporalEntropy; //amplitude indices
             public double lowFreqCover, midFreqCover, hiFreqCover, spectralEntropy;  //, entropyOfVarianceSpectrum; //spectral indices
+            public double ACI;
 
             public Indices(double _snr, double _bgNoise, double _avSig_dB, double _activity, double _spikes,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
-                            double _entropyOfAvSpectrum  /*, double _entropyOfVarianceSpectrum*/ )
+                            double _entropyOfAvSpectrum, double _ACI )
             {
                 snr = _snr;
                 bgNoise = _bgNoise;
@@ -77,9 +80,9 @@ namespace AnalysisPrograms
                 midFreqCover = _midFreqCover;
                 lowFreqCover = _lowFreqCover;
                 spectralEntropy = _entropyOfAvSpectrum;
-                //entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
+                ACI = _ACI;
             }
-        } //struct Indices2
+        } //struct Indices
 
 
 
@@ -365,7 +368,7 @@ namespace AnalysisPrograms
         public static Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
-            
+
             //get parameters for the analysis
             int frameSize = AcousticFeatures.DEFAULT_WINDOW_SIZE;
             double windowOverlap = 0.0;
@@ -387,26 +390,27 @@ namespace AnalysisPrograms
             //calculate duration/size of various quantities.
             int signalLength = recording.GetWavReader().Samples.Length;
             TimeSpan audioDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
-            double   frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
+            double duration        = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
+            TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration * TimeSpan.TicksPerSecond));
+
             int chunkDuration = 10; //seconds
-            double framesPerSeconds = 1 / frameDuration;
-            int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
-            int chunkLength = (int)(chunkDuration * framesPerSeconds);
+            double framesPerSecond = 1 / frameDuration.TotalSeconds;
+            int chunkCount      = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
+            int framesPerChunk  = (int)(chunkDuration * framesPerSecond);
             string[] classifications = new string[chunkCount];
 
 
             //i: EXTRACT ENVELOPE and FFTs
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[]  envelope    = results2.Envelope;
-            double[,] spectrogram = results2.Spectrogram;  //amplitude spectrogram
+            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+            double[,] spectrogram = signalextract.Spectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);
 
+
             int nyquistFreq = recording.Nyquist;
-            int nyquistBin = spectrogram.GetLength(1);
+            int nyquistBin = spectrogram.GetLength(1) - 1;
             double binWidth = nyquistFreq / (double)spectrogram.GetLength(1);
 
-            // calculate boundary between hi and low frequency spectrum
+            // calculate the bin id of boundary between mid and low frequency spectrum
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this iwll be less than 17640/2.
@@ -417,6 +421,27 @@ namespace AnalysisPrograms
                 nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
             }
 
+
+            // vi: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
+            var subBandSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowBinBound, spectrogram.GetLength(0) - 1, nyquistBin);
+
+            double[] aciArray = AcousticFeatures.AcousticComplexityIndex(subBandSpectrogram);
+            double aci1 = aciArray.Average();
+
+
+            // ii: FRAME ENERGIES -
+            // convert signal to decibels and subtract background noise.
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalextract.Envelope));
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
+
+
+            //// vii: remove background noise from the full spectrogram i.e. BIN 1 to Nyquist
+            //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, nyquistBin);
+            //const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+            //double[] modalValues = SNR.CalculateModalValues(spectrogramData); // calculate modal value for each freq bin.
+            //modalValues = DataTools.filterMovingAverage(modalValues, 7);      // smooth the modal profile
+            //spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
+            //spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
 
             //set up the output
             if (verbose)
@@ -432,12 +457,12 @@ namespace AnalysisPrograms
             for (int i=0; i<chunkCount; i++)
             {
                 int startSecond = i * chunkDuration;
-                int start = (int)(startSecond * framesPerSeconds);
-                int end   = start + chunkLength;
-                if (end >= envelope.Length) end = envelope.Length - 1;
-                double[]  array  = DataTools.Subarray(envelope, start, chunkLength);
+                int start = (int)(startSecond * framesPerSecond);
+                int end   = start + framesPerChunk;
+                if (end >= signalextract.Envelope.Length) end = signalextract.Envelope.Length - 1;
+                double[] array = DataTools.Subarray(signalextract.Envelope, start, framesPerChunk);
                 if (array.Length < 50) continue;  //an arbitrary minimum length
-                double[,] matrix = DataTools.Submatrix(spectrogram, start, 0, end, (colCount - 1));
+                double[,] matrix = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin);
 
                 Indices indices = GetIndices(array, matrix, nyquistFreq, lowFreqBound, midFreqBound, binWidth);
                 string classification = ConvertAcousticIndices2Classifcations(indices);
@@ -509,11 +534,6 @@ namespace AnalysisPrograms
             int excludeLoFreqBins = (int)Math.Ceiling(lowFreqBound / binWidth);
             int nyquistBin        = (int)Math.Ceiling(nyquistFreq  / binWidth);
 
-
-
-            //int nyquistBin = spectrogramData.GetLength(1) - 1;
-            //double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
-
             // calculate the bin id of boundary between mid and low frequency spectrum
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
@@ -531,13 +551,12 @@ namespace AnalysisPrograms
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(subSpectrogram);
             indices.spectralEntropy = tuple.Item1;
+            //indices.entropyOfVarianceSpectrum = tuple.Item2;
 
 
-
-
-
-
-
+            // WARNING TO DO::: THIS IS CALCULATED ON DECIBEL SPECTRUM - SHOULD BE CALCULATED ON AMPLITUDE SPECTRUM
+            var aciArray = AcousticFeatures.AcousticComplexityIndex(subSpectrogram);
+            indices.ACI = aciArray.Average();
 
 
             //iv: remove background noise from the spectrogram
@@ -548,10 +567,11 @@ namespace AnalysisPrograms
             spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, spectralBgThreshold);
 
             //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogramData, spectralBgThreshold, lowFreqBound, midFreqBound, nyquistFreq, binWidth);
+            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogramData, spectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
+
             return indices;
         }
 
