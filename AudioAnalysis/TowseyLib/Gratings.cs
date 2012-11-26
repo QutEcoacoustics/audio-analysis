@@ -152,7 +152,7 @@ namespace TowseyLib
             {
                 int start = i;
                 double[] extract = DataTools.Subarray(array, start, segmentLength);
-                if (extract == null) return output; // reached end of array
+                if (extract.Length != segmentLength) return output; // reached end of array
                 double score = DetectPeriod2Grating(extract);
 
                 output[i] = score;
@@ -189,7 +189,7 @@ namespace TowseyLib
             {
                 //if (noiseReducedArray[i] < threshold) continue;
                 double[] extract = DataTools.Subarray(array, i, segmentLength);
-                if (extract == null) return gridScore; // reached end of array
+                if (extract.Length != segmentLength) return gridScore; // reached end of array
 
                 //now reduce the segment
                 double[] reducedSegment = ReduceArray(extract, cyclePeriod, numberOfCycles);

@@ -429,7 +429,7 @@ namespace AnalysisPrograms
                 int start = step * i;
                 double[] lowerSubarray = DataTools.Subarray(lowerArray, start, sampleLength);
                 double[] upperSubarray = DataTools.Subarray(upperArray, start, sampleLength);
-                if ((lowerSubarray == null) || (upperSubarray == null)) break;
+                if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
                 var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
                 int zeroCount = 3;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content

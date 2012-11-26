@@ -585,7 +585,7 @@ namespace AnalysisPrograms
                 {
                     int segmentLength = numberOfCycles * p;
                     double[] extract = DataTools.Subarray(dBArray, i, segmentLength);
-                    if (extract == null) return gridScore; // reached end of array
+                    if (extract.Length != segmentLength) return gridScore; // reached end of array
 
                     double[] reducedSegment = Gratings.ReduceArray(extract, p, numberOfCycles);
                     double pScore = Gratings.DetectPeriod2Grating(reducedSegment);

@@ -386,6 +386,8 @@
         /// <exception cref="ArgumentException">file</exception>
         protected void CheckFile(FileInfo file)
         {
+            file.Refresh();
+            
             if (file == null)
             {
                 throw new ArgumentNullException("file");

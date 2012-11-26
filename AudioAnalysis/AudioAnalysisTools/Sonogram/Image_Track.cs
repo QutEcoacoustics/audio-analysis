@@ -239,47 +239,6 @@
         }
 
 
-        public Bitmap DrawTimeTrack(Bitmap bmp)
-        {
-            int width = bmp.Width;
-            int height = bmp.Height;
-
-            DateTime start = new DateTime(0);
-            double duration = this.timeSpan.TotalSeconds;
-            double period = duration / (double)width;
-
-            byte[] hScale = CreateXaxis(width, this.timeSpan);
-            topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
-
-            Graphics g1 = Graphics.FromImage(bmp);
-            g1.FillRectangle(Brushes.White, 0, topOffset - timeScaleHt + 1, width, topOffset-13); //why -13??? I don't know! Quick & dirty fix!
-
-            var font = new Font("Tahoma", 8);
-
-            for (int x = 0; x < width; x++)
-            {
-                if (hScale[x] == 50) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Gray);
-                else
-                if (hScale[x] ==  0) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Black);
-                bmp.SetPixel(x, topOffset, Color.Black);                   // bottom line of scale
-                bmp.SetPixel(x, topOffset - timeScaleHt + 1, Color.Black); // top line of scale
-            } //end of adding time grid
-
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (hScale[x] == 0)
-                    {
-                        int secs = (int)Math.Round(x * period);
-                        TimeSpan span = new TimeSpan(0, 0, secs);
-                        g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 1, topOffset-11));
-                    }
-                }
-            }
-            return bmp;
-        }
-
         public byte[] CreateXaxis(int width, TimeSpan timeSpan)
         {
             byte[] ba = new byte[width]; //byte array
@@ -772,6 +731,14 @@
 
 
         // mark of time scale according to scale.
+        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+        {
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, bmp.Width, trackHeight, title);
+            Graphics gr = Graphics.FromImage(bmp);
+            gr.DrawImage(timeBmp, 0, yOffset);
+        }
+
+        // mark of time scale according to scale.
         public static Bitmap DrawTimeTrack(int duration, int scale, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -797,12 +764,52 @@
         }
 
 
-        // mark of time scale according to scale.
-        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+        public Bitmap DrawTimeTrack(Bitmap bmp)
         {
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, bmp.Width, trackHeight, title);
-            Graphics gr = Graphics.FromImage(bmp);
-            gr.DrawImage(timeBmp, 0, yOffset);
+            int width = bmp.Width;
+            int height = bmp.Height;
+
+            DateTime start = new DateTime(0);
+            double duration = this.timeSpan.TotalSeconds;
+            double secondsPerPixel = duration / (double)width;
+
+            byte[] hScale = CreateXaxis(width, this.timeSpan);
+            topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
+
+            Graphics g1 = Graphics.FromImage(bmp);
+            g1.FillRectangle(Brushes.White, 0, topOffset - timeScaleHt + 1, width, topOffset - 13); //why -13??? I don't know! Quick & dirty fix!
+
+            var font = new Font("Tahoma", 8);
+
+            // mark the tics
+            for (int x = 0; x < width; x++)
+            {
+                if (hScale[x] == 50) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Gray);
+                else
+                if (hScale[x] ==  0) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Black);
+                bmp.SetPixel(x, topOffset, Color.Black);                   // bottom line of scale
+                bmp.SetPixel(x, topOffset - timeScaleHt + 1, Color.Black); // top line of scale
+            } //end of adding time grid
+
+            // add time tic labels - where to place label depends on scale of the time axis.
+            int onesecondInterval = (int)Math.Round(1 / secondsPerPixel);
+            int interval = onesecondInterval;
+            if (interval < 50) interval *= 10;
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                int prevLocation = -interval-1;
+                for (int x = 0; x < width; x++)
+                {
+                    if ((hScale[x] == 0) && (x > (prevLocation+interval)))
+                    {
+                        int secs = (int)Math.Round(x * secondsPerPixel);
+                        TimeSpan span = new TimeSpan(0, 0, secs);
+                        g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 1, topOffset - 11));
+                        prevLocation = x;
+                    }
+                }
+            }
+            return bmp;
         }
 
     }// end  class Image_Track

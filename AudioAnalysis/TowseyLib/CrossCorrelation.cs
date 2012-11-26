@@ -295,7 +295,7 @@ out double[] r)
                  else if (segmentLength > 16) xcorrLength = 16;
 
                  double[] extract = DataTools.Subarray(array, segment[0], xcorrLength);
-                 if (extract == null) continue;
+                 if (extract.Length != xcorrLength) continue;
 
                  var results = CrossCorrelation.DetectPeriodicityInArray(extract, zeroBinCount);
                  double intensity = results.Item1;     //an array of periodicity scores
@@ -453,7 +453,7 @@ out double[] r)
                 int start = step * i;
                 double[] lowerSubarray = DataTools.Subarray(array1, start, sampleLength);
                 double[] upperSubarray = DataTools.Subarray(array2, start, sampleLength);
-                if ((lowerSubarray == null) || (upperSubarray == null)) break;
+                if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
                 var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
                 int zeroCount = 3;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
