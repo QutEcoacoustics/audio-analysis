@@ -248,7 +248,7 @@ namespace AnalysisPrograms
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<double[]>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
+        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<Plot>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
@@ -345,12 +345,10 @@ namespace AnalysisPrograms
             // ix:  set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = null;
-            List<double[]> scores = new List<double[]>();
+            var scores = new List<Plot>();
 
             bool returnSonogramInfo = false;
             if (config.ContainsKey(Keys.SAVE_SONOGRAMS)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, config);
-            bool doNoiseReduction = false;
-            if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
 
             if (returnSonogramInfo)
             {
@@ -359,15 +357,19 @@ namespace AnalysisPrograms
                 sonoConfig.WindowSize = 1024;
                 sonoConfig.WindowOverlap = 0.0;
                 sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+                bool doNoiseReduction = false;
+                if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
                 if (doNoiseReduction) sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
                 sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-                scores.Add(DataTools.normalise(dBarray));        //array1
-                scores.Add(DataTools.Bool2Binary(activity.activeFrames)); //array2
+                scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), AcousticFeatures.DEFAULT_activityThreshold_dB));
+                scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 //convert spectral peaks to frequency
-                //int[] peaksBins = tuple_Peaks.Item2;
-                //freqPeaks = 
-                //scores.Add(DataTools.normalise(freqPeaks)); //location of peaks for spectral images
+                int[] peaksBins = tuple_Peaks.Item2;
+                double[] freqPeaks = new double[peaksBins.Length];
+                int binCount = sonogram.Data.GetLength(1);
+                for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowBinBound + peaksBins[i]) / (double)nyquistBin;
+                scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
             }
 
 
@@ -396,8 +398,9 @@ namespace AnalysisPrograms
                 //bool[] selectedFrames = tuple_Clustering.Item3;
                 //scores.Add(DataTools.Bool2Binary(selectedFrames));
                 //List<double[]> clusterWts = tuple_Clustering.Item4;
-                //int[] clusterHits = tuple_Clustering.Item5;
-                //scores.Add(DataTools.clusterHits);
+                int[] clusterHits = tuple_Clustering.Item5;
+                string label = String.Format(indices.clusterCount + " Clusters");
+                scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
 
                 //no need for the following line in normal usage - mostly for debugging
                 //double[,] clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins, selectedFrames, binaryThreshold, clusterWts, clusterHits);
