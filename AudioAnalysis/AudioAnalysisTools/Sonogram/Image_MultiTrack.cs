@@ -25,6 +25,7 @@ namespace AudioAnalysisTools
         private int[] FreqHits;
         private int nyquistFreq; //sets the frequency scale for drawing events
         private int freqBinCount;
+        private double freqBinWidth;
         private double framesPerSecond;
         #endregion
 
@@ -50,6 +51,7 @@ namespace AudioAnalysisTools
             this.nyquistFreq     = _nyquist;
             this.freqBinCount    = _freqBinCount;
             this.framesPerSecond = _framesPerSecond;
+            this.freqBinWidth    = _nyquist / _freqBinCount;
         }
 
         public void OverlayRedMatrix(Double[,] m, double maxScore)
@@ -110,13 +112,18 @@ namespace AudioAnalysisTools
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
             {
-                ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
+                //g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.sonogramImage); // USE THIS CALL INSTEAD.
 
-                if (this.eventList != null) DrawEvents(g); //draw events first because its rectangle can cover other features
+                if (this.eventList != null) //draw events first because their rectangles can cover other features
+                {
+                    foreach (AcousticEvent e in this.eventList)
+                        e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                }
+
                 if (this.FreqHits != null) DrawFreqHits(g);
 
-                if (this.SuperimposedMatrix != null) OverlayMatrix(g);
+                //if (this.SuperimposedMatrix != null) OverlayMatrix(g);
                 if (this.SuperimposedMatrix != null) OverlayMatrix(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRedTransparency != null) OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
@@ -134,9 +141,6 @@ namespace AudioAnalysisTools
             return image2return;
         }
 
-
-
-
         private int CalculateImageHeight()
         {
             int totalHeight = sonogramImage.Height;
@@ -144,52 +148,6 @@ namespace AudioAnalysisTools
                 totalHeight += track.Height;
             return totalHeight;
         }
-
-        void DrawEvents(Graphics g)
-        {
-            double freqBinWidth = this.nyquistFreq / this.freqBinCount;
-            Pen p1 = new Pen(Color.Crimson);
-            Pen p2 = new Pen(Color.Black);
-            foreach (AcousticEvent e in this.eventList)
-            {
-                if (e.colour != null) 
-                    p1 = new Pen(e.colour);
-
-                //if (e.oblong == null) continue;
-                //calculate top and bottom freq bins
-                int minFreqBin = (int)Math.Round(e.MinFreq / freqBinWidth);
-                int maxFreqBin = (int)Math.Round(e.MaxFreq / freqBinWidth);
-                int height = maxFreqBin - minFreqBin + 1;
-                int y = this.sonogramImage.Height - maxFreqBin - 1;
-
-                //calculate start and end time frames
-                int t1 = 0;
-                int tWidth = 0;
-                double duration = e.TimeEnd - e.TimeStart;
-                if ((duration != 0.0) && (this.framesPerSecond != 0.0))
-                {
-                    t1     = (int)Math.Round(e.TimeStart * this.framesPerSecond); //temporal start of event
-                    tWidth = (int)Math.Round(duration * this.framesPerSecond);
-                }
-                else if (e.oblong != null)
-                {
-                    t1     = e.oblong.r1; //temporal start of event
-                    tWidth = e.oblong.r2 - t1 + 1;
-                }
-
-                g.DrawRectangle(p1, t1, y, tWidth, height);
-
-                //draw the score bar to indicate relative score
-                int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
-                int y1 = y + height;
-                int y2 = y1 - scoreHt;
-                g.DrawLine(p2, t1 + 1, y1, t1 + 1, y2);
-                g.DrawLine(p2, t1 + 2, y1, t1 + 2, y2);
-                //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
-                g.DrawString(e.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
-            }
-        }
-
 
         void DrawFreqHits(Graphics g)
         {

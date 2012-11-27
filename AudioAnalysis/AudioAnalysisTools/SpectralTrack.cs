@@ -288,7 +288,7 @@ namespace AudioAnalysisTools
                 AcousticEvent ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
                 ae.SetTimeAndFreqScales(track.framesPerSecond, track.herzPerBin);
                 ae.Name = "";
-                ae.colour = Color.Blue;
+                ae.BorderColour = Color.Blue;
                 ae.DominantFreq = track.AverageBin * track.herzPerBin;
                 ae.Periodicity  = track.avPeriodicity;
                 ae.Score        = track.avPeriodicityScore;

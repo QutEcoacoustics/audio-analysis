@@ -961,7 +961,16 @@ namespace AnalysisPrograms
                     image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
             if (hits != null) image.OverlayRainbowTransparency(hits);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+
+            if (predictedEvents.Count > 0)
+            {
+                foreach (AcousticEvent ev in predictedEvents) // set colour for the events
+                {
+                    ev.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
+                    ev.ScoreColour  = AcousticEvent.DEFAULT_SCORE_COLOR;
+                }
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
             return image.GetImage();
         } //DrawSonogram()
 
