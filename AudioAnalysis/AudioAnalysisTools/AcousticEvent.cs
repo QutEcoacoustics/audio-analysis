@@ -13,6 +13,8 @@ namespace AudioAnalysisTools
 
     public class AcousticEvent
     {
+        public static Color DEFAULT_BORDER_COLOR = Color.Crimson;
+        public static Color DEFAULT_SCORE_COLOR = Color.Black;
 
         //DIMENSIONS OF THE EVENT
         /// <summary>in seconds</summary>
@@ -93,7 +95,8 @@ namespace AudioAnalysisTools
         /// </summary>
         public List<ResultProperty> ResultPropertyList { get; set; }
 
-        public Color colour { get; set; }
+        public Color BorderColour { get; set; }
+        public Color ScoreColour  { get; set; }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -210,6 +213,55 @@ namespace AudioAnalysisTools
         {
             return " min-max=" + this.MinFreq + "-" + this.MaxFreq + ",  " + oblong.c1 + "-" + oblong.c2;
         }
+
+
+
+
+        public void DrawEvent(Graphics g, double framesPerSecond, double freqBinWidth, int sonogramHeight)
+        {
+            Pen p1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR); // default colour
+            Pen p2 = new Pen(AcousticEvent.DEFAULT_SCORE_COLOR);
+            if (this.BorderColour != null) p1 = new Pen(this.BorderColour);
+
+            //calculate top and bottom freq bins
+            int minFreqBin = (int)Math.Round(this.MinFreq / freqBinWidth);
+            int maxFreqBin = (int)Math.Round(this.MaxFreq / freqBinWidth);
+            int height = maxFreqBin - minFreqBin + 1;
+            int y = sonogramHeight - maxFreqBin - 1;
+
+            //calculate start and end time frames
+            int t1 = 0;
+            int tWidth = 0;
+            double duration = this.TimeEnd - this.TimeStart;
+            if ((duration != 0.0) && (framesPerSecond != 0.0))
+            {
+                t1 = (int)Math.Round(this.TimeStart * framesPerSecond); //temporal start of event
+                tWidth = (int)Math.Round(duration * framesPerSecond);
+            }
+            else if (this.oblong != null)
+            {
+                t1 = this.oblong.r1; //temporal start of event
+                tWidth = this.oblong.r2 - t1 + 1;
+            }
+
+            g.DrawRectangle(p1, t1, y, tWidth, height);
+
+            //draw the score bar to indicate relative score
+            int scoreHt = (int)Math.Round(height * this.ScoreNormalised);
+            int y1 = y + height;
+            int y2 = y1 - scoreHt;
+            g.DrawLine(p2, t1 + 1, y1, t1 + 1, y2);
+            g.DrawLine(p2, t1 + 2, y1, t1 + 2, y2);
+            //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
+            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
+        }
+
+
+
+
+
+
+
 
         /// <summary>
         /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.

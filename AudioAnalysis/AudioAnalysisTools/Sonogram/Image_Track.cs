@@ -294,12 +294,12 @@
             int dataLength = this.doubleData.Length;
             double range = this.scoreMax - this.scoreMin;
 
+            //next three lines for subsampling if the score array is compressed to smaller width.
             int bmpWidth = bmp.Width;
             int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
             if (subSample < 1) subSample = 1;
 
-            Color gray = Color.LightGray;
-            Color white = Color.White;
+            Color gray = Color.FromArgb(235, 235, 235); // use as background
 
             int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
             for (int w = 0; w < length; w++)
@@ -308,28 +308,27 @@
                 int end = (w + 1) * subSample;
                 double max = -Double.MaxValue;
                 int location = 0;
-                for (int x = start; x < end; x++)
+                for (int x = start; x < end; x++) //find max value in subsample
                 {
                     if (max < doubleData[x]) max = doubleData[x];
                     location = x;
                 }
                 double fraction = (doubleData[w] - this.scoreMin) / range;
                 int id = this.Height - 1 - (int)(this.Height * fraction);
-                if (id < 0) id = 0;
-                else if (id > this.Height) id = this.Height;
+                if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds
+
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, white);
+                bmp.SetPixel(w, topOffset + 0, Color.Black);
+                for (int z = 1; z < id; z++) bmp.SetPixel(w, topOffset + z, gray); // background
+                for (int z = id; z < this.height; z++) bmp.SetPixel(w, topOffset + z, Color.Black); // draw the score bar
             }
 
             //add in horizontal threshold significance line
-          //  double thold = 2 * this.ScoreThreshold;
-           // if (thold < this.ScoreMax) thold = this.ScoreMax;
-          //  int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / thold)));
             double f = (this.ScoreThreshold - this.scoreMin) / range;
             int lineID = this.Height - 1 - (int)(this.Height * f);
-            if (lineID < 0) lineID = 0;
-            else if (lineID > this.Height) lineID = this.Height;
-            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
+            if (lineID < 0) return bmp;
+            if (lineID > this.Height) return bmp;
+            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
             return bmp;
         }
 
