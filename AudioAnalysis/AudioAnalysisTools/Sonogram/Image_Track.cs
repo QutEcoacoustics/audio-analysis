@@ -294,18 +294,19 @@
             int dataLength = this.doubleData.Length;
             double range = this.scoreMax - this.scoreMin;
 
-            //next three lines for subsampling if the score array is compressed to smaller width.
-            int bmpWidth = bmp.Width;
-            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
-            if (subSample < 1) subSample = 1;
+            //next two lines are for subsampling if the score array is compressed to fit smaller image width.
+            double subSample = dataLength / (double)bmp.Width;
+            if (subSample < 1.0) subSample = 1;
 
             Color gray = Color.FromArgb(235, 235, 235); // use as background
+            int baseLine = topOffset + this.height - 2;
 
-            int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
-            for (int w = 0; w < length; w++)
+            //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
+            //for (int w = 0; w < length; w++)
+            for (int w = 0; w < bmp.Width; w++)
             {
-                int start = w * subSample;
-                int end = (w + 1) * subSample;
+                int start = (int)Math.Round(w     * subSample);
+                int end   = (int)Math.Round((w+1) * subSample);
                 double max = -Double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++) //find max value in subsample
@@ -313,14 +314,14 @@
                     if (max < doubleData[x]) max = doubleData[x];
                     location = x;
                 }
-                double fraction = (doubleData[w] - this.scoreMin) / range;
+                double fraction = (max - this.scoreMin) / range;
                 int id = this.Height - 1 - (int)(this.Height * fraction);
                 if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds
 
                 //paint white and leave a black vertical histogram bar
-                bmp.SetPixel(w, topOffset + 0, Color.Black);
-                for (int z = 1; z < id; z++) bmp.SetPixel(w, topOffset + z, gray); // background
+                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, gray); // background
                 for (int z = id; z < this.height; z++) bmp.SetPixel(w, topOffset + z, Color.Black); // draw the score bar
+                bmp.SetPixel(w, baseLine, Color.Black); // draw base line
             }
 
             //add in horizontal threshold significance line
@@ -328,7 +329,7 @@
             int lineID = this.Height - 1 - (int)(this.Height * f);
             if (lineID < 0) return bmp;
             if (lineID > this.Height) return bmp;
-            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
+            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
             return bmp;
         }
 
@@ -397,7 +398,8 @@
                 if (id < 0) id = 0;
                 else if (id > Image_Track.DefaultHeight) id = Image_Track.DefaultHeight;
                 //paint white and leave a black vertical bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, Color.White);
+                //for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, Color.White); // backgorund
+                for (int z = id; z < Image_Track.DefaultHeight; z++) bmp.SetPixel(w, topOffset + z, Color.Black);
             }
 
             return bmp;

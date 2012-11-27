@@ -245,12 +245,12 @@ namespace AnalysisPrograms
             analysisResults.AudioDuration = results.Item2;
             var sonogram = results.Item3;
             var hits = results.Item4;
-            var scores = results.Item5;
+            var plots = results.Item5;
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(sonogram, hits, scores);
+                var image = DrawSonogram(sonogram, hits, plots);
                 //var fiImage = new FileInfo(imagePath);
                 //if (fiImage.Exists) fiImage.Delete();
                 image.Save(imagePath, ImageFormat.Png);
@@ -266,21 +266,20 @@ namespace AnalysisPrograms
         } // Analyse()
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<double[]> scores)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency;
             //int maxFreq = sonogram.NyquistFrequency / 2;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
-
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            double eventThreshold = 0.2;
-            if (scores != null) foreach (double[] track in scores) image.AddTrack(Image_Track.GetScoreTrack(track, 0.0, 1.0, eventThreshold));
+
+            if (scores != null)
+            {
+                foreach (Plot plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
             if (hits != null) image.OverlayRainbowTransparency(hits);
             return image.GetImage();
         } //DrawSonogram()
