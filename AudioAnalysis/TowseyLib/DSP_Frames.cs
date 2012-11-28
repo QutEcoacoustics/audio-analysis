@@ -54,7 +54,9 @@ namespace TowseyLib
 
             int overlap = windowSize - step;
             int framecount = (dataLength - overlap) / step; //this truncates residual samples
-            if (framecount < 2) throw new ArgumentException("Signal must produce at least two frames!");
+            if (framecount < 2)
+                //throw new ArgumentException("Signal must produce at least two frames!");
+                return null;
 
             int offset = 0;
             int[,] frames = new int[framecount, 2]; //col 0 =start; col 1 =end
@@ -128,6 +130,7 @@ namespace TowseyLib
         {
             int frameOffset = (int)(windowSize * (1 - overlap));
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
+            if (frameIDs == null) return null;
             int frameCount = frameIDs.GetLength(0);
 
             double[] average = new double[frameCount];

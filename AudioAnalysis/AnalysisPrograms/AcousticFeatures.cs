@@ -37,7 +37,7 @@ namespace AnalysisPrograms
         public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
         public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
 
-        private const int    COL_NUMBER = 19;
+        private const int    COL_NUMBER = 20;
         private static Type[] COL_TYPES = new Type[COL_NUMBER];
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
@@ -47,7 +47,8 @@ namespace AnalysisPrograms
         public const string header_startMin  = "start-min";
         public const string header_SecondsDuration = "SegTimeSpan";
         public const string header_avAmpdB   = "avAmp-dB";
-        public const string header_snrdB     = "snr-dB";   
+        public const string header_snrdB     = "snr-dB";
+        public const string header_activeSnrdB = "activeSnr-dB";
         public const string header_bgdB      = "bg-dB";
         public const string header_activity  = "activity";
         public const string header_segCount  = "segCount";
@@ -66,26 +67,27 @@ namespace AnalysisPrograms
 
         private static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
-            HEADERS[0] = header_count;         COL_TYPES[0] = typeof(int);    DISPLAY_COLUMN[0] = false; COMBO_WEIGHTS[0] = 0.0;
-            HEADERS[1] = header_startMin;      COL_TYPES[1] = typeof(double); DISPLAY_COLUMN[1] = false; COMBO_WEIGHTS[1] = 0.0;
-            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false; COMBO_WEIGHTS[2] = 0.0;
-            HEADERS[3] = header_avAmpdB;       COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = true;  COMBO_WEIGHTS[3] = 0.0;
-            HEADERS[4] = header_snrdB;         COL_TYPES[4] = typeof(double); DISPLAY_COLUMN[4] = true;  COMBO_WEIGHTS[4] = 0.0;
-            HEADERS[5] = header_bgdB;          COL_TYPES[5] = typeof(double); DISPLAY_COLUMN[5] = true;  COMBO_WEIGHTS[5] = 0.0;
-            HEADERS[6] = header_activity;      COL_TYPES[6] = typeof(double); DISPLAY_COLUMN[6] = true;  COMBO_WEIGHTS[6] = 0.0;
-            HEADERS[7] = header_segCount;      COL_TYPES[7] = typeof(int);    DISPLAY_COLUMN[7] = true;  COMBO_WEIGHTS[7] = 0.0;
-            HEADERS[8] = header_avSegDur;      COL_TYPES[8] = typeof(double); DISPLAY_COLUMN[8] = true;  COMBO_WEIGHTS[8] = 0.0;
-            HEADERS[9]  = header_hfCover;      COL_TYPES[9] = typeof(double); DISPLAY_COLUMN[9] = true;  COMBO_WEIGHTS[9] = 0.0;
-            HEADERS[10] = header_mfCover;      COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;  COMBO_WEIGHTS[10] = 0.0;
-            HEADERS[11] = header_lfCover;      COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;  COMBO_WEIGHTS[11] = 0.0;
-            HEADERS[12] = header_HAmpl;        COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;  COMBO_WEIGHTS[12] = 0.0;
-            HEADERS[13] = header_HPeakFreq;    COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = false; COMBO_WEIGHTS[13] = 0.0;
-            HEADERS[14] = header_HAvSpectrum;  COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;  COMBO_WEIGHTS[14] = 0.4;
-            HEADERS[15] = header_HVarSpectrum; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; COMBO_WEIGHTS[15] = 0.1;
-            HEADERS[16] = header_AcComplexity; COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = true;  COMBO_WEIGHTS[16] = 0.0;
-            HEADERS[17] = header_NumClusters;  COL_TYPES[17] = typeof(int);    DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.4;
-            HEADERS[18] = header_avClustDur;   COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.1;
-            ////HEADERS[19] = "Weighted index"; COL_TYPES[19] = typeof(double); DISPLAY_COLUMN[19] = false; COMBO_WEIGHTS[19] = 0.0;
+            HEADERS[0] = header_count;         COL_TYPES[0] = typeof(int);      DISPLAY_COLUMN[0] = false;  COMBO_WEIGHTS[0]  = 0.0;
+            HEADERS[1] = header_startMin;      COL_TYPES[1] = typeof(double);   DISPLAY_COLUMN[1] = false;  COMBO_WEIGHTS[1]  = 0.0;
+            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false;  COMBO_WEIGHTS[2]  = 0.0;
+            HEADERS[3] = header_avAmpdB;       COL_TYPES[3] = typeof(double);   DISPLAY_COLUMN[3] = true;   COMBO_WEIGHTS[3]  = 0.0;
+            HEADERS[4] = header_snrdB;         COL_TYPES[4] = typeof(double);   DISPLAY_COLUMN[4] = true;   COMBO_WEIGHTS[4]  = 0.0;
+            HEADERS[5] = header_activeSnrdB;   COL_TYPES[5] = typeof(double);   DISPLAY_COLUMN[5] = true;   COMBO_WEIGHTS[5]  = 0.0;
+            HEADERS[6] = header_bgdB;          COL_TYPES[6] = typeof(double);   DISPLAY_COLUMN[6] = true;   COMBO_WEIGHTS[6]  = 0.0;
+            HEADERS[7] = header_activity;      COL_TYPES[7] = typeof(double);   DISPLAY_COLUMN[7] = true;   COMBO_WEIGHTS[7]  = 0.0;
+            HEADERS[8] = header_segCount;      COL_TYPES[8] = typeof(int);      DISPLAY_COLUMN[8] = true;   COMBO_WEIGHTS[8]  = 0.0;
+            HEADERS[9] = header_avSegDur;      COL_TYPES[9] = typeof(double);   DISPLAY_COLUMN[9] = true;   COMBO_WEIGHTS[9]  = 0.0;
+            HEADERS[10] = header_hfCover;      COL_TYPES[10] = typeof(double);  DISPLAY_COLUMN[10] = true;  COMBO_WEIGHTS[10] = 0.0;
+            HEADERS[11] = header_mfCover;      COL_TYPES[11] = typeof(double);  DISPLAY_COLUMN[11] = true;  COMBO_WEIGHTS[11] = 0.0;
+            HEADERS[12] = header_lfCover;      COL_TYPES[12] = typeof(double);  DISPLAY_COLUMN[12] = true;  COMBO_WEIGHTS[12] = 0.0;
+            HEADERS[13] = header_HAmpl;        COL_TYPES[13] = typeof(double);  DISPLAY_COLUMN[13] = true;  COMBO_WEIGHTS[13] = 0.0;
+            HEADERS[14] = header_HPeakFreq;    COL_TYPES[14] = typeof(double);  DISPLAY_COLUMN[14] = false; COMBO_WEIGHTS[14] = 0.0;
+            HEADERS[15] = header_HAvSpectrum;  COL_TYPES[15] = typeof(double);  DISPLAY_COLUMN[15] = true;  COMBO_WEIGHTS[15] = 0.4;
+            HEADERS[16] = header_HVarSpectrum; COL_TYPES[16] = typeof(double);  DISPLAY_COLUMN[16] = false; COMBO_WEIGHTS[16] = 0.1;
+            HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double);  DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.0;
+            HEADERS[18] = header_NumClusters;  COL_TYPES[18] = typeof(int);     DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.4;
+            HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.1;
+            //HEADERS[20] = "Weighted index"; COL_TYPES[20] = typeof(double); DISPLAY_COLUMN[20] = false; COMBO_WEIGHTS[20] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
 
@@ -112,9 +114,9 @@ namespace AnalysisPrograms
             InitOutputTableColumns();
             return COMBO_WEIGHTS;
         }
-       
-        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
-        public const string FORMAT_STR_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
+
+        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}{0}{19}";
+        public const string FORMAT_STR_DATA    = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}{0}{19}";
 
 
         // Following is list of scaling originally applied to the Acoustic Indices Tracks
@@ -179,16 +181,17 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Activity
         {
-            public double activeFrameCover;
+            public double activeFrameCover, activeAvDB;
             public TimeSpan avSegmentDuration;
             public int    activeFrameCount, segmentCount;
             public bool[] activeFrames, segmentLocations;
 
-            public Activity(bool[] _activeFrames, int _activeFrameCount, double _activity, int _segmentCount, TimeSpan _avSegmentLength, bool[] _segments)
+            public Activity(bool[] _activeFrames, int _activeFrameCount, double _activity, double _activeAvDB, int _segmentCount, TimeSpan _avSegmentLength, bool[] _segments)
             {
                 activeFrames = _activeFrames;
                 activeFrameCount = _activeFrameCount;
                 activeFrameCover = _activity;
+                activeAvDB = _activeAvDB;
                 segmentCount = _segmentCount;
                 avSegmentDuration = _avSegmentLength;
                 segmentLocations = _segments;
@@ -203,19 +206,20 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Indices2
         {
-            public double snr, bgNoise, activity, avSig_dB, temporalEntropy; //amplitude indices
+            public double snr, activeSnr, bgNoise, activity, avSig_dB, temporalEntropy; //amplitude indices
             public double lowFreqCover, midFreqCover, hiFreqCover;
             public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
             public double ACI; // acoustic complexity index
             public int    segmentCount, clusterCount;
             public TimeSpan avSegmentDuration, avClusterDuration;
 
-            public Indices2(double _snr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
+            public Indices2(double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
                             int _clusterCount, TimeSpan _avClusterDuration)
             {
                 snr        = _snr;
+                activeSnr  = _activeSnr;
                 bgNoise    = _bgNoise;
                 activity   = _activity;
                 segmentCount = _segmentCount;
@@ -278,17 +282,18 @@ namespace AnalysisPrograms
 
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
-            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
-            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
+            var bgNoiseResults = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
+            var dBarray  = SNR.TruncateNegativeValues2Zero(bgNoiseResults.DBFrames);
 
 
-            // iii: ACTIVITY and SEGMENT STATISTICS
+            // iii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
             var activity = CalculateActivity(dBarray, frameDuration, DEFAULT_activityThreshold_dB);
 
             Indices2 indices; // struct in which to store all indices
             indices.activity = activity.activeFrameCover;                   // fraction of frames having acoustic activity 
-            indices.bgNoise  = results3.NoiseMode;                          // bg noise in dB
-            indices.snr      = results3.Snr;                                // snr
+            indices.bgNoise  = bgNoiseResults.NoiseMode;                    // bg noise in dB
+            indices.snr      = bgNoiseResults.Snr;                          // snr
+            indices.activeSnr= activity.activeAvDB;                         // snr calculated from active frames only
             indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());   // 10 times log of amplitude squared 
             indices.temporalEntropy   = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
             indices.segmentCount      = activity.segmentCount;             //number of segments whose duration > one frame
@@ -400,6 +405,7 @@ namespace AnalysisPrograms
                 //List<double[]> clusterWts = tuple_Clustering.Item4;
                 int[] clusterHits = tuple_Clustering.Item5;
                 string label = String.Format(indices.clusterCount + " Clusters");
+                if (clusterHits == null) clusterHits = new int[dBarray.Length];      // array of zeroes
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
 
                 //no need for the following line in normal usage - mostly for debugging
@@ -458,6 +464,8 @@ namespace AnalysisPrograms
         {
             bool[] activeFrames = new bool[dBarray.Length];
             bool[] segments     = new bool[dBarray.Length];
+            double activeAvDB = 0.0;
+            int activeFrameCount = 0;
 
             // get frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++)
@@ -465,14 +473,17 @@ namespace AnalysisPrograms
                 if (dBarray[i] >= DEFAULT_activityThreshold_dB)
                 {
                     activeFrames[i] = true;
+                    activeAvDB += dBarray[i];
+                    activeFrameCount++;
                 }
             }
 
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));  // this more elegant but want to keep active frame array
-            int activeFrameCount = DataTools.CountTrues(activeFrames);
             double percentActivity = activeFrameCount / (double)dBarray.Length;
+            if (activeFrameCount != 0) activeAvDB /= (double)activeFrameCount;
+
             if (activeFrameCount <= 1)
-                return new Activity(activeFrames, activeFrameCount, percentActivity, 0, TimeSpan.Zero, segments);
+                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, 0, TimeSpan.Zero, segments);
 
 
             // store record of segments longer than one frame
@@ -491,7 +502,7 @@ namespace AnalysisPrograms
             }
 
             if (segmentCount == 0)
-                return new Activity(activeFrames, activeFrameCount, percentActivity, segmentCount, TimeSpan.Zero, segments);
+                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, segmentCount, TimeSpan.Zero, segments);
 
             int segmentFrameCount = DataTools.CountTrues(segments);
             var avSegmentDuration = TimeSpan.Zero;
@@ -499,7 +510,7 @@ namespace AnalysisPrograms
             if (segmentFrameCount > 0) 
                 avSegmentDuration = TimeSpan.FromSeconds(frameDuration.TotalSeconds * segmentFrameCount / (double)segmentCount);   //av segment duration in milliseconds
 
-            return new Activity(activeFrames, activeFrameCount, percentActivity, segmentCount, avSegmentDuration, segments);
+            return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, segmentCount, avSegmentDuration, segments);
         } // CalculateActivity()
 
 
