@@ -90,13 +90,16 @@
             Contract.Requires(fileSegments.All(s => s.Validate()), "File Segment must be valid.");
 
             // calculate the sub-segments of the given file segments that match what the analysis expects.
-            // analyse each sub-segment in parallel or not (IsParallel property), 
-            // creating and deleting directories and/or files as indicated by properties
-            // DeleteFinished and SubFoldersUnique
-
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
+            // check last segment and remove if too short
+            var finalSegment = analysisSegments[analysisSegments.Count()-1];
+            var duration = finalSegment.SegmentEndOffset - finalSegment.SegmentStartOffset;
+            if (duration < settings.SegmentMinDuration) analysisSegments.Remove(finalSegment);
             var analysisSegmentsCount = analysisSegments.Count();
 
+            // Analyse the sub-segments in parallel or sequentially (IsParallel property), 
+            // Create and delete directories and/or files as indicated by properties
+            // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
             {
                 var results = new AnalysisResult[analysisSegmentsCount];
@@ -111,7 +114,7 @@
 
                 return results;
             }
-            else
+            else // sequential
             {
                 var results = new List<AnalysisResult>();
                 foreach (var item in analysisSegments)

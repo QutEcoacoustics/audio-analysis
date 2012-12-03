@@ -322,31 +322,43 @@ namespace NeuralNets
 
 
         /// <summary>
-        /// removes wtVectors from a list where three threshold conditions not satisfied
-        /// 1) Sum of positive wts must exceed threshold
-        /// 2) Cluster size (i.e. total frames hit by wtVector must exceed threshold
-        /// returns 1) number of clusters remaining;
+        /// removes wtVectors from a list where two threshold conditions not satisfied:
+        /// 1) Sum of positive wts must exceed weight threshold
+        /// 2) Cluster size (i.e. total frames hit by wtVector) must exceed threshold
         /// </summary>
         /// <param name="wtVectors"></param>
         /// <param name="clusterHits"></param>
         /// <param name="wtThreshold"></param>
         /// <param name="hitThreshold"></param>
-    public static System.Tuple<List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static System.Tuple<int[], List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make two histogram of cluster sizes;
-        int[] clusterSizes = new int[wtVectors.Count]; //init histogram 1
-        for (int i = 1; i < clusterHits.Length - 1; i++) clusterSizes[clusterHits[i]]++;
+        int[] clusterSizes = new int[wtVectors.Count]; // Init histogram
+        for (int i = 1; i < clusterHits.Length; i++)
+            clusterSizes[clusterHits[i]]++;
         
         //init new list of wt vectors and add wt vectors that SATISFY conditions
-        List<double[]> prunedList = new List<double[]>();
+        List<double[]> prunedClusterWeights = new List<double[]>();
+        prunedClusterWeights.Add(null); // filler for zero position which means not part of a cluster.
+        int[] clusterMapping_old2new = new int[wtVectors.Count];
+
         for (int i = 0; i < wtVectors.Count; i++)
         {
             if (wtVectors[i] == null) continue;
             if (wtVectors[i].Sum() < wtThreshold) continue;
             if (clusterSizes[i] < hitThreshold)   continue;
-            prunedList.Add(wtVectors[i]); 
+            prunedClusterWeights.Add(wtVectors[i]);
+            clusterMapping_old2new[i] = prunedClusterWeights.Count-1; // -1 because want index - not total count. index = count-1. 
         }
-        return System.Tuple.Create(prunedList);
+
+        // calculate new list of cluster hits
+        int[] prunedClusterHits = new int[clusterHits.Length];
+        for (int i = 0; i < clusterHits.Length; i++)
+        {
+            prunedClusterHits[i] = clusterMapping_old2new[clusterHits[i]];
+        }
+
+        return System.Tuple.Create(prunedClusterHits, prunedClusterWeights);
     } //PruneClusters()
 
 

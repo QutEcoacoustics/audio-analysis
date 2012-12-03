@@ -239,6 +239,25 @@ namespace AnalysisPrograms
         } // struct Indices2
 
 
+        public struct ClusterInfo
+        {
+            public int clusterCount;
+            public double av2;
+            public bool[] selectedFrames;
+            public List<double[]> prunedClusterWts;
+            public int[] clusterHits2;
+            public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames, int[] _ClusterHits2)
+            {
+                clusterCount = 0;
+                if (_PrunedClusterWts != null) clusterCount = _PrunedClusterWts.Count;
+                av2 = _av2; 
+                selectedFrames = _SelectedFrames; 
+                prunedClusterWts = _PrunedClusterWts; 
+                clusterHits2 = _ClusterHits2;
+            }
+        }
+
+
         // #########################################################################################################################################################
 
         /// <summary>
@@ -392,9 +411,9 @@ namespace AnalysisPrograms
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             // First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB. An amplitude threshold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
-            var tuple_Clustering = ClusterAnalysis(spectrogramData, activity.segmentLocations, lowBinBound, binaryThreshold);
-            indices.clusterCount = tuple_Clustering.Item1; 
-            indices.avClusterDuration = TimeSpan.FromSeconds(tuple_Clustering.Item2 * frameDuration.TotalSeconds); //av cluster duration
+            ClusterInfo clusterInfo = ClusterAnalysis(spectrogramData, activity.segmentLocations, lowBinBound, binaryThreshold);
+            indices.clusterCount = clusterInfo.clusterCount ; 
+            indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
 
 
             //iii: STORE CLUSTERING IMAGES
@@ -403,7 +422,7 @@ namespace AnalysisPrograms
                 //bool[] selectedFrames = tuple_Clustering.Item3;
                 //scores.Add(DataTools.Bool2Binary(selectedFrames));
                 //List<double[]> clusterWts = tuple_Clustering.Item4;
-                int[] clusterHits = tuple_Clustering.Item5;
+                int[] clusterHits = clusterInfo.clusterHits2;
                 string label = String.Format(indices.clusterCount + " Clusters");
                 if (clusterHits == null) clusterHits = new int[dBarray.Length];      // array of zeroes
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
@@ -668,16 +687,24 @@ namespace AnalysisPrograms
         } // AcousticComplexityIndex()
 
 
-        public static Tuple<int, double, bool[], List<double[]>, int[]> ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
+        /// <summary>
+        /// Clusters the spectra in a spectrogram. USED to determine the spectral diversity and persistence of spectral types.
+        /// The spectrogram is passed as a matrix. Note that the spectrogram is in amplitude values in [0, 1];
+        /// First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB.   An amplitude threhold of 0.05 = -26dB.
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="activeFrames"></param>
+        /// <param name="excludeBins"></param>
+        /// <param name="binaryThreshold"></param>
+        /// <returns></returns>
+        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
         {
-            //viii: CLUSTERING - to determine spectral diversity and spectral persistence
-            //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);  // convert to binary 
 
-            int length = spectrogram.GetLength(0);
+            int spectroLength = spectrogram.GetLength(0);
 
-            double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
-            bool[] selectedFrames = new bool[length];
+            double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectroLength-1, spectrogram.GetLength(1) - 1);
+            bool[] selectedFrames = new bool[spectroLength];
             var trainingData = new List<double[]>();    //training data that will be used for clustering
 
             int rowSumThreshold = 1;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
@@ -693,17 +720,13 @@ namespace AnalysisPrograms
                     selectedFrameCount++;
                 }
             }
-            //return if no suitable training data for clustering
+
+            // Return if no suitable training data for clustering
             if (trainingData.Count  <= 10)
             {
-                List<double[]> clusterWts_dummy = null;
-                int[] clusterHits_dummy = null;
-                return System.Tuple.Create(0, 0.0, selectedFrames, clusterWts_dummy, clusterHits_dummy);
+                double avLength = 0.0;
+                return new ClusterInfo(null, avLength, selectedFrames, null);
             }
-
-
-
-            //Log.WriteLine("ActiveFrameCount=" + activeFrameCount + "  frames selected for clustering=" + selectedFrameCount);
 
             //DO CLUSTERING - if have suitable data
             BinaryCluster.Verbose = false;
@@ -711,33 +734,34 @@ namespace AnalysisPrograms
             BinaryCluster.RandomiseTrnSetOrder = false;
             double vigilance = 0.2;    //vigilance parameter - increasing this proliferates categories
                                        //if vigilance=0.1, require similairty (AND/OR) > 10%
-            var output = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterHits1        = output.Item1;   //the cluster to which each frame belongs
-            List<double[]> clusterWts = output.Item2;
+            var tuple_Clusters = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
+            int[] clusterHits1        = tuple_Clusters.Item1;   //the cluster to which each frame belongs
+            List<double[]> clusterWts = tuple_Clusters.Item2;
             //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
 
             //PRUNE THE CLUSTERS
-            double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts <= threshold
-            int hitThreshold   = 5;   //used to remove wt vectors which have fewer than the threshold hits
-            var output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
-            List<double[]> prunedClusterWts = output2.Item1;
-            int clusterCount = prunedClusterWts.Count;
+            double wtThreshold = 1.0; // used to remove wt vectors whose sum of wts <= threshold
+            int hitThreshold   = 4;   // used to remove wt vectors which have fewer than the threshold hits
+            var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
+            int[] prunedClusterHits         = tuple_output2.Item1;
+            List<double[]> prunedClusterWts = tuple_output2.Item2;
 
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", clusterCount);
+            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
             
-            //ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
+            // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
             int hitCount = 0;
-            int[] clusterHits2 = new int[length]; 
-            for (int i = 0; i < length; i++)
+            int[] clusterHits2 = new int[spectroLength]; // after pruning of clusters
+            for (int i = 0; i < spectroLength; i++)
             {
-                if (selectedFrames[i]) //select only frames having acoustic energy >= threshold
+                if (selectedFrames[i]) // Select only frames having acoustic energy >= threshold
                 {
-                    clusterHits2[i] = clusterHits1[hitCount] + 1;//+1 so do not have zero index for a cluster 
+                    clusterHits2[i] = prunedClusterHits[hitCount]; 
                     hitCount++;
                 }
             }
+
             //  second:  calculate duration (ms) of each spectral event
             List<int> hitDurations = new List<int>();
             int currentDuration = 1;
@@ -755,7 +779,7 @@ namespace AnalysisPrograms
             }
             double av2, sd2;
             NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
-            return System.Tuple.Create(clusterCount, av2, selectedFrames, prunedClusterWts, clusterHits2);
+            return new ClusterInfo(prunedClusterWts, av2, selectedFrames, clusterHits2);
         }
 
 
