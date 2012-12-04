@@ -56,10 +56,10 @@ namespace AnalysisPrograms
         public const string header_hfCover   = "hfCover";
         public const string header_mfCover   = "mfCover";
         public const string header_lfCover   = "lfCover";
-        public const string header_HAmpl     = "H[ampl]";
+        public const string header_HAmpl     = "H[temporal]";
         public const string header_HPeakFreq = "H[peakFreq]";
-        public const string header_HAvSpectrum  = "H[avSpectrum]";
-        public const string header_HVarSpectrum = "H[varSpectrum]";
+        public const string header_HAvSpectrum  = "H[spectral]";
+        public const string header_HVarSpectrum = "H[spectralVar]";
         public const string header_AcComplexity = "AcComplexity";
         public const string header_NumClusters  = "#clusters";
         public const string header_avClustDur   = "avClustDur";
@@ -249,7 +249,12 @@ namespace AnalysisPrograms
             public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames, int[] _ClusterHits2)
             {
                 clusterCount = 0;
-                if (_PrunedClusterWts != null) clusterCount = _PrunedClusterWts.Count;
+                if (_PrunedClusterWts != null)
+                {
+                    clusterCount = _PrunedClusterWts.Count;
+                    if (_PrunedClusterWts[0] == null) 
+                        clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
+                }
                 av2 = _av2; 
                 selectedFrames = _SelectedFrames; 
                 prunedClusterWts = _PrunedClusterWts; 
@@ -315,8 +320,8 @@ namespace AnalysisPrograms
             indices.activeSnr= activity.activeAvDB;                         // snr calculated from active frames only
             indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());   // 10 times log of amplitude squared 
             indices.temporalEntropy   = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
-            indices.segmentCount      = activity.segmentCount;             //number of segments whose duration > one frame
-            indices.avSegmentDuration = activity.avSegmentDuration;        //av segment duration in milliseconds
+            indices.segmentCount      = activity.segmentCount;              //number of segments whose duration > one frame
+            indices.avSegmentDuration = activity.avSegmentDuration;         //av segment duration in milliseconds
 
 
             int nyquistFreq = recording.Nyquist; 
@@ -408,10 +413,9 @@ namespace AnalysisPrograms
             }
             //#V#####################################################################################################################################################
 
-            //viii: CLUSTERING - to determine spectral diversity and spectral persistence
-            // First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB. An amplitude threshold of 0.05 = -26dB.
-            double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
-            ClusterInfo clusterInfo = ClusterAnalysis(spectrogramData, activity.segmentLocations, lowBinBound, binaryThreshold);
+            //viii: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            double binaryThreshold = 0.15; // for deriving binary spectrogram
+            ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
             indices.clusterCount = clusterInfo.clusterCount ; 
             indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
 
@@ -693,36 +697,40 @@ namespace AnalysisPrograms
         /// First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB.   An amplitude threhold of 0.05 = -26dB.
         /// </summary>
         /// <param name="spectrogram"></param>
-        /// <param name="activeFrames"></param>
         /// <param name="excludeBins"></param>
         /// <param name="binaryThreshold"></param>
         /// <returns></returns>
-        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
+        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, double binaryThreshold)
         {
-            spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);  // convert to binary 
+            //binaryThreshold = 0.15;
 
             int spectroLength = spectrogram.GetLength(0);
-
-            double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectroLength-1, spectrogram.GetLength(1) - 1);
             bool[] selectedFrames = new bool[spectroLength];
             var trainingData = new List<double[]>();    //training data that will be used for clustering
 
-            int rowSumThreshold = 1;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
+            int rowSumThreshold = 3;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
             int selectedFrameCount = 0;
-            for (int i = 0; i < subMatrix.GetLength(0); i++)
+            for (int r = 0; r < spectroLength; r++)
             {
-                if (! activeFrames[i]) continue;   //select only frames having acoustic energy >= threshold
-                double[] row = DataTools.GetRow(subMatrix, i);
-                if (row.Sum() >= rowSumThreshold)  //only include frames where activity exceeds threshold 
+                double[] spectrum = DataTools.GetRow(spectrogram, r);
+                spectrum = DataTools.filterMovingAverage(spectrum, 7);
+                //convert to binary
+                for (int i = 0; i < spectrum.Length; i++)
                 {
-                    trainingData.Add(row);
-                    selectedFrames[i] = true;
+                    if (spectrum[i] >= binaryThreshold) spectrum[i] = 1.0;
+                    else                                spectrum[i] = 0.0;
+                }
+
+                if (spectrum.Sum() > rowSumThreshold)  //only include frames where activity exceeds threshold 
+                {
+                    trainingData.Add(spectrum);
+                    selectedFrames[r] = true;
                     selectedFrameCount++;
                 }
             }
 
             // Return if no suitable training data for clustering
-            if (trainingData.Count  <= 10)
+            if (trainingData.Count  <= 8)
             {
                 double avLength = 0.0;
                 return new ClusterInfo(null, avLength, selectedFrames, null);
@@ -732,15 +740,15 @@ namespace AnalysisPrograms
             BinaryCluster.Verbose = false;
             //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
-            double vigilance = 0.2;    //vigilance parameter - increasing this proliferates categories
-                                       //if vigilance=0.1, require similairty (AND/OR) > 10%
+            double vigilance = 0.12;    //vigilance parameter - increasing this proliferates categories
+                                       //if vigilance=0.1, require similarity (AND/OR) > 10%
             var tuple_Clusters = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
             int[] clusterHits1        = tuple_Clusters.Item1;   //the cluster to which each frame belongs
             List<double[]> clusterWts = tuple_Clusters.Item2;
             //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
 
             //PRUNE THE CLUSTERS
-            double wtThreshold = 1.0; // used to remove wt vectors whose sum of wts <= threshold
+            double wtThreshold = 2.0; // used to remove wt vectors whose sum of wts <= threshold
             int hitThreshold   = 4;   // used to remove wt vectors which have fewer than the threshold hits
             var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
             int[] prunedClusterHits         = tuple_output2.Item1;
@@ -1002,11 +1010,13 @@ namespace AnalysisPrograms
             var types   = parameters.Item2;
             var dt = DataTableTools.CreateTable(headers, types);
             dt.Rows.Add(0, 0.0, 0.0, //add dummy values to the first two columns. These will be entered later.
-                        indices.avSig_dB, indices.snr, indices.bgNoise,
+                        indices.avSig_dB, indices.snr, indices.activeSnr, indices.bgNoise,
                         indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, 
                         indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum, 
                         indices.ACI, 
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds);
+
+            //foreach (DataRow row in dt.Rows) { }
             return dt;
         }
 
