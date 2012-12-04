@@ -46,7 +46,7 @@ namespace AnalysisPrograms
                     { "analysesAvailable", strings => AnalysesAvailable.Main(strings) },
 
                     // 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an indices.csv file
-                    // Signed off: Michael Towsey 27th July 2012
+                    // Signed off: Michael Towsey 4th December 2012
                     { "audio2csv", strings => AnalyseLongRecording.Main(strings) },
 
                     // 3. Produces a sonogram from an audio file - EITHER custom OR via SOX

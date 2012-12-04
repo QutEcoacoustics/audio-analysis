@@ -114,13 +114,25 @@ namespace AnalysisPrograms
                 DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
                 DataTableTools.WriteTable2Console(dt);
             }
-            //string imagePath = Path.Combine(outputDir, sonogramFname);
-            //FileInfo fiImage = new FileInfo(imagePath);
-            //if (fiImage.Exists)
-            //{
-            //    ProcessRunner process = new ProcessRunner(imageViewer);
-            //    process.Run(imagePath, outputDir);
-            //}
+
+            var fName = "TOWER_20100208_204500_Towsey.Acoustic.Indices";
+            outputDir = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic";
+            csvPath       = Path.Combine(outputDir, fName+".csv");
+            var imagePath = Path.Combine(outputDir, fName+".png");
+            var args2 = new List<string>();
+            args2[0] = csvPath;
+            args2[1] = configPath;
+            args2[2] = imagePath;
+
+            IndicesCsv2Display.Main(args2.ToArray());
+            FileInfo fiImage = new FileInfo(imagePath);
+            if (fiImage.Exists)
+            {
+                var paintPath = @"C:\Windows\system32\mspaint.exe";
+                var cmdLine = paintPath + "  " + fiImage.FullName;
+                ProcessRunner process = new ProcessRunner(cmdLine);
+                process.Run(imagePath, outputDir);
+            }
 
             LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
         } // Dev()
@@ -541,10 +553,17 @@ namespace AnalysisPrograms
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_snrdB))
                 {
-                    min = 5;
+                    min = 3;
                     max = 50;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (5..50dB)";
+                    newHeaders[i] = headers[i] + "  (3..50dB)";
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_activeSnrdB))
+                {
+                    min = 3;
+                    max = 10;
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (3..10dB)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_avSegDur))
                 {
@@ -560,6 +579,13 @@ namespace AnalysisPrograms
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
+                else if (headers[i].Equals(AcousticFeatures.header_NumClusters))
+                {
+                    min = 0.0; //
+                    max = 50.0; 
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0..50)";
+                }
                 else if (headers[i].Equals(AcousticFeatures.header_avClustDur))
                 {
                     min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
@@ -569,24 +595,24 @@ namespace AnalysisPrograms
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_lfCover))
                 {
-                    min = 0.1; //
+                    min = 0.0; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (10..100%)";
+                    newHeaders[i] = headers[i] + "  (0..100%)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_mfCover))
                 {
                     min = 0.0; //
-                    max = 0.9; //
+                    max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (0..90%)";
+                    newHeaders[i] = headers[i] + "  (0..100%)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_hfCover))
                 {
                     min = 0.0; //
-                    max = 0.9; //
+                    max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (0..90%)";
+                    newHeaders[i] = headers[i] + "  (0..100%)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_HAmpl))
                 {
@@ -601,6 +627,13 @@ namespace AnalysisPrograms
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0.2..1.0)";
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_AcComplexity))
+                {
+                    min = 0.3;
+                    max = 0.8;
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = headers[i] + "  (0.3..0.8)";
                 }
                 else //default is to normalise in [0,1]
                 {

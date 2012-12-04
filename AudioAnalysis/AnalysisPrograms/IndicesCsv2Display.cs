@@ -20,6 +20,10 @@ namespace AnalysisPrograms
         //indicesCsv2Image  "C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.MultiAnalyser\DM420036_Towsey.MultiAnalyser.Indices.csv"            "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg"  C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.MultiAnalyser\DM420036_Towsey.MultiAnalyser.IndicesNEW.png
         //indicesCsv2Image  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\IndicesCsv2Image\DM420044_20111020_000000_Towsey.Acoustic.Indices.csv" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"       C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\IndicesCsv2Image\DM420044_20111020_000000_Towsey.Acoustic.Indices.png
 
+
+        // indicesCsv2Image  "C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TOWER_20100208_204500_Towsey.Acoustic.Indices.csv"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"   "C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TOWER_20100208_204500_Towsey.Acoustic.Indices.png
+
+
         /// <summary>
         /// Loads a csv file for visualisation and displays TracksImage
         /// </summary>
@@ -81,9 +85,9 @@ namespace AnalysisPrograms
 
             // #########################################################################################################
             // Convert datatable to image
-            bool normalisedDisplay = true;
+            bool normalisedDisplay = false;
             string fileName = Path.GetFileNameWithoutExtension(imagePath);
-            string title = String.Format("(c) Queensland University of Technology.   SOURCE:{0};  ", fileName);
+            string title = String.Format("(c) QUT, Brisbane.   SOURCE:{0};  ", fileName);
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, imagePath);
             // #########################################################################################################
 

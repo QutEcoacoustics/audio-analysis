@@ -87,7 +87,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
         /// Different things happen depending on the content of the analysis data table
-        /// If the returned data table contains EVENTAS then also need to return a data table of indices i.e. events per minute.
+        /// If the returned data table contains EVENTS then also need to return a data table of indices i.e. events per minute.
         /// </summary>
         /// <param name="masterDataTable"></param>
         /// <param name="analyser"></param>
