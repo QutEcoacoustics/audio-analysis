@@ -87,7 +87,9 @@ namespace AnalysisPrograms
             HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double);  DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.0;
             HEADERS[18] = header_NumClusters;  COL_TYPES[18] = typeof(int);     DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.4;
             HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.1;
-            //HEADERS[20] = "Weighted index"; COL_TYPES[20] = typeof(double); DISPLAY_COLUMN[20] = false; COMBO_WEIGHTS[20] = 0.0;
+            HEADERS[20] = Rain.header_rain;    COL_TYPES[20] = typeof(double);  DISPLAY_COLUMN[20] = true;  COMBO_WEIGHTS[20] = 0.0;
+            HEADERS[21] = Rain.header_cicada;  COL_TYPES[21] = typeof(double);  DISPLAY_COLUMN[21] = true;  COMBO_WEIGHTS[21] = 0.0;
+            //HEADERS[22] = "Weighted index"; COL_TYPES[22] = typeof(double); DISPLAY_COLUMN[22] = false; COMBO_WEIGHTS[22] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
 
@@ -115,8 +117,8 @@ namespace AnalysisPrograms
             return COMBO_WEIGHTS;
         }
 
-        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}{0}{19}";
-        public const string FORMAT_STR_DATA    = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}{0}{19}";
+        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}{0}{19}{0}{20}{0}{21}";
+        public const string FORMAT_STR_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}{0}{19}{0}{20:f2}{0}{21:f2}";
 
 
         // Following is list of scaling originally applied to the Acoustic Indices Tracks
@@ -210,13 +212,14 @@ namespace AnalysisPrograms
             public double lowFreqCover, midFreqCover, hiFreqCover;
             public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
             public double ACI; // acoustic complexity index
+            public double rainScore, cicadaScore;
             public int    segmentCount, clusterCount;
             public TimeSpan avSegmentDuration, avClusterDuration;
 
             public Indices2(double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
-                            int _clusterCount, TimeSpan _avClusterDuration)
+                            int _clusterCount, TimeSpan _avClusterDuration, double _rainScore, double _cicadaScore)
             {
                 snr        = _snr;
                 activeSnr  = _activeSnr;
@@ -229,12 +232,14 @@ namespace AnalysisPrograms
                 hiFreqCover   = _hiFreqCover;
                 midFreqCover  = _midFreqCover;
                 lowFreqCover  = _lowFreqCover;
-                entropyOfPeakFreqDistr = _peakFreqEntropy;
-                entropyOfAvSpectrum   = _entropyOfAvSpectrum;
+                entropyOfPeakFreqDistr    = _peakFreqEntropy;
+                entropyOfAvSpectrum       = _entropyOfAvSpectrum;
                 entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
-                ACI = _ACI;
-                clusterCount = _clusterCount;
+                ACI               = _ACI;
+                clusterCount      = _clusterCount;
                 avClusterDuration = _avClusterDuration; //av length of clusters > 1 frame.
+                rainScore         = _rainScore;
+                cicadaScore       = _cicadaScore;
             }
         } // struct Indices2
 
@@ -370,6 +375,19 @@ namespace AnalysisPrograms
             indices.hiFreqCover  = tuple_Cover.Item3;
 
 
+            //######################################################################
+            // ix: calculate rain and cicada indices.
+            indices.rainScore = 0.0;
+            indices.cicadaScore = 0.0;
+            DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, spectrogramData, lowFreqBound, midFreqBound, binWidth);
+            if (dt != null)
+            { 
+                DataRow row = dt.Rows[0];
+                indices.rainScore   = (double)row[Rain.header_rain];
+                indices.cicadaScore = (double)row[Rain.header_cicada];
+            }
+
+
             // #V#####################################################################################################################################################
             // ix:  set up other info to return
             BaseSonogram sonogram = null;
@@ -408,13 +426,13 @@ namespace AnalysisPrograms
             {
                 indices.clusterCount = 0;
                 indices.avClusterDuration = TimeSpan.Zero; //av cluster durtaion in milliseconds
-
+                
                 return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores);
             }
             //#V#####################################################################################################################################################
 
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
-            double binaryThreshold = 0.15; // for deriving binary spectrogram
+            double binaryThreshold = 0.1; // for deriving binary spectrogram
             ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
             indices.clusterCount = clusterInfo.clusterCount ; 
             indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
@@ -703,22 +721,40 @@ namespace AnalysisPrograms
         public static ClusterInfo ClusterAnalysis(double[,] spectrogram, double binaryThreshold)
         {
             //binaryThreshold = 0.15;
+            spectrogram = ImageTools.WienerFilter(spectrogram, 3);
 
             int spectroLength = spectrogram.GetLength(0);
             bool[] selectedFrames = new bool[spectroLength];
             var trainingData = new List<double[]>();    //training data that will be used for clustering
 
-            int rowSumThreshold = 3;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
+            double rowSumThreshold = 5.0;  //ACTIVITY THRESHOLD - require activity in at least N bins to include for training
             int selectedFrameCount = 0;
             for (int r = 0; r < spectroLength; r++)
             {
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
-                spectrum = DataTools.filterMovingAverage(spectrum, 7);
+                spectrum = DataTools.filterMovingAverage(spectrum, 7); // additional smoothing to remove noise
                 //convert to binary
                 for (int i = 0; i < spectrum.Length; i++)
                 {
                     if (spectrum[i] >= binaryThreshold) spectrum[i] = 1.0;
                     else                                spectrum[i] = 0.0;
+                }
+
+                for (int i = 1; i < spectrum.Length-1; i++)
+                {
+                    if ((spectrum[i] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 1] == 0.0))
+                    {
+                        spectrum[i] = 0.0; //remove isolated peaks.
+                    }
+                }
+
+                for (int i = 1; i < spectrum.Length - 2; i++)
+                {
+                    if ((spectrum[i] == 1.0) && (spectrum[i+1] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 2] == 0.0))
+                    {
+                        spectrum[i]   = 0.0; //remove isolated peaks.
+                        spectrum[i+1] = 0.0; //remove isolated peaks.
+                    }
                 }
 
                 if (spectrum.Sum() > rowSumThreshold)  //only include frames where activity exceeds threshold 
@@ -740,7 +776,7 @@ namespace AnalysisPrograms
             BinaryCluster.Verbose = false;
             //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
-            double vigilance = 0.12;    //vigilance parameter - increasing this proliferates categories
+            double vigilance = 0.1;    //vigilance parameter - increasing this proliferates categories
                                        //if vigilance=0.1, require similarity (AND/OR) > 10%
             var tuple_Clusters = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
             int[] clusterHits1        = tuple_Clusters.Item1;   //the cluster to which each frame belongs
@@ -748,8 +784,8 @@ namespace AnalysisPrograms
             //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
 
             //PRUNE THE CLUSTERS
-            double wtThreshold = 2.0; // used to remove wt vectors whose sum of wts <= threshold
-            int hitThreshold   = 4;   // used to remove wt vectors which have fewer than the threshold hits
+            double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
+            int hitThreshold   = 4;               // used to remove wt vectors which have fewer than the threshold hits
             var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
             int[] prunedClusterHits         = tuple_output2.Item1;
             List<double[]> prunedClusterWts = tuple_output2.Item2;
@@ -992,8 +1028,9 @@ namespace AnalysisPrograms
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string line = string.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1], HEADERS[2], HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7],
-                                                                        HEADERS[8], HEADERS[9], HEADERS[10], HEADERS[11], HEADERS[12], HEADERS[13], HEADERS[14], HEADERS[15], HEADERS[16],HEADERS[17], HEADERS[18]);
+            string line = string.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1],  HEADERS[2],  HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7], HEADERS[8], HEADERS[9],
+                                                                            HEADERS[10], HEADERS[11], HEADERS[12], HEADERS[13], HEADERS[14], HEADERS[15], HEADERS[16], HEADERS[17], HEADERS[18], HEADERS[19],
+                                                                            HEADERS[20], HEADERS[21]);
             return line;
         }
 
@@ -1014,7 +1051,8 @@ namespace AnalysisPrograms
                         indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, 
                         indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum, 
                         indices.ACI, 
-                        indices.clusterCount, indices.avClusterDuration.TotalMilliseconds);
+                        indices.clusterCount, indices.avClusterDuration.TotalMilliseconds,
+                        indices.rainScore, indices.cicadaScore);
 
             //foreach (DataRow row in dt.Rows) { }
             return dt;

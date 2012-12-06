@@ -54,11 +54,18 @@ namespace AnalysisPrograms
         // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"                   "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
         // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"          "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
 
+        // SUNSHINE COAST
+        // audio2csv  "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1"
+
 
         // CHECKING 16Hz PROBLEMS
         // audio2csv  "C:\SensorNetworks\WavFiles\Frogs\Curramore\CurramoreSelection-mono16kHz.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\AudioToCSV"
         // audio2csv  "C:\SensorNetworks\WavFiles\16HzRecording\CREDO1_20120607_063200.mp3"          "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\Frogs\ShiloDebugOct2012\AudioToCSV"
- 
+
+
+
+        const string imagefileExt = ".png";
+
 
         public static void Main(string[] args)
         {
@@ -109,6 +116,9 @@ namespace AnalysisPrograms
             if (configDict.ContainsKey(Keys.SAVE_SONOGRAMS))
                 saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, configDict);
 
+            bool displayCSVImage = false;
+            if ( configDict.ContainsKey(Keys.DISPLAY_CSV_IMAGE))
+                displayCSVImage = ConfigDictionary.GetBoolean(Keys.DISPLAY_CSV_IMAGE, configDict);
             
             bool doParallelProcessing = false;
             if (configDict.ContainsKey(Keys.PARALLEL_PROCESSING))
@@ -174,12 +184,14 @@ namespace AnalysisPrograms
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.SetUserConfiguration(fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
             var analyserResults = analysisCoordinator.Run(new[] { fileSegment }, analyser, analysisSettings);
             //    ###########################################################################################
 
             // 8. PROCESS THE RESULTS
+            LoggedConsole.WriteLine("");
             if (analyserResults == null)
             {
                 LoggedConsole.WriteLine("###################################################\n");
@@ -240,10 +252,31 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
+                LoggedConsole.WriteLine("");
+                SaveImageOfIndices(fiIndicesCSV.FullName, configPath, displayCSVImage);
             }
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         } // Main(string[] args)
 
+
+        public static void SaveImageOfIndices(string csvPath, string configPath, bool doDisplay)
+        {
+            string outputDir = Path.GetDirectoryName(csvPath);
+            string fName     = Path.GetFileNameWithoutExtension(csvPath);
+            var imagePath    = Path.Combine(outputDir, fName + imagefileExt);
+            var args = new string[3];
+            args[0] = csvPath;
+            args[1] = configPath;
+            args[2] = imagePath;
+            // create and write the indices image to file
+            IndicesCsv2Display.Main(args.ToArray());
+
+            FileInfo fiImage = new FileInfo(imagePath);
+            if ((doDisplay) && (fiImage.Exists))
+            {
+                ImageTools.DisplayImageWithPaint(imagePath);
+            }
+        }
 
 
         public static void CheckArguments(string[] args)

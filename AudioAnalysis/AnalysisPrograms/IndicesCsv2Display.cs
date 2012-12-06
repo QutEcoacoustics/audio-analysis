@@ -87,7 +87,7 @@ namespace AnalysisPrograms
             // Convert datatable to image
             bool normalisedDisplay = false;
             string fileName = Path.GetFileNameWithoutExtension(imagePath);
-            string title = String.Format("(c) QUT, Brisbane.   SOURCE:{0};  ", fileName);
+            string title = String.Format("(c) QUT.EDU.AU - SOURCE:{0};  ", fileName);
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, imagePath);
             // #########################################################################################################
 

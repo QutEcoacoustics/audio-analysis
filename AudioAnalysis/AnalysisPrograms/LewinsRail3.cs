@@ -148,7 +148,7 @@ namespace AnalysisPrograms
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                ProcessRunner process = new ProcessRunner(imageViewer);
+                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
                 process.Run(imagePath, outputDir);
             }
 

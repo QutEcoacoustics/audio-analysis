@@ -136,7 +136,7 @@ namespace AnalysisPrograms
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                ProcessRunner process = new ProcessRunner(LSKiwiHelper.imageViewer);
+                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(LSKiwiHelper.imageViewer);
                 process.Run(imagePath, outputDir);
             }
 

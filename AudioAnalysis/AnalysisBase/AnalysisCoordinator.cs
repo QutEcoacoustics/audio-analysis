@@ -121,6 +121,7 @@
                 {
                     var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
+                    Console.Write(".");
                 }
 
                 return results;

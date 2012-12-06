@@ -231,6 +231,7 @@
     <Compile Include="MatrixTools.cs" />
     <Compile Include="Plot.cs" />
     <Compile Include="PolarCoordinates.cs" />
+    <Compile Include="ProcessRunner.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />
     <Compile Include="NormalDist.cs" />

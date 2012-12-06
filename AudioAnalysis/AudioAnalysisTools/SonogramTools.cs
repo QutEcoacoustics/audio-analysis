@@ -317,7 +317,7 @@ namespace AudioAnalysisTools
             //trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
 
             var args = string.Format(soxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
-            var process = new ProcessRunner(soxCmd);
+            var process = new TowseyLib.ProcessRunner(soxCmd);
             process.Run(args, output.DirectoryName);
             return 0;
         } //MakeSonogramWithSox
