@@ -115,25 +115,6 @@ namespace AnalysisPrograms
                 DataTableTools.WriteTable2Console(dt);
             }
 
-            var fName = "TOWER_20100208_204500_Towsey.Acoustic.Indices";
-            outputDir = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic";
-            csvPath       = Path.Combine(outputDir, fName+".csv");
-            var imagePath = Path.Combine(outputDir, fName+".png");
-            var args2 = new List<string>();
-            args2[0] = csvPath;
-            args2[1] = configPath;
-            args2[2] = imagePath;
-
-            IndicesCsv2Display.Main(args2.ToArray());
-            FileInfo fiImage = new FileInfo(imagePath);
-            if (fiImage.Exists)
-            {
-                var paintPath = @"C:\Windows\system32\mspaint.exe";
-                var cmdLine = paintPath + "  " + fiImage.FullName;
-                ProcessRunner process = new ProcessRunner(cmdLine);
-                process.Run(imagePath, outputDir);
-            }
-
             LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
         } // Dev()
 
@@ -623,17 +604,17 @@ namespace AnalysisPrograms
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_HAvSpectrum))
                 {
-                    min = 0.2; //
+                    min = 0.5; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (0.2..1.0)";
+                    newHeaders[i] = headers[i] + "  (0.5..1.0)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_AcComplexity))
                 {
                     min = 0.3;
-                    max = 0.8;
+                    max = 0.7;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (0.3..0.8)";
+                    newHeaders[i] = headers[i] + "  (0.3..0.7)";
                 }
                 else //default is to normalise in [0,1]
                 {

@@ -1302,8 +1302,9 @@ namespace TowseyLib
       int[] bins = new int[binCount];
       for (int i = 0; i < data.Length; i++)
       {
-          int id = (int)((data[i] - min) / binWidth);
-          if (id == binCount) id--;
+          int id = 0;
+          if (binWidth != 0.0) id = (int)((data[i] - min) / binWidth);
+          if (id >= binCount)  id = binCount - 1; // check because too lazy to do it properly.
           bins[id]++;
       }
       return bins;

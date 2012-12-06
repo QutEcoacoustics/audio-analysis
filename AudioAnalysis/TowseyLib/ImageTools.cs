@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -19,6 +20,7 @@ namespace TowseyLib
     
     public class ImageTools
     {
+        const string paintPath = @"C:\Windows\system32\mspaint.exe";
 
         public static bool Verbose { set; get; }
 
@@ -164,6 +166,20 @@ namespace TowseyLib
         {
             binaryBmp.Save(opPath);
         }
+
+        public static void DisplayImageWithPaint(string imagePath)
+        {
+            FileInfo exe = new FileInfo(paintPath);
+            if (!exe.Exists)
+            {
+                LoggedConsole.WriteLine("CANNOT DISPLAY IMAGE. PAINT.EXE DOES NOT EXIST: <" + imagePath + ">");
+                return;
+            }
+            string outputDir = Path.GetDirectoryName(imagePath);
+            TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(paintPath);
+            process.Run(imagePath, outputDir);
+        }
+
 
         /// <summary>
         /// reads the intensity of a grey scale image into a matrix of double.

@@ -295,7 +295,7 @@ namespace AudioBrowser
         {
             var fiAudacity = new FileInfo(audacityPath);
             if (!fiAudacity.Exists) return 666;
-            ProcessRunner process = new ProcessRunner(audacityPath);
+            TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(audacityPath);
             process.Run(recordingPath, dir, false);
             return 0;
         }// RunAudacity()
