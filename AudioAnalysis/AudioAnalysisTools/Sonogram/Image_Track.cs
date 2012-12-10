@@ -648,8 +648,9 @@
             for (int i = 0; i < array.Length; i++) //for pixels in the line
             {
                 int x = (int)order[i]; //
-                //double value = array[i];
-                int barHeight = (int)Math.Round(array[i] * trackHeight);
+                double value = array[i];
+                if (value > 1.0) value = 1.0; //expect normalised data
+                int barHeight = (int)Math.Round(value * trackHeight);
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
