@@ -37,7 +37,7 @@ namespace AnalysisPrograms
         public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
         public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
 
-        private const int    COL_NUMBER = 20;
+        private const int    COL_NUMBER = 22;
         private static Type[] COL_TYPES = new Type[COL_NUMBER];
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
@@ -337,14 +337,16 @@ namespace AnalysisPrograms
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
-            int originalAudioNyquist = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
-            if (nyquistFreq > originalAudioNyquist) // i.e. upsampling has been done
+            int originalNyquistFreq = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
+            if (nyquistFreq > originalNyquistFreq) // i.e. upsampling has been done
             {
-                nyquistFreq = originalAudioNyquist;
-                nyquistBin = (int)Math.Floor(originalAudioNyquist / binWidth);
+                nyquistFreq = originalNyquistFreq;
+                nyquistBin = (int)Math.Floor(originalNyquistFreq / binWidth); // note that binwidth does not change
             }
 
-            var midBandSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0)-1, nyquistBin);
+            //EXTRACT TWO SPECTROGRAMS
+            var midBandSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0) - 1, nyquistBin);
+            spectrogramData        = MatrixTools.Submatrix(spectrogramData, 0, 1,           spectrogramData.GetLength(0) - 1, nyquistBin);
             
             // iv: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = CalculateEntropyOfSpectralAvAndVariance(midBandSpectrogram);
@@ -361,7 +363,6 @@ namespace AnalysisPrograms
 
 
             // vii: remove background noise from the full spectrogram i.e. BIN 1 to Nyquist
-            spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, nyquistBin);
             const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[] modalValues = SNR.CalculateModalValues(spectrogramData); // calculate modal value for each freq bin.
             modalValues = DataTools.filterMovingAverage(modalValues, 7);      // smooth the modal profile
@@ -376,8 +377,8 @@ namespace AnalysisPrograms
 
 
             //######################################################################
-            // ix: calculate rain and cicada indices.
-            indices.rainScore = 0.0;
+            // ix: calculate RAIN and CICADA indices.
+            indices.rainScore   = 0.0;
             indices.cicadaScore = 0.0;
             DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, spectrogramData, lowFreqBound, midFreqBound, binWidth);
             if (dt != null)
@@ -462,20 +463,9 @@ namespace AnalysisPrograms
         public static double CalculateSpikeIndex(double[] envelope, double spikeThreshold)
         {
             int length = envelope.Length;
-            int isolatedSpikeCount = 0;
-
-            //int spikeCount = 0;
-            //for (int i = 1; i < length-1; i++)
-            //{
-            //    if (envelope[i] < spikeThreshold) continue; //count spikes
-            //    spikeCount++;
-            //    if ((envelope[i-1] < spikeThreshold) && (envelope[i+1] < spikeThreshold)) 
-            //        isolatedSpikeCount++; //count isolated spikes
-            //}
-            //if (spikeCount == 0) return 0.0;
-            //else
-            //    //return isolatedSpikeCount / (double)spikeCount;
-            //    return isolatedSpikeCount / (double)length;
+            //int isolatedSpikeCount = 0;
+            double peakIntenisty  = 0.0;
+            double spikeIntensity = 0.0;
 
             var peaks = DataTools.GetPeaks(envelope);
             int peakCount = 0;
@@ -483,14 +473,18 @@ namespace AnalysisPrograms
             {
                 if (!peaks[i]) continue; //count spikes
                 peakCount++;
-                double diffMinus1 = envelope[i] - envelope[i - 1];
-                double diffPlus1  = envelope[i] - envelope[i + 1];
-                if ((diffMinus1 > spikeThreshold) && (diffPlus1 > spikeThreshold))
-                    isolatedSpikeCount++; //count isolated spikes
+                double diffMinus1 = Math.Abs(envelope[i] - envelope[i - 1]);
+                double diffPlus1  = Math.Abs(envelope[i] - envelope[i + 1]);
+                double avDifference = (diffMinus1 + diffPlus1) / 2;
+                peakIntenisty    += avDifference;
+                if (avDifference > spikeThreshold)
+                {
+                    //isolatedSpikeCount++; // count isolated spikes
+                    spikeIntensity += avDifference;
+                }
             }
             if (peakCount == 0) return 0.0;
-            if (isolatedSpikeCount == 0) return 0.0;
-            return isolatedSpikeCount / (double)peakCount;
+            return spikeIntensity / peakIntenisty;
         }
 
         /// <summary>
@@ -701,7 +695,7 @@ namespace AnalysisPrograms
                     sumI   += spectrogram[r, j];
                     deltaI += Math.Abs(spectrogram[r, j] - spectrogram[r + 1, j]);
                 }
-                aciArray[j] = deltaI / sumI;      //store normalised ACI value
+                if (sumI > 0.0) aciArray[j] = deltaI / sumI;      //store normalised ACI value
             }
             //DataTools.writeBarGraph(aciArray);
 

@@ -458,10 +458,20 @@ namespace AnalysisPrograms
             return System.Tuple.Create(dt, audioDuration);
         } //Analysis()
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal">envelope of the original signal</param>
+        /// <param name="audioDuration"></param>
+        /// <param name="frameDuration"></param>
+        /// <param name="spectrogram">the original amplitude spectrum BUT noise reduced</param>
+        /// <param name="lowFreqBound"></param>
+        /// <param name="midFreqBound"></param>
+        /// <param name="binWidth">derived from original nyquist and window/2</param>
+        /// <returns></returns>
         public static DataTable GetIndices(double[] signal, TimeSpan audioDuration, TimeSpan frameDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
         {
-            int chunkDuration = 10; //seconds
+            int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration
 
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
             int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
@@ -471,35 +481,36 @@ namespace AnalysisPrograms
             string[] classifications = new string[chunkCount];
 
             //get acoustic indices and convert to rain indices.
+            var sb = new StringBuilder();
             for (int i=0; i<chunkCount; i++)
             {
                 int startSecond = i * chunkDuration;
                 int start = (int)(startSecond * framesPerSecond);
                 int end   = start + framesPerChunk;
                 if (end >= signal.Length) end = signal.Length - 1;
-                double[] array = DataTools.Subarray(signal, start, framesPerChunk);
-                if (array.Length < 50) continue;  //an arbitrary minimum length
-                double[,] matrix = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin-1);
+                double[] chunkSignal = DataTools.Subarray(signal, start, framesPerChunk);
+                if (chunkSignal.Length < 50) continue;  //an arbitrary minimum length
+                double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin-1);
 
-                Indices rainIndices = GetIndices(array, matrix, lowFreqBound, midFreqBound, binWidth);
+                Indices rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, binWidth);
                 string classification = ConvertAcousticIndices2Classifcations(rainIndices);
                 classifications[i] = classification;
 
                 //write indices and clsasification info to console
                 string separator = ",";
-                //if (verbose)
-                    if(true)
-                    LoggedConsole.WriteLine("{1:d2}{0}    {2}{0}   {3:f1}{0} {4:f1}{0}  {5:f1}{0}   {6:f2}{0}   {7:f3}{0}   {8:f2}{0}   {9:f2}{0}   {10:f2}{0}   {11:f2}{0}   {12:f2}{0}   {13}", separator,
-                                      startSecond, (startSecond + chunkDuration), rainIndices.avSig_dB, rainIndices.bgNoise, rainIndices.snr, rainIndices.activity, rainIndices.spikes, 
+                string line = String.Format("{1:d2}{0} {2:d2}{0} {3:f1}{0} {4:f1}{0} {5:f1}{0} {6:f2}{0} {7:f3}{0} {8:f2}{0} {9:f2}{0} {10:f2}{0} {11:f2}{0} {12:f2}{0} {13:f2}{0} {14}", separator,
+                                      startSecond, (startSecond + chunkDuration), 
+                                      rainIndices.avSig_dB, rainIndices.bgNoise, rainIndices.snr,
+                                      rainIndices.activity, rainIndices.spikes, rainIndices.ACI, 
                                       rainIndices.lowFreqCover, rainIndices.midFreqCover, rainIndices.hiFreqCover,
                                       rainIndices.temporalEntropy, rainIndices.spectralEntropy, classification);
 
-
+                //if (verbose)
+                if (false)
+                {
+                    LoggedConsole.WriteLine(line);
+                }
                 //FOR PREPARING SEE.5 DATA  -------  write indices and clsasification info to file
-                //string line = String.Format("{1:d2}{0}{2}{0}{3:f1}{0}{4:f1}{0}{5:f1}{0}{6:f2}{0}{7:f2}{0}{8:f2}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13}{0}{14}", separator,
-                //      startSecond, (startSecond + chunkDuration), indices.avSig_dB, indices.bgNoise, indices.snr, indices.activity, indices.spikes,
-                //      indices.lowFreqCover, indices.midFreqCover, indices.hiFreqCover,
-                //      indices.temporalEntropy, indices.spectralEntropy, classification);
                 //sb.AppendLine(line);
             }
 
@@ -518,64 +529,60 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// NOTE: THIS METHOD NEEDS TOTAL REWORK FOR CHANGE IN NYQUIST FREQ
+        /// returns some indices relevant to rain and cicadas from a short (10seconds) chunk of audio
         /// </summary>
-        /// <param name="envelope"></param>
-        /// <param name="spectrogramData"></param>
-        /// <param name="nyquistFreq"></param>
+        /// <param name="signal">signal envelope of a 10s chunk of audio</param>
+        /// <param name="spectrogram">spectrogram of a 10s chunk of audio</param>
         /// <param name="lowFreqBound"></param>
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth"></param>
         /// <returns></returns>
-        public static Indices GetIndices(double[] envelope, double[,] spectrogramData, int lowFreqBound, int midFreqBound, double binWidth)   
+        public static Indices Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)   
         {
-
-            //ii: FRAME ENERGIES - 
-            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
+            // i: FRAME ENERGIES - 
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signal));//use Lamel et al. Only search in range 10dB above min dB.
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
-
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticFeatures.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
-            double spikeThreshold = 0.1;
-            double spikeIndex = AcousticFeatures.CalculateSpikeIndex(envelope, spikeThreshold);
+            double spikeThreshold = 0.05;
+            double spikeIndex = AcousticFeatures.CalculateSpikeIndex(signal, spikeThreshold);
+            //Console.WriteLine("spikeIndex=" + spikeIndex);
+            //DataTools.writeBarGraph(signal);
 
             Indices rainIndices; // struct in which to store all indices
             rainIndices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity 
             rainIndices.bgNoise  = results3.NoiseMode;                         //bg noise in dB
             rainIndices.snr      = results3.Snr;                               //snr
-            rainIndices.avSig_dB = 20 * Math.Log10(envelope.Average());        //10 times log of amplitude squared 
-            rainIndices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
+            rainIndices.avSig_dB = 20 * Math.Log10(signal.Average());        //10 times log of amplitude squared 
+            rainIndices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signal)); //ENTROPY of ENERGY ENVELOPE
             rainIndices.spikes = spikeIndex;
 
-            int nyquistBin        = spectrogramData.GetLength(1);
-            // calculate the bin id of boundary between mid and low frequency spectrum
-            int lowBinBound       = (int)Math.Ceiling(lowFreqBound / binWidth);
-            var subSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0) - 1, nyquistBin - 1);
+            // ii: calculate the bin id of boundary between mid and low frequency spectrum
+            int lowBinBound        = (int)Math.Ceiling(lowFreqBound / binWidth);
+            var midbandSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowBinBound, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(subSpectrogram);
+            var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(midbandSpectrogram);
             rainIndices.spectralEntropy = tuple.Item1;
-            //indices.entropyOfVarianceSpectrum = tuple.Item2;
+            //rainIndices.entropyOfVarianceSpectrum = tuple.Item2;
 
-
-            // WARNING TO DO::: THIS IS CALCULATED ON DECIBEL SPECTRUM - SHOULD BE CALCULATED ON AMPLITUDE SPECTRUM
-            var aciArray = AcousticFeatures.AcousticComplexityIndex(subSpectrogram);
+            // iv: CALCULATE Acoustic Complexity Index on the AMPLITUDE SPECTRUM
+            var aciArray = AcousticFeatures.AcousticComplexityIndex(midbandSpectrogram);
             rainIndices.ACI = aciArray.Average();
 
-
-            //iv: remove background noise from the spectrogram
+            //v: remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[] modalValues = SNR.CalculateModalValues(spectrogramData); //calculate modal value for each freq bin.
-            modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
-            spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
-            spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, spectralBgThreshold);
+            //double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
+            //modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
+            //spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
+            //spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogramData, spectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
+            //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
+            var tuple3 = AcousticFeatures.CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
             rainIndices.lowFreqCover = tuple3.Item1;
             rainIndices.midFreqCover = tuple3.Item2;
             rainIndices.hiFreqCover  = tuple3.Item3;
@@ -591,7 +598,7 @@ namespace AnalysisPrograms
         public static string ConvertAcousticIndices2Classifcations(Indices indices)
         {
             string classification = header_negative;
-            if (indices.spikes > 0.0)
+            if (indices.spikes > 0.2)
             {
                 if (indices.hiFreqCover > 0.24) return header_rain;
                 else return header_negative;
