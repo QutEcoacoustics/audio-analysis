@@ -197,7 +197,7 @@
             this.analysisParams = op.Item2;
 
             LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            LoggedConsole.WriteLine(DateTime.Now);
+            Console.WriteLine(DateTime.Now);
             this.browserSettings.WriteSettings2Console();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
@@ -521,10 +521,16 @@
             List<string> abbrevList = new List<string>();
             this.listBoxDisplayedTracks.Items.Clear(); //remove previous entries in list box.
 
-            foreach (string str in displayList) abbrevList.Add(str.Substring(0, 5)); //the headers have been tampered with!! but assume not first 5 chars
+            foreach (string str in displayList)
+            {
+                string text = str;  // the headers have been tampered with!! but assume not first 5 chars
+                if (text.Length > 6) text = str.Substring(0, 5);
+                abbrevList.Add(text); 
+            }
             for (int i = 0; i < originalHeaders.Length; i++)
             {
-                string text = originalHeaders[i].Substring(0, 5);
+                string text = originalHeaders[i];
+                if (text.Length > 6) text = originalHeaders[i].Substring(0, 5);
                 if (abbrevList.Contains(text))
                     this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}  (displayed)", (i + 1), originalHeaders[i]));
                 else
@@ -582,23 +588,23 @@
             this.textBoxConsole.Clear();
             this.tabControlMain.SelectTab("tabPageConsole");
             string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            Console.WriteLine(date);
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
             //Infer source file name from CSV file name
             FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
             if (inferredSourceFile == null)
             {
                 browserSettings.fiSourceRecording = null;
-                LoggedConsole.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
-                LoggedConsole.WriteLine("    Cannot proceed with display of segment sonogram.");
+                Console.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
+                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
                 return;
             }
             else
             {
                 browserSettings.fiSourceRecording = inferredSourceFile;
-                LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
-                LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
+                Console.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
+                Console.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
             }
 
 
@@ -648,6 +654,7 @@
             AudioRecording.ExtractSegment(fiSource, startMinute, endMinute, buffer, analysisParams, fiOutputSegment);
             //}
 
+            fiOutputSegment.Refresh();
             if (!fiOutputSegment.Exists) //still has not been extracted
             {
                 LoggedConsole.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
@@ -1344,9 +1351,12 @@
 
             this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
             var config = ConfigDictionary.ReadPropertiesFile(configPath);
-            config.Add(AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());
-            config.Add(AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
-            config.Add(AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
+            SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());
+            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
+            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
+            SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH,       "1024"); // do not want long spectrogram
+            
+            //config.Add(AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
             config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisName;
             var fiTempConfig = new FileInfo(Path.Combine(opDir, "temp.cfg"));
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
@@ -1357,6 +1367,12 @@
             Image image = SonogramTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);
             return image;
         } //GetSonogram()
+
+        private void SetConfigValue(Dictionary<string,string> config, string key, string value)
+        {
+            if (! config.ContainsKey(key)) config.Add(key, value);
+            else                           config[key] = value;
+        }
 
         private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {

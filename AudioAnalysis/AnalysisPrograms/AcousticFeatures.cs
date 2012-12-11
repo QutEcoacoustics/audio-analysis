@@ -61,7 +61,7 @@ namespace AnalysisPrograms
         public const string header_HAvSpectrum  = "H[spectral]";
         public const string header_HVarSpectrum = "H[spectralVar]";
         public const string header_AcComplexity = "AcComplexity";
-        public const string header_NumClusters  = "#clusters";
+        public const string header_NumClusters  = "clusterCount";
         public const string header_avClustDur   = "avClustDur";
 
 
