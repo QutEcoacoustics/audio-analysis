@@ -18,27 +18,63 @@
 
         public const string DefaultConfigExt = ".cfg";
 
-
+        /// <summary>
+        /// loads settings from the executable's config file.
+        /// If directories given in config file do not exist then create a temp directory in C drive.
+        /// </summary>
         public void LoadBrowserSettings()
         {
             try
             {
-                this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
                 this.DefaultConfigDir = AppConfigHelper.GetDir("DefaultConfigDir", true);
-                this.DefaultOutputDir = AppConfigHelper.GetDir("DefaultOutputDir", true);
-                this.diSourceDir = this.DefaultSourceDir;
                 this.diConfigDir = this.DefaultConfigDir;
-                this.diOutputDir = this.DefaultOutputDir;   
             }
             catch (DirectoryNotFoundException ex)
             {
                 MessageBox.Show("WARNING: " + ex.ToString());
-                MessageBox.Show("  CHECK contents of app.config file.");
+                MessageBox.Show("  Cannot find the app.config file.");
+                MessageBox.Show("  Cannot proceed!");
 
                 if (Debugger.IsAttached)
                 {
                     Debugger.Break();
                 }
+            } //catch
+
+            try
+            {
+                this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
+                this.diSourceDir = this.DefaultSourceDir;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                string lastResort = @"C:\temp";
+                MessageBox.Show("WARNING: " + ex.ToString());
+                MessageBox.Show("WARNING:  The default source directory in the app.config file does not exist.\n  Creating new directory <" + lastResort + "> \n\n\n\n" + ex.ToString());
+                this.diSourceDir = new DirectoryInfo(lastResort);
+                if (!diSourceDir.Exists) diSourceDir.Create();
+            } //catch
+
+            try
+            {
+                this.DefaultOutputDir = AppConfigHelper.GetDir("DefaultOutputDir", false);
+                if (!this.DefaultOutputDir.Exists) 
+                {
+                    this.DefaultOutputDir = this.DefaultOutputDir.Parent;
+                    if (!this.DefaultOutputDir.Exists)
+                    {
+                        this.DefaultOutputDir = this.DefaultOutputDir.Parent;
+                        if (!this.DefaultOutputDir.Exists) throw new DirectoryNotFoundException();
+                    }
+                }
+                this.diOutputDir = this.DefaultOutputDir;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                string lastResort = @"C:\temp";
+                MessageBox.Show("WARNING:  The default output directory and parents do not exist.\n  Creating new directory <" + lastResort + "> \n\n\n\n" + ex.ToString());
+                this.diOutputDir = new DirectoryInfo(lastResort);
+                if (!diOutputDir.Exists) diOutputDir.Create();
             } //catch
 
             //CHECK THESE FILES EXIST
@@ -54,12 +90,11 @@
                 fiEXE = AppConfigHelper.GetFile("AudioUtilityWvunpackExe", true);
                 fiEXE = AppConfigHelper.GetFile("AudioUtilityMp3SpltExe", true);
                 fiEXE = AppConfigHelper.GetFile("AudioUtilitySoxExe", true);
-                this.AudacityExe = AppConfigHelper.GetFile("AudacityExe", false);
             }
             catch (FileNotFoundException ex)
             {
                 MessageBox.Show("WARNING: " + ex.ToString());
-                MessageBox.Show("  CHECK contents of app.config file.");
+                MessageBox.Show("  CHECK paths in app.config file.");
 
                 if (Debugger.IsAttached)
                 {
@@ -67,6 +102,22 @@
                 }
             } //catch
 
+            try // locate AUDACITY
+            {
+                FileInfo audacity = AppConfigHelper.GetFile("AudacityExe", false);
+                string anotherPath = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
+                if (!audacity.Exists) audacity = new FileInfo(anotherPath);
+                if (!audacity.Exists) 
+                {
+                    audacity = null;
+                    throw new FileNotFoundException();
+                }
+                this.AudacityExe = audacity;
+            }
+            catch (FileNotFoundException ex)
+            {
+                MessageBox.Show("WARNING: Unable to find Audacity. Check location in app.config file.");
+            } //catch
 
             try
             {
@@ -183,16 +234,16 @@
 
         public void WriteSettings2Console()
         {
-            LoggedConsole.WriteLine();
-            LoggedConsole.WriteLine("# Browser Settings:");
-            LoggedConsole.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
+            Console.WriteLine();
+            Console.WriteLine("# Browser Settings:");
+            Console.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
             if (this.fiAnalysisConfig == null)
-                LoggedConsole.WriteLine("\tAnalysis Config File: NULL");
-            else LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
-            LoggedConsole.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
-            LoggedConsole.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
-            LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
-            LoggedConsole.WriteLine("####################################################################################\n");
+                Console.WriteLine("\tAnalysis Config File: NULL");
+            else Console.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
+            Console.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
+            Console.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
+            Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
+            Console.WriteLine("####################################################################################\n");
         }
 
 

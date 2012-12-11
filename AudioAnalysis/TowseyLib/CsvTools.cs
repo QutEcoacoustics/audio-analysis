@@ -30,6 +30,7 @@ namespace TowseyLib
          /// <summary>
          /// loads a data table with data in given csv file.
          /// If the column types are not given then default to string
+         /// CALLED ONLY BY KIWI RECOGNIZER TO READ GROUND TRUTH TABLE
          /// </summary>
          /// <param name="filePath"></param>
          /// <param name="isFirstRowHeader"></param>
@@ -74,8 +75,8 @@ namespace TowseyLib
          {
              string[] csvRows = System.IO.File.ReadAllLines(filePath);
              if (csvRows.Length == 0) return null;
-             //convert rows 1-11 toList of strings so can deduce their types.
-             var listOfStringArrays = ConvertCSVRowsToListOfStringArrays(csvRows, 1, 30);
+             //convert rows 1-300 toList of strings so can deduce their types.
+             var listOfStringArrays = ConvertCSVRowsToListOfStringArrays(csvRows, 1, 300);
              Type[] types = DataTools.GetArrayTypes(listOfStringArrays);
 
              //initialise the DataTable

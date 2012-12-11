@@ -746,7 +746,7 @@
             this.MinimumSize = new System.Drawing.Size(830, 670);
             this.Name = "MainForm";
             this.Text = "Acoustic Environment Browser";
-            this.Load += new System.EventHandler(this.MainForm_Load);
+            // this.Load += new System.EventHandler(this.MainForm_Load);  // THIS ONLY LOADS THE CONFIG WHICH HAS ALREADY BEEN DONE. SEE MainForm.cs, Line 82 ############################################################################################
             this.tabControlMain.ResumeLayout(false);
             this.tabPageSourceFiles.ResumeLayout(false);
             this.tabPageSourceFiles.PerformLayout();
