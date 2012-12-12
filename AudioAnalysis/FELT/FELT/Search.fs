@@ -176,8 +176,8 @@
                             OffsetStart = ( left |> TimeSpan.FromMilliseconds |> N), 
                             OffsetEnd = (right |> TimeSpan.FromMilliseconds |> N),
                             BandpassLow = (Option.mapToNullable float low),
-                            BandpassHigh = (Option.mapToNullable float high),
-                            SampleRate = (sampleRate |> fromUI |> N)
+                            BandpassHigh = (Option.mapToNullable float high)
+                            //SampleRate = (sampleRate |> fromUI |> N)
                         )  
                     //! warning: io mutation
                     mau.Modify(sourceFile, MediaTypes.MediaTypeWav, outputFile, MediaTypes.MediaTypeWav, request)
@@ -214,7 +214,10 @@
             //? unsure if this is correct
             spm.[l..h,*]
 
-
+        type FeatureAction = 
+            | Spectral of (AudioRecording -> SpectralSonogram -> Value)
+            | Sample of (AudioRecording -> Value)
+            | None of  (unit -> Value)
         /// extractFeatures ->  for every event, and then every feature selected, extract those features
         let extractFeatures (snippets:EventRect array) featureList audioCutter sourceFile : Data =
 
@@ -225,9 +228,9 @@
 
             /// a mapping of feature names to functions and datatypes
             let routeAction feature =
-                let action, headerName, dataType =
+                let (action:FeatureAction), headerName, dataType =
                     match feature with
-                        | EqualsOut "" a -> id, a, DataType.Number;
+                        | EqualsOut "bullshit" a -> None(fun () -> upcast( new Number(3.0))), a, DataType.Number;
                         | _ -> raise <| new NotImplementedException()
                 action, (headerName, dataType)
 
@@ -240,22 +243,29 @@
             let classes = Array.zeroCreateUnchecked eventCount
 
             //+ execution
-            let applyActionsToAllEvents (e:Index) ((instanceMap:Map<ColumnHeader, Value[]>), (classLabels:Class array)) event =
-                // pre-pare audio
+            let applyActionsToEvent (e:Index) ((instanceMap:Map<ColumnHeader, Value[]>), (classLabels:Class array)) (event: EventRect) =
+                // pre-pare audio - we only want to cut this once, and reuse it for each feature
                 let getAudio =
                     (fun () ->
-                        ()
+                        // TODO: BROKEN
+                        new AudioRecording([||])
                     )
-                let getSpectrogram() =
+                // pre-pare spectrogram - we only want to calculate this once, and reuse it for each feature
+                let getSpectrogram =
                     (fun () ->
-                        ()
+                        // TODO: BROKEN()
+                        new SpectralSonogram("", null)
                     )
 
-                let runAction (action, (headerName, dataType)) =
-                    let v = action()
-                    instanceMap.[headerName].[index] <- v
+                let runAction (action, (headerName, (dataType:DataType))) =
+                    let v =     
+                        match action with 
+                            | None f -> raise <| new InvalidOperationException()
+                            | Spectral fftf -> fftf (getAudio()) (getSpectrogram())
+                            | Sample samplef -> samplef (getAudio())   
+                    instanceMap.[headerName].[e] <- v
 
-                List.iter (runAction instanceMap e) actions
+                List.iter (runAction) actions
 
                 
                 // lastly mutate the values in the storage mechanism
@@ -265,7 +275,7 @@
 
             // each event will remap to one "row" in the dataset
             //! warning mutation of value and classes arrays is occuring
-            let instances, classes = Array.foldi applyActionsToAllEvents (instances, classes) snippets
+            let instances, classes = Array.foldi applyActionsToEvent (instances, classes) snippets
             
             {DataSet = DataSet.Test; Headers =  actions |> List.unzip |> snd |> Map.ofList; Instances = instances; ClassHeader = "Tag"; Classes = classes  }
 
@@ -337,11 +347,11 @@
             // for each overlay, extract stats
             let possibleEvents = extractFeatures overlays
 
-            Diagnostics.Debug.Assert( possibleEvents.DataSet = DataSet.Test)
+            //Diagnostics.Debug.Assert( possibleEvents.DataSet = DataSet.Test)
 
             // now cross-join training samples with all the possible overlays
             let distancesFunc =
-                classifier.Classify templateData possibleEvents
+                classifier.Classify templateData templateData //WRONG!@!!!!!!!!!!!!!!!!!!!!!!! possibleEvents
 
             
             // ! order the results from highest match to lowest
@@ -372,7 +382,7 @@
             if info.Duration.Value > 10.0.Minutes then
                 Warnf "Current test file (%A) is over 10 Minutes long (%f m) - this may take a while!"  testAudioFile info.Duration.Value.TotalMinutes
 
-            let audioRecording = audioCutter testAudioFile (info.Duration.Value.DivideBy 2L) info.Duration.Value None None
+            let audioRecording = audioCutter testAudioFile (info.Duration.Value.DivideBy 2L) info.Duration.Value Option.None Option.None
             let spectrogram = snippetToSpectrogram audioRecording
 
             // run aed 

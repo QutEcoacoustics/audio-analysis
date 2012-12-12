@@ -234,16 +234,22 @@
 
         public void WriteSettings2Console()
         {
-            Console.WriteLine();
-            Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
+            LoggedConsole.WriteLine();
+            LoggedConsole.WriteLine("# Browser Settings:");
+            LoggedConsole.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
             if (this.fiAnalysisConfig == null)
-                Console.WriteLine("\tAnalysis Config File: NULL");
-            else Console.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
-            Console.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
-            Console.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
-            Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
-            Console.WriteLine("####################################################################################\n");
+            {
+                LoggedConsole.WriteLine("\tAnalysis Config File: NULL");
+            }
+            else
+            {
+                LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
+            }
+
+            LoggedConsole.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
+            LoggedConsole.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
+            LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
+            LoggedConsole.WriteLine("####################################################################################\n");
         }
 
 

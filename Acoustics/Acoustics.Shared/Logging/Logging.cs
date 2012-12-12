@@ -80,11 +80,6 @@ namespace System
             Log.Error(str);
             Console.Error.WriteLine(str);
         }
-
     }
-
-
-
-
 }
 

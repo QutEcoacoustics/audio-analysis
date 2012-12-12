@@ -197,7 +197,7 @@
             this.analysisParams = op.Item2;
 
             LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            Console.WriteLine(DateTime.Now);
+            LoggedConsole.WriteLine(DateTime.Now);
             this.browserSettings.WriteSettings2Console();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
@@ -588,23 +588,23 @@
             this.textBoxConsole.Clear();
             this.tabControlMain.SelectTab("tabPageConsole");
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
             //Infer source file name from CSV file name
             FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
             if (inferredSourceFile == null)
             {
                 browserSettings.fiSourceRecording = null;
-                Console.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
-                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
+                LoggedConsole.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
+                LoggedConsole.WriteLine("    Cannot proceed with display of segment sonogram.");
                 return;
             }
             else
             {
                 browserSettings.fiSourceRecording = inferredSourceFile;
-                Console.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
-                Console.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
+                LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
+                LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
             }
 
 
