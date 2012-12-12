@@ -57,14 +57,14 @@
         let config filePath = 
             let filePath' = 
                 match filePath with
-                    | "" | null -> None
-                    | s when File.Exists s -> Some(s)
+                    | "" | null -> Option.None
+                    | s when File.Exists s -> Option.Some(s)
                     | _ ->
                         // okay try automatic resolution
                         let fn = Path.GetFileName filePath
                         let ed =  Path.GetDirectoryName <| Assembly.GetExecutingAssembly().Location
                         let guess = [ ed + sep + fn; ed + sep + "ConfigFiles" + sep + fn]
-                        List.tryPick (fun p ->  if File.Exists p then Some(p) else None) guess
+                        List.tryPick (fun p ->  if File.Exists p then Some(p) else Option.None) guess
                         
 
             
@@ -258,7 +258,7 @@
                         Log "Finished summary report"    
                         Some(dest)
                     else
-                        None
+                        Option.None
 
 
                 Info "Analysis complete!"
@@ -329,7 +329,7 @@
             let rootAppender = 
                     (LogManager.GetRepository() :?> log4net.Repository.Hierarchy.Hierarchy).Root.Appenders 
                     |> Seq.cast<obj>
-                    |> Seq.pick (fun ap -> if ap :? Appender.FileAppender then Some(ap :?> Appender.FileAppender) else None) 
+                    |> Seq.pick (fun ap -> if ap :? Appender.FileAppender then Some(ap :?> Appender.FileAppender) else Option.None) 
             rootAppender.File;
 
         let copyLog source _ =
