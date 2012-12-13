@@ -117,11 +117,16 @@
             else // sequential
             {
                 var results = new List<AnalysisResult>();
+                int count = 0;
                 foreach (var item in analysisSegments)
                 {
                     var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
-                    Console.Write(".");
+                    if (count % 100 == 0) Console.Write("#");
+                    else
+                    if (count % 10  == 0) Console.Write(":");
+                    else Console.Write(".");
+                    count++;
                 }
 
                 return results;
