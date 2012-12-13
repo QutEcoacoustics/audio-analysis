@@ -299,7 +299,13 @@ namespace AnalysisPrograms
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
                 if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                {
                     displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                    for (int i = 0; i < displayHeaders.Count; i++)
+                    {
+                        displayHeaders[i] = displayHeaders[i].Trim();
+                    }
+                }
             }
             //if config file does not exist or does not contain display headers then use the original headers
             if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
@@ -560,6 +566,20 @@ namespace AnalysisPrograms
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
+                else if (headers[i].Equals(AcousticFeatures.header_activity))
+                {
+                    min = 0.0;
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (max={1:f2})", headers[i], max);
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_segCount))
+                {
+                    min = 0.0;
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (max={1:f0})", headers[i], max);
+                }
                 else if (headers[i].Equals(AcousticFeatures.header_NumClusters))
                 {
                     min = 0.0; //
@@ -615,6 +635,27 @@ namespace AnalysisPrograms
                     max = 0.7;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0.3..0.7)";
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_TrigramCount))
+                {
+                    min = 0.0;
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (max={1:f0})", headers[i], max);
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_TrigramRate))
+                {
+                    min = 0.3;
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (max={1:f1})", headers[i], max);
+                }
+                else if (headers[i].Equals(AcousticFeatures.header_SPTracks))
+                {
+                    min = 0.0;
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (0..{1:f1})", headers[i], max);
                 }
                 else //default is to normalise in [0,1]
                 {

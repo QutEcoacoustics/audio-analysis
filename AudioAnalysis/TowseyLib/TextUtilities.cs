@@ -52,6 +52,53 @@ namespace TowseyLib
         }
 
 
+        public static Dictionary<string, int> ConvertIntegerArray2NgramCount(int[] integers, int ngramValue)
+        {
+            String[] array = new String[integers.Length];
+            for (int i = 0; i < integers.Length; i++)
+            {
+                array[i] = integers[i].ToString();
+            }
+
+            int N = ngramValue - 1; // length of N-gram beyond current position
+            Dictionary<string, int> D = new Dictionary<string, int>();
+            for (int i = 0; i < array.Length - N; i++)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < ngramValue; j++)
+                {
+                    sb.Append(","+ array[i+j]);
+                }
+                string key = sb.ToString();
+                if (D.ContainsKey(key)) D[key]++;
+                else D.Add(key, 1);
+            }
+
+            return D;
+        }
+
+
+        /// <summary>
+        /// returns a dictionary of counts of character N-grams in a string. 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="ngramValue"></param>
+        /// <returns></returns>
+        static public Dictionary<string, int> GetNgrams(string str, int ngramValue)
+        {
+            int N = ngramValue - 1; // length of N-gram beyond current position
+            Dictionary<string, int> D = new Dictionary<string, int>();
+            for (int c = 0; c <= (str.Length - N); c++)
+            {
+                string ss = str.Substring(c, ngramValue);
+                if (D.ContainsKey(ss)) D[ss]++;
+                else                   D.Add(ss, 1);
+            }
+            return D;
+        }
+
+
+
         //=============================================================================
 
 

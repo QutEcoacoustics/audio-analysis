@@ -135,7 +135,13 @@ namespace AudioAnalysisTools
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
                 if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                {
                     displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                    for (int i = 0; i < displayHeaders.Count; i++) // trim the headers just in case
+                    {
+                        displayHeaders[i] = displayHeaders[i].Trim();
+                    }
+                }
             }
             //if config file does not exist or does not contain display headers then use the original headers
             if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
@@ -217,8 +223,9 @@ namespace AudioAnalysisTools
                 }
                 else //default is to normalise in [0,1]
                 {
-                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
-                    newHeaders[i] = headers[i];
+                    max = values.Max();
+                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
+                    newHeaders[i] = String.Format("{0} (0..{1:f2})", headers[i], max);
                 }
             } //for loop
 

@@ -279,12 +279,31 @@ namespace TowseyLib
         }
 
 
+        public static double[] VectorReduceLength(double[] V, int factor)
+        {
+            int newLength = V.Length / factor;
+            double[] newVector = new double[newLength]; 
+
+            for (int i = 0; i < newLength; i++)
+            {
+                int index = i * factor;
+                double sum = 0.0;
+                for (int j = 0; j < factor; j++)
+                {
+                    sum += V[index + j];
+                }
+                newVector[i] = (sum / (double)factor);
+            }
+            return newVector;
+        }
+
+
         /// <summary>
         /// returns the euclidian length of vector
         /// </summary>
         /// <param name="V"></param>
         /// <returns></returns>
-        public static double VectorLength(double[] V)
+        public static double VectorEuclidanLength(double[] V)
         {
             int length = V.Length;
 
@@ -300,7 +319,7 @@ namespace TowseyLib
 
         public static double[] Vector_NormLength(double[] V)
         {
-            double euclidLength = VectorLength(V);
+            double euclidLength = VectorEuclidanLength(V);
             double[] Vnorm = new double[V.Length];
 
             for (int i = 0; i < V.Length; i++)
@@ -310,7 +329,7 @@ namespace TowseyLib
 
              
             // now that length = 1.0;
-            double L = VectorLength(Vnorm);
+            double L = VectorEuclidanLength(Vnorm);
             if (L > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
             if (L < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
 
