@@ -461,13 +461,19 @@ namespace AnalysisPrograms
             indices.triGramRepeatRate  = clusterInfo.triGramRepeatRate;
 
             // xi: Get Spectral peak tracks
-            //List<SpectralTrack> tracks = GetSpectralPeakTracks();
+            double framesPerSecond = 1 / frameDuration.TotalSeconds; 
+            double threshold = 0.05;
+            var tracks = SpectralTrack.GetSpectralPeakTracks(midBandSpectrogram, framesPerSecond, binWidth, threshold);
             indices.avTrackDuration = TimeSpan.Zero; 
-            //foreach(SpectralTrack track in tracks)
-            //{
-                //TimeSpan ts = new Time
-                //indices.avTrackDuration += track.
-            //}
+            foreach(SpectralTrack track in tracks)
+            {
+                indices.avTrackDuration += track.Duration();
+            }
+
+            //TO DO: calculate av track duration and total duration as fraction of recording duration
+            //indices.avTrackDuration = indices.avTrackDuration / (double)tracks.Count;
+
+            //wavDuration
 
             // xii: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)

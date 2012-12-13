@@ -99,6 +99,12 @@ namespace AudioAnalysisTools
             return density;
         }
 
+        public TimeSpan Duration()
+        {
+            double seconds = this.Length / framesPerSecond;  
+            return TimeSpan.FromSeconds(seconds);
+        }
+
 
         public bool ExtendTrack(int currentFrame, int currentValue)
         {
@@ -149,6 +155,44 @@ namespace AudioAnalysisTools
         //#########################################################################################################################################################
         //#########################################################################################################################################################
         //#########################################################################################################################################################
+
+
+        /// <summary>
+        /// returns an array showing which freq bin in each frame hsa the maximum amplitude
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        public static int[] GetSpectralMaxima(double[,] spectrogram, double threshold)
+        {
+            int rowCount = spectrogram.GetLength(0);
+            int colCount = spectrogram.GetLength(1);
+            var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
+            //var hitsMatrix = new double[rowCount, colCount];
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                double[] spectrum = DataTools.GetRow(spectrogram, r);
+                spectrum = DataTools.VectorReduceLength(spectrum, 3);  // reduce length of the vector by factor of N
+                spectrum = DataTools.filterMovingAverage(spectrum, 3); // additional smoothing to remove noise
+                //find local freq maxima and store in freqArray & hits matrix.
+                int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                if (spectrum[maxFreqbin] > threshold) //only record spectral peak if it is above threshold.
+                {
+                    maxFreqArray[r] = maxFreqbin;
+                        //hitsMatrix[r + nh, maxFreqbin] = 1.0;
+                }
+            }
+            return maxFreqArray;
+        }
+
+        public static List<SpectralTrack> GetSpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double herzPerBin, double threshold)
+        {
+            int[] spectralPeakArray = GetSpectralMaxima(spectrogram, threshold);
+            var tracks = GetSpectraltracks(spectralPeakArray, framesPerSecond, herzPerBin);
+            return tracks;
+        }
+
 
         /// <summary>
         /// 
