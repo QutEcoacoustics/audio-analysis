@@ -238,14 +238,8 @@
             LoggedConsole.WriteLine("# Browser Settings:");
             LoggedConsole.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
             if (this.fiAnalysisConfig == null)
-            {
                 LoggedConsole.WriteLine("\tAnalysis Config File: NULL");
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
-            }
-
+            else LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
             LoggedConsole.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
             LoggedConsole.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
             LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
