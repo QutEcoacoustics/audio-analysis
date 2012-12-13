@@ -145,106 +145,24 @@
         } // LoadBrowserSettings()
 
 
-        //public void ConfirmAllOtherFilesExist()
-        //{
-        //    try
-        //    {
-                //if (this.diConfigDir == null)
-                //{
-                //    MessageBox.Show("WARNING: A valid config directory has not been set.\n\nCheck entry in the application file: app.config ");
-                //    throw new Exception();
-                //}
-                //else
-                //if (!this.diConfigDir.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The config directory does not exist: {0}.\n\nCheck entry in the application file: app.config.", this.diConfigDir.FullName);
-                //    throw new Exception();
-                //}
-                ////check the source directory
-                //if (this.diSourceDir == null)
-                //{
-                //    MessageBox.Show("WARNING: A valid source directory has not been set.\n\nCheck entry in the application file: app.config ");
-                //    throw new Exception();
-                //}
-                //else
-                //if (!this.diSourceDir.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The source directory does not exist: {0}.\n\nCheck entry in the application file: app.config.", this.diSourceDir.FullName);
-                //    throw new Exception();
-                //}
-                ////check the output directory
-                //if (this.diOutputDir == null)
-                //{
-                //    MessageBox.Show("WARNING: A valid output directory has not been set.\n\nCheck entry in the application file: app.config ");
-                //    throw new Exception();
-                //}
-                //else
-                //if (!this.diOutputDir.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The output directory does not exist: {0}.\n\nCheck entry in the application file: app.config.", this.diOutputDir.FullName);
-                //    throw new Exception();
-                //}
-
-
-                //var fiEXE = new FileInfo(@"audio-utils\ffmpeg\ffmpeg.exe");
-                //if (! fiEXE.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The file <audio-utils\\ffmpeg\\ffmpeg.exe> does not exist: {0}.\n\nCheck entry in the application file: app.config.");
-                //    throw new Exception();
-                //}
-                //fiEXE = new FileInfo(@"audio-utils\ffmpeg\ffprobe.exe");
-                //if (!fiEXE.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The file <audio-utils\\ffprobe\\ffprobe.exe> does not exist: {0}.\n\nCheck entry in the application file: app.config.");
-                //    throw new Exception();
-                //}
-
-
-
-                //fiEXE = new FileInfo(@"audio-utils\wavpack\wvunpack.exe");
-                //if (!fiEXE.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The file <audio-utils\\wavpack\\wvunpack.exe> does not exist: {0}.\n\nCheck entry in the application file: app.config.");
-                //    throw new Exception();
-                //}
-                //fiEXE = new FileInfo(@"audio-utils\mp3splt\mp3splt.exe");
-                //if (!fiEXE.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The file <audio-utils\\mp3splt\\mp3splt.exe> does not exist: {0}.\n\nCheck entry in the application file: app.config.");
-                //    throw new Exception();
-                //}
-                //fiEXE = new FileInfo(@"audio-utils\sox\sox.exe");
-                //if (!fiEXE.Exists)
-                //{
-                //    MessageBox.Show("WARNING: The file <audio-utils\\sox\\sox.exe> does not exist: {0}.");
-                //    throw new Exception("Check entry in the application file: app.config.");
-                //}
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show(ex.ToString());
-        //        if (Debugger.IsAttached)
-        //        {
-        //            Debugger.Break();
-        //        }
-
-        //    } //catch
-        //}
-
-
         public void WriteSettings2Console()
         {
             LoggedConsole.WriteLine();
             LoggedConsole.WriteLine("# Browser Settings:");
             LoggedConsole.WriteLine("\tAnalysis Name: " + this.AnalysisIdentifier);
             if (this.fiAnalysisConfig == null)
+            {
                 LoggedConsole.WriteLine("\tAnalysis Config File: NULL");
-            else LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
+            }
+            else
+            {
+                LoggedConsole.WriteLine("\tAnalysis Config File: " + this.fiAnalysisConfig.FullName);
+            }
             LoggedConsole.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
             LoggedConsole.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
             LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
             LoggedConsole.WriteLine("####################################################################################\n");
-        }
+        } // WriteSettings2Console()
 
 
 
