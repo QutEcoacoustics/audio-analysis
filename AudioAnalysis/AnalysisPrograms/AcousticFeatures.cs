@@ -37,11 +37,7 @@ namespace AnalysisPrograms
         public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
         public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
 
-        private const int    COL_NUMBER = 25;
-        private static Type[] COL_TYPES = new Type[COL_NUMBER];
-        private static string[] HEADERS = new string[COL_NUMBER];
-        private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
-        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
+        private const int    COL_NUMBER = 26;
 
         public static string header_count = Keys.INDICES_COUNT;
         public const string header_startMin  = "start-min";
@@ -64,12 +60,17 @@ namespace AnalysisPrograms
         public const string header_NumClusters  = "clusterCount";
         public const string header_avClustDur   = "avClustDur";
         public const string header_TrigramCount = "3gramCount";
-        public const string header_TrigramRate  = "3gramRate";
-        public const string header_SPTracks     = "SpPkTracks";
+        public const string header_TrigramRate  = "av3gramRepetition";
+        public const string header_SPTracksPerSec = "SpPkTracks/Sec";
+        public const string header_SPTracksDur  = "SpPkTracks%Dur";
 
 
-        private static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
+        private static System.Tuple<string[], Type[], bool[], double[]> InitOutputTableColumns()
         {
+            Type[] COL_TYPES = new Type[COL_NUMBER];
+            string[] HEADERS = new string[COL_NUMBER];
+            bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
+            double[] COMBO_WEIGHTS = new double[COL_NUMBER];
             HEADERS[0] = header_count;         COL_TYPES[0] = typeof(int);      DISPLAY_COLUMN[0] = false;  COMBO_WEIGHTS[0]  = 0.0;
             HEADERS[1] = header_startMin;      COL_TYPES[1] = typeof(double);   DISPLAY_COLUMN[1] = false;  COMBO_WEIGHTS[1]  = 0.0;
             HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false;  COMBO_WEIGHTS[2]  = 0.0;
@@ -92,62 +93,20 @@ namespace AnalysisPrograms
             HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.1;
             HEADERS[20] = header_TrigramCount; COL_TYPES[20] = typeof(int);     DISPLAY_COLUMN[20] = true;  COMBO_WEIGHTS[20] = 0.0;
             HEADERS[21] = header_TrigramRate;  COL_TYPES[21] = typeof(double);  DISPLAY_COLUMN[21] = true;  COMBO_WEIGHTS[21] = 0.0;
-            HEADERS[22] = header_SPTracks;     COL_TYPES[22] = typeof(double);  DISPLAY_COLUMN[22] = true;  COMBO_WEIGHTS[22] = 0.0;
-            HEADERS[23] = Rain.header_rain;    COL_TYPES[23] = typeof(double);  DISPLAY_COLUMN[23] = true;  COMBO_WEIGHTS[23] = 0.0;
-            HEADERS[24] = Rain.header_cicada;  COL_TYPES[24] = typeof(double);  DISPLAY_COLUMN[24] = true;  COMBO_WEIGHTS[24] = 0.0;
-            //HEADERS[25] = "Weighted index"; COL_TYPES[25] = typeof(double); DISPLAY_COLUMN[25] = false; COMBO_WEIGHTS[25] = 0.0;
-            return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
+            HEADERS[22] = header_SPTracksPerSec; COL_TYPES[22] = typeof(double);DISPLAY_COLUMN[22] = true;  COMBO_WEIGHTS[22] = 0.0;
+            HEADERS[23] = header_SPTracksDur;  COL_TYPES[23] = typeof(double);  DISPLAY_COLUMN[23] = true;  COMBO_WEIGHTS[23] = 0.0;
+            HEADERS[24] = Rain.header_rain;    COL_TYPES[24] = typeof(double);  DISPLAY_COLUMN[24] = true;  COMBO_WEIGHTS[24] = 0.0;
+            HEADERS[25] = Rain.header_cicada;  COL_TYPES[25] = typeof(double);  DISPLAY_COLUMN[25] = true;  COMBO_WEIGHTS[25] = 0.0;
+            //HEADERS[26] = "Weighted index"; COL_TYPES[26] = typeof(double); DISPLAY_COLUMN[26] = false; COMBO_WEIGHTS[26] = 0.0;
+            return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN, COMBO_WEIGHTS);
         }
 
-        public static string[] GetTableHeaders()
-        {
-            InitOutputTableColumns();
-            return HEADERS;
-        }
-
-        public static Type[] GetTableTypes()
-        {
-            InitOutputTableColumns();
-            return COL_TYPES;
-        }
-
-        public static bool[] GetDisplayColumns()
-        {
-            InitOutputTableColumns();
-            return DISPLAY_COLUMN;
-        }
 
         public static double[] GetComboWeights()
         {
-            InitOutputTableColumns();
-            return COMBO_WEIGHTS;
+            var items = InitOutputTableColumns();
+            return items.Item4; // COMBO_WEIGHTS;
         }
-
-        public const string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}{0}{19}{0}{20}{0}{21}";
-        public const string FORMAT_STR_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}{0}{19}{0}{20:f2}{0}{21:f2}";
-
-
-        // Following is list of scaling originally applied to the Acoustic Indices Tracks
-        // Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
-        // Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
-        // SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
-        // draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
-        // Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
-        // avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
-        // percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
-        // percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
-        // Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
-        // H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
-        // H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
-        // H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
-        // clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
-        // av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
-        // weightedIndex track 16:         title = "15: Weighted Index";  
-
-
-
-
-
 
         /// <summary>
         /// a set of parameters derived from ini file.
@@ -166,8 +125,6 @@ namespace AnalysisPrograms
 
             public double FrameOverlap;
 
-            //public int DRAW_SONOGRAMS;
-            //public string reportFormat;
 
             public Parameters(double _segmentDuration, int _segmentOverlap, int _resampleRate,
                               int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
@@ -178,8 +135,8 @@ namespace AnalysisPrograms
                 this.FrameLength     = _frameLength;
                 this.FrameOverlap    = _frameOverlap;
                 this.LowFreqBound    = _lowFreqBound;
-                ////DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
-                ////reportFormat    = _fileFormat;
+                // DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; // av length of clusters > 1 frame.
+                // reportFormat    = _fileFormat;
             } // Parameters
         } // struct Parameters
 
@@ -220,17 +177,19 @@ namespace AnalysisPrograms
             public double ACI; // acoustic complexity index
             public double rainScore, cicadaScore;
             public int    segmentCount, clusterCount;
-            public TimeSpan avSegmentDuration, avClusterDuration, avTrackDuration;
-            public int      triGramUniqueCount;
-            public double   triGramRepeatRate;
+            public TimeSpan recordingDuration, avSegmentDuration, avClusterDuration, trackDuration_total;
+            public int    triGramUniqueCount;
+            public double triGramRepeatRate;
+            public int    trackCount, trackDuration_percent;
+            public double tracksPerSec;
 
-
-            public Indices2(double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
+            public Indices2(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
                             int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
-                            TimeSpan _trackDuration, double _rainScore, double _cicadaScore)
+                            TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore)
             {
+                recordingDuration = _recordingDuration;
                 snr        = _snr;
                 activeSnr  = _activeSnr;
                 bgNoise    = _bgNoise;
@@ -242,15 +201,22 @@ namespace AnalysisPrograms
                 hiFreqCover   = _hiFreqCover;
                 midFreqCover  = _midFreqCover;
                 lowFreqCover  = _lowFreqCover;
+
                 entropyOfPeakFreqDistr    = _peakFreqEntropy;
                 entropyOfAvSpectrum       = _entropyOfAvSpectrum;
                 entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
                 ACI                = _ACI;
+
                 clusterCount       = _clusterCount;
                 avClusterDuration  = _avClusterDuration; //av length of clusters > 1 frame.
                 triGramUniqueCount = _triGramUniqueCount; // unique cluster trigrams
                 triGramRepeatRate  = _triGramRepeatRate;  // average repetitions of each cluster trigram
-                avTrackDuration    = _trackDuration;
+
+                trackDuration_total = _trackDuration_total;
+                trackCount = _trackCount;
+                trackDuration_percent = _trackDuration_percent;
+                tracksPerSec = _trackCount / recordingDuration.TotalSeconds;
+                
                 rainScore          = _rainScore;
                 cicadaScore        = _cicadaScore;
             }
@@ -283,6 +249,20 @@ namespace AnalysisPrograms
                 triGramRepeatRate = _triGramRepeatRate;
             }
         }
+
+        public struct TrackInfo
+        {
+            public int trackCount;
+            public TimeSpan totalTrackDuration;
+            public int percentDuration; // percent of recording length
+            public TrackInfo(int _trackCount, TimeSpan _totalTrackDuration, int _percentDuration)
+            {
+                trackCount = _trackCount;
+                totalTrackDuration = _totalTrackDuration;
+                percentDuration = _percentDuration;
+            }
+        }
+
 
 
         // #########################################################################################################################################################
@@ -336,6 +316,7 @@ namespace AnalysisPrograms
             var activity = CalculateActivity(dBarray, frameDuration, DEFAULT_activityThreshold_dB);
 
             Indices2 indices; // struct in which to store all indices
+            indices.recordingDuration = wavDuration;                        // total duration of recording
             indices.activity = activity.activeFrameCover;                   // fraction of frames having acoustic activity 
             indices.bgNoise  = bgNoiseResults.NoiseMode;                    // bg noise in dB
             indices.snr      = bgNoiseResults.Snr;                          // snr
@@ -438,6 +419,16 @@ namespace AnalysisPrograms
             }
 
 
+            // x: Get Spectral peak tracks
+            double framesPerSecond = 1 / frameDuration.TotalSeconds;
+            double threshold = 0.05;
+            TrackInfo trackInfo = GetTrackIndices(midBandSpectrogram, framesPerSecond, binWidth, threshold);
+            indices.trackDuration_total = trackInfo.totalTrackDuration;
+            indices.trackDuration_percent = trackInfo.percentDuration;
+            indices.trackCount   = trackInfo.trackCount;
+            indices.tracksPerSec = trackInfo.trackCount / wavDuration.TotalSeconds;
+
+
             //#V#####################################################################################################################################################
             //return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
             if ((activity.activeFrameCount <= 2)||(indices.segmentCount == 0))   
@@ -446,13 +437,11 @@ namespace AnalysisPrograms
                 indices.avClusterDuration = TimeSpan.Zero; //av cluster durtaion in milliseconds
                 indices.triGramUniqueCount = 0;
                 indices.triGramRepeatRate  = 0.0;
-                indices.avTrackDuration = TimeSpan.Zero; 
-                
                 return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores);
             }
             //#V#####################################################################################################################################################
 
-            // x: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            // xi: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             double binaryThreshold = 0.07; // for deriving binary spectrogram
             ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
             indices.clusterCount = clusterInfo.clusterCount; 
@@ -460,15 +449,6 @@ namespace AnalysisPrograms
             indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
             indices.triGramRepeatRate  = clusterInfo.triGramRepeatRate;
 
-            // xi: Get Spectral peak tracks
-            double framesPerSecond = 1 / frameDuration.TotalSeconds; 
-            double threshold = 0.05;
-            var tracks = SpectralTrack.GetSpectralPeakTracks(midBandSpectrogram, framesPerSecond, binWidth, threshold);
-            indices.avTrackDuration = TimeSpan.Zero; 
-            foreach(SpectralTrack track in tracks)
-            {
-                indices.avTrackDuration += track.Duration();
-            }
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration
             //indices.avTrackDuration = indices.avTrackDuration / (double)tracks.Count;
@@ -875,6 +855,23 @@ namespace AnalysisPrograms
         }
 
 
+        public static TrackInfo GetTrackIndices(double[,] spectrogram, double framesPerSecond, double binWidth, double threshold)
+        {
+            var minDuration = TimeSpan.FromMilliseconds(100);
+            var permittedGap = TimeSpan.FromMilliseconds(50);
+            var tracks = SpectralTrack.GetSpectralPeakTracks(spectrogram, framesPerSecond, binWidth, threshold, minDuration, permittedGap);
+            var duration = TimeSpan.Zero;
+            int trackLength = 0;
+            foreach(SpectralTrack track in tracks)
+            {
+                duration += track.Duration();
+                trackLength += track.Length;
+            }
+            int percentDuration = (int)Math.Round(100 * trackLength / (double)spectrogram.GetLength(0));
+            return new TrackInfo(tracks.Count, duration, percentDuration);
+        }
+
+
         //#########################################################################################################################################################
         //  OTHER METHODS
 
@@ -1070,24 +1067,6 @@ namespace AnalysisPrograms
             return weightedIndices;
         }
 
-
-        public static string FormatHeader(string parmasFile_Separator)
-        {
-            string reportSeparator = "\t";
-            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
-
-            string line = string.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1],  HEADERS[2],  HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7], HEADERS[8], HEADERS[9],
-                                                                            HEADERS[10], HEADERS[11], HEADERS[12], HEADERS[13], HEADERS[14], HEADERS[15], HEADERS[16], HEADERS[17], HEADERS[18], HEADERS[19],
-                                                                            HEADERS[20], HEADERS[21], HEADERS[22], HEADERS[23], HEADERS[24]);
-            return line;
-        }
-
-        public static void WriteHeaderToReportFile(string reportfileName, string parmasFile_Separator)
-        {
-            string line = FormatHeader(parmasFile_Separator);
-            FileTools.WriteTextFile(reportfileName, line);
-        }
-
         public static DataTable Indices2DataTable(Indices2 indices)
         {
             var parameters = InitOutputTableColumns();
@@ -1100,7 +1079,7 @@ namespace AnalysisPrograms
                         indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum, 
                         indices.ACI, 
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds, indices.triGramUniqueCount, indices.triGramRepeatRate,
-                        indices.avTrackDuration.TotalMilliseconds,
+                        indices.tracksPerSec, indices.trackDuration_percent,
                         indices.rainScore, indices.cicadaScore);
 
             //foreach (DataRow row in dt.Rows) { }
