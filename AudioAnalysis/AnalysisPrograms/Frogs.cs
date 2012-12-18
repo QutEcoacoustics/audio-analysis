@@ -344,48 +344,23 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
 
-            //var dBArray = sonogram.DecibelsPerFrame;
-            var peaks = DataTools.GetPeakValues(sonogram.DecibelsPerFrame);
-
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-
-            int nhLimit = 3; //limit of neighbourhood around maximum
-            var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
-            var hitsMatrix   = new double[rowCount, colCount];
-            for (int r = nhLimit; r < rowCount - nhLimit; r++)
-            {
-                if (peaks[r] < dBThreshold) continue;
-                //find local freq maxima and store in freqArray & hits matrix.
-                for (int nh = -nhLimit; nh < nhLimit; nh++)
-                {
-                    double[] spectrum = MatrixTools.GetRow(sonogram.Data, r+nh);
-                    spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
-                    int maxFreqbin = DataTools.GetMaxIndex(spectrum);
-                    if (spectrum[maxFreqbin] > dBThreshold) //only record spectral peak if it is above threshold.
-                    {
-                        maxFreqArray[r + nh] = maxFreqbin;
-                        //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
-                        hitsMatrix[r + nh, maxFreqbin] = 1.0;
-                    }
-                }
-            }
-
             //iii: GET TRACKS
-            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth);
+            int nhLimit = 3; //limit of neighbourhood around maximum
+            var peaks = DataTools.GetPeakValues(sonogram.DecibelsPerFrame);
+            var tuple = SpectralTrack.GetSpectralMaxima(sonogram.DecibelsPerFrame, sonogram.Data, dBThreshold, nhLimit);
+            var maxFreqArray = tuple.Item1; //array (one element per frame) indicating which freq bin has max amplitude.
+            var hitsMatrix   = tuple.Item2;
+            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP);
 
-            //double threshold = 9.0;
             double severity = 0.5;
-
             double dynamicRange = 60; // deciBels above background noise. BG noise has already been removed from each bin.
             // convert sonogram to a list of frequency bin arrays
             var listOfFrequencyBins = SonogramTools.Sonogram2ListOfFreqBinArrays(sonogram, dynamicRange);
+            int minFrameLength = SpectralTrack.FrameCountEquivalent(SpectralTrack.MIN_TRACK_DURATION, framesPerSecond);
 
-            int minFrameLength = SpectralTrack.ConvertMilliseconds2FrameCount(SpectralTrack.MIN_TRACK_DURATION, framesPerSecond);
             for (int i = tracks.Count-1; i >= 0; i--)
             {
                 tracks[i].CropTrack(listOfFrequencyBins, severity);
-                //track.CropTrack(sonogram, threshold);
                 if (tracks[i].Length < minFrameLength) tracks.Remove(tracks[i]);
             } // foreach track
 
@@ -395,6 +370,7 @@ namespace AnalysisPrograms
                 SpectralTrack.DetectTrackPeriodicity(track, xCorrelationLength, listOfFrequencyBins, sonogram.FramesPerSecond);
             } // foreach track
 
+            int rowCount = sonogram.Data.GetLength(0);
             int topBin = SpectralTrack.UpperTrackBound(freqBinWidth);
             var plots = CreateScorePlots(tracks, rowCount, topBin);
 

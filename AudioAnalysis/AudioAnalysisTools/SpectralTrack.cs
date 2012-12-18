@@ -37,9 +37,9 @@ namespace AudioAnalysisTools
 
         double tolerance = 2.5; // do not accept new track if new peak is > this distance from old track.
         public  const int    MAX_FREQ_BOUND        = 6000;  // herz
-        private const int    MAX_INTRASYLLABLE_GAP = 30;  // milliseconds
         private const double MIN_TRACK_DENSITY     = 0.3;
-        public  const int MIN_TRACK_DURATION = 20;  // milliseconds
+        public static TimeSpan MIN_TRACK_DURATION = TimeSpan.FromMilliseconds(20);     // milliseconds
+        public static TimeSpan MAX_INTRASYLLABLE_GAP = TimeSpan.FromMilliseconds(30);  // milliseconds
 
 
 
@@ -75,9 +75,9 @@ namespace AudioAnalysisTools
             herzPerBin      = _herzPerBin;
         }
 
-        int FrameCount(int milliseconds)
+        int FrameCountEquivalent(TimeSpan duration)
         {
-            return ConvertMilliseconds2FrameCount(milliseconds, framesPerSecond);
+            return FrameCountEquivalent(duration, framesPerSecond);          
         }
 
         int BinCount(int herz)
@@ -85,11 +85,11 @@ namespace AudioAnalysisTools
             return (int)Math.Round(herz / (double)herzPerBin);
         }
 
-        public bool TrackTerminated(int currentFrame)
+        public bool TrackTerminated(int currentFrame, TimeSpan maxGap)
         {
             bool trackTerminated = true;
-            int minFrameGap = this.FrameCount(MAX_INTRASYLLABLE_GAP);
-            if ((this.endFrame + minFrameGap) > currentFrame) trackTerminated = false;
+            int permittedFrameGap = this.FrameCountEquivalent(maxGap);
+            if ((this.endFrame + permittedFrameGap) > currentFrame) trackTerminated = false;
             return trackTerminated;
         }
 
@@ -157,8 +157,13 @@ namespace AudioAnalysisTools
         //#########################################################################################################################################################
 
 
+        public static int FrameCountEquivalent(TimeSpan duration, double framesPerSecond)
+        {
+            return (int)Math.Round(framesPerSecond * duration.TotalSeconds);
+        }
+
         /// <summary>
-        /// returns an array showing which freq bin in each frame hsa the maximum amplitude
+        /// returns an array showing which freq bin in each frame has the maximum amplitude
         /// </summary>
         /// <param name="spectrogram"></param>
         /// <param name="threshold"></param>
@@ -180,19 +185,56 @@ namespace AudioAnalysisTools
                 if (spectrum[maxFreqbin] > threshold) //only record spectral peak if it is above threshold.
                 {
                     maxFreqArray[r] = maxFreqbin;
-                        //hitsMatrix[r + nh, maxFreqbin] = 1.0;
+                    //hitsMatrix[r + nh, maxFreqbin] = 1.0;
                 }
             }
             return maxFreqArray;
-        }
+        } // GetSpectralMaxima()
 
-        public static List<SpectralTrack> GetSpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double herzPerBin, double threshold)
+        /// <summary>
+        /// returns an array showing which freq bin in each frame has the maximum amplitude.
+        /// However only returns values for those frames in the neighbourhood of an envelope peak.
+        /// </summary>
+        /// <param name="decibelsPerFrame"></param>
+        /// <param name="spectrogram"></param>
+        /// <param name="threshold"></param>
+        /// <param name="nhLimit"></param>
+        /// <returns></returns>
+        public static System.Tuple<int[], double[,]> GetSpectralMaxima(double[] decibelsPerFrame, double[,] spectrogram, double threshold, int nhLimit)
+        {
+            int rowCount = spectrogram.GetLength(0);
+            int colCount = spectrogram.GetLength(1);
+
+            var peaks = DataTools.GetPeakValues(decibelsPerFrame);
+
+            var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
+            var hitsMatrix   = new double[rowCount, colCount];
+            for (int r = nhLimit; r < rowCount - nhLimit; r++)
+            {
+                if (peaks[r] < threshold) continue;
+                //find local freq maxima and store in freqArray & hits matrix.
+                for (int nh = -nhLimit; nh < nhLimit; nh++)
+                {
+                    double[] spectrum = MatrixTools.GetRow(spectrogram, r + nh);
+                    spectrum[0] = 0.0; // set DC = 0.0 just in case it is max.
+                    int maxFreqbin = DataTools.GetMaxIndex(spectrum);
+                    if (spectrum[maxFreqbin] > threshold) //only record spectral peak if it is above threshold.
+                    {
+                        maxFreqArray[r + nh] = maxFreqbin;
+                        //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
+                        hitsMatrix[r + nh, maxFreqbin] = 1.0;
+                    }
+                }
+            }
+            return System.Tuple.Create(maxFreqArray, hitsMatrix);
+        } // GetSpectralMaxima()
+
+        public static List<SpectralTrack> GetSpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double herzPerBin, double threshold, TimeSpan minDuration, TimeSpan permittedGap)
         {
             int[] spectralPeakArray = GetSpectralMaxima(spectrogram, threshold);
-            var tracks = GetSpectraltracks(spectralPeakArray, framesPerSecond, herzPerBin);
+            var tracks = GetSpectraltracks(spectralPeakArray, framesPerSecond, herzPerBin, minDuration, permittedGap);
             return tracks;
         }
-
 
         /// <summary>
         /// 
@@ -201,13 +243,13 @@ namespace AudioAnalysisTools
         /// <param name="_framesPerSecond">time scale</param>
         /// <param name="_herzPerBin">freq scale</param>
         /// <returns></returns>
-        public static List<SpectralTrack> GetSpectraltracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin)
+        public static List<SpectralTrack> GetSpectraltracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin, TimeSpan minDuration, TimeSpan permittedGap)
         {
             var tracks = new List<SpectralTrack>();
             for (int r = 0; r < spectralPeakArray.Length - 1; r++)
             {
                 if (spectralPeakArray[r] == 0) continue;  //skip frames with zero value i.e. did not have peak > threshold.
-                PruneTracks(tracks, r);
+                PruneTracks(tracks, r, minDuration, permittedGap);
                 if (!ExtendTrack(tracks, r, spectralPeakArray[r]))
                     tracks.Add(new SpectralTrack(r, spectralPeakArray[r], _framesPerSecond, _herzPerBin));
             }
@@ -224,7 +266,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="tracks">current list of tracks</param>
         /// <param name="currentFrame"></param>
-        public static void PruneTracks(List<SpectralTrack> tracks, int currentFrame)
+        public static void PruneTracks(List<SpectralTrack> tracks, int currentFrame, TimeSpan minDuration, TimeSpan permittedGap)
         {
             if ((tracks == null) || (tracks.Count == 0)) return;
 
@@ -234,11 +276,11 @@ namespace AudioAnalysisTools
             {
                 if (tracks[i].status == 0) continue;
 
-                if (tracks[i].TrackTerminated(currentFrame))  //this track has terminated
+                if (tracks[i].TrackTerminated(currentFrame, permittedGap))  //this track has terminated
                 {
                     tracks[i].status = 0; //set track status to closed
-                    int minFrameLength = tracks[i].FrameCount(MIN_TRACK_DURATION);
-                    if ((tracks[i].Length < minFrameLength) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY)) 
+                    //int minFrameLength = tracks[i].FrameCountEquivalent(minimumDuration);
+                    if ((tracks[i].Duration() < minDuration) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY)) 
                         tracks.RemoveAt(i);
                 }
             }
@@ -341,13 +383,6 @@ namespace AudioAnalysisTools
 
             return list;
         }
-
-
-        public static int ConvertMilliseconds2FrameCount(int milliseconds, double framesPerSecond)
-        {
-            return (int)Math.Round(framesPerSecond * milliseconds / (double)1000);
-        }
-
 
     } //class SpectralTrack
 }
