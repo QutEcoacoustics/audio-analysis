@@ -239,11 +239,12 @@ namespace AnalysisPrograms
             var sonogram = results.Item3;
             var hits = results.Item4;
             var plots = results.Item5;
+            var tracks = results.Item6;
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(sonogram, hits, plots);
+                var image = DrawSonogram(sonogram, hits, plots, tracks);
                 //var fiImage = new FileInfo(imagePath);
                 //if (fiImage.Exists) fiImage.Delete();
                 image.Save(imagePath, ImageFormat.Png);
@@ -259,7 +260,7 @@ namespace AnalysisPrograms
         } // Analyse()
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency;
@@ -273,7 +274,8 @@ namespace AnalysisPrograms
                 foreach (Plot plot in scores)
                     image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+            if (tracks != null) image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
+            if (hits != null) image.OverlayRainbowTransparency(hits); 
             return image.GetImage();
         } //DrawSonogram()
 

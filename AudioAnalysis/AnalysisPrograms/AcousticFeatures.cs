@@ -252,12 +252,12 @@ namespace AnalysisPrograms
 
         public struct TrackInfo
         {
-            public int trackCount;
+            public List<SpectralTrack> tracks;
             public TimeSpan totalTrackDuration;
             public int percentDuration; // percent of recording length
-            public TrackInfo(int _trackCount, TimeSpan _totalTrackDuration, int _percentDuration)
+            public TrackInfo(List<SpectralTrack> _tracks, TimeSpan _totalTrackDuration, int _percentDuration)
             {
-                trackCount = _trackCount;
+                tracks     = _tracks;
                 totalTrackDuration = _totalTrackDuration;
                 percentDuration = _percentDuration;
             }
@@ -278,7 +278,7 @@ namespace AnalysisPrograms
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<Plot>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
+        public static Tuple<DataTable, TimeSpan, BaseSonogram, double[,], List<Plot>, List<SpectralTrack>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
@@ -373,9 +373,17 @@ namespace AnalysisPrograms
             indices.midFreqCover = tuple_Cover.Item2;
             indices.hiFreqCover  = tuple_Cover.Item3;
 
+            // ix: Get Spectral peak tracks
+            double framesPerSecond = 1 / frameDuration.TotalSeconds;
+            double threshold = 0.005;
+            TrackInfo trackInfo = GetTrackIndices(midBandSpectrogram, framesPerSecond, binWidth, lowFreqBound, threshold);
+            indices.trackDuration_total = trackInfo.totalTrackDuration;
+            indices.trackDuration_percent = trackInfo.percentDuration;
+            indices.trackCount = trackInfo.tracks.Count;
+            indices.tracksPerSec = trackInfo.tracks.Count / wavDuration.TotalSeconds;
 
             //######################################################################
-            // ix: calculate RAIN and CICADA indices.
+            // x: calculate RAIN and CICADA indices.
             indices.rainScore   = 0.0;
             indices.cicadaScore = 0.0;
             DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, spectrogramData, lowFreqBound, midFreqBound, binWidth);
@@ -388,7 +396,7 @@ namespace AnalysisPrograms
 
 
             // #V#####################################################################################################################################################
-            // ix:  set up other info to return
+            // xi:  set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = null;
             var scores = new List<Plot>();
@@ -419,15 +427,6 @@ namespace AnalysisPrograms
             }
 
 
-            // x: Get Spectral peak tracks
-            double framesPerSecond = 1 / frameDuration.TotalSeconds;
-            double threshold = 0.05;
-            TrackInfo trackInfo = GetTrackIndices(midBandSpectrogram, framesPerSecond, binWidth, threshold);
-            indices.trackDuration_total = trackInfo.totalTrackDuration;
-            indices.trackDuration_percent = trackInfo.percentDuration;
-            indices.trackCount   = trackInfo.trackCount;
-            indices.tracksPerSec = trackInfo.trackCount / wavDuration.TotalSeconds;
-
 
             //#V#####################################################################################################################################################
             //return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
@@ -437,11 +436,11 @@ namespace AnalysisPrograms
                 indices.avClusterDuration = TimeSpan.Zero; //av cluster durtaion in milliseconds
                 indices.triGramUniqueCount = 0;
                 indices.triGramRepeatRate  = 0.0;
-                return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores);
+                return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores, trackInfo.tracks);
             }
             //#V#####################################################################################################################################################
 
-            // xi: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            // xii: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             double binaryThreshold = 0.07; // for deriving binary spectrogram
             ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
             indices.clusterCount = clusterInfo.clusterCount; 
@@ -455,7 +454,7 @@ namespace AnalysisPrograms
 
             //wavDuration
 
-            // xii: STORE CLUSTERING IMAGES
+            // xiii: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
             {
                 //bool[] selectedFrames = tuple_Clustering.Item3;
@@ -471,7 +470,7 @@ namespace AnalysisPrograms
                 //MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
             }
 
-            return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores);
+            return Tuple.Create(Indices2DataTable(indices), wavDuration, sonogram, hits, scores, trackInfo.tracks);
         } //Analysis()
 
 
@@ -855,11 +854,13 @@ namespace AnalysisPrograms
         }
 
 
-        public static TrackInfo GetTrackIndices(double[,] spectrogram, double framesPerSecond, double binWidth, double threshold)
+        public static TrackInfo GetTrackIndices(double[,] spectrogram, double framesPerSecond, double binWidth, int herzOffset, double threshold)
         {
-            var minDuration = TimeSpan.FromMilliseconds(100);
-            var permittedGap = TimeSpan.FromMilliseconds(50);
-            var tracks = SpectralTrack.GetSpectralPeakTracks(spectrogram, framesPerSecond, binWidth, threshold, minDuration, permittedGap);
+            var minDuration = TimeSpan.FromMilliseconds(150);
+            var permittedGap = TimeSpan.FromMilliseconds(100);
+            int maxFreq = 10000;
+
+            var tracks = SpectralTrack.GetSpectralPeakTracks(spectrogram, framesPerSecond, binWidth, herzOffset, threshold, minDuration, permittedGap, maxFreq);
             var duration = TimeSpan.Zero;
             int trackLength = 0;
             foreach(SpectralTrack track in tracks)
@@ -868,7 +869,7 @@ namespace AnalysisPrograms
                 trackLength += track.Length;
             }
             int percentDuration = (int)Math.Round(100 * trackLength / (double)spectrogram.GetLength(0));
-            return new TrackInfo(tracks.Count, duration, percentDuration);
+            return new TrackInfo(tracks, duration, percentDuration);
         }
 
 
