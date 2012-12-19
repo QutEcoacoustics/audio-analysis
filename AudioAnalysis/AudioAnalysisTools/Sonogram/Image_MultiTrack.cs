@@ -18,6 +18,7 @@ namespace AudioAnalysisTools
         List<Image_Track> tracks = new List<Image_Track>();
         public IEnumerable<Image_Track> Tracks { get { return tracks; } }
         public List<AcousticEvent> eventList { get; set; }
+        public List<SpectralTrack> spectralTracks { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         double[,] SuperimposedRedTransparency { get; set; }
         double[,] SuperimposedRainbowTransparency { get; set; }
@@ -76,6 +77,13 @@ namespace AudioAnalysisTools
             this.nyquistFreq = nyquist;
         }
 
+        public void AddTracks(List<SpectralTrack> _tracks, double _framesPerSecond, double _freqBinWidth)
+        {
+            this.freqBinWidth = _freqBinWidth;
+            this.framesPerSecond = _framesPerSecond;
+            this.spectralTracks = _tracks;
+        }
+
         /// <summary>
         /// WARNING: This method calls Image_MultiTrack.GetImage().
         /// In some circumstances GetImage() cannot manage images with an area larger than 10,385,000 pixels.
@@ -119,6 +127,12 @@ namespace AudioAnalysisTools
                 {
                     foreach (AcousticEvent e in this.eventList)
                         e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                }
+
+                if (this.spectralTracks != null) //draw spectral tracks 
+                {
+                    foreach (SpectralTrack t in this.spectralTracks)
+                        t.DrawTrack(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                 }
 
                 if (this.FreqHits != null) DrawFreqHits(g);

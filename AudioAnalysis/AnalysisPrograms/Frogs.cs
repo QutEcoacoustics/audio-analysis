@@ -350,7 +350,9 @@ namespace AnalysisPrograms
             var tuple = SpectralTrack.GetSpectralMaxima(sonogram.DecibelsPerFrame, sonogram.Data, dBThreshold, nhLimit);
             var maxFreqArray = tuple.Item1; //array (one element per frame) indicating which freq bin has max amplitude.
             var hitsMatrix   = tuple.Item2;
-            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP);
+            int herzOffset = 0;
+            int maxFreq = 6000;
+            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth, herzOffset, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP, maxFreq);
 
             double severity = 0.5;
             double dynamicRange = 60; // deciBels above background noise. BG noise has already been removed from each bin.
@@ -371,7 +373,8 @@ namespace AnalysisPrograms
             } // foreach track
 
             int rowCount = sonogram.Data.GetLength(0);
-            int topBin = SpectralTrack.UpperTrackBound(freqBinWidth);
+            int MAX_FREQ_BOUND = 6000;
+            int topBin = (int)Math.Round(MAX_FREQ_BOUND / freqBinWidth);
             var plots = CreateScorePlots(tracks, rowCount, topBin);
 
             //iv: CONVERT TRACKS TO ACOUSTIC EVENTS
