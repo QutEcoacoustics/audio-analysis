@@ -10,6 +10,8 @@
     using System.Text;
     using System.Threading.Tasks;
 
+    using log4net;
+
     /// <summary>
     /// Prepares, runs and completes analyses.
     /// </summary>
@@ -28,6 +30,8 @@
     /// </remarks>
     public class AnalysisCoordinator
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class.
         /// </summary>
@@ -106,6 +110,7 @@
 
                 Parallel.ForEach(
                     analysisSegments,
+                    new ParallelOptions() { MaxDegreeOfParallelism = 64 },
                     (item, state, index) =>
                     {
                         var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
@@ -122,10 +127,11 @@
                 {
                     var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
-                    if (count % 100 == 0) Console.Write("#");
+                    LoggedConsole.Write(".");
+                    if (count % 100 == 0) LoggedConsole.Write("#");
                     else
-                    if (count % 10  == 0) Console.Write(":");
-                    else Console.Write(".");
+                    if (count % 10  == 0) LoggedConsole.Write(":");
+                    else LoggedConsole.Write(".");
                     count++;
                 }
 
@@ -190,6 +196,8 @@
                 }
             }
 
+            System.Threading.Thread.Sleep(2000);
+
             //##### RUN the ANALYSIS ################################################################
             var result = analyser.Analyse(settings);
             //#######################################################################################
@@ -211,19 +219,22 @@
                 catch (Exception ex)
                 {
                     // this error is not fatal, but it does mean we'll be leaving a folder behind.
+                    Log.Error("Prepare file delete directory failed", ex);
                 }
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
             {
                 // delete the prepared audio file segment
-                try
-                {
-                    File.Delete(settings.AudioFile.FullName);
-                }
-                catch (Exception ex)
-                {
-                    // this error is not fatal, but it does mean we'll be leaving an audio file behind.
-                }
+                    try
+                    {
+                        File.Delete(settings.AudioFile.FullName);
+                    }
+                    catch (Exception ex)
+                    {
+                        // this error is not fatal, but it does mean we'll be leaving an audio file behind.
+
+                        Log.Error("Prepare file delete file failed", ex);
+                    }
             }
 
             return result;
