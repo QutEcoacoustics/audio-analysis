@@ -146,7 +146,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <COMReference Include="EnvDTE" >
+    <COMReference Include="EnvDTE">
       <Guid>{80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2}</Guid>
       <VersionMajor>8</VersionMajor>
       <VersionMinor>0</VersionMinor>

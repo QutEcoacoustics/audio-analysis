@@ -113,7 +113,11 @@
                     new ParallelOptions() { MaxDegreeOfParallelism = 64 },
                     (item, state, index) =>
                     {
-                        var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
+                        Log.Debug("Start Parallel: Current Item: offset start: "+item.SegmentStartOffset+" offsetend: "+item.SegmentEndOffset+" file: "+item.OriginalFile);
+                        // can't use settings as each iteration modifies settings. This causes hard to track down bugs
+                        // instead create a copy of the settings, and use that
+                        var settingsForThisItem = settings.ShallowClone();
+                        var result = this.PrepareFileAndRunAnalysis(item, analysis, settingsForThisItem);
                         results[index] = result;
                     });
 
@@ -125,6 +129,7 @@
                 int count = 0;
                 foreach (var item in analysisSegments)
                 {
+                    // this can use settings, as it is modified each iteration, but this is run synchronously.
                     var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
                     LoggedConsole.Write(".");
@@ -160,15 +165,28 @@
             Contract.Requires(fileSegment != null,    "File Segments must not be null.");
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
+            Log.Debug("Starting Running Analyse for " + analyser.Identifier + " instanceId: " + settings.MyInstanceId);
+
             var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
             var end   = fileSegment.SegmentEndOffset.HasValue   ? fileSegment.SegmentEndOffset.Value   : fileSegment.OriginalFileDuration;
 
             // create directory for analysis run
             settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analyser, settings);
 
+            // create temp directory 
+            settings.AnalysisTempRunDirectory = this.PrepareWorkingDirectory(analyser, settings, false);
+
+             var tempFileDirectory = settings.AnalysisTempRunDirectory;
+
+#if DEBUG
+            tempFileDirectory = settings.AnalysisRunDirectory;
+#endif
+
+            Log.Warn("Using output directory: " + tempFileDirectory);
+
             // create the file for the analysis
             var preparedFile = this.SourcePreparer.PrepareFile(
-                settings.AnalysisRunDirectory,
+                tempFileDirectory,
                 fileSegment.OriginalFile,
                 settings.SegmentMediaType,
                 start,
@@ -196,7 +214,9 @@
                 }
             }
 
-            System.Threading.Thread.Sleep(2000);
+            //System.Threading.Thread.Sleep(2000);
+
+            Log.Debug("Running Analyse for " + analyser.Identifier + " path: " + settings.AudioFile.FullName+" instanceId: " + settings.MyInstanceId);
 
             //##### RUN the ANALYSIS ################################################################
             var result = analyser.Analyse(settings);
@@ -214,12 +234,13 @@
                 // delete the directory created for this run
                 try
                 {
+                    Log.Debug("Attempting to delete directory " + settings.AnalysisRunDirectory.FullName + " instanceId: " + settings.MyInstanceId);
                     Directory.Delete(settings.AnalysisRunDirectory.FullName, true);
                 }
                 catch (Exception ex)
                 {
                     // this error is not fatal, but it does mean we'll be leaving a folder behind.
-                    Log.Error("Prepare file delete directory failed", ex);
+                    Log.Error("Prepare file delete directory failed. instanceId: " + settings.MyInstanceId, ex);
                 }
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
@@ -227,13 +248,14 @@
                 // delete the prepared audio file segment
                     try
                     {
+                        Log.Debug("Attempting to delete file " + settings.AudioFile.FullName + " instanceId: " + settings.MyInstanceId);
                         File.Delete(settings.AudioFile.FullName);
                     }
                     catch (Exception ex)
                     {
                         // this error is not fatal, but it does mean we'll be leaving an audio file behind.
 
-                        Log.Error("Prepare file delete file failed", ex);
+                        Log.Error("Prepare file delete file failed. instanceId: " + settings.MyInstanceId, ex);
                     }
             }
 
@@ -252,16 +274,28 @@
         /// <returns>
         /// Updated analysisSettings with working directory and configuration file paths.
         /// </returns>
-        private DirectoryInfo PrepareWorkingDirectory(IAnalyser analysis, AnalysisSettings settings)
+        private DirectoryInfo PrepareWorkingDirectory(IAnalyser analysis, AnalysisSettings settings, bool forResults = true)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
             Contract.Ensures(Contract.Result<DirectoryInfo>() != null, "Directory was null.");
             Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory did not exist.");
 
-            var thisAnalysisWorkingDirectory = this.SubFoldersUnique
-                                                   ? this.CreateUniqueRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier)
-                                                   : this.CreateNamedRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier);
+            DirectoryInfo thisAnalysisWorkingDirectory;
+
+            if (forResults)
+            {
+
+                thisAnalysisWorkingDirectory = this.SubFoldersUnique
+                                                       ? this.CreateUniqueRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier)
+                                                       : this.CreateNamedRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier);
+            }
+            else
+            {
+                thisAnalysisWorkingDirectory = this.SubFoldersUnique
+                                                       ? this.CreateUniqueRunDirectory(settings.AnalysisTempBaseDirectory, analysis.Identifier)
+                                                       : this.CreateNamedRunDirectory(settings.AnalysisTempBaseDirectory, analysis.Identifier);
+            }
 
             return thisAnalysisWorkingDirectory;
         }

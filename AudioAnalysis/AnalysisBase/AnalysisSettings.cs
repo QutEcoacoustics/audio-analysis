@@ -126,6 +126,31 @@
             }
         }
 
+        static int instanceCounter = 0;
+        int myInstanceId;
+
+        public AnalysisSettings()
+        {
+            instanceCounter++;
+            myInstanceId = instanceCounter;
+        }
+
+        public int MyInstanceId { get { return myInstanceId; } }
+
+        /// <summary>
+        /// Gets or sets the directory that is the base of the folder structure that analyses can use.
+        /// Anything put here will be deleted when the analysis is complete.
+        /// Analysis implementations must not set this.
+        /// </summary>
+        public DirectoryInfo AnalysisTempBaseDirectory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the directory for a single analysis run.
+        /// Anything put here will be deleted when the analysis is complete.
+        /// Analysis implementations must not set this.
+        /// </summary>
+        public DirectoryInfo AnalysisTempRunDirectory { get; set; }
+
         /// <summary>
         /// Gets or sets the directory that is the base of the folder structure that analyses can use.
         /// Analysis implementations must not set this.
@@ -153,7 +178,7 @@
         /// Gets or sets the events file for the analysis.
         /// </summary>
         public FileInfo EventsFile { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the indices file for the analysis.
         /// </summary>
@@ -228,6 +253,7 @@
             this.ConfigFile = fiConfig;
             this.ConfigDict = dict;
             this.AnalysisBaseDirectory = diOutputDir;
+            this.AnalysisTempBaseDirectory = new DirectoryInfo(Path.GetTempPath());
 
             //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
 
@@ -259,5 +285,45 @@
             }
         } //SetUserConfiguration()
 
+        /// <summary>
+        /// Creates a clone of this AnalysisSettings object.
+        /// 
+        /// </summary>
+        /// <returns>A clone of this AnalysisSettings object.</returns>
+        /// <remarks>
+        /// see: http://msdn.microsoft.com/en-us/library/system.icloneable.aspx
+        /// see: http://msdn.microsoft.com/en-us/library/system.object.memberwiseclone.aspx
+        /// </remarks>
+        public AnalysisSettings ShallowClone()
+        {
+            // all these must copy the VALUE not the REFERENCE!!!!
+            // TODO: If lots more properties are added, this needs to be changed.
+            var newSettings = new AnalysisSettings();
+
+            newSettings.AnalysisBaseDirectory = this.AnalysisBaseDirectory != null ? new DirectoryInfo(this.AnalysisBaseDirectory.FullName) : null;
+            newSettings.AnalysisRunDirectory = this.AnalysisRunDirectory != null ? new DirectoryInfo(this.AnalysisRunDirectory.FullName) : null;
+
+            newSettings.AnalysisTempBaseDirectory = this.AnalysisTempBaseDirectory != null ? new DirectoryInfo(this.AnalysisTempBaseDirectory.FullName) : null;
+            newSettings.AnalysisTempRunDirectory = this.AnalysisTempRunDirectory != null ? new DirectoryInfo(this.AnalysisTempRunDirectory.FullName) : null;
+
+            newSettings.SourceFile = this.SourceFile != null ? new FileInfo(this.SourceFile.FullName) : null;
+            newSettings.AudioFile = this.AudioFile != null ? new FileInfo(this.AudioFile.FullName) : null;
+            newSettings.EventsFile = this.EventsFile != null ? new FileInfo(this.EventsFile.FullName) : null;
+            newSettings.IndicesFile = this.IndicesFile != null ? new FileInfo(this.IndicesFile.FullName) : null;
+            newSettings.ImageFile = this.ImageFile != null ? new FileInfo(this.ImageFile.FullName) : null;
+
+            newSettings.SegmentOverlapDuration = TimeSpan.FromTicks(this.SegmentOverlapDuration.Ticks);
+            newSettings.SegmentMinDuration = SegmentMinDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMinDuration.Value.Ticks) : new TimeSpan?();
+            newSettings.SegmentMaxDuration = SegmentMaxDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMaxDuration.Value.Ticks) : new TimeSpan?();
+
+            newSettings.SegmentTargetSampleRate = this.SegmentTargetSampleRate;
+            newSettings.SampleRateOfOriginalAudioFile = this.SampleRateOfOriginalAudioFile.HasValue ? this.SampleRateOfOriginalAudioFile.Value : new int?();
+            newSettings.SegmentMediaType = this.SegmentMediaType;
+
+            newSettings.ConfigFile = new FileInfo(this.ConfigFile.FullName);
+            newSettings.ConfigDict = new Dictionary<string, string>(this.ConfigDict);
+
+            return newSettings;
+        }
     }
 }
