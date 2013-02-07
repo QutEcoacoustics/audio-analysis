@@ -80,6 +80,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AudioBrowserTools.cs" />
+    <Compile Include="CsvFileFilter.cs" />
     <Compile Include="CsvFileItem.cs" />
     <Compile Include="PluginHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -158,6 +159,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="LINQtoCSV">
+      <HintPath>..\packages\LINQtoCSV.1.2.0.0\lib\LINQtoCSV.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\Extra Assemblies\log4net\log4net.dll</HintPath>
     </Reference>

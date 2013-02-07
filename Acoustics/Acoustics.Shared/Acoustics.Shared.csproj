@@ -114,6 +114,7 @@
     <Compile Include="Segmenter.cs" />
     <Compile Include="SegmentPolicy.cs" />
     <Compile Include="SortableBindingList.cs" />
+    <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />
     <Compile Include="TempFileHelper.cs" />
     <Compile Include="Validation.cs" />

@@ -1,0 +1,30 @@
+
+d:
+cd "D:\@Projects\LINQtoCSV\NuGet"
+copy "Standard Nuspec\LINQtoCSV.dll.nuspec" .
+
+rem >>>>> Copy the CombineAndMinify.dll and the dlls in the dependencies folder to the lib folder in the current (Nuget) directory
+rem >>>>> Update CombineAndMinify.dll.nuspec in current directory, to give it the correct version
+
+rem "C:\Program Files (x86)\NuGet\NuGet.exe" spec lib\LINQtoCSV.dll
+rem move lib\*.nuspec .
+
+"C:\Program Files (x86)\NuGet\NuGet.exe"  pack LINQtoCSV.dll.nuspec
+
+========================================
+
+Hello,
+
+My name is Matt Perdeck. I am the author of the LinqToCsv library. I (belatedly) decided to put the library on NuGet, but then I saw that you had already done so! I'm flattered you found it that useful :-)
+
+The issue is that I've decided to do some updates to the library over the coming weeks (just completed the first one), and I want to turn those updates into NuGet packages and put them on NuGet. This would also affect the description of the library on NuGet.
+
+To make this all happen, would you like to share the login details of the NuGet account you're using for the LinqToCsv entry, so I can do the updates? Alternatively, would you be prepared to make the updates on my behalf?
+
+If you want proof of my identity, I can provide that if you want.
+
+Thanks in response for your reply,
+
+Matt Perdeck
+
+

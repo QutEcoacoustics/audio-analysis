@@ -16,10 +16,13 @@
     using Acoustics.Tools.Audio;
 
     using AnalysisPrograms;
-   // using AnalysisPrograms.Processing;
+    // using AnalysisPrograms.Processing;
     using AnalysisRunner;
 
     using AudioAnalysisTools;
+
+    using LINQtoCSV;
+
     using log4net;
 
     using TowseyLib;
@@ -298,7 +301,7 @@
 
                     var settings = analyser.DefaultSettings;
                     var configuration = new ConfigDictionary(fiConfig.FullName);
-                    settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir, 
+                    settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
                                                   AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
 
                     //################# PROCESS THE RECORDING #####################################################################################
@@ -525,7 +528,7 @@
             {
                 string text = str;  // the headers have been tampered with!! but assume not first 5 chars
                 if (text.Length > 6) text = str.Substring(0, 5);
-                abbrevList.Add(text); 
+                abbrevList.Add(text);
             }
             for (int i = 0; i < originalHeaders.Length; i++)
             {
@@ -665,7 +668,7 @@
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
             LoggedConsole.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
- 
+
             //store info
             this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
             this.browserSettings.fiSegmentRecording = fiOutputSegment;
@@ -694,7 +697,7 @@
                     int remainder = title.Length - 22;
                     title = title.Substring(0, 21) + "\n   " + title.Substring(22, remainder);
                 }
-                
+
                 this.labelSonogramFileName.Text = title;
 
                 //attempt to deal with variable height of spectrogram
@@ -727,7 +730,7 @@
             {
                 LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
                 LoggedConsole.WriteLine("   Check Audacity path in the app.config.");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);     
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
             }
 
         }
@@ -1354,8 +1357,8 @@
             SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());
             SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
             SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
-            SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH,       "1024"); // do not want long spectrogram
-            
+            SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, "1024"); // do not want long spectrogram
+
             //config.Add(AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
             config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisName;
             var fiTempConfig = new FileInfo(Path.Combine(opDir, "temp.cfg"));
@@ -1368,10 +1371,10 @@
             return image;
         } //GetSonogram()
 
-        private void SetConfigValue(Dictionary<string,string> config, string key, string value)
+        private void SetConfigValue(Dictionary<string, string> config, string key, string value)
         {
-            if (! config.ContainsKey(key)) config.Add(key, value);
-            else                           config[key] = value;
+            if (!config.ContainsKey(key)) config.Add(key, value);
+            else config[key] = value;
         }
 
         private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -1393,6 +1396,193 @@
                 e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
                 e.FormattingApplied = true;
             }
+
+        }
+
+        private const int FilterLineNumControls = 7;
+        private const int FilterLineOffsetTop = 29;
+
+        private void btnAddSearchEntry_Click(object sender, EventArgs e)
+        {
+            // there are 7 controls to copy, and one just gets moved down
+
+
+            var controlCount = this.panelSearchEntries.Controls.Count;
+            var currentCount = controlCount / FilterLineNumControls;
+            var amountToAddToTop = currentCount * FilterLineOffsetTop;
+
+            // copy the search field line and set the location and event handlers
+            TextBox tfSearchFieldMaxNew = new TextBox();
+            this.panelSearchEntries.Controls.Add(tfSearchFieldMaxNew);
+
+            TextBox tfSearchFieldMinNew = new TextBox();
+            this.panelSearchEntries.Controls.Add(tfSearchFieldMinNew);
+
+            Label lblSearchFieldMaxNew = new Label();
+            this.panelSearchEntries.Controls.Add(lblSearchFieldMaxNew);
+
+            Label lblSearchFieldNameNew = new Label();
+            this.panelSearchEntries.Controls.Add(lblSearchFieldNameNew);
+
+            Label lblSearchFieldMinNew = new Label();
+            this.panelSearchEntries.Controls.Add(lblSearchFieldMinNew);
+
+            TextBox tfSearchFieldNameNew = new TextBox();
+            this.panelSearchEntries.Controls.Add(tfSearchFieldNameNew);
+
+            Button btnSearchRemoveFilterLineNew = new Button();
+            this.panelSearchEntries.Controls.Add(btnSearchRemoveFilterLineNew);
+
+
+            // 
+            // tfSearchFieldName
+            // 
+            tfSearchFieldNameNew.Location = new System.Drawing.Point(75, 12 + amountToAddToTop);
+            tfSearchFieldNameNew.Name = "tfSearchFieldName" + amountToAddToTop;
+            tfSearchFieldNameNew.Size = new System.Drawing.Size(212, 20);
+            tfSearchFieldNameNew.TabIndex = 16;
+            // 
+            // lblSearchFieldMin
+            // 
+            lblSearchFieldMinNew.AutoSize = true;
+            lblSearchFieldMinNew.Location = new System.Drawing.Point(293, 15 + amountToAddToTop);
+            lblSearchFieldMinNew.Name = "lblSearchFieldMin" + amountToAddToTop;
+            lblSearchFieldMinNew.Size = new System.Drawing.Size(51, 13);
+            lblSearchFieldMinNew.TabIndex = 17;
+            lblSearchFieldMinNew.Text = "Minimum:";
+            // 
+            // lblSearchFieldName
+            // 
+            lblSearchFieldNameNew.AutoSize = true;
+            lblSearchFieldNameNew.Location = new System.Drawing.Point(6, 14 + amountToAddToTop);
+            lblSearchFieldNameNew.Name = "lblSearchFieldName" + amountToAddToTop;
+            lblSearchFieldNameNew.Size = new System.Drawing.Size(63, 13);
+            lblSearchFieldNameNew.TabIndex = 18;
+            lblSearchFieldNameNew.Text = "Field Name:";
+            // 
+            // lblSearchFieldMax
+            // 
+            lblSearchFieldMaxNew.AutoSize = true;
+            lblSearchFieldMaxNew.Location = new System.Drawing.Point(444, 15 + amountToAddToTop);
+            lblSearchFieldMaxNew.Name = "lblSearchFieldMax" + amountToAddToTop;
+            lblSearchFieldMaxNew.Size = new System.Drawing.Size(54, 13);
+            lblSearchFieldMaxNew.TabIndex = 19;
+            lblSearchFieldMaxNew.Text = "Maximum:";
+            // 
+            // tfSearchFieldMin
+            // 
+            tfSearchFieldMinNew.Location = new System.Drawing.Point(350, 11 + amountToAddToTop);
+            tfSearchFieldMinNew.MaxLength = 10;
+            tfSearchFieldMinNew.Name = "tfSearchFieldMin" + amountToAddToTop;
+            tfSearchFieldMinNew.Size = new System.Drawing.Size(88, 20);
+            tfSearchFieldMinNew.TabIndex = 20;
+            // 
+            // tfSearchFieldMax
+            // 
+            tfSearchFieldMaxNew.Location = new System.Drawing.Point(504, 11 + amountToAddToTop);
+            tfSearchFieldMaxNew.MaxLength = 10;
+            tfSearchFieldMaxNew.Name = "tfSearchFieldMax" + amountToAddToTop;
+            tfSearchFieldMaxNew.Size = new System.Drawing.Size(88, 20);
+            tfSearchFieldMaxNew.TabIndex = 21;
+            // 
+            // btnSearchRemoveFilterLine
+            // 
+            btnSearchRemoveFilterLineNew.Location = new System.Drawing.Point(598, 10 + amountToAddToTop);
+            btnSearchRemoveFilterLineNew.Name = "btnSearchRemoveFilterLine" + amountToAddToTop;
+            btnSearchRemoveFilterLineNew.Size = new System.Drawing.Size(118, 23);
+            btnSearchRemoveFilterLineNew.TabIndex = 22;
+            btnSearchRemoveFilterLineNew.Text = "Remove This Filter";
+            btnSearchRemoveFilterLineNew.UseVisualStyleBackColor = true;
+            btnSearchRemoveFilterLineNew.Click += this.btnSearchRemoveFilterLine_Click;
+
+            // move the add button down
+            // add 29 top top, left stays the same
+
+        }
+
+        private void btnSearchRemoveFilterLine_Click(object sender, EventArgs e)
+        {
+            var btn = sender as Button;
+
+            if (btn != null)
+            {
+                var controlNameList = new List<string>
+                    {
+                        "btnSearchRemoveFilterLine",
+                        "tfSearchFieldName",
+                        "lblSearchFieldMin",
+                        "lblSearchFieldName",
+                        "lblSearchFieldMax",
+                        "tfSearchFieldMin",
+                        "tfSearchFieldMax"
+                    };
+
+
+                var suffix = int.Parse(btn.Name.Replace("btnSearchRemoveFilterLine", string.Empty));
+
+                FindAndRemoveControlFromTabPageSearchCsv(controlNameList, suffix);
+            }
+        }
+
+        private void FindAndRemoveControlFromTabPageSearchCsv(IEnumerable<string> controlNameList, int suffix)
+        {
+            foreach (var item in controlNameList)
+            {
+                // remove the control
+                var controls = this.panelSearchEntries.Controls.Find(item + suffix, false);
+                if (controls.Count() == 1)
+                {
+                    this.panelSearchEntries.Controls.Remove(controls.First());
+                }
+
+                // move all other controls of the same name (and high postfix) up by one place
+                var changingPostfix = suffix;
+                while ((controls = this.panelSearchEntries.Controls.Find(item + (changingPostfix + FilterLineOffsetTop), false)).Any())
+                {
+                    changingPostfix += FilterLineOffsetTop;
+                    controls[0].Location = new Point(controls[0].Location.X, controls[0].Location.Y - FilterLineOffsetTop);
+                }
+            }
+        }
+
+        private void btnFindInCSV_Click(object sender, EventArgs e)
+        {
+            var filter = new CsvFileFilter();
+
+            var topDir = new DirectoryInfo(textBoxCSVSourceFolderPath.Text);
+
+            var allControls = this.panelSearchEntries.Controls.Cast<Control>();
+            var textBoxes = allControls.Select(i => i as TextBox).Where(i => i != null);
+            var suffixes =
+                textBoxes.Select(
+                    i =>
+                    i.Name.Replace("tfSearchFieldName", string.Empty)
+                     .Replace("tfSearchFieldMin", string.Empty)
+                     .Replace("tfSearchFieldMax", string.Empty)).Distinct();
+
+            var filters =
+                suffixes.Select(
+                    i =>
+                    new CsvFileFilter.CsvFilter
+                        {
+                            FieldName = textBoxes.First(tf => tf.Name == "tfSearchFieldName" + i).Text,
+                            Minimum = double.Parse(textBoxes.First(tf => tf.Name == "tfSearchFieldMin" + i).Text),
+                            Maximum = double.Parse(textBoxes.First(tf => tf.Name == "tfSearchFieldMax" + i).Text)
+                        })
+                        .Where(i => !string.IsNullOrWhiteSpace(i.FieldName));
+
+
+            var results = filter.Run(topDir, filters);
+
+            foreach (var result in results)
+            {
+                LoggedConsole.WriteLine("Processed " + result.ProcessedFile.FullName);
+                LoggedConsole.WriteLine("Headers: " + string.Join(", ", result.Headers));
+                LoggedConsole.WriteLine("Using filters: " + string.Join(", ", result.Filters.Select(f => f.FieldName + " " + f.Minimum + "-" + f.Maximum)));
+                LoggedConsole.WriteLine("File Stats: " + string.Join(", ", result.ColumnStats.Select(i => i.Key + ": " + i.Value.ToString())));
+                LoggedConsole.WriteLine(result.Rows.Count + " Rows Matched Filter");
+            }
+
 
         }
 
