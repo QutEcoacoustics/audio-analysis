@@ -31,9 +31,7 @@
             }
             catch (DirectoryNotFoundException ex)
             {
-                MessageBox.Show("WARNING: " + ex.ToString());
-                MessageBox.Show("  Cannot find the app.config file.");
-                MessageBox.Show("  Cannot proceed!");
+                MessageBox.Show("Direct Not Found Error: " + ex.ToString());
 
                 if (Debugger.IsAttached)
                 {
@@ -43,6 +41,7 @@
 
             try
             {
+                // specify false rather than true so GetDir doesn't throw exceptions
                 this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
                 this.diSourceDir = this.DefaultSourceDir;
             }
