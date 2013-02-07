@@ -253,7 +253,7 @@
             this.ConfigFile = fiConfig;
             this.ConfigDict = dict;
             this.AnalysisBaseDirectory = diOutputDir;
-            this.AnalysisTempBaseDirectory = new DirectoryInfo(Path.GetTempPath());
+            this.AnalysisTempBaseDirectory = new DirectoryInfo("F:\\"); //new DirectoryInfo(Path.GetTempPath());
 
             //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
 
