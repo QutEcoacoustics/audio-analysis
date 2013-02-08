@@ -1579,8 +1579,10 @@
                 LoggedConsole.WriteLine("Processed " + result.ProcessedFile.FullName);
                 LoggedConsole.WriteLine("Headers: " + string.Join(", ", result.Headers));
                 LoggedConsole.WriteLine("Using filters: " + string.Join(", ", result.Filters.Select(f => f.FieldName + " " + f.Minimum + "-" + f.Maximum)));
-                LoggedConsole.WriteLine("File Stats: " + string.Join(", ", result.ColumnStats.Select(i => i.Key + ": " + i.Value.ToString())));
+                //LoggedConsole.WriteLine("File Stats: " + string.Join(", ", result.ColumnStats.Select(i => i.Key + ": " + i.Value.ToString())));
                 LoggedConsole.WriteLine(result.Rows.Count + " Rows Matched Filter");
+
+                //filter.WriteCSV(new FileInfo(result.ProcessedFile.FullName + ".matched.csv"), result.Headers, result.Rows);
             }
 
 

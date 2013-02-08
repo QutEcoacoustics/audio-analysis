@@ -13,6 +13,29 @@ namespace AudioBrowser
 
     public class CsvFileFilter
     {
+        public class CsvFilter
+        {
+            public string FieldName { get; set; }
+            public double Maximum { get; set; }
+            public double Minimum { get; set; }
+        }
+
+        public class FilteredCsv
+        {
+            public FilteredCsv()
+            {
+                Rows = new List<List<double>>();
+                Headers = new List<string>();
+                ColumnStats = new Dictionary<string, StatDescriptiveResult>();
+            }
+
+            public List<List<double>> Rows { get; private set; }
+            public List<string> Headers { get; private set; }
+            public Dictionary<string, StatDescriptiveResult> ColumnStats { get; private set; }
+            public FileInfo ProcessedFile { get; set; }
+            public IEnumerable<CsvFilter> Filters { get; set; }
+        }
+
         public IEnumerable<FilteredCsv> Run(DirectoryInfo topDir, IEnumerable<CsvFilter> filters)
         {
             var files = GetFiles(topDir);
@@ -27,61 +50,6 @@ namespace AudioBrowser
             var files = Directory.EnumerateFiles(topDir.FullName, "*.csv", SearchOption.AllDirectories);
 
             return files.Select(i => new FileInfo(i));
-        }
-
-        private class CsvFileFilterDataRow : List<DataRowItem>, IDataRow
-        {
-        }
-
-        private IEnumerable<CsvFileFilterDataRow> GetDataRows(FileInfo file)
-        {
-            CsvFileDescription inputFileDescription = new CsvFileDescription
-            {
-                SeparatorChar = ',',
-                FirstLineHasColumnNames = true // skips first line
-            };
-
-            var cc = new CsvContext();
-
-            var lines = cc.Read<CsvFileFilterDataRow>(file.FullName, inputFileDescription);
-            return lines;
-        }
-
-        private CsvFileFilterDataRow GetHeaders(FileInfo file)
-        {
-            CsvFileDescription inputFileDescription = new CsvFileDescription
-            {
-                SeparatorChar = ',',
-                FirstLineHasColumnNames = false // otherwise can't get headers
-            };
-
-            var cc = new CsvContext();
-
-            var lines = cc.Read<CsvFileFilterDataRow>(file.FullName, inputFileDescription).First();
-            return lines;
-        }
-
-        public class CsvFilter
-        {
-            public string FieldName { get; set; }
-            public double Maximum { get; set; }
-            public double Minimum { get; set; }
-        }
-
-        public class FilteredCsv
-        {
-            public FilteredCsv()
-            {
-                Rows = new List<double>();
-                Headers = new List<string>();
-                ColumnStats = new Dictionary<string, StatDescriptiveResult>();
-            }
-
-            public List<double> Rows { get; private set; }
-            public List<string> Headers { get; private set; }
-            public Dictionary<string, StatDescriptiveResult> ColumnStats { get; private set; }
-            public FileInfo ProcessedFile { get; set; }
-            public IEnumerable<CsvFilter> Filters { get; set; }
         }
 
         public FilteredCsv Filter(FileInfo file, IEnumerable<CsvFilter> filters)
@@ -132,9 +100,9 @@ namespace AudioBrowser
                         }
                     }
 
-                    if (matchCount > 1 && rejectCount == 0)
+                    if (matchCount >= 1 && rejectCount == 0)
                     {
-                        filterResult.Rows.AddRange(row.Select(i => double.Parse(i.Value)));
+                        filterResult.Rows.Add(row.Select(i => double.Parse(i.Value)).ToList());
                     }
                 }
             }
@@ -142,14 +110,65 @@ namespace AudioBrowser
             // calculate stats for columns
             foreach (var column in intermediateColumnStats)
             {
-                var stats = new StatDescriptive(column.Value.ToArray());
-                stats.Analyze();
+                //var stats = new StatDescriptive(column.Value.ToArray());
+                //stats.Analyze();
 
-                filterResult.ColumnStats.Add(column.Key, stats.Result);
+                //filterResult.ColumnStats.Add(column.Key, stats.Result);
             }
 
 
             return filterResult;
+        }
+
+        public void WriteCSV(FileInfo file, IEnumerable<string> headers, IEnumerable<IEnumerable<double>> lines)
+        {
+            CsvFileDescription inputFileDescription = new CsvFileDescription
+            {
+                SeparatorChar = ',',
+                FirstLineHasColumnNames = true
+            };
+
+            var cc = new CsvContext();
+
+            var toWrite = new List<List<string>>();
+            toWrite.Add(headers.ToList());
+
+            var linesString = lines.Select(i => i.Select(j => j.ToString()).ToList()).ToList();
+            toWrite.AddRange(linesString);
+
+            cc.Write<IEnumerable<string>>(toWrite, file.FullName);
+        }
+
+        private class CsvFileFilterDataRow : List<DataRowItem>, IDataRow
+        {
+        }
+
+        private IEnumerable<CsvFileFilterDataRow> GetDataRows(FileInfo file)
+        {
+            CsvFileDescription inputFileDescription = new CsvFileDescription
+            {
+                SeparatorChar = ',',
+                FirstLineHasColumnNames = true // skips first line
+            };
+
+            var cc = new CsvContext();
+
+            var lines = cc.Read<CsvFileFilterDataRow>(file.FullName, inputFileDescription);
+            return lines;
+        }
+
+        private CsvFileFilterDataRow GetHeaders(FileInfo file)
+        {
+            CsvFileDescription inputFileDescription = new CsvFileDescription
+            {
+                SeparatorChar = ',',
+                FirstLineHasColumnNames = false // otherwise can't get headers
+            };
+
+            var cc = new CsvContext();
+
+            var lines = cc.Read<CsvFileFilterDataRow>(file.FullName, inputFileDescription).First();
+            return lines;
         }
     }
 }
