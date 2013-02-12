@@ -24,6 +24,11 @@
         /// </summary>
         public void LoadBrowserSettings()
         {
+
+
+            LoggedConsole.WriteLine("\n####################################################################################\nLOADING BROWSER SETTINGS:");
+
+
             try
             {
                 this.DefaultConfigDir = AppConfigHelper.GetDir("DefaultConfigDir", true);
@@ -31,7 +36,9 @@
             }
             catch (DirectoryNotFoundException ex)
             {
-                MessageBox.Show("Direct Not Found Error: " + ex.ToString());
+                LoggedConsole.WriteLine("WARNING!  The default directory containing analysis config files was not found. \n" + ex.ToString());
+                LoggedConsole.WriteLine("          You will not be able to analyse audio files.");
+                LoggedConsole.WriteLine("          Enter correct directory location of the config files in the app.config file.");
 
                 if (Debugger.IsAttached)
                 {
@@ -48,10 +55,11 @@
             catch (DirectoryNotFoundException ex)
             {
                 string lastResort = @"C:\temp";
-                MessageBox.Show("WARNING: " + ex.ToString());
-                MessageBox.Show("WARNING:  The default source directory in the app.config file does not exist.\n  Creating new directory <" + lastResort + "> \n\n\n\n" + ex.ToString());
                 this.diSourceDir = new DirectoryInfo(lastResort);
                 if (!diSourceDir.Exists) diSourceDir.Create();
+
+                LoggedConsole.WriteLine("WARNING!  The default source directory was not found. <" + this.DefaultSourceDir + ">");
+                LoggedConsole.WriteLine("          Created new directory <" + this.diSourceDir.FullName + "> \n\n");
             } //catch
 
             try
@@ -71,53 +79,15 @@
             catch (DirectoryNotFoundException ex)
             {
                 string lastResort = @"C:\temp";
-                MessageBox.Show("WARNING:  The default output directory and parents do not exist.\n  Creating new directory <" + lastResort + "> \n\n\n\n" + ex.ToString());
                 this.diOutputDir = new DirectoryInfo(lastResort);
                 if (!diOutputDir.Exists) diOutputDir.Create();
+
+                LoggedConsole.WriteLine("WARNING!  The default output directory was not found. <" + this.DefaultOutputDir + ">");
+                LoggedConsole.WriteLine("          Created new directory <" + this.diOutputDir.FullName + "> \n\n");
+
             } //catch
 
-            //CHECK THESE FILES EXIST
-            //<add key="AudioUtilityFfmpegExe" value="audio-utils\ffmpeg\ffmpeg.exe" />
-            //<add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
-            //<add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
-            //<add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
-            //<add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
-            try
-            {
-                var fiEXE = AppConfigHelper.GetFile("AudioUtilityFfmpegExe", true);
-                fiEXE = AppConfigHelper.GetFile("AudioUtilityFfprobeExe", true);
-                fiEXE = AppConfigHelper.GetFile("AudioUtilityWvunpackExe", true);
-                fiEXE = AppConfigHelper.GetFile("AudioUtilityMp3SpltExe", true);
-                fiEXE = AppConfigHelper.GetFile("AudioUtilitySoxExe", true);
-            }
-            catch (FileNotFoundException ex)
-            {
-                MessageBox.Show("WARNING: " + ex.ToString());
-                MessageBox.Show("  CHECK paths in app.config file.");
-
-                if (Debugger.IsAttached)
-                {
-                    Debugger.Break();
-                }
-            } //catch
-
-            try // locate AUDACITY
-            {
-                FileInfo audacity = AppConfigHelper.GetFile("AudacityExe", false);
-                string anotherPath = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
-                if (!audacity.Exists) audacity = new FileInfo(anotherPath);
-                if (!audacity.Exists) 
-                {
-                    audacity = null;
-                    throw new FileNotFoundException();
-                }
-                this.AudacityExe = audacity;
-            }
-            catch (FileNotFoundException ex)
-            {
-                MessageBox.Show("WARNING: Unable to find Audacity. Check location in app.config file.");
-            } //catch
-
+            // check for remainder of app.config arguments
             try
             {
                 //this.AnalysisList = AppConfigHelper.GetStrings("AnalysisList", ',');
@@ -141,6 +111,36 @@
                     Debugger.Break();
                 }
             } //catch
+
+
+            //CHECK THESE AUDIO ANALYSIS FILES EXIST
+            //<add key="AudioUtilityFfmpegExe" value="audio-utils\ffmpeg\ffmpeg.exe" />
+            //<add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
+            //<add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
+            //<add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
+            //<add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
+            if (! AudioAnalysisFilesExist())
+            {
+                // MessageBox.Show("WARNING: " + ex.ToString());
+                // MessageBox.Show("  CHECK paths in app.config file for following executable files: Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
+                LoggedConsole.WriteLine("WARNING!  Could not find one or more of the following audio analysis files:");
+                LoggedConsole.WriteLine("          Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
+                LoggedConsole.WriteLine("          You will not be able to work with the original source file.");
+
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+            }
+
+            if (! AudacityExists())
+            {
+                //MessageBox.Show("WARNING: Unable to find Audacity. Enter correct location in the app.config file.");
+                LoggedConsole.WriteLine("WARNING!  Unable to find Audacity at default locations.");
+                LoggedConsole.WriteLine("          Audacity.exe is required to view spectrograms of source recording.");
+                LoggedConsole.WriteLine("          Enter correct location in the app.config file.");
+            }
+
         } // LoadBrowserSettings()
 
 
@@ -159,10 +159,63 @@
             }
             LoggedConsole.WriteLine("\tSource Directory:     " + this.diSourceDir.FullName);
             LoggedConsole.WriteLine("\tOutput Directory:     " + this.diOutputDir.FullName);
+            if (AudacityExists())
+                LoggedConsole.WriteLine("\tAudacity Path   :     " + this.AudacityExe.FullName);
+            else
+                LoggedConsole.WriteLine("\tAudacity Path   :     NOT FOUND!");
             LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
             LoggedConsole.WriteLine("####################################################################################\n");
         } // WriteSettings2Console()
 
+
+        public bool AudacityExists()
+        {
+            try // locate AUDACITY
+            {
+                FileInfo audacity = AppConfigHelper.GetFile("AudacityExe", false);
+                string possiblePath = @"audio-utils\Audacity\audacity.exe";
+                string anotherPath  = @"C:\Program Files (x86)\Audacity 1.2 Beta (Unicode)\audacity.exe";
+                if (!audacity.Exists) audacity = new FileInfo(possiblePath);
+                if (!audacity.Exists) audacity = new FileInfo(anotherPath);
+                if (!audacity.Exists)
+                {
+                    audacity = null;
+                    throw new FileNotFoundException();
+                }
+                this.AudacityExe = audacity;
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                //MessageBox.Show("WARNING: Unable to find Audacity. Enter correct location in the app.config file.");
+                //MessageBox.Show(ex.ToString());
+                return false;
+            } //catch
+        }
+
+        
+        public bool AudioAnalysisFilesExist()
+        {
+            //CHECK THESE FILES EXIST
+            //<add key="AudioUtilityFfmpegExe" value="audio-utils\ffmpeg\ffmpeg.exe" />
+            //<add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
+            //<add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
+            //<add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
+            //<add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
+            try
+            {
+                var fiEXE = AppConfigHelper.GetFile("AudioUtilityFfmpegExe", true);
+                fiEXE = AppConfigHelper.GetFile("AudioUtilityFfprobeExe", true);
+                fiEXE = AppConfigHelper.GetFile("AudioUtilityWvunpackExe", true);
+                fiEXE = AppConfigHelper.GetFile("AudioUtilityMp3SpltExe", true);
+                fiEXE = AppConfigHelper.GetFile("AudioUtilitySoxExe", true);
+            }
+            catch (FileNotFoundException ex)
+            {
+                return false;
+            } //catch
+            return true;
+        } // AudioAnalysisFilesExist()
 
 
         public FileInfo AudacityExe { get; private set; }
