@@ -80,10 +80,6 @@
             // must be here, must be first
             InitializeComponent();
 
-            //initialize instance of AudioBrowserSettings class
-            browserSettings = new AudioBrowserSettings();
-            browserSettings.LoadBrowserSettings();
-
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
             this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
@@ -138,20 +134,34 @@
                     sender,
                     e);
 
-            // if input and output dirs exist, populate datagrids
-            if (browserSettings.DefaultSourceDir != null)
-            {
-                this.tfSourceDirectory.Text = browserSettings.DefaultSourceDir.FullName;
 
-                if (Directory.Exists(browserSettings.DefaultSourceDir.FullName))
+
+
+            //initialize instance of AudioBrowserSettings class
+            browserSettings = new AudioBrowserSettings();
+            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+            LoggedConsole.WriteLine(DateTime.Now);
+            this.tabControlMain.SelectTab(tabPageConsoleLabel);
+
+            //return;
+
+            browserSettings.LoadBrowserSettings();
+
+
+            // if input and output dirs exist, populate datagrids
+            if (browserSettings.diSourceDir != null)
+            {
+                this.tfSourceDirectory.Text = browserSettings.diSourceDir.FullName;
+
+                if (Directory.Exists(browserSettings.diSourceDir.FullName))
                 {
                     this.UpdateSourceFileList();
                 }
             }
 
-            if (browserSettings.DefaultOutputDir != null)
+            if (browserSettings.diOutputDir != null)
             {
-                this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
+                //this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
                 this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
 
                 if (Directory.Exists(browserSettings.diOutputDir.FullName))
@@ -199,10 +209,8 @@
             this.browserSettings.fiAnalysisConfig = op.Item1;
             this.analysisParams = op.Item2;
 
-            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            LoggedConsole.WriteLine(DateTime.Now);
             this.browserSettings.WriteSettings2Console();
-            this.tabControlMain.SelectTab(tabPageConsoleLabel);
+
 
         } //MainForm()
 
