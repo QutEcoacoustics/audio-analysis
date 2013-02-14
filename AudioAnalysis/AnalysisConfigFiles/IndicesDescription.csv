@@ -1,0 +1,23 @@
+Abbrev,Full Name,Min Value,Max Value,Units,Default Display,Default Display Min,Default Display Max,Description
+avAmp-dB,Average signal amplitude,undefined,0,dB,NO,-50,-5,Average amplitude of signal envelope (max value in each frame of 512 values).
+bg-dB,Background amplitude,undefined,0,dB,YES,-50,-5,Background amplitude calculated using method of Lamel et al.
+snr-dB,Signal to Noise ratio,0,undefined,dB,YES,3,50,SNR = Average amplitude - background amplitude
+activeSnr-dB,SNR of active frames,0,undefined,dB,YES,3,10,SNR calculated only from active frames
+activity,Fraction of active frames,0,1,real,YES,0,max in array,An active frame is one whose SNR > 3.0 dB
+segCount,Count of acoustic segments,0,undefined,integer,YES,0,max in array,An acoustic segment is a consecutive sequence of active frames whose duration > one frame.
+avSegDur,Average duration of acoustic segments,0,undefined,milliseconds,YES,0,500,Average duration of acoustic segments as determined above.
+hfCover,High frequency cover,0,1,real,YES,0,1,Fraction of high freq (>3500 Hz) spectrogram cells whose amplitude > 0.015. 
+mfCover,Mid frequency cover,0,1,real,YES,0,1,Fraction of mid-freq (500-3500 Hz) spectrogram cells whose amplitude > 0.015. 
+lfCover,Low frequency cover,0,1,real,YES,0,1,Fraction of low freq (0-500 Hz) spectrogram cells whose amplitude > 0.015. 
+AcComplexity,Acoustic Complexity Index,0,1,real,YES,0.3,0.7,AC Index as described by Depretere et al. (2012)
+H[temporal],Temporal entropy,0,1,real,YES,0.5,1,Temporal Entropy as described by Sueur et al.
+H[spectral],Spectral Entropy,0,1,real,YES,0.5,1,Spectral Entropy as described by Sueur et al.
+H[spectralVar],Entropy of Variance Spectrum,0,1,real,NO,0.5,1,Entropy of the spectrum of amplitude variance in each freq bin.
+clusterCount,Cluster Count,0,undefined,integer,YES,0,50,Number of mid-band spectral clusters as determined by a simple clustering algorithm
+avClustDur,Average Cluster Duration,0,undefined,milliseconds,YES,50,200,Average duration of spectral clusters
+3gramCount,Number of 3-grams,0,undefined,integer,YES,0.3,max in array,Number of 3-gram cluster sequences
+av3gramRepetition,Av repetition of 3-grams,0,undefined,real,YES,0,max in array,Average repetition of unique 3-gram cluster sequences
+SpPkTracks/Sec,Number of Spectral Peak Tracks per second,0,undefined,real,YES,0,max in array,Number of (near) horizontal tracks or whistles in spectrogram (cell ampl > 0.005).
+SpPkTracks%Dur,Duration of spectral peak tracks,0,undefined,real,YES,0,max in array,Duration of spectral peak tracks as percent of recording duration
+rain,Rain index,0,1,real,YES,0,1,Used to determine occurrence of rain in a recording
+cicada,Cicada index,0,1,real,NO,0,1,Used to determine occurrence of cicada singing in a recording
