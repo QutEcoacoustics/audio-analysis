@@ -174,6 +174,7 @@
             {
                 FileInfo audacity = AppConfigHelper.GetFile("AudacityExe", false);
                 string possiblePath = @"audio-utils\Audacity\audacity.exe";
+                string anotherPath  = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
                 string anotherPath  = @"C:\Program Files (x86)\Audacity 1.2 Beta (Unicode)\audacity.exe";
                 if (!audacity.Exists) audacity = new FileInfo(possiblePath);
                 if (!audacity.Exists) audacity = new FileInfo(anotherPath);
