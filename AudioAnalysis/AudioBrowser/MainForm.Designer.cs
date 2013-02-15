@@ -32,10 +32,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPageSourceFiles = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
@@ -60,11 +60,12 @@
             this.CsvFileDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.tabPageDisplay = new System.Windows.Forms.TabPage();
+            this.btnViewFileOfIndices = new System.Windows.Forms.Button();
             this.labelCSVHeaders = new System.Windows.Forms.Label();
             this.listBoxDisplayedTracks = new System.Windows.Forms.ListBox();
             this.panelDisplayImages = new System.Windows.Forms.Panel();
             this.panelDisplayImageAndTrackBar = new System.Windows.Forms.Panel();
-            this.pictureBoxVisualIndex = new System.Windows.Forms.PictureBox();
+            this.pictureBoxVisualIndices = new System.Windows.Forms.PictureBox();
             this.pictureBoxBarTrack = new System.Windows.Forms.PictureBox();
             this.panelDisplaySpectrogram = new System.Windows.Forms.Panel();
             this.pictureBoxSonogram = new System.Windows.Forms.PictureBox();
@@ -82,29 +83,29 @@
             this.textBoxCursorLocation = new System.Windows.Forms.TextBox();
             this.tabPageConsole = new System.Windows.Forms.TabPage();
             this.textBoxConsole = new System.Windows.Forms.TextBox();
+            this.tabPageSearchCsv = new System.Windows.Forms.TabPage();
+            this.panelSearchEntries = new System.Windows.Forms.Panel();
+            this.btnSearchRemoveFilterLine = new System.Windows.Forms.Button();
+            this.tfSearchFieldMax = new System.Windows.Forms.TextBox();
+            this.tfSearchFieldMin = new System.Windows.Forms.TextBox();
+            this.lblSearchFieldMax = new System.Windows.Forms.Label();
+            this.lblSearchFieldName = new System.Windows.Forms.Label();
+            this.lblSearchFieldMin = new System.Windows.Forms.Label();
+            this.tfSearchFieldName = new System.Windows.Forms.TextBox();
+            this.btnFindInCSV = new System.Windows.Forms.Button();
+            this.btnSelectCSVSourceFolder = new System.Windows.Forms.Button();
+            this.textBoxCSVSourceFolderPath = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.btnAddFilterLine = new System.Windows.Forms.Button();
             this.folderBrowserDialogChooseDir = new System.Windows.Forms.FolderBrowserDialog();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
-            this.tabPageSearchCsv = new System.Windows.Forms.TabPage();
-            this.label6 = new System.Windows.Forms.Label();
-            this.btnSelectCSVSourceFolder = new System.Windows.Forms.Button();
-            this.textBoxCSVSourceFolderPath = new System.Windows.Forms.TextBox();
             this.fullNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileNameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lastModifiedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.durationDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaTypeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btnFindInCSV = new System.Windows.Forms.Button();
-            this.panelSearchEntries = new System.Windows.Forms.Panel();
-            this.btnAddFilterLine = new System.Windows.Forms.Button();
-            this.tfSearchFieldName = new System.Windows.Forms.TextBox();
-            this.lblSearchFieldMin = new System.Windows.Forms.Label();
-            this.lblSearchFieldName = new System.Windows.Forms.Label();
-            this.lblSearchFieldMax = new System.Windows.Forms.Label();
-            this.tfSearchFieldMin = new System.Windows.Forms.TextBox();
-            this.tfSearchFieldMax = new System.Windows.Forms.TextBox();
-            this.btnSearchRemoveFilterLine = new System.Windows.Forms.Button();
             this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -121,7 +122,7 @@
             this.tabPageDisplay.SuspendLayout();
             this.panelDisplayImages.SuspendLayout();
             this.panelDisplayImageAndTrackBar.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndices)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).BeginInit();
             this.panelDisplaySpectrogram.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSonogram)).BeginInit();
@@ -145,7 +146,7 @@
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.SelectedIndex = 0;
-            this.tabControlMain.Size = new System.Drawing.Size(1222, 633);
+            this.tabControlMain.Size = new System.Drawing.Size(1458, 681);
             this.tabControlMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlMain.TabIndex = 0;
             // 
@@ -162,7 +163,7 @@
             this.tabPageSourceFiles.Location = new System.Drawing.Point(4, 22);
             this.tabPageSourceFiles.Name = "tabPageSourceFiles";
             this.tabPageSourceFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSourceFiles.Size = new System.Drawing.Size(1214, 607);
+            this.tabPageSourceFiles.Size = new System.Drawing.Size(1450, 655);
             this.tabPageSourceFiles.TabIndex = 2;
             this.tabPageSourceFiles.Text = "Source Audio Files";
             this.tabPageSourceFiles.UseVisualStyleBackColor = true;
@@ -204,14 +205,14 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewFileList.AutoGenerateColumns = false;
             this.dataGridViewFileList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewFileList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.selectedDataGridViewCheckBoxColumn,
@@ -221,18 +222,18 @@
             this.fileLengthDataGridViewTextBoxColumn,
             this.mediaTypeDataGridViewTextBoxColumn});
             this.dataGridViewFileList.DataSource = this.mediaFileItemBindingSource;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewFileList.Location = new System.Drawing.Point(6, 37);
             this.dataGridViewFileList.Name = "dataGridViewFileList";
             this.dataGridViewFileList.ReadOnly = true;
-            this.dataGridViewFileList.Size = new System.Drawing.Size(1202, 564);
+            this.dataGridViewFileList.Size = new System.Drawing.Size(1438, 612);
             this.dataGridViewFileList.TabIndex = 0;
             this.dataGridViewFileList.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellClick);
             this.dataGridViewFileList.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellContentClick);
@@ -308,7 +309,7 @@
             this.tabPageOutputFiles.Location = new System.Drawing.Point(4, 22);
             this.tabPageOutputFiles.Name = "tabPageOutputFiles";
             this.tabPageOutputFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageOutputFiles.Size = new System.Drawing.Size(1214, 607);
+            this.tabPageOutputFiles.Size = new System.Drawing.Size(1450, 655);
             this.tabPageOutputFiles.TabIndex = 3;
             this.tabPageOutputFiles.Text = "Output CSV Files";
             this.tabPageOutputFiles.UseVisualStyleBackColor = true;
@@ -377,14 +378,14 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridCSVfiles.AutoGenerateColumns = false;
             this.dataGridCSVfiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridCSVfiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridCSVfiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewCheckBoxColumnSelected,
@@ -392,18 +393,18 @@
             this.CsvFileDate,
             this.dataGridViewTextBoxColumnFileLength});
             this.dataGridCSVfiles.DataSource = this.csvFileItemBindingSource;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridCSVfiles.Location = new System.Drawing.Point(6, 36);
             this.dataGridCSVfiles.MultiSelect = false;
             this.dataGridCSVfiles.Name = "dataGridCSVfiles";
-            this.dataGridCSVfiles.Size = new System.Drawing.Size(1202, 565);
+            this.dataGridCSVfiles.Size = new System.Drawing.Size(1438, 613);
             this.dataGridCSVfiles.TabIndex = 1;
             this.dataGridCSVfiles.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellClick);
             this.dataGridCSVfiles.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellContentClick);
@@ -440,6 +441,7 @@
             // 
             // tabPageDisplay
             // 
+            this.tabPageDisplay.Controls.Add(this.btnViewFileOfIndices);
             this.tabPageDisplay.Controls.Add(this.labelCSVHeaders);
             this.tabPageDisplay.Controls.Add(this.listBoxDisplayedTracks);
             this.tabPageDisplay.Controls.Add(this.panelDisplayImages);
@@ -449,24 +451,32 @@
             this.tabPageDisplay.Controls.Add(this.labelCursorValue);
             this.tabPageDisplay.Controls.Add(this.labelSonogramName);
             this.tabPageDisplay.Controls.Add(this.buttonRefreshSonogram);
-            this.tabPageDisplay.Controls.Add(this.labelSourceFileName);
             this.tabPageDisplay.Controls.Add(this.buttonAudacityRun);
             this.tabPageDisplay.Controls.Add(this.textBoxCursorValue);
             this.tabPageDisplay.Controls.Add(this.label3);
-            this.tabPageDisplay.Controls.Add(this.labelSourceFileDurationInMinutes);
             this.tabPageDisplay.Controls.Add(this.textBoxCursorLocation);
             this.tabPageDisplay.Location = new System.Drawing.Point(4, 22);
             this.tabPageDisplay.Name = "tabPageDisplay";
             this.tabPageDisplay.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDisplay.Size = new System.Drawing.Size(1214, 607);
+            this.tabPageDisplay.Size = new System.Drawing.Size(1450, 655);
             this.tabPageDisplay.TabIndex = 0;
             this.tabPageDisplay.Text = "Display";
             this.tabPageDisplay.UseVisualStyleBackColor = true;
             // 
+            // btnViewFileOfIndices
+            // 
+            this.btnViewFileOfIndices.Location = new System.Drawing.Point(16, 17);
+            this.btnViewFileOfIndices.Name = "btnViewFileOfIndices";
+            this.btnViewFileOfIndices.Size = new System.Drawing.Size(146, 36);
+            this.btnViewFileOfIndices.TabIndex = 12;
+            this.btnViewFileOfIndices.Text = "View File of Indices ";
+            this.btnViewFileOfIndices.UseVisualStyleBackColor = true;
+            this.btnViewFileOfIndices.Click += new System.EventHandler(this.btnViewFileOfIndices_Click);
+            // 
             // labelCSVHeaders
             // 
             this.labelCSVHeaders.AutoSize = true;
-            this.labelCSVHeaders.Location = new System.Drawing.Point(3, 150);
+            this.labelCSVHeaders.Location = new System.Drawing.Point(3, 214);
             this.labelCSVHeaders.Name = "labelCSVHeaders";
             this.labelCSVHeaders.Size = new System.Drawing.Size(101, 13);
             this.labelCSVHeaders.TabIndex = 11;
@@ -475,9 +485,9 @@
             // listBoxDisplayedTracks
             // 
             this.listBoxDisplayedTracks.FormattingEnabled = true;
-            this.listBoxDisplayedTracks.Location = new System.Drawing.Point(8, 166);
+            this.listBoxDisplayedTracks.Location = new System.Drawing.Point(6, 230);
             this.listBoxDisplayedTracks.Name = "listBoxDisplayedTracks";
-            this.listBoxDisplayedTracks.Size = new System.Drawing.Size(153, 186);
+            this.listBoxDisplayedTracks.Size = new System.Drawing.Size(163, 225);
             this.listBoxDisplayedTracks.TabIndex = 10;
             // 
             // panelDisplayImages
@@ -488,9 +498,11 @@
             this.panelDisplayImages.AutoScroll = true;
             this.panelDisplayImages.Controls.Add(this.panelDisplayImageAndTrackBar);
             this.panelDisplayImages.Controls.Add(this.panelDisplaySpectrogram);
+            this.panelDisplayImages.Controls.Add(this.labelSourceFileName);
+            this.panelDisplayImages.Controls.Add(this.labelSourceFileDurationInMinutes);
             this.panelDisplayImages.Location = new System.Drawing.Point(178, 6);
             this.panelDisplayImages.Name = "panelDisplayImages";
-            this.panelDisplayImages.Size = new System.Drawing.Size(1031, 581);
+            this.panelDisplayImages.Size = new System.Drawing.Size(1800, 629);
             this.panelDisplayImages.TabIndex = 9;
             // 
             // panelDisplayImageAndTrackBar
@@ -498,30 +510,31 @@
             this.panelDisplayImageAndTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDisplayImageAndTrackBar.AutoScroll = true;
-            this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxVisualIndex);
+            this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxVisualIndices);
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
-            this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 3);
+            this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(804, 393);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1522, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
-            // pictureBoxVisualIndex
+            // pictureBoxVisualIndices
             // 
-            this.pictureBoxVisualIndex.BackColor = System.Drawing.Color.Black;
-            this.pictureBoxVisualIndex.Location = new System.Drawing.Point(3, 3);
-            this.pictureBoxVisualIndex.Name = "pictureBoxVisualIndex";
-            this.pictureBoxVisualIndex.Size = new System.Drawing.Size(1600, 340);
-            this.pictureBoxVisualIndex.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-            this.pictureBoxVisualIndex.TabIndex = 0;
-            this.pictureBoxVisualIndex.TabStop = false;
-            this.pictureBoxVisualIndex.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVisualIndex_MouseClick);
-            this.pictureBoxVisualIndex.MouseHover += new System.EventHandler(this.pictureBoxVisualIndex_MouseHover);
-            this.pictureBoxVisualIndex.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVisualIndex_MouseMove);
+            this.pictureBoxVisualIndices.BackColor = System.Drawing.Color.Black;
+            this.pictureBoxVisualIndices.Location = new System.Drawing.Point(18, 6);
+            this.pictureBoxVisualIndices.MinimumSize = new System.Drawing.Size(100, 100);
+            this.pictureBoxVisualIndices.Name = "pictureBoxVisualIndices";
+            this.pictureBoxVisualIndices.Size = new System.Drawing.Size(1800, 340);
+            this.pictureBoxVisualIndices.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBoxVisualIndices.TabIndex = 0;
+            this.pictureBoxVisualIndices.TabStop = false;
+            this.pictureBoxVisualIndices.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVisualIndex_MouseClick);
+            this.pictureBoxVisualIndices.MouseHover += new System.EventHandler(this.pictureBoxVisualIndex_MouseHover);
+            this.pictureBoxVisualIndices.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVisualIndex_MouseMove);
             // 
             // pictureBoxBarTrack
             // 
             this.pictureBoxBarTrack.BackColor = System.Drawing.Color.BlanchedAlmond;
-            this.pictureBoxBarTrack.Location = new System.Drawing.Point(3, 349);
+            this.pictureBoxBarTrack.Location = new System.Drawing.Point(18, 349);
             this.pictureBoxBarTrack.Name = "pictureBoxBarTrack";
             this.pictureBoxBarTrack.Size = new System.Drawing.Size(1583, 24);
             this.pictureBoxBarTrack.TabIndex = 3;
@@ -533,17 +546,17 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDisplaySpectrogram.AutoScroll = true;
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
-            this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 402);
+            this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(804, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1522, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
             // 
             this.pictureBoxSonogram.BackColor = System.Drawing.Color.DarkGray;
-            this.pictureBoxSonogram.Location = new System.Drawing.Point(3, 0);
+            this.pictureBoxSonogram.Location = new System.Drawing.Point(0, -56);
             this.pictureBoxSonogram.Name = "pictureBoxSonogram";
-            this.pictureBoxSonogram.Size = new System.Drawing.Size(1584, 270);
+            this.pictureBoxSonogram.Size = new System.Drawing.Size(1800, 300);
             this.pictureBoxSonogram.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBoxSonogram.TabIndex = 2;
             this.pictureBoxSonogram.TabStop = false;
@@ -551,7 +564,7 @@
             // checkBoxSonogramAnnotate
             // 
             this.checkBoxSonogramAnnotate.AutoSize = true;
-            this.checkBoxSonogramAnnotate.Location = new System.Drawing.Point(24, 463);
+            this.checkBoxSonogramAnnotate.Location = new System.Drawing.Point(24, 539);
             this.checkBoxSonogramAnnotate.Name = "checkBoxSonogramAnnotate";
             this.checkBoxSonogramAnnotate.Size = new System.Drawing.Size(118, 17);
             this.checkBoxSonogramAnnotate.TabIndex = 5;
@@ -561,7 +574,7 @@
             // checkBoxSonnogramNoiseReduce
             // 
             this.checkBoxSonnogramNoiseReduce.AutoSize = true;
-            this.checkBoxSonnogramNoiseReduce.Location = new System.Drawing.Point(24, 439);
+            this.checkBoxSonnogramNoiseReduce.Location = new System.Drawing.Point(24, 516);
             this.checkBoxSonnogramNoiseReduce.Name = "checkBoxSonnogramNoiseReduce";
             this.checkBoxSonnogramNoiseReduce.Size = new System.Drawing.Size(138, 17);
             this.checkBoxSonnogramNoiseReduce.TabIndex = 4;
@@ -572,7 +585,7 @@
             // 
             this.labelSonogramFileName.AutoSize = true;
             this.labelSonogramFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSonogramFileName.Location = new System.Drawing.Point(6, 400);
+            this.labelSonogramFileName.Location = new System.Drawing.Point(8, 486);
             this.labelSonogramFileName.Name = "labelSonogramFileName";
             this.labelSonogramFileName.Size = new System.Drawing.Size(116, 13);
             this.labelSonogramFileName.TabIndex = 3;
@@ -581,7 +594,7 @@
             // labelCursorValue
             // 
             this.labelCursorValue.AutoSize = true;
-            this.labelCursorValue.Location = new System.Drawing.Point(3, 96);
+            this.labelCursorValue.Location = new System.Drawing.Point(3, 149);
             this.labelCursorValue.Name = "labelCursorValue";
             this.labelCursorValue.Size = new System.Drawing.Size(67, 13);
             this.labelCursorValue.TabIndex = 6;
@@ -591,7 +604,7 @@
             // 
             this.labelSonogramName.AutoSize = true;
             this.labelSonogramName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSonogramName.Location = new System.Drawing.Point(6, 384);
+            this.labelSonogramName.Location = new System.Drawing.Point(8, 469);
             this.labelSonogramName.Name = "labelSonogramName";
             this.labelSonogramName.Size = new System.Drawing.Size(102, 15);
             this.labelSonogramName.TabIndex = 2;
@@ -599,7 +612,7 @@
             // 
             // buttonRefreshSonogram
             // 
-            this.buttonRefreshSonogram.Location = new System.Drawing.Point(24, 497);
+            this.buttonRefreshSonogram.Location = new System.Drawing.Point(24, 562);
             this.buttonRefreshSonogram.Name = "buttonRefreshSonogram";
             this.buttonRefreshSonogram.Size = new System.Drawing.Size(120, 28);
             this.buttonRefreshSonogram.TabIndex = 1;
@@ -611,15 +624,15 @@
             // 
             this.labelSourceFileName.AutoSize = true;
             this.labelSourceFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSourceFileName.Location = new System.Drawing.Point(6, 3);
+            this.labelSourceFileName.Location = new System.Drawing.Point(19, 12);
             this.labelSourceFileName.Name = "labelSourceFileName";
-            this.labelSourceFileName.Size = new System.Drawing.Size(107, 13);
+            this.labelSourceFileName.Size = new System.Drawing.Size(63, 13);
             this.labelSourceFileName.TabIndex = 3;
-            this.labelSourceFileName.Text = "Source File Name";
+            this.labelSourceFileName.Text = "File Name";
             // 
             // buttonAudacityRun
             // 
-            this.buttonAudacityRun.Location = new System.Drawing.Point(24, 548);
+            this.buttonAudacityRun.Location = new System.Drawing.Point(24, 596);
             this.buttonAudacityRun.Name = "buttonAudacityRun";
             this.buttonAudacityRun.Size = new System.Drawing.Size(120, 28);
             this.buttonAudacityRun.TabIndex = 0;
@@ -629,7 +642,7 @@
             // 
             // textBoxCursorValue
             // 
-            this.textBoxCursorValue.Location = new System.Drawing.Point(9, 112);
+            this.textBoxCursorValue.Location = new System.Drawing.Point(6, 165);
             this.textBoxCursorValue.Name = "textBoxCursorValue";
             this.textBoxCursorValue.Size = new System.Drawing.Size(160, 20);
             this.textBoxCursorValue.TabIndex = 5;
@@ -637,7 +650,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 53);
+            this.label3.Location = new System.Drawing.Point(3, 110);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 13);
             this.label3.TabIndex = 1;
@@ -646,15 +659,15 @@
             // labelSourceFileDurationInMinutes
             // 
             this.labelSourceFileDurationInMinutes.AutoSize = true;
-            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(6, 20);
+            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(338, 12);
             this.labelSourceFileDurationInMinutes.Name = "labelSourceFileDurationInMinutes";
-            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(111, 13);
+            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(198, 13);
             this.labelSourceFileDurationInMinutes.TabIndex = 4;
-            this.labelSourceFileDurationInMinutes.Text = "File Duration (minutes)";
+            this.labelSourceFileDurationInMinutes.Text = "File Duration (Image scale = 1 pixel/min.)";
             // 
             // textBoxCursorLocation
             // 
-            this.textBoxCursorLocation.Location = new System.Drawing.Point(9, 69);
+            this.textBoxCursorLocation.Location = new System.Drawing.Point(6, 126);
             this.textBoxCursorLocation.Name = "textBoxCursorLocation";
             this.textBoxCursorLocation.Size = new System.Drawing.Size(160, 20);
             this.textBoxCursorLocation.TabIndex = 2;
@@ -665,7 +678,7 @@
             this.tabPageConsole.Location = new System.Drawing.Point(4, 22);
             this.tabPageConsole.Name = "tabPageConsole";
             this.tabPageConsole.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageConsole.Size = new System.Drawing.Size(1214, 607);
+            this.tabPageConsole.Size = new System.Drawing.Size(1450, 655);
             this.tabPageConsole.TabIndex = 1;
             this.tabPageConsole.Text = "Console";
             this.tabPageConsole.UseVisualStyleBackColor = true;
@@ -681,13 +694,8 @@
             this.textBoxConsole.Name = "textBoxConsole";
             this.textBoxConsole.ReadOnly = true;
             this.textBoxConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBoxConsole.Size = new System.Drawing.Size(1208, 601);
+            this.textBoxConsole.Size = new System.Drawing.Size(1444, 649);
             this.textBoxConsole.TabIndex = 0;
-            // 
-            // folderBrowserDialogChooseDir
-            // 
-            this.folderBrowserDialogChooseDir.RootFolder = System.Environment.SpecialFolder.MyComputer;
-            this.folderBrowserDialogChooseDir.ShowNewFolderButton = false;
             // 
             // tabPageSearchCsv
             // 
@@ -700,19 +708,95 @@
             this.tabPageSearchCsv.Location = new System.Drawing.Point(4, 22);
             this.tabPageSearchCsv.Name = "tabPageSearchCsv";
             this.tabPageSearchCsv.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSearchCsv.Size = new System.Drawing.Size(1214, 607);
+            this.tabPageSearchCsv.Size = new System.Drawing.Size(1450, 655);
             this.tabPageSearchCsv.TabIndex = 4;
             this.tabPageSearchCsv.Text = "Filter CSV Files";
             this.tabPageSearchCsv.UseVisualStyleBackColor = true;
             // 
-            // label6
+            // panelSearchEntries
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 11);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(76, 13);
-            this.label6.TabIndex = 14;
-            this.label6.Text = "Source Folder:";
+            this.panelSearchEntries.Controls.Add(this.btnSearchRemoveFilterLine);
+            this.panelSearchEntries.Controls.Add(this.tfSearchFieldMax);
+            this.panelSearchEntries.Controls.Add(this.tfSearchFieldMin);
+            this.panelSearchEntries.Controls.Add(this.lblSearchFieldMax);
+            this.panelSearchEntries.Controls.Add(this.lblSearchFieldName);
+            this.panelSearchEntries.Controls.Add(this.lblSearchFieldMin);
+            this.panelSearchEntries.Controls.Add(this.tfSearchFieldName);
+            this.panelSearchEntries.Location = new System.Drawing.Point(8, 34);
+            this.panelSearchEntries.Name = "panelSearchEntries";
+            this.panelSearchEntries.Size = new System.Drawing.Size(1200, 565);
+            this.panelSearchEntries.TabIndex = 19;
+            // 
+            // btnSearchRemoveFilterLine
+            // 
+            this.btnSearchRemoveFilterLine.Enabled = false;
+            this.btnSearchRemoveFilterLine.Location = new System.Drawing.Point(598, 10);
+            this.btnSearchRemoveFilterLine.Name = "btnSearchRemoveFilterLine";
+            this.btnSearchRemoveFilterLine.Size = new System.Drawing.Size(118, 23);
+            this.btnSearchRemoveFilterLine.TabIndex = 22;
+            this.btnSearchRemoveFilterLine.Text = "Remove This Filter";
+            this.btnSearchRemoveFilterLine.UseVisualStyleBackColor = true;
+            this.btnSearchRemoveFilterLine.Click += new System.EventHandler(this.btnSearchRemoveFilterLine_Click);
+            // 
+            // tfSearchFieldMax
+            // 
+            this.tfSearchFieldMax.Location = new System.Drawing.Point(504, 11);
+            this.tfSearchFieldMax.MaxLength = 10;
+            this.tfSearchFieldMax.Name = "tfSearchFieldMax";
+            this.tfSearchFieldMax.Size = new System.Drawing.Size(88, 20);
+            this.tfSearchFieldMax.TabIndex = 21;
+            // 
+            // tfSearchFieldMin
+            // 
+            this.tfSearchFieldMin.Location = new System.Drawing.Point(350, 11);
+            this.tfSearchFieldMin.MaxLength = 10;
+            this.tfSearchFieldMin.Name = "tfSearchFieldMin";
+            this.tfSearchFieldMin.Size = new System.Drawing.Size(88, 20);
+            this.tfSearchFieldMin.TabIndex = 20;
+            // 
+            // lblSearchFieldMax
+            // 
+            this.lblSearchFieldMax.AutoSize = true;
+            this.lblSearchFieldMax.Location = new System.Drawing.Point(444, 15);
+            this.lblSearchFieldMax.Name = "lblSearchFieldMax";
+            this.lblSearchFieldMax.Size = new System.Drawing.Size(54, 13);
+            this.lblSearchFieldMax.TabIndex = 19;
+            this.lblSearchFieldMax.Text = "Maximum:";
+            // 
+            // lblSearchFieldName
+            // 
+            this.lblSearchFieldName.AutoSize = true;
+            this.lblSearchFieldName.Location = new System.Drawing.Point(6, 14);
+            this.lblSearchFieldName.Name = "lblSearchFieldName";
+            this.lblSearchFieldName.Size = new System.Drawing.Size(63, 13);
+            this.lblSearchFieldName.TabIndex = 18;
+            this.lblSearchFieldName.Text = "Field Name:";
+            // 
+            // lblSearchFieldMin
+            // 
+            this.lblSearchFieldMin.AutoSize = true;
+            this.lblSearchFieldMin.Location = new System.Drawing.Point(293, 15);
+            this.lblSearchFieldMin.Name = "lblSearchFieldMin";
+            this.lblSearchFieldMin.Size = new System.Drawing.Size(51, 13);
+            this.lblSearchFieldMin.TabIndex = 17;
+            this.lblSearchFieldMin.Text = "Minimum:";
+            // 
+            // tfSearchFieldName
+            // 
+            this.tfSearchFieldName.Location = new System.Drawing.Point(75, 12);
+            this.tfSearchFieldName.Name = "tfSearchFieldName";
+            this.tfSearchFieldName.Size = new System.Drawing.Size(212, 20);
+            this.tfSearchFieldName.TabIndex = 16;
+            // 
+            // btnFindInCSV
+            // 
+            this.btnFindInCSV.Location = new System.Drawing.Point(797, 6);
+            this.btnFindInCSV.Name = "btnFindInCSV";
+            this.btnFindInCSV.Size = new System.Drawing.Size(120, 23);
+            this.btnFindInCSV.TabIndex = 18;
+            this.btnFindInCSV.Text = "Find In CSV Files";
+            this.btnFindInCSV.UseVisualStyleBackColor = true;
+            this.btnFindInCSV.Click += new System.EventHandler(this.btnFindInCSV_Click);
             // 
             // btnSelectCSVSourceFolder
             // 
@@ -731,6 +815,30 @@
             this.textBoxCSVSourceFolderPath.Size = new System.Drawing.Size(479, 20);
             this.textBoxCSVSourceFolderPath.TabIndex = 15;
             this.textBoxCSVSourceFolderPath.Text = "I:\\Projects\\QUT\\QutSensors\\test-audio\\ID14";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 11);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(76, 13);
+            this.label6.TabIndex = 14;
+            this.label6.Text = "Source Folder:";
+            // 
+            // btnAddFilterLine
+            // 
+            this.btnAddFilterLine.Location = new System.Drawing.Point(699, 6);
+            this.btnAddFilterLine.Name = "btnAddFilterLine";
+            this.btnAddFilterLine.Size = new System.Drawing.Size(92, 23);
+            this.btnAddFilterLine.TabIndex = 0;
+            this.btnAddFilterLine.Text = "Add New Filter";
+            this.btnAddFilterLine.UseVisualStyleBackColor = true;
+            this.btnAddFilterLine.Click += new System.EventHandler(this.btnAddSearchEntry_Click);
+            // 
+            // folderBrowserDialogChooseDir
+            // 
+            this.folderBrowserDialogChooseDir.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            this.folderBrowserDialogChooseDir.ShowNewFolderButton = false;
             // 
             // fullNameDataGridViewTextBoxColumn
             // 
@@ -773,101 +881,6 @@
             this.fileLengthDataGridViewTextBoxColumn1.HeaderText = "FileLength";
             this.fileLengthDataGridViewTextBoxColumn1.Name = "fileLengthDataGridViewTextBoxColumn1";
             this.fileLengthDataGridViewTextBoxColumn1.Width = 81;
-            // 
-            // btnFindInCSV
-            // 
-            this.btnFindInCSV.Location = new System.Drawing.Point(797, 6);
-            this.btnFindInCSV.Name = "btnFindInCSV";
-            this.btnFindInCSV.Size = new System.Drawing.Size(120, 23);
-            this.btnFindInCSV.TabIndex = 18;
-            this.btnFindInCSV.Text = "Find In CSV Files";
-            this.btnFindInCSV.UseVisualStyleBackColor = true;
-            this.btnFindInCSV.Click += new System.EventHandler(this.btnFindInCSV_Click);
-            // 
-            // panelSearchEntries
-            // 
-            this.panelSearchEntries.Controls.Add(this.btnSearchRemoveFilterLine);
-            this.panelSearchEntries.Controls.Add(this.tfSearchFieldMax);
-            this.panelSearchEntries.Controls.Add(this.tfSearchFieldMin);
-            this.panelSearchEntries.Controls.Add(this.lblSearchFieldMax);
-            this.panelSearchEntries.Controls.Add(this.lblSearchFieldName);
-            this.panelSearchEntries.Controls.Add(this.lblSearchFieldMin);
-            this.panelSearchEntries.Controls.Add(this.tfSearchFieldName);
-            this.panelSearchEntries.Location = new System.Drawing.Point(8, 34);
-            this.panelSearchEntries.Name = "panelSearchEntries";
-            this.panelSearchEntries.Size = new System.Drawing.Size(1200, 565);
-            this.panelSearchEntries.TabIndex = 19;
-            // 
-            // btnAddFilterLine
-            // 
-            this.btnAddFilterLine.Location = new System.Drawing.Point(699, 6);
-            this.btnAddFilterLine.Name = "btnAddFilterLine";
-            this.btnAddFilterLine.Size = new System.Drawing.Size(92, 23);
-            this.btnAddFilterLine.TabIndex = 0;
-            this.btnAddFilterLine.Text = "Add New Filter";
-            this.btnAddFilterLine.UseVisualStyleBackColor = true;
-            this.btnAddFilterLine.Click += new System.EventHandler(this.btnAddSearchEntry_Click);
-            // 
-            // tfSearchFieldName
-            // 
-            this.tfSearchFieldName.Location = new System.Drawing.Point(75, 12);
-            this.tfSearchFieldName.Name = "tfSearchFieldName";
-            this.tfSearchFieldName.Size = new System.Drawing.Size(212, 20);
-            this.tfSearchFieldName.TabIndex = 16;
-            // 
-            // lblSearchFieldMin
-            // 
-            this.lblSearchFieldMin.AutoSize = true;
-            this.lblSearchFieldMin.Location = new System.Drawing.Point(293, 15);
-            this.lblSearchFieldMin.Name = "lblSearchFieldMin";
-            this.lblSearchFieldMin.Size = new System.Drawing.Size(51, 13);
-            this.lblSearchFieldMin.TabIndex = 17;
-            this.lblSearchFieldMin.Text = "Minimum:";
-            // 
-            // lblSearchFieldName
-            // 
-            this.lblSearchFieldName.AutoSize = true;
-            this.lblSearchFieldName.Location = new System.Drawing.Point(6, 14);
-            this.lblSearchFieldName.Name = "lblSearchFieldName";
-            this.lblSearchFieldName.Size = new System.Drawing.Size(63, 13);
-            this.lblSearchFieldName.TabIndex = 18;
-            this.lblSearchFieldName.Text = "Field Name:";
-            // 
-            // lblSearchFieldMax
-            // 
-            this.lblSearchFieldMax.AutoSize = true;
-            this.lblSearchFieldMax.Location = new System.Drawing.Point(444, 15);
-            this.lblSearchFieldMax.Name = "lblSearchFieldMax";
-            this.lblSearchFieldMax.Size = new System.Drawing.Size(54, 13);
-            this.lblSearchFieldMax.TabIndex = 19;
-            this.lblSearchFieldMax.Text = "Maximum:";
-            // 
-            // tfSearchFieldMin
-            // 
-            this.tfSearchFieldMin.Location = new System.Drawing.Point(350, 11);
-            this.tfSearchFieldMin.MaxLength = 10;
-            this.tfSearchFieldMin.Name = "tfSearchFieldMin";
-            this.tfSearchFieldMin.Size = new System.Drawing.Size(88, 20);
-            this.tfSearchFieldMin.TabIndex = 20;
-            // 
-            // tfSearchFieldMax
-            // 
-            this.tfSearchFieldMax.Location = new System.Drawing.Point(504, 11);
-            this.tfSearchFieldMax.MaxLength = 10;
-            this.tfSearchFieldMax.Name = "tfSearchFieldMax";
-            this.tfSearchFieldMax.Size = new System.Drawing.Size(88, 20);
-            this.tfSearchFieldMax.TabIndex = 21;
-            // 
-            // btnSearchRemoveFilterLine
-            // 
-            this.btnSearchRemoveFilterLine.Enabled = false;
-            this.btnSearchRemoveFilterLine.Location = new System.Drawing.Point(598, 10);
-            this.btnSearchRemoveFilterLine.Name = "btnSearchRemoveFilterLine";
-            this.btnSearchRemoveFilterLine.Size = new System.Drawing.Size(118, 23);
-            this.btnSearchRemoveFilterLine.TabIndex = 22;
-            this.btnSearchRemoveFilterLine.Text = "Remove This Filter";
-            this.btnSearchRemoveFilterLine.UseVisualStyleBackColor = true;
-            this.btnSearchRemoveFilterLine.Click += new System.EventHandler(this.btnSearchRemoveFilterLine_Click);
             // 
             // fileNameDataGridViewTextBoxColumn
             // 
@@ -933,7 +946,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1224, 633);
+            this.ClientSize = new System.Drawing.Size(1460, 688);
             this.Controls.Add(this.tabControlMain);
             this.Location = new System.Drawing.Point(90, 90);
             this.MinimumSize = new System.Drawing.Size(830, 670);
@@ -949,9 +962,10 @@
             this.tabPageDisplay.ResumeLayout(false);
             this.tabPageDisplay.PerformLayout();
             this.panelDisplayImages.ResumeLayout(false);
+            this.panelDisplayImages.PerformLayout();
             this.panelDisplayImageAndTrackBar.ResumeLayout(false);
             this.panelDisplayImageAndTrackBar.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndices)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).EndInit();
             this.panelDisplaySpectrogram.ResumeLayout(false);
             this.panelDisplaySpectrogram.PerformLayout();
@@ -986,7 +1000,7 @@
         private Label label1;
         private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateSourceFileList;
         private Button btnAnalyseSelectedAudioFiles;
-        private PictureBox pictureBoxVisualIndex;
+        private PictureBox pictureBoxVisualIndices;
         private TabPage tabPageOutputFiles;
         private Button btnUpdateOutputFileList;
         private Button btnLoadSelectedCSVFile;
@@ -1047,6 +1061,7 @@
         private Label lblSearchFieldMin;
         private TextBox tfSearchFieldName;
         private Button btnSearchRemoveFilterLine;
+        private Button btnViewFileOfIndices;
 
 
     }

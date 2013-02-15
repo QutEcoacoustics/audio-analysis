@@ -64,7 +64,7 @@ namespace AudioAnalysisTools
 
             // accumulate the individual tracks
             int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
-            int endPanelwidth = 150;
+            int endPanelwidth = 200;            // this is where name of index goes
             int imageWidth = duration + endPanelwidth;
 
             var bitmaps = new List<Bitmap>();
