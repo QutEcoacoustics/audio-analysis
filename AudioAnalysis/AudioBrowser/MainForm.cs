@@ -513,32 +513,31 @@
             fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
             fdlg.Filter = "CSV files (*.csv)|*.csv";
             fdlg.FilterIndex = 2;
-            fdlg.RestoreDirectory = true;
+            fdlg.RestoreDirectory = false;
             if (fdlg.ShowDialog() == DialogResult.OK)
             {
-                var csvFileName = fdlg.FileName;
-                var csvFilePath =
-                        new FileInfo(Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
+                var fiCSVFile = new FileInfo(fdlg.FileName);
+                this.browserSettings.fiCSVFile = fiCSVFile; // store in settings so can be accessed later.
 
+                this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
                 this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
-                this.labelSonogramFileName.Text = "File Name";
-                this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
+                this.labelSonogramFileName.Text = "Sonogram file name";
 
                 // ##################################################################################################################
-                int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
+                int status = this.LoadIndicesCSVFile(fiCSVFile.FullName);
                 // ##################################################################################################################
 
-                    if (status != 0)
+                    if (status >= 3)
                     {
-                        this.tabControlMain.SelectTab("tabPageConsole");
-                        LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                        LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
-                        if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                        if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                        //this.tabControlMain.SelectTab("tabPageConsole");
+                        //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                        //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
+                        //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                        //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
                     }
                     else
                     {
-                        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + csvFileName);
+                        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiCSVFile.FullName);
                         this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
                         this.pictureBoxBarTrack.Image = this.selectionTrackImage;
 
@@ -548,9 +547,17 @@
                         this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
                         this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
                         this.pictureBoxSonogram.Location = new Point(3, 0);
+                        this.labelSourceFileDurationInMinutes.Text = "                Image scale = 1 minute/pixel.   File duration = " + this.sourceRecording_MinutesDuration + " minutes";
 
-                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
-                        this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
+                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
+                        if (status == 0)
+                        {
+                            this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
+                        }
+                        else
+                        {
+                            this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.  READ CONSOLE MESSAGE!  ", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));                            
+                        }
                         this.tabControlMain.SelectTab("tabPageDisplay");
                     } // (status == 0)
             } // if (DialogResult.OK)
@@ -567,17 +574,43 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            //get analysis config settings
-            string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
+            int error = 0;
+
+            // get analysis config settings from the comboBox
+            // string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
+            // NO!! Instead determine the analysis name from the CSV file name.
+            // IMPORTANT: ASSUME that file name can be parsed to get the analysis type.
+
+            // PARSE the file name
+            string fileName = Path.GetFileNameWithoutExtension(csvPath);
+            string[] array = fileName.Split('_');
+            array = array[array.Length -1].Split('.');
+            string analysisName = "Towsey.Default";
+            if (array.Length >= 2) analysisName = array[0] + "." + array[1];
+
+            bool isIndicesFile = false;
+            if (array.Length >= 3)
+                isIndicesFile = (array[2] == "Indices");
+
+            if (!isIndicesFile)
+            {
+                LoggedConsole.WriteLine("\nWARNING: The file name did not parse correctly. This may not be a file of indices: " + fileName);
+                error = 1;
+            }
             var op = LoadAnalysisConfigFile(analysisName);
             this.browserSettings.fiAnalysisConfig = op.Item1;
             this.analysisParams = op.Item2;
 
             IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
-            if (analyser == null)
+            if ((! isIndicesFile) || (analyser == null))
             {
                 LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
-                LoggedConsole.WriteLine("\t Using default analysis module.");
+                LoggedConsole.WriteLine("           File name format should be: <AudioID_PersonID.AnalysisID.Indices.csv>");
+                LoggedConsole.WriteLine("                          For example: <DM36000_Towsey.MultiAnalyser.Indices.csv>");
+                LoggedConsole.WriteLine("           The file name should end with <.Indices.csv>");
+                LoggedConsole.WriteLine("           The full analysis name will be: <PersonID.AnalysisID>, e.g. Towsey.MultiAnalyser");
+                LoggedConsole.WriteLine("           The CSV file will be displayed using the default analysis module <Towsey.Default>.");
+                error = 2;
                 analyser = new AnalysisTemplate();
             }
 
@@ -621,7 +654,6 @@
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, AudioBrowserTools.IMAGE_TITLE_TEXT, browserSettings.TrackNormalisedDisplay, imagePath);
             this.pictureBoxVisualIndices.Image = tracksImage;
 
-            int error = 0;
             return error;
         }
 
