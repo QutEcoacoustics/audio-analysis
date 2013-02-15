@@ -69,17 +69,17 @@
             this.pictureBoxBarTrack = new System.Windows.Forms.PictureBox();
             this.panelDisplaySpectrogram = new System.Windows.Forms.Panel();
             this.pictureBoxSonogram = new System.Windows.Forms.PictureBox();
+            this.labelSourceFileName = new System.Windows.Forms.Label();
+            this.labelSourceFileDurationInMinutes = new System.Windows.Forms.Label();
             this.checkBoxSonogramAnnotate = new System.Windows.Forms.CheckBox();
             this.checkBoxSonnogramNoiseReduce = new System.Windows.Forms.CheckBox();
             this.labelSonogramFileName = new System.Windows.Forms.Label();
             this.labelCursorValue = new System.Windows.Forms.Label();
             this.labelSonogramName = new System.Windows.Forms.Label();
             this.buttonRefreshSonogram = new System.Windows.Forms.Button();
-            this.labelSourceFileName = new System.Windows.Forms.Label();
             this.buttonAudacityRun = new System.Windows.Forms.Button();
             this.textBoxCursorValue = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.labelSourceFileDurationInMinutes = new System.Windows.Forms.Label();
             this.textBoxCursorLocation = new System.Windows.Forms.TextBox();
             this.tabPageConsole = new System.Windows.Forms.TabPage();
             this.textBoxConsole = new System.Windows.Forms.TextBox();
@@ -143,6 +143,7 @@
             this.tabControlMain.Controls.Add(this.tabPageDisplay);
             this.tabControlMain.Controls.Add(this.tabPageConsole);
             this.tabControlMain.Controls.Add(this.tabPageSearchCsv);
+            this.tabControlMain.ItemSize = new System.Drawing.Size(105, 18);
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.SelectedIndex = 0;
@@ -165,7 +166,7 @@
             this.tabPageSourceFiles.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageSourceFiles.Size = new System.Drawing.Size(1450, 655);
             this.tabPageSourceFiles.TabIndex = 2;
-            this.tabPageSourceFiles.Text = "Source Audio Files";
+            this.tabPageSourceFiles.Text = "Analyse Audio File";
             this.tabPageSourceFiles.UseVisualStyleBackColor = true;
             // 
             // label4
@@ -306,6 +307,7 @@
             this.tabPageOutputFiles.Controls.Add(this.tfOutputDirectory);
             this.tabPageOutputFiles.Controls.Add(this.dataGridCSVfiles);
             this.tabPageOutputFiles.Controls.Add(this.btnSelectOutputDirectory);
+            this.tabPageOutputFiles.ImeMode = System.Windows.Forms.ImeMode.AlphaFull;
             this.tabPageOutputFiles.Location = new System.Drawing.Point(4, 22);
             this.tabPageOutputFiles.Name = "tabPageOutputFiles";
             this.tabPageOutputFiles.Padding = new System.Windows.Forms.Padding(3);
@@ -460,7 +462,7 @@
             this.tabPageDisplay.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageDisplay.Size = new System.Drawing.Size(1450, 655);
             this.tabPageDisplay.TabIndex = 0;
-            this.tabPageDisplay.Text = "Display";
+            this.tabPageDisplay.Text = "Display Indices File";
             this.tabPageDisplay.UseVisualStyleBackColor = true;
             // 
             // btnViewFileOfIndices
@@ -492,6 +494,7 @@
             // 
             // panelDisplayImages
             // 
+            this.panelDisplayImages.AccessibleName = "";
             this.panelDisplayImages.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -504,6 +507,7 @@
             this.panelDisplayImages.Name = "panelDisplayImages";
             this.panelDisplayImages.Size = new System.Drawing.Size(1800, 629);
             this.panelDisplayImages.TabIndex = 9;
+            this.panelDisplayImages.Tag = "";
             // 
             // panelDisplayImageAndTrackBar
             // 
@@ -514,7 +518,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1522, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1505, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -548,7 +552,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1522, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1505, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -560,6 +564,25 @@
             this.pictureBoxSonogram.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBoxSonogram.TabIndex = 2;
             this.pictureBoxSonogram.TabStop = false;
+            // 
+            // labelSourceFileName
+            // 
+            this.labelSourceFileName.AutoSize = true;
+            this.labelSourceFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSourceFileName.Location = new System.Drawing.Point(19, 12);
+            this.labelSourceFileName.Name = "labelSourceFileName";
+            this.labelSourceFileName.Size = new System.Drawing.Size(63, 13);
+            this.labelSourceFileName.TabIndex = 3;
+            this.labelSourceFileName.Text = "File Name";
+            // 
+            // labelSourceFileDurationInMinutes
+            // 
+            this.labelSourceFileDurationInMinutes.AutoSize = true;
+            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(338, 12);
+            this.labelSourceFileDurationInMinutes.Name = "labelSourceFileDurationInMinutes";
+            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(198, 13);
+            this.labelSourceFileDurationInMinutes.TabIndex = 4;
+            this.labelSourceFileDurationInMinutes.Text = "File Duration (Image scale = 1 pixel/min.)";
             // 
             // checkBoxSonogramAnnotate
             // 
@@ -620,16 +643,6 @@
             this.buttonRefreshSonogram.UseVisualStyleBackColor = true;
             this.buttonRefreshSonogram.Click += new System.EventHandler(this.buttonRefreshSonogram_Click);
             // 
-            // labelSourceFileName
-            // 
-            this.labelSourceFileName.AutoSize = true;
-            this.labelSourceFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSourceFileName.Location = new System.Drawing.Point(19, 12);
-            this.labelSourceFileName.Name = "labelSourceFileName";
-            this.labelSourceFileName.Size = new System.Drawing.Size(63, 13);
-            this.labelSourceFileName.TabIndex = 3;
-            this.labelSourceFileName.Text = "File Name";
-            // 
             // buttonAudacityRun
             // 
             this.buttonAudacityRun.Location = new System.Drawing.Point(24, 596);
@@ -655,15 +668,6 @@
             this.label3.Size = new System.Drawing.Size(81, 13);
             this.label3.TabIndex = 1;
             this.label3.Text = "Cursor Location";
-            // 
-            // labelSourceFileDurationInMinutes
-            // 
-            this.labelSourceFileDurationInMinutes.AutoSize = true;
-            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(338, 12);
-            this.labelSourceFileDurationInMinutes.Name = "labelSourceFileDurationInMinutes";
-            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(198, 13);
-            this.labelSourceFileDurationInMinutes.TabIndex = 4;
-            this.labelSourceFileDurationInMinutes.Text = "File Duration (Image scale = 1 pixel/min.)";
             // 
             // textBoxCursorLocation
             // 
