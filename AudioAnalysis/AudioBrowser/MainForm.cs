@@ -136,16 +136,38 @@
 
 
 
+            //finds valid analysis files that implement the IAnalysis interface
+            this.pluginHelper = new PluginHelper();
+            this.pluginHelper.FindIAnalysisPlugins();
+            //create list of analysers for display to user
+            var analyserDict = new Dictionary<string, string>();
+            foreach (var plugin in this.pluginHelper.AnalysisPlugins)
+            {
+                analyserDict.Add(plugin.Identifier, plugin.DisplayName);
+            }
+            var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
+            analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
 
-            //initialize instance of AudioBrowserSettings class
-            browserSettings = new AudioBrowserSettings();
+            //create comboBox display
+            this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
+            this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
+            this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
+
+            this.comboBoxCSVFileAnalysisType.DataSource = analyserList.ToList();
+            this.comboBoxCSVFileAnalysisType.DisplayMember = "Key";
+            this.comboBoxCSVFileAnalysisType.DisplayMember = "Value";
+
+
             LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             LoggedConsole.WriteLine(DateTime.Now);
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
-
             //return;
 
-            browserSettings.LoadBrowserSettings();
+
+            //REMAINDER OF METHOD LOADS BROWSER SETTINGS
+            //initialize instance of AudioBrowserSettings class
+            this.browserSettings = new AudioBrowserSettings();
+            this.browserSettings.LoadBrowserSettings();
 
 
             // if input and output dirs exist, populate datagrids
@@ -170,28 +192,8 @@
                 }
             }
 
-            //finds valid analysis files that implement the IAnalysis interface
-            this.pluginHelper = new PluginHelper();
-            this.pluginHelper.FindIAnalysisPlugins();
-            //create list of analysers for display to user
-            var analyserDict = new Dictionary<string, string>();
-            foreach (var plugin in this.pluginHelper.AnalysisPlugins)
-            {
-                analyserDict.Add(plugin.Identifier, plugin.DisplayName);
-            }
-            var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
-            analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
 
-            //create comboBox display
-            this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
-            this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
-            this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
-
-            this.comboBoxCSVFileAnalysisType.DataSource = analyserList.ToList();
-            this.comboBoxCSVFileAnalysisType.DisplayMember = "Key";
-            this.comboBoxCSVFileAnalysisType.DisplayMember = "Value";
-
-            //set default
+            //set default analyser
             var defaultAnalyserExists = analyserList.Any(a => a.Key == browserSettings.AnalysisIdentifier);
             if (defaultAnalyserExists)
             {
@@ -723,24 +725,33 @@
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
+            // check Audacity is available
+            if (browserSettings.AudacityExe == null)
+            {
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at default locations.");
+                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            FileInfo audacity = new FileInfo(browserSettings.AudacityExe.FullName);
+            if (! audacity.Exists)
+            {
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
+                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+
             int status = 0;
             if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists))
             {
                 LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
-                LoggedConsole.WriteLine("It does not exist!");
-                this.tabControlMain.SelectTab("tabPageConsole");
+                LoggedConsole.WriteLine("The audio file does not exist!");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
             }
             else
                 status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
-
-            if (status != 0)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
-                LoggedConsole.WriteLine("   Check Audacity path in the app.config.");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-            }
-
         }
 
         // here be dragons!
