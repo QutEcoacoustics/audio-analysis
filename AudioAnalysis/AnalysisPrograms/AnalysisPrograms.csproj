@@ -193,10 +193,6 @@
       <Project>{372A71B7-7505-4A40-8139-BE6D89281C9B}</Project>
       <Name>FELT.Runner</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FELT\FELT\FELT.fsproj">
-      <Project>{73B9C579-F539-426F-9852-1EFCBA75C0D5}</Project>
-      <Name>FELT %28FELT\FELT%29</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
       <Name>TowseyLib</Name>

@@ -474,9 +474,9 @@
                         this.pictureBoxBarTrack.Image = this.selectionTrackImage;
 
                         //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndex.Height + 1);
+                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
                         //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndex.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
                         this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
                         this.pictureBoxSonogram.Location = new Point(3, 0);
 
@@ -493,6 +493,71 @@
                 MessageBox.Show("No CSV file is selected.");
             }
         }
+
+
+
+        private void btnViewFileOfIndices_Click(object sender, EventArgs e)
+        {
+            //USE FOLLOWING LINE TO LOAD A PNG IMAGE
+            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
+
+            this.textBoxConsole.Clear();
+
+            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine(date);
+
+            //OPEN A FILE DIALOGUE TO FIND CSV FILE
+            OpenFileDialog fdlg = new OpenFileDialog();
+            fdlg.Title = "Open File Dialogue";
+            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
+            fdlg.Filter = "CSV files (*.csv)|*.csv";
+            fdlg.FilterIndex = 2;
+            fdlg.RestoreDirectory = true;
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var csvFileName = fdlg.FileName;
+                var csvFilePath =
+                        new FileInfo(Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
+
+                this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
+                this.labelSonogramFileName.Text = "File Name";
+                this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
+
+                // ##################################################################################################################
+                int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
+                // ##################################################################################################################
+
+                    if (status != 0)
+                    {
+                        this.tabControlMain.SelectTab("tabPageConsole");
+                        LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                        LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
+                        if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                        if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                    }
+                    else
+                    {
+                        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + csvFileName);
+                        this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+                        this.pictureBoxBarTrack.Image = this.selectionTrackImage;
+
+                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
+                        //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
+                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+                        this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
+                        this.pictureBoxSonogram.Location = new Point(3, 0);
+
+                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
+                        this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
+                        this.tabControlMain.SelectTab("tabPageDisplay");
+                    } // (status == 0)
+            } // if (DialogResult.OK)
+
+        }
+
+
 
         /// <summary>
         /// loads a csv file of indices
@@ -554,7 +619,7 @@
 
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, AudioBrowserTools.IMAGE_TITLE_TEXT, browserSettings.TrackNormalisedDisplay, imagePath);
-            this.pictureBoxVisualIndex.Image = tracksImage;
+            this.pictureBoxVisualIndices.Image = tracksImage;
 
             int error = 0;
             return error;
@@ -562,7 +627,7 @@
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
         {
-            this.pictureBoxVisualIndex.Cursor = Cursors.HSplit;
+            this.pictureBoxVisualIndices.Cursor = Cursors.HSplit;
         }
 
         private void pictureBoxVisualIndex_MouseMove(object sender, MouseEventArgs e)
@@ -574,16 +639,16 @@
             this.textBoxCursorLocation.Text = text; // pixel position = minutes
 
             //mark the time scale
-            Graphics g = this.pictureBoxVisualIndex.CreateGraphics();
-            g.DrawImage(this.pictureBoxVisualIndex.Image, 0, 0);
+            Graphics g = this.pictureBoxVisualIndices.CreateGraphics();
+            g.DrawImage(this.pictureBoxVisualIndices.Image, 0, 0);
             float[] dashValues = { 2, 2, 2, 2 };
             Pen pen = new Pen(Color.Red, 1.0F);
             pen.DashPattern = dashValues;
             Point pt1 = new Point(myX - 1, 2);
-            Point pt2 = new Point(myX - 1, this.pictureBoxVisualIndex.Height);
+            Point pt2 = new Point(myX - 1, this.pictureBoxVisualIndices.Height);
             g.DrawLine(pen, pt1, pt2);
             pt1 = new Point(myX + 1, 2);
-            pt2 = new Point(myX + 1, this.pictureBoxVisualIndex.Height);
+            pt2 = new Point(myX + 1, this.pictureBoxVisualIndices.Height);
             g.DrawLine(pen, pt1, pt2);
 
             if ((trackValues == null) || (trackValues.Length < 2)) return;
@@ -627,7 +692,7 @@
 
             //DRAW RED LINE ON BAR TRACK
             for (int y = 0; y < selectionTrackImage.Height; y++)
-                selectionTrackImage.SetPixel(this.pictureBoxVisualIndex.Left + myX, y, Color.Red);
+                selectionTrackImage.SetPixel(this.pictureBoxVisualIndices.Left + myX, y, Color.Red);
             this.pictureBoxBarTrack.Image = selectionTrackImage;
 
             double segmentDuration = this.browserSettings.DefaultSegmentDuration;
@@ -1606,6 +1671,7 @@
 
 
         }
+
 
     } //class MainForm : Form
 }
