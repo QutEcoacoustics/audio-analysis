@@ -42,10 +42,16 @@
         private readonly TextWriter consoleWriter;
         private readonly IAudioUtility audioUtilityForDurationColumn;
 
-        int totalCheckBoxesCSVFileList = 0;
-        int totalCheckedCheckBoxesCSVFileList = 0;
-        CheckBox headerCheckBoxCSVFileList = null;
-        bool isHeaderCheckBoxClickedCSVFileList = false;
+        //identifers for the TAB panels/pages
+        private string tabPageOutputFilesLabel = "tabPageOutputFiles";
+        private string tabPageSourceFilesLabel = "tabPageSourceFiles";
+        private string tabPageDisplayLabel = "tabPageDisplay";
+        private string tabPageConsoleLabel = "tabPageConsole";
+
+        //int totalCheckBoxesCSVFileList = 0;
+        //int totalCheckedCheckBoxesCSVFileList = 0;
+        //CheckBox headerCheckBoxCSVFileList = null;
+        //bool isHeaderCheckBoxClickedCSVFileList = false;
 
         int totalCheckBoxesSourceFileList = 0;
         int totalCheckedCheckBoxesSourceFileList = 0;
@@ -61,13 +67,7 @@
         private Bitmap selectionTrackImage;
 
         private string CurrentSourceFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key; } }
-        private string CurrentCSVFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key; } }
-
-        //identifers for the TAB panels/pages
-        private string tabPageOutputFilesLabel = "tabPageOutputFiles";
-        private string tabPageSourceFilesLabel = "tabPageSourceFiles";
-        private string tabPageDisplayLabel = "tabPageDisplay";
-        private string tabPageConsoleLabel = "tabPageConsole";
+        //private string CurrentCSVFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key; } }
 
         //private AnalysisCoordinator analysisCoordinator;
         private PluginHelper pluginHelper;
@@ -87,10 +87,9 @@
             this.headerCheckBoxSourceFileList.MouseClick += this.HeaderCheckBoxSourceFileList_MouseClick;
 
             //Add the CheckBox into the output file list datagridview
-            this.headerCheckBoxCSVFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
-            this.dataGridCSVfiles.Controls.Add(this.headerCheckBoxCSVFileList);
-            this.headerCheckBoxCSVFileList.KeyUp += this.HeaderCheckBoxCSVFileList_KeyUp;
-            this.headerCheckBoxCSVFileList.MouseClick += this.HeaderCheckBoxCSVFileList_MouseClick;
+            //this.headerCheckBoxCSVFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
+            //this.headerCheckBoxCSVFileList.KeyUp += this.HeaderCheckBoxCSVFileList_KeyUp;
+            //this.headerCheckBoxCSVFileList.MouseClick += this.HeaderCheckBoxCSVFileList_MouseClick;
 
             // Redirect the out Console stream
             this.consoleWriter = new TextBoxStreamWriter(this.textBoxConsole);
@@ -100,11 +99,11 @@
             this.audioUtilityForDurationColumn = new MasterAudioUtility();
 
             // column formatting for output datagridview
-            this.CsvFileDate.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
-            this.CsvFileDate.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
+            //this.CsvFileDate.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
+            //this.CsvFileDate.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
 
-            this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
-            this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
+            //this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
+            //this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
 
             this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
             this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
@@ -125,17 +124,6 @@
                     sender,
                     e);
 
-            this.backgroundWorkerUpdateCSVFileList.DoWork += this.BackgroundWorkerUpdateOutputFileListDoWork;
-            this.backgroundWorkerUpdateCSVFileList.RunWorkerCompleted +=
-                (sender, e) =>
-                this.BeginInvoke(
-                    new Action<object, RunWorkerCompletedEventArgs>(
-                    this.BackgroundWorkerUpdateOutputFileListRunWorkerCompleted),
-                    sender,
-                    e);
-
-
-
             //finds valid analysis files that implement the IAnalysis interface
             this.pluginHelper = new PluginHelper();
             this.pluginHelper.FindIAnalysisPlugins();
@@ -148,15 +136,15 @@
             var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
             analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
 
-            //create comboBox display
+            //create comboBox display for Audio File Analysis Tab
+            this.comboAnalysisType.DataSource = analyserList.ToList();
+            this.comboAnalysisType.DisplayMember = "Key";
+            this.comboAnalysisType.DisplayMember = "Value";
+
+            //create comboBox display for Source File Tab
             this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
-
-            this.comboBoxCSVFileAnalysisType.DataSource = analyserList.ToList();
-            this.comboBoxCSVFileAnalysisType.DisplayMember = "Key";
-            this.comboBoxCSVFileAnalysisType.DisplayMember = "Value";
-
 
             LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
             LoggedConsole.WriteLine(DateTime.Now);
@@ -181,16 +169,16 @@
                 }
             }
 
-            if (browserSettings.diOutputDir != null)
-            {
-                //this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
-                this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
+            //if (browserSettings.diOutputDir != null)
+            //{
+            //    //this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
+            //    this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
 
-                if (Directory.Exists(browserSettings.diOutputDir.FullName))
-                {
-                    this.UpdateOutputFileList();
-                }
-            }
+            //    if (Directory.Exists(browserSettings.diOutputDir.FullName))
+            //    {
+            //        this.UpdateOutputFileList();
+            //    }
+            //}
 
 
             //set default analyser
@@ -199,12 +187,12 @@
             {
                 var defaultAnalyser = analyserList.First(a => a.Key == browserSettings.AnalysisIdentifier);
                 this.comboBoxSourceFileAnalysisType.SelectedItem = defaultAnalyser;
-                this.comboBoxCSVFileAnalysisType.SelectedItem = defaultAnalyser;
+                this.comboAnalysisType.SelectedItem = defaultAnalyser;
             }
 
-            string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
+            //string analysisName = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
+            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
             //this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
-            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;
             this.browserSettings.AnalysisIdentifier = analysisName;
 
             var op = LoadAnalysisConfigFile(analysisName);
@@ -397,7 +385,7 @@
 
                     LoggedConsole.WriteLine("###################################################");
                     LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                    LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+                    //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
                     if (fiEventsCSV != null)
                     {
                         LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
@@ -419,80 +407,80 @@
             }
         }
 
-        private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
-        {
-            int count = 0;
+        //private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
+        //{
+        //    int count = 0;
 
-            //USE FOLLOWING LINES TO LOAD A PNG IMAGE
-            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
+        //    //USE FOLLOWING LINES TO LOAD A PNG IMAGE
+        //    //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
 
-            this.textBoxConsole.Clear();
+        //    this.textBoxConsole.Clear();
 
-            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(date);
+        //    LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+        //    string date = "# DATE AND TIME: " + DateTime.Now;
+        //    LoggedConsole.WriteLine(date);
 
-            foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
-            {
-                var checkBoxCol = row.Cells["dataGridViewCheckBoxColumnSelected"] as DataGridViewCheckBoxCell;
-                var item = row.DataBoundItem as CsvFileItem;
+        //    foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
+        //    {
+        //        var checkBoxCol = row.Cells["dataGridViewCheckBoxColumnSelected"] as DataGridViewCheckBoxCell;
+        //        var item = row.DataBoundItem as CsvFileItem;
 
-                if (checkBoxCol == null || item == null || checkBoxCol.Value == null) continue;
+        //        if (checkBoxCol == null || item == null || checkBoxCol.Value == null) continue;
 
-                var isChecked = (bool)checkBoxCol.Value;
+        //        var isChecked = (bool)checkBoxCol.Value;
 
-                if (isChecked)
-                {
-                    count++;
+        //        if (isChecked)
+        //        {
+        //            count++;
 
-                    var csvFileName = item.FileName;
-                    var csvFilePath =
-                        new FileInfo(
-                            Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
+        //            var csvFileName = item.FileName;
+        //            var csvFilePath =
+        //                new FileInfo(
+        //                    Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
-                    //LoggedConsole.WriteLine("# Display tracks in csv file: " + csvFileName);
+        //            //LoggedConsole.WriteLine("# Display tracks in csv file: " + csvFileName);
 
-                    this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
-                    this.labelSonogramFileName.Text = "File Name";
-                    this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
+        //            this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
+        //            this.labelSonogramFileName.Text = "File Name";
+        //            this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
 
-                    //##################################################################################################################
-                    int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
-                    //##################################################################################################################
+        //            //##################################################################################################################
+        //            int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
+        //            //##################################################################################################################
 
-                    if (status != 0)
-                    {
-                        this.tabControlMain.SelectTab("tabPageConsole");
-                        LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                        LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
-                        if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                        if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
-                    }
-                    else
-                    {
-                        this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-                        this.pictureBoxBarTrack.Image = this.selectionTrackImage;
+        //            if (status != 0)
+        //            {
+        //                this.tabControlMain.SelectTab("tabPageConsole");
+        //                LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+        //                LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
+        //                if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+        //                if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+        //            }
+        //            else
+        //            {
+        //                this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+        //                this.pictureBoxBarTrack.Image = this.selectionTrackImage;
 
-                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
-                        //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
-                        this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
-                        this.pictureBoxSonogram.Location = new Point(3, 0);
+        //                //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+        //                this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
+        //                //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
+        //                this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+        //                this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
+        //                this.pictureBoxSonogram.Location = new Point(3, 0);
 
-                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
-                        this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-                        this.tabControlMain.SelectTab("tabPageDisplay");
-                    } // (status == 0)
-                } // if (isChecked)
-            } //for each row in dataGridCSVfiles
-            //settings.fiCSVFile = new FileInfo();
+        //                this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
+        //                this.labelDisplayInfo.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
+        //                this.tabControlMain.SelectTab("tabPageDisplay");
+        //            } // (status == 0)
+        //        } // if (isChecked)
+        //    } //for each row in dataGridCSVfiles
+        //    //settings.fiCSVFile = new FileInfo();
 
-            if (this.dataGridCSVfiles.RowCount < 1 || count < 1)
-            {
-                MessageBox.Show("No CSV file is selected.");
-            }
-        }
+        //    if (this.dataGridCSVfiles.RowCount < 1 || count < 1)
+        //    {
+        //        MessageBox.Show("No CSV file is selected.");
+        //    }
+        //}
 
 
 
@@ -500,12 +488,6 @@
         {
             //USE FOLLOWING LINE TO LOAD A PNG IMAGE
             //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
-
-            this.textBoxConsole.Clear();
-
-            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(date);
 
             //OPEN A FILE DIALOGUE TO FIND CSV FILE
             OpenFileDialog fdlg = new OpenFileDialog();
@@ -522,6 +504,12 @@
                 this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
                 this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                 this.labelSonogramFileName.Text = "Sonogram file name";
+
+                // clear console window
+                this.textBoxConsole.Clear();
+                LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(date);
 
                 // ##################################################################################################################
                 int status = this.LoadIndicesCSVFile(fiCSVFile.FullName);
@@ -547,19 +535,20 @@
                         this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
                         this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
                         this.pictureBoxSonogram.Location = new Point(3, 0);
-                        this.labelSourceFileDurationInMinutes.Text = "                Image scale = 1 minute/pixel.   File duration = " + this.sourceRecording_MinutesDuration + " minutes";
 
                         this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
                         if (status == 0)
                         {
                             this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
+                            this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
                         }
                         else
                         {
-                            this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.  READ CONSOLE MESSAGE!  ", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));                            
+                            this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));
+                            this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
                         }
                         this.tabControlMain.SelectTab("tabPageDisplay");
-                    } // (status == 0)
+                    } // (status)
             } // if (DialogResult.OK)
 
         }
@@ -601,19 +590,27 @@
             this.browserSettings.fiAnalysisConfig = op.Item1;
             this.analysisParams = op.Item2;
 
+            // Get the analyser
             IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
-            if ((! isIndicesFile) || (analyser == null))
+            if (analyser == null)
             {
                 LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
+                error = 2;
+            }
+
+            if ((!isIndicesFile) || (analyser == null))
+            {
                 LoggedConsole.WriteLine("           File name format should be: <AudioID_PersonID.AnalysisID.Indices.csv>");
                 LoggedConsole.WriteLine("                          For example: <DM36000_Towsey.MultiAnalyser.Indices.csv>");
                 LoggedConsole.WriteLine("           The file name should end with <.Indices.csv>");
                 LoggedConsole.WriteLine("           The full analysis name will be: <PersonID.AnalysisID>, e.g. Towsey.MultiAnalyser");
                 LoggedConsole.WriteLine("           The CSV file will be displayed using the default analysis module <Towsey.Default>.");
-                error = 2;
                 analyser = new AnalysisTemplate();
             }
+            // label to show selected analysis type for viewing CSV file.
+            this.labelDisplayInfo.Text = "Analysis type = " + analysisName + ".   ";
 
+            // finally process the CSV file
             var output = analyser.ProcessCsvFile(new FileInfo(csvPath), this.browserSettings.fiAnalysisConfig);
             DataTable dtRaw = output.Item1;
             DataTable dt2Display = output.Item2;
@@ -653,7 +650,6 @@
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, AudioBrowserTools.IMAGE_TITLE_TEXT, browserSettings.TrackNormalisedDisplay, imagePath);
             this.pictureBoxVisualIndices.Image = tracksImage;
-
             return error;
         }
 
@@ -820,7 +816,7 @@
         } //pictureBoxVisualIndex_MouseClick()
 
 
-        private void buttonRunAudacity_Click(object sender, EventArgs e)
+        private void btnRunAudacity_Click(object sender, EventArgs e)
         {
             // check Audacity is available
             if (browserSettings.AudacityExe == null)
@@ -891,42 +887,6 @@
             e.Result = files.ToList();
         }
 
-        private void BackgroundWorkerUpdateOutputFileListRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            var items = e.Result as List<CsvFileItem>;
-            if (!e.Cancelled && e.Error == null && items != null)
-            {
-                foreach (var item in items)
-                {
-                    this.csvFileItemBindingSource.Add(item);
-                }
-            }
-
-            this.dataGridCSVfiles.Refresh();
-
-            this.totalCheckBoxesCSVFileList = this.dataGridCSVfiles.RowCount;
-            this.totalCheckedCheckBoxesCSVFileList = 0;
-
-            // replace existing settings
-            browserSettings.diOutputDir = new DirectoryInfo(tfOutputDirectory.Text);
-        }
-
-        private void BackgroundWorkerUpdateOutputFileListDoWork(object sender, DoWorkEventArgs e)
-        {
-            var dir = new DirectoryInfo(this.tfOutputDirectory.Text);
-            var files =
-                dir.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).Where(
-                    f =>
-                    new[] { ".csv" }.Contains(f.Extension.ToLowerInvariant()))
-                    .OrderBy(f => f.Name).Select(
-                        f =>
-                        {
-                            var item = new CsvFileItem(f);
-                            return item;
-                        });
-            e.Result = files.ToList();
-        }
-
         #endregion
 
 
@@ -980,39 +940,39 @@
             }
         }
 
-        private void btnUpdateCSVFileList_Click(object sender, EventArgs e)
-        {
-            this.Validate();
-            this.tabControlMain.SelectTab("tabPageOutputFiles");
-            UpdateOutputFileList();
+        //private void btnUpdateCSVFileList_Click(object sender, EventArgs e)
+        //{
+        //    this.Validate();
+        //    this.tabControlMain.SelectTab("tabPageOutputFiles");
+        //    UpdateOutputFileList();
 
-        }
+        //}
 
-        private void UpdateOutputFileList()
-        {
-            if (string.IsNullOrWhiteSpace(this.tfOutputDirectory.Text))
-            {
-                MessageBox.Show("Output directory path was not given.", "Error", MessageBoxButtons.OK);
-                return;
-            }
+        //private void UpdateOutputFileList()
+        //{
+        //    if (string.IsNullOrWhiteSpace(this.tfOutputDirectory.Text))
+        //    {
+        //        MessageBox.Show("Output directory path was not given.", "Error", MessageBoxButtons.OK);
+        //        return;
+        //    }
 
-            if (!Directory.Exists(this.tfOutputDirectory.Text))
-            {
-                MessageBox.Show("The given output directory does not exist.", "Error", MessageBoxButtons.OK);
-                return;
-            }
+        //    if (!Directory.Exists(this.tfOutputDirectory.Text))
+        //    {
+        //        MessageBox.Show("The given output directory does not exist.", "Error", MessageBoxButtons.OK);
+        //        return;
+        //    }
 
-            this.csvFileItemBindingSource.Clear();
+        //    this.csvFileItemBindingSource.Clear();
 
-            if (!this.backgroundWorkerUpdateCSVFileList.IsBusy)
-            {
-                this.backgroundWorkerUpdateCSVFileList.RunWorkerAsync();
-            }
-            else
-            {
-                MessageBox.Show("Already updating the CSV file list. Please wait until the current update is complete.");
-            }
-        }
+        //    if (!this.backgroundWorkerUpdateCSVFileList.IsBusy)
+        //    {
+        //        this.backgroundWorkerUpdateCSVFileList.RunWorkerAsync();
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("Already updating the CSV file list. Please wait until the current update is complete.");
+        //    }
+        //}
 
         private void btnSelectSourceDirectory_Click(object sender, EventArgs e)
         {
@@ -1032,23 +992,6 @@
             this.tabControlMain.SelectTab("tabPageSourceFiles");
         }
 
-        private void btnSelectOutputDirectory_Click(object sender, EventArgs e)
-        {
-            this.Validate();
-
-            if (Helpers.ValidDirectory(this.tfOutputDirectory.Text))
-            {
-                this.folderBrowserDialogChooseDir.SelectedPath = this.tfOutputDirectory.Text;
-            }
-
-            if (this.folderBrowserDialogChooseDir.ShowDialog() == DialogResult.OK)
-            {
-                this.tfOutputDirectory.Text = this.folderBrowserDialogChooseDir.SelectedPath;
-                browserSettings.diOutputDir = new DirectoryInfo(this.tfOutputDirectory.Text);
-            }
-
-            this.tabControlMain.SelectTab("tabPageOutputFiles");
-        }
 
         private bool IsANonHeaderTextBoxCell(DataGridViewCellEventArgs cellEvent)
         {
@@ -1155,79 +1098,79 @@
 
         #region datagridviewoutputfilelist
 
-        private void dataGridViewFileListCSVFileList_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex < 0 || e.RowIndex < 0)
-            {
-                return;
-            }
+        //private void dataGridViewFileListCSVFileList_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        //{
+        //    if (e.ColumnIndex < 0 || e.RowIndex < 0)
+        //    {
+        //        return;
+        //    }
 
-            var column = this.dataGridCSVfiles.Columns[e.ColumnIndex];
+        //    var column = this.dataGridCSVfiles.Columns[e.ColumnIndex];
 
-            if (IsANonHeaderButtonCell(e))
-            {
+        //    if (IsANonHeaderButtonCell(e))
+        //    {
 
-            }
-            else if (this.IsANonHeaderCheckBoxCell(e))
-            {
-                var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
-                if (cell != null)
-                {
-                    if (cell.Value == null)
-                    {
-                        cell.Value = true;
-                    }
-                    else
-                    {
-                        cell.Value = !((bool)cell.Value);
-                    }
+        //    }
+        //    else if (this.IsANonHeaderCheckBoxCell(e))
+        //    {
+        //        var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
+        //        if (cell != null)
+        //        {
+        //            if (cell.Value == null)
+        //            {
+        //                cell.Value = true;
+        //            }
+        //            else
+        //            {
+        //                cell.Value = !((bool)cell.Value);
+        //            }
 
-                    //MessageBox.Show(cell.Value.ToString());
-                }
-            }
-            else if (this.IsANonHeaderTextBoxCell(e))
-            {
-                //MessageBox.Show("text clicked");
-            }
-        }
+        //            //MessageBox.Show(cell.Value.ToString());
+        //        }
+        //    }
+        //    else if (this.IsANonHeaderTextBoxCell(e))
+        //    {
+        //        //MessageBox.Show("text clicked");
+        //    }
+        //}
 
-        private void dataGridViewFileListCSVFileList_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex <= -1 || e.RowIndex <= -1)
-            {
-                return;
-            }
+        //private void dataGridViewFileListCSVFileList_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        //{
+        //    if (e.ColumnIndex <= -1 || e.RowIndex <= -1)
+        //    {
+        //        return;
+        //    }
 
-            var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
+        //    var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
 
-            if (cell != null)
-            {
-                this.dataGridCSVfiles.Rows[e.RowIndex].DefaultCellStyle.BackColor = (bool)cell.Value
-                                                                                       ? Color.Yellow
-                                                                                       : Color.White;
+        //    if (cell != null)
+        //    {
+        //        this.dataGridCSVfiles.Rows[e.RowIndex].DefaultCellStyle.BackColor = (bool)cell.Value
+        //                                                                               ? Color.Yellow
+        //                                                                               : Color.White;
 
-                this.dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
-                this.dataGridCSVfiles.EndEdit(DataGridViewDataErrorContexts.LeaveControl);
-            }
+        //        this.dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        //        this.dataGridCSVfiles.EndEdit(DataGridViewDataErrorContexts.LeaveControl);
+        //    }
 
 
-            if (cell != null && !this.isHeaderCheckBoxClickedCSVFileList)
-            {
-                this.RowCheckBoxClickCSVFileList(cell);
-            }
-        }
+        //    if (cell != null && !this.isHeaderCheckBoxClickedCSVFileList)
+        //    {
+        //        this.RowCheckBoxClickCSVFileList(cell);
+        //    }
+        //}
 
-        private void dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged(object sender, EventArgs e)
-        {
-            if (dataGridCSVfiles.CurrentCell is DataGridViewCheckBoxCell)
-                dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
-        }
+        //private void dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        //{
+        //    if (dataGridCSVfiles.CurrentCell is DataGridViewCheckBoxCell)
+        //        dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        //}
 
-        private void dataGridViewFileListCSVFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex == -1 && e.ColumnIndex == 0)
-                ResetHeaderCheckBoxLocationCSVFileList(e.ColumnIndex, e.RowIndex);
-        }
+        //private void dataGridViewFileListCSVFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        //{
+        //    if (e.RowIndex == -1 && e.ColumnIndex == 0)
+        //        ResetHeaderCheckBoxLocationCSVFileList(e.ColumnIndex, e.RowIndex);
+        //}
 
         private void dataGridViewFileListCSVFileList_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -1317,80 +1260,60 @@
 
         #region check boxes output file list
 
-        private void HeaderCheckBoxCSVFileList_MouseClick(object sender, MouseEventArgs e)
-        {
-            HeaderCheckBoxClickCSVFileList((CheckBox)sender);
-        }
+        //private void HeaderCheckBoxCSVFileList_MouseClick(object sender, MouseEventArgs e)
+        //{
+        //    HeaderCheckBoxClickCSVFileList((CheckBox)sender);
+        //}
 
-        private void HeaderCheckBoxCSVFileList_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == System.Windows.Forms.Keys.Space)
-                HeaderCheckBoxClickCSVFileList((CheckBox)sender);
-        }
+        //private void HeaderCheckBoxCSVFileList_KeyUp(object sender, KeyEventArgs e)
+        //{
+        //    if (e.KeyCode == System.Windows.Forms.Keys.Space)
+        //        HeaderCheckBoxClickCSVFileList((CheckBox)sender);
+        //}
 
-        private void ResetHeaderCheckBoxLocationCSVFileList(int ColumnIndex, int RowIndex)
-        {
-            //Get the column header cell bounds
-            Rectangle oRectangle = this.dataGridCSVfiles.GetCellDisplayRectangle(ColumnIndex, RowIndex, true);
+        //private void ResetHeaderCheckBoxLocationCSVFileList(int ColumnIndex, int RowIndex)
+        //{
+        //    //Get the column header cell bounds
+        //    Rectangle oRectangle = this.dataGridCSVfiles.GetCellDisplayRectangle(ColumnIndex, RowIndex, true);
 
-            Point oPoint = new Point
-            {
-                X = oRectangle.Location.X + (oRectangle.Width - this.headerCheckBoxCSVFileList.Width) / 2 + 1,
-                Y = oRectangle.Location.Y + (oRectangle.Height - this.headerCheckBoxCSVFileList.Height) / 2 + 1
-            };
+        //    Point oPoint = new Point
+        //    {
+        //        X = oRectangle.Location.X + (oRectangle.Width - this.headerCheckBoxCSVFileList.Width) / 2 + 1,
+        //        Y = oRectangle.Location.Y + (oRectangle.Height - this.headerCheckBoxCSVFileList.Height) / 2 + 1
+        //    };
 
-            //Change the location of the CheckBox to make it stay on the header
-            this.headerCheckBoxCSVFileList.Location = oPoint;
-        }
+        //    //Change the location of the CheckBox to make it stay on the header
+        //    this.headerCheckBoxCSVFileList.Location = oPoint;
+        //}
 
-        private void HeaderCheckBoxClickCSVFileList(CheckBox hCheckBox)
-        {
-            this.isHeaderCheckBoxClickedCSVFileList = true;
 
-            if (hCheckBox.CheckState == CheckState.Indeterminate)
-            {
-                hCheckBox.CheckState = CheckState.Unchecked;
-            }
+        //private void RowCheckBoxClickCSVFileList(DataGridViewCheckBoxCell rCheckBox)
+        //{
+        //    if (rCheckBox != null)
+        //    {
+        //        var state = (bool)rCheckBox.Value;
 
-            foreach (DataGridViewRow row in dataGridCSVfiles.Rows)
-            {
-                row.Cells["dataGridViewCheckBoxColumnSelected"].Value = hCheckBox.CheckState == CheckState.Checked;
-            }
+        //        //Modifiy Counter;            
+        //        if (state && this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
+        //            this.totalCheckedCheckBoxesCSVFileList++;
+        //        else if (this.totalCheckedCheckBoxesCSVFileList > 0)
+        //            this.totalCheckedCheckBoxesCSVFileList--;
 
-            dataGridCSVfiles.RefreshEdit();
-
-            this.totalCheckedCheckBoxesCSVFileList = hCheckBox.Checked ? this.totalCheckBoxesCSVFileList : 0;
-
-            this.isHeaderCheckBoxClickedCSVFileList = false;
-        }
-
-        private void RowCheckBoxClickCSVFileList(DataGridViewCheckBoxCell rCheckBox)
-        {
-            if (rCheckBox != null)
-            {
-                var state = (bool)rCheckBox.Value;
-
-                //Modifiy Counter;            
-                if (state && this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
-                    this.totalCheckedCheckBoxesCSVFileList++;
-                else if (this.totalCheckedCheckBoxesCSVFileList > 0)
-                    this.totalCheckedCheckBoxesCSVFileList--;
-
-                //Change state of the header CheckBox.
-                if (this.totalCheckedCheckBoxesCSVFileList == 0)
-                {
-                    this.headerCheckBoxCSVFileList.CheckState = CheckState.Unchecked;
-                }
-                else if (this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
-                {
-                    this.headerCheckBoxCSVFileList.CheckState = CheckState.Indeterminate;
-                }
-                else if (this.totalCheckedCheckBoxesCSVFileList == this.totalCheckBoxesCSVFileList)
-                {
-                    this.headerCheckBoxCSVFileList.CheckState = CheckState.Checked;
-                }
-            }
-        }
+        //        //Change state of the header CheckBox.
+        //        if (this.totalCheckedCheckBoxesCSVFileList == 0)
+        //        {
+        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Unchecked;
+        //        }
+        //        else if (this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
+        //        {
+        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Indeterminate;
+        //        }
+        //        else if (this.totalCheckedCheckBoxesCSVFileList == this.totalCheckBoxesCSVFileList)
+        //        {
+        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Checked;
+        //        }
+        //    }
+        //}
 
         #endregion
 
@@ -1701,6 +1624,276 @@
                 //filter.WriteCSV(new FileInfo(result.ProcessedFile.FullName + ".matched.csv"), result.Headers, result.Rows);
             }
 
+
+        }
+
+        private void btnAnalysisFile_Click(object sender, EventArgs e)
+        {
+            //USE FOLLOWING LINE TO LOAD A PNG IMAGE
+            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
+
+            //OPEN A FILE DIALOGUE TO FIND CSV FILE
+            OpenFileDialog fdlg = new OpenFileDialog();
+            fdlg.Title = "Open Audio File Dialogue";
+            fdlg.InitialDirectory = this.browserSettings.diSourceDir.FullName;
+            fdlg.Filter = "Audio Files|*.mp3;*.wav|All files|*.*"; // ,mp4,mov,wmv,mpg    ;*.mp4;*.mov;*.wmv;*.mpg
+            fdlg.FilterIndex = 1;
+            fdlg.RestoreDirectory = false;
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var fiAudioFile = new FileInfo(fdlg.FileName);
+                this.browserSettings.fiSourceRecording = fiAudioFile; // store in settings so can be accessed later.
+                this.txtBoxAnalysisFile.Text = fiAudioFile.Name;
+                this.browserSettings.diSourceDir = new DirectoryInfo(Path.GetDirectoryName(fiAudioFile.FullName)); // change to selected directory
+                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;
+                
+                //// clear console window
+                //this.textBoxConsole.Clear();
+                //LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+                //string date = "# DATE AND TIME: " + DateTime.Now;
+                //LoggedConsole.WriteLine(date);
+
+                //// ##################################################################################################################
+                //int status = this.LoadIndicesCSVFile(fiAudioFile.FullName);
+                //// ##################################################################################################################
+
+                //    if (status >= 3)
+                //    {
+                //        //this.tabControlMain.SelectTab("tabPageConsole");
+                //        //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                //        //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
+                //        //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                //        //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                //    }
+                //    else
+                //    {
+                //        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiAudioFile.FullName);
+
+                //        //if (status == 0)
+                //        //{
+                //        //    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiAudioFile.FullName);
+                //        //    this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
+                //        //}
+                //        //else
+                //        //{
+                //        //    this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiAudioFile.FullName));
+                //        //    this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
+                //        //}
+                //    } // (status)
+            } // if (DialogResult.OK)
+
+        }
+
+        private void btnAnalysisOutputDir_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fdlg = new FolderBrowserDialog();
+
+            // Set the help text description for the FolderBrowserDialog. 
+            fdlg.Description = "Select the directory that you want to use for output files.";
+
+            // Do not allow the user to create new files via the FolderBrowserDialog. 
+            fdlg.ShowNewFolderButton = true;
+
+            // Default to the current output dir in Browser settings
+            fdlg.SelectedPath = this.browserSettings.diOutputDir.FullName;
+            //fdlg.RootFolder = Environment.SpecialFolder.Personal;
+
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var diOutput = new DirectoryInfo(fdlg.SelectedPath);
+                this.browserSettings.diOutputDir = diOutput; // store in settings so can be accessed later.
+                this.txtBoxAnalysisOutputDir.Text = diOutput.FullName;
+            }
+
+        }
+
+
+        private void comboAnalysisType_Click(object sender, EventArgs e)
+        {
+            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
+
+            if (this.browserSettings.AnalysisIdentifier == analysisName) // there has been no change
+            {
+                this.txtBoxAnalysisEditConfig.Text = String.Format("Name of config file = <{0}>.", analysisName + AudioBrowserSettings.DefaultConfigExt);
+                return;
+            }
+
+
+
+            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            var fiConfig = new FileInfo(configPath);
+            if (!fiConfig.Exists)
+            {
+                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type.");
+                LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
+                LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            this.txtBoxAnalysisEditConfig.Text = String.Format("Name of config file = <{0}>.", fiConfig.Name);
+        }
+
+        private void btnAnalysisEditConfig_Click(object sender, EventArgs e)
+        {
+            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
+            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            var fiConfig = new FileInfo(configPath);
+            if (! fiConfig.Exists)
+            {
+                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type.");
+                LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
+                LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            this.browserSettings.AnalysisIdentifier = analysisName;
+
+            string text = fiConfig.Name + "   in directory   " + Path.GetDirectoryName(configPath);
+            this.txtBoxAnalysisEditConfig.Text = text;
+            //this.txtBoxAnalysisEditConfig.TextAlign = HorizontalAlignment.Right;
+
+            //string editorPath = @"C:\Program Files (x86)\Windows NT\Accessories\wordpad.exe";
+            // check Wordpad is available
+            if ((browserSettings.WordPadExe == null) || (! browserSettings.WordPadExe.Exists))
+            {
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Wordpad editor.");
+                LoggedConsole.WriteLine("   Enter correct Wordpad path in the Browser's app.config file and try again.");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            int status = AudioBrowserTools.RunWordPad(browserSettings.WordPadExe.FullName, configPath, browserSettings.diOutputDir.FullName);
+        }
+
+        private void btnAnalysisStart_Click(object sender, EventArgs e)
+        {
+
+            textBoxAnalysisGo.Text = "Monitor analysis progress in the Console Panel.";
+
+            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
+            this.browserSettings.AnalysisIdentifier = analysisName;
+            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            var fiConfig = new FileInfo(configPath);
+
+
+            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
+
+            this.browserSettings.fiAnalysisConfig = fiConfig;
+            WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
+            CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
+
+            //this.textBoxConsole.Clear();
+            this.tabControlMain.SelectTab(tabPageConsoleLabel);
+
+            var fiSourceRecording = this.browserSettings.fiSourceRecording;
+            LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
+            LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
+            LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+
+            Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
+            stopwatch.Start();
+
+            var currentlySelectedIdentifier = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
+            var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
+
+            var settings = analyser.DefaultSettings;
+            var configuration = new ConfigDictionary(fiConfig.FullName);
+            settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
+                                            AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
+            //return;
+
+            //################# PROCESS THE RECORDING #####################################################################################
+            var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
+
+            if (analyserResults == null)
+            {
+                LoggedConsole.WriteLine("###################################################");
+                LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                LoggedConsole.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
+                return;
+            }
+
+            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
+
+                    //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
+                    var audioUtility = new MasterAudioUtility();
+                    var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
+                    var sourceInfo = audioUtility.Info(fiSourceRecording);
+
+                    var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
+                    var eventsDatatable = op1.Item1;
+                    var indicesDatatable = op1.Item2;
+                    int eventsCount = 0;
+                    if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
+                    int indicesCount = 0;
+                    if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
+                    var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
+                    var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+
+                    //#############################################################################################################################
+                    stopwatch.Stop();
+                    //DataTableTools.WriteTable2Console(indicesDataTable);
+
+
+                    //string reportFileExt = ".csv";
+                    //string opDir = this.tfOutputDirectory.Text;
+                    //string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
+                    //string reportfilePath;
+                    //int outputCount = 0;
+
+                    ////different things happen depending on the content of the analysis data table
+                    //if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
+                    //{
+                    //    outputCount = indicesDataTable.Rows.Count;
+                    //    string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                    //    indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
+                    //    reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
+                    //    CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
+
+                    //    string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
+                    //    File.Delete(target);               // Ensure that the target does not exist.
+                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
+                    //}
+
+                    //if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
+                    //{
+                    //    outputCount = eventsDataTable.Rows.Count;
+                    //    string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                    //    eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
+                    //    reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
+                    //    CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
+
+                    //    string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
+                    //    File.Delete(target);               // Ensure that the target does not exist.
+                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
+                    //}
+
+                    var fiEventsCSV = op2.Item1;
+                    var fiIndicesCSV = op2.Item2;
+
+                    //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
+                    TimeSpan ts = stopwatch.Elapsed;
+                    LoggedConsole.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+                    int outputCount = eventsCount;
+                    if (eventsCount == 0) outputCount = indicesCount;
+                    LoggedConsole.WriteLine("Number of units of output: {0}", outputCount);
+                    if (outputCount == 0) outputCount = 1;
+                    LoggedConsole.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
+
+                    LoggedConsole.WriteLine("###################################################");
+                    LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                    //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+                    if (fiEventsCSV != null)
+                    {
+                        LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                        LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
+                    }
+                    if (fiIndicesCSV != null)
+                    {
+                        LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                        LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
+                    }
+                    LoggedConsole.WriteLine("###################################################\n");
 
         }
 

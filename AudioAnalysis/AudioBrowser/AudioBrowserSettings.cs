@@ -163,6 +163,11 @@
                 LoggedConsole.WriteLine("\tAudacity Path   :     " + this.AudacityExe.FullName);
             else
                 LoggedConsole.WriteLine("\tAudacity Path   :     NOT FOUND!");
+
+            if (WordPadExists())
+                LoggedConsole.WriteLine("\tWordPad Path    :     " + this.WordPadExe.FullName);
+            else
+                LoggedConsole.WriteLine("\tWordPad Path    :     NOT FOUND!");
             LoggedConsole.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", this.TrackHeight, this.TrackNormalisedDisplay);
             LoggedConsole.WriteLine("####################################################################################\n");
         } // WriteSettings2Console()
@@ -193,6 +198,30 @@
             } //catch
         }
 
+        public bool WordPadExists()
+        {
+            try // locate WordPad
+            {
+                FileInfo wordPad = AppConfigHelper.GetFile("WordPadExe", false);
+                //string possiblePath = @"audio-utils\Audacity\audacity.exe";
+                //string anotherPath = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
+                //if (!audacity.Exists) audacity = new FileInfo(possiblePath);
+                //if (!audacity.Exists) audacity = new FileInfo(anotherPath);
+                if (!wordPad.Exists)
+                {
+                    wordPad = null;
+                    throw new FileNotFoundException();
+                }
+                this.WordPadExe = wordPad;
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                //MessageBox.Show("WARNING: Unable to find WordPad.exe. Enter correct location in the app.config file.");
+                //MessageBox.Show(ex.ToString());
+                return false;
+            } //catch
+        }
         
         public bool AudioAnalysisFilesExist()
         {
@@ -219,6 +248,7 @@
 
 
         public FileInfo AudacityExe { get; private set; }
+        public FileInfo WordPadExe { get; private set; }
         //public string AnalysisName { get; private set; }
         //public int FrameLength { get; private set; }
         public int DefaultResampleRate { get; private set; }
