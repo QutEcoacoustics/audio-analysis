@@ -301,5 +301,20 @@ namespace AudioBrowser
         }// RunAudacity()
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="wordPadPath"></param>
+        /// <param name="filePath"></param>
+        /// <param name="dir"></param>
+        public static int RunWordPad(string wordPadPath, string filePath, string dir)
+        {
+            var fiAudacity = new FileInfo(wordPadPath);
+            if (!fiAudacity.Exists) return 666;
+            TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(wordPadPath);
+            process.Run(filePath, dir, false);
+            return 0;
+        }// RunWordPad()
+
     } //AudioBrowserTools
 }

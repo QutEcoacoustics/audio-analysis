@@ -34,9 +34,22 @@
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControlMain = new System.Windows.Forms.TabControl();
+            this.tabAnalyseFile = new System.Windows.Forms.TabPage();
+            this.textBoxAnalysisGo = new System.Windows.Forms.TextBox();
+            this.txtBoxAnalysisEditConfig = new System.Windows.Forms.TextBox();
+            this.txtBoxAnalysisOutputDir = new System.Windows.Forms.TextBox();
+            this.txtBoxAnalysisFile = new System.Windows.Forms.TextBox();
+            this.comboAnalysisType = new System.Windows.Forms.ComboBox();
+            this.btnAnalysisStart = new System.Windows.Forms.Button();
+            this.btnAnalysisEditConfig = new System.Windows.Forms.Button();
+            this.lblAnalysisStart = new System.Windows.Forms.Label();
+            this.lblAnalysisEditConfig = new System.Windows.Forms.Label();
+            this.lblAnalysisType = new System.Windows.Forms.Label();
+            this.btnAnalysisOutputDir = new System.Windows.Forms.Button();
+            this.lblAnalysisOutputDir = new System.Windows.Forms.Label();
+            this.lblAnalysisFile = new System.Windows.Forms.Label();
+            this.btnAnalysisFile = new System.Windows.Forms.Button();
             this.tabPageSourceFiles = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
             this.comboBoxSourceFileAnalysisType = new System.Windows.Forms.ComboBox();
@@ -48,17 +61,6 @@
             this.btnSelectSourceDirectory = new System.Windows.Forms.Button();
             this.btnUpdateSourceFileList = new System.Windows.Forms.Button();
             this.tfSourceDirectory = new System.Windows.Forms.TextBox();
-            this.tabPageOutputFiles = new System.Windows.Forms.TabPage();
-            this.label5 = new System.Windows.Forms.Label();
-            this.comboBoxCSVFileAnalysisType = new System.Windows.Forms.ComboBox();
-            this.btnUpdateOutputFileList = new System.Windows.Forms.Button();
-            this.btnLoadSelectedCSVFile = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.tfOutputDirectory = new System.Windows.Forms.TextBox();
-            this.dataGridCSVfiles = new System.Windows.Forms.DataGridView();
-            this.dataGridViewCheckBoxColumnSelected = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.CsvFileDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.tabPageDisplay = new System.Windows.Forms.TabPage();
             this.btnViewFileOfIndices = new System.Windows.Forms.Button();
             this.labelCSVHeaders = new System.Windows.Forms.Label();
@@ -70,7 +72,7 @@
             this.panelDisplaySpectrogram = new System.Windows.Forms.Panel();
             this.pictureBoxSonogram = new System.Windows.Forms.PictureBox();
             this.labelSourceFileName = new System.Windows.Forms.Label();
-            this.labelSourceFileDurationInMinutes = new System.Windows.Forms.Label();
+            this.labelDisplayInfo = new System.Windows.Forms.Label();
             this.checkBoxSonogramAnnotate = new System.Windows.Forms.CheckBox();
             this.checkBoxSonnogramNoiseReduce = new System.Windows.Forms.CheckBox();
             this.labelSonogramFileName = new System.Windows.Forms.Label();
@@ -99,7 +101,6 @@
             this.btnAddFilterLine = new System.Windows.Forms.Button();
             this.folderBrowserDialogChooseDir = new System.Windows.Forms.FolderBrowserDialog();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
-            this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
             this.fullNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileNameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lastModifiedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -111,14 +112,11 @@
             this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.dataGridViewTextBoxColumnFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumnFileLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.tabControlMain.SuspendLayout();
+            this.tabAnalyseFile.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).BeginInit();
-            this.tabPageOutputFiles.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridCSVfiles)).BeginInit();
             this.tabPageDisplay.SuspendLayout();
             this.panelDisplayImages.SuspendLayout();
             this.panelDisplayImageAndTrackBar.SuspendLayout();
@@ -138,8 +136,8 @@
             this.tabControlMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControlMain.Controls.Add(this.tabAnalyseFile);
             this.tabControlMain.Controls.Add(this.tabPageSourceFiles);
-            this.tabControlMain.Controls.Add(this.tabPageOutputFiles);
             this.tabControlMain.Controls.Add(this.tabPageDisplay);
             this.tabControlMain.Controls.Add(this.tabPageConsole);
             this.tabControlMain.Controls.Add(this.tabPageSearchCsv);
@@ -150,6 +148,154 @@
             this.tabControlMain.Size = new System.Drawing.Size(1458, 681);
             this.tabControlMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlMain.TabIndex = 0;
+            // 
+            // tabAnalyseFile
+            // 
+            this.tabAnalyseFile.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tabAnalyseFile.Controls.Add(this.textBoxAnalysisGo);
+            this.tabAnalyseFile.Controls.Add(this.txtBoxAnalysisEditConfig);
+            this.tabAnalyseFile.Controls.Add(this.txtBoxAnalysisOutputDir);
+            this.tabAnalyseFile.Controls.Add(this.txtBoxAnalysisFile);
+            this.tabAnalyseFile.Controls.Add(this.comboAnalysisType);
+            this.tabAnalyseFile.Controls.Add(this.btnAnalysisStart);
+            this.tabAnalyseFile.Controls.Add(this.btnAnalysisEditConfig);
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisStart);
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisEditConfig);
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisType);
+            this.tabAnalyseFile.Controls.Add(this.btnAnalysisOutputDir);
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisOutputDir);
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisFile);
+            this.tabAnalyseFile.Controls.Add(this.btnAnalysisFile);
+            this.tabAnalyseFile.Location = new System.Drawing.Point(4, 22);
+            this.tabAnalyseFile.Name = "tabAnalyseFile";
+            this.tabAnalyseFile.Padding = new System.Windows.Forms.Padding(3);
+            this.tabAnalyseFile.Size = new System.Drawing.Size(1450, 655);
+            this.tabAnalyseFile.TabIndex = 5;
+            this.tabAnalyseFile.Text = "Analyse Audio File";
+            this.tabAnalyseFile.UseVisualStyleBackColor = true;
+            // 
+            // textBoxAnalysisGo
+            // 
+            this.textBoxAnalysisGo.Location = new System.Drawing.Point(364, 283);
+            this.textBoxAnalysisGo.Name = "textBoxAnalysisGo";
+            this.textBoxAnalysisGo.Size = new System.Drawing.Size(272, 20);
+            this.textBoxAnalysisGo.TabIndex = 26;
+            this.textBoxAnalysisGo.Text = "--------------------------";
+            // 
+            // txtBoxAnalysisEditConfig
+            // 
+            this.txtBoxAnalysisEditConfig.Location = new System.Drawing.Point(364, 218);
+            this.txtBoxAnalysisEditConfig.Name = "txtBoxAnalysisEditConfig";
+            this.txtBoxAnalysisEditConfig.Size = new System.Drawing.Size(272, 20);
+            this.txtBoxAnalysisEditConfig.TabIndex = 25;
+            // 
+            // txtBoxAnalysisOutputDir
+            // 
+            this.txtBoxAnalysisOutputDir.Location = new System.Drawing.Point(364, 120);
+            this.txtBoxAnalysisOutputDir.Name = "txtBoxAnalysisOutputDir";
+            this.txtBoxAnalysisOutputDir.Size = new System.Drawing.Size(272, 20);
+            this.txtBoxAnalysisOutputDir.TabIndex = 24;
+            // 
+            // txtBoxAnalysisFile
+            // 
+            this.txtBoxAnalysisFile.Location = new System.Drawing.Point(364, 62);
+            this.txtBoxAnalysisFile.Name = "txtBoxAnalysisFile";
+            this.txtBoxAnalysisFile.Size = new System.Drawing.Size(272, 20);
+            this.txtBoxAnalysisFile.TabIndex = 23;
+            // 
+            // comboAnalysisType
+            // 
+            this.comboAnalysisType.FormattingEnabled = true;
+            this.comboAnalysisType.Location = new System.Drawing.Point(211, 171);
+            this.comboAnalysisType.Name = "comboAnalysisType";
+            this.comboAnalysisType.Size = new System.Drawing.Size(121, 21);
+            this.comboAnalysisType.TabIndex = 22;
+            this.comboAnalysisType.Click += new System.EventHandler(this.comboAnalysisType_Click);
+            // 
+            // btnAnalysisStart
+            // 
+            this.btnAnalysisStart.Location = new System.Drawing.Point(211, 280);
+            this.btnAnalysisStart.Name = "btnAnalysisStart";
+            this.btnAnalysisStart.Size = new System.Drawing.Size(120, 23);
+            this.btnAnalysisStart.TabIndex = 21;
+            this.btnAnalysisStart.Text = "GO!";
+            this.btnAnalysisStart.UseVisualStyleBackColor = true;
+            this.btnAnalysisStart.Click += new System.EventHandler(this.btnAnalysisStart_Click);
+            // 
+            // btnAnalysisEditConfig
+            // 
+            this.btnAnalysisEditConfig.Location = new System.Drawing.Point(211, 218);
+            this.btnAnalysisEditConfig.Name = "btnAnalysisEditConfig";
+            this.btnAnalysisEditConfig.Size = new System.Drawing.Size(120, 23);
+            this.btnAnalysisEditConfig.TabIndex = 20;
+            this.btnAnalysisEditConfig.Text = "Edit";
+            this.btnAnalysisEditConfig.UseVisualStyleBackColor = true;
+            this.btnAnalysisEditConfig.Click += new System.EventHandler(this.btnAnalysisEditConfig_Click);
+            // 
+            // lblAnalysisStart
+            // 
+            this.lblAnalysisStart.AutoSize = true;
+            this.lblAnalysisStart.Location = new System.Drawing.Point(30, 285);
+            this.lblAnalysisStart.Name = "lblAnalysisStart";
+            this.lblAnalysisStart.Size = new System.Drawing.Size(102, 13);
+            this.lblAnalysisStart.TabIndex = 19;
+            this.lblAnalysisStart.Text = "5: Start the analysis:";
+            // 
+            // lblAnalysisEditConfig
+            // 
+            this.lblAnalysisEditConfig.AutoSize = true;
+            this.lblAnalysisEditConfig.Location = new System.Drawing.Point(30, 228);
+            this.lblAnalysisEditConfig.Name = "lblAnalysisEditConfig";
+            this.lblAnalysisEditConfig.Size = new System.Drawing.Size(146, 13);
+            this.lblAnalysisEditConfig.TabIndex = 18;
+            this.lblAnalysisEditConfig.Text = "4: Edit the analysis config file:";
+            // 
+            // lblAnalysisType
+            // 
+            this.lblAnalysisType.AutoSize = true;
+            this.lblAnalysisType.Location = new System.Drawing.Point(30, 174);
+            this.lblAnalysisType.Name = "lblAnalysisType";
+            this.lblAnalysisType.Size = new System.Drawing.Size(157, 13);
+            this.lblAnalysisType.TabIndex = 17;
+            this.lblAnalysisType.Text = "3: Select \'analysis type\' from list:";
+            // 
+            // btnAnalysisOutputDir
+            // 
+            this.btnAnalysisOutputDir.Location = new System.Drawing.Point(211, 120);
+            this.btnAnalysisOutputDir.Name = "btnAnalysisOutputDir";
+            this.btnAnalysisOutputDir.Size = new System.Drawing.Size(120, 23);
+            this.btnAnalysisOutputDir.TabIndex = 16;
+            this.btnAnalysisOutputDir.Text = "Select";
+            this.btnAnalysisOutputDir.UseVisualStyleBackColor = true;
+            this.btnAnalysisOutputDir.Click += new System.EventHandler(this.btnAnalysisOutputDir_Click);
+            // 
+            // lblAnalysisOutputDir
+            // 
+            this.lblAnalysisOutputDir.AutoSize = true;
+            this.lblAnalysisOutputDir.Location = new System.Drawing.Point(30, 120);
+            this.lblAnalysisOutputDir.Name = "lblAnalysisOutputDir";
+            this.lblAnalysisOutputDir.Size = new System.Drawing.Size(170, 13);
+            this.lblAnalysisOutputDir.TabIndex = 15;
+            this.lblAnalysisOutputDir.Text = "2: Select a directory for the output:";
+            // 
+            // lblAnalysisFile
+            // 
+            this.lblAnalysisFile.AutoSize = true;
+            this.lblAnalysisFile.Location = new System.Drawing.Point(30, 67);
+            this.lblAnalysisFile.Name = "lblAnalysisFile";
+            this.lblAnalysisFile.Size = new System.Drawing.Size(163, 13);
+            this.lblAnalysisFile.TabIndex = 14;
+            this.lblAnalysisFile.Text = "1: Select an audio file to analyse:";
+            // 
+            // btnAnalysisFile
+            // 
+            this.btnAnalysisFile.Location = new System.Drawing.Point(211, 62);
+            this.btnAnalysisFile.Name = "btnAnalysisFile";
+            this.btnAnalysisFile.Size = new System.Drawing.Size(120, 23);
+            this.btnAnalysisFile.TabIndex = 2;
+            this.btnAnalysisFile.Text = "Select";
+            this.btnAnalysisFile.UseVisualStyleBackColor = true;
+            this.btnAnalysisFile.Click += new System.EventHandler(this.btnAnalysisFile_Click);
             // 
             // tabPageSourceFiles
             // 
@@ -166,7 +312,7 @@
             this.tabPageSourceFiles.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageSourceFiles.Size = new System.Drawing.Size(1450, 655);
             this.tabPageSourceFiles.TabIndex = 2;
-            this.tabPageSourceFiles.Text = "Analyse Audio File";
+            this.tabPageSourceFiles.Text = "Source File";
             this.tabPageSourceFiles.UseVisualStyleBackColor = true;
             // 
             // label4
@@ -297,150 +443,6 @@
             this.tfSourceDirectory.Size = new System.Drawing.Size(272, 20);
             this.tfSourceDirectory.TabIndex = 8;
             // 
-            // tabPageOutputFiles
-            // 
-            this.tabPageOutputFiles.Controls.Add(this.label5);
-            this.tabPageOutputFiles.Controls.Add(this.comboBoxCSVFileAnalysisType);
-            this.tabPageOutputFiles.Controls.Add(this.btnUpdateOutputFileList);
-            this.tabPageOutputFiles.Controls.Add(this.btnLoadSelectedCSVFile);
-            this.tabPageOutputFiles.Controls.Add(this.label2);
-            this.tabPageOutputFiles.Controls.Add(this.tfOutputDirectory);
-            this.tabPageOutputFiles.Controls.Add(this.dataGridCSVfiles);
-            this.tabPageOutputFiles.Controls.Add(this.btnSelectOutputDirectory);
-            this.tabPageOutputFiles.ImeMode = System.Windows.Forms.ImeMode.AlphaFull;
-            this.tabPageOutputFiles.Location = new System.Drawing.Point(4, 22);
-            this.tabPageOutputFiles.Name = "tabPageOutputFiles";
-            this.tabPageOutputFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageOutputFiles.Size = new System.Drawing.Size(1450, 655);
-            this.tabPageOutputFiles.TabIndex = 3;
-            this.tabPageOutputFiles.Text = "Output CSV Files";
-            this.tabPageOutputFiles.UseVisualStyleBackColor = true;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 10);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(75, 13);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Analysis Type:";
-            // 
-            // comboBoxCSVFileAnalysisType
-            // 
-            this.comboBoxCSVFileAnalysisType.FormattingEnabled = true;
-            this.comboBoxCSVFileAnalysisType.Location = new System.Drawing.Point(89, 7);
-            this.comboBoxCSVFileAnalysisType.Name = "comboBoxCSVFileAnalysisType";
-            this.comboBoxCSVFileAnalysisType.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxCSVFileAnalysisType.TabIndex = 16;
-            // 
-            // btnUpdateOutputFileList
-            // 
-            this.btnUpdateOutputFileList.CausesValidation = false;
-            this.btnUpdateOutputFileList.Location = new System.Drawing.Point(705, 4);
-            this.btnUpdateOutputFileList.Name = "btnUpdateOutputFileList";
-            this.btnUpdateOutputFileList.Size = new System.Drawing.Size(120, 23);
-            this.btnUpdateOutputFileList.TabIndex = 15;
-            this.btnUpdateOutputFileList.Text = "Update File List";
-            this.btnUpdateOutputFileList.UseVisualStyleBackColor = true;
-            this.btnUpdateOutputFileList.Click += new System.EventHandler(this.btnUpdateCSVFileList_Click);
-            // 
-            // btnLoadSelectedCSVFile
-            // 
-            this.btnLoadSelectedCSVFile.Location = new System.Drawing.Point(840, 5);
-            this.btnLoadSelectedCSVFile.Name = "btnLoadSelectedCSVFile";
-            this.btnLoadSelectedCSVFile.Size = new System.Drawing.Size(120, 23);
-            this.btnLoadSelectedCSVFile.TabIndex = 2;
-            this.btnLoadSelectedCSVFile.Text = "Load CSV File";
-            this.btnLoadSelectedCSVFile.UseVisualStyleBackColor = true;
-            this.btnLoadSelectedCSVFile.Click += new System.EventHandler(this.btnLoadVisualIndexAllSelected_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(216, 10);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(74, 13);
-            this.label2.TabIndex = 14;
-            this.label2.Text = "Output Folder:";
-            // 
-            // tfOutputDirectory
-            // 
-            this.tfOutputDirectory.Location = new System.Drawing.Point(296, 7);
-            this.tfOutputDirectory.Name = "tfOutputDirectory";
-            this.tfOutputDirectory.Size = new System.Drawing.Size(272, 20);
-            this.tfOutputDirectory.TabIndex = 11;
-            // 
-            // dataGridCSVfiles
-            // 
-            this.dataGridCSVfiles.AllowUserToAddRows = false;
-            this.dataGridCSVfiles.AllowUserToDeleteRows = false;
-            this.dataGridCSVfiles.AllowUserToResizeRows = false;
-            this.dataGridCSVfiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dataGridCSVfiles.AutoGenerateColumns = false;
-            this.dataGridCSVfiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
-            this.dataGridCSVfiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridCSVfiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewCheckBoxColumnSelected,
-            this.dataGridViewTextBoxColumnFileName,
-            this.CsvFileDate,
-            this.dataGridViewTextBoxColumnFileLength});
-            this.dataGridCSVfiles.DataSource = this.csvFileItemBindingSource;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle4;
-            this.dataGridCSVfiles.Location = new System.Drawing.Point(6, 36);
-            this.dataGridCSVfiles.MultiSelect = false;
-            this.dataGridCSVfiles.Name = "dataGridCSVfiles";
-            this.dataGridCSVfiles.Size = new System.Drawing.Size(1438, 613);
-            this.dataGridCSVfiles.TabIndex = 1;
-            this.dataGridCSVfiles.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellClick);
-            this.dataGridCSVfiles.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellContentClick);
-            this.dataGridCSVfiles.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridCSVfiles_CellFormatting);
-            this.dataGridCSVfiles.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridViewFileListCSVFileList_CellPainting);
-            this.dataGridCSVfiles.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellValueChanged);
-            this.dataGridCSVfiles.CurrentCellDirtyStateChanged += new System.EventHandler(this.dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged);
-            // 
-            // dataGridViewCheckBoxColumnSelected
-            // 
-            this.dataGridViewCheckBoxColumnSelected.HeaderText = "";
-            this.dataGridViewCheckBoxColumnSelected.Name = "dataGridViewCheckBoxColumnSelected";
-            this.dataGridViewCheckBoxColumnSelected.ReadOnly = true;
-            this.dataGridViewCheckBoxColumnSelected.Width = 5;
-            // 
-            // CsvFileDate
-            // 
-            this.CsvFileDate.DataPropertyName = "LastModified";
-            this.CsvFileDate.HeaderText = "Last Modified";
-            this.CsvFileDate.Name = "CsvFileDate";
-            this.CsvFileDate.ReadOnly = true;
-            this.CsvFileDate.Width = 95;
-            // 
-            // btnSelectOutputDirectory
-            // 
-            this.btnSelectOutputDirectory.CausesValidation = false;
-            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(574, 5);
-            this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
-            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(120, 23);
-            this.btnSelectOutputDirectory.TabIndex = 12;
-            this.btnSelectOutputDirectory.Text = "Select Output Folder";
-            this.btnSelectOutputDirectory.UseVisualStyleBackColor = true;
-            this.btnSelectOutputDirectory.Click += new System.EventHandler(this.btnSelectOutputDirectory_Click);
-            // 
             // tabPageDisplay
             // 
             this.tabPageDisplay.Controls.Add(this.btnViewFileOfIndices);
@@ -502,7 +504,7 @@
             this.panelDisplayImages.Controls.Add(this.panelDisplayImageAndTrackBar);
             this.panelDisplayImages.Controls.Add(this.panelDisplaySpectrogram);
             this.panelDisplayImages.Controls.Add(this.labelSourceFileName);
-            this.panelDisplayImages.Controls.Add(this.labelSourceFileDurationInMinutes);
+            this.panelDisplayImages.Controls.Add(this.labelDisplayInfo);
             this.panelDisplayImages.Location = new System.Drawing.Point(178, 6);
             this.panelDisplayImages.Name = "panelDisplayImages";
             this.panelDisplayImages.Size = new System.Drawing.Size(1800, 629);
@@ -518,7 +520,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1505, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1437, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -552,7 +554,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1505, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1437, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -575,14 +577,14 @@
             this.labelSourceFileName.TabIndex = 3;
             this.labelSourceFileName.Text = "File Name";
             // 
-            // labelSourceFileDurationInMinutes
+            // labelDisplayInfo
             // 
-            this.labelSourceFileDurationInMinutes.AutoSize = true;
-            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(338, 12);
-            this.labelSourceFileDurationInMinutes.Name = "labelSourceFileDurationInMinutes";
-            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(198, 13);
-            this.labelSourceFileDurationInMinutes.TabIndex = 4;
-            this.labelSourceFileDurationInMinutes.Text = "File Duration (Image scale = 1 pixel/min.)";
+            this.labelDisplayInfo.AutoSize = true;
+            this.labelDisplayInfo.Location = new System.Drawing.Point(759, 11);
+            this.labelDisplayInfo.Name = "labelDisplayInfo";
+            this.labelDisplayInfo.Size = new System.Drawing.Size(37, 13);
+            this.labelDisplayInfo.TabIndex = 4;
+            this.labelDisplayInfo.Text = "..........";
             // 
             // checkBoxSonogramAnnotate
             // 
@@ -651,7 +653,7 @@
             this.buttonAudacityRun.TabIndex = 0;
             this.buttonAudacityRun.Text = "Run Audacity";
             this.buttonAudacityRun.UseVisualStyleBackColor = true;
-            this.buttonAudacityRun.Click += new System.EventHandler(this.buttonRunAudacity_Click);
+            this.buttonAudacityRun.Click += new System.EventHandler(this.btnRunAudacity_Click);
             // 
             // textBoxCursorValue
             // 
@@ -926,22 +928,6 @@
             // 
             this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
             // 
-            // dataGridViewTextBoxColumnFileName
-            // 
-            this.dataGridViewTextBoxColumnFileName.DataPropertyName = "FileName";
-            this.dataGridViewTextBoxColumnFileName.HeaderText = "FileName";
-            this.dataGridViewTextBoxColumnFileName.Name = "dataGridViewTextBoxColumnFileName";
-            this.dataGridViewTextBoxColumnFileName.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileName.Width = 76;
-            // 
-            // dataGridViewTextBoxColumnFileLength
-            // 
-            this.dataGridViewTextBoxColumnFileLength.DataPropertyName = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.HeaderText = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.Name = "dataGridViewTextBoxColumnFileLength";
-            this.dataGridViewTextBoxColumnFileLength.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileLength.Width = 81;
-            // 
             // csvFileItemBindingSource
             // 
             this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
@@ -957,12 +943,11 @@
             this.Name = "MainForm";
             this.Text = "Acoustic Environment Browser";
             this.tabControlMain.ResumeLayout(false);
+            this.tabAnalyseFile.ResumeLayout(false);
+            this.tabAnalyseFile.PerformLayout();
             this.tabPageSourceFiles.ResumeLayout(false);
             this.tabPageSourceFiles.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).EndInit();
-            this.tabPageOutputFiles.ResumeLayout(false);
-            this.tabPageOutputFiles.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridCSVfiles)).EndInit();
             this.tabPageDisplay.ResumeLayout(false);
             this.tabPageDisplay.PerformLayout();
             this.panelDisplayImages.ResumeLayout(false);
@@ -998,20 +983,12 @@
         private TextBox tfSourceDirectory;
         private FolderBrowserDialog folderBrowserDialogChooseDir;
         private BindingSource mediaFileItemBindingSource;
-        private TextBox tfOutputDirectory;
-        private Button btnSelectOutputDirectory;
-        private Label label2;
         private Label label1;
         private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateSourceFileList;
         private Button btnAnalyseSelectedAudioFiles;
         private PictureBox pictureBoxVisualIndices;
-        private TabPage tabPageOutputFiles;
-        private Button btnUpdateOutputFileList;
-        private Button btnLoadSelectedCSVFile;
-        private DataGridView dataGridCSVfiles;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateCSVFileList;
         private BindingSource csvFileItemBindingSource;
-        private Label labelSourceFileDurationInMinutes;
+        private Label labelDisplayInfo;
         private Label labelSourceFileName;
         private TextBox textBoxCursorLocation;
         private Label label3;
@@ -1025,10 +1002,6 @@
         private Label labelSonogramFileName;
         private Label labelSonogramName;
         public TabControl tabControlMain;
-        private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnSelected;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileName;
-        private DataGridViewTextBoxColumn CsvFileDate;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileLength;
         private Panel panelDisplayImages;
         private Panel panelDisplayImageAndTrackBar;
         private Panel panelDisplaySpectrogram;
@@ -1041,8 +1014,6 @@
         private DataGridViewTextBoxColumn mediaTypeDataGridViewTextBoxColumn;
         private Label label4;
         private ComboBox comboBoxSourceFileAnalysisType;
-        private Label label5;
-        private ComboBox comboBoxCSVFileAnalysisType;
         private ListBox listBoxDisplayedTracks;
         private Label labelCSVHeaders;
         private TabPage tabPageSearchCsv;
@@ -1066,6 +1037,21 @@
         private TextBox tfSearchFieldName;
         private Button btnSearchRemoveFilterLine;
         private Button btnViewFileOfIndices;
+        private TabPage tabAnalyseFile;
+        private TextBox txtBoxAnalysisEditConfig;
+        private TextBox txtBoxAnalysisOutputDir;
+        private TextBox txtBoxAnalysisFile;
+        private ComboBox comboAnalysisType;
+        private Button btnAnalysisStart;
+        private Button btnAnalysisEditConfig;
+        private Label lblAnalysisStart;
+        private Label lblAnalysisEditConfig;
+        private Label lblAnalysisType;
+        private Button btnAnalysisOutputDir;
+        private Label lblAnalysisOutputDir;
+        private Label lblAnalysisFile;
+        private Button btnAnalysisFile;
+        private TextBox textBoxAnalysisGo;
 
 
     }
