@@ -177,6 +177,10 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reflection.Context.CodePlex, Version=4.1.2.0, Culture=neutral, PublicKeyToken=13e5ffd4e05db186, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\MEF\System.Reflection.Context.CodePlex.dll</HintPath>

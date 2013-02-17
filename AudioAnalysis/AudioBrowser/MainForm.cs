@@ -12,6 +12,11 @@
     using System.Reflection;
     using System.Windows.Forms;
 
+    //following are to run powershell script
+    using System.Collections.ObjectModel;
+    using System.Management.Automation;
+    using System.Management.Automation.Runspaces;
+
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
 
@@ -27,6 +32,7 @@
 
     using TowseyLib;
     using AnalysisBase;
+    using System.Text;
 
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -1708,18 +1714,11 @@
         }
 
 
-        private void comboAnalysisType_Click(object sender, EventArgs e)
+        private void comboAnalysisType_SelectedValueChanged(object sender, EventArgs e)
         {
+            if(browserSettings == null) return; // in case not initialised yet.
+
             string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
-
-            if (this.browserSettings.AnalysisIdentifier == analysisName) // there has been no change
-            {
-                this.txtBoxAnalysisEditConfig.Text = String.Format("Name of config file = <{0}>.", analysisName + AudioBrowserSettings.DefaultConfigExt);
-                return;
-            }
-
-
-
             string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
             var fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
@@ -1730,7 +1729,7 @@
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
-            this.txtBoxAnalysisEditConfig.Text = String.Format("Name of config file = <{0}>.", fiConfig.Name);
+            this.browserSettings.AnalysisIdentifier = analysisName;
         }
 
         private void btnAnalysisEditConfig_Click(object sender, EventArgs e)
@@ -1764,11 +1763,66 @@
             int status = AudioBrowserTools.RunWordPad(browserSettings.WordPadExe.FullName, configPath, browserSettings.diOutputDir.FullName);
         }
 
+
+        //private void btnAnalysisStart_Click(object sender, EventArgs e)
+        //{
+
+        //    string arguments = "";
+        //    // Create the Process Info object with the overloaded constructor
+        //    // This takes in two parameters, the program to start and the
+        //    // command line arguments.
+        //    // The arguments parm is prefixed with "@" to eliminate the need
+        //    // to escape special characters (i.e. backslashes) in the
+        //    // arguments string and has "/C" prior to the command to tell
+        //    // the process to execute the command quickly without feedback.
+        //    ProcessStartInfo _info = new ProcessStartInfo("cmd", @"/C " + arguments);
+
+        //    // The following commands are needed to redirect the
+        //    // standard output.  This means that it will be redirected
+        //    // to the Process.StandardOutput StreamReader.
+        //    _info.RedirectStandardOutput = true;
+
+        //    // Set UseShellExecute to false.  This tells the process to run
+        //    // as a child of the invoking program, instead of on its own.
+        //    // This allows us to intercept and redirect the standard output.
+        //    _info.UseShellExecute = false;
+
+        //    // Set CreateNoWindow to true, to supress the creation of
+        //    // a new window
+        //    _info.CreateNoWindow = true;
+
+        //    // Create a process, assign its ProcessStartInfo and start it
+        //    Process _p = new Process();
+        //    _p.StartInfo = _info;
+        //    _p.Start();
+
+        //    // Capture the results in a string
+        //    string _processResults = _p.StandardOutput.ReadToEnd();
+
+        //    // Close the process to release system resources
+        //    _p.Close();
+
+        //    // Return the output stream to the caller
+        //    //_processResults;
+        //}
+    
+
+        //private void btnAnalysisStart_Click(object sender, EventArgs e)
+        //{
+        //    if (this.browserSettings.ConsoleExists())
+        //    {
+        //        FileInfo fiConsole = AppConfigHelper.GetFile("ConsoleExe", false);
+        //        LoggedConsole.WriteLine("\nRunning analysis console: " + fiConsole.FullName);
+        //        //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(fiConsole.FullName);
+        //        //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Users\Owner\Desktop\powershell.bat");
+        //        TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Windows\system32\cmd.exe");
+        //        process.Run("", this.browserSettings.diOutputDir.FullName, false);
+        //    }
+        //}
+
+
         private void btnAnalysisStart_Click(object sender, EventArgs e)
         {
-
-            textBoxAnalysisGo.Text = "Monitor analysis progress in the Console Panel.";
-
             string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
             this.browserSettings.AnalysisIdentifier = analysisName;
             string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
@@ -1781,13 +1835,22 @@
             WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
             CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
 
-            //this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab(tabPageConsoleLabel);
-
             var fiSourceRecording = this.browserSettings.fiSourceRecording;
             LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
             LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
             LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+
+            //SET UP the command line
+            StringBuilder sb = new StringBuilder();
+            sb.Append(@"C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe   audio2csv   ");
+            sb.Append("    " + fiSourceRecording.FullName);
+            sb.Append("    " + this.browserSettings.fiAnalysisConfig.FullName);
+            sb.Append("    " + this.browserSettings.diOutputDir);
+            textBoxAnalysisGo.Text = sb.ToString();
+            return;
+
+            //this.textBoxConsole.Clear();
+            this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
             Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
             stopwatch.Start();
@@ -1814,88 +1877,97 @@
 
             DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
 
-                    //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
-                    var audioUtility = new MasterAudioUtility();
-                    var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-                    var sourceInfo = audioUtility.Info(fiSourceRecording);
+            //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
+            var audioUtility = new MasterAudioUtility();
+            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
+            var sourceInfo = audioUtility.Info(fiSourceRecording);
 
-                    var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
-                    var eventsDatatable = op1.Item1;
-                    var indicesDatatable = op1.Item2;
-                    int eventsCount = 0;
-                    if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
-                    int indicesCount = 0;
-                    if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
-                    var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-                    var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
+            var eventsDatatable = op1.Item1;
+            var indicesDatatable = op1.Item2;
+            int eventsCount = 0;
+            if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
+            int indicesCount = 0;
+            if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
+            var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+            string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
+            var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-                    //#############################################################################################################################
-                    stopwatch.Stop();
-                    //DataTableTools.WriteTable2Console(indicesDataTable);
+            //#############################################################################################################################
+            stopwatch.Stop();
+            var fiEventsCSV = op2.Item1;
+            var fiIndicesCSV = op2.Item2;
 
+            //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
+            TimeSpan ts = stopwatch.Elapsed;
+            LoggedConsole.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+            int outputCount = eventsCount;
+            if (eventsCount == 0) outputCount = indicesCount;
+            LoggedConsole.WriteLine("Number of units of output: {0}", outputCount);
+            if (outputCount == 0) outputCount = 1;
+            LoggedConsole.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
 
-                    //string reportFileExt = ".csv";
-                    //string opDir = this.tfOutputDirectory.Text;
-                    //string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
-                    //string reportfilePath;
-                    //int outputCount = 0;
-
-                    ////different things happen depending on the content of the analysis data table
-                    //if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
-                    //{
-                    //    outputCount = indicesDataTable.Rows.Count;
-                    //    string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
-                    //    indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
-                    //    reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
-                    //    CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
-
-                    //    string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
-                    //    File.Delete(target);               // Ensure that the target does not exist.
-                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
-                    //}
-
-                    //if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
-                    //{
-                    //    outputCount = eventsDataTable.Rows.Count;
-                    //    string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
-                    //    eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
-                    //    reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
-                    //    CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
-
-                    //    string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
-                    //    File.Delete(target);               // Ensure that the target does not exist.
-                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
-                    //}
-
-                    var fiEventsCSV = op2.Item1;
-                    var fiIndicesCSV = op2.Item2;
-
-                    //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
-                    TimeSpan ts = stopwatch.Elapsed;
-                    LoggedConsole.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
-                    int outputCount = eventsCount;
-                    if (eventsCount == 0) outputCount = indicesCount;
-                    LoggedConsole.WriteLine("Number of units of output: {0}", outputCount);
-                    if (outputCount == 0) outputCount = 1;
-                    LoggedConsole.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
-
-                    LoggedConsole.WriteLine("###################################################");
-                    LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                    //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
-                    if (fiEventsCSV != null)
-                    {
-                        LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
-                        LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
-                    }
-                    if (fiIndicesCSV != null)
-                    {
-                        LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
-                        LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
-                    }
-                    LoggedConsole.WriteLine("###################################################\n");
-
+            LoggedConsole.WriteLine("###################################################");
+            LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+            //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+            if (fiEventsCSV != null)
+            {
+                LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
+            }
+            if (fiIndicesCSV != null)
+            {
+                LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
+            }
+            LoggedConsole.WriteLine("###################################################\n");
         }
+
+        // TRY TO USE POWERSHELL
+        //private void btnAnalysisStart_Click(object sender, EventArgs e)
+        //{
+        //    if (! this.browserSettings.ConsoleExists()) return;
+        //   
+        //    FileInfo fiConsole = AppConfigHelper.GetFile("ConsoleExe", false);
+        //    LoggedConsole.WriteLine("\nRunning analysis console: " + fiConsole.FullName);
+        //    //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(fiConsole.FullName);
+        //    //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Users\Owner\Desktop\powershell.bat");
+        //    // TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Windows\system32\cmd.exe");
+        //    // process.Run("", this.browserSettings.diOutputDir.FullName, false);
+        //    string scriptText = "echo DONE";
+        //    
+
+        //    // create Powershell runspace and open it
+        //    Runspace runspace = RunspaceFactory.CreateRunspace();
+        //    runspace.Open();
+
+        //    // create a pipeline and feed it the script text
+        //    Pipeline pipeline = runspace.CreatePipeline();
+        //    pipeline.Commands.AddScript(scriptText);
+
+        //    // add an extra command to transform the script output objects into nicely formatted strings
+        //    // remove this line to get the actual objects that the script returns. For example, the script
+
+        //    // "Get-Process" returns a collection of System.Diagnostics.Process instances.
+        //    pipeline.Commands.Add("Out-String");
+
+        //    // execute the script
+        //    //Collection<psobject /> results = pipeline.Invoke();
+        //    pipeline.Invoke();
+
+        //    // close the runspace
+        //    runspace.Close();
+
+        //    // convert the script result into a single string
+        //    StringBuilder stringBuilder = new StringBuilder();
+        //    stringBuilder.Append("done");
+        //    //foreach (PSObject obj in results)
+        //    //{
+        //    //    stringBuilder.AppendLine(obj.ToString());
+        //    //}
+
+        //    return stringBuilder.ToString();
+        //}
 
 
     } //class MainForm : Form

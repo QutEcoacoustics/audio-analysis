@@ -176,11 +176,13 @@
             // 
             // textBoxAnalysisGo
             // 
-            this.textBoxAnalysisGo.Location = new System.Drawing.Point(364, 283);
+            this.textBoxAnalysisGo.Location = new System.Drawing.Point(59, 320);
+            this.textBoxAnalysisGo.Multiline = true;
             this.textBoxAnalysisGo.Name = "textBoxAnalysisGo";
-            this.textBoxAnalysisGo.Size = new System.Drawing.Size(272, 20);
+            this.textBoxAnalysisGo.ReadOnly = true;
+            this.textBoxAnalysisGo.Size = new System.Drawing.Size(1163, 40);
             this.textBoxAnalysisGo.TabIndex = 26;
-            this.textBoxAnalysisGo.Text = "--------------------------";
+            this.textBoxAnalysisGo.Text = "COMMAND LINE";
             // 
             // txtBoxAnalysisEditConfig
             // 
@@ -210,7 +212,7 @@
             this.comboAnalysisType.Name = "comboAnalysisType";
             this.comboAnalysisType.Size = new System.Drawing.Size(121, 21);
             this.comboAnalysisType.TabIndex = 22;
-            this.comboAnalysisType.Click += new System.EventHandler(this.comboAnalysisType_Click);
+            this.comboAnalysisType.SelectedValueChanged += new System.EventHandler(this.comboAnalysisType_SelectedValueChanged);
             // 
             // btnAnalysisStart
             // 
@@ -520,7 +522,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1437, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1403, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -554,7 +556,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1437, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1403, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
