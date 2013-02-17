@@ -56,7 +56,12 @@
             this.btnAnalyseSelectedAudioFiles = new System.Windows.Forms.Button();
             this.dataGridViewFileList = new System.Windows.Forms.DataGridView();
             this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.btnSelectSourceDirectory = new System.Windows.Forms.Button();
             this.btnUpdateSourceFileList = new System.Windows.Forms.Button();
@@ -107,16 +112,14 @@
             this.durationDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaTypeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.label2 = new System.Windows.Forms.Label();
+            this.lblAnalysisPanelHeader = new System.Windows.Forms.Label();
             this.tabControlMain.SuspendLayout();
             this.tabAnalyseFile.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).BeginInit();
             this.tabPageDisplay.SuspendLayout();
             this.panelDisplayImages.SuspendLayout();
             this.panelDisplayImageAndTrackBar.SuspendLayout();
@@ -127,7 +130,6 @@
             this.tabPageConsole.SuspendLayout();
             this.tabPageSearchCsv.SuspendLayout();
             this.panelSearchEntries.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
@@ -152,6 +154,8 @@
             // tabAnalyseFile
             // 
             this.tabAnalyseFile.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tabAnalyseFile.Controls.Add(this.lblAnalysisPanelHeader);
+            this.tabAnalyseFile.Controls.Add(this.label2);
             this.tabAnalyseFile.Controls.Add(this.textBoxAnalysisGo);
             this.tabAnalyseFile.Controls.Add(this.txtBoxAnalysisEditConfig);
             this.tabAnalyseFile.Controls.Add(this.txtBoxAnalysisOutputDir);
@@ -176,31 +180,35 @@
             // 
             // textBoxAnalysisGo
             // 
-            this.textBoxAnalysisGo.Location = new System.Drawing.Point(59, 320);
+            this.textBoxAnalysisGo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxAnalysisGo.Location = new System.Drawing.Point(234, 356);
             this.textBoxAnalysisGo.Multiline = true;
             this.textBoxAnalysisGo.Name = "textBoxAnalysisGo";
             this.textBoxAnalysisGo.ReadOnly = true;
-            this.textBoxAnalysisGo.Size = new System.Drawing.Size(1163, 40);
+            this.textBoxAnalysisGo.Size = new System.Drawing.Size(988, 69);
             this.textBoxAnalysisGo.TabIndex = 26;
             this.textBoxAnalysisGo.Text = "COMMAND LINE";
             // 
             // txtBoxAnalysisEditConfig
             // 
-            this.txtBoxAnalysisEditConfig.Location = new System.Drawing.Point(364, 218);
+            this.txtBoxAnalysisEditConfig.BackColor = System.Drawing.SystemColors.Control;
+            this.txtBoxAnalysisEditConfig.Location = new System.Drawing.Point(389, 228);
             this.txtBoxAnalysisEditConfig.Name = "txtBoxAnalysisEditConfig";
             this.txtBoxAnalysisEditConfig.Size = new System.Drawing.Size(272, 20);
             this.txtBoxAnalysisEditConfig.TabIndex = 25;
             // 
             // txtBoxAnalysisOutputDir
             // 
-            this.txtBoxAnalysisOutputDir.Location = new System.Drawing.Point(364, 120);
+            this.txtBoxAnalysisOutputDir.BackColor = System.Drawing.SystemColors.Control;
+            this.txtBoxAnalysisOutputDir.Location = new System.Drawing.Point(389, 118);
             this.txtBoxAnalysisOutputDir.Name = "txtBoxAnalysisOutputDir";
             this.txtBoxAnalysisOutputDir.Size = new System.Drawing.Size(272, 20);
             this.txtBoxAnalysisOutputDir.TabIndex = 24;
             // 
             // txtBoxAnalysisFile
             // 
-            this.txtBoxAnalysisFile.Location = new System.Drawing.Point(364, 62);
+            this.txtBoxAnalysisFile.BackColor = System.Drawing.SystemColors.Control;
+            this.txtBoxAnalysisFile.Location = new System.Drawing.Point(389, 67);
             this.txtBoxAnalysisFile.Name = "txtBoxAnalysisFile";
             this.txtBoxAnalysisFile.Size = new System.Drawing.Size(272, 20);
             this.txtBoxAnalysisFile.TabIndex = 23;
@@ -208,7 +216,7 @@
             // comboAnalysisType
             // 
             this.comboAnalysisType.FormattingEnabled = true;
-            this.comboAnalysisType.Location = new System.Drawing.Point(211, 171);
+            this.comboAnalysisType.Location = new System.Drawing.Point(232, 173);
             this.comboAnalysisType.Name = "comboAnalysisType";
             this.comboAnalysisType.Size = new System.Drawing.Size(121, 21);
             this.comboAnalysisType.TabIndex = 22;
@@ -216,17 +224,17 @@
             // 
             // btnAnalysisStart
             // 
-            this.btnAnalysisStart.Location = new System.Drawing.Point(211, 280);
+            this.btnAnalysisStart.Location = new System.Drawing.Point(234, 282);
             this.btnAnalysisStart.Name = "btnAnalysisStart";
             this.btnAnalysisStart.Size = new System.Drawing.Size(120, 23);
             this.btnAnalysisStart.TabIndex = 21;
-            this.btnAnalysisStart.Text = "GO!";
+            this.btnAnalysisStart.Text = "Construct";
             this.btnAnalysisStart.UseVisualStyleBackColor = true;
             this.btnAnalysisStart.Click += new System.EventHandler(this.btnAnalysisStart_Click);
             // 
             // btnAnalysisEditConfig
             // 
-            this.btnAnalysisEditConfig.Location = new System.Drawing.Point(211, 218);
+            this.btnAnalysisEditConfig.Location = new System.Drawing.Point(234, 225);
             this.btnAnalysisEditConfig.Name = "btnAnalysisEditConfig";
             this.btnAnalysisEditConfig.Size = new System.Drawing.Size(120, 23);
             this.btnAnalysisEditConfig.TabIndex = 20;
@@ -237,33 +245,36 @@
             // lblAnalysisStart
             // 
             this.lblAnalysisStart.AutoSize = true;
+            this.lblAnalysisStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAnalysisStart.Location = new System.Drawing.Point(30, 285);
             this.lblAnalysisStart.Name = "lblAnalysisStart";
-            this.lblAnalysisStart.Size = new System.Drawing.Size(102, 13);
+            this.lblAnalysisStart.Size = new System.Drawing.Size(176, 15);
             this.lblAnalysisStart.TabIndex = 19;
-            this.lblAnalysisStart.Text = "5: Start the analysis:";
+            this.lblAnalysisStart.Text = "5: Construct the command line:";
             // 
             // lblAnalysisEditConfig
             // 
             this.lblAnalysisEditConfig.AutoSize = true;
+            this.lblAnalysisEditConfig.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAnalysisEditConfig.Location = new System.Drawing.Point(30, 228);
             this.lblAnalysisEditConfig.Name = "lblAnalysisEditConfig";
-            this.lblAnalysisEditConfig.Size = new System.Drawing.Size(146, 13);
+            this.lblAnalysisEditConfig.Size = new System.Drawing.Size(166, 15);
             this.lblAnalysisEditConfig.TabIndex = 18;
             this.lblAnalysisEditConfig.Text = "4: Edit the analysis config file:";
             // 
             // lblAnalysisType
             // 
             this.lblAnalysisType.AutoSize = true;
+            this.lblAnalysisType.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAnalysisType.Location = new System.Drawing.Point(30, 174);
             this.lblAnalysisType.Name = "lblAnalysisType";
-            this.lblAnalysisType.Size = new System.Drawing.Size(157, 13);
+            this.lblAnalysisType.Size = new System.Drawing.Size(181, 15);
             this.lblAnalysisType.TabIndex = 17;
             this.lblAnalysisType.Text = "3: Select \'analysis type\' from list:";
             // 
             // btnAnalysisOutputDir
             // 
-            this.btnAnalysisOutputDir.Location = new System.Drawing.Point(211, 120);
+            this.btnAnalysisOutputDir.Location = new System.Drawing.Point(234, 118);
             this.btnAnalysisOutputDir.Name = "btnAnalysisOutputDir";
             this.btnAnalysisOutputDir.Size = new System.Drawing.Size(120, 23);
             this.btnAnalysisOutputDir.TabIndex = 16;
@@ -274,24 +285,26 @@
             // lblAnalysisOutputDir
             // 
             this.lblAnalysisOutputDir.AutoSize = true;
+            this.lblAnalysisOutputDir.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAnalysisOutputDir.Location = new System.Drawing.Point(30, 120);
             this.lblAnalysisOutputDir.Name = "lblAnalysisOutputDir";
-            this.lblAnalysisOutputDir.Size = new System.Drawing.Size(170, 13);
+            this.lblAnalysisOutputDir.Size = new System.Drawing.Size(190, 15);
             this.lblAnalysisOutputDir.TabIndex = 15;
             this.lblAnalysisOutputDir.Text = "2: Select a directory for the output:";
             // 
             // lblAnalysisFile
             // 
             this.lblAnalysisFile.AutoSize = true;
+            this.lblAnalysisFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAnalysisFile.Location = new System.Drawing.Point(30, 67);
             this.lblAnalysisFile.Name = "lblAnalysisFile";
-            this.lblAnalysisFile.Size = new System.Drawing.Size(163, 13);
+            this.lblAnalysisFile.Size = new System.Drawing.Size(185, 15);
             this.lblAnalysisFile.TabIndex = 14;
             this.lblAnalysisFile.Text = "1: Select an audio file to analyse:";
             // 
             // btnAnalysisFile
             // 
-            this.btnAnalysisFile.Location = new System.Drawing.Point(211, 62);
+            this.btnAnalysisFile.Location = new System.Drawing.Point(234, 64);
             this.btnAnalysisFile.Name = "btnAnalysisFile";
             this.btnAnalysisFile.Size = new System.Drawing.Size(120, 23);
             this.btnAnalysisFile.TabIndex = 2;
@@ -398,6 +411,15 @@
             this.selectedDataGridViewCheckBoxColumn.ReadOnly = true;
             this.selectedDataGridViewCheckBoxColumn.Width = 5;
             // 
+            // fileNameDataGridViewTextBoxColumn
+            // 
+            this.fileNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
+            this.fileNameDataGridViewTextBoxColumn.HeaderText = "File Name";
+            this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
+            this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileNameDataGridViewTextBoxColumn.Width = 79;
+            // 
             // fileDateDataGridViewTextBoxColumn
             // 
             this.fileDateDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -406,6 +428,37 @@
             this.fileDateDataGridViewTextBoxColumn.Name = "fileDateDataGridViewTextBoxColumn";
             this.fileDateDataGridViewTextBoxColumn.ReadOnly = true;
             this.fileDateDataGridViewTextBoxColumn.Width = 95;
+            // 
+            // durationDataGridViewTextBoxColumn
+            // 
+            this.durationDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.durationDataGridViewTextBoxColumn.DataPropertyName = "Duration";
+            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration";
+            this.durationDataGridViewTextBoxColumn.Name = "durationDataGridViewTextBoxColumn";
+            this.durationDataGridViewTextBoxColumn.ReadOnly = true;
+            this.durationDataGridViewTextBoxColumn.Width = 72;
+            // 
+            // fileLengthDataGridViewTextBoxColumn
+            // 
+            this.fileLengthDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
+            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "File Length";
+            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
+            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileLengthDataGridViewTextBoxColumn.Width = 84;
+            // 
+            // mediaTypeDataGridViewTextBoxColumn
+            // 
+            this.mediaTypeDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.mediaTypeDataGridViewTextBoxColumn.DataPropertyName = "MediaType";
+            this.mediaTypeDataGridViewTextBoxColumn.HeaderText = "MediaType";
+            this.mediaTypeDataGridViewTextBoxColumn.Name = "mediaTypeDataGridViewTextBoxColumn";
+            this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // mediaFileItemBindingSource
+            // 
+            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
             // 
             // label1
             // 
@@ -522,7 +575,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1403, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1386, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -556,7 +609,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1403, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1386, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -890,49 +943,31 @@
             this.fileLengthDataGridViewTextBoxColumn1.Name = "fileLengthDataGridViewTextBoxColumn1";
             this.fileLengthDataGridViewTextBoxColumn1.Width = 81;
             // 
-            // fileNameDataGridViewTextBoxColumn
-            // 
-            this.fileNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.HeaderText = "File Name";
-            this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
-            this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileNameDataGridViewTextBoxColumn.Width = 79;
-            // 
-            // durationDataGridViewTextBoxColumn
-            // 
-            this.durationDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.durationDataGridViewTextBoxColumn.DataPropertyName = "Duration";
-            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration";
-            this.durationDataGridViewTextBoxColumn.Name = "durationDataGridViewTextBoxColumn";
-            this.durationDataGridViewTextBoxColumn.ReadOnly = true;
-            this.durationDataGridViewTextBoxColumn.Width = 72;
-            // 
-            // fileLengthDataGridViewTextBoxColumn
-            // 
-            this.fileLengthDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
-            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "File Length";
-            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
-            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileLengthDataGridViewTextBoxColumn.Width = 84;
-            // 
-            // mediaTypeDataGridViewTextBoxColumn
-            // 
-            this.mediaTypeDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.mediaTypeDataGridViewTextBoxColumn.DataPropertyName = "MediaType";
-            this.mediaTypeDataGridViewTextBoxColumn.HeaderText = "MediaType";
-            this.mediaTypeDataGridViewTextBoxColumn.Name = "mediaTypeDataGridViewTextBoxColumn";
-            this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
-            // 
-            // mediaFileItemBindingSource
-            // 
-            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
-            // 
             // csvFileItemBindingSource
             // 
             this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(30, 336);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(589, 15);
+            this.label2.TabIndex = 27;
+            this.label2.Text = "6: Paste the command line below into a command-line shell such as \'powershell.exe" +
+    "\' or \'cmd.exe\' and run:";
+            // 
+            // lblAnalysisPanelHeader
+            // 
+            this.lblAnalysisPanelHeader.AutoSize = true;
+            this.lblAnalysisPanelHeader.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAnalysisPanelHeader.ForeColor = System.Drawing.Color.Navy;
+            this.lblAnalysisPanelHeader.Location = new System.Drawing.Point(30, 21);
+            this.lblAnalysisPanelHeader.Name = "lblAnalysisPanelHeader";
+            this.lblAnalysisPanelHeader.Size = new System.Drawing.Size(341, 17);
+            this.lblAnalysisPanelHeader.TabIndex = 28;
+            this.lblAnalysisPanelHeader.Text = "To analyse an audio file complete steps 1 - 6.";
             // 
             // MainForm
             // 
@@ -950,6 +985,7 @@
             this.tabPageSourceFiles.ResumeLayout(false);
             this.tabPageSourceFiles.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).EndInit();
             this.tabPageDisplay.ResumeLayout(false);
             this.tabPageDisplay.PerformLayout();
             this.panelDisplayImages.ResumeLayout(false);
@@ -967,7 +1003,6 @@
             this.tabPageSearchCsv.PerformLayout();
             this.panelSearchEntries.ResumeLayout(false);
             this.panelSearchEntries.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).EndInit();
             this.ResumeLayout(false);
 
@@ -1054,6 +1089,8 @@
         private Label lblAnalysisFile;
         private Button btnAnalysisFile;
         private TextBox textBoxAnalysisGo;
+        private Label lblAnalysisPanelHeader;
+        private Label label2;
 
 
     }

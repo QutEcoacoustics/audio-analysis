@@ -10,29 +10,21 @@
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using System.Windows.Forms;
-
-    //following are to run powershell script
-    using System.Collections.ObjectModel;
-    using System.Management.Automation;
-    using System.Management.Automation.Runspaces;
 
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
 
+    using AnalysisBase;
     using AnalysisPrograms;
-    // using AnalysisPrograms.Processing;
     using AnalysisRunner;
-
     using AudioAnalysisTools;
+    using TowseyLib;
 
     using LINQtoCSV;
-
     using log4net;
 
-    using TowseyLib;
-    using AnalysisBase;
-    using System.Text;
 
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -92,24 +84,12 @@
             this.headerCheckBoxSourceFileList.KeyUp += this.HeaderCheckBoxSourceFileList_KeyUp;
             this.headerCheckBoxSourceFileList.MouseClick += this.HeaderCheckBoxSourceFileList_MouseClick;
 
-            //Add the CheckBox into the output file list datagridview
-            //this.headerCheckBoxCSVFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
-            //this.headerCheckBoxCSVFileList.KeyUp += this.HeaderCheckBoxCSVFileList_KeyUp;
-            //this.headerCheckBoxCSVFileList.MouseClick += this.HeaderCheckBoxCSVFileList_MouseClick;
-
             // Redirect the out Console stream
             this.consoleWriter = new TextBoxStreamWriter(this.textBoxConsole);
             Console.SetOut(this.consoleWriter);
 
             //use to display file size in file open window
             this.audioUtilityForDurationColumn = new MasterAudioUtility();
-
-            // column formatting for output datagridview
-            //this.CsvFileDate.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
-            //this.CsvFileDate.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
-
-            //this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
-            //this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
 
             this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
             this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
@@ -174,18 +154,6 @@
                     this.UpdateSourceFileList();
                 }
             }
-
-            //if (browserSettings.diOutputDir != null)
-            //{
-            //    //this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
-            //    this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
-
-            //    if (Directory.Exists(browserSettings.diOutputDir.FullName))
-            //    {
-            //        this.UpdateOutputFileList();
-            //    }
-            //}
-
 
             //set default analyser
             var defaultAnalyserExists = analyserList.Any(a => a.Key == browserSettings.AnalysisIdentifier);
@@ -341,41 +309,6 @@
 
                     //#############################################################################################################################
                     stopwatch.Stop();
-                    //DataTableTools.WriteTable2Console(indicesDataTable);
-
-
-                    //string reportFileExt = ".csv";
-                    //string opDir = this.tfOutputDirectory.Text;
-                    //string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
-                    //string reportfilePath;
-                    //int outputCount = 0;
-
-                    ////different things happen depending on the content of the analysis data table
-                    //if (indicesDataTable != null) //outputdata consists of rows of one minute indices 
-                    //{
-                    //    outputCount = indicesDataTable.Rows.Count;
-                    //    string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
-                    //    indicesDataTable = DataTableTools.SortTable(indicesDataTable, sortString);    //sort by start time
-                    //    reportfilePath = Path.Combine(opDir, fName + "Indices" + reportFileExt);
-                    //    CsvTools.DataTable2CSV(indicesDataTable, reportfilePath);
-
-                    //    string target = Path.Combine(opDir, fName + "Indices_BACKUP" + reportFileExt);
-                    //    File.Delete(target);               // Ensure that the target does not exist.
-                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
-                    //}
-
-                    //if (eventsDataTable != null) //outputdata consists of rows of acoustic events 
-                    //{
-                    //    outputCount = eventsDataTable.Rows.Count;
-                    //    string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
-                    //    eventsDataTable = DataTableTools.SortTable(eventsDataTable, sortString);    //sort by start time
-                    //    reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
-                    //    CsvTools.DataTable2CSV(eventsDataTable, reportfilePath);
-
-                    //    string target = Path.Combine(opDir, fName + "Events_BACKUP" + reportFileExt);
-                    //    File.Delete(target);               // Ensure that the target does not exist.
-                    //    File.Copy(reportfilePath, target); // Copy the file 2 target
-                    //}
 
                     var fiEventsCSV = op2.Item1;
                     var fiIndicesCSV = op2.Item2;
@@ -412,82 +345,6 @@
                 MessageBox.Show("No file is selected.");
             }
         }
-
-        //private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
-        //{
-        //    int count = 0;
-
-        //    //USE FOLLOWING LINES TO LOAD A PNG IMAGE
-        //    //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
-
-        //    this.textBoxConsole.Clear();
-
-        //    LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-        //    string date = "# DATE AND TIME: " + DateTime.Now;
-        //    LoggedConsole.WriteLine(date);
-
-        //    foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
-        //    {
-        //        var checkBoxCol = row.Cells["dataGridViewCheckBoxColumnSelected"] as DataGridViewCheckBoxCell;
-        //        var item = row.DataBoundItem as CsvFileItem;
-
-        //        if (checkBoxCol == null || item == null || checkBoxCol.Value == null) continue;
-
-        //        var isChecked = (bool)checkBoxCol.Value;
-
-        //        if (isChecked)
-        //        {
-        //            count++;
-
-        //            var csvFileName = item.FileName;
-        //            var csvFilePath =
-        //                new FileInfo(
-        //                    Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
-
-        //            //LoggedConsole.WriteLine("# Display tracks in csv file: " + csvFileName);
-
-        //            this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
-        //            this.labelSonogramFileName.Text = "File Name";
-        //            this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
-
-        //            //##################################################################################################################
-        //            int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
-        //            //##################################################################################################################
-
-        //            if (status != 0)
-        //            {
-        //                this.tabControlMain.SelectTab("tabPageConsole");
-        //                LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-        //                LoggedConsole.WriteLine("\t\tfile name:" + csvFilePath.FullName);
-        //                if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-        //                if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
-        //            }
-        //            else
-        //            {
-        //                this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-        //                this.pictureBoxBarTrack.Image = this.selectionTrackImage;
-
-        //                //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-        //                this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
-        //                //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-        //                this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
-        //                this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
-        //                this.pictureBoxSonogram.Location = new Point(3, 0);
-
-        //                this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
-        //                this.labelDisplayInfo.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-        //                this.tabControlMain.SelectTab("tabPageDisplay");
-        //            } // (status == 0)
-        //        } // if (isChecked)
-        //    } //for each row in dataGridCSVfiles
-        //    //settings.fiCSVFile = new FileInfo();
-
-        //    if (this.dataGridCSVfiles.RowCount < 1 || count < 1)
-        //    {
-        //        MessageBox.Show("No CSV file is selected.");
-        //    }
-        //}
-
 
 
         private void btnViewFileOfIndices_Click(object sender, EventArgs e)
@@ -946,40 +803,6 @@
             }
         }
 
-        //private void btnUpdateCSVFileList_Click(object sender, EventArgs e)
-        //{
-        //    this.Validate();
-        //    this.tabControlMain.SelectTab("tabPageOutputFiles");
-        //    UpdateOutputFileList();
-
-        //}
-
-        //private void UpdateOutputFileList()
-        //{
-        //    if (string.IsNullOrWhiteSpace(this.tfOutputDirectory.Text))
-        //    {
-        //        MessageBox.Show("Output directory path was not given.", "Error", MessageBoxButtons.OK);
-        //        return;
-        //    }
-
-        //    if (!Directory.Exists(this.tfOutputDirectory.Text))
-        //    {
-        //        MessageBox.Show("The given output directory does not exist.", "Error", MessageBoxButtons.OK);
-        //        return;
-        //    }
-
-        //    this.csvFileItemBindingSource.Clear();
-
-        //    if (!this.backgroundWorkerUpdateCSVFileList.IsBusy)
-        //    {
-        //        this.backgroundWorkerUpdateCSVFileList.RunWorkerAsync();
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("Already updating the CSV file list. Please wait until the current update is complete.");
-        //    }
-        //}
-
         private void btnSelectSourceDirectory_Click(object sender, EventArgs e)
         {
             this.Validate();
@@ -1103,86 +926,10 @@
         #endregion
 
         #region datagridviewoutputfilelist
-
-        //private void dataGridViewFileListCSVFileList_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        //{
-        //    if (e.ColumnIndex < 0 || e.RowIndex < 0)
-        //    {
-        //        return;
-        //    }
-
-        //    var column = this.dataGridCSVfiles.Columns[e.ColumnIndex];
-
-        //    if (IsANonHeaderButtonCell(e))
-        //    {
-
-        //    }
-        //    else if (this.IsANonHeaderCheckBoxCell(e))
-        //    {
-        //        var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
-        //        if (cell != null)
-        //        {
-        //            if (cell.Value == null)
-        //            {
-        //                cell.Value = true;
-        //            }
-        //            else
-        //            {
-        //                cell.Value = !((bool)cell.Value);
-        //            }
-
-        //            //MessageBox.Show(cell.Value.ToString());
-        //        }
-        //    }
-        //    else if (this.IsANonHeaderTextBoxCell(e))
-        //    {
-        //        //MessageBox.Show("text clicked");
-        //    }
-        //}
-
-        //private void dataGridViewFileListCSVFileList_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        //{
-        //    if (e.ColumnIndex <= -1 || e.RowIndex <= -1)
-        //    {
-        //        return;
-        //    }
-
-        //    var cell = this.dataGridCSVfiles[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
-
-        //    if (cell != null)
-        //    {
-        //        this.dataGridCSVfiles.Rows[e.RowIndex].DefaultCellStyle.BackColor = (bool)cell.Value
-        //                                                                               ? Color.Yellow
-        //                                                                               : Color.White;
-
-        //        this.dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
-        //        this.dataGridCSVfiles.EndEdit(DataGridViewDataErrorContexts.LeaveControl);
-        //    }
-
-
-        //    if (cell != null && !this.isHeaderCheckBoxClickedCSVFileList)
-        //    {
-        //        this.RowCheckBoxClickCSVFileList(cell);
-        //    }
-        //}
-
-        //private void dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged(object sender, EventArgs e)
-        //{
-        //    if (dataGridCSVfiles.CurrentCell is DataGridViewCheckBoxCell)
-        //        dataGridCSVfiles.CommitEdit(DataGridViewDataErrorContexts.Commit);
-        //}
-
-        //private void dataGridViewFileListCSVFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        //{
-        //    if (e.RowIndex == -1 && e.ColumnIndex == 0)
-        //        ResetHeaderCheckBoxLocationCSVFileList(e.ColumnIndex, e.RowIndex);
-        //}
-
         private void dataGridViewFileListCSVFileList_CellClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
-
         #endregion
 
         #region checkboxheader source
@@ -1763,50 +1510,6 @@
             int status = AudioBrowserTools.RunWordPad(browserSettings.WordPadExe.FullName, configPath, browserSettings.diOutputDir.FullName);
         }
 
-
-        //private void btnAnalysisStart_Click(object sender, EventArgs e)
-        //{
-
-        //    string arguments = "";
-        //    // Create the Process Info object with the overloaded constructor
-        //    // This takes in two parameters, the program to start and the
-        //    // command line arguments.
-        //    // The arguments parm is prefixed with "@" to eliminate the need
-        //    // to escape special characters (i.e. backslashes) in the
-        //    // arguments string and has "/C" prior to the command to tell
-        //    // the process to execute the command quickly without feedback.
-        //    ProcessStartInfo _info = new ProcessStartInfo("cmd", @"/C " + arguments);
-
-        //    // The following commands are needed to redirect the
-        //    // standard output.  This means that it will be redirected
-        //    // to the Process.StandardOutput StreamReader.
-        //    _info.RedirectStandardOutput = true;
-
-        //    // Set UseShellExecute to false.  This tells the process to run
-        //    // as a child of the invoking program, instead of on its own.
-        //    // This allows us to intercept and redirect the standard output.
-        //    _info.UseShellExecute = false;
-
-        //    // Set CreateNoWindow to true, to supress the creation of
-        //    // a new window
-        //    _info.CreateNoWindow = true;
-
-        //    // Create a process, assign its ProcessStartInfo and start it
-        //    Process _p = new Process();
-        //    _p.StartInfo = _info;
-        //    _p.Start();
-
-        //    // Capture the results in a string
-        //    string _processResults = _p.StandardOutput.ReadToEnd();
-
-        //    // Close the process to release system resources
-        //    _p.Close();
-
-        //    // Return the output stream to the caller
-        //    //_processResults;
-        //}
-    
-
         //private void btnAnalysisStart_Click(object sender, EventArgs e)
         //{
         //    if (this.browserSettings.ConsoleExists())
@@ -1819,7 +1522,6 @@
         //        process.Run("", this.browserSettings.diOutputDir.FullName, false);
         //    }
         //}
-
 
         private void btnAnalysisStart_Click(object sender, EventArgs e)
         {
@@ -1838,7 +1540,7 @@
             var fiSourceRecording = this.browserSettings.fiSourceRecording;
             LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
             LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-            LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+            //LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
 
             //SET UP the command line
             StringBuilder sb = new StringBuilder();
@@ -1848,6 +1550,10 @@
             sb.Append("    " + this.browserSettings.diOutputDir);
             textBoxAnalysisGo.Text = sb.ToString();
             return;
+
+
+
+
 
             //this.textBoxConsole.Clear();
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
@@ -1922,52 +1628,6 @@
             }
             LoggedConsole.WriteLine("###################################################\n");
         }
-
-        // TRY TO USE POWERSHELL
-        //private void btnAnalysisStart_Click(object sender, EventArgs e)
-        //{
-        //    if (! this.browserSettings.ConsoleExists()) return;
-        //   
-        //    FileInfo fiConsole = AppConfigHelper.GetFile("ConsoleExe", false);
-        //    LoggedConsole.WriteLine("\nRunning analysis console: " + fiConsole.FullName);
-        //    //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(fiConsole.FullName);
-        //    //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Users\Owner\Desktop\powershell.bat");
-        //    // TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Windows\system32\cmd.exe");
-        //    // process.Run("", this.browserSettings.diOutputDir.FullName, false);
-        //    string scriptText = "echo DONE";
-        //    
-
-        //    // create Powershell runspace and open it
-        //    Runspace runspace = RunspaceFactory.CreateRunspace();
-        //    runspace.Open();
-
-        //    // create a pipeline and feed it the script text
-        //    Pipeline pipeline = runspace.CreatePipeline();
-        //    pipeline.Commands.AddScript(scriptText);
-
-        //    // add an extra command to transform the script output objects into nicely formatted strings
-        //    // remove this line to get the actual objects that the script returns. For example, the script
-
-        //    // "Get-Process" returns a collection of System.Diagnostics.Process instances.
-        //    pipeline.Commands.Add("Out-String");
-
-        //    // execute the script
-        //    //Collection<psobject /> results = pipeline.Invoke();
-        //    pipeline.Invoke();
-
-        //    // close the runspace
-        //    runspace.Close();
-
-        //    // convert the script result into a single string
-        //    StringBuilder stringBuilder = new StringBuilder();
-        //    stringBuilder.Append("done");
-        //    //foreach (PSObject obj in results)
-        //    //{
-        //    //    stringBuilder.AppendLine(obj.ToString());
-        //    //}
-
-        //    return stringBuilder.ToString();
-        //}
 
 
     } //class MainForm : Form
