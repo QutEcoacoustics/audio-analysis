@@ -222,6 +222,30 @@
                 return false;
             } //catch
         }
+
+        public bool ConsoleExists()
+        {
+
+            string consolePath = @"C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe";
+            try // locate WordPad
+            {
+                FileInfo console = AppConfigHelper.GetFile("ConsoleExe", false);
+                if (!console.Exists)
+                {
+                    console = null;
+                    throw new FileNotFoundException();
+                }
+                this.ConsoleExe = console;
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                //MessageBox.Show("WARNING: Unable to find WordPad.exe. Enter correct location in the app.config file.");
+                //MessageBox.Show(ex.ToString());
+                return false;
+            } //catch
+        }
+
         
         public bool AudioAnalysisFilesExist()
         {
@@ -249,6 +273,7 @@
 
         public FileInfo AudacityExe { get; private set; }
         public FileInfo WordPadExe { get; private set; }
+        public FileInfo ConsoleExe { get; private set; }       
         //public string AnalysisName { get; private set; }
         //public int FrameLength { get; private set; }
         public int DefaultResampleRate { get; private set; }
