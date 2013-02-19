@@ -28,6 +28,7 @@
 
             LoggedConsole.WriteLine("\n####################################################################################\nLOADING BROWSER SETTINGS:");
 
+            this.DefaultTempFilesDir = AppConfigHelper.GetDir("TempFileDirectory", false);
 
             try
             {
@@ -113,12 +114,7 @@
             } //catch
 
 
-            //CHECK THESE AUDIO ANALYSIS FILES EXIST
-            //<add key="AudioUtilityFfmpegExe" value="audio-utils\ffmpeg\ffmpeg.exe" />
-            //<add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
-            //<add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
-            //<add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
-            //<add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
+            //CHECK THAT AUDIO SOX.exe and other AUDIO ANALYSIS FILES EXIST
             if (! AudioAnalysisFilesExist())
             {
                 // MessageBox.Show("WARNING: " + ex.ToString());
@@ -177,22 +173,23 @@
         {
             try // locate AUDACITY
             {
-                FileInfo audacity = AppConfigHelper.GetFile("AudacityExe", false);
-                string possiblePath = @"audio-utils\Audacity\audacity.exe";
-                string anotherPath  = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
-                if (!audacity.Exists) audacity = new FileInfo(possiblePath);
-                if (!audacity.Exists) audacity = new FileInfo(anotherPath);
-                if (!audacity.Exists)
+                this.AudacityExe = null;
+                FileInfo audacity1 = AppConfigHelper.GetFile("AudacityExe1", false);
+                if (audacity1.Exists)
                 {
-                    audacity = null;
-                    throw new FileNotFoundException();
+                    this.AudacityExe = audacity1;
+                    return true;
                 }
-                this.AudacityExe = audacity;
-                return true;
+                FileInfo audacity2 = AppConfigHelper.GetFile("AudacityExe2", false);
+                if (audacity2.Exists)
+                {
+                    this.AudacityExe = audacity2;
+                    return true;
+                }
+                throw new FileNotFoundException();
             }
             catch (FileNotFoundException ex)
             {
-                //MessageBox.Show("WARNING: Unable to find Audacity. Enter correct location in the app.config file.");
                 //MessageBox.Show(ex.ToString());
                 return false;
             } //catch
@@ -203,10 +200,6 @@
             try // locate WordPad
             {
                 FileInfo wordPad = AppConfigHelper.GetFile("WordPadExe", false);
-                //string possiblePath = @"audio-utils\Audacity\audacity.exe";
-                //string anotherPath = @"C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe";
-                //if (!audacity.Exists) audacity = new FileInfo(possiblePath);
-                //if (!audacity.Exists) audacity = new FileInfo(anotherPath);
                 if (!wordPad.Exists)
                 {
                     wordPad = null;
@@ -217,7 +210,26 @@
             }
             catch (FileNotFoundException ex)
             {
-                //MessageBox.Show("WARNING: Unable to find WordPad.exe. Enter correct location in the app.config file.");
+                //MessageBox.Show(ex.ToString());
+                return false;
+            } //catch
+        }
+
+        public bool AnalysisProgramsExeExists()
+        {
+            try // locate Console exe
+            {
+                FileInfo exe = AppConfigHelper.GetFile("AnalysisProgramsExe", false);
+                if (!exe.Exists)
+                {
+                    exe = null;
+                    throw new FileNotFoundException();
+                }
+                this.AnalysisProgramsExe = exe;
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
                 //MessageBox.Show(ex.ToString());
                 return false;
             } //catch
@@ -225,9 +237,7 @@
 
         public bool ConsoleExists()
         {
-
-            string consolePath = @"C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe";
-            try // locate WordPad
+            try // locate Console exe
             {
                 FileInfo console = AppConfigHelper.GetFile("ConsoleExe", false);
                 if (!console.Exists)
@@ -240,12 +250,10 @@
             }
             catch (FileNotFoundException ex)
             {
-                //MessageBox.Show("WARNING: Unable to find WordPad.exe. Enter correct location in the app.config file.");
                 //MessageBox.Show(ex.ToString());
                 return false;
             } //catch
         }
-
         
         public bool AudioAnalysisFilesExist()
         {
@@ -273,13 +281,10 @@
 
         public FileInfo AudacityExe { get; private set; }
         public FileInfo WordPadExe { get; private set; }
+        public FileInfo AnalysisProgramsExe { get; private set; }        
         public FileInfo ConsoleExe { get; private set; }       
-        //public string AnalysisName { get; private set; }
-        //public int FrameLength { get; private set; }
         public int DefaultResampleRate { get; private set; }
-        //public double FrameOverlap { get; private set; }
         public double DefaultSegmentDuration { get; private set; }  //measured in minutes
-        //public int SegmentOverlap { get; private set; }   //measured in seconds
         public double SonogramBackgroundThreshold { get; private set; }
         public int TrackHeight { get; private set; }
         public int TrackCount { get; private set; }
@@ -294,6 +299,8 @@
         public DirectoryInfo diSourceDir { get; set; }
         public DirectoryInfo diConfigDir { get; set; }
         public DirectoryInfo diOutputDir { get; set; }
+
+        public DirectoryInfo DefaultTempFilesDir { get; set; }
 
         public FileInfo fiSourceRecording { get; set; }
         public FileInfo fiAnalysisConfig  { get; set; }
