@@ -91,12 +91,24 @@ namespace AnalysisPrograms
             string recordingPath = args[0];
             string configPath    = args[1];
             string outputDir     = args[2];
+            string tempFilesDir  = null;
+
+            if (args.Length > 3)
+            {
+                tempFilesDir = args[3];
+            }
+
+            if (tempFilesDir == null)
+            {
+                tempFilesDir = new DirectoryInfo(Path.GetTempPath()).FullName;
+            }
 
             if (verbose)
             {
                 LoggedConsole.WriteLine("# Recording file:     " + Path.GetFileName(recordingPath));
                 LoggedConsole.WriteLine("# Configuration file: " + configPath);
                 LoggedConsole.WriteLine("# Output folder:      " + outputDir);
+                LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDir);
             }
 
             //1. set up the necessary files
@@ -185,7 +197,7 @@ namespace AnalysisPrograms
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SetUserConfiguration(tempFilesDir, fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################

@@ -211,7 +211,6 @@
     <!-- ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\" -->
     <!-- C:\Program Files\CollabNet\Subversion Client -->
     <PropertyGroup>
-      <ToolPath Condition="Exists('D:\boobs\')">D:\boobs\</ToolPath>
       <ToolPath Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\')">$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\</ToolPath>
       <ToolPath Condition="Exists('D:\Work\Sensors\Extra Assemblies\Subversion Server\')">D:\Work\Sensors\Extra Assemblies\Subversion Server\</ToolPath>
       <ToolPath Condition="Exists('C:\Program Files (x86)\CollabNet\Subversion Server\')">C:\Program Files (x86)\CollabNet\Subversion Server\</ToolPath>

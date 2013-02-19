@@ -273,7 +273,7 @@
 
                     var settings = analyser.DefaultSettings;
                     var configuration = new ConfigDictionary(fiConfig.FullName);
-                    settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
+                    settings.SetUserConfiguration(this.browserSettings.DefaultTempFilesDir, fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
                                                   AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
 
                     //################# PROCESS THE RECORDING #####################################################################################
@@ -1536,19 +1536,41 @@
             this.browserSettings.fiAnalysisConfig = fiConfig;
             WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
             CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
-
-            var fiSourceRecording = this.browserSettings.fiSourceRecording;
-            LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
-            LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-            //LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+            textBoxAnalysisGo.ForeColor = Color.Black;
+            textBoxAnalysisGo.BackColor = Color.Ivory;
 
             //SET UP the command line
+            if (! this.browserSettings.AnalysisProgramsExeExists())
+            {
+                textBoxAnalysisGo.BackColor = Color.Ivory;
+                textBoxAnalysisGo.ForeColor = Color.Red;
+                LoggedConsole.WriteLine("\nWARNING: Cannot find AudioAnalysisPrograms.exe.");
+                LoggedConsole.WriteLine("   Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
+                textBoxAnalysisGo.Text = "WARNING: Cannot find AudioAnalysisPrograms.exe. Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.";
+                return;
+            }
+
+            var fiSourceRecording = this.browserSettings.fiSourceRecording;
+            if (fiSourceRecording == null)
+            {
+                textBoxAnalysisGo.BackColor = Color.Ivory;
+                textBoxAnalysisGo.ForeColor = Color.Red;
+                string msg = "\nWARNING: You must complete Step 1. Enter an audio file to analyse.";
+                LoggedConsole.WriteLine(msg);
+                textBoxAnalysisGo.Text = msg;
+                return;
+            }
+
             StringBuilder sb = new StringBuilder();
-            sb.Append(@"C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe   audio2csv   ");
+            sb.Append(browserSettings.AnalysisProgramsExe.FullName + "   audio2csv");
             sb.Append("    " + fiSourceRecording.FullName);
             sb.Append("    " + this.browserSettings.fiAnalysisConfig.FullName);
             sb.Append("    " + this.browserSettings.diOutputDir);
             textBoxAnalysisGo.Text = sb.ToString();
+
+            LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
+            LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
+            //LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
             return;
 
 
@@ -1566,7 +1588,7 @@
 
             var settings = analyser.DefaultSettings;
             var configuration = new ConfigDictionary(fiConfig.FullName);
-            settings.SetUserConfiguration(fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
+            settings.SetUserConfiguration(this.browserSettings.DefaultTempFilesDir, fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
                                             AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
             //return;
 

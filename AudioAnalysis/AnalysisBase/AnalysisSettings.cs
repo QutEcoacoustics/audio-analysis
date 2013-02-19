@@ -248,12 +248,19 @@
         /// <param name="diOutputDir"></param>
         /// <param name="key_SEGMENT_DURATION"></param>
         /// <param name="key_SEGMENT_OVERLAP"></param>
-        public void SetUserConfiguration(FileInfo fiConfig, Dictionary<string, string> dict, DirectoryInfo diOutputDir, string key_SEGMENT_DURATION, string key_SEGMENT_OVERLAP)
+        public void SetUserConfiguration(DirectoryInfo tempFileDir, FileInfo fiConfig, Dictionary<string, string> dict, DirectoryInfo diOutputDir, string key_SEGMENT_DURATION, string key_SEGMENT_OVERLAP)
         {
             this.ConfigFile = fiConfig;
             this.ConfigDict = dict;
             this.AnalysisBaseDirectory = diOutputDir;
-            this.AnalysisTempBaseDirectory = new DirectoryInfo("F:\\"); //new DirectoryInfo(Path.GetTempPath());
+            if (tempFileDir == null)
+            {
+                this.AnalysisTempBaseDirectory = new DirectoryInfo(Path.GetTempPath());
+            }
+            else
+            {
+                this.AnalysisTempBaseDirectory = tempFileDir;
+            }
 
             //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
 
