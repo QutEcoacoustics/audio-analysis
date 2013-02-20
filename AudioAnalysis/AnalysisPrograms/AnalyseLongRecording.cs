@@ -197,7 +197,7 @@ namespace AnalysisPrograms
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(tempFilesDir, fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SetUserConfiguration(new DirectoryInfo(tempFilesDir), fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
