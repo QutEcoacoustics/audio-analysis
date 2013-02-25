@@ -1377,8 +1377,14 @@
                 //filter.WriteCSV(new FileInfo(result.ProcessedFile.FullName + ".matched.csv"), result.Headers, result.Rows);
             }
 
-
         }
+
+
+
+
+
+        // ********************************************************************************************************************************************
+        // METHODS BELOW ARE FOR CONTROLS ON THE TABBED PANEL LABELLED 'ANALYSE AUDIO FILE'.
 
         private void btnAnalysisFile_Click(object sender, EventArgs e)
         {
@@ -1398,44 +1404,10 @@
                 this.browserSettings.fiSourceRecording = fiAudioFile; // store in settings so can be accessed later.
                 this.txtBoxAnalysisFile.Text = fiAudioFile.Name;
                 this.browserSettings.diSourceDir = new DirectoryInfo(Path.GetDirectoryName(fiAudioFile.FullName)); // change to selected directory
-                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;
-                
-                //// clear console window
-                //this.textBoxConsole.Clear();
-                //LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-                //string date = "# DATE AND TIME: " + DateTime.Now;
-                //LoggedConsole.WriteLine(date);
-
-                //// ##################################################################################################################
-                //int status = this.LoadIndicesCSVFile(fiAudioFile.FullName);
-                //// ##################################################################################################################
-
-                //    if (status >= 3)
-                //    {
-                //        //this.tabControlMain.SelectTab("tabPageConsole");
-                //        //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                //        //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
-                //        //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                //        //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
-                //    }
-                //    else
-                //    {
-                //        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiAudioFile.FullName);
-
-                //        //if (status == 0)
-                //        //{
-                //        //    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiAudioFile.FullName);
-                //        //    this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-                //        //}
-                //        //else
-                //        //{
-                //        //    this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiAudioFile.FullName));
-                //        //    this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
-                //        //}
-                //    } // (status)
+                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;                
             } // if (DialogResult.OK)
-
         }
+
 
         private void btnAnalysisOutputDir_Click(object sender, EventArgs e)
         {
@@ -1457,8 +1429,7 @@
                 this.browserSettings.diOutputDir = diOutput; // store in settings so can be accessed later.
                 this.txtBoxAnalysisOutputDir.Text = diOutput.FullName;
             }
-
-        }
+        } //btnAnalysisOutputDir_Click()
 
 
         private void comboAnalysisType_SelectedValueChanged(object sender, EventArgs e)
@@ -1470,10 +1441,13 @@
             var fiConfig = new FileInfo(configPath);
             if (!fiConfig.Exists)
             {
-                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type.");
-                LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
-                LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
+                MessageBox.Show("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
+                MessageBox.Show("         Write an appropriate config file with following path: <{0}>.", configPath);
+
+                //LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
+                //LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
+                //this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
             this.browserSettings.AnalysisIdentifier = analysisName;
@@ -1486,10 +1460,9 @@
             var fiConfig = new FileInfo(configPath);
             if (! fiConfig.Exists)
             {
-                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type.");
-                LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
-                LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
+                MessageBox.Show("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
+                MessageBox.Show("         Write an appropriate config file with following path: <{0}>.", configPath);
                 return;
             }
             this.browserSettings.AnalysisIdentifier = analysisName;
@@ -1502,9 +1475,11 @@
             // check Wordpad is available
             if ((browserSettings.WordPadExe == null) || (! browserSettings.WordPadExe.Exists))
             {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Wordpad editor.");
-                LoggedConsole.WriteLine("   Enter correct Wordpad path in the Browser's app.config file and try again.");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                MessageBox.Show("WARNING: Cannot find Wordpad editor.");
+                MessageBox.Show("         Enter correct Wordpad path in the Browser's app.config file and try again.");
+                //LoggedConsole.WriteLine("\nWARNING: Cannot find Wordpad editor.");
+                //LoggedConsole.WriteLine("   Enter correct Wordpad path in the Browser's app.config file and try again.");
+                //this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
             int status = AudioBrowserTools.RunWordPad(browserSettings.WordPadExe.FullName, configPath, browserSettings.diOutputDir.FullName);
@@ -1544,9 +1519,11 @@
             {
                 textBoxAnalysisGo.BackColor = Color.Ivory;
                 textBoxAnalysisGo.ForeColor = Color.Red;
-                LoggedConsole.WriteLine("\nWARNING: Cannot find AudioAnalysisPrograms.exe.");
-                LoggedConsole.WriteLine("   Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
+                //LoggedConsole.WriteLine("\nWARNING: Cannot find AudioAnalysisPrograms.exe.");
+                //LoggedConsole.WriteLine("   Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
                 textBoxAnalysisGo.Text = "WARNING: Cannot find AudioAnalysisPrograms.exe. Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.";
+                MessageBox.Show("WARNING: Cannot find AudioAnalysisPrograms.exe.");
+                MessageBox.Show("         Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
                 return;
             }
 
@@ -1555,8 +1532,8 @@
             {
                 textBoxAnalysisGo.BackColor = Color.Ivory;
                 textBoxAnalysisGo.ForeColor = Color.Red;
-                string msg = "\nWARNING: You must complete Step 1. Enter an audio file to analyse.";
-                LoggedConsole.WriteLine(msg);
+                string msg = "WARNING: You must complete Step 1. Enter an audio file to analyse.";
+                MessageBox.Show(msg);
                 textBoxAnalysisGo.Text = msg;
                 return;
             }
