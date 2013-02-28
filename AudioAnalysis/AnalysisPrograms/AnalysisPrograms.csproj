@@ -189,10 +189,6 @@
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FELT\FeltRunner\FELT.Runner.fsproj">
-      <Project>{372A71B7-7505-4A40-8139-BE6D89281C9B}</Project>
-      <Name>FELT.Runner</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
       <Name>TowseyLib</Name>

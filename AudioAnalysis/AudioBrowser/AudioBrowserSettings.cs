@@ -6,6 +6,7 @@
     using System.Windows.Forms;
 
     using Acoustics.Shared;
+    using System.Text;
 
     public class AudioBrowserSettings
     {
@@ -24,7 +25,8 @@
         /// </summary>
         public void LoadBrowserSettings()
         {
-
+            char tick = '\u2714';
+            char cross = '\u2718';
 
             LoggedConsole.WriteLine("\n####################################################################################\nLOADING BROWSER SETTINGS:");
 
@@ -34,6 +36,7 @@
             {
                 this.DefaultConfigDir = AppConfigHelper.GetDir("DefaultConfigDir", true);
                 this.diConfigDir = this.DefaultConfigDir;
+                LoggedConsole.WriteLine(tick + " Found the default config directory.");
             }
             catch (DirectoryNotFoundException ex)
             {
@@ -52,6 +55,7 @@
                 // specify false rather than true so GetDir doesn't throw exceptions
                 this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
                 this.diSourceDir = this.DefaultSourceDir;
+                LoggedConsole.WriteLine(tick + " Found the default source audio directory.");
             }
             catch (DirectoryNotFoundException ex)
             {
@@ -76,6 +80,7 @@
                     }
                 }
                 this.diOutputDir = this.DefaultOutputDir;
+                LoggedConsole.WriteLine(tick + " Found the default output directory.");
             }
             catch (DirectoryNotFoundException ex)
             {
@@ -115,11 +120,15 @@
 
 
             //CHECK THAT AUDIO SOX.exe and other AUDIO ANALYSIS FILES EXIST
-            if (! AudioAnalysisFilesExist())
+            if (AudioAnalysisFilesExist())
+            {
+                LoggedConsole.WriteLine(tick + " Located SOX and other audio analysis files");
+            }
+            else
             {
                 // MessageBox.Show("WARNING: " + ex.ToString());
                 // MessageBox.Show("  CHECK paths in app.config file for following executable files: Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
-                LoggedConsole.WriteLine("WARNING!  Could not find one or more of the following audio analysis files:");
+                LoggedConsole.WriteLine(cross + " WARNING!  Could not find one or more of the following audio analysis files:");
                 LoggedConsole.WriteLine("          Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
                 LoggedConsole.WriteLine("          You will not be able to work with the original source file.");
 
@@ -129,7 +138,11 @@
                 }
             }
 
-            if (! AudacityExists())
+            if (AudacityExists())
+            {
+                LoggedConsole.WriteLine(tick + " Audacity located");
+            }
+            else
             {
                 //MessageBox.Show("WARNING: Unable to find Audacity. Enter correct location in the app.config file.");
                 LoggedConsole.WriteLine("WARNING!  Unable to find Audacity at default locations.");
@@ -137,7 +150,20 @@
                 LoggedConsole.WriteLine("          Enter correct location in the app.config file.");
             }
 
+            if (WordPadExists())
+            {
+                LoggedConsole.WriteLine(tick + " WordPad located");
+            }
+            else
+            {
+                LoggedConsole.WriteLine("WARNING!  Unable to find WordPad at default location.");
+                LoggedConsole.WriteLine("          A text editor may be required to edit the analysis config files.");
+                LoggedConsole.WriteLine("          Enter correct location in the app.config file.");
+            }
+
         } // LoadBrowserSettings()
+
+
 
 
         public void WriteSettings2Console()
