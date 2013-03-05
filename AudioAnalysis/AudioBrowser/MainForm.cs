@@ -132,7 +132,7 @@
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
             this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
 
-            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT + AudioBrowserTools.COPYRIGHT);
             LoggedConsole.WriteLine(DateTime.Now);
             this.tabControlMain.SelectTab(tabPageConsoleLabel);
             //return;

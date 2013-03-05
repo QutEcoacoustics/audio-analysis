@@ -25,9 +25,13 @@ namespace AudioBrowser
 {
     public static class AudioBrowserTools
     {
-        public const string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: An application for exploring bio-acoustic recordings.  (c) Queensland University of Technology.";
-        public const string IMAGE_TITLE_TEXT = "Image produced by AUDIO-BROWSER, Queensland University of Technology (QUT).";
+        public const char copyright = '\u00a9';
+        public const string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: To explore long bio-acoustic recordings.  ";
+        public const string COPYRIGHT = "\u00a9 Queensland University of Technology (QUT)";
+        public const string IMAGE_TITLE_TEXT = "Image produced by AUDIO-BROWSER, (QUT).";
         public const string REPORT_FILE_EXT = ".csv";
+        
+
 
         /// <summary>
         /// This method will not work in the HPC MONO environment.
