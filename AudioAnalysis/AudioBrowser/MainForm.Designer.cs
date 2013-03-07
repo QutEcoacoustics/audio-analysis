@@ -36,6 +36,8 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabAnalyseFile = new System.Windows.Forms.TabPage();
+            this.lblAnalysisPanelHeader = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.textBoxAnalysisGo = new System.Windows.Forms.TextBox();
             this.txtBoxAnalysisEditConfig = new System.Windows.Forms.TextBox();
             this.txtBoxAnalysisOutputDir = new System.Windows.Forms.TextBox();
@@ -113,8 +115,8 @@
             this.mediaTypeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.label2 = new System.Windows.Forms.Label();
-            this.lblAnalysisPanelHeader = new System.Windows.Forms.Label();
+            this.tabMisc = new System.Windows.Forms.TabPage();
+            this.btnCSV2ARFF = new System.Windows.Forms.Button();
             this.tabControlMain.SuspendLayout();
             this.tabAnalyseFile.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
@@ -131,6 +133,7 @@
             this.tabPageSearchCsv.SuspendLayout();
             this.panelSearchEntries.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).BeginInit();
+            this.tabMisc.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControlMain
@@ -143,6 +146,7 @@
             this.tabControlMain.Controls.Add(this.tabPageDisplay);
             this.tabControlMain.Controls.Add(this.tabPageConsole);
             this.tabControlMain.Controls.Add(this.tabPageSearchCsv);
+            this.tabControlMain.Controls.Add(this.tabMisc);
             this.tabControlMain.ItemSize = new System.Drawing.Size(105, 18);
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Name = "tabControlMain";
@@ -177,6 +181,28 @@
             this.tabAnalyseFile.TabIndex = 5;
             this.tabAnalyseFile.Text = "Analyse Audio File";
             this.tabAnalyseFile.UseVisualStyleBackColor = true;
+            // 
+            // lblAnalysisPanelHeader
+            // 
+            this.lblAnalysisPanelHeader.AutoSize = true;
+            this.lblAnalysisPanelHeader.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAnalysisPanelHeader.ForeColor = System.Drawing.Color.Navy;
+            this.lblAnalysisPanelHeader.Location = new System.Drawing.Point(30, 21);
+            this.lblAnalysisPanelHeader.Name = "lblAnalysisPanelHeader";
+            this.lblAnalysisPanelHeader.Size = new System.Drawing.Size(341, 17);
+            this.lblAnalysisPanelHeader.TabIndex = 28;
+            this.lblAnalysisPanelHeader.Text = "To analyse an audio file complete steps 1 - 6.";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(30, 336);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(589, 15);
+            this.label2.TabIndex = 27;
+            this.label2.Text = "6: Paste the command line below into a command-line shell such as \'powershell.exe" +
+    "\' or \'cmd.exe\' and run:";
             // 
             // textBoxAnalysisGo
             // 
@@ -575,7 +601,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1386, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1369, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -609,7 +635,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1386, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1369, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -947,27 +973,26 @@
             // 
             this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
             // 
-            // label2
+            // tabMisc
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(30, 336);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(589, 15);
-            this.label2.TabIndex = 27;
-            this.label2.Text = "6: Paste the command line below into a command-line shell such as \'powershell.exe" +
-    "\' or \'cmd.exe\' and run:";
+            this.tabMisc.Controls.Add(this.btnCSV2ARFF);
+            this.tabMisc.Location = new System.Drawing.Point(4, 22);
+            this.tabMisc.Name = "tabMisc";
+            this.tabMisc.Padding = new System.Windows.Forms.Padding(3);
+            this.tabMisc.Size = new System.Drawing.Size(1450, 655);
+            this.tabMisc.TabIndex = 6;
+            this.tabMisc.Text = "Miscellaneous";
+            this.tabMisc.UseVisualStyleBackColor = true;
             // 
-            // lblAnalysisPanelHeader
+            // btnCSV2ARFF
             // 
-            this.lblAnalysisPanelHeader.AutoSize = true;
-            this.lblAnalysisPanelHeader.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAnalysisPanelHeader.ForeColor = System.Drawing.Color.Navy;
-            this.lblAnalysisPanelHeader.Location = new System.Drawing.Point(30, 21);
-            this.lblAnalysisPanelHeader.Name = "lblAnalysisPanelHeader";
-            this.lblAnalysisPanelHeader.Size = new System.Drawing.Size(341, 17);
-            this.lblAnalysisPanelHeader.TabIndex = 28;
-            this.lblAnalysisPanelHeader.Text = "To analyse an audio file complete steps 1 - 6.";
+            this.btnCSV2ARFF.Location = new System.Drawing.Point(87, 130);
+            this.btnCSV2ARFF.Name = "btnCSV2ARFF";
+            this.btnCSV2ARFF.Size = new System.Drawing.Size(75, 23);
+            this.btnCSV2ARFF.TabIndex = 0;
+            this.btnCSV2ARFF.Text = "csv2Arff";
+            this.btnCSV2ARFF.UseVisualStyleBackColor = true;
+            this.btnCSV2ARFF.Click += new System.EventHandler(this.btnCSV2ARFF_Click);
             // 
             // MainForm
             // 
@@ -1004,6 +1029,7 @@
             this.panelSearchEntries.ResumeLayout(false);
             this.panelSearchEntries.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).EndInit();
+            this.tabMisc.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1091,6 +1117,8 @@
         private TextBox textBoxAnalysisGo;
         private Label lblAnalysisPanelHeader;
         private Label label2;
+        private TabPage tabMisc;
+        private Button btnCSV2ARFF;
 
 
     }

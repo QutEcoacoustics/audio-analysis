@@ -1391,7 +1391,7 @@
             //USE FOLLOWING LINE TO LOAD A PNG IMAGE
             //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
 
-            //OPEN A FILE DIALOGUE TO FIND CSV FILE
+            //OPEN A FILE DIALOGUE TO FIND MP3 FILE
             OpenFileDialog fdlg = new OpenFileDialog();
             fdlg.Title = "Open Audio File Dialogue";
             fdlg.InitialDirectory = this.browserSettings.diSourceDir.FullName;
@@ -1627,6 +1627,39 @@
             }
             LoggedConsole.WriteLine("###################################################\n");
         }
+
+        private void btnCSV2ARFF_Click(object sender, EventArgs e)
+        {
+            //OPEN A FILE DIALOGUE TO FIND CSV FILE
+            OpenFileDialog fdlg = new OpenFileDialog();
+            fdlg.Title = "Open File Dialogue";
+            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
+            fdlg.Filter = "CSV files (*.csv)|*.csv";
+            fdlg.FilterIndex = 2;
+            fdlg.RestoreDirectory = false;
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var fiCSVFile = new FileInfo(fdlg.FileName);
+                //this.browserSettings.fiCSVFile = fiCSVFile; // store in settings so can be accessed later.
+                //this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
+
+                // ##################################################################################################################
+                int status = AudioBrowserTools.CSV2ARFF(fiCSVFile);
+                // ##################################################################################################################
+                this.tabControlMain.SelectTab("tabPageConsole");
+
+                if (status > 0)
+                {
+                    LoggedConsole.WriteLine("ERROR: Error converting csv file to ARFF and SEE5 formats");
+                } else
+                {
+                    LoggedConsole.WriteLine("Successfully converted CSV file to ARFF and SEE5 formats.");
+                } // (status)
+
+            } // if (DialogResult.OK)
+
+
+        } // btnCSV2ARFF_Click()
 
 
     } //class MainForm : Form

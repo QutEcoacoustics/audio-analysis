@@ -320,5 +320,75 @@ namespace AudioBrowser
             return 0;
         }// RunWordPad()
 
+
+
+        public static int CSV2ARFF(FileInfo fiCsvfile)
+        {
+            if (!fiCsvfile.Exists)
+            {
+                LoggedConsole.WriteLine("ERROR: The selected CSV file does not exist: <{0}>", fiCsvfile.FullName);
+                return 1;
+            }
+
+            int error = 0;
+
+            // finally process the CSV file
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvfile.FullName, true);
+            string[] headers = DataTableTools.GetColumnNames(dt);
+
+            LoggedConsole.WriteLine("Table has {0} rows and {1} columns.", dt.Rows.Count, headers.Length); 
+            LoggedConsole.WriteLine("List of column headers:");
+            for (int i = 0; i < headers.Length; i++)
+            {
+                LoggedConsole.WriteLine("   {0}   {1}", i, headers[i]);
+            }
+            ConvertTable2ARFF(fiCsvfile, dt);
+
+            return error;
+        } // CSV2ARFF()
+
+
+        public static int ConvertTable2ARFF(FileInfo fiCsvfile, DataTable dt)
+        {
+
+            int error = 0;
+            string title = fiCsvfile.Name;
+            StringBuilder sb = new StringBuilder("% 1. Title: " + title);
+            sb.AppendLine("%");
+            sb.AppendLine("% 2. Sources:");
+            sb.AppendLine("%    CSV file from Acoustic Analysis project.");
+            sb.AppendLine("@RELATION acousticIndices");
+
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                sb.AppendLine("@ATTRIBUTE "+headers[i]+" \tNUMERIC");
+            }
+
+            //sb.AppendLine("@ATTRIBUTE class \t{0,1,2,3,4,5,6,7}");
+            sb.AppendLine("@DATA");
+            foreach(DataRow row in dt.Rows)
+            {
+                sb.Append(row[headers[0]]);
+                for (int i = 1; i < headers.Length; i++)
+                {
+                    sb.Append(","+  row[headers[i]]);
+                }
+                sb.AppendLine();
+                //sb.AppendLine(",5"); //use this line if insert class ATTRIBUTE above
+            }
+
+            string fName = Path.GetFileNameWithoutExtension(fiCsvfile.FullName);
+            string arffPath = Path.Combine(fiCsvfile.DirectoryName, fName+".arff");
+            FileTools.WriteTextFile(arffPath, sb.ToString());
+
+            return error;
+        } // ConvertTable2ARFF()
+
+
+
+
+
+
     } //AudioBrowserTools
 }
