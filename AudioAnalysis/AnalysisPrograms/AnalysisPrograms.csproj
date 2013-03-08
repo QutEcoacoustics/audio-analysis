@@ -124,6 +124,15 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet.Converters">
+      <HintPath>..\packages\YamlDotNet.Converters.1.1.17\lib\YamlDotNet.Converters.dll</HintPath>
+    </Reference>
+    <Reference Include="YamlDotNet.Core">
+      <HintPath>..\packages\YamlDotNet.Core.1.1.17\lib\YamlDotNet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="YamlDotNet.RepresentationModel">
+      <HintPath>..\packages\YamlDotNet.RepresentationModel.1.1.17\lib\YamlDotNet.RepresentationModel.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticFeatures.cs" />
@@ -188,6 +197,14 @@
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Dong.Felt\Dong.Felt.csproj">
+      <Project>{b9b1e1ab-bdf5-4100-8839-27901ca12afd}</Project>
+      <Name>Dong.Felt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FELT\FeltRunner\FELT.Runner.fsproj">
+      <Project>{372a71b7-7505-4a40-8139-be6d89281c9b}</Project>
+      <Name>FELT.Runner</Name>
     </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
