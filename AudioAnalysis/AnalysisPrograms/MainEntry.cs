@@ -16,6 +16,8 @@ namespace AnalysisPrograms
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using Dong.Felt;
+    using FELT.Runner;
 
     #if DEBUG
         using Acoustics.Shared.Debugging;
@@ -139,7 +141,10 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+
+                    // Xueyan's FELT
+                    {"dong.felt", Dong.Felt.FeltAnalysis.Dev},
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },

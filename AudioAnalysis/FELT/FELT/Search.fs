@@ -126,7 +126,6 @@
             Rectangle : EventRect
         }    
 
-
         type AedConfig =  {
             SmallAreaThreshold : int<px ^ 2>;
             IntensityThreshold : float<dB>;
