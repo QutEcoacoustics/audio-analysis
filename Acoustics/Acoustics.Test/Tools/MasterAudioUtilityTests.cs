@@ -570,7 +570,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
                 var sourceInfo = util.Info(source);
 
-                CheckSource(source, sourceExpected, sourceInfo);
+                TestHelper.CheckAudioUtilityInfo(sourceExpected, sourceInfo);
 
                 var outputInfo = util.Info(output);
                 var outputInfoText = GetDurationInfo(outputInfo);
@@ -579,54 +579,6 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 TestHelper.DeleteTempDir(dir);
             }
         }
-
-        private static void CheckSource(FileInfo audioFile, AudioUtilityInfo expected, AudioUtilityInfo actual)
-        {
-            if (expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
-            {
-                Assert.AreEqual(expected.BitsPerSample.Value, actual.BitsPerSample.Value);
-            }
-
-            if (expected.BitsPerSample.HasValue && !actual.BitsPerSample.HasValue)
-            {
-                Assert.Fail("BitsPerSample");
-            }
-
-            if (!expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
-            {
-                Assert.Fail("BitsPerSample");
-            }
-
-
-            if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
-            {
-                Assert.AreEqual(expected.BitsPerSecond.Value, actual.BitsPerSecond.Value);
-            }
-
-            if (expected.BitsPerSecond.HasValue && !actual.BitsPerSecond.HasValue)
-            {
-                Assert.Fail("BitsPerSecond");
-            }
-
-            if (!expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
-            {
-                Assert.Fail("BitsPerSecond");
-            }
-
-            Assert.IsTrue(expected.ChannelCount.HasValue);
-            Assert.IsTrue(expected.Duration.HasValue);
-            Assert.IsTrue(expected.SampleRate.HasValue);
-
-            Assert.IsTrue(actual.ChannelCount.HasValue);
-            Assert.IsTrue(actual.Duration.HasValue);
-            Assert.IsTrue(actual.SampleRate.HasValue);
-
-            Assert.AreEqual(expected.ChannelCount.Value, actual.ChannelCount.Value);
-            Assert.AreEqual(expected.Duration.Value, actual.Duration.Value);
-            Assert.AreEqual(expected.SampleRate.Value, actual.SampleRate.Value);
-        }
-
-        
 
         #endregion
     }

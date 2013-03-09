@@ -280,7 +280,7 @@
 
             if (result.RawData.ContainsKey(KeyPrecision))
             {
-                var precision = int.Parse(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim());
+                result.BitsPerSample = int.Parse(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim());
             }
 
             result.MediaType = MediaTypes.MediaTypeWavpack;

@@ -285,10 +285,11 @@
         {
             //CHECK THESE FILES EXIST
             //<add key="AudioUtilityFfmpegExe" value="audio-utils\ffmpeg\ffmpeg.exe" />
-            //<add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
-            //<add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
-            //<add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
-            //<add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
+            //    <add key="AudioUtilityFfprobeExe" value="audio-utils\ffmpeg\ffprobe.exe" />
+            //    <add key="AudioUtilityWvunpackExe" value="audio-utils\wavpack\wvunpack.exe" />
+            //    <add key="AudioUtilityMp3SpltExe" value="audio-utils\mp3splt\mp3splt.exe" />
+            //    <add key="AudioUtilitySoxExe" value="audio-utils\sox\sox.exe" />
+            //    <add key="AudioUtilityShntoolExe" value="audio-utils\shntool\shntool.exe" />
             try
             {
                 var fiEXE = AppConfigHelper.GetFile("AudioUtilityFfmpegExe", true);
@@ -296,6 +297,7 @@
                 fiEXE = AppConfigHelper.GetFile("AudioUtilityWvunpackExe", true);
                 fiEXE = AppConfigHelper.GetFile("AudioUtilityMp3SpltExe", true);
                 fiEXE = AppConfigHelper.GetFile("AudioUtilitySoxExe", true);
+                fiEXE = AppConfigHelper.GetFile("AudioUtilityShntoolExe", true);
             }
             catch (FileNotFoundException ex)
             {

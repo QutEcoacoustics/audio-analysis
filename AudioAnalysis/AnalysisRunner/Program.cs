@@ -3,12 +3,16 @@
     using System.IO;
 
     using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
     public class Program
     {
 
         public static void Main(string[] args)
         {
+            var shntool = new ShntoolAudioUtility(new FileInfo(@"I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\shntool\shntoo.exe"));
+            //shntool.Info();
+
             //PageEventsToCsv();
         }
 

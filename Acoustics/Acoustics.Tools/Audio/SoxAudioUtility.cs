@@ -373,6 +373,15 @@
                 result.ChannelCount = int.Parse(result.RawData[keyChannels]);
             }
 
+            if (result.RawData.ContainsKey(keyPrecision))
+            {
+                result.BitsPerSample = int.Parse(result.RawData[keyPrecision].Replace("-bit", string.Empty).Trim());
+                if (result.BitsPerSample < 1)
+                {
+                    result.BitsPerSample = null;
+                }
+            }
+
             result.MediaType = GetMediaType(result.RawData, source.Extension);
 
             return result;

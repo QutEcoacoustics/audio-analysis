@@ -56,6 +56,17 @@
         }
 
         /// <summary>
+        /// Gets ShntoolExe.
+        /// </summary>
+        public static string ShntoolExe
+        {
+            get
+            {
+                return GetString("AudioUtilityShntoolExe");
+            }
+        }
+
+        /// <summary>
         /// Gets SoxExe.
         /// </summary>
         public static string SoxExe

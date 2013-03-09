@@ -88,6 +88,7 @@
     <Compile Include="Audio\FfmpegAudioUtility.cs" />
     <Compile Include="Audio\IAudioUtility.cs" />
     <Compile Include="Audio\Mp3SpltAudioUtility.cs" />
+    <Compile Include="Audio\ShntoolAudioUtility.cs" />
     <Compile Include="Audio\SoxAudioUtility.cs" />
     <Compile Include="Audio\SoxSpectrogramUtility.cs" />
     <Compile Include="Audio\WavPackAudioUtility.cs" />

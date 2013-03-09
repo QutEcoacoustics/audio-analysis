@@ -3,11 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A050BD53-DEE0-40F3-BEAB-1F7474533C40}"
 	ProjectSection(SolutionItems) = preProject
-		AudioAnalysis.vsmdi = AudioAnalysis.vsmdi
+		..\Acoustics\Acoustics.Tools\Acoustics.testsettings = ..\Acoustics\Acoustics.Tools\Acoustics.testsettings
+		AudioAnalysis2012.vsmdi = AudioAnalysis2012.vsmdi
 		FELT\Local.testsettings = FELT\Local.testsettings
-		FELT\Performance1.psess = FELT\Performance1.psess
 		FELT\Performance2.psess = FELT\Performance2.psess
-		FELT\TraceAndTestImpact.testsettings = FELT\TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{138943DF-78D7-46ED-9F96-ABBA34CD2350}"
@@ -17,15 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{138943
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FELT", "FELT", "{601CA08A-2ED7-441E-BDFA-A8C04FEF0EC9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items (2)", "Solution Items (2)", "{165357CB-2DB7-4A1C-BF5D-E523202BD52F}"
-	ProjectSection(SolutionItems) = preProject
-		AudioAnalysis.vsmdi = AudioAnalysis.vsmdi
-		FELT\Local.testsettings = FELT\Local.testsettings
-		FELT\Performance1.psess = FELT\Performance1.psess
-		FELT\Performance2.psess = FELT\Performance2.psess
-		FELT\TraceAndTestImpact.testsettings = FELT\TraceAndTestImpact.testsettings
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{58F7CE31-1633-4483-A051-125F349B3AA0}"
 	ProjectSection(SolutionItems) = preProject
@@ -71,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dong.Felt", "Dong.Felt\Dong
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = AudioAnalysis.vsmdi
+		CategoryFile = AudioAnalysis2012.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Core|Any CPU = Core|Any CPU
