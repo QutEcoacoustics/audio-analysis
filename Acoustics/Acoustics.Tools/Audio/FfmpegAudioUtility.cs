@@ -261,6 +261,7 @@
             var keyBitRate = "FORMAT bit_rate";
             var keySampleRate = "STREAM sample_rate";
             var keyChannels = "STREAM channels";
+            var keyBitsPerSample = "STREAM bits_per_sample";
 
 
             if (result.RawData.ContainsKey(keyDuration))
@@ -295,6 +296,15 @@
             if (result.RawData.ContainsKey(keyChannels))
             {
                 result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+            }
+
+            if (result.RawData.ContainsKey(keyBitsPerSample))
+            {
+                result.BitsPerSample = int.Parse(result.RawData[keyBitsPerSample]);
+                if (result.BitsPerSample < 1)
+                {
+                    result.BitsPerSample = null;
+                }
             }
 
             result.MediaType = FfmpegFormatToMediaType(result.RawData, source.Extension);

@@ -1,6 +1,7 @@
 ﻿namespace EcoSounds.Mvc.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
 
@@ -15,6 +16,137 @@
     /// </summary>
     public static class TestHelper
     {
+        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
+            {
+                {
+                    "06Sibylla.asf",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
+                            SampleRate = 44100,
+                            ChannelCount = 2,
+                            BitsPerSecond = 128000,
+                            MediaType = MediaTypes.MediaTypeAsf
+                        }
+                },
+                {
+                    "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(59.987),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 96000,
+                            MediaType = MediaTypes.MediaTypeMp3,
+                        }
+                },
+                {
+                    "A French Fiddle Speaks.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(41.6),
+                            SampleRate = 44100,
+                            ChannelCount = 2,
+                            BitsPerSecond = 160000,
+                            MediaType = MediaTypes.MediaTypeMp3,
+                        }
+                },
+                {
+                    "ocioncosta-lindamenina.ogg",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(32.173),
+                            SampleRate = 32000,
+                            ChannelCount = 2,
+                            BitsPerSecond = 84000,
+                            MediaType = MediaTypes.MediaTypeOggAudio,
+                        }
+                },
+                {
+                    "Lewins Rail Kekkek.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.245),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 352000,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "FemaleKoala MaleKoala.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(0),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 352000,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "geckos.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(59.902),
+                            SampleRate = 44100,
+                            ChannelCount = 2,
+                            BitsPerSecond = 1410000,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "Lewins Rail Kekkek.webm",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.7),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 43032,
+                            MediaType = MediaTypes.MediaTypeWebMAudio,
+                            //BitsPerSample = 32 // only relevant to PCM data
+                        }
+                },
+                {
+                    "06Sibylla.wma",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(49.6),
+                            SampleRate = 44100,
+                            ChannelCount = 2,
+                            BitsPerSecond = 128000,
+                            MediaType = MediaTypes.MediaTypeWma,
+                        }
+                },
+                {
+                    "Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(0),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 171000,
+                            MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(0),
+                            SampleRate = 22050,
+                            ChannelCount = 1,
+                            BitsPerSecond = 158000,
+                            MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                }
+            };
+
         /// <summary>
         /// Used by the Throws and DoesNotThrow methods.
         /// </summary>
@@ -292,22 +424,12 @@
                 Assert.Fail("BitsPerSample");
             }
 
-            if (!expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
-            {
-                Assert.Fail("BitsPerSample");
-            }
-
             if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
             {
                 Assert.AreEqual(expected.BitsPerSecond.Value, actual.BitsPerSecond.Value, 1700);
             }
 
             if (expected.BitsPerSecond.HasValue && !actual.BitsPerSecond.HasValue)
-            {
-                Assert.Fail("BitsPerSecond");
-            }
-
-            if (!expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
             {
                 Assert.Fail("BitsPerSecond");
             }
@@ -395,6 +517,17 @@
             var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
 
             return mp3Splt;
+        }
+
+        public static IAudioUtility GetAudioUtilityShntool()
+        {
+            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
+
+            var shntoolExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.ShntoolExe));
+
+            var shntool = new ShntoolAudioUtility(shntoolExe);
+
+            return shntool;
         }
     }
 

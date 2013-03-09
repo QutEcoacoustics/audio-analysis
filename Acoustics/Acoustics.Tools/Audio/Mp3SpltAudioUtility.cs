@@ -14,10 +14,7 @@
     /// <summary>
     /// Mp3 split audio utility.
     /// </summary>
-    /// <remarks>
-    /// for other lossless file formats see:
-    /// http://www.etree.org/shnutils/shntool/
-    /// </remarks>
+
     public class Mp3SpltAudioUtility : AbstractAudioUtility, IAudioUtility
     {
         /// <summary>
@@ -179,7 +176,7 @@
         /// </returns>
         protected override string ConstructInfoArgs(FileInfo source)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -196,7 +193,7 @@
         /// </returns>
         protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         /// <summary>

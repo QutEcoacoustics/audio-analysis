@@ -60,7 +60,6 @@ namespace AudioBrowser
         /// 
         /// </summary>
         /// <param name="analysisIdentifier"></param>
-        /// <param name="analysers"></param>
         /// <returns></returns>
         public static IAnalyser GetAcousticAnalyser(string analysisIdentifier)
         {

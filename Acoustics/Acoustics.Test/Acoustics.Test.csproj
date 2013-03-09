@@ -67,7 +67,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
-    <Compile Include="Tools\AudioUtilityMp3ToWavTests.cs" />
     <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
     <Compile Include="Tools\AudioUtilityWavpackTests.cs" />
     <Compile Include="Tools\AudioUtilityWavTests.cs" />
