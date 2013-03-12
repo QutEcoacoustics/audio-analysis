@@ -122,14 +122,14 @@
             //CHECK THAT AUDIO SOX.exe and other AUDIO ANALYSIS FILES EXIST
             if (AudioAnalysisFilesExist())
             {
-                LoggedConsole.WriteLine(tick + " Located SOX and other audio analysis files");
+                LoggedConsole.WriteLine(tick + " Located audio analysis files: Ffmpeg, Ffprobe, Wvunpack, Mp3Splt, Sox, Shntool");
             }
             else
             {
                 // MessageBox.Show("WARNING: " + ex.ToString());
                 // MessageBox.Show("  CHECK paths in app.config file for following executable files: Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
-                LoggedConsole.WriteLine(cross + " WARNING!  Could not find one or more of the following audio analysis files:");
-                LoggedConsole.WriteLine("          Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe");
+                LoggedConsole.WriteLine(cross + " WARNING!  Could not find one or more of the following audio analysis files in dir \audio-utils:");
+                LoggedConsole.WriteLine("          Ffmpeg.exe, Ffprobe.exe, Wvunpack.exe, Mp3Splt.exe, Sox.exe, Shntool.exe");
                 LoggedConsole.WriteLine("          You will not be able to work with the original source file.");
 
                 if (Debugger.IsAttached)
