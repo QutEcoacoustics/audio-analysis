@@ -23,16 +23,25 @@ namespace AnalysisPrograms
 
 
             //i: Set up the dir and file names
-            string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            //IMPORTANT: IF CHANGE FILE NAMES, MUST ALSO CHANGE ARRAY INDICES BELOW IN METHOD GetRankOrder(string fileName) BECAUSE FILE FORMATS CHANGE
-            string callsFileName   = "SE_2010Oct14_Calls.csv";
-            string indicesFilePath = inputDir + @"\Exp4\Oct14_Results.csv";   //used only for smart sampling
-            string outputfile      = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+            // next four lines from January 2012
+            // string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
+            // IMPORTANT: IF CHANGE FILE NAMES, MUST ALSO CHECK IF NEED TO EDIT ARRAY INDICES IN METHOD GetRankOrder(string fileName) BELOW BECAUSE FILE FORMATS MAY CHANGE
+            // string callsFileName = "SE_2010Oct14_Calls.csv";
+            // string indicesFilePath = inputDir + @"\Exp4\Oct14_Results.csv";   //used only for smart sampling
+            // string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+            string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+
+            // 2013 analysis
+            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2013";
+            string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            string callsFileName = "SE_2010Oct13_Calls.csv";
+
+
             int sampleConstant     = 60;    //Fixed number of samples an ecologist is prepared to process. 
                                             //Equivalent to a manual survey of 20mins each at morning, noon and dusk.
 
             
-            string callOccurenceFilePath = inputDir + callsFileName;
+            string callOccurenceFilePath = Path.Combine(inputDir, callsFileName);
             Log.WriteLine("Directory:          " + inputDir);
             Log.WriteLine("Selected file:      " + callsFileName);
 
@@ -171,19 +180,19 @@ namespace AnalysisPrograms
 
 
 
-            // SMART SAMPLING
+            // ######################## SMART SAMPLING #############################
             if (true)
             {
                 List<string> lines = FileTools.ReadTextFile(indicesFilePath);
                 string[] headers = lines[0].Split(',');
 
                 //######################## use following two lines to rank by just a single column of acoustic indices matrix.
-                //int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
-                //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
-                //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
+                int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
+                LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
+                int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
-                int[] rankOrder = GetRankOrder(indicesFilePath);
+                //int[] rankOrder = GetRankOrder(indicesFilePath);
 
                 //USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
                 //rankOrder = DataTools.reverseArray(rankOrder);
@@ -254,27 +263,27 @@ namespace AnalysisPrograms
 
         //#########################################################################################################################################################
 
-        ///// <summary>
-        ///// returns the row indices for a single column of an array, ranked by value.
-        ///// Used to order the sampling of an acoustic recording split into one minute chunks.
-        ///// </summary>
-        ///// <param name="fileName"></param>
-        ///// <param name="colNumber"></param>
-        ///// <returns></returns>
-        //public static int[] GetRankOrder(string fileName, int colNumber)
-        //{
-        //    string header1;
-        //    double[] array = FileTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
-        //    var results2 = DataTools.SortRowIDsByRankOrder(array);
+        /// <summary>
+        /// returns the row indices for a single column of an array, ranked by value.
+        /// Used to order the sampling of an acoustic recording split into one minute chunks.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="colNumber"></param>
+        /// <returns>array of index locations in descending order</returns>
+        public static int[] GetRankOrder(string fileName, int colNumber)
+        {
+            string header1;
+            double[] array = CsvTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
+            var results2   = DataTools.SortRowIDsByRankOrder(array);
 
-        //    //double[] sort = results2.Item2;
-        //    //for (int i = 0; i < array.Length; i++)
-        //    //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
-        //    //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-        //    //LoggedConsole.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+            //double[] sort = results2.Item2;
+            //for (int i = 0; i < array.Length; i++)
+            //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+            //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
+            //LoggedConsole.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
 
-        //    return results2.Item1;   
-        //}
+            return results2.Item1;
+        }
 
         public static int[] GetRankOrder(string fileName)
         {
@@ -450,19 +459,27 @@ namespace AnalysisPrograms
             int ignoreLastNColumns = 2;
             List<string> text = FileTools.ReadTextFile(occurenceFile);  // read occurence file
             string[] line = text[0].Split(',');                    // read and split the first line
-            int endColumn = line.Length - ignoreLastNColumns -1;
+            int colTotal  = line.Length;
+            int endColumn = colTotal - ignoreLastNColumns - 1;
 
             int columnNumber = endColumn - startColumn + 1;
             byte[,] occurenceMatrix = new byte[text.Count - 1, columnNumber];
-            byte[] speciesCounts = new byte[text.Count - 1];
+            byte[] speciesCounts    = new byte[text.Count - 1];
+            int[] occurenceCount    = new  int[text.Count - 1];
             for (int i = 1; i < text.Count; i++)              //skip header
             {
-                line = text[i].Split(',');                    // read and split the first line
+                int callCount = 0;
+                line = text[i].Split(',');                    // read and split the line
                 for (int j = startColumn; j <= endColumn; j++)
                 {
-                    if (Int32.Parse(line[j]) >= 1) occurenceMatrix[i-1, j - startColumn] = 1;
+                    if (Int32.Parse(line[j]) >= 1)
+                    {
+                        occurenceMatrix[i - 1, j - startColumn] = 1;
+                        callCount++;
+                    }
                 }
                 //speciesCounts[i-1] = Byte.Parse(line[endColumn]); //
+                occurenceCount[i-1] = callCount;
             }
 
             //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
@@ -482,7 +499,7 @@ namespace AnalysisPrograms
             //}
             //check the species names
             int count = 0;
-            foreach (string name in speciesList) LoggedConsole.WriteLine(++count +"\t"+ name);
+            foreach (string name in speciesList) LoggedConsole.WriteLine(++count + "\t" + name + "\t" + occurenceCount[count-1]);
 
             return Tuple.Create(speciesList, occurenceMatrix);
         }
