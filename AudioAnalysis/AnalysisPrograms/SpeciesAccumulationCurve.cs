@@ -32,7 +32,7 @@ namespace AnalysisPrograms
             string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
 
             // 2013 analysis
-            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2013";
+            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
             string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             string callsFileName = "SE_2010Oct13_Calls.csv";
 
@@ -52,11 +52,9 @@ namespace AnalysisPrograms
 
             //READ CSV FILE TO MASSAGE DATA
             var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFilePath);
-            List<string> speciesList = results1.Item1;
-            LoggedConsole.WriteLine("Unique Species Count = " + speciesList.Count);
-
-            //the speciesList contains N species names from columns 3 to N+2. Some species will not call in a particular day i.e. column sum = zero.
-            byte[,] occurenceMatrix = results1.Item2;
+            List<string> totalSpeciesList   = results1.Item1;
+            List<string> callingSpeciesList = results1.Item2; // Some species will not call in a particular day 
+            byte[,] callMatrix = results1.Item3; // rows=minutes,  cols=species 
 
             int speciesCount = 0;
             int sampleNumber = 0;
@@ -66,11 +64,11 @@ namespace AnalysisPrograms
             {
                 List<string> text = new List<string>();
 
-                while (speciesCount < speciesList.Count)
+                while (speciesCount < callingSpeciesList.Count)
                 {
-                    int[] rowSums = DataTools.GetRowSums(occurenceMatrix);
+                    int[] rowSums = DataTools.GetRowSums(callMatrix);
                     int maxRow = DataTools.GetMaxIndex(rowSums);
-                    byte[] row = DataTools.GetRow(occurenceMatrix, maxRow);
+                    byte[] row = DataTools.GetRow(callMatrix, maxRow);
                     sampleNumber++;
 
                     int count = 0;
@@ -80,14 +78,14 @@ namespace AnalysisPrograms
                     text.Add(line);
                     LoggedConsole.WriteLine(line);
 
-                    for(int i = 0; i < row.Length; i++) if(row[i] == 1) DataTools.SetColumnZero(occurenceMatrix, i);
+                    for(int i = 0; i < row.Length; i++) if(row[i] == 1) DataTools.SetColumnZero(callMatrix, i);
 
                 }
 
 
                 FileTools.WriteTextFile(inputDir+outputfile, text);
 
-                int[] finalRowSums = DataTools.GetRowSums(occurenceMatrix);
+                int[] finalRowSums = DataTools.GetRowSums(callMatrix);
                 int totalSum = finalRowSums.Sum();
                 LoggedConsole.WriteLine("remaining species ="+totalSum);
 
@@ -106,13 +104,13 @@ namespace AnalysisPrograms
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
                 int[] fixedsampleArray = new int[trialCount];
-                int N = occurenceMatrix.GetLength(0); //maximum Sample Number
+                int N = callMatrix.GetLength(0); //maximum Sample Number
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
-                    int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
+                    int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
+                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
@@ -158,8 +156,8 @@ namespace AnalysisPrograms
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
-                    int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
+                    int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
+                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
@@ -186,6 +184,10 @@ namespace AnalysisPrograms
                 List<string> lines = FileTools.ReadTextFile(indicesFilePath);
                 string[] headers = lines[0].Split(',');
 
+                int count = 0;
+                foreach (string name in totalSpeciesList) LoggedConsole.WriteLine(++count + "\t" + headers[count]);
+
+
                 //######################## use following two lines to rank by just a single column of acoustic indices matrix.
                 int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
                 LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
@@ -198,8 +200,8 @@ namespace AnalysisPrograms
                 //rankOrder = DataTools.reverseArray(rankOrder);
 
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
-                System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
+                int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
+                System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
                 LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
                 LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
             }
@@ -453,7 +455,7 @@ namespace AnalysisPrograms
             return System.Tuple.Create(s25, s50, s75, s100, idPercent);
         }
 
-        public static System.Tuple<List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
+        public static System.Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {
             int startColumn = 3;
             int ignoreLastNColumns = 2;
@@ -463,45 +465,37 @@ namespace AnalysisPrograms
             int endColumn = colTotal - ignoreLastNColumns - 1;
 
             int columnNumber = endColumn - startColumn + 1;
-            byte[,] occurenceMatrix = new byte[text.Count - 1, columnNumber];
-            byte[] speciesCounts    = new byte[text.Count - 1];
-            int[] occurenceCount    = new  int[text.Count - 1];
+            byte[,] callMatrix = new byte[text.Count - 1, columnNumber];
             for (int i = 1; i < text.Count; i++)              //skip header
             {
-                int callCount = 0;
                 line = text[i].Split(',');                    // read and split the line
                 for (int j = startColumn; j <= endColumn; j++)
                 {
                     if (Int32.Parse(line[j]) >= 1)
                     {
-                        occurenceMatrix[i - 1, j - startColumn] = 1;
-                        callCount++;
+                        callMatrix[i - 1, j - startColumn] = 1;
                     }
                 }
-                //speciesCounts[i-1] = Byte.Parse(line[endColumn]); //
-                occurenceCount[i-1] = callCount;
             }
 
-            //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
-            List<string> speciesList = new List<string>();
-            string[] headerLine = text[0].Split(',');                    // read and split the first line
-            int[] columnSums = DataTools.GetColumnSums(occurenceMatrix);
-            for (int j = 0; j < columnSums.Length; j++) if (columnSums[j] > 0) speciesList.Add(headerLine[startColumn + j]);
-            //LoggedConsole.WriteLine("Unique Species Count = " + speciesList.Count);
-            
+            //the speciesList contains 77 species names from columns 3 to 80
+            List<string> totalSpeciesList = new List<string>();
+            List<string> callingSpeciesList = new List<string>();   // not all species call in the 24 hour period
+            string[] headerLine = text[0].Split(',');               // read and split the first line to get species names
+            int[] columnSums = DataTools.GetColumnSums(callMatrix); // 
+            for (int j = 0; j < columnSums.Length; j++)
+            {
+                totalSpeciesList.Add(headerLine[startColumn + j]);
+                if (columnSums[j] > 0) callingSpeciesList.Add(headerLine[startColumn + j]);
+            }
+            LoggedConsole.WriteLine("\nTotal species in csv file = " + totalSpeciesList.Count);
+            LoggedConsole.WriteLine("Calling species           = " + callingSpeciesList.Count + "\n");
+            LoggedConsole.WriteLine("ID ---  Species Name ----------- Total minutes in which at least one call identified. \n");
 
-            //now cross check that all is OK - this code now needs debugging
-            //for (int i = 0; i < occurenceMatrix.GetLength(0); i++)
-            //{
-            //    int rowSum = DataTools.GetRowSum(occurenceMatrix, i);
-            //    if (speciesCounts[i] != rowSum)
-            //        LoggedConsole.WriteLine("WARNING: ROW {0}: Matrix row sum != Species count i.e. {1} != {2}", (i+1), rowSum, speciesCounts[i]);
-            //}
-            //check the species names
             int count = 0;
-            foreach (string name in speciesList) LoggedConsole.WriteLine(++count + "\t" + name + "\t" + occurenceCount[count-1]);
+            foreach (string name in totalSpeciesList) LoggedConsole.WriteLine(++count + "\t" + name + "\t" + columnSums[count - 1]);
 
-            return Tuple.Create(speciesList, occurenceMatrix);
+            return Tuple.Create(totalSpeciesList, callingSpeciesList, callMatrix);
         }
 
 

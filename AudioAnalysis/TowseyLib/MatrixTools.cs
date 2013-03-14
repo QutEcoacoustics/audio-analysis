@@ -434,6 +434,13 @@ namespace TowseyLib
       for (int i = 0; i < rows; i++) sum += m[i,colID];
       return sum;
   }
+  public static int SumColumn(byte[,] m, int colID)
+  {
+      int rows = m.GetLength(0);
+      int sum = 0;
+      for (int i = 0; i < rows; i++) sum += m[i, colID];
+      return sum;
+  }
 
   public static double[] GetRow(double[,] m, int rowID)
   {
