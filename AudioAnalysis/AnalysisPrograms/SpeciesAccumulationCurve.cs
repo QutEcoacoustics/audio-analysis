@@ -4,14 +4,33 @@ using System.Linq;
 using System.IO;
 
 using TowseyLib;
+using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    class SpeciesAccumulationStats
+    {
+        // Fixed number of samples an ecologist is prepared to process. 
+        public const int SAMPLE_1HOUR = 60;  // Equivalent to a manual survey of 20mins each at morning, noon and dusk.
+        public const int SAMPLE_2HOUR = 120; // Equivalent to 2 hours of listening time. 
+        public const int SAMPLE_3HOUR = 180; // Equivalent to 3 hours of listening time. 
+        public const int SAMPLE_4HOUR = 240; // Equivalent to 4 hours of listening time. 
+
+        public int s25  { get; set; }
+        public int s50  { get; set; }
+        public int s75  { get; set; }
+        public int s100 { get; set; }
+
+        public double percentRecognitionWith60Samples  = 0;
+        public double percentRecognitionWith120Samples = 0;
+        public double percentRecognitionWith180Samples = 0;
+        public double percentRecognitionWith240Samples = 0;
+    }
+
     class SpeciesAccumulationCurve
     {
 
         static string HEADER = "sample,additional,total";
-
 
         public static void Dev(string[] args)
         {
@@ -20,6 +39,48 @@ namespace AnalysisPrograms
             DateTime tStart = DateTime.Now;
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString());
+
+
+            // ShuiYan
+            //if (true)
+            //{
+            //    string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071011-182040.wav";
+            //    var recording = new AudioRecording(wavFilePath);
+
+            //    // make random acoustic events
+            //    // TODO: make real acoustic events
+            //    var events = new List<AcousticEvent>() { 
+            //        new AcousticEvent(5.0,2.0,500,1000),   
+            //        new AcousticEvent(8.0,2.0,500,1000),
+            //        new AcousticEvent(11.0,2.0,500,1000),
+            //        new AcousticEvent(14.0,2.0,500,1000),
+            //        new AcousticEvent(17.0,2.0,500,1000),
+            //    };
+
+            //    foreach (var e in events)
+            //    {
+            //        e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
+            //    }
+
+            //    var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+            //    var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+
+            //    var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
+
+            //    image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //    ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
+            //    image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
+            //    image.AddEvents(events, spectrogram.NyquistFrequency, spectrogram.Configuration.FreqBinCount, spectrogram.FramesPerSecond);
+
+            //    image.Save(@"C:\SensorNetworks\Output\Test1.png");
+
+
+
+            //    Log.WriteLine("# Finished everything!");
+            //    Console.ReadLine();
+            //    System.Environment.Exit(666);
+            //}
+
 
 
             //i: Set up the dir and file names
@@ -35,11 +96,6 @@ namespace AnalysisPrograms
             string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
             string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             string callsFileName = "SE_2010Oct13_Calls.csv";
-
-
-            int sampleConstant     = 60;    //Fixed number of samples an ecologist is prepared to process. 
-                                            //Equivalent to a manual survey of 20mins each at morning, noon and dusk.
-
             
             string callOccurenceFilePath = Path.Combine(inputDir, callsFileName);
             Log.WriteLine("Directory:          " + inputDir);
@@ -103,20 +159,20 @@ namespace AnalysisPrograms
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
-                int[] fixedsampleArray = new int[trialCount];
+                double[] fixedsampleArray = new double[trialCount];
                 int N = callMatrix.GetLength(0); //maximum Sample Number
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
-                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
+                    var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
-                    s25array[i] = results.Item1;
-                    s50array[i] = results.Item2;
-                    s75array[i] = results.Item3;
-                    s100array[i] = results.Item4;
-                    fixedsampleArray[i] = results.Item5;
+                    s25array[i] = stats.s25;
+                    s50array[i] = stats.s50;
+                    s75array[i] = stats.s75;
+                    s100array[i] = stats.s100;
+                    fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
 
                     if (i % 100 == 0) LoggedConsole.WriteLine("trial "+ i);
                 } //over all trials
@@ -127,7 +183,7 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
                
                 throw new AnalysisOptionDevilException();
             }
@@ -150,20 +206,20 @@ namespace AnalysisPrograms
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
-                int[] fixedsampleArray = new int[trialCount];
+                double[] fixedsampleArray = new double[trialCount];
 
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
-                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
+                    var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
-                    s25array[i] = results.Item1;
-                    s50array[i] = results.Item2;
-                    s75array[i] = results.Item3;
-                    s100array[i] = results.Item4;
-                    fixedsampleArray[i] = results.Item5;
+                    s25array[i] = stats.s25;
+                    s50array[i] = stats.s50;
+                    s75array[i] = stats.s75;
+                    s100array[i] = stats.s100;
+                    fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
                     if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
                 } //over all trials
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
@@ -173,7 +229,7 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
             }
 
 
@@ -184,26 +240,32 @@ namespace AnalysisPrograms
                 List<string> lines = FileTools.ReadTextFile(indicesFilePath);
                 string[] headers = lines[0].Split(',');
 
+                // Write names of headers
                 int count = 0;
-                foreach (string name in totalSpeciesList) LoggedConsole.WriteLine(++count + "\t" + headers[count]);
+                LoggedConsole.WriteLine("\nNAMES in header of indices.csv file:");
+                foreach (string name in headers) LoggedConsole.WriteLine(count + "\t" + headers[count++]);
+                LoggedConsole.WriteLine();
 
-
-                //######################## use following two lines to rank by just a single column of acoustic indices matrix.
-                int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
+                //###############################################################################################################################################
+                // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
+                int colNumber = 15;  // 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
                 LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
-                //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
+                // OPTION 2: USE FOLLOWING  two lines to rank by weighted multiple columns of acoustic indices matrix.
                 //int[] rankOrder = GetRankOrder(indicesFilePath);
 
-                //USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
+                // OPTION 3: USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
                 //rankOrder = DataTools.reverseArray(rankOrder);
 
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
-                System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count, sampleConstant);
-                LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
+                var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
+                LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", stats.s25, stats.s50, stats.s75, stats.s100);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_1HOUR, stats.percentRecognitionWith60Samples);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_2HOUR, stats.percentRecognitionWith120Samples);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_3HOUR, stats.percentRecognitionWith180Samples);
+                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_4HOUR, stats.percentRecognitionWith240Samples);
             }
 
             
@@ -438,21 +500,26 @@ namespace AnalysisPrograms
             return accumlationCurve;
         }
 
-        
-        public static System.Tuple<int, int, int, int, int> GetAccumulationCurveStatistics(int[] accumulationCurve, int totalSpeciesCount, int sampleConstant)
+
+        public static SpeciesAccumulationStats GetAccumulationCurveStatistics(int[] accumulationCurve, int totalSpeciesCount)
         {
             int s25threshold = (int)Math.Round(totalSpeciesCount*0.25);
             int s50threshold = (int)Math.Round(totalSpeciesCount*0.50);
             int s75threshold = (int)Math.Round(totalSpeciesCount*0.75);
             int s100threshold = totalSpeciesCount;
-            int idPercent = (int)Math.Round(accumulationCurve[sampleConstant - 1] * 100 / (double)totalSpeciesCount); //percent of total species identified when sample number = <sampleConstant>
 
-            int s25 = 0; int s50 = 0; int s75 = 0; int s100 = 0;
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { s25 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { s50 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { s75 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { s100 = i + 1; break; }
-            return System.Tuple.Create(s25, s50, s75, s100, idPercent);
+            SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { stats.s25 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { stats.s50 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { stats.s75 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { stats.s100 = i + 1; break; }
+
+            stats.percentRecognitionWith60Samples  = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_1HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
+            stats.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_2HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
+            stats.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_3HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
+            stats.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_4HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
+
+            return stats;
         }
 
         public static System.Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
