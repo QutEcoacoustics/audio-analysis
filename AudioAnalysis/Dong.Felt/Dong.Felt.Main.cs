@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet;
 using YamlDotNet.RepresentationModel.Serialization;
+using AudioAnalysisTools;
+using TowseyLib;
 
 namespace Dong.Felt
 {
@@ -39,7 +41,7 @@ namespace Dong.Felt
         {
             get {
                 return new AnalysisSettings();
-            }
+                }
         }
 
 
@@ -54,22 +56,61 @@ namespace Dong.Felt
             // XUEYAN　－　You should start writing your analysis in here
 
             // read the config file
-            object settings;
-            using (var reader = new StringReader(analysisSettings.ConfigFile.FullName)) {
-                //var yaml = new YamlStream();
-                //yaml.Load(reader);
+            //object settings;
+            //using (var reader = new StringReader(analysisSettings.ConfigFile.FullName)) {
+            //    //var yaml = new YamlStream();
+            //    //yaml.Load(reader);
                 
-                var serializer = new YamlSerializer();
-                settings = serializer.Deserialize(reader, new DeserializationOptions() { });
+            //    var serializer = new YamlSerializer();
+            //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
+            //}
+
+            // Writing my code here
+
+            string wavFilePath = analysisSettings.SourceFile.FullName;
+                //"C:\\Test recordings\\ctest.wav";
+            // Read the .wav file
+            var recording = new AudioRecording(wavFilePath); 
+            //if (recording.SampleRate != 22050)
+            //{
+            //    recording.ConvertSampleRate22kHz();
+            //}
+
+            // make random acoustic events
+            // TODO: make real acoustic events
+            var events =  new List<AcousticEvent>() { 
+                new AcousticEvent(5.0,2.0,500,1000),   
+                new AcousticEvent(8.0,2.0,500,1000),
+                new AcousticEvent(11.0,2.0,500,1000),
+                new AcousticEvent(14.0,2.0,500,1000),
+                new AcousticEvent(17.0,2.0,500,1000),
+            };
+
+            foreach (var e in events)
+            {
+                e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
             }
 
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
-            throw new NotImplementedException();
+            var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
+
+            image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
+            image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
+            image.AddEvents(events, spectrogram.NyquistFrequency, spectrogram.Configuration.FreqBinCount, spectrogram.FramesPerSecond);
+
+            image.Save("C:\\Test recordings\\Test1.png");
+
+            // print configure dictionary
+            string printMessage = analysisSettings.ConfigDict["my_custom_setting"];
+            Log.Info(printMessage);
+
+            //throw new NotImplementedException();
             var result = new AnalysisResult();
-
-            
-
             return result;
+            
         }
 
         public Tuple<System.Data.DataTable, System.Data.DataTable> ProcessCsvFile(System.IO.FileInfo fiCsvFile, System.IO.FileInfo fiConfigFile)
@@ -98,6 +139,11 @@ namespace Dong.Felt
             //    arguments = new[] { testConfig, testDirectory };
 
             //}
+            string date = "# Date and Time:" + DateTime.Now;
+            // Log.Info("Read the wav. file and save it as a Spectrogram");  //
+            // Log.Info("Read the wav. file path"); // 14/March/2013
+            Log.Info("Read the wav. file path");
+            Log.Info(date);
 
             Execute(arguments);
 
@@ -121,18 +167,26 @@ namespace Dong.Felt
             var analysisSettings = felt.DefaultSettings;
 
             //var configFile = arguments.Skip(arguments.IndexOf("-configFile");
-            if (!File.Exists(ConfigFilePath))
-            {
-                throw new Exception("Can't find config file");
-            }
-            Log.Info("Using config file: " + ConfigFilePath);
-            analysisSettings.ConfigFile = new FileInfo(ConfigFilePath);
+            //if (!File.Exists(ConfigFilePath))
+            //{
+            //    throw new Exception("Can't find config file");
+            //}
+            //Log.Info("Using config file: " + ConfigFilePath);
+            //analysisSettings.ConfigFile = new FileInfo(ConfigFilePath);
 
+            string recordingPath = arguments[1];
+            if (!File.Exists(recordingPath))
+            {
+                throw new Exception("Can't find this recording file path: "  + recordingPath);
+            }
+            analysisSettings.SourceFile = new FileInfo(recordingPath);
+
+            analysisSettings.ConfigDict = new Dictionary<string, string>();
+            analysisSettings.ConfigDict["my_custom_setting"] = "hello xueyan";
 
             var result = felt.Analyse(analysisSettings);
 
-            Log.Warn("Hello Xueyan");
-
+            Log.Info("Finished, yay!");
         }
 
         public StringBuilder Usage(StringBuilder sb)

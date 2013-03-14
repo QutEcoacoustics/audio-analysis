@@ -81,9 +81,21 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
+      <Project>{0338570e-5a77-4a2e-8e17-7955c36ae1f7}</Project>
+      <Name>Acoustics.Tools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>
       <Name>AnalysisBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
+      <Project>{86855cbc-7243-492a-a500-2de36cc7c825}</Project>
+      <Name>AudioAnalysisTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
+      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
+      <Name>TowseyLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
