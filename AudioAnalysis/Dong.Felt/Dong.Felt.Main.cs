@@ -67,6 +67,7 @@ namespace Dong.Felt
 
             // Writing my code here
 
+            // get wav.file path
             string wavFilePath = analysisSettings.SourceFile.FullName;
                 //"C:\\Test recordings\\ctest.wav";
             // Read the .wav file
@@ -90,12 +91,11 @@ namespace Dong.Felt
             {
                 e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
             }
-
+            // generate spectrogram
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
             var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
             var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
-
             image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
@@ -177,7 +177,7 @@ namespace Dong.Felt
             string recordingPath = arguments[1];
             if (!File.Exists(recordingPath))
             {
-                throw new Exception("Can't find this recording file path: "  + recordingPath);
+                throw new Exception("Can't find this recordingfile path: "  + recordingPath);
             }
             analysisSettings.SourceFile = new FileInfo(recordingPath);
 
