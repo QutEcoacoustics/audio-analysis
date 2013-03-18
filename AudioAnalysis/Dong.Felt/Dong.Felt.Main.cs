@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,7 +62,7 @@ namespace Dong.Felt
             //using (var reader = new StringReader(analysisSettings.ConfigFile.FullName)) {
             //    //var yaml = new YamlStream();
             //    //yaml.Load(reader);
-                
+
             //    var serializer = new YamlSerializer();
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             //}
@@ -69,9 +71,9 @@ namespace Dong.Felt
 
             // get wav.file path
             string wavFilePath = analysisSettings.SourceFile.FullName;
-                //"C:\\Test recordings\\ctest.wav";
+            //"C:\\Test recordings\\ctest.wav";
             // Read the .wav file
-            var recording = new AudioRecording(wavFilePath); 
+            var recording = new AudioRecording(wavFilePath);
             //if (recording.SampleRate != 22050)
             //{
             //    recording.ConvertSampleRate22kHz();
@@ -79,29 +81,75 @@ namespace Dong.Felt
 
             // make random acoustic events
             // TODO: make real acoustic events
-            var events =  new List<AcousticEvent>() { 
-                new AcousticEvent(5.0,2.0,500,1000),   
-                new AcousticEvent(8.0,2.0,500,1000),
-                new AcousticEvent(11.0,2.0,500,1000),
-                new AcousticEvent(14.0,2.0,500,1000),
-                new AcousticEvent(17.0,2.0,500,1000),
-            };
+            //var events = new List<AcousticEvent>() { 
+            //    new AcousticEvent(5.0,2.0,500,1000),   
+            //    new AcousticEvent(8.0,2.0,500,1000),
+            //    new AcousticEvent(11.0,2.0,500,1000),
+            //    new AcousticEvent(14.0,2.0,500,1000),
+            //    new AcousticEvent(17.0,2.0,500,1000),
+            //};
 
-            foreach (var e in events)
-            {
-                e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
-            }
+            //foreach (var e in events)
+            //{
+            //    e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
+            //}
+           
             // generate spectrogram
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
-            var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
-            image.AddEvents(events, spectrogram.NyquistFrequency, spectrogram.Configuration.FreqBinCount, spectrogram.FramesPerSecond);
+            //image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
+            //image.AddEvents(events, spectrogram.NyquistFrequency, spectrogram.Configuration.FreqBinCount, spectrogram.FramesPerSecond);
+            //image.Save("C:\\Test recordings\\Test1.png");
+            
+            // Draw a line in the spectrogram
+            //var amplitudeSpectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            //var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
 
-            image.Save("C:\\Test recordings\\Test1.png");
+            //for (int i = 0; i < 2000; i++)
+            //{
+            //    for (int j = 30; j < 50; j++)
+            //    {
+            //        spectrogramAmplitudeMatrix[i, j] = 1;
+            //    }
+            //}
+            //var imageResult = new Image_MultiTrack(amplitudeSpectrogram.GetImage(false, true));
+            //imageResult.Save("C:\\Test recordings\\Test2.png");
+            
+            // Draw a box on a customerized frequency and time range
+            var amplitudeSpectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
+            int MinFreq = 2000;
+            int MaxFreq = 3500;
+            int minFreqBin = (int)Math.Round(MinFreq / amplitudeSpectrogram.FBinWidth);
+            int maxFreqBin = (int)Math.Round(MaxFreq / amplitudeSpectrogram.FBinWidth);
+
+            int StartTime = 16;
+            int EndTime = 22;
+            int minFrameNum = (int)Math.Round(StartTime * amplitudeSpectrogram.FramesPerSecond);
+            int maxFrameNum = (int)Math.Round(EndTime * amplitudeSpectrogram.FramesPerSecond);
+
+            for (int i = minFrameNum; i < maxFrameNum; i++)
+            {
+                spectrogramAmplitudeMatrix[i, minFreqBin] = 1;
+            }
+            for (int i = minFrameNum; i < maxFrameNum; i++)
+            {
+                spectrogramAmplitudeMatrix[i, maxFreqBin] = 1;
+            }
+            for (int j = minFreqBin; j < maxFreqBin; j++)
+            {
+                spectrogramAmplitudeMatrix[minFrameNum, j] = 1;
+            }
+            for (int j = minFreqBin; j < maxFreqBin; j++)
+            {
+                spectrogramAmplitudeMatrix[maxFrameNum, j] = 1;
+            }
+            var imageResult = new Image_MultiTrack(amplitudeSpectrogram.GetImage(false, true));
+            imageResult.Save("C:\\Test recordings\\Test3.png");
 
             // print configure dictionary
             string printMessage = analysisSettings.ConfigDict["my_custom_setting"];
@@ -110,7 +158,7 @@ namespace Dong.Felt
             //throw new NotImplementedException();
             var result = new AnalysisResult();
             return result;
-            
+
         }
 
         public Tuple<System.Data.DataTable, System.Data.DataTable> ProcessCsvFile(System.IO.FileInfo fiCsvFile, System.IO.FileInfo fiConfigFile)
@@ -124,7 +172,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This is the entry point, while I am doing developing / testing.
+        /// This is the (first)entry point, while I am doing developing / testing.
         /// This method should set up any artifitial testing parameters, and then call the execute method. 
         /// </summary>
         /// <param name="arguments"></param>
@@ -150,7 +198,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This is the main entry point, that my code will use when it is run on a super computer. 
+        /// This is the (second) main entry point, that my code will use when it is run on a super computer. 
         /// It should take all of the parameters from the arguments parameter.
         /// </summary>
         /// <param name="arguments"></param>
@@ -174,6 +222,7 @@ namespace Dong.Felt
             //Log.Info("Using config file: " + ConfigFilePath);
             //analysisSettings.ConfigFile = new FileInfo(ConfigFilePath);
 
+            // get the file path from arguments
             string recordingPath = arguments[1];
             if (!File.Exists(recordingPath))
             {
