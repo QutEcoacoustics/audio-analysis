@@ -233,9 +233,7 @@ namespace AudioAnalysisTools
             int t1 = 0;
             int tWidth = 0;
             double duration = this.TimeEnd - this.TimeStart;
-            if ((duration != 0.0
-                
-                && (framesPerSecond != 0.0))
+            if ((duration != 0.0) && (framesPerSecond != 0.0))
             {
                 t1 = (int)Math.Round(this.TimeStart * framesPerSecond); //temporal start of event
                 tWidth = (int)Math.Round(duration * framesPerSecond);
