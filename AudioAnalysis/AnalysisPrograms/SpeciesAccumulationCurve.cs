@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.IO;
 
@@ -11,20 +12,30 @@ namespace AnalysisPrograms
     class SpeciesAccumulationStats
     {
         // Fixed number of samples an ecologist is prepared to process. 
-        public const int SAMPLE_1HOUR = 60;  // Equivalent to a manual survey of 20mins each at morning, noon and dusk.
-        public const int SAMPLE_2HOUR = 120; // Equivalent to 2 hours of listening time. 
-        public const int SAMPLE_3HOUR = 180; // Equivalent to 3 hours of listening time. 
-        public const int SAMPLE_4HOUR = 240; // Equivalent to 4 hours of listening time. 
-
         public int s25  { get; set; }
         public int s50  { get; set; }
         public int s75  { get; set; }
         public int s100 { get; set; }
 
+        public double percentRecognitionWith10Samples  = 0;
+        public double percentRecognitionWith30Samples  = 0;
         public double percentRecognitionWith60Samples  = 0;
+        public double percentRecognitionWith90Samples  = 0;
         public double percentRecognitionWith120Samples = 0;
         public double percentRecognitionWith180Samples = 0;
         public double percentRecognitionWith240Samples = 0;
+
+        public void WriteStats()
+        {
+            LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.s25, this.s50, this.s75, this.s100);
+            LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
+            LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.percentRecognitionWith10Samples, this.percentRecognitionWith30Samples,
+                this.percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
+                this.percentRecognitionWith180Samples, this.percentRecognitionWith240Samples);
+        }
+
+
+
     }
 
     class SpeciesAccumulationCurve
@@ -183,7 +194,7 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
+                //LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
                
                 throw new AnalysisOptionDevilException();
             }
@@ -229,7 +240,7 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
+                //LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
             }
 
 
@@ -248,25 +259,23 @@ namespace AnalysisPrograms
 
                 //###############################################################################################################################################
                 // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
-                int colNumber = 15;  // 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
-                LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
-                int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
+                //int colNumber = 20;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
+                //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
+                //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 // OPTION 2: USE FOLLOWING  two lines to rank by weighted multiple columns of acoustic indices matrix.
-                //int[] rankOrder = GetRankOrder(indicesFilePath);
+                int[] rankOrder = GetRankOrder(indicesFilePath);
 
-                // OPTION 3: USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
-                //rankOrder = DataTools.reverseArray(rankOrder);
+                // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
+                bool doReverseOrder = false;
+                if (doReverseOrder) 
+                    rankOrder = DataTools.reverseArray(rankOrder);
 
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
                 var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
-                LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", stats.s25, stats.s50, stats.s75, stats.s100);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_1HOUR, stats.percentRecognitionWith60Samples);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_2HOUR, stats.percentRecognitionWith120Samples);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_3HOUR, stats.percentRecognitionWith180Samples);
-                LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}%", SpeciesAccumulationStats.SAMPLE_4HOUR, stats.percentRecognitionWith240Samples);
-            }
+                stats.WriteStats();
+            } // ######################## END SMART SAMPLING #############################
 
             
             DateTime tEnd = DateTime.Now;
@@ -339,17 +348,10 @@ namespace AnalysisPrograms
             string header1;
             double[] array = CsvTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
             var results2   = DataTools.SortRowIDsByRankOrder(array);
-
-            //double[] sort = results2.Item2;
-            //for (int i = 0; i < array.Length; i++)
-            //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
-            //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-            //LoggedConsole.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
-
             return results2.Item1;
         }
 
-        public static int[] GetRankOrder(string fileName)
+        public static int[] GetRankOrder1(string fileName)
         {
             //int offset = 4;  //for 13th October 2010
             int offset = 7;  //for 14th October 2010
@@ -432,7 +434,66 @@ namespace AnalysisPrograms
             return rankOrder;
         }
 
+        public static int[] GetRankOrder(string fileName)
+        {
+            // THE HEADERS
+            string[] headers = {"IndicesCount","avAmp-dB","snr-dB","activeSnr-dB","bg-dB","activity","segCount","avSegDur","hfCover","mfCover","lfCover",
+                                "H[temporal]","H[peakFreq]","H[spectral]","H[spectralVar]","AcComplexity","clusterCount","avClustDur","3gramCount","av3gramRepetition",
+                                "SpPkTracks/Sec","SpPkTracksDur","callCount"};
+            // callCount
 
+            // weights for combining indices. First weight is av-AMP; Last weight is the constant.
+            // double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            // following weights derived from WEKA linear regression.
+            // FEATURE SET 1 ..... 15 features
+            //double[] weights = { -1.139, 0.0, 0.0, 1.197, 16.38, 0.0, -0.005, -5.1, 2.16, 2.89, 0.0, 16.75, 0.0, -2.21, 18.92, 0.214, 0.01, -0.008, 0.0, -0.56, 0.049, -15.066}; // 21 indices
+            // FEATURE SET 2..... 12 features
+            //double[] weights = { 0.0, 0.0, -0.55, 0.109, 7.61, 0.0, 0.0, -8.48, 2.21, 2.76, 3.065, 15.96, 5.55, -8.45, 38.59, 0.0, 0.0, 0.0, 0.09, 0.0, 0.0, -19.4 }; // 21 indices
+            // FEATURE SET 3..... 15 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.017, -0.003, -5.15, 2.45, 5.13, 10.95, 18.95, 0.0, -2.53, 18.29, 0.23, 0.01, -0.009, 0.04, -0.73, 0.06, -29.83 }; // 21 indices
+            // FEATURE SET 4..... 11 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, -5.4, 0.04, 0.003, -6.2, 3.05, 4.61, 12.77, 14.0, 0.0, -6.06, 29.06, 0.06, 0.0, 0.0, 0.0, 0.0, 0.00, -28.4 }; // 21 indices
+            // FEATURE SET 5..... 9 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 4.85, 0.0, 0.0, -7.9, 3.47, 5.99, 14.05, 14.54, 4.35, -8.08, 38.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -35.56 }; // 21 indices
+            // FEATURE SET 6..... 7 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 5.16, 0.0, 0.0, -6.18, 0.0, 7.16, 14.65, 16.42, 0.0, -8.02, 41.62, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -34.44 }; // 21 indices
+            // FEATURE SET 7..... 5 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.06, 13.73, 17.1, 0.0, -9.49, 33.87, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -30.69 }; // 21 indices
+            // FEATURE SET 8..... 3 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.24, 10.43, 0.0, 0.0, 42.76, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -16.72 }; // 21 indices
+            // FEATURE SET 9..... 2 features
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.46, 0.0, 0.0, 45.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -20.72 }; // 21 indices
+            // FEATURE SET 10..... 1 feature
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 59.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -19.02 }; // 21 indices
+            // FEATURE SET 11..... 1 feature ... equivalent to single unweighted feature
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0 }; // 21 indices
+
+
+
+            int wtCount = weights.Length;
+            var table = CsvTools.ReadCSVToTable(fileName, true);
+            int rowCount = table.Rows.Count;
+            double[] combined = new double[rowCount];
+
+            int count = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                double weightedSum = 0.0;
+                for (int i = 0; i < weights.Length; i++)
+                {
+                    //double value1 = row[i + 1].
+                    string strValue = row[i + 1].ToString();
+                    double value = Double.Parse(strValue);
+                    weightedSum += (weights[i] * value);
+                }
+                combined[count] = weightedSum + weights[wtCount-1]; //  *chorusBias[count] * bgBias[count]
+                count++;
+            }
+            var results2 = DataTools.SortRowIDsByRankOrder(combined);
+
+            int[] rankOrder = results2.Item1;
+            return rankOrder;
+        }
 
         public static double[] CalculateBGNoiseSamplingBias(double[] bgArray, double bgThreshold, double bgVarianceThreshold, double noiseBias)
         {
@@ -509,15 +570,19 @@ namespace AnalysisPrograms
             int s100threshold = totalSpeciesCount;
 
             SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { stats.s25 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { stats.s50 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { stats.s75 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold)  { stats.s25 = i + 1;  break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold)  { stats.s50 = i + 1;  break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold)  { stats.s75 = i + 1;  break; }
             for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { stats.s100 = i + 1; break; }
 
-            stats.percentRecognitionWith60Samples  = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_1HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
-            stats.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_2HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
-            stats.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_3HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
-            stats.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[SpeciesAccumulationStats.SAMPLE_4HOUR - 1] * 100 / (double)totalSpeciesCount); //% of total species identified with N samples
+            //% of total species identified with N samples
+            stats.percentRecognitionWith10Samples  = (int)Math.Round(accumulationCurve[10 - 1]  * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith30Samples  = (int)Math.Round(accumulationCurve[30 - 1]  * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith60Samples  = (int)Math.Round(accumulationCurve[60 - 1]  * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith90Samples  = (int)Math.Round(accumulationCurve[90 - 1]  * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[120 - 1] * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[180 - 1] * 100 / (double)totalSpeciesCount); 
+            stats.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[240 - 1] * 100 / (double)totalSpeciesCount); 
 
             return stats;
         }
