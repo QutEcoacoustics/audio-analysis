@@ -103,11 +103,27 @@ namespace AnalysisPrograms
             // string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
             string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
 
-            // 2013 analysis
-            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
-            string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
-            string callsFileName = "SE_2010Oct13_Calls.csv";
+            // 2013 analysis  ...  LOCATION OF ANALYSIS FILES
+            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
+            // 13th OCTOBER
+            //string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            //string callsFileName = "SE_2010Oct13_Calls.csv";
+            // 14th OCTOBER
+            //string indicesFilePath = Path.Combine(inputDir, "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            //string callsFileName = "SE_2010Oct14_Calls.csv";
+            // 15th OCTOBER
+            //string indicesFilePath = Path.Combine(inputDir, "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            //string callsFileName = "SE_2010Oct15_Calls.csv";
+            // 16th OCTOBER
+            //string indicesFilePath = Path.Combine(inputDir, "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            //string callsFileName = "SE_2010Oct16_Calls.csv";
+            // 17th OCTOBER
+            string indicesFilePath = Path.Combine(inputDir, "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            string callsFileName = "SE_2010Oct17_Calls.csv";
             
+
+
+
             string callOccurenceFilePath = Path.Combine(inputDir, callsFileName);
             Log.WriteLine("Directory:          " + inputDir);
             Log.WriteLine("Selected file:      " + callsFileName);
@@ -170,7 +186,13 @@ namespace AnalysisPrograms
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
-                double[] fixedsampleArray = new double[trialCount];
+                double[] samples10 = new double[trialCount];
+                double[] samples30 = new double[trialCount];
+                double[] samples60 = new double[trialCount];
+                double[] samples90 = new double[trialCount];
+                double[] samples120 = new double[trialCount];
+                double[] samples180 = new double[trialCount];
+                double[] samples240 = new double[trialCount];
                 int N = callMatrix.GetLength(0); //maximum Sample Number
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
@@ -183,21 +205,40 @@ namespace AnalysisPrograms
                     s50array[i] = stats.s50;
                     s75array[i] = stats.s75;
                     s100array[i] = stats.s100;
-                    fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
+                    samples10[i] = stats.percentRecognitionWith10Samples;
+                    samples30[i] = stats.percentRecognitionWith30Samples;
+                    samples60[i] = stats.percentRecognitionWith60Samples;
+                    samples90[i] = stats.percentRecognitionWith90Samples;
+                    samples120[i] = stats.percentRecognitionWith120Samples;
+                    samples180[i] = stats.percentRecognitionWith180Samples;
+                    samples240[i] = stats.percentRecognitionWith240Samples;
 
                     if (i % 100 == 0) LoggedConsole.WriteLine("trial "+ i);
                 } //over all trials
-                double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
+                double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
-                NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 LoggedConsole.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                //LoggedConsole.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", SpeciesAccumulationStats.SAMPLE_1HOUR, avFixedSample, sdFixedSample);
-               
-                throw new AnalysisOptionDevilException();
-            }
+
+                double avFixed10Sample, avFixed30Sample, avFixed60Sample, avFixed90Sample, avFixed120Sample, avFixed180Sample, avFixed240Sample;
+                double sdFixed10Sample, sdFixed30Sample, sdFixed60Sample, sdFixed90Sample, sdFixed120Sample, sdFixed180Sample, sdFixed240Sample;
+                NormalDist.AverageAndSD(samples10,  out avFixed10Sample,  out sdFixed10Sample);
+                NormalDist.AverageAndSD(samples30,  out avFixed30Sample,  out sdFixed30Sample);
+                NormalDist.AverageAndSD(samples60,  out avFixed60Sample,  out sdFixed60Sample);
+                NormalDist.AverageAndSD(samples90,  out avFixed90Sample,  out sdFixed90Sample);
+                NormalDist.AverageAndSD(samples120, out avFixed120Sample, out sdFixed120Sample);
+                NormalDist.AverageAndSD(samples180, out avFixed180Sample, out sdFixed180Sample);
+                NormalDist.AverageAndSD(samples240, out avFixed240Sample, out sdFixed240Sample);
+
+
+                LoggedConsole.WriteLine("% of total species identified in fixed samples");
+                LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
+                LoggedConsole.WriteLine("mean % \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", avFixed10Sample, avFixed30Sample, avFixed60Sample, avFixed90Sample, avFixed120Sample, avFixed180Sample, avFixed240Sample);
+                LoggedConsole.WriteLine("std dev\t{0:f2}\t{1:f2}\t{2:f2}\t{3:f2}\t{4:f2}\t{5:f2}\t{6:f2}", sdFixed10Sample, sdFixed30Sample, sdFixed60Sample, sdFixed90Sample, sdFixed120Sample, sdFixed180Sample, sdFixed240Sample);
+
+            } // ######################## END OF RANDOM SAMPLING #############################
 
 
             //random sampling OVER FIXED INTERVAL GIVEN START and END
@@ -259,7 +300,7 @@ namespace AnalysisPrograms
 
                 //###############################################################################################################################################
                 // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
-                //int colNumber = 20;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
+                //int colNumber = 22;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
                 //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
@@ -267,7 +308,7 @@ namespace AnalysisPrograms
                 int[] rankOrder = GetRankOrder(indicesFilePath);
 
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
-                bool doReverseOrder = false;
+                bool doReverseOrder = true;
                 if (doReverseOrder) 
                     rankOrder = DataTools.reverseArray(rankOrder);
 
@@ -463,10 +504,26 @@ namespace AnalysisPrograms
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.24, 10.43, 0.0, 0.0, 42.76, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -16.72 }; // 21 indices
             // FEATURE SET 9..... 2 features
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.46, 0.0, 0.0, 45.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -20.72 }; // 21 indices
-            // FEATURE SET 10..... 1 feature
+            // FEATURE SET 10..... 1 feature ACI
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 59.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -19.02 }; // 21 indices
-            // FEATURE SET 11..... 1 feature ... equivalent to single unweighted feature
-            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0 }; // 21 indices
+            // FEATURE SET 11..... 1 feature av cluster duration  -- sometimes need to multiply by -1.
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.047, 0.0, 0.0, 0.0, 0.00, 0.49 }; // 21 indices
+            // FEATURE SET 12..... 1 feature av cluster 
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, -0.069, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -1.03 }; // 21 indices
+            // FEATURE SET 13..... 1 feature H[peaks] 
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 19.09, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -9.38 }; // 21 indices
+            // FEATURE SET 14..... 1 feature activity 
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, -16.28, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -1.53 }; // 21 indices
+            // FEATURE SET 15..... 1 feature mf 
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -12.96, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -0.088 }; // 21 indices
+            // FEATURE SET 16..... 1 feature # clusters 
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.47, 0.0, 0.0, 0.0, 0.0, 0.00, -0.023 }; // 21 indices
+
+
+
+
+            // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0 }; // 21 indices
 
 
 
