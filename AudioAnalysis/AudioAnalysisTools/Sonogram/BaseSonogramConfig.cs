@@ -44,6 +44,8 @@ namespace AudioAnalysisTools
         private bool saveSonogramImage = false;
         public  bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
         private string imageDir = null;
+        private SonogramConfig config;
+        private Acoustics.Tools.Wav.WavReader wavReader;
         public  string ImageDir { get { return imageDir; } set { imageDir = value; } }
 
         #endregion
@@ -112,6 +114,13 @@ namespace AudioAnalysisTools
 		{
             Initialize(config);
 		}
+
+        public SonogramConfig(SonogramConfig config, Acoustics.Tools.Wav.WavReader wavReader)
+        {
+            // TODO: Complete member initialization
+            this.config = config;
+            this.wavReader = wavReader;
+        }
 
         /// <summary>
         /// DoSnr = true;
