@@ -193,14 +193,14 @@
       <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
-      <Name>MQUTeR.FSharp.Shared</Name>
-      <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\AED\AED\AED.fsproj">
       <Name>AED</Name>
       <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
+      <Name>MQUTeR.FSharp.Shared</Name>
+      <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

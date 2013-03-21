@@ -382,7 +382,7 @@
         let ProgramEntry args =
             Entry true args
 
-        [<EntryPoint>]
+//        [<EntryPoint>]
         let CommandEntry args =
             Entry false args
 
