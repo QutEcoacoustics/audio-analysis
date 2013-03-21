@@ -11,6 +11,7 @@ using YamlDotNet.RepresentationModel;
 using YamlDotNet;
 using YamlDotNet.RepresentationModel.Serialization;
 using AudioAnalysisTools;
+using TowseyLib;
 
 
 namespace Dong.Felt
@@ -70,8 +71,11 @@ namespace Dong.Felt
             string wavFilePath = analysisSettings.SourceFile.FullName;
             //"C:\\Test recordings\\ctest.wav";
             // Read the .wav file
-            //var recording = new AudioRecording(wavFilePath);
+            var recording = new AudioRecording(wavFilePath);
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+            var spectrogram1 = new SpectralSonogram(config, recording.GetWavReader());
 
+           
             //throw new NotImplementedException();
             var result = new AnalysisResult();
             return result;
