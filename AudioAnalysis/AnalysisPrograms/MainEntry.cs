@@ -9,6 +9,8 @@
 
 namespace AnalysisPrograms
 {
+    #if DEBUG
+#endif
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -16,16 +18,18 @@ namespace AnalysisPrograms
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
-    using Dong.Felt;
-    using FELT.Runner;
 
-    #if DEBUG
-        using Acoustics.Shared.Debugging;
-    #endif
+    using Acoustics.Shared.Debugging;
 
     using AnalysisPrograms.Production;
 
+    using Dong.Felt;
+
+    using FELT.Runner;
+
     using log4net;
+
+    using SammonProjection;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -144,7 +148,7 @@ namespace AnalysisPrograms
                     { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // Xueyan's FELT
-                    {"dong.felt", Dong.Felt.FeltAnalysis.Dev},
+                    { "dong.felt", FeltAnalysis.Dev },
 
                     // frog calls
                     { "frog_ribbit", FrogRibit.Dev },
@@ -182,6 +186,9 @@ namespace AnalysisPrograms
 
                     // A template for producing IAnalysis classes.
                     { "test", AnalysisTemplate.Dev },
+
+                    // a investigation into sammon projections
+                    { "sammon_projection", SammonProgram.Dev }
                 };
         }
 

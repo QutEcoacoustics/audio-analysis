@@ -206,6 +206,10 @@
       <Project>{372a71b7-7505-4a40-8139-be6d89281c9b}</Project>
       <Name>FELT.Runner</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SammonProjection\SammonProjection.csproj">
+      <Project>{adcab854-897b-4604-94ba-aafcb4fb81a6}</Project>
+      <Name>SammonProjection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
       <Name>TowseyLib</Name>
