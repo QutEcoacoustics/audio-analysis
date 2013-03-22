@@ -77,11 +77,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AcousticEventDetection.cs" />
+    <Compile Include="POI.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
+      <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
+      <Name>Acoustics.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570e-5a77-4a2e-8e17-7955c36ae1f7}</Project>
       <Name>Acoustics.Tools</Name>
