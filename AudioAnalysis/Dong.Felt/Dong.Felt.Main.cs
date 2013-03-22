@@ -12,6 +12,8 @@ using YamlDotNet;
 using YamlDotNet.RepresentationModel.Serialization;
 using AudioAnalysisTools;
 using TowseyLib;
+using Dong.Felt;
+
 
 
 namespace Dong.Felt
@@ -65,18 +67,17 @@ namespace Dong.Felt
             //    var serializer = new YamlSerializer();
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             //}
-
             // Writing my code here
             // get wav.file path
-            string wavFilePath = analysisSettings.SourceFile.FullName;
-            //"C:\\Test recordings\\ctest.wav";
+            string wavFilePath = analysisSettings.SourceFile.FullName;      
+            
             // Read the .wav file
-            var recording = new AudioRecording(wavFilePath);
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
-            var spectrogram1 = new SpectralSonogram(config, recording.GetWavReader());
+            AudioRecording audioRecording;
+            var spectrogram = POI.AudioToSpectrogram(wavFilePath, out audioRecording);
+            var matrix = POI.NoiseReductionToBinarySpectrogram(spectrogram, 8.0);
 
-           
-            //throw new NotImplementedException();
+            var localMaxima = POI.PickLocalMaximum(matrix, 5);
+
             var result = new AnalysisResult();
             return result;
 
@@ -99,6 +100,13 @@ namespace Dong.Felt
         /// <param name="arguments"></param>
         public static void Dev(string[] arguments)
         {
+
+            var tempFile = @"C:\Test recordings\ctest.wav";
+
+            arguments = new string[2];
+
+            arguments[0] = "-input";
+            arguments[1] = tempFile;
 
             //if (arguments.Length == 0)
             //{
