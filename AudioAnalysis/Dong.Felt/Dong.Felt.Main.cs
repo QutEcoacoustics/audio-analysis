@@ -47,7 +47,6 @@ namespace Dong.Felt
                 }
         }
 
-
         /// <summary>
         /// This is the main analysis method.
         /// At this point, there should be no parsing of command line paramenters. This method should be called by the execute method.
@@ -57,13 +56,11 @@ namespace Dong.Felt
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
             // XUEYAN　－　You should start writing your analysis in here
-
             // read the config file
             //object settings;
             //using (var reader = new StringReader(analysisSettings.ConfigFile.FullName)) {
             //    //var yaml = new YamlStream();
             //    //yaml.Load(reader);
-
             //    var serializer = new YamlSerializer();
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             //}
@@ -74,13 +71,20 @@ namespace Dong.Felt
             // Read the .wav file
             AudioRecording audioRecording;
             var spectrogram = POI.AudioToSpectrogram(wavFilePath, out audioRecording);
-            var matrix = POI.NoiseReductionToBinarySpectrogram(spectrogram, 8.0);
+            var matrix = POI.NoiseReductionToBinarySpectrogram(spectrogram, 10.0);
+            var localMaxima = POI.PickLocalMaximum(matrix, 3); 
+            localMaxima.Add(localMaxima.First());
+            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
+            imageResult.AddPoints(localMaxima.ToArray());
+            imageResult.Save(@"C:\Test recordings\test13.png");
 
-            var localMaxima = POI.PickLocalMaximum(matrix, 5);
+            var leftPoints = POI.MergeAdjacentPoint(localMaxima, 4);
+            var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, false));
+            imageResult2.AddPoints(leftPoints.ToArray());
+            imageResult2.Save(@"C:\Test recordings\test12.png");
 
             var result = new AnalysisResult();
             return result;
-
         }
 
         public Tuple<System.Data.DataTable, System.Data.DataTable> ProcessCsvFile(System.IO.FileInfo fiCsvFile, System.IO.FileInfo fiConfigFile)

@@ -87,7 +87,8 @@ namespace Dong.Felt
                     }
                 } 
             }
-            return outMatrix;
+            spectralSonogram.Data = outMatrix;
+            return spectralSonogram.Data;
             //spectralSonogram.Data = outM;
 
             //var imageResult = new Image_MultiTrack(spectralSonogram.GetImage(false, false));
@@ -99,10 +100,10 @@ namespace Dong.Felt
         /// The pick local maximum.
         /// </summary>
         /// <param name="m">
-        /// The m. matrix
+        /// The m. matrix.
         /// </param>
         /// <param name="neighborWindowSize">
-        /// The neighbor window size. It should be odd number 
+        /// The neighbor window size. It should be odd number. 
         /// </param>
         /// <returns>
         /// The <see cref="List"/>.
@@ -123,7 +124,6 @@ namespace Dong.Felt
                     // assume local maxium
                     double localMaximum = m[col, row];
                     bool maximum = true;
-
                     // check if it really is the local maximum in the neighbourhood
                     for (int i = centerOffset; i < neighborWindowSize; i++)
                     {
@@ -132,9 +132,8 @@ namespace Dong.Felt
                             if (m.PointIntersect(col + j, row + i))
                             {
                                 var current = m[col + j, row + i];
-
                                 // don't check the middle point
-                                if (localMaximum <= current && !(i == 0 && j ==0))
+                                if (localMaximum <= current && !(i == 0 && j == 0))
                                 {
                                     // actually not a local maximum
                                     maximum = false;
@@ -142,12 +141,42 @@ namespace Dong.Felt
                             }
                         }
                     }
-
                     // iff it is indeed the local maximum, then add it
                     if (maximum)
                     {
                         results.Add(new Point(col, row));
                     }
+                }
+            }
+            return results;
+        }
+        public static List<Point> MergeAdjacentPoint(List<Point> pointsOfInterest, int offset)
+        {
+            int maxIndex = pointsOfInterest.Count;
+            var results = new List<Point>(maxIndex);
+           
+            for (int index1 = 0; index1 < maxIndex; index1++)
+            {
+                var close = false; 
+                for (int index2 = 0; index2 < maxIndex; index2++)
+                {
+                    if (index1 == index2)
+                    {
+                        continue;
+                    }
+
+                    int deltaX = Math.Abs(pointsOfInterest[index2].X - pointsOfInterest[index1].X);
+                    int deltaY = Math.Abs(pointsOfInterest[index2].Y - pointsOfInterest[index1].Y);
+                    if (deltaX < offset && deltaY < offset)
+                    {
+                        close = true;
+                        break;
+                    }    
+                }
+
+                if (!close)
+                {
+                    results.Add(pointsOfInterest[index1]);
                 }
             }
 
@@ -352,11 +381,7 @@ namespace Dong.Felt
              imageResult.Save("C:\\Test recordings\\Test2.png");
          }
 
-            //  not necessary part - you shouldn't ever work on recordings that aren't in 22050Hz
-            //if (recording.SampleRate != 22050)
-            //{
-            //    recording.ConvertSampleRate22kHz();
-            //}
+           
 
         private static readonly SonogramConfig standardConfig = new SonogramConfig();
 
@@ -404,8 +429,11 @@ namespace Dong.Felt
 }
 
 /*
-
-
+ //  not necessary part - you shouldn't ever work on recordings that aren't in 22050Hz
+            //if (recording.SampleRate != 22050)
+            //{
+            //    recording.ConvertSampleRate22kHz();
+            //}
 
 
 
