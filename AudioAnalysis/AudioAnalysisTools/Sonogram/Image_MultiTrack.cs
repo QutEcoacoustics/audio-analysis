@@ -16,7 +16,7 @@ namespace AudioAnalysisTools
         #region Properties
         public Image sonogramImage { get; private set; }
         List<Image_Track> tracks = new List<Image_Track>();
-        public IEnumerable<Image_Track> Tracks { get { return tracks; } }
+        public IEnumerable<Image_Track> Tracks { get { return this.tracks; } }
         public List<AcousticEvent> eventList { get; set; }
         public List<SpectralTrack> spectralTracks { get; set; }
         double[,] SuperimposedMatrix { get; set; }
@@ -28,6 +28,7 @@ namespace AudioAnalysisTools
         private int freqBinCount;
         private double freqBinWidth;
         private double framesPerSecond;
+        private Point[] points;
         #endregion
 
 
@@ -37,13 +38,13 @@ namespace AudioAnalysisTools
         /// <param name="image"></param>
         public Image_MultiTrack(Image image)
         {
-            sonogramImage = image;
+            this.sonogramImage = image;
         }
 
 
         public void AddTrack(Image_Track track)
         {
-            tracks.Add(track);
+            this.tracks.Add(track);
         }
 
         public void AddEvents(List<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
@@ -53,6 +54,22 @@ namespace AudioAnalysisTools
             this.freqBinCount    = _freqBinCount;
             this.framesPerSecond = _framesPerSecond;
             this.freqBinWidth    = _nyquist / _freqBinCount;
+        }
+
+        public void AddPoints(Point[] points)
+        {
+            this.points = points;
+        }
+
+        public static void DrawPoints(Graphics g, Point[] pointsOfInterest)
+        {
+            Brush b = new SolidBrush(AcousticEvent.DEFAULT_BORDER_COLOR);
+            int MaximumFreBin = 257;
+            
+            foreach (var point in pointsOfInterest)
+            {
+                g.FillRectangle(b, point.X, 257 - point.Y, 1, 1);
+            }
         }
 
         public void OverlayRedMatrix(Double[,] m, double maxScore)
@@ -92,7 +109,7 @@ namespace AudioAnalysisTools
         /// <param name="path"></param>
         public void Save(string path)
         {
-            Image image = GetImage();
+            Image image = this.GetImage();
             if (image == null)
             {
                 Log.WriteLine("MultiTrackImage.Save() - WARNING: NULL IMAGE.Cannot save to: " + path);
@@ -112,10 +129,10 @@ namespace AudioAnalysisTools
         public Image GetImage()
         {
             // Calculate total height of the bmp
-            var height = CalculateImageHeight();
+            var height = this.CalculateImageHeight();
 
             //set up a new image having the correct dimensions
-            var image2return = new Bitmap(sonogramImage.Width, height, PixelFormat.Format24bppRgb);
+            var image2return = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format24bppRgb);
 
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
@@ -129,23 +146,29 @@ namespace AudioAnalysisTools
                         e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                 }
 
+                if (this.points != null) //draw events first because their rectangles can cover other features
+                {
+                    
+                        DrawPoints(g, this.points);
+                }
+
                 if (this.spectralTracks != null) //draw spectral tracks 
                 {
                     foreach (SpectralTrack t in this.spectralTracks)
                         t.DrawTrack(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                 }
 
-                if (this.FreqHits != null) DrawFreqHits(g);
+                if (this.FreqHits != null) this.DrawFreqHits(g);
 
                 //if (this.SuperimposedMatrix != null) OverlayMatrix(g);
-                if (this.SuperimposedMatrix != null) OverlayMatrix(g, (Bitmap)this.sonogramImage);
-                if (this.SuperimposedRedTransparency != null) OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
-                if (this.SuperimposedRainbowTransparency != null) OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedMatrix != null) this.OverlayMatrix(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedRedTransparency != null) this.OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedRainbowTransparency != null) this.OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
             }
 
             //now add tracks to the image
-            int offset = sonogramImage.Height;
-            foreach (Image_Track track in tracks)
+            int offset = this.sonogramImage.Height;
+            foreach (Image_Track track in this.tracks)
             {
                 track.topOffset = offset;
                 track.bottomOffset = offset + track.Height - 1;
@@ -157,8 +180,8 @@ namespace AudioAnalysisTools
 
         private int CalculateImageHeight()
         {
-            int totalHeight = sonogramImage.Height;
-            foreach (Image_Track track in tracks)
+            int totalHeight = this.sonogramImage.Height;
+            foreach (Image_Track track in this.tracks)
                 totalHeight += track.Height;
             return totalHeight;
         }
