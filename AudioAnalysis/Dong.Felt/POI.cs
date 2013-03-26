@@ -313,6 +313,7 @@ namespace Dong.Felt
                 {
                     bottomPoints = true;
                 }
+
                 if (topPoints || bottomPoints)
                 {
                     result.Add(points[index]);
