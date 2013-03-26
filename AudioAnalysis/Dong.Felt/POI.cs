@@ -117,9 +117,43 @@ namespace Dong.Felt
 
             var results = new List<Point>();
             
-            for (int row = 0; row < m.GetLength(1); row++)
+            // scan the whole matrix
+            //for (int row = 0; row < m.GetLength(1); row++)
+            //{
+            //    for (int col = 0; col < m.GetLength(0); col++)
+            //    {
+            //        // assume local maxium
+            //        double localMaximum = m[col, row];
+            //        bool maximum = true;
+            //        // check if it really is the local maximum in the neighbourhood
+            //        for (int i = centerOffset; i < neighborWindowSize; i++)
+            //        {
+            //            for (int j = centerOffset; j < neighborWindowSize; j++)
+            //            {
+            //                if (m.PointIntersect(col + j, row + i))
+            //                {
+            //                    var current = m[col + j, row + i];
+            //                    // don't check the middle point
+            //                    if (localMaximum <= current && !(i == 0 && j == 0))
+            //                    {
+            //                        // actually not a local maximum
+            //                        maximum = false;
+            //                    }
+            //                }
+            //            }
+            //        }
+            //        // iff it is indeed the local maximum, then add it
+            //        if (maximum)
+            //        {
+            //            results.Add(new Point(col, row));
+            //        }
+            //    }
+            //}
+
+            // scan fixed range of recording
+            for (int row = m.GetLength(1) / 10; row < (3 * m.GetLength(1) / 10); row++)
             {
-                for (int col = 0; col < m.GetLength(0); col++)
+                for (int col = m.GetLength(0) / 10; col < (3 * m.GetLength(0) / 10); col++)
                 {
                     // assume local maxium
                     double localMaximum = m[col, row];
@@ -150,7 +184,20 @@ namespace Dong.Felt
             }
             return results;
         }
-        public static List<Point> MergeAdjacentPoint(List<Point> pointsOfInterest, int offset)
+
+        /// <summary>
+        /// The merge close point.
+        /// </summary>
+        /// <param name="pointsOfInterest">
+        /// The points of interest.
+        /// </param>
+        /// <param name="offset">
+        /// The offset.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Point> MergeClosePoint(List<Point> pointsOfInterest, int offset)
         {
             int maxIndex = pointsOfInterest.Count;
             var results = new List<Point>(maxIndex);
@@ -173,7 +220,6 @@ namespace Dong.Felt
                         break;
                     }    
                 }
-
                 if (!close)
                 {
                     results.Add(pointsOfInterest[index1]);
@@ -184,10 +230,101 @@ namespace Dong.Felt
         }
 
         /// <summary>
+        /// The lewins rail template.
+        /// </summary>
+        /// <param name="fillOutPoints">
+        /// The fill out points.
+        /// </param>
+        /// <param name="pixelOffset">
+        /// The pixel offset.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Point> LewinsRailTemplate(List<Point> fillOutPoints, int pixelOffset)
+        {
+            int maxIndex = fillOutPoints.Count;
+            var eventPoints = new List<Point>(maxIndex);
+            var frequencyGap = 1000;
+            var frequencyBin = 86;
+            for (int index1 = 0; index1 < fillOutPoints.Count; index1++)
+            {
+                var potentialEventPoints = false;
+                var frequencyRange = frequencyGap / frequencyBin - pixelOffset;
+                var frameRange = pixelOffset;
+                for (int index2 = 1; index2 < fillOutPoints.Count; index2++)
+                {
+                    int deltaX = Math.Abs(fillOutPoints[index1].X - fillOutPoints[index2].X);
+                    int deltaY = Math.Abs(fillOutPoints[index1].Y - fillOutPoints[index2].Y);
+                    if (deltaX <= frameRange && deltaY >= frequencyRange)
+                    {
+                        potentialEventPoints = true;
+                        break;
+                    }
+                }
+                if (potentialEventPoints)
+                {
+                    eventPoints.Add(fillOutPoints[index1]);
+                }     
+            }
+            return eventPoints;
+        }
+
+        /// <summary>
+        /// The fill out points.
+        /// </summary>
+        /// <param name="points">
+        /// The points.
+        /// </param>
+        /// <param name="lowFrequency">
+        /// The low frequency.
+        /// </param>
+        /// <param name="highFrequency">
+        /// The high frequency.
+        /// </param>
+        /// <param name="frequencyBinWidth">
+        /// The frequency bin width.
+        /// </param>
+        /// <param name="pixelOffset">
+        /// The pixel offset.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Point> FillOutPoints(List<Point> points, int lowFrequency, int highFrequency, double frequencyBinWidth, int pixelOffset)
+        {
+            int maxIndex = points.Count;
+            var lowFrequencyBin = lowFrequency / frequencyBinWidth; //for Lewins 3000/86;
+            var highFrequencyBin = highFrequency / frequencyBinWidth; //for Lewins 4000/86;
+
+            var result = new List<Point>(maxIndex);
+            for (int index = 0; index < maxIndex; index++)
+            {
+                var topPoints = false;
+                var bottomPoints = false; 
+                int deltaTopY = (int)Math.Abs(points[index].Y - highFrequencyBin);
+                int deltaBottomY = (int)Math.Abs(points[index].Y - lowFrequencyBin);
+ 
+                if (deltaTopY <= pixelOffset)
+                {
+                    topPoints = true;
+                }
+                if (deltaBottomY <= pixelOffset)
+                {
+                    bottomPoints = true;
+                }
+                if (topPoints || bottomPoints)
+                {
+                    result.Add(points[index]);
+                }
+            }
+            return result;
+        }
+        /// <summary>
         /// To generate a binary spectrogram, a amplitudeThreshold is required
         /// Above the threshold, its amplitude value will be assigned to MAX (black), otherwise to MIN (white)
         /// Side affect: An image is saved
-        /// Side affect: the original AmplitudeSonogram is modified
+        /// Side affect: the original AmplitudeSonogram is modified.
         /// </summary>
         /// <returns>
         /// </returns>

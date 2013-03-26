@@ -72,16 +72,21 @@ namespace Dong.Felt
             AudioRecording audioRecording;
             var spectrogram = POI.AudioToSpectrogram(wavFilePath, out audioRecording);
             var matrix = POI.NoiseReductionToBinarySpectrogram(spectrogram, 10.0);
-            var localMaxima = POI.PickLocalMaximum(matrix, 3); 
-            localMaxima.Add(localMaxima.First());
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
-            imageResult.AddPoints(localMaxima.ToArray());
-            imageResult.Save(@"C:\Test recordings\test13.png");
 
-            var leftPoints = POI.MergeAdjacentPoint(localMaxima, 4);
-            var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, false));
-            imageResult2.AddPoints(leftPoints.ToArray());
-            imageResult2.Save(@"C:\Test recordings\test12.png");
+            var localMaxima = POI.PickLocalMaximum(matrix, 7);
+            localMaxima.Add(localMaxima.First());
+            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult.AddPoints(localMaxima.ToArray());
+            imageResult.Save(@"C:\Test recordings\test12.png");
+
+            var leftPoints = POI.MergeClosePoint(localMaxima, 5);
+            var fillOutPoints = POI.FillOutPoints(leftPoints, 3000, 4000, spectrogram.FBinWidth, 3);
+            var eventPoints = POI.LewinsRailTemplate(fillOutPoints, 3);
+            var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult2.AddPoints(leftPoints.ToArray());
+            imageResult2.AddPoints(eventPoints.ToArray());
+            //imageResult2.Save(@"C:\Test recordings\test13.png");
+            imageResult2.Save(@"C:\Test recordings\test15.png");
 
             var result = new AnalysisResult();
             return result;
@@ -105,7 +110,8 @@ namespace Dong.Felt
         public static void Dev(string[] arguments)
         {
 
-            var tempFile = @"C:\Test recordings\ctest.wav";
+            //var tempFile = @"C:\Test recordings\ctest.wav";
+            var tempFile = @"C:\Test recordings\Lewin's Rail.wav";
 
             arguments = new string[2];
 

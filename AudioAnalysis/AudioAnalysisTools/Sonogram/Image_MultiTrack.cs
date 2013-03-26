@@ -46,7 +46,6 @@ namespace AudioAnalysisTools
         {
             this.tracks.Add(track);
         }
-
         public void AddEvents(List<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
         {
             this.eventList       = _list;
@@ -55,20 +54,17 @@ namespace AudioAnalysisTools
             this.framesPerSecond = _framesPerSecond;
             this.freqBinWidth    = _nyquist / _freqBinCount;
         }
-
         public void AddPoints(Point[] points)
         {
             this.points = points;
         }
-
         public static void DrawPoints(Graphics g, Point[] pointsOfInterest)
         {
             Brush b = new SolidBrush(AcousticEvent.DEFAULT_BORDER_COLOR);
-            int MaximumFreBin = 257;
-            
+                     
             foreach (var point in pointsOfInterest)
             {
-                g.FillRectangle(b, point.X, 257 - point.Y, 1, 1);
+                g.FillRectangle(b, point.X, 256 - point.Y, 1, 1);
             }
         }
 
