@@ -100,24 +100,26 @@ namespace AnalysisPrograms
             // IMPORTANT: IF CHANGE FILE NAMES, MUST ALSO CHECK IF NEED TO EDIT ARRAY INDICES IN METHOD GetRankOrder(string fileName) BELOW BECAUSE FILE FORMATS MAY CHANGE
             // string callsFileName = "SE_2010Oct14_Calls.csv";
             // string indicesFilePath = inputDir + @"\Exp4\Oct14_Results.csv";   //used only for smart sampling
-            // string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
-            string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
 
             // 2013 analysis  ...  LOCATION OF ANALYSIS FILES
-            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
             // 13th OCTOBER
+            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct13_Calls.csv";
             // 14th OCTOBER
+            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\14Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct14_Calls.csv";
             // 15th OCTOBER
+            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\15Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct15_Calls.csv";
             // 16th OCTOBER
+            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\16Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct16_Calls.csv";
             // 17th OCTOBER
+            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
             string indicesFilePath = Path.Combine(inputDir, "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             string callsFileName = "SE_2010Oct17_Calls.csv";
             
@@ -166,7 +168,8 @@ namespace AnalysisPrograms
                 }
 
 
-                FileTools.WriteTextFile(inputDir+outputfile, text);
+                string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+                FileTools.WriteTextFile(inputDir + outputfile, text);
 
                 int[] finalRowSums = DataTools.GetRowSums(callMatrix);
                 int totalSum = finalRowSums.Sum();
@@ -304,7 +307,7 @@ namespace AnalysisPrograms
                 //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
-                // OPTION 2: USE FOLLOWING  two lines to rank by weighted multiple columns of acoustic indices matrix.
+                // OPTION 2: USE FOLLOWING  line to rank by weighted multiple columns of acoustic indices matrix.
                 int[] rankOrder = GetRankOrder(indicesFilePath);
 
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
@@ -507,7 +510,7 @@ namespace AnalysisPrograms
             // FEATURE SET 10..... 1 feature ACI
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 59.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -19.02 }; // 21 indices
             // FEATURE SET 11..... 1 feature av cluster duration  -- sometimes need to multiply by -1.
-            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.047, 0.0, 0.0, 0.0, 0.00, 0.49 }; // 21 indices
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.047, 0.0, 0.0, 0.0, 0.00, 0.49 }; // 21 indices
             // FEATURE SET 12..... 1 feature av cluster 
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, -0.069, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -1.03 }; // 21 indices
             // FEATURE SET 13..... 1 feature H[peaks] 
@@ -520,6 +523,8 @@ namespace AnalysisPrograms
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.47, 0.0, 0.0, 0.0, 0.0, 0.00, -0.023 }; // 21 indices
 
 
+            // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
 
 
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
