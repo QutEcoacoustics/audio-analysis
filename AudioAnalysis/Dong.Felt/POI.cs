@@ -58,44 +58,44 @@ namespace Dong.Felt
         /// The spectral sonogram.
         /// </param>
         /// <param name="threshold">
-        /// The threshold. ranging from 3.0 to 10.0 - decible value
+        /// The threshold. ranging from 3.0 or 4.0 - decible value
         /// </param>
-        public static double[,] NoiseReductionToBinarySpectrogram(SpectralSonogram spectralSonogram, double threshold, bool makeBinary = false)
+        public static Tuple<double[,], double[]> NoiseReductionToBinarySpectrogram(SpectralSonogram spectralSonogram, double backgroundthreshold, bool makeBinary = false)
         {
-            double[] modalNoise = SNR.CalculateModalNoise(spectralSonogram.Data);
-            double[,] matrix = spectralSonogram.Data;
+            return SNR.NoiseReduce(spectralSonogram.Data, NoiseReductionType.STANDARD, backgroundthreshold);
+            //double[] modalNoise = SNR.CalculateModalNoise(spectralSonogram.Data);
+            //double[,] matrix = spectralSonogram.Data;
 
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] outMatrix = new double[rowCount, colCount]; 
+            //int rowCount = matrix.GetLength(0);
+            //int colCount = matrix.GetLength(1);
+            //double[,] outMatrix = new double[rowCount, colCount]; 
 
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-            {
-                for (int y = 0; y < rowCount; y++) //for all rows
-                {
-                    outMatrix[y, col] = matrix[y, col] - modalNoise[col];
-                    if (outMatrix[y, col] < threshold)
-                    {
-                        outMatrix[y, col] = 0.0;
-                    }
-                    else
-                    {
-                        if (makeBinary)
-                        {
-                            outMatrix[y, col] = 1.0;
-                        }
-                    }
-                } 
-            }
-            spectralSonogram.Data = outMatrix;
-            return spectralSonogram.Data;
+            //for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            //{
+            //    for (int y = 0; y < rowCount; y++) //for all rows
+            //    {
+            //        outMatrix[y, col] = matrix[y, col] - modalNoise[col];
+            //        if (outMatrix[y, col] < threshold)
+            //        {
+            //            outMatrix[y, col] = 0.0;
+            //        }
+            //        else
+            //        {
+            //            if (makeBinary)
+            //            {
+            //                outMatrix[y, col] = 1.0;
+            //            }
+            //        }
+            //    } 
+            //}
+            //spectralSonogram.Data = outMatrix;
+            //return spectralSonogram.Data;
             //spectralSonogram.Data = outM;
 
             //var imageResult = new Image_MultiTrack(spectralSonogram.GetImage(false, false));
             //imageResult.Save("C:\\Test recordings\\Test6.png");
 
         }
-
         /// <summary>
         /// The pick local maximum.
         /// </summary>
@@ -108,14 +108,13 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> PickLocalMaximum(double[,] m, int neighborWindowSize)
+        public static List<Tuple<Point, double>> PickLocalMaximum(double[,] m, int neighborWindowSize)
         {
             Contract.Requires(neighborWindowSize % 2 == 1, "Neighbourhood window size must be odd");
             Contract.Requires(neighborWindowSize >= 1, "Neighbourhood window size must be at least 1");
-
             int centerOffset = -(int)(neighborWindowSize / 2.0);
-
-            var results = new List<Point>();
+         
+            var results = new List<Tuple<Point, double>>();
             
             // scan the whole matrix
             //for (int row = 0; row < m.GetLength(1); row++)
@@ -145,15 +144,15 @@ namespace Dong.Felt
             //        // iff it is indeed the local maximum, then add it
             //        if (maximum)
             //        {
-            //            results.Add(new Point(col, row));
+            //            results.Add(Tuple.Create(new Point(col, row), m[col, row]));
             //        }
             //    }
             //}
-
+            //return results;
             // scan fixed range of recording
-            for (int row = m.GetLength(1) / 10; row < (3 * m.GetLength(1) / 10); row++)
+            for (int row = m.GetLength(1) / 10; row < m.GetLength(1); row++)
             {
-                for (int col = m.GetLength(0) / 10; col < (3 * m.GetLength(0) / 10); col++)
+                for (int col = 0; col < m.GetLength(0); col++)
                 {
                     // assume local maxium
                     double localMaximum = m[col, row];
@@ -178,12 +177,38 @@ namespace Dong.Felt
                     // iff it is indeed the local maximum, then add it
                     if (maximum)
                     {
-                        results.Add(new Point(col, row));
+                        results.Add(Tuple.Create(new Point(col, row), m[col, row]));
                     }
                 }
             }
             return results;
         }
+
+        /// <summary>
+        /// The filter out points.   Pick up points whose amplitude value is more than a threshold
+        /// </summary>
+        /// <param name="list">
+        /// The list.
+        /// </param>
+        /// <param name="threshold">
+        /// The threshold.   It should be a dB value
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Tuple<Point, double>> FilterOutPoints(List<Tuple<Point, double>> list, int amplitudethreshold)
+        {
+            var results = new List<Tuple<Point, double>>();
+
+            results = list.Where(item => item.Item2 > amplitudethreshold).ToList();
+
+            return results;
+        }
+
+        //private static bool Filter(Tuple<Point, double> item)
+        //{
+        //    return item.Item2 < 10;
+        //}
 
         /// <summary>
         /// The merge close point.
@@ -197,7 +222,7 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> MergeClosePoint(List<Point> pointsOfInterest, int offset)
+        public static List<Point> RemoveClosePoint(List<Point> pointsOfInterest, int offset)
         {
             int maxIndex = pointsOfInterest.Count;
             var results = new List<Point>(maxIndex);
@@ -291,7 +316,7 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> FillOutPoints(List<Point> points, int lowFrequency, int highFrequency, double frequencyBinWidth, int pixelOffset)
+        public static List<Point> FilterOutPointsForLewins(List<Point> points, int lowFrequency, int highFrequency, double frequencyBinWidth, int pixelOffset)
         {
             int maxIndex = points.Count;
             var lowFrequencyBin = lowFrequency / frequencyBinWidth; //for Lewins 3000/86;
@@ -313,7 +338,6 @@ namespace Dong.Felt
                 {
                     bottomPoints = true;
                 }
-
                 if (topPoints || bottomPoints)
                 {
                     result.Add(points[index]);
@@ -379,28 +403,28 @@ namespace Dong.Felt
                  // scan along frames
                  for (int i = 0; i < (windowIndex + 1) * slideWindowFrameOffset; i++)
                  {
-                      // scan through bins
+                     // scan through bins
                      for (int j = slideWindowminFreqBin; j < slideWindowmaxFreqBin; j++)
-                      {
-                          if (spectrogramAmplitudeMatrix[i, j] > currentMaximum)
-                          {
-                              peakPoints[windowIndex] = Tuple.Create(new Point(i, j), spectrogramAmplitudeMatrix[i, j]);
-                          }
-                      }
-                  }
-              }
+                     {
+                         if (spectrogramAmplitudeMatrix[i, j] > currentMaximum)
+                         {
+                             peakPoints[windowIndex] = Tuple.Create(new Point(i, j), spectrogramAmplitudeMatrix[i, j]);
+                         }
+                     }
+                 }
+             }
 
-              var outputPoints = string.Empty;
-              foreach (var point in peakPoints)
-              {
-                  if (point != null)
-                  {
-                      outputPoints += string.Format("Point found at x:{0}, y:{1}, value: {2}\n", point.Item1.X, point.Item1.Y, point.Item2);
-                  }
-              }
+             var outputPoints = string.Empty;
+             foreach (var point in peakPoints)
+             {
+                 if (point != null)
+                 {
+                     outputPoints += string.Format("Point found at x:{0}, y:{1}, value: {2}\n", point.Item1.X, point.Item1.Y, point.Item2);
+                 }
+             }
 
-            return outputPoints;
-            ////Log.Info("Found points: \n" + outputPoints);
+             return outputPoints;
+             ////Log.Info("Found points: \n" + outputPoints);
          }
 
         //const double customizedTime = 15.0;

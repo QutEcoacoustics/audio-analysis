@@ -28,7 +28,8 @@ namespace AudioAnalysisTools
         private int freqBinCount;
         private double freqBinWidth;
         private double framesPerSecond;
-        private Point[] points;
+        //private Point[] points;
+        private List<Tuple<Point, double>> points;
         #endregion
 
 
@@ -54,7 +55,7 @@ namespace AudioAnalysisTools
             this.framesPerSecond = _framesPerSecond;
             this.freqBinWidth    = _nyquist / _freqBinCount;
         }
-        public void AddPoints(Point[] points)
+        public void AddPoints(List<Tuple<Point, double>> points)
         {
             this.points = points;
         }
@@ -67,7 +68,15 @@ namespace AudioAnalysisTools
                 g.FillRectangle(b, point.X, 256 - point.Y, 1, 1);
             }
         }
-
+        public static void DrawCircle(Graphics g, List<Tuple<Point, double>> pointsOfInterest)
+        {
+            Pen pen1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR);
+            
+            foreach (var point in pointsOfInterest)
+            {
+                g.DrawEllipse(pen1, point.Item1.X - 2, 256 - point.Item1.Y - 2, 4, 4);
+            }
+        }
         public void OverlayRedMatrix(Double[,] m, double maxScore)
         {
             this.SuperimposedMatrix = m;
@@ -144,8 +153,10 @@ namespace AudioAnalysisTools
 
                 if (this.points != null) //draw events first because their rectangles can cover other features
                 {
-                    
-                        DrawPoints(g, this.points);
+                    // var stats = new StatDescriptive(this.points.Select(p => p.Item2).ToArray());
+                    // stats.Analyze();
+                    //DrawPoints(g, this.points);
+                    DrawCircle(g, this.points);
                 }
 
                 if (this.spectralTracks != null) //draw spectral tracks 
