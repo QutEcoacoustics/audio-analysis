@@ -71,22 +71,29 @@ namespace Dong.Felt
             // Read the .wav file
             AudioRecording audioRecording;
             var spectrogram = POI.AudioToSpectrogram(wavFilePath, out audioRecording);
-            var matrix = POI.NoiseReductionToBinarySpectrogram(spectrogram, 10.0);
-
-            var localMaxima = POI.PickLocalMaximum(matrix, 7);
-            localMaxima.Add(localMaxima.First());
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(localMaxima.ToArray());
-            imageResult.Save(@"C:\Test recordings\test12.png");
+            imageResult.Save(@"C:\Test recordings\test19.png");
 
-            var leftPoints = POI.MergeClosePoint(localMaxima, 5);
-            var fillOutPoints = POI.FillOutPoints(leftPoints, 3000, 4000, spectrogram.FBinWidth, 3);
-            var eventPoints = POI.LewinsRailTemplate(fillOutPoints, 3);
+            var tuple = POI.NoiseReductionToBinarySpectrogram(spectrogram, 10);
+
+            var localMaxima = POI.PickLocalMaximum(tuple.Item1, 7);
+            localMaxima.Add(localMaxima.First());
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult.AddPoints(localMaxima);
+            //imageResult.Save(@"C:\Test recordings\test18.png");
+
+            //var leftPoints = POI.RemoveClosePoint(localMaxima, 5);
+            //var filterOutPoints = POI.FillOutPoints(leftPoints, 3000, 4000, spectrogram.FBinWidth, 3);
+            //var eventPoints = POI.LewinsRailTemplate(filterOutPoints, 3);
+            var filterOutPoints = POI.FilterOutPoints(localMaxima, 5);
             var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult2.AddPoints(filterOutPoints);
+            imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            imageResult2.Save(@"C:\Test recordings\test17.png");
             //imageResult2.AddPoints(leftPoints.ToArray());
-            imageResult2.AddPoints(eventPoints.ToArray());
+            //imageResult2.AddPoints(leftPoints.ToArray());
             //imageResult2.Save(@"C:\Test recordings\test13.png");
-            imageResult2.Save(@"C:\Test recordings\test15.png");
+            //imageResult2.Save(@"C:\Test recordings\test15.png");
 
             var result = new AnalysisResult();
             return result;
