@@ -150,7 +150,7 @@ namespace Dong.Felt
             //}
             //return results;
             // scan fixed range of recording
-            for (int row = m.GetLength(1) / 10; row < m.GetLength(1); row++)
+            for (int row =  m.GetLength(1) / 4; row < 2 * m.GetLength(1)/5; row++)
             {
                 for (int col = 0; col < m.GetLength(0); col++)
                 {
@@ -208,6 +208,30 @@ namespace Dong.Felt
         //private static bool Filter(Tuple<Point, double> item)
         //{
         //    return item.Item2 < 10;
+        //}
+
+
+        //public static Tuple<double, int, double>[] LewinsRailFeatureClass(List<Tuple<Point, double>> points, int framePersecond, double FrequencyBinWidth)
+        //{
+        //    //var duration = ;
+        //    var maxFrequency = 4000;
+        //    var minFrequency = 3000;
+
+        //    var maxFrequencyBin = (int) (maxFrequency / FrequencyBinWidth);
+        //    var minFrequencyBin = (int) (minFrequency / FrequencyBinWidth);
+        //    var offset = 5;  
+        //    //var featureClass = new Tuple<double, int, double>[6]
+        //    //                       {
+        //    //                           ((,maxFrequencyBin), points.Item2),
+        //    //                           ((,maxFrequencyBin + offset),points.Item2),
+        //    //                           ((,minFrequencyBin + offset),points.Item2),
+                                          
+        //    //                       };
+            
+            
+
+
+
         //}
 
         /// <summary>
