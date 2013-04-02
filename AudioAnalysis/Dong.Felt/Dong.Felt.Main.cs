@@ -83,14 +83,19 @@ namespace Dong.Felt
 
             //var leftPoints = POI.RemoveClosePoint(localMaxima, 5);
             var filterOutPoints = POI.FilterOutPoints(localMaxima, 1);
-            var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult2.AddPoints(filterOutPoints);
-            imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult2.Save(@"C:\Test recordings\test2.png");
+  
+            var avgDistance = POI.AverageDistanceScore(POI.LewinsRailTemplate(18), filterOutPoints.where(item => item))
+            //var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult2.AddPoints(filterOutPoints);
+            //imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult2.Save(@"C:\Test recordings\test3.png");
+
             //imageResult2.AddPoints(leftPoints.ToArray());
             //imageResult2.AddPoints(leftPoints.ToArray());
             //imageResult2.Save(@"C:\Test recordings\test13.png");
             //imageResult2.Save(@"C:\Test recordings\test15.png");
+
+
 
             var result = new AnalysisResult();
             return result;
