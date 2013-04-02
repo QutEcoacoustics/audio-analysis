@@ -152,7 +152,7 @@ namespace Dong.Felt
             // scan fixed range of recording
             for (int row =  m.GetLength(1) / 4; row < 2 * m.GetLength(1)/5; row++)
             {
-                for (int col = 0; col < m.GetLength(0); col++)
+                for (int col = 3010; col < 3096; col++)  // 3010 =  35s * frame/second(86)
                 {
                     // assume local maxium
                     double localMaximum = m[col, row];
@@ -185,13 +185,13 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// The filter out points.   Pick up points whose amplitude value is more than a threshold
+        /// The filter out points.   Pick up points whose amplitude value is more than a threshold.
         /// </summary>
         /// <param name="list">
         /// The list.
         /// </param>
         /// <param name="threshold">
-        /// The threshold.   It should be a dB value
+        /// The threshold.   It should be a dB value.
         /// </param>
         /// <returns>
         /// The <see cref="List"/>.
@@ -204,35 +204,6 @@ namespace Dong.Felt
 
             return results;
         }
-
-        //private static bool Filter(Tuple<Point, double> item)
-        //{
-        //    return item.Item2 < 10;
-        //}
-
-
-        //public static Tuple<double, int, double>[] LewinsRailFeatureClass(List<Tuple<Point, double>> points, int framePersecond, double FrequencyBinWidth)
-        //{
-        //    //var duration = ;
-        //    var maxFrequency = 4000;
-        //    var minFrequency = 3000;
-
-        //    var maxFrequencyBin = (int) (maxFrequency / FrequencyBinWidth);
-        //    var minFrequencyBin = (int) (minFrequency / FrequencyBinWidth);
-        //    var offset = 5;  
-        //    //var featureClass = new Tuple<double, int, double>[6]
-        //    //                       {
-        //    //                           ((,maxFrequencyBin), points.Item2),
-        //    //                           ((,maxFrequencyBin + offset),points.Item2),
-        //    //                           ((,minFrequencyBin + offset),points.Item2),
-                                          
-        //    //                       };
-            
-            
-
-
-
-        //}
 
         /// <summary>
         /// The merge close point.
@@ -285,38 +256,106 @@ namespace Dong.Felt
         /// The fill out points.
         /// </param>
         /// <param name="pixelOffset">
-        /// The pixel offset.
+        /// The pixel offset.  // should be 18 or 19.
         /// </param>
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> LewinsRailTemplate(List<Point> fillOutPoints, int pixelOffset)
+        public static List<Point> LewinsRailTemplate(int pixelOffset)
         {
-            int maxIndex = fillOutPoints.Count;
-            var eventPoints = new List<Point>(maxIndex);
-            var frequencyGap = 1000;
-            var frequencyBin = 86;
-            for (int index1 = 0; index1 < fillOutPoints.Count; index1++)
+            var template = new List<Point>()
+                               {
+                                   new Point(0, 67)),
+                                   //the first three points in the same frequency bin : & have same time space
+                                   new Point(0 + pixelOffset, 67)),
+                                   new Point(0 + 2 * pixelOffset, 67)),
+                                   new Point(0, 90)), // the second three points in the same frequency bin :
+                                   new Point(0 + pixelOffset, 90)),
+                                   new Point(0 + 2 * pixelOffset, 90)),
+                                   new Point(0, 94)),
+                                   new Point(0 + pixelOffset, 94)),
+                                   new Point(0 + 2 * pixelOffset, 94))
+                               };
+
+              return template;
+            //int maxIndex = fillOutPoints.Count;
+            //var eventPoints = new List<Point>(maxIndex);
+            //var frequencyGap = 1000;
+            //var frequencyBin = 86;
+            //for (int index1 = 0; index1 < fillOutPoints.Count; index1++)
+            //{
+            //    var potentialEventPoints = false;
+            //    var frequencyRange = frequencyGap / frequencyBin - pixelOffset;
+            //    var frameRange = pixelOffset;
+            //    for (int index2 = 1; index2 < fillOutPoints.Count; index2++)
+            //    {
+            //        int deltaX = Math.Abs(fillOutPoints[index1].X - fillOutPoints[index2].X);
+            //        int deltaY = Math.Abs(fillOutPoints[index1].Y - fillOutPoints[index2].Y);
+            //        if (deltaX <= frameRange && deltaY >= frequencyRange)
+            //        {
+            //            potentialEventPoints = true;
+            //            break;
+            //        }
+            //    }
+            //    if (potentialEventPoints)
+            //    {
+            //        eventPoints.Add(fillOutPoints[index1]);
+            //    }     
+            //}
+            //return eventPoints;
+        }
+
+        /// <summary>
+        /// The average distance score.
+        /// </summary>
+        /// <param name="template">
+        /// The template.
+        /// </param>
+        /// <param name="pointsOfInterest">
+        /// The points of interest.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.  List<Tuple<Point, double>>
+        /// </returns>
+        public static double[] AverageDistanceScore(List<Point> template, List<Tuple<Point,double>> pointsOfInterest)
+        {
+            var distance = new double[pointsOfInterest.Count];
+            var avgDistance = new double[pointsOfInterest.Count];
+            var numberOfVertexes = template.Count;
+            int relativeFrame;
+
+            double averageDistanceScore;
+            //var results = new List<Tuple<Point, double>>();
+            foreach (var poi in pointsOfInterest)
             {
-                var potentialEventPoints = false;
-                var frequencyRange = frequencyGap / frequencyBin - pixelOffset;
-                var frameRange = pixelOffset;
-                for (int index2 = 1; index2 < fillOutPoints.Count; index2++)
+                Point anchorPoint = poi.Item1;
+
+                distance[i] = 0;
+
+                // skip the anchor point, we already know the distance
+                for (int j = 1; j <= numberOfVertexes; j++)
                 {
-                    int deltaX = Math.Abs(fillOutPoints[index1].X - fillOutPoints[index2].X);
-                    int deltaY = Math.Abs(fillOutPoints[index1].Y - fillOutPoints[index2].Y);
-                    if (deltaX <= frameRange && deltaY >= frequencyRange)
+                    relativeFrame = anchorPoint.X;
+                    if (!(poi.Item1 == anchorPoint))
                     {
-                        potentialEventPoints = true;
-                        break;
-                    }
+                        distance[i] += EuclideanDistance(template[j], poi)
+                        distance[i] += 
+                            Math.Sqrt(((template.ElementAt(j).X + relativeFrame) 
+                            - poi.Item1.X) * ((template.ElementAt(j).X + relativeFrame) - pointsOfInterest.ElementAt(i).X)
+                                  + (template.ElementAt(j).Y - poi.Item1.Y) * (template.ElementAt(j).Y - poi.Item1.Y));
+                    }                 
                 }
-                if (potentialEventPoints)
-                {
-                    eventPoints.Add(fillOutPoints[index1]);
-                }     
+                avgDistance[i] = distance[i] / numberOfVertexes;
             }
-            return eventPoints;
+            return avgDistance;
+        }
+
+        public static double EuclideanDistance(Point p1, Point p2)
+        {
+            var deltaX = Math.Pow((p2.X - p1.X), 2);
+            var deltaY = Math.Pow((p2.Y - p1.Y), 2);
+
+            return Math.Sqrt(deltaX + deltaY);
         }
 
         /// <summary>
@@ -620,7 +659,10 @@ namespace Dong.Felt
             //{
             //    recording.ConvertSampleRate22kHz();
             //}
-
-
-
 */
+
+
+//private static bool Filter(Tuple<Point, double> item)
+//{
+//    return item.Item2 < 10;
+//}
