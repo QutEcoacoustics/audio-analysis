@@ -62,6 +62,7 @@ namespace AudioAnalysisTools
         public static void DrawPoints(Graphics g, Point[] pointsOfInterest)
         {
             Brush b = new SolidBrush(AcousticEvent.DEFAULT_BORDER_COLOR);
+            //Brush b = new SolidBrush();
                      
             foreach (var point in pointsOfInterest)
             {

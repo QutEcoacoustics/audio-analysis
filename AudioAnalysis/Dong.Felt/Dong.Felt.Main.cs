@@ -77,23 +77,25 @@ namespace Dong.Felt
 
             var localMaxima = POI.PickLocalMaximum(tuple.Item1, 5);  // neighbourSize
             localMaxima.Add(localMaxima.First());
-            var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult2.AddPoints(localMaxima);
-            imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult2.Save(@"C:\Test recordings\localMaxima.png");
+            //var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult2.AddPoints(localMaxima);
+            //imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult2.Save(@"C:\Test recordings\localMaxima.png");
 
             var filterOutPoints = POI.FilterOutPoints(localMaxima, 1); // pink noise model threshold
-            var imageResult3 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult3.AddPoints(filterOutPoints);
-            imageResult3.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult3.Save(@"C:\Test recordings\filterPoints.png");
+            //var imageResult3 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult3.AddPoints(filterOutPoints);
+            //imageResult3.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult3.Save(@"C:\Test recordings\filterPoints.png");
            
             var removeClosePoints = POI.RemoveClosePoint(filterOutPoints, 7); 
-            // var avgDistance = POI.AverageDistanceScore(POI.LewinsRailTemplate(18), filterOutPoints);
+            var avgDistance = POI.AverageDistanceScore(POI.LewinsRailTemplate(18), filterOutPoints);
+            //Log.Info("Average distance: \n" + avgDistance);
+
             var imageResult4 = new Image_MultiTrack(spectrogram.GetImage(false, true));
             imageResult4.AddPoints(removeClosePoints);
             imageResult4.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult4.Save(@"C:\Test recordings\RemoveClosePoints2.png");
+            imageResult4.Save(@"C:\Test recordings\FixedRangeRemoveClosePoints.png");
 
             var result = new AnalysisResult();
             return result;
