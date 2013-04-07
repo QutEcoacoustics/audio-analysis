@@ -335,45 +335,38 @@ namespace Dong.Felt
             var distance = new double[pointsOfInterest.Count];                     
             int relativeFrame;
             //var result = new List<Tuple<Point, double>>();
-            double minimumDistance = 0.0;
+            var minimumDistance = new double[numberOfVertexes];
             var avgDistance = new double[pointsOfInterest.Count];
-            var tempDistance = new double[numberOfVertexes];
-            
+            //var tempDistance = new double[numberOfVertexes-1];
+            //double temp = 0.0;
+            var sum = 0.0;
+
             for (int i = 0; i < pointsOfInterest.Count; i++)
             {
                 var poi = pointsOfInterest;
-                double temp = 0.0;
-                distance[i] = 0.0;
+                
+                // distance[0] = 5555555.0;
                 Point anchorPoint = poi[i].Item1;
                 var absoluteTemplate = GetAbsoluteTemplate(anchorPoint, template);
-                    // skip the anchor point, we already know the distance
-                for (int j = 0; j < poi.Count; j++)
-                {                   
-                    //distance[j] = 66666666666;
-                    if (poi[j] == poi[i])
-                    {
-                            continue;
-                    }
-                    else
-                    {
-                         for (int k = 1; k < numberOfVertexes; k++)
-                         {
-                             distance[j] += EuclideanDistance(template[k], poi[j].Item1);                    
-                         }
-                     }                       
-                    // choose the smallest distance 
-                    //minimumDistance = distance.Min();                   
+                // skip the anchor point, we already know the distance
+                for (int j = 0; j < numberOfVertexes; j++)
+                {                  
+                    for (int index = 0; index < poi.Count; index++)
+                    {                           
+                        distance[index] = EuclideanDistance(absoluteTemplate[j], poi[index].Item1);                          
+                    } 
+
+                    minimumDistance[j] = distance.Min();  
                 }
-                Array.Sort(distance);
-                Array.Copy(distance, tempDistance, numberOfVertexes-1);
-                for (int index = 0; index < numberOfVertexes-1; index++)
-                {                   
-                    temp = temp + tempDistance[index];
-                }               
-                avgDistance[i] = temp / (numberOfVertexes - 1);
-                //return result.Add(Tuple.Create(poi[i].Item1, avgDistance));     
+
+                for (int k = 0; k < numberOfVertexes; k++)
+                {
+                    sum += minimumDistance[k];
+                }
+                avgDistance[i] = sum / numberOfVertexes ;
+                sum = 0.0;              
             }
-            return avgDistance;
+            return minimumDistance;
         }
 
         public static bool CheckTheDistance(Point p1, Point p2, int threshold)
@@ -393,30 +386,33 @@ namespace Dong.Felt
  
 
 /// <summary>
-        /// The get absolute template.
-        /// </summary>
-        /// <param name="anchorPoint">
-        /// The anchor point.
-        /// </param>
-        /// <param name="template">
-        /// The template.
-        /// </param>
-        /// <returns>
-        /// The <see cref="List"/>.
-        /// </returns>
+/// The get absolute template.
+/// </summary>
+/// <param name="anchorPoint">
+/// The anchor point.
+/// </param>
+/// <param name="template">
+/// The template.
+/// </param>
+/// <returns>
+/// The <see cref="List"/>.
+/// </returns>
         public static List<Point> GetAbsoluteTemplate(Point anchorPoint, List<Point> template)
         {
             var numberOfVertexes = template.Count;
             int relativeFrame = anchorPoint.X;
+            var result = new List<Point>();
+            result = template;
+
             // this loop I want to get an absolute template
             for (int Index = 0; Index < numberOfVertexes; Index++)
             {
-                var tempTemplate = template[Index];
-                tempTemplate.X += relativeFrame;
-                template[Index] = tempTemplate;
+                var temp = result[Index];
+                temp.X += relativeFrame;
+                result[Index] = temp;
             }
 
-            return template;
+            return result;
         }
 
         /// <summary>
