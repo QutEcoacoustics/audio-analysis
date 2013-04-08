@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="POI.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
+    <Compile Include="PointsOfInterest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

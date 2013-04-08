@@ -11,6 +11,7 @@ namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.IO;
@@ -120,49 +121,14 @@ namespace Dong.Felt
             var results = new List<Tuple<Point, double>>();
 
             // scan the whole matrix
-            //for (int row = 0; row < m.GetLength(1); row++)
-            //{
-            //    for (int col = 0; col < m.GetLength(0); col++)
-            //    {
-            //        // assume local maxium
-            //        double localMaximum = m[col, row];
-            //        bool maximum = true;
-
-            //        // check if it really is the local maximum in the neighbourhood
-            //        for (int i = centerOffset; i < neighborWindowSize; i++)
-            //        {
-            //            for (int j = centerOffset; j < neighborWindowSize; j++)
-            //            {
-            //                if (m.PointIntersect(col + j, row + i))
-            //                {
-            //                    var current = m[col + j, row + i];
-
-            //                    // don't check the middle point
-            //                    if (localMaximum <= current && !(i == 0 && j == 0))
-            //                    {
-            //                        // actually not a local maximum
-            //                        maximum = false;
-            //                    }
-            //                }
-            //            }
-            //        }
-
-            //        // iff it is indeed the local maximum, then add it
-            //        if (maximum)
-            //        {
-            //            results.Add(Tuple.Create(new Point(col, row), m[col, row]));
-            //        }
-            //    }
-            //}
-            //return results;
-            // scan fixed range of recording
-            for (int row = m.GetLength(1) / 4; row < 2 * m.GetLength(1) / 5; row++)
+            for (int row = 0; row < m.GetLength(1); row++)
             {
-                for (int col = 3096; col < 3180; col++)  // 3010 =  35s * frame/second(86)
+                for (int col = 0; col < m.GetLength(0); col++)
                 {
                     // assume local maxium
                     double localMaximum = m[col, row];
                     bool maximum = true;
+
                     // check if it really is the local maximum in the neighbourhood
                     for (int i = centerOffset; i < neighborWindowSize; i++)
                     {
@@ -171,6 +137,7 @@ namespace Dong.Felt
                             if (m.PointIntersect(col + j, row + i))
                             {
                                 var current = m[col + j, row + i];
+
                                 // don't check the middle point
                                 if (localMaximum <= current && !(i == 0 && j == 0))
                                 {
@@ -180,6 +147,7 @@ namespace Dong.Felt
                             }
                         }
                     }
+
                     // iff it is indeed the local maximum, then add it
                     if (maximum)
                     {
@@ -188,6 +156,67 @@ namespace Dong.Felt
                 }
             }
             return results;
+            //// scan fixed range of recording
+            //for (int row = m.GetLength(1) / 4; row < 2 * m.GetLength(1) / 5; row++)
+            //{
+            //    for (int col = 3096; col < 3180; col++)  // 3010 =  35s * frame/second(86)
+            //    {
+            //        // assume local maxium
+            //        double localMaximum = m[col, row];
+            //        bool maximum = true;
+            //        // check if it really is the local maximum in the neighbourhood
+            //        for (int i = centerOffset; i < neighborWindowSize; i++)
+            //        {
+            //            for (int j = centerOffset; j < neighborWindowSize; j++)
+            //            {
+            //                if (m.PointIntersect(col + j, row + i))
+            //                {
+            //                    var current = m[col + j, row + i];
+            //                    // don't check the middle point
+            //                    if (localMaximum <= current && !(i == 0 && j == 0))
+            //                    {
+            //                        // actually not a local maximum
+            //                        maximum = false;
+            //                    }
+            //                }
+            //            }
+            //        }
+            //        // iff it is indeed the local maximum, then add it
+            //        if (maximum)
+            //        {
+            //            results.Add(Tuple.Create(new Point(col, row), m[col, row]));
+            //        }
+            //    }
+            //}
+            // return results;
+
+        }
+
+        public static List<Tuple<Point, double>> GroupPointsOfInterest(List<Tuple<Point, double>> pointsOfInterest)
+        {
+            var groupOne = new List<Tuple<Point, double>>();
+            var groupTwo = new List<Tuple<Point, double>>();
+            var groupThree = new List<Tuple<Point, double>>();
+            var groupFour = new List<Tuple<Point, double>>();
+            var groupFive = new List<Tuple<Point, double>>();
+            var groupSix = new List<Tuple<Point, double>>();
+            var groupSeven = new List<Tuple<Point, double>>();
+            var groupEight = new List<Tuple<Point, double>>();
+            var groupNine = new List<Tuple<Point, double>>();
+            var result = new List<Tuple<Point, double>>();
+
+            groupOne = pointsOfInterest.Where(item => 23 < item.Item1.Y && item.Item1.Y < 46).ToList();
+            groupTwo = pointsOfInterest.Where(item => 46 < item.Item1.Y && item.Item1.Y < 69).ToList();
+            groupThree = pointsOfInterest.Where(item => 69 < item.Item1.Y && item.Item1.Y < 92).ToList();
+            groupFour = pointsOfInterest.Where(item => 92 < item.Item1.Y && item.Item1.Y < 115).ToList();
+            groupFive = pointsOfInterest.Where(item => 115 < item.Item1.Y && item.Item1.Y < 138).ToList();
+            groupSix = pointsOfInterest.Where(item => 138 < item.Item1.Y && item.Item1.Y < 161).ToList();
+            groupSeven = pointsOfInterest.Where(item => 161 < item.Item1.Y && item.Item1.Y < 184).ToList();
+            groupEight = pointsOfInterest.Where(item => 184 < item.Item1.Y && item.Item1.Y < 207).ToList();
+            groupNine = pointsOfInterest.Where(item => 207 < item.Item1.Y && item.Item1.Y < 230).ToList();
+
+            return groupTwo;
+
         }
 
         /// <summary>
@@ -203,11 +232,11 @@ namespace Dong.Felt
         /// The <see cref="List"/>.
         /// </returns>
         public static List<Tuple<Point, double>> FilterOutPoints(
-            List<Tuple<Point, double>> list, int amplitudethreshold)
+            List<Tuple<Point, double>> list, int amplitudeThreshold)
         {
             var results = new List<Tuple<Point, double>>();
 
-            results = list.Where(item => item.Item2 > amplitudethreshold).ToList();
+            results = list.Where(item => item.Item2 > amplitudeThreshold).ToList();
 
             return results;
         }
@@ -274,33 +303,43 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> LewinsRailTemplate(int pixelOffset)
+        public static List<Point> LewinsRailTemplate(int frameOffset)
         {
             var template = new List<Point>()
                                {
                                    //the first five points in the same frequency bin 67 & have same time space
-                                   new Point(0, 67),
-                                   new Point(0 + pixelOffset, 67),
-                                   new Point(0 + 2 * pixelOffset, 67),
+                                   new Point(0, 0),
+                                   new Point(0 + frameOffset, 0),
+                                   new Point(0 + 2 * frameOffset,0),
+                                   //new Point(0, 67),
+                                   //new Point(0 + pixelOffset, 67),
+                                   //new Point(0 + 2 * pixelOffset, 67),
                                    //new Point(0 + 3 * pixelOffset, 67),
                                   // new Point(0 + 4 * pixelOffset, 67),
 
                                    // the second five points in the same frequency bin
-                                   new Point(0, 90),
-                                   new Point(0 + pixelOffset, 90),
-                                   new Point(0 + 2 * pixelOffset, 90),
+
+                                   new Point(0, 0  + 23),
+                                   new Point(0 + frameOffset, 0 + 23),
+                                   new Point(0 + 2 * frameOffset,0 + 23),
+                                   //new Point(0, 90),
+                                   //new Point(0 + pixelOffset, 90),
+                                   //new Point(0 + 2 * pixelOffset, 90),
                                   // new Point(0 + 3 * pixelOffset, 90),
                                    //new Point(0 + 4 * pixelOffset, 90),
 
-                                   new Point(0, 101),
-                                   new Point(0 + pixelOffset, 101),
-                                   new Point(0 + 2 * pixelOffset, 101),
+                                   new Point(0, 0  + 34),
+                                   new Point(0 + frameOffset, 0 + 34),
+                                   new Point(0 + 2 * frameOffset,0 + 34),
+                                   //new Point(0, 101),
+                                   //new Point(0 + pixelOffset, 101),
+                                   //new Point(0 + 2 * pixelOffset, 101),
                                   // new Point(0 + 3 * pixelOffset, 101),
                                  //  new Point(0 + 4 * pixelOffset, 101),
 
-                                   new Point(0, 113),
-                                   new Point(0 + pixelOffset, 113),
-                                   new Point(0 + 2 * pixelOffset, 113),
+                                   //new Point(0, 113),
+                                   //new Point(0 + pixelOffset, 113),
+                                   //new Point(0 + 2 * pixelOffset, 113),
                                   // new Point(0 + 3 * pixelOffset, 113),
                                  //  new Point(0 + 4 * pixelOffset, 113),
                                };
@@ -329,26 +368,22 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.  List<Tuple<Point, double>>
         /// </returns>
-        public static double[] AverageDistanceScore(List<Point> template, List<Tuple<Point, double>> pointsOfInterest)
+        public static double[] AverageDistanceScores(List<Point> template, List<Tuple<Point, double>> pointsOfInterest)
         {
             var numberOfVertexes = template.Count;
             var distance = new double[pointsOfInterest.Count];                     
             int relativeFrame;
-            //var result = new List<Tuple<Point, double>>();
             var minimumDistance = new double[numberOfVertexes];
-            var avgDistance = new double[pointsOfInterest.Count];
-            //var tempDistance = new double[numberOfVertexes-1];
-            //double temp = 0.0;
+            var avgDistanceScores = new double[pointsOfInterest.Count];
+            
             var sum = 0.0;
 
             for (int i = 0; i < pointsOfInterest.Count; i++)
             {
                 var poi = pointsOfInterest;
-                
-                // distance[0] = 5555555.0;
                 Point anchorPoint = poi[i].Item1;
                 var absoluteTemplate = GetAbsoluteTemplate(anchorPoint, template);
-                // skip the anchor point, we already know the distance
+               
                 for (int j = 0; j < numberOfVertexes; j++)
                 {                  
                     for (int index = 0; index < poi.Count; index++)
@@ -363,12 +398,60 @@ namespace Dong.Felt
                 {
                     sum += minimumDistance[k];
                 }
-                avgDistance[i] = sum / numberOfVertexes ;
+
+                avgDistanceScores[i] = sum / numberOfVertexes ;
                 sum = 0.0;              
             }
-            return minimumDistance;
+            return avgDistanceScores;
         }
 
+        /// <summary>
+        /// The matched points of interest.
+        /// </summary>
+        /// <param name="pointsOfInterest">
+        /// The points of interest.
+        /// </param>
+        /// <param name="avgDistanceScores">
+        /// The avg distance scores.
+        /// </param>
+        /// <param name="threshold">
+        /// The threshold.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Tuple<Point, double>> MatchedPointsOfInterest(
+            List<Tuple<Point, double>> pointsOfInterest, double[] avgDistanceScores, double threshold)
+        {
+            var numberOfVertex = pointsOfInterest.Count;
+            var result = new List<Tuple<Point, double>>();
+
+            for (int i = 0; i < numberOfVertex; i++)
+            {
+                if (avgDistanceScores[i] < threshold)
+                {
+                    result.Add(pointsOfInterest[i]);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// The check the distance.
+        /// </summary>
+        /// <param name="p1">
+        /// The p 1.
+        /// </param>
+        /// <param name="p2">
+        /// The p 2.
+        /// </param>
+        /// <param name="threshold">
+        /// The threshold.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public static bool CheckTheDistance(Point p1, Point p2, int threshold)
         {
             int deltaX = Math.Abs(p1.X - p2.X);
@@ -383,33 +466,35 @@ namespace Dong.Felt
                 return false;
             }
         }
- 
 
-/// <summary>
-/// The get absolute template.
-/// </summary>
-/// <param name="anchorPoint">
-/// The anchor point.
-/// </param>
-/// <param name="template">
-/// The template.
-/// </param>
-/// <returns>
-/// The <see cref="List"/>.
-/// </returns>
+        /// <summary>
+        /// The get absolute template.
+        /// </summary>
+        /// <param name="anchorPoint">
+        /// The anchor point.
+        /// </param>
+        /// <param name="template">
+        /// The template.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:FieldNamesMustBeginWithLowerCaseLetter", Justification = "Reviewed. Suppression is OK here.")]
         public static List<Point> GetAbsoluteTemplate(Point anchorPoint, List<Point> template)
         {
             var numberOfVertexes = template.Count;
             int relativeFrame = anchorPoint.X;
-            var result = new List<Point>();
-            result = template;
+            int relativeFrequency = anchorPoint.Y;
+            List<Point> result;
+            result = new List<Point>(template);
 
             // this loop I want to get an absolute template
-            for (int Index = 0; Index < numberOfVertexes; Index++)
+            for (int index = 0; index < numberOfVertexes; index++)
             {
-                var temp = result[Index];
+                var temp = result[index];
                 temp.X += relativeFrame;
-                result[Index] = temp;
+                temp.Y += relativeFrequency;
+                result[index] = temp;
             }
 
             return result;
@@ -546,6 +631,7 @@ namespace Dong.Felt
         /// <returns>
         /// strings of out of points. 
         /// </returns>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1614:ElementParameterDocumentationMustHaveText", Justification = "Reviewed. Suppression is OK here.")]
         public static string PeakAmplitudeDetection(AmplitudeSonogram amplitudeSpectrogram, int minFreq, int maxFreq, double slideWindowDuation = 2.0)
         {
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
@@ -683,10 +769,11 @@ namespace Dong.Felt
         /// <summary>
         /// Draw a line on the spectrogram
         /// 
-        /// Side affect: writes image to disk
+        /// Side affect: writes image to disk.
         /// </summary>
-        /// <param name="wavFilePath"></param>
-        public void DrawLine(string wavFilePath, double startTime, double endTime, int minFrequency, int maxFrequency)
+        /// <param name="wavFilePath">
+        /// </param>
+        public static void DrawLine(string wavFilePath, double startTime, double endTime, int minFrequency, int maxFrequency)
         {
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig();
@@ -712,9 +799,10 @@ namespace Dong.Felt
 
         /// <summary>
         /// Draw a box on a customerized frequency and time range
-        /// Side affect: writes file to disk
+        /// Side affect: writes file to disk.
         /// </summary>
-        /// <param name="wavFilePath"></param>
+        /// <param name="wavFilePath">
+        /// </param>
         public static void DrawCustomizedBox(string wavFilePath)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(wavFilePath));
@@ -753,8 +841,8 @@ namespace Dong.Felt
 }
 
 // print configure dictionary
-         //string printMessage = analysisSettings.ConfigDict["my_custom_setting"];
-         //Log.Info(printMessage);
+         // string printMessage = analysisSettings.ConfigDict["my_custom_setting"];
+         // Log.Info(printMessage);
 
 /*
  //  not necessary part - you shouldn't ever work on recordings that aren't in 22050Hz
@@ -765,7 +853,7 @@ namespace Dong.Felt
 */
 
 
-//private static bool Filter(Tuple<Point, double> item)
-//{
+// private static bool Filter(Tuple<Point, double> item)
+// {
 //    return item.Item2 < 10;
-//}
+// }
