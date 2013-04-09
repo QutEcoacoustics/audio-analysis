@@ -165,6 +165,7 @@
     <Compile Include="AudioSegmentation.cs" />
     <Compile Include="HMMSettings.cs" />
     <Compile Include="Keys.cs" />
+    <Compile Include="PointOfInterest.cs" />
     <Compile Include="SonogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />
@@ -185,6 +186,7 @@
     <Compile Include="Sonogram\BaseSonogramDrawImage.cs" />
     <Compile Include="Sonogram\Image_MultiTrack.cs" />
     <Compile Include="Sonogram\Image_Track.cs" />
+    <Compile Include="Sonogram\PointOfInterest.cs" />
     <Compile Include="SpectralTrack.cs" />
     <Compile Include="SprTools.cs" />
     <Compile Include="ResultsTools.cs">
