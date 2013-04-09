@@ -589,14 +589,14 @@ namespace AnalysisPrograms
 
                     double[] reducedSegment = Gratings.ReduceArray(extract, p, numberOfCycles);
                     double pScore = Gratings.DetectPeriod2Grating(reducedSegment);
-                    if (pScore > score)
+                    if (pScore > score) // only store the maximum score achieved over the different periods
                     {
                         score = pScore;
                         scoreLength = segmentLength;
                     }
                 }
 
-                //transfer score to output array
+                //transfer score to output array - overwrite previous values if they were smaller.
                 for (int x = 0; x < scoreLength; x++)
                     if (gridScore[i + x] < score) gridScore[i + x] = score;
             }

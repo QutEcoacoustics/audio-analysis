@@ -84,13 +84,13 @@ namespace AnalysisPrograms
             HEADERS[10] = header_hfCover;      COL_TYPES[10] = typeof(double);  DISPLAY_COLUMN[10] = true;  COMBO_WEIGHTS[10] = 0.0;
             HEADERS[11] = header_mfCover;      COL_TYPES[11] = typeof(double);  DISPLAY_COLUMN[11] = true;  COMBO_WEIGHTS[11] = 0.0;
             HEADERS[12] = header_lfCover;      COL_TYPES[12] = typeof(double);  DISPLAY_COLUMN[12] = true;  COMBO_WEIGHTS[12] = 0.0;
-            HEADERS[13] = header_HAmpl;        COL_TYPES[13] = typeof(double);  DISPLAY_COLUMN[13] = true;  COMBO_WEIGHTS[13] = 0.0;
-            HEADERS[14] = header_HPeakFreq;    COL_TYPES[14] = typeof(double);  DISPLAY_COLUMN[14] = false; COMBO_WEIGHTS[14] = 0.0;
-            HEADERS[15] = header_HAvSpectrum;  COL_TYPES[15] = typeof(double);  DISPLAY_COLUMN[15] = true;  COMBO_WEIGHTS[15] = 0.4;
-            HEADERS[16] = header_HVarSpectrum; COL_TYPES[16] = typeof(double);  DISPLAY_COLUMN[16] = false; COMBO_WEIGHTS[16] = 0.1;
-            HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double);  DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.0;
-            HEADERS[18] = header_NumClusters;  COL_TYPES[18] = typeof(int);     DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.4;
-            HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.1;
+            HEADERS[13] = header_HAmpl;        COL_TYPES[13] = typeof(double);  DISPLAY_COLUMN[13] = true;  COMBO_WEIGHTS[13] = -0.2;
+            HEADERS[14] = header_HPeakFreq;    COL_TYPES[14] = typeof(double);  DISPLAY_COLUMN[14] = false; COMBO_WEIGHTS[14] = 0.2;
+            HEADERS[15] = header_HAvSpectrum;  COL_TYPES[15] = typeof(double);  DISPLAY_COLUMN[15] = true;  COMBO_WEIGHTS[15] = 0.0;
+            HEADERS[16] = header_HVarSpectrum; COL_TYPES[16] = typeof(double);  DISPLAY_COLUMN[16] = false; COMBO_WEIGHTS[16] = 0.2;
+            HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double);  DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.2;
+            HEADERS[18] = header_NumClusters;  COL_TYPES[18] = typeof(int);     DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.2;
+            HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.0;
             HEADERS[20] = header_TrigramCount; COL_TYPES[20] = typeof(int);     DISPLAY_COLUMN[20] = true;  COMBO_WEIGHTS[20] = 0.0;
             HEADERS[21] = header_TrigramRate;  COL_TYPES[21] = typeof(double);  DISPLAY_COLUMN[21] = true;  COMBO_WEIGHTS[21] = 0.0;
             HEADERS[22] = header_SPTracksPerSec; COL_TYPES[22] = typeof(double);DISPLAY_COLUMN[22] = true;  COMBO_WEIGHTS[22] = 0.0;
@@ -1050,7 +1050,7 @@ namespace AnalysisPrograms
                 {
                     combo += (weights[c] * columns[c][i]);
                 }
-                weightedIndices[i] = combo;
+                weightedIndices[i] = combo * combo; // square the index for display purposes only. Does not change ranking.
             }
 
             //Add in weighted bias for chorus and backgorund noise

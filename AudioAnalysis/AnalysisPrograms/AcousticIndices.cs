@@ -479,9 +479,9 @@ namespace AnalysisPrograms
                 else if (headers[i].Equals(AcousticFeatures.header_NumClusters))
                 {
                     min = 0.0; //
-                    max = 50.0; 
+                    max = 20.0; 
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (0..50)";
+                    newHeaders[i] = headers[i] + "  (0..20)";
                 }
                 else if (headers[i].Equals(AcousticFeatures.header_avClustDur))
                 {
