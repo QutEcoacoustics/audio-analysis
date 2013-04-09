@@ -53,37 +53,30 @@ namespace AudioAnalysisTools
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
             int trackHeight = DEFAULT_TRACK_HEIGHT;
 
-            //set up the array of tracks to display
-            //var dodisplay = new bool[values.Count];
-            //for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
-            //if (!(tracks2Display == null))
-            //{
-            //    for (int i = 0; i < values.Count; i++)
-            //        if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
-            //}
-
             // accumulate the individual tracks
-            int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
+            int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
             int endPanelwidth = 200;            // this is where name of index goes
             int imageWidth = duration + endPanelwidth;
 
             var bitmaps = new List<Bitmap>();
             double threshold = 0.0;
             double[] array;
-            for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
+            for (int i = 0; i < values.Count - 1; i++) // for each column of valuesin data table (except last) create a display track
             {
-                //if ((!dodisplay[i]) || (values[i].Length == 0)) continue;
                 if (values[i].Length == 0) continue;
                 array = values[i];
                 if (doNormalise) array = DataTools.normalise(values[i]);
                 bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
             }
+
+            // last track is weighted index
             int x = values.Count - 1;
             array = values[x];
             if (doNormalise) array = DataTools.normalise(values[x]);
-            //if ((dodisplay[x]) || (values[x].Length > 0))
+            //if (values[x].Length > 0)
+            //    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
             if (values[x].Length > 0)
-                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
             int imageHt = trackHeight * (bitmaps.Count + 3);  //+3 for title and top and bottom time tracks
