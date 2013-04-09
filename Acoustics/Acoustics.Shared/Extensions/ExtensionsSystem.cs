@@ -567,9 +567,15 @@ namespace System
             foreach (var item in source)
             {
                 if (predicate(item))
+                {
                     return i;
+                }
+
                 i++;
             }
+
+            return -1;
+
             throw new ArgumentOutOfRangeException();
         }
 

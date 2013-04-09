@@ -29,7 +29,7 @@ namespace AudioAnalysisTools
         private double freqBinWidth;
         private double framesPerSecond;
         //private Point[] points;
-        private List<Tuple<Point, double>> points;
+        public List<PointOfInterest> Points { get; set; }
         #endregion
 
 
@@ -40,13 +40,14 @@ namespace AudioAnalysisTools
         public Image_MultiTrack(Image image)
         {
             this.sonogramImage = image;
+            this.Points = new List<PointOfInterest>();
         }
-
 
         public void AddTrack(Image_Track track)
         {
             this.tracks.Add(track);
         }
+
         public void AddEvents(List<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
         {
             this.eventList       = _list;
@@ -55,30 +56,34 @@ namespace AudioAnalysisTools
             this.framesPerSecond = _framesPerSecond;
             this.freqBinWidth    = _nyquist / _freqBinCount;
         }
-        public void AddPoints(List<Tuple<Point, double>> points)
+
+
+        public void AddPoints(IEnumerable<PointOfInterest> points)
         {
-            this.points = points;
-        }
-        //public static void DrawPoints(Graphics g, Point[] pointsOfInterest)
-        //{
+            ////this.points.AddRange(points);
 
-        //    Brush b = new SolidBrush(AcousticEvent.DEFAULT_BORDER_COLOR);
-
-        //    foreach (var point in pointsOfInterest)
-        //    {
-        //        g.FillRectangle(b, point.X, 256 - point.Y, 1, 1);
-        //    }
-        //}
-        public static void DrawPoints(Graphics g, List<Tuple<Point, double>> pointsOfInterest)
-        {
-            Pen pen1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR);
-            Pen pen2 = new Pen(Color.Blue);
-
-            foreach (var point in pointsOfInterest)
+            // scan for preexisting coordinates
+            foreach (var pointOfInterest in points)
             {
-                g.DrawEllipse(pen2, point.Item1.X - 2, 256 - point.Item1.Y - 2, 4, 4);
+                // copied to satisfy closure constraint
+                PointOfInterest localCopy = pointOfInterest;
+                
+                // search current points to see if any share the same coordinates
+                
+                var match = this.Points.IndexOf(poi => poi.Point == localCopy.Point);                
+                if (match >= 0)
+                {
+                    // if they do share the same coordinates, overwrite the old one
+                    this.Points[match] = pointOfInterest;
+                }
+                else
+                {
+                    // otherwise, add new point to list
+                    this.Points.Add(pointOfInterest);
+                }
             }
         }
+
         public void OverlayRedMatrix(Double[,] m, double maxScore)
         {
             this.SuperimposedMatrix = m;
@@ -89,6 +94,7 @@ namespace AudioAnalysisTools
         {
             this.SuperimposedRedTransparency = m;
         }
+
         public void OverlayRainbowTransparency(Double[,] m)
         {
             this.SuperimposedRainbowTransparency = m;
@@ -153,11 +159,14 @@ namespace AudioAnalysisTools
                         e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                 }
 
-                if (this.points != null) //draw events first because their rectangles can cover other features
+                if (this.Points != null) //draw events first because their rectangles can cover other features
                 {
                     // var stats = new StatDescriptive(this.points.Select(p => p.Item2).ToArray());
-                    // stats.Analyze();                  
-                    DrawPoints(g, this.points);
+                    // stats.Analyze(); 
+                    foreach (PointOfInterest poi in this.Points)
+                    {
+                        poi.DrawPoint(g, this.Points, this.sonogramImage.Height);
+                    }       
                 }
 
                 if (this.spectralTracks != null) //draw spectral tracks 

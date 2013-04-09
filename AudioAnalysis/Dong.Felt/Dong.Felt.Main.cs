@@ -73,32 +73,39 @@ namespace Dong.Felt
             var spectrogram = POI.AudioToSpectrogram(wavFilePath, out audioRecording);
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
 
-            var tuple = POI.NoiseReductionToBinarySpectrogram(spectrogram, 8);
+            var noiseReduction = POI.NoiseReductionToBinarySpectrogram(spectrogram, 8);
 
-            var localMaxima = POI.PickLocalMaximum(tuple.Item1, 5);  // neighbourSize
-            //var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult2.AddPoints(localMaxima);
-            //imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult2.Save(@"C:\Test recordings\localMaxima.png");
+            var localMaxima = POI.PickLocalMaximum(noiseReduction.Item1, 5);  // neighbourSize
+            ////var imageResult2 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            ////imageResult2.AddPoints(localMaxima);
+            ////imageResult2.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            ////imageResult2.Save(@"C:\Test recordings\localMaxima.png");
 
             var filterOutPoints = POI.FilterOutPoints(localMaxima, 1); // pink noise model threshold
-            //var imageResult3 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult3.AddPoints(filterOutPoints);
-            //imageResult3.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult3.Save(@"C:\Test recordings\filterPoints.png");
+            ////var imageResult3 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            ////imageResult3.AddPoints(filterOutPoints);
+            ////imageResult3.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            ////imageResult3.Save(@"C:\Test recordings\filterPoints.png");
            
-            var removeClosePoints = POI.RemoveClosePoint(filterOutPoints, 7);
-            //var imageResult4 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult4.AddPoints(removeClosePoints);
-            //imageResult4.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult4.Save(@"C:\Test recordings\FixedRangeRemoveClosePoints.png");
-
-            var avgDistanceScores = POI.AverageDistanceScores(POI.LewinsRailTemplate(18), filterOutPoints);
-            var matchedPOI = POI.MatchedPointsOfInterest(removeClosePoints, avgDistanceScores, 3);
+            var finalPois = POI.RemoveClosePoint(filterOutPoints, 7);
             var imageResult4 = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult4.AddPoints(matchedPOI);
-            imageResult4.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult4.Save(@"C:\Test recordings\MatchedPointsOfInterest.png");
+            ////imageResult4.AddPoints(removeClosePoints);
+            ////imageResult4.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            ////imageResult4.Save(@"C:\Test recordings\FixedRangeRemoveClosePoints.png");
+
+            var centeroid = Template.GetCenteroid(Template.LewinsRailTemplate(18));
+            var avgDistanceScores = POI.AverageDistanceScores(Template.LewinsRailTemplate(18), finalPois);
+            var matchedPoi = POI.MatchedPointsOfInterest(finalPois, avgDistanceScores, 3);
+
+            
+
+            var imageResult5 = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult5.AddPoints(finalPois);
+            // .addPoints( templatePoints);
+            imageResult5.AddPoints(matchedPoi);
+            // addEvents(templateBoundingBoxes); 
+            imageResult5.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            imageResult5.Save(@"C:\Test recordings\MatchedPointsOfInterest2.png");
 
             var result = new AnalysisResult();
             return result;
