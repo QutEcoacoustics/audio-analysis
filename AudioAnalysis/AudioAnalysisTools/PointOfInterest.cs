@@ -19,7 +19,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// The anchor color.
         /// </summary>
-        public static readonly Color AnchorColor = Color.Chartreuse;
+        public static readonly Color TemplateColor = Color.Chartreuse;
 
         /// <summary>
         /// The default border color.
