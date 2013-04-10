@@ -17,9 +17,10 @@ namespace AudioAnalysisTools
         public static string DCT_THRESHOLD = "DCT_THRESHOLD";
         public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
         public static string DISPLAY_CSV_IMAGE = "DISPLAY_CSV_IMAGE";
+        public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
+        public static string DISPLAY_WEIGHTED_INDICES = "DISPLAY_WEIGHTED_INDICES";
         public static string DOMINANT_FREQUENCY = "DOMINANT_FREQUENCY";
         public static string DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
         public static string FRAME_LENGTH = "FRAME_LENGTH";
         public static string FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
