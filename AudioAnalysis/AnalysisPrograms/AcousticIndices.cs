@@ -295,6 +295,7 @@ namespace AnalysisPrograms
             }
 
             List<string> displayHeaders = null;
+            bool addColumnOfweightedIndices = true;
             //check if config file contains list of display headers
             if (fiConfigFile != null)
             {
@@ -307,6 +308,12 @@ namespace AnalysisPrograms
                     {
                         displayHeaders[i] = displayHeaders[i].Trim();
                     }
+                }
+
+                // now check if required to display a track showing combination of weighted indices
+                if (configDict.ContainsKey(Keys.DISPLAY_WEIGHTED_INDICES))
+                {
+                    addColumnOfweightedIndices = Boolean.Parse(configDict[Keys.DISPLAY_WEIGHTED_INDICES]);
                 }
             }
             //if config file does not exist or does not contain display headers then use the original headers
@@ -355,7 +362,6 @@ namespace AnalysisPrograms
             table2Display = NormaliseColumnsOfDataTable(table2Display);
 
             //add in column of weighted indices
-            bool addColumnOfweightedIndices = true;
             if (addColumnOfweightedIndices)
             {
                 double[] comboWts = AcousticFeatures.GetComboWeights();
