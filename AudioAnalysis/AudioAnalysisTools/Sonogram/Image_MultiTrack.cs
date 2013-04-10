@@ -60,7 +60,7 @@ namespace AudioAnalysisTools
 
         public void AddPoints(IEnumerable<PointOfInterest> points)
         {
-            ////this.points.AddRange(points);
+            // this.points.AddRange(points);
 
             // scan for preexisting coordinates
             foreach (var pointOfInterest in points)
