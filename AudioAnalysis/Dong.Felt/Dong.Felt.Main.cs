@@ -105,7 +105,7 @@ namespace Dong.Felt
             var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(18), finalPois);
 
             // Get the metched anchor point (centroid)
-            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, 3);
+            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, 6);
 
             // Get the absolute template for each matchedPoi
             var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);            
@@ -115,12 +115,12 @@ namespace Dong.Felt
             imageResult.AddPoints(finalPois);
 
             // .addPoints( templatePoints);
-            imageResult.AddPoints(templatePoints);
+            // imageResult.AddPoints(templatePoints);
             imageResult.AddPoints(matchedPoi);
 
             // addEvents(templateBoundingBoxes); 
             imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\MatchedPointsOfInterest3.png");
+            imageResult.Save(@"C:\Test recordings\MatchedPointsOfInterest-ManhaDistance-6.png");
 
             var result = new AnalysisResult();
             return result;

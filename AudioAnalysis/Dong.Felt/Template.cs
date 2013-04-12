@@ -13,11 +13,15 @@ namespace Dong.Felt
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
-
-    using AudioAnalysisTools;
+    using AudioAnalysisTools;   
 
     public class TemplateTools
     {
+        /// <summary>
+        /// The centroid frequency.
+        /// </summary>
+        public static readonly int CentroidFrequency = 91;
+
         /// <summary>
         /// The Lewins' Rail template.
         /// </summary>
@@ -32,23 +36,29 @@ namespace Dong.Felt
             var template = new List<Point>()
                                {
                                    // centeroid
+                                   new Point(0, 0 - 23),
+                                   new Point(0, 0 - 23),
+                                   new Point(0 + 2 * frameOffset, 0 - 23),
+                                   new Point(0 - frameOffset, 0  - 23),
+                                   new Point(0 - 2 * frameOffset, 0 - 23),                                                                  
+
                                    new Point(0, 0),
                                    new Point(0 + frameOffset, 0),
                                    new Point(0 + 2 * frameOffset, 0),
                                    new Point(0 - frameOffset, 0),
-                                   new Point(0 - 2 * frameOffset, 0),                                                                  
-
-                                   new Point(0, 0  - 23),
-                                   new Point(0 + frameOffset, 0 - 23),
-                                   new Point(0 + 2 * frameOffset, 0 - 23),
-                                   new Point(0 - frameOffset, 0 - 23),
-                                   new Point(0 - 2 * frameOffset, 0 - 23),                                
+                                   new Point(0 - 2 * frameOffset, 0),                                
 
                                    new Point(0, 0  + 11),
                                    new Point(0 + frameOffset, 0 + 11),
                                    new Point(0 + 2 * frameOffset, 0 + 11),
                                    new Point(0 - frameOffset, 0 + 12),
                                    new Point(0 - 2 * frameOffset, 0 + 11),
+
+                                   new Point(0, 0  + 20),
+                                   new Point(0 + frameOffset, 0 + 20),
+                                   new Point(0 + 2 * frameOffset, 0 + 20),
+                                   new Point(0 - frameOffset, 0 + 20),
+                                   new Point(0 - 2 * frameOffset, 0 + 20),
                                };
 
             return template;
