@@ -37,27 +37,27 @@ namespace Dong.Felt
                                {
                                    // centeroid
                                    new Point(0, 0 - 23),
-                                   new Point(0, 0 - 23),
-                                   new Point(0 + 2 * frameOffset, 0 - 23),
+                                   new Point(0 + frameOffset, 0 - 23),
                                    new Point(0 - frameOffset, 0  - 23),
+                                   new Point(0 + 2 * frameOffset, 0 - 23),                                  
                                    new Point(0 - 2 * frameOffset, 0 - 23),                                                                  
 
                                    new Point(0, 0),
                                    new Point(0 + frameOffset, 0),
-                                   new Point(0 + 2 * frameOffset, 0),
                                    new Point(0 - frameOffset, 0),
+                                   new Point(0 + 2 * frameOffset, 0),                                   
                                    new Point(0 - 2 * frameOffset, 0),                                
 
                                    new Point(0, 0  + 11),
                                    new Point(0 + frameOffset, 0 + 11),
-                                   new Point(0 + 2 * frameOffset, 0 + 11),
                                    new Point(0 - frameOffset, 0 + 12),
+                                   new Point(0 + 2 * frameOffset, 0 + 11),                                   
                                    new Point(0 - 2 * frameOffset, 0 + 11),
 
                                    new Point(0, 0  + 20),
                                    new Point(0 + frameOffset, 0 + 20),
-                                   new Point(0 + 2 * frameOffset, 0 + 20),
                                    new Point(0 - frameOffset, 0 + 20),
+                                   new Point(0 + 2 * frameOffset, 0 + 20),                                   
                                    new Point(0 - 2 * frameOffset, 0 + 20),
                                };
 
@@ -87,8 +87,8 @@ namespace Dong.Felt
             var maxX = points.Min(p => p.X);
             var maxY = points.Max(p => p.Y);
 
-            var centeroidX = (maxX - minX) / 2;
-            var centeroidY = (maxY - minY) / 2;
+            var centeroidX = (maxX + minX) / 2;
+            var centeroidY = (maxY + minY) / 2;
 
             var tempCenteroid = new Point(centeroidX, centeroidY);
 
