@@ -226,26 +226,29 @@ namespace Dong.Felt
             for (int i = 0; i < pointsOfInterest.Count; i++)
             {
                 var poi = pointsOfInterest;
+                
                 Point centeroid = poi[i].Point;
                 var absoluteTemplate = GetAbsoluteTemplate(centeroid, template);
 
                 for (int j = 0; j < numberOfVertexes; j++)
                 {
+
                     for (int index = 0; index < poi.Count; index++)
                     {
-                        distance[index] = EuclideanDistance(absoluteTemplate[j], poi[index].Point);
+                        // distance[index] = EuclideanDistance(absoluteTemplate[j], poi[index].Point);
+                        distance[index] = ManhattanDistance(absoluteTemplate[j], poi[index].Point);
                     }
 
-                    minimumDistance[j] = distance.Min();
+                        minimumDistance[j] = distance.Min();
                 }
 
                 for (int k = 0; k < numberOfVertexes; k++)
                 {
-                    sum += minimumDistance[k];
+                     sum += minimumDistance[k];
                 }
 
                 avgDistanceScores[i] = sum / numberOfVertexes;
-                sum = 0.0;
+                sum = 0.0;              
             }
 
             return avgDistanceScores;
@@ -277,7 +280,12 @@ namespace Dong.Felt
                 if (averageDistanceScores[i] < threshold)
                 {
                     var poi = pointsOfInterest[i];
-                    poi.DrawColor = PointOfInterest.HitsColor;
+                    var frequencyOffset = Math.Abs(poi.Point.Y - TemplateTools.CentroidFrequency);
+                    if (frequencyOffset < 6)
+                    {
+                        poi.DrawColor = PointOfInterest.HitsColor;
+                    }
+                   
                     result.Add(poi);
                 }
             }
@@ -363,6 +371,26 @@ namespace Dong.Felt
             var deltaY = Math.Pow(p2.Y - p1.Y, 2);
 
             return Math.Sqrt(deltaX + deltaY);
+        }
+
+        /// <summary>
+        /// The manhanton distance.
+        /// </summary>
+        /// <param name="p1">
+        /// The p 1.
+        /// </param>
+        /// <param name="p2">
+        /// The p 2.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int ManhattanDistance(Point p1, Point p2)
+        {
+            var deltaX = Math.Abs(p2.X - p1.X);
+            var deltaY = Math.Abs(p2.Y - p1.Y);
+
+            return deltaX + deltaY;
         }
 
         /// <summary>

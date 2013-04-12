@@ -52,11 +52,6 @@ namespace AudioAnalysisTools
             this.Point = point;
         }
 
-        public PointOfInterest()
-        {
-            
-        }
-
         #endregion
 
         #region Public Properties
@@ -105,20 +100,9 @@ namespace AudioAnalysisTools
         /// </param>
         public void DrawPoint(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
         {
-            // drawColor = 
-            // Pen p1 = new Pen(PointOfInterest.DefaultBorderColor); // default colour
-            // Pen p2 = new Pen(PointOfInterest.AnchorColor);
-            // Pen p3 = new Pen(PointOfInterest.HitsColor);
-
-            // foreach (var poi in pointsOfInterest)
-            // {
-            // graphics.DrawEllipse(p1, poi.Point.X - 2, height - poi.Point.Y - 2, 4, 4);
-            // }
-
-            // For HitAnchorPoints
             foreach (PointOfInterest poi in pointsOfInterest)
             {
-                graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 2, 4, 4);
+                graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 4, 4);
             }
         }
 
