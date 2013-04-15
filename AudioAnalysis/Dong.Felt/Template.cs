@@ -13,8 +13,10 @@ namespace Dong.Felt
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
-    using AudioAnalysisTools;   
 
+    /// <summary>
+    /// The template tools.
+    /// </summary>
     public class TemplateTools
     {
         /// <summary>
@@ -104,6 +106,56 @@ namespace Dong.Felt
             }
 
             return centeroid;
+        }
+
+        /// <summary>
+        /// Convert from frequency to frequency bin.
+        /// </summary>
+        /// <param name="frequency">
+        /// The frequency.
+        /// </param>
+        /// <param name="frequencyBinWidth">
+        /// The frequency bin width.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int FrequencyToFrequencyBin(int frequency, double frequencyBinWidth)
+        {
+            return (int)(frequency / frequencyBinWidth);
+        }
+
+        /// <summary>
+        /// Convert from million seconds to Frame index.
+        /// </summary>
+        /// <param name="millionSecond">
+        /// The million second.
+        /// </param>
+        /// <param name="framePerSecond">
+        /// The frame per second.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int MillionSecondsToFrame(int millionSecond, double framePerSecond)
+        {
+            var second = millionSecond / 1000;
+            return (int)(second * framePerSecond);
+        }
+
+        /// <summary>
+        /// The pixel per million second.
+        /// </summary>
+        /// <param name="framePerSecond">
+        /// The frame Per Second.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int PixelPerMillionsecond(double framePerSecond)
+        {
+            const int SecondToMillionsecond = 1000;
+            return (int)(framePerSecond / SecondToMillionsecond);
         }
 
         /// <summary>
