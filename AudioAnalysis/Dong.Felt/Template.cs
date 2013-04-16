@@ -22,7 +22,8 @@ namespace Dong.Felt
         /// <summary>
         /// The centroid frequency.
         /// </summary>
-        public static readonly int CentroidFrequency = 91;
+        public static readonly int CentroidFrequencyOfLewinsRailTemplate = 91;
+        public static readonly int CentroidFrequencyOfCrowTemplate = 80;
 
         /// <summary>
         /// The Lewins' Rail template.
@@ -63,6 +64,39 @@ namespace Dong.Felt
                                    new Point(0 - 2 * frameOffset, 0 + 20),
                                };
 
+            return template;
+        }
+
+        /// <summary>
+        /// The crow template.
+        /// </summary>
+        /// <param name="frameOffset">
+        /// The frame offset.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Point> CrowTemplate(int frameOffset)
+        {
+            var template = new List<Point>()
+                               {
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                                   new Point(),
+                               };
             return template;
         }
 
