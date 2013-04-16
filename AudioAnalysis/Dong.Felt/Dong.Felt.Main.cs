@@ -84,45 +84,49 @@ namespace Dong.Felt
 
             // Writing my code here
             // get wav.file path
-            string wavFilePath = analysisSettings.SourceFile.FullName;      
-            
+            string wavFilePath = analysisSettings.SourceFile.FullName; 
+                
             // Read the .wav file
             AudioRecording audioRecording;
             var spectrogram = PoiAnalysis.AudioToSpectrogram(wavFilePath, out audioRecording);
+            Log.Info("AudioToSpectrogram");
 
             // Do the noise removal
             const int BackgroundThreshold = 5;
             var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold);
+            Log.Info("NoiseReduction");
             
             // Find the local Maxima
             const int NeibourhoodWindowSize = 7;
-            var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);  
+            var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);
+            Log.Info("LocalMaxima");
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
             imageResult.AddPoints(localMaxima);
             imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
             imageResult.Save(@"C:\Test recordings\Crows\localMaxima.png");
+            Log.Info("Show the result of LocalMaxima");
 
-            const int NumberOfTemplatePoints = 18;
-            var centeroid = TemplateTools.GetCentroid(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints));
+            //const int NumberOfTemplatePoints = 18;
+            //var centeroid = TemplateTools.GetCentroid(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints));
 
-            // Filter out points
-            const int AmplitudeThreshold = 7;
-            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
+            //// Filter out points
+            //const int AmplitudeThreshold = 7;
+            //var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
             
-            // Remove points which are too close
-            const int DistanceThreshold = 7;
-            var finalPois = PoiAnalysis.RemoveClosePoint(filterOutPoints, DistanceThreshold);
+            //// Remove points which are too close
+            //const int DistanceThreshold = 7;
+            //var finalPois = PoiAnalysis.RemoveClosePoint(filterOutPoints, DistanceThreshold);
             
 
-            // Calculate the distance between poi and points in the template
-            var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
+            //// Calculate the distance between poi and points in the template
+            //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
 
-            // Get the metched anchor point (centroid)
-            const int AvgDistanceScoreThreshold = 6;
-            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
+            //// Get the metched anchor point (centroid)
+            //const int AvgDistanceScoreThreshold = 6;
+            //var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
 
-            // Get the absolute template for each matchedPoi
-            var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);
+            //// Get the absolute template for each matchedPoi
+            //var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);
             
             // Draw circle on different types of points 
             
