@@ -17,6 +17,9 @@ namespace Dong.Felt
     using System.Text;
     using AnalysisBase;
     using AudioAnalysisTools;
+
+    using TowseyLib;
+
     using log4net;
 
     /// <summary>
@@ -88,40 +91,46 @@ namespace Dong.Felt
             var spectrogram = PoiAnalysis.AudioToSpectrogram(wavFilePath, out audioRecording);
 
             // Do the noise removal
-            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, 8);
+            const int BackgroundThreshold = 5;
+            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold);
             
             // Find the local Maxima
-            var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction.Item1, 5);  // neighbourSize
-            
+            const int NeibourhoodWindowSize = 7;
+            var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);  
+            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult.AddPoints(localMaxima);
+            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            imageResult.Save(@"C:\Test recordings\Crows\localMaxima.png");
+
+            const int NumberOfTemplatePoints = 18;
+            var centeroid = TemplateTools.GetCentroid(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints));
+
             // Filter out points
-            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, 1); // pink noise model threshold
+            const int AmplitudeThreshold = 7;
+            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
             
             // Remove points which are too close
-            var finalPois = PoiAnalysis.RemoveClosePoint(filterOutPoints, 7);
-
-            var centeroid = TemplateTools.GetCentroid(TemplateTools.LewinsRailTemplate(18));
+            const int DistanceThreshold = 7;
+            var finalPois = PoiAnalysis.RemoveClosePoint(filterOutPoints, DistanceThreshold);
+            
 
             // Calculate the distance between poi and points in the template
-            var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(18), finalPois);
+            var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
 
             // Get the metched anchor point (centroid)
-            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, 6);
+            const int AvgDistanceScoreThreshold = 6;
+            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
 
             // Get the absolute template for each matchedPoi
-            var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);            
-
+            var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);
+            
             // Draw circle on different types of points 
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(finalPois);
-
+            
             // .addPoints( templatePoints);
             // imageResult.AddPoints(templatePoints);
-            imageResult.AddPoints(matchedPoi);
-
+            // imageResult.AddPoints(matchedPoi);
             // addEvents(templateBoundingBoxes); 
-            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\MatchedPointsOfInterest-ManhaDistance-6.png");
-
+            
             var result = new AnalysisResult();
             return result;
         }
@@ -179,7 +188,7 @@ namespace Dong.Felt
         /// </param>
         public static void Dev(string[] arguments)
         {
-            const string TempFile = @"C:\Test recordings\LewinsRail\BAC2_20071008-062040.wav";
+            const string TempFile = @"C:\Test recordings\Crows\DM420036_min430Crows-1minute.wav";
 
             arguments = new string[2];
             arguments[0] = "-input";

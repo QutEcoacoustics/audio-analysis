@@ -59,19 +59,32 @@ namespace Dong.Felt
         /// <param name="makeBinary">
         /// To make the spectrogram into a binary image.
         /// </param>
+        /// <param name="changeOriginalData">
+        /// The change Original Data.
+        /// </param>
         /// <returns>
-        /// return a tuple composed of each pixel's coordinate and its amplitude after the noise removal.
+        /// return a tuple composed of each pixel's amplitude at each coordinates and  smoothArray after the noise removal.
         /// </returns>
-        public static Tuple<double[,], double[]> NoiseReductionToBinarySpectrogram(
-            SpectralSonogram spectralSonogram, double backgroundThreshold, bool makeBinary = true)
+        public static double[,] NoiseReductionToBinarySpectrogram(
+            SpectralSonogram spectralSonogram, double backgroundThreshold, bool makeBinary = false, bool changeOriginalData = false)
         {
-            if (!makeBinary)
+            double[,] result = spectralSonogram.Data;
+
+            if (makeBinary)
             {
-                return SNR.NoiseReduce(spectralSonogram.Data, NoiseReductionType.BINARY, backgroundThreshold);
+                return SNR.NoiseReduce(result, NoiseReductionType.BINARY, backgroundThreshold).Item1;
             }
             else
             {
-                return SNR.NoiseReduce(spectralSonogram.Data, NoiseReductionType.STANDARD, backgroundThreshold);
+                if (changeOriginalData)
+                {
+                    spectralSonogram.Data = SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
+                    return spectralSonogram.Data;
+                }
+                else
+                {
+                    return SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
+                }
             }
         }
 
@@ -92,42 +105,42 @@ namespace Dong.Felt
             Contract.Requires(neighborWindowSize % 2 == 1, "Neighbourhood window size must be odd");
             Contract.Requires(neighborWindowSize >= 1, "Neighbourhood window size must be at least 1");
             int centerOffset = -(int)(neighborWindowSize / 2.0);
-
             var results = new List<PointOfInterest>();
 
             // scan the whole matrix, if want to scan a fixed part of matrix, the range of row and col might be changed.
             // e.g row ~ (m.GetLength(1) / 4 - 2 * m.GetLength(1) / 5), col ~ (3096 - 3180)
-            for (int row = 0; row < m.GetLength(1); row++)
+            for (int row = 0; row < m.GetLength(0); row++)
             {
-                for (int col = 0; col < m.GetLength(0); col++)
+                for (int col = 0; col < m.GetLength(1); col++)
                 {
                     // assume local maxium
-                    double localMaximum = m[col, row];
-                    bool maximum = true;
+                    double localMaximum = m[row, col];
+                    var maximum = true;
 
                     // check if it is really the local maximum in the neighbourhood
-                    for (int i = centerOffset; i < neighborWindowSize; i++)
+                    for (int i = centerOffset; i <= -centerOffset; i++)
                     {
-                        for (int j = centerOffset; j < neighborWindowSize; j++)
+                        for (int j = centerOffset; j <= -centerOffset; j++)
                         {
-                            if (m.PointIntersect(col + j, row + i))
-                            {
-                                var current = m[col + j, row + i];
+                            // check if it is out of range of m
+                            if (m.PointIntersect(row + i, col + j))
+                            {                              
+                                var current = m[row + i, col + j];
 
                                 // don't check the middle point
-                                if (localMaximum <= current && !(i == 0 && j == 0))
+                                if (!(i == 0 && j == 0) && (localMaximum < current))
                                 {
-                                    // actually not a local maximum
-                                    maximum = false;
+                                     // actually not a local maximum
+                                     maximum = false;
                                 }
                             }
                         }
                     }
 
-                    // iff it is indeed the local maximum, then add it
+                    // if it is indeed the local maximum, then add it
                     if (maximum)
                     {
-                        results.Add(new PointOfInterest(new Point(col, row)) { Intensity = m[col, row] });
+                        results.Add(new PointOfInterest(new Point(row, col)) { Intensity = m[row, col] });
                     }
                 }
             }
@@ -200,6 +213,7 @@ namespace Dong.Felt
                     }                    
                 }
             }
+
             return pointsOfInterest; 
         }
               
@@ -280,7 +294,11 @@ namespace Dong.Felt
                 if (averageDistanceScores[i] < threshold)
                 {
                     var poi = pointsOfInterest[i];
-                    var frequencyOffset = Math.Abs(poi.Point.Y - TemplateTools.CentroidFrequency);
+                    
+                    // fix possible hit points around a fixed frequency-the frequency of LewinsRailTemplate's centroid   
+                    var frequencyOffset = Math.Abs(poi.Point.Y - TemplateTools.CentroidFrequencyOfLewinsRailTemplate);
+
+                    // probably need to fix this magic number
                     if (frequencyOffset < 6)
                     {
                         poi.DrawColor = PointOfInterest.HitsColor;

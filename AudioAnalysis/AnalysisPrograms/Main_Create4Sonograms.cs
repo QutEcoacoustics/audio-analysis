@@ -106,6 +106,7 @@ namespace AnalysisPrograms
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             //fn = outputFolder + wavFileName + "_peaks.png";
             //image.Save(fn);
+
             //LoggedConsole.WriteLine("Spectral peaks  sonogram to file: " + fn);
 
             //4: Sobel approach
