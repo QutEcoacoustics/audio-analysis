@@ -113,10 +113,10 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < m.GetLength(1); col++)
                 {
-                    // assume local maxium
+                    // assume it's a local maxium
                     double localMaximum = m[row, col];
                     var maximum = true;
-
+                   
                     // check if it is really the local maximum in the neighbourhood
                     for (int i = centerOffset; i <= -centerOffset; i++)
                     {
@@ -128,15 +128,27 @@ namespace Dong.Felt
                                 var current = m[row + i, col + j];
 
                                 // don't check the middle point
-                                if (!(i == 0 && j == 0) && (localMaximum < current))
+                                if (i == 0 && j == 0)
                                 {
-                                     // actually not a local maximum
-                                     maximum = false;
+                                    if (!(Math.Abs(current - 0.0) > 0.01))
+                                    {
+                                        maximum = false;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (localMaximum < current)
+                                    {
+                                        // actually not a local maximum
+                                        maximum = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-
+                  
                     // if it is indeed the local maximum, then add it
                     if (maximum)
                     {
@@ -178,7 +190,7 @@ namespace Dong.Felt
         /// <returns>
         /// The list of PointOfInterest after remove too close points.
         /// </returns>
-        public static List<PointOfInterest> RemoveClosePoint(List<PointOfInterest> pointsOfInterest, int offset)
+        public static List<PointOfInterest> RemoveClosePoints(List<PointOfInterest> pointsOfInterest, int offset)
         {
             var maxIndex = pointsOfInterest.Count;
             

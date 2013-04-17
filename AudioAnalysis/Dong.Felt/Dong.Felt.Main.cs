@@ -100,23 +100,22 @@ namespace Dong.Felt
             const int NeibourhoodWindowSize = 7;
             var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);
             Log.Info("LocalMaxima");
+
+            // Filter out points
+            const int AmplitudeThreshold = 10;
+            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
+            Log.Info("FilterOutPoints");
+
+            // Remove points which are too close
+            const int DistanceThreshold = 7;
+            var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+            Log.Info("RemoveClosePoints");
+
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(localMaxima);
+            imageResult.AddPoints(filterOutPoints);
             imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\Crows\localMaxima.png");
-            Log.Info("Show the result of LocalMaxima");
-
-            //const int NumberOfTemplatePoints = 18;
-            //var centeroid = TemplateTools.GetCentroid(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints));
-
-            //// Filter out points
-            //const int AmplitudeThreshold = 7;
-            //var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
-            
-            //// Remove points which are too close
-            //const int DistanceThreshold = 7;
-            //var finalPois = PoiAnalysis.RemoveClosePoint(filterOutPoints, DistanceThreshold);
-            
+            imageResult.Save(@"C:\Test recordings\Crows\localMaxima7-filterOutPoints10-finalPois7.png");
+            Log.Info("Show the result of FinalPoints");
 
             //// Calculate the distance between poi and points in the template
             //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
