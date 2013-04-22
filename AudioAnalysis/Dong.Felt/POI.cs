@@ -322,7 +322,67 @@ namespace Dong.Felt
 
             return result;
         }
+
+        public static int[ , ] SetMaskMatrixX()
+        {
+            var mask = new int[,]{{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}};
+            return mask;
+        }
+
+        public static int[ , ] SetMaskMatrixY()
+        {
+            var mask = new int[,]{{-1, -2, -1},{0, 0, 0},{1, 2, 1}};
+            return mask;
+        }
+        public static void CalculatePartialDifference(double[ , ] m, int[ , ] mask)
+        {
+            int MaximumXIndex = m.GetLength(0);
+            int MaximumYIndex = m.GetLength(1);
+
+            var partialIntensityX = new double[MaximumXIndex, MaximumYIndex];
+            var partialIntensityY = new double[MaximumXIndex, MaximumYIndex];
+
+            var maskMatrixIndex = mask.GetLength(0);
+            var temporalArray = new double[maskMatrixIndex,maskMatrixIndex];
+
+            for (int row = 0; row < MaximumXIndex; row++)
+            {
+                for (int col = 0; col < MaximumYIndex; col++)
+                {
+                    temporalArray[0, 0] = m[row, col];
+                    temporalArray[0, 1] = m[row, col + 1];
+                    temporalArray[0, 2] = m[row, col + 2];
+                    temporalArray[1, 0] = m[row + 1, col];
+                    temporalArray[1, 1] = m[row + 1, col + 1];
+                    temporalArray[1, 2] = m[row + 1, col + 2];
+                    temporalArray[2, 0] = m[row + 2, col];
+                    temporalArray[2, 1] = m[row + 2, col + 1];
+                    temporalArray[2, 2] = m[row + 2, col + 2];
+
+                    var sum = temporalArray[0, 0] * mask[0, 0] +
+                              temporalArray[0, 1] * mask[0, 1] +
+                              temporalArray[0, 2] * mask[0, 2] +
+                              temporalArray[1, 0] * mask[1, 0] +
+                              temporalArray[1, 1] * mask[1, 1] +
+                              temporalArray[1, 2] * mask[1, 2] +
+                              temporalArray[2, 0] * mask[2, 0] +
+                              temporalArray[2, 1] * mask[2, 1] +
+                              temporalArray[2, 2] * mask[2, 2];
+                    partialIntensityX[row, col] = sum / maskMatrixIndex;
+                    partialIntensityY[row, col] = sum / maskMatrixIndex;
+                }          
+            }
+        }
+
+        public static void StructureTensor(List<PointOfInterest>)
+        {
       
+        }
+
+        public static void CalculateEignvector()
+        {
+
+        }
         /// <summary>
         /// The get absolute template.
         /// </summary>
