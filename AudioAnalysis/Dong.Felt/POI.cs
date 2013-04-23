@@ -18,6 +18,8 @@ namespace Dong.Felt
     using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
     using TowseyLib;
+    using AForge.Imaging.Filters;
+    using Accord.Math.Decompositions;
 
     /// <summary>
     /// The acoustic event detection.
@@ -325,64 +327,87 @@ namespace Dong.Felt
 
         public static int[ , ] SetMaskMatrixX()
         {
-            var mask = new int[,]{{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}};
+            var mask = new int[ , ]{{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}};
             return mask;
         }
 
         public static int[ , ] SetMaskMatrixY()
         {
-            var mask = new int[,]{{-1, -2, -1},{0, 0, 0},{1, 2, 1}};
+            var mask = new int[ , ]{{-1, -2, -1},{0, 0, 0},{1, 2, 1}};
             return mask;
         }
-        public static void CalculatePartialDifference(double[ , ] m, int[ , ] mask)
+
+        public static void CalculatePartialDifference(double[ , ] m, int[ , ] maskX, int[ , ] maskY)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
 
             var partialIntensityX = new double[MaximumXIndex, MaximumYIndex];
-            var partialIntensityY = new double[MaximumXIndex, MaximumYIndex];
-
-            var maskMatrixIndex = mask.GetLength(0);
-            var temporalArray = new double[maskMatrixIndex,maskMatrixIndex];
+            var centerOffset = (int)(maskX.Length / 2);
+            var sum = new double[MaximumXIndex, MaximumYIndex];
 
             for (int row = 0; row < MaximumXIndex; row++)
             {
                 for (int col = 0; col < MaximumYIndex; col++)
                 {
-                    temporalArray[0, 0] = m[row, col];
-                    temporalArray[0, 1] = m[row, col + 1];
-                    temporalArray[0, 2] = m[row, col + 2];
-                    temporalArray[1, 0] = m[row + 1, col];
-                    temporalArray[1, 1] = m[row + 1, col + 1];
-                    temporalArray[1, 2] = m[row + 1, col + 2];
-                    temporalArray[2, 0] = m[row + 2, col];
-                    temporalArray[2, 1] = m[row + 2, col + 1];
-                    temporalArray[2, 2] = m[row + 2, col + 2];
-
-                    var sum = temporalArray[0, 0] * mask[0, 0] +
-                              temporalArray[0, 1] * mask[0, 1] +
-                              temporalArray[0, 2] * mask[0, 2] +
-                              temporalArray[1, 0] * mask[1, 0] +
-                              temporalArray[1, 1] * mask[1, 1] +
-                              temporalArray[1, 2] * mask[1, 2] +
-                              temporalArray[2, 0] * mask[2, 0] +
-                              temporalArray[2, 1] * mask[2, 1] +
-                              temporalArray[2, 2] * mask[2, 2];
-                    partialIntensityX[row, col] = sum / maskMatrixIndex;
-                    partialIntensityY[row, col] = sum / maskMatrixIndex;
-                }          
+                    var sumX = 0.0;
+                    var sumY = 0.0;
+                    if (row == 0 || row == MaximumXIndex - 1)
+                    {
+                        sum[row, col] = 0.0;
+                    }
+                    else
+                    {
+                        if (col == 0 || col == MaximumXIndex - 1)
+                        {
+                            sum[row, col] = 0.0;
+                        }
+                        else
+                        {
+         
+                            for (int i = centerOffset; i <= -centerOffset; i++)
+                            {
+                                for (int j = centerOffset; j <= -centerOffset; j++)
+                                {   
+                                    // X gradient
+                                    sumX = sumX + m[row + j, col - i] * maskX[i + 1, j + 1];
+                                    // y gradient
+                                    sumY = sumY + m[row + j, col - i] * maskY[i + 1, j + 1];
+                                }
+                            }
+                        }
+                        // the magnitude of gradient
+                        sum[row, col] = Math.Abs(sumX) + Math.Abs(sumY);
+                    }
+                }
             }
         }
 
-        public static void StructureTensor(List<PointOfInterest>)
+        public static double[ , ] StructureTensor(double[ , ] partialDifferenceX, double[ , ] partialDifferenceY)
         {
-      
+            
+            for (int row = 0; row < partialDifferenceX.GetLength(0); row++)
+            {
+                for (int col = 0; col < partialDifferenceX.GetLength(1); col++)
+                {
+                    var topLeftOfStructureTensor = partialDifferenceX[row, col] * partialDifferenceX[row, col];
+                    var diagnorOfStructureTensor = partialDifferenceX[row, col] * partialDifferenceY[row, col];
+                    var bottomRightOfStructureTensor = partialDifferenceY[row, col] * partialDifferenceY[row, col];
+                    var structureTensor = new double[2, 2]{{topLeftOfStructureTensor, diagnorOfStructureTensor},
+                                          {diagnorOfStructureTensor, bottomRightOfStructureTensor}};;
+                    
+                }             
+            }
+            return structureTensor;
         }
 
-        public static void CalculateEignvector()
+        public static void CalculateEignvector(double [ , ] structureTensor)
         {
-
+            var evd = new EigenvalueDecomposition(structureTensor);
+            var Vector = evd.Eigenvectors;
+            var EigenValueValue = evd.RealEigenvalues;
         }
+
         /// <summary>
         /// The get absolute template.
         /// </summary>
