@@ -111,11 +111,13 @@ namespace Dong.Felt
             var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
             Log.Info("RemoveClosePoints");
 
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(filterOutPoints);
-            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\Crows\localMaxima7-filterOutPoints10-finalPois7.png");
-            Log.Info("Show the result of FinalPoints");
+            var MatrixMask = PoiAnalysis.SetMaskMatrixX();
+
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult.AddPoints(filterOutPoints);
+            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult.Save(@"C:\Test recordings\Crows\localMaxima7-filterOutPoints10-finalPois7.png");
+            //Log.Info("Show the result of FinalPoints");
 
             //// Calculate the distance between poi and points in the template
             //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
