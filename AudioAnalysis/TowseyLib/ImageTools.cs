@@ -88,7 +88,10 @@ namespace TowseyLib
 
 
 
-        static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 }, { 0.1, 0.2, 0.1 }, { 0.1, 0.1, 0.1 } };
+        static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 }, 
+                                           { 0.1, 0.2, 0.1 }, 
+                                           { 0.1, 0.1, 0.1 } };
+
         static double[,] highPassKernal1 = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } };
         static double[,] highPassKernal2 = { { -0.3, -0.3, -0.3, -0.3, -0.3},
                                              { -0.3, -0.3, -0.3, -0.3, -0.3}, 
