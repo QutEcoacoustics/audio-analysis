@@ -325,83 +325,89 @@ namespace Dong.Felt
             return result;
         }
 
-        public static int[ , ] SetMaskMatrixX()
-        {
-            var mask = new int[ , ]{{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}};
-            return mask;
-        }
-
-        public static int[ , ] SetMaskMatrixY()
-        {
-            var mask = new int[ , ]{{-1, -2, -1},{0, 0, 0},{1, 2, 1}};
-            return mask;
-        }
-
-        public static void CalculatePartialDifference(double[ , ] m, int[ , ] maskX, int[ , ] maskY)
+        //  Calculate the difference between current pixel and its neighborhood pixel
+        public static Tuple<double[,], double[,]> CalculatePartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
 
             var partialIntensityX = new double[MaximumXIndex, MaximumYIndex];
-            var centerOffset = (int)(maskX.Length / 2);
-            var sum = new double[MaximumXIndex, MaximumYIndex];
+            var partialIntensityY = new double[MaximumXIndex, MaximumYIndex];
 
             for (int row = 0; row < MaximumXIndex; row++)
             {
                 for (int col = 0; col < MaximumYIndex; col++)
                 {
-                    var sumX = 0.0;
-                    var sumY = 0.0;
-                    if (row == 0 || row == MaximumXIndex - 1)
+                    if (m.PointIntersect(row + 1, col))
                     {
-                        sum[row, col] = 0.0;
+                        partialIntensityX[row, col] = m[row + 1, col] - m[row, col];
                     }
-                    else
+                    if (m.PointIntersect(row, col + 1))
                     {
-                        if (col == 0 || col == MaximumXIndex - 1)
-                        {
-                            sum[row, col] = 0.0;
-                        }
-                        else
-                        {
-         
-                            for (int i = centerOffset; i <= -centerOffset; i++)
-                            {
-                                for (int j = centerOffset; j <= -centerOffset; j++)
-                                {   
-                                    // X gradient
-                                    sumX = sumX + m[row + j, col - i] * maskX[i + 1, j + 1];
-                                    // y gradient
-                                    sumY = sumY + m[row + j, col - i] * maskY[i + 1, j + 1];
-                                }
-                            }
-                        }
-                        // the magnitude of gradient
-                        sum[row, col] = Math.Abs(sumX) + Math.Abs(sumY);
+                        partialIntensityY[row, col] = m[row, col + 1] - m[row, col];
                     }
-                }
+                 }      
             }
-        }
+            var result = Tuple.Create(partialIntensityX, partialIntensityY);
+            return result;
+        } 
+        
+        // A 7 * 7 gaussian blur
+        public static double[,] gaussianBlur = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
+                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
+                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
+                                                {0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771},
+                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
+                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
+                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
-        public static double[ , ] StructureTensor(double[ , ] partialDifferenceX, double[ , ] partialDifferenceY)
+        public static List<Tuple<Point, double[,]>> StructureTensor(double[,] gaussianBlur,double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
-            
+            var structureTensor = new double[2, 2];
+            var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(0));
+            var centerOffset = (int)(sizeOfGaussianBlur/2);
+            var result = new List<Tuple<Point, double[,]>>();
+
             for (int row = 0; row < partialDifferenceX.GetLength(0); row++)
             {
                 for (int col = 0; col < partialDifferenceX.GetLength(1); col++)
                 {
-                    var topLeftOfStructureTensor = partialDifferenceX[row, col] * partialDifferenceX[row, col];
-                    var diagnorOfStructureTensor = partialDifferenceX[row, col] * partialDifferenceY[row, col];
-                    var bottomRightOfStructureTensor = partialDifferenceY[row, col] * partialDifferenceY[row, col];
-                    var structureTensor = new double[2, 2]{{topLeftOfStructureTensor, diagnorOfStructureTensor},
-                                          {diagnorOfStructureTensor, bottomRightOfStructureTensor}};;
-                    
-                }             
-            }
-            return structureTensor;
+                    var sumTopLeft = 0.0;
+                    var sumDiagonal = 0.0;
+                    var sumBottomRight = 0.0;
+
+                    // check whether the current point can be in the center of gaussian blur 
+                    for (int i = -centerOffset; i < centerOffset; i++)
+                        {
+                            for (int j = -centerOffset; j < centerOffset; j++)
+                            {
+                                // check whether it's in the range of partialDifferenceX
+                                if (partialDifferenceX.PointIntersect(row + j, col - i))
+                                {
+                                    sumTopLeft = sumTopLeft + gaussianBlur[i + centerOffset, j + centerOffset] * Math.Pow(partialDifferenceX[row + j, col - i], 2);
+                                }
+                                
+                                // check whether it's in the range of partialDifferenceX
+                                if (partialDifferenceY.PointIntersect(row + j, col - i))
+                                {
+                                    sumDiagonal = sumDiagonal + gaussianBlur[i + centerOffset, j + centerOffset] * partialDifferenceX[row + j, col - i] * partialDifferenceY[row + j, col - i];
+                                    sumBottomRight = sumBottomRight + gaussianBlur[i + centerOffset, j + centerOffset] * Math.Pow(partialDifferenceY[row + j, col - i], 2);
+                                }
+                            }
+                        }
+
+                        structureTensor[0, 0] = sumTopLeft;
+                        structureTensor[0, 1] = sumDiagonal;
+                        structureTensor[1, 0] = sumDiagonal;
+                        structureTensor[1, 1] = sumBottomRight;
+
+                        result.Add(Tuple.Create(new Point(row, col), structureTensor));
+                }            
+            }           
+            return result;
         }
 
-        public static void CalculateEignvector(double [ , ] structureTensor)
+        public static void CalculateEignvector(double [,] structureTensor)
         {
             var evd = new EigenvalueDecomposition(structureTensor);
             var Vector = evd.Eigenvectors;
@@ -736,5 +742,7 @@ namespace Dong.Felt
             var imageResult = new Image_MultiTrack(amplitudeSpectrogram.GetImage(false, true));
             imageResult.Save("C:\\Test recordings\\Test3.png");
         }
+
+        public static Tuple<int, int, double[,]> result { get; set; }
     }
 }

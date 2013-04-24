@@ -93,25 +93,26 @@ namespace Dong.Felt
 
             // Do the noise removal
             const int BackgroundThreshold = 5;
-            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold);
+            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
             Log.Info("NoiseReduction");
-            
-            // Find the local Maxima
-            const int NeibourhoodWindowSize = 7;
-            var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);
-            Log.Info("LocalMaxima");
 
-            // Filter out points
-            const int AmplitudeThreshold = 10;
-            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
-            Log.Info("FilterOutPoints");
+            var partialDifference = PoiAnalysis.CalculatePartialDifference(spectrogram.Data);
+            var structureTensor = PoiAnalysis.StructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
 
-            // Remove points which are too close
-            const int DistanceThreshold = 7;
-            var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
-            Log.Info("RemoveClosePoints");
+            //// Find the local Maxima
+            //const int NeibourhoodWindowSize = 7;
+            //var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);
+            //Log.Info("LocalMaxima");
 
-            var MatrixMask = PoiAnalysis.SetMaskMatrixX();
+            //// Filter out points
+            //const int AmplitudeThreshold = 10;
+            //var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
+            //Log.Info("FilterOutPoints");
+
+            //// Remove points which are too close
+            //const int DistanceThreshold = 7;
+            //var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+            //Log.Info("RemoveClosePoints");           
 
             //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
             //imageResult.AddPoints(filterOutPoints);

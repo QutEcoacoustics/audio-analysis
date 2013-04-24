@@ -15,7 +15,8 @@ namespace TowseyLib
         LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5, 
                             DiagLine1, DiagLine2,
                             Grid2, Grid3, Grid4, Grid2Wave, Grid3Wave, //grid filters
-                            Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS }
+                            Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS,
+                            SobelX, SobelY}
 
     
     public class ImageTools
@@ -155,7 +156,13 @@ namespace TowseyLib
                                             {  1.0,  1.0,  1.0 },
                                             { -0.5, -0.5, -0.5 }};
 
+        public static double[,] SobelX =         { {-1.0,  0.0,  1.0},
+                                            {-2.0,  0.0,  -2.0},
+                                            {-1.0,  0.0,  1.0} };
 
+        public static double[,] SobelY =         { {1.0,  2.0,  1.0},
+                                            {0.0,  0.0,  0.0},
+                                            {-1.0, -2.0, -1.0} };
 
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
