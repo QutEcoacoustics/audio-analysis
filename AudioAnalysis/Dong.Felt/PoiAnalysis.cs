@@ -377,9 +377,9 @@ namespace Dong.Felt
                     var sumBottomRight = 0.0;
 
                     // check whether the current point can be in the center of gaussian blur 
-                    for (int i = -centerOffset; i < centerOffset; i++)
+                    for (int i = -centerOffset; i <= centerOffset; i++)
                         {
-                            for (int j = -centerOffset; j < centerOffset; j++)
+                            for (int j = -centerOffset; j <= centerOffset; j++)
                             {
                                 // check whether it's in the range of partialDifferenceX
                                 if (partialDifferenceX.PointIntersect(row + j, col - i))
@@ -407,13 +407,134 @@ namespace Dong.Felt
             return result;
         }
 
-        public static void CalculateEignvector(double [,] structureTensor)
+        public static List<Tuple<Point, double[,]>> MeanOfStructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY, int windowSize)
         {
-            var evd = new EigenvalueDecomposition(structureTensor);
-            var Vector = evd.Eigenvectors;
-            var EigenValueValue = evd.RealEigenvalues;
+            var rowMaximumIndex = partialDifferenceX.GetLongLength(0);
+            var colMaximumIndex = partialDifferenceX.GetLongLength(1);
+            var centerOffset = (int) (windowSize / 2);
+
+            var structureTensor = new double[2, 2];
+            var result = new List<Tuple<Point, double[,]>>(); 
+
+            for (int row = 0; row < rowMaximumIndex; row++)
+            {
+                for (int col = 0; col < colMaximumIndex; col++)
+                {
+                    var sumX = 0.0;
+                    var sumY = 0.0;
+                    // calculate the mean of structure tensor in a fixed neighborhood
+                    for (int i = -centerOffset; i <= centerOffset; i++)
+                    {
+                        for (int j = -centerOffset; j <= centerOffset; j++)
+                        {
+                            if (partialDifferenceX.PointIntersect(row + i, col + j))
+                            {
+                                sumX = sumX + partialDifferenceX[row + i, col + j];
+                            }
+
+                            if (partialDifferenceY.PointIntersect(row + i, col + j))
+                            {
+                                sumY = sumY + partialDifferenceX[row + i, col + j];
+                            }
+                        }
+                    }
+
+                    // if the current point is out of range, its value is regarded zero.
+                    // So when calculate the average, the sum still needs to be divided by windowSize * windowSize
+                    var averageX = sumX / Math.Pow(windowSize, 2);
+                    var averageY = sumY / Math.Pow(windowSize, 2);
+
+                    structureTensor[0, 0] = Math.Pow(averageX, 2);
+                    structureTensor[0, 1] = averageX * averageY;
+                    structureTensor[1, 0] = averageX * averageY;
+                    structureTensor[1, 1] = Math.Pow(averageY, 2);
+
+                    result.Add(Tuple.Create(new Point(row, col), structureTensor));
+                }
+            }
+
+            return result;
         }
 
+        public static List<Tuple<Point, double[]>> CalculateEignvalue(List<Tuple<Point, double[,]>> structureTensors)
+        {
+            var result = new List<Tuple<Point, double[]>>();
+            foreach (var st in structureTensors)
+            {
+                var evd = new EigenvalueDecomposition(st.Item2);
+                var realEigenValue = evd.RealEigenvalues;
+                result.Add(Tuple.Create(new Point(st.Item1.X, st.Item1.Y), realEigenValue));
+            }
+            
+            return result;
+        }
+
+        /// <summary>
+        /// Todo: Get a threshold for exactimg poi
+        /// </summary>
+        public static double[,] getThreshold(List<Tuple<Point, double[]>> eigenValue)
+        {
+            var lengthOfEigenValue = eigenValue.Count;
+            var MaximumX = eigenValue[lengthOfEigenValue].Item1.X;
+            var MaximumY = eigenValue[lengthOfEigenValue].Item1.Y;
+
+            // each window has 1000 colomns 
+            var numberOfWindow = (int)(MaximumX/1000);
+
+            // for each window,set up a threshold
+            var threshold = new double[numberOfWindow];
+            var attention = new double[MaximumX, MaximumY];
+
+            foreach (var eValue in eigenValue)
+            {              
+                if (eValue.Item2[0] == eValue.Item2[1])
+                {
+                    attention[eValue.Item1.X, eValue.Item1.Y] = 0;
+                }
+                else 
+                {
+                    attention[eValue.Item1.X, eValue.Item1.Y] = Math.Max(eValue.Item2[0],eValue.Item2[1]);
+                }             
+            }
+
+            return attention;           
+        }
+
+        // Todo: according to Bardeli, Calculate the Histogram
+        public static int[] CalculateHistogram(double[,] a)
+        {
+            IEnumerable<double> allValues = a.Cast<double>();
+            var MaximumOfAttention = allValues.Max();
+            var increasementOfEachBin = MaximumOfAttention / 1000;
+            
+            const int MaximumBinIndex = 1000;
+            var histogram = new int [MaximumBinIndex];
+
+            for (int i = 0; i < a.GetLength(0); i++)
+            {
+                for (int j = 0; j < a.GetLength(1); j++)
+                {
+                   for (int l = 0; l < MaximumBinIndex; l++)
+                   {
+                       var attentionValue = a[i, j] * 1000 / MaximumOfAttention;
+                       if ( (attentionValue >= l) && (attentionValue <= (l + 1)))
+                       {
+                           histogram[l]++;
+                       }
+                   }
+                }
+            }
+            
+            return histogram;
+        }
+
+        // Todo: Bardeli, keep points of interest, whose attention value is greater than the threshold
+        public static List<Point> ExactPointsOfInterest(List<Tuple<Point, double[]>> eigenValue, double threshold)
+        {
+            var result =  new List<Point>();
+
+            return result; 
+        }
         /// <summary>
         /// The get absolute template.
         /// </summary>
