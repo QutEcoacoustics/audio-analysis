@@ -19,7 +19,9 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Reflection;
 
+#if DEBUG
     using Acoustics.Shared.Debugging;
+#endif
 
     using AnalysisPrograms.Production;
 
