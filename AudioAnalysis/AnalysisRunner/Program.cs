@@ -10,7 +10,7 @@
 
         public static void Main(string[] args)
         {
-            var shntool = new ShntoolAudioUtility(new FileInfo(@"I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\shntool\shntoo.exe"));
+            var shntool = new ShntoolAudioUtility(new FileInfo(@"I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\shntool\shntool.exe"));
             //shntool.Info();
 
             //PageEventsToCsv();
