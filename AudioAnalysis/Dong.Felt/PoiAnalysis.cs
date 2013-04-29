@@ -361,7 +361,8 @@ namespace Dong.Felt
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
                                                 {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
-        public static List<Tuple<Point, double[,]>> StructureTensor(double[,] gaussianBlur,double[,] partialDifferenceX, double[,] partialDifferenceY)
+        // calculate the structure tensor for each point
+        public static List<Tuple<Point, double[,]>> StructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
             var structureTensor = new double[2, 2];
             var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(0));
@@ -407,14 +408,15 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Tuple<Point, double[,]>> MeanOfStructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY, int windowSize)
+        // Bardeli: calculate the mean of the structure tensor
+        public static List<Tuple<PointOfInterest, double[,]>> MeanOfStructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY, int windowSize)
         {
             var rowMaximumIndex = partialDifferenceX.GetLongLength(0);
             var colMaximumIndex = partialDifferenceX.GetLongLength(1);
             var centerOffset = (int) (windowSize / 2);
 
             var structureTensor = new double[2, 2];
-            var result = new List<Tuple<Point, double[,]>>(); 
+            var result = new List<Tuple<PointOfInterest, double[,]>>(); 
 
             for (int row = 0; row < rowMaximumIndex; row++)
             {
@@ -449,89 +451,188 @@ namespace Dong.Felt
                     structureTensor[1, 0] = averageX * averageY;
                     structureTensor[1, 1] = Math.Pow(averageY, 2);
 
-                    result.Add(Tuple.Create(new Point(row, col), structureTensor));
+                    result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                 }
             }
 
             return result;
         }
 
-        public static List<Tuple<Point, double[]>> CalculateEignvalue(List<Tuple<Point, double[,]>> structureTensors)
+        // For each structure tensor matrix of each point, calculate its eigenvalues
+        public static List<Tuple<PointOfInterest, double[]>> CalculateEignvalue(List<Tuple<PointOfInterest, double[,]>> structureTensors)
         {
-            var result = new List<Tuple<Point, double[]>>();
+            var result = new List<Tuple<PointOfInterest, double[]>>();
+
             foreach (var st in structureTensors)
             {
                 var evd = new EigenvalueDecomposition(st.Item2);
                 var realEigenValue = evd.RealEigenvalues;
-                result.Add(Tuple.Create(new Point(st.Item1.X, st.Item1.Y), realEigenValue));
+                result.Add(Tuple.Create(new PointOfInterest(st.Item1.Point), realEigenValue));
             }
             
             return result;
         }
 
-        /// <summary>
-        /// Todo: Get a threshold for exactimg poi
-        /// </summary>
-        public static double[,] getThreshold(List<Tuple<Point, double[]>> eigenValue)
+        // get the attention value for each structure tensor at each point, and keep the greater one
+        public static List<Tuple<PointOfInterest, double>> GetAttention(List<Tuple<PointOfInterest, double[]>> eigenValue)
         {
-            var lengthOfEigenValue = eigenValue.Count;
-            var MaximumX = eigenValue[lengthOfEigenValue].Item1.X;
-            var MaximumY = eigenValue[lengthOfEigenValue].Item1.Y;
+            var result = new List<Tuple<PointOfInterest, double>>();
 
-            // each window has 1000 colomns 
-            var numberOfWindow = (int)(MaximumX/1000);
-
-            // for each window,set up a threshold
-            var threshold = new double[numberOfWindow];
-            var attention = new double[MaximumX, MaximumY];
-
-            foreach (var eValue in eigenValue)
-            {              
-                if (eValue.Item2[0] == eValue.Item2[1])
+            foreach (var ev in eigenValue)
+            {
+                if (ev.Item2[0] > ev.Item2[1])
                 {
-                    attention[eValue.Item1.X, eValue.Item1.Y] = 0;
+                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[0]));
+                    // todo: consider assign 0.0 to ev.Item2[1]
                 }
-                else 
+                else
                 {
-                    attention[eValue.Item1.X, eValue.Item1.Y] = Math.Max(eValue.Item2[0],eValue.Item2[1]);
-                }             
+                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
+                    // todo: consider the case of ev.Item2[0] = ev.Item2[1]
+                }              
             }
 
-            return attention;           
+            return result;
         }
 
-        // Todo: according to Bardeli, Calculate the Histogram
-        public static int[] CalculateHistogram(double[,] a)
+        // get the threshold for keeping poi
+        public static double GetThreshold(List<double> attention)
         {
-            IEnumerable<double> allValues = a.Cast<double>();
-            var MaximumOfAttention = allValues.Max();
-            var increasementOfEachBin = MaximumOfAttention / 1000;
-            
-            const int MaximumBinIndex = 1000;
-            var histogram = new int [MaximumBinIndex];
+            const int numberOfColumn = 1000;
+            var maxAttention = FindMaximumOfAttention(attention);
+            var l = GetMaximumLenth(attention, maxAttention);
 
-            for (int i = 0; i < a.GetLength(0); i++)
+            return l * maxAttention / numberOfColumn;
+        }
+
+        // find out the maximum  of attention in a window with 1000 columns width
+        public static double FindMaximumOfAttention(List<double> listOfAttention)
+        {
+            if (listOfAttention.Count == 0)
             {
-                for (int j = 0; j < a.GetLength(1); j++)
+                throw new InvalidOperationException("Empty list");
+            }
+            double maxAttention = double.MinValue;
+
+            foreach (var la in listOfAttention)
+            {
+                if (la > maxAttention)
                 {
-                   for (int l = 0; l < MaximumBinIndex; l++)
-                   {
-                       var attentionValue = a[i, j] * 1000 / MaximumOfAttention;
-                       if ( (attentionValue >= l) && (attentionValue <= (l + 1)))
-                       {
-                           histogram[l]++;
-                       }
-                   }
+                    maxAttention = la;
                 }
             }
-            
+
+            return maxAttention;
+        }
+
+        // bardeli: get the l(a scaling parameter) 
+        public static int GetMaximumLenth(List<double> listOfAttention, double maxOfAttention)
+        {
+            var sumOfLargePart = 0;
+            var sumOfLowerPart = 0;
+            var p = 0.96;  //  a fixed parameterl
+            var l = 0;
+
+            if (listOfAttention.Count >= 1000)
+            {
+                for (l = 1; l < 1000; l++)
+                {
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[1000 - l];
+                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
+                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    {
+                        break;
+                    }
+                }
+            }
+            else 
+            {
+                for (l = 1; l < listOfAttention.Count; l++)
+                {
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[1000 - l];
+                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
+                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    {
+                        
+                        break;
+                    }
+                }
+            }
+
+            return l;
+        }
+
+        // according to Bardeli, Calculate the Histogram
+        public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention)
+        {   
+            const int numberOfBins = 1000;
+            var histogram = new int[numberOfBins];
+
+            for (int l = 0; l < numberOfBins; l++)
+            {
+                 foreach (var la in listOfAttention)
+                 {
+                     var attentionValue = la * numberOfBins / maxOfAttention;
+                     if ((attentionValue >= l) && (attentionValue <= (l + 1)))
+                     {
+                          histogram[l]++;
+                     }
+                 }
+            }
+
             return histogram;
         }
-
-        // Todo: Bardeli, keep points of interest, whose attention value is greater than the threshold
-        public static List<Point> ExactPointsOfInterest(List<Tuple<Point, double[]>> eigenValue, double threshold)
+        
+        // according to Bardeli, keep points of interest, whose attention value is greater than the threshold
+        public static List<PointOfInterest> ExactPointsOfInterest(List<Tuple<PointOfInterest, double>> attention)
         {
-            var result =  new List<Point>();
+            const int numberOfIncludedBins = 1000;
+            var LenghOfAttention = attention.Count();
+            var numberOfColumn = attention[LenghOfAttention - 1 ].Item1.Point.X;
+            var maxIndexOfPart = (int)(numberOfColumn / numberOfIncludedBins) + 1;
+            var threshold = new double[maxIndexOfPart];
+            var listOfAttention = new List<double>();
+
+            var result = new List<PointOfInterest>();
+
+            for (int i = 0; i < maxIndexOfPart; i++)
+            {
+                // first, it is required to divided the original data into several parts with the width of 1000 colomn
+                // for each part, it will have a distinct threshold
+                // check whether it's  
+                if (numberOfColumn >= numberOfIncludedBins * (i + 1))
+                {
+                    var tempAttention = new List<Tuple<PointOfInterest, double>>();
+                    // var tempAttention = new List<Tuple<Point, double>>();
+                    foreach (var a in attention)
+                    {
+                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X  < i + 1 * numberOfIncludedBins)
+                        {
+                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
+                        }
+
+                    }
+                    
+                    foreach (var ev in tempAttention)
+                    {                       
+                        listOfAttention.Add(ev.Item2);
+                    }
+                    threshold[i] = GetThreshold(listOfAttention);
+
+                    foreach (var ev in tempAttention)
+                    {
+                        if (ev.Item2 > threshold[i])
+                        {
+                            result.Add(ev.Item1);
+                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
+                        }
+                    }
+                }
+                else
+                {
+                   // todo: 
+                }
+            }
 
             return result; 
         }
@@ -552,6 +653,7 @@ namespace Dong.Felt
             var numberOfVertexes = template.Count;
             int relativeFrame = anchorPoint.X;
             int relativeFrequency = anchorPoint.Y;
+            // Make a copy of original template
             var result = new List<Point>(template);
 
             // get an absolute template

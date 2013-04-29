@@ -96,8 +96,20 @@ namespace Dong.Felt
             var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
             Log.Info("NoiseReduction");
 
-            var partialDifference = PoiAnalysis.CalculatePartialDifference(spectrogram.Data);
-            var structureTensor = PoiAnalysis.StructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
+            // Calculate the structure tensor
+            var partialDifference = PoiAnalysis.CalculatePartialDifference(noiseReduction);
+            var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(partialDifference.Item1, partialDifference.Item2, 11);
+
+            var eigenValueDecomposition = PoiAnalysis.CalculateEignvalue(meanOfStructureTensor);
+            var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
+
+            var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
+
+            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult.AddPoints(pointsOfInterst);
+            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest.png");
+            Log.Info("Show the result of PointsOfInterest");
 
             //// Find the local Maxima
             //const int NeibourhoodWindowSize = 7;
