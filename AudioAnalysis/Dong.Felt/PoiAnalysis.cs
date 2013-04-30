@@ -27,7 +27,7 @@ namespace Dong.Felt
     public class PoiAnalysis
     {
         private static readonly SonogramConfig StandardConfig = new SonogramConfig();
-   
+
         /// <summary>
         /// AudioToSpectrogram transforms an audio to a spectrogram. 
         /// </summary>
@@ -326,13 +326,13 @@ namespace Dong.Felt
         }
 
         //  Calculate the difference between current pixel and its neighborhood pixel
-        public static Tuple<double[,], double[,]> CalculatePartialDifference(double[,] m)
+        public static Tuple<double[,], double[,]> PartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
 
-            var partialIntensityX = new double[MaximumXIndex, MaximumYIndex];
-            var partialIntensityY = new double[MaximumXIndex, MaximumYIndex];
+            var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
+            var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
 
             for (int row = 0; row < MaximumXIndex; row++)
             {
@@ -340,15 +340,23 @@ namespace Dong.Felt
                 {
                     if (m.PointIntersect(row + 1, col))
                     {
-                        partialIntensityX[row, col] = m[row + 1, col] - m[row, col];
+                        partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];
+                    }
+                    else
+                    {
+                        partialDifferenceX[row, col] = 0.0;
                     }
                     if (m.PointIntersect(row, col + 1))
                     {
-                        partialIntensityY[row, col] = m[row, col + 1] - m[row, col];
+                        partialDifferenceY[row, col] = m[row, col + 1] - m[row, col];
+                    }
+                    else
+                    {
+                        partialDifferenceY[row, col] = 0.0;
                     }
                  }      
             }
-            var result = Tuple.Create(partialIntensityX, partialIntensityY);
+            var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
             return result;
         } 
         
@@ -415,16 +423,18 @@ namespace Dong.Felt
             var colMaximumIndex = partialDifferenceX.GetLongLength(1);
             var centerOffset = (int) (windowSize / 2);
 
-            var structureTensor = new double[2, 2];
+            
             var result = new List<Tuple<PointOfInterest, double[,]>>(); 
 
             for (int row = 0; row < rowMaximumIndex; row++)
             {
                 for (int col = 0; col < colMaximumIndex; col++)
                 {
+                    var structureTensor = new double[2, 2];
                     var sumX = 0.0;
                     var sumY = 0.0;
-                    // calculate the mean of structure tensor in a fixed neighborhood
+
+                    // calculate the sum of partial difference in a fixed neighborhood
                     for (int i = -centerOffset; i <= centerOffset; i++)
                     {
                         for (int j = -centerOffset; j <= centerOffset; j++)
@@ -436,11 +446,12 @@ namespace Dong.Felt
 
                             if (partialDifferenceY.PointIntersect(row + i, col + j))
                             {
-                                sumY = sumY + partialDifferenceX[row + i, col + j];
+                                sumY = sumY + partialDifferenceY[row + i, col + j];
                             }
                         }
                     }
 
+                    // calculate the mean of paritial difference with the current point as centeroid.
                     // if the current point is out of range, its value is regarded zero.
                     // So when calculate the average, the sum still needs to be divided by windowSize * windowSize
                     var averageX = sumX / Math.Pow(windowSize, 2);
@@ -459,7 +470,7 @@ namespace Dong.Felt
         }
 
         // For each structure tensor matrix of each point, calculate its eigenvalues
-        public static List<Tuple<PointOfInterest, double[]>> CalculateEignvalue(List<Tuple<PointOfInterest, double[,]>> structureTensors)
+        public static List<Tuple<PointOfInterest, double[]>> EignvalueDecomposition(List<Tuple<PointOfInterest, double[,]>> structureTensors)
         {
             var result = new List<Tuple<PointOfInterest, double[]>>();
 
@@ -480,33 +491,33 @@ namespace Dong.Felt
 
             foreach (var ev in eigenValue)
             {
-                if (ev.Item2[0] > ev.Item2[1])
+                // by default, the eigenvalue is in a ascend order, so just check whether they are equal
+                if (ev.Item2[0] == ev.Item2[1])
                 {
-                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[0]));
-                    // todo: consider assign 0.0 to ev.Item2[1]
+                    ev.Item2[1] = 0.0;
+                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
                 }
                 else
                 {
                     result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
-                    // todo: consider the case of ev.Item2[0] = ev.Item2[1]
-                }              
+                }           
             }
 
             return result;
         }
 
         // get the threshold for keeping poi
-        public static double GetThreshold(List<double> attention)
+        public static double GetThreshold(List<Tuple<PointOfInterest, double>> attention)
         {
             const int numberOfColumn = 1000;
-            var maxAttention = FindMaximumOfAttention(attention);
+            var maxAttention = MaximumOfAttention(attention);
             var l = GetMaximumLenth(attention, maxAttention);
 
-            return l * maxAttention / numberOfColumn;
+            return l * maxAttention / numberOfColumn;  
         }
 
         // find out the maximum  of attention in a window with 1000 columns width
-        public static double FindMaximumOfAttention(List<double> listOfAttention)
+        public static double MaximumOfAttention(List<Tuple<PointOfInterest, double>> listOfAttention)
         {
             if (listOfAttention.Count == 0)
             {
@@ -516,9 +527,9 @@ namespace Dong.Felt
 
             foreach (var la in listOfAttention)
             {
-                if (la > maxAttention)
+                if (la.Item2 > maxAttention)
                 {
-                    maxAttention = la;
+                    maxAttention = la.Item2;
                 }
             }
 
@@ -526,18 +537,19 @@ namespace Dong.Felt
         }
 
         // bardeli: get the l(a scaling parameter) 
-        public static int GetMaximumLenth(List<double> listOfAttention, double maxOfAttention)
+        public static int GetMaximumLenth(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
         {
+            const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
             var p = 0.96;  //  a fixed parameterl
             var l = 0;
 
-            if (listOfAttention.Count >= 1000)
+            if (listOfAttention.Count >= numberOfBins)
             {
-                for (l = 1; l < 1000; l++)
+                for (l = 1; l < numberOfBins; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[1000 - l];
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
                     if (sumOfLargePart >= p * sumOfLowerPart)
                     {
@@ -549,11 +561,10 @@ namespace Dong.Felt
             {
                 for (l = 1; l < listOfAttention.Count; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[1000 - l];
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
                     if (sumOfLargePart >= p * sumOfLowerPart)
-                    {
-                        
+                    {                       
                         break;
                     }
                 }
@@ -563,21 +574,19 @@ namespace Dong.Felt
         }
 
         // according to Bardeli, Calculate the Histogram
-        public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention)
+        public static int[] CalculateHistogram(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
         {   
             const int numberOfBins = 1000;
             var histogram = new int[numberOfBins];
 
-            for (int l = 0; l < numberOfBins; l++)
+            foreach (var la in listOfAttention)
             {
-                 foreach (var la in listOfAttention)
-                 {
-                     var attentionValue = la * numberOfBins / maxOfAttention;
-                     if ((attentionValue >= l) && (attentionValue <= (l + 1)))
-                     {
-                          histogram[l]++;
-                     }
-                 }
+                var attentionValue = la.Item2 * numberOfBins / maxOfAttention;
+                var temp = (int)attentionValue;
+                if (temp < numberOfBins)
+                {
+                    histogram[temp]++;
+                }
             }
 
             return histogram;
@@ -590,38 +599,37 @@ namespace Dong.Felt
             var LenghOfAttention = attention.Count();
             var numberOfColumn = attention[LenghOfAttention - 1 ].Item1.Point.X;
             var maxIndexOfPart = (int)(numberOfColumn / numberOfIncludedBins) + 1;
-            var threshold = new double[maxIndexOfPart];
-            var listOfAttention = new List<double>();
 
+            // each distinct part with 1000 columns has a threshold 
+            var threshold = new double[maxIndexOfPart];
+            
+            // keep a list of attention and tempfor calculating threshold
+            var tempAttention = new List<Tuple<PointOfInterest, double>>();
+            
             var result = new List<PointOfInterest>();
 
+            // calculate the threshold for each distinct part
             for (int i = 0; i < maxIndexOfPart; i++)
             {
                 // first, it is required to divided the original data into several parts with the width of 1000 colomn
                 // for each part, it will have a distinct threshold
-                // check whether it's  
                 if (numberOfColumn >= numberOfIncludedBins * (i + 1))
                 {
-                    var tempAttention = new List<Tuple<PointOfInterest, double>>();
+                    
                     // var tempAttention = new List<Tuple<Point, double>>();
                     foreach (var a in attention)
                     {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X  < i + 1 * numberOfIncludedBins)
+                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X  < (i + 1) * numberOfIncludedBins)
                         {
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
-
                     }
-                    
-                    foreach (var ev in tempAttention)
-                    {                       
-                        listOfAttention.Add(ev.Item2);
-                    }
-                    threshold[i] = GetThreshold(listOfAttention);
+                    //threshold[i] = GetThreshold(tempAttention);
 
                     foreach (var ev in tempAttention)
                     {
-                        if (ev.Item2 > threshold[i])
+                        //if (ev.Item2 > threshold[i])
+                        if (ev.Item2 > 7.0)
                         {
                             result.Add(ev.Item1);
                             ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
@@ -630,7 +638,24 @@ namespace Dong.Felt
                 }
                 else
                 {
-                   // todo: 
+                    foreach (var a in attention)
+                    {
+                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X <= numberOfColumn)
+                        {
+                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
+                        }
+                    }
+                    //threshold[i] = GetThreshold(tempAttention);
+
+                    foreach (var ev in tempAttention)
+                    {
+                        //if (ev.Item2 > threshold[i])
+                        if (ev.Item2 > 7.0)
+                        {
+                            result.Add(ev.Item1);
+                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
+                        }
+                    }
                 }
             }
 
