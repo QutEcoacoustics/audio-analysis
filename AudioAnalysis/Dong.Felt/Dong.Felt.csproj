@@ -99,6 +99,7 @@
     <Compile Include="PoiAnalysis.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StructureTensor.cs" />
     <Compile Include="TemplateTools.cs" />
   </ItemGroup>
   <ItemGroup>

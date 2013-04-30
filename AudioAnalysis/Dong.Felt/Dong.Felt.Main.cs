@@ -97,13 +97,24 @@ namespace Dong.Felt
             Log.Info("NoiseReduction");
 
             // Calculate the structure tensor
-            var partialDifference = PoiAnalysis.CalculatePartialDifference(noiseReduction);
+            var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
+            Log.Info("partialDifference");
             var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(partialDifference.Item1, partialDifference.Item2, 11);
+            Log.Info("meanStructureTensor");
 
-            var eigenValueDecomposition = PoiAnalysis.CalculateEignvalue(meanOfStructureTensor);
+            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(meanOfStructureTensor);
+            Log.Info("eigenValueDecomposition");
             var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
+            Log.Info("getAttention");
 
+            //var maxAttention = PoiAnalysis.MaximumOfAttention(attention);
+            //Log.Info("maximumAttention");
+            //var l = PoiAnalysis.GetMaximumLenth(attention, maxAttention);
+            //Log.Info("maximumLength");
+            //var threshold = PoiAnalysis.GetThreshold(attention);
+            //Log.Info("getThreshold");
             var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
+            Log.Info("extractPointsOfInterest");
 
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
             imageResult.AddPoints(pointsOfInterst);
