@@ -478,137 +478,14 @@ namespace TowseyLib
         //###############################################################################################################
 
 
-        //// returns the median value in a vector of 27 floats pointed to by a
-        // this code is written in c and hard coded for an input vector of 27 values.
-        //Need to rework. But said to be fast.
-        //double heapMedian3(double[] a)
-        //{
-        //   double left[14], right[14], median, *p;
-        //   unsigned char nLeft, nRight;
-
-        //   // pick first value as median candidate
-        //   p = a;
-        //   median = *p++;
-        //   nLeft = nRight = 1;
-
-        //   for(;;)
-        //   {
-        //       // get next value
-        //       float val = *p++;
-
-        //       // if value is smaller than median, append to left heap
-        //       if( val < median )
-        //       {
-        //           // move biggest value to the heap top
-        //           unsigned char child = nLeft++, parent = (child - 1) / 2;
-        //           while( parent && val > left[parent] )
-        //           {
-        //               left[child] = left[parent];
-        //               child = parent;
-        //               parent = (parent - 1) / 2;
-        //           }
-        //           left[child] = val;
-
-        //           // if left heap is full
-        //           if( nLeft == 14 )
-        //           {
-        //               // for each remaining value
-        //               for( unsigned char nVal = 27 - (p - a); nVal; --nVal )
-        //               {
-        //                   // get next value
-        //                   val = *p++;
-
-        //                   // if value is to be inserted in the left heap
-        //                   if( val < median )
-        //                   {
-        //                       child = left[2] > left[1] ? 2 : 1;
-        //                       if( val >= left[child] )
-        //                           median = val;
-        //                       else
-        //                       {
-        //                           median = left[child];
-        //                           parent = child;
-        //                           child = parent*2 + 1;
-        //                           while( child < 14 )
-        //                           {
-        //                               if( child < 13 && left[child+1] > left[child] )
-        //                                   ++child;
-        //                               if( val >= left[child] )
-        //                                   break;
-        //                               left[parent] = left[child];
-        //                               parent = child;
-        //                               child = parent*2 + 1;
-        //                           }
-        //                           left[parent] = val;
-        //                       }
-        //                   }
-        //               }
-        //               return median;
-        //           }
-        //       }
-
-        //       // else append to right heap
-        //       else
-        //       {
-        //           // move smallest value to the heap top
-        //           unsigned char child = nRight++, parent = (child - 1) / 2;
-        //           while( parent && val < right[parent] )
-        //           {
-        //               right[child] = right[parent];
-        //               child = parent;
-        //               parent = (parent - 1) / 2;
-        //           }
-        //           right[child] = val;
-
-        //           // if right heap is full
-        //           if( nRight == 14 )
-        //           {
-        //               // for each remaining value
-        //               for( unsigned char nVal = 27 - (p - a); nVal; --nVal )
-        //               {
-        //                   // get next value
-        //                   val = *p++;
-
-        //                   // if value is to be inserted in the right heap
-        //                   if( val > median )
-        //                   {
-        //                       child = right[2] < right[1] ? 2 : 1;
-        //                       if( val <= right[child] )
-        //                           median = val;
-        //                       else
-        //                       {
-        //                           median = right[child];
-        //                           parent = child;
-        //                           child = parent*2 + 1;
-        //                           while( child < 14 )
-        //                           {
-        //                               if( child < 13 && right[child+1] < right[child] )
-        //                                   ++child;
-        //                               if( val <= right[child] )
-        //                                   break;
-        //                               right[parent] = right[child];
-        //                               parent = child;
-        //                               child = parent*2 + 1;
-        //                           }
-        //                           right[parent] = val;
-        //                       }
-        //                   }
-        //               }
-        //               return median;
-        //           }
-        //       }
-        //   }
-        //}
-
-
-        
+       
         /// <summary>
         /// sorts an array of doubles.
         /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
-        public static System.Tuple<int[], double[]> SortRowIDsByRankOrder(double[] array)
+        public static System.Tuple<int[], double[]> SortArray(double[] array)
         {
             int[] rankOrder = new int[array.Length];
             double[] sort   = new double[array.Length];
@@ -623,6 +500,47 @@ namespace TowseyLib
             }
             return Tuple.Create(rankOrder, sort);
         }
+
+        /// <summary>
+        /// sorts a list of integers.
+        /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static System.Tuple<int[], int[]> SortArray(List<int> array)
+        {
+            //Array.Sort(array);
+            int[] rankOrder = new int[array.Count];
+            int[] sort = new int[array.Count];
+            for (int i = 0; i < array.Count; i++)
+            {
+                int maxIndex = DataTools.GetMaxIndex(array);
+                rankOrder[i] = maxIndex;
+                sort[i] = array[maxIndex];
+                //if(i % 100==0)
+                //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
+                array[maxIndex] = -Int32.MaxValue;
+            }
+            return Tuple.Create(rankOrder, sort);
+        }
+        public static System.Tuple<int[], int[]> SortArray(int[] a)
+        {
+            //Array.Sort(array);
+            int[] array = (int[])a.Clone();
+            int[] rankOrder = new int[array.Length];
+            int[] sort = new int[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                int maxIndex = DataTools.GetMaxIndex(array);
+                rankOrder[i] = maxIndex;
+                sort[i] = array[maxIndex];
+                //if(i % 100==0)
+                //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
+                array[maxIndex] = -Int32.MaxValue;
+            }
+            return Tuple.Create(rankOrder, sort);
+        }
+
 
 
 
@@ -2395,7 +2313,10 @@ namespace TowseyLib
 
         /// <summary>
         /// Normalizes an array so that the sum of its values (area under curve) = 1.0
-        /// Use to express data as probability funciton.
+        /// Use to express data as probability function.
+        /// NB: ONLY USE THIS METHOD IF ARRAY CONTAINS NEGATIVE VALUES
+        /// First of all normalises array into [0,1]
+        /// This is rather dodgy!
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -2403,7 +2324,9 @@ namespace TowseyLib
         {
             double[] v = DataTools.normalise(data); //ensures all values in 0,1
             double sum = 0.0;
-            for (int i = 0; i < v.Length; i++) sum += v[i];
+            for (int i = 0; i < v.Length; i++) 
+                sum += v[i];
+            Console.WriteLine("Area={0:f4}",sum);
             if (sum == 0.0) return data;
 
             double[] ret = new double[v.Length];
@@ -2429,6 +2352,26 @@ namespace TowseyLib
             
             return probs;
         } // end NormaliseProbabilites()
+        /// <summary>
+        /// calculates the cumulative probabilities from a prob array.
+        /// assumes that values in the data vector are >= zero and sum = 1.0.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        static public double[] ConvertProbabilityDistribution2CummulativeProbabilites(double[] data)
+        {
+            int length = data.Length;
+
+            double sum = 0;
+            double[] probs = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                sum += data[i];
+                probs[i] = sum;
+            }
+            //Console.WriteLine("cumulative prob = "+sum);
+            return probs;
+        } // end ConvertProbabilityDistribution2CummulativeProbabilites()
 
 
         /// <summary>
@@ -2832,6 +2775,20 @@ namespace TowseyLib
       int indexOfMax = 0;
       int max = data[0];
       for (int i = 1; i < data.Length; i++)
+      {
+          if (data[i] > max)
+          {
+              max = data[i];
+              indexOfMax = i;
+          }
+      }
+      return indexOfMax;
+  }
+  static public int GetMaxIndex(List<int> data)
+  {
+      int indexOfMax = 0;
+      int max = data[0];
+      for (int i = 1; i < data.Count; i++)
       {
           if (data[i] > max)
           {
@@ -3327,7 +3284,60 @@ namespace TowseyLib
 
   //=============================================================================
 
+/// <summary>
+/// Given an array of monotonically increasing or decreasing values and a reference value, 
+/// determine whether the ref value lies above or below the index halfway between the passed lower and upper indices.
+/// This method is recursive. It determines the index of the array whose value is closest to the ref value.
+/// </summary>
+/// <param name="array"></param>
+/// <param name="value"></param>
+/// <param name="lowerIndex"></param>
+/// <param name="upperIndex"></param>
+/// <returns></returns>
 
+  static public Int32 WhichSideOfCentre(double[] array, double refValue, Int32 lowerIndex, Int32 upperIndex)
+  {
+      int distance = upperIndex - lowerIndex;
+      Int32 centre = new Int32();
+      centre = upperIndex - (distance / 2);
+
+      if (distance <= 1)
+      {
+          if (refValue < array[lowerIndex]) return lowerIndex;
+          else return upperIndex;
+      }
+      if (refValue >= array[centre])
+          centre = WhichSideOfCentre(array, refValue, centre, upperIndex);
+      else
+          centre = WhichSideOfCentre(array, refValue, lowerIndex, centre);
+      return centre;
+  }
+
+        public static int[] SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(double[] distribution, int sampleCount)
+        {
+            //int seed = 666;
+            int seed = DateTime.Now.Millisecond;
+            RandomNumber generator = new RandomNumber(seed);
+
+            // create list to handle non-resplacement of samples
+            List<int> list = new List<int>();
+            for (int i = 0; i < distribution.Length; i++) list.Add(i);
+
+            int[] returnSampleArray = new int[sampleCount];
+            for (int i = 0; i < sampleCount; i++)
+            {
+                // get a random number
+                double rn = generator.GetDouble();
+                // get its index from probability distribution
+                int distributionIndex = DataTools.WhichSideOfCentre(distribution, rn, 0, distribution.Length);
+                //convert distribution array index to an index appropriate to non-replacement of samples
+                int newIndex = (int)Math.Floor(distributionIndex * list.Count / (double)distribution.Length);
+                //recover original index
+                returnSampleArray[i] = list[newIndex];
+                list.RemoveAt(newIndex);
+            }
+            return returnSampleArray;
+        } 
 
     }//class dataTools()
 }
