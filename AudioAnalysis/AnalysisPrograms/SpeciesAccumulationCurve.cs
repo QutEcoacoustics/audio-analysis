@@ -307,22 +307,24 @@ namespace AnalysisPrograms
                 // OPTION 2: USE FOLLOWING  line to rank by weighted multiple columns of acoustic indices matrix.
                 int[] rankOrder = GetRankOrder(indicesFilePath);
 
-                int distributionlength = 1435;
-                int sampleCount = 60;
-
-                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
-                //int[] rankOrder = tuple.Item1;
-                int[] sort = tuple.Item2;
-                sort = DataTools.reverseArray(sort);
-
-
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
-                bool doReverseOrder = false;
+                bool doReverseOrder = true;
                 if (doReverseOrder)
                     rankOrder = DataTools.reverseArray(rankOrder);
 
+                int distributionlength = rankOrder.Length;
+                int sampleCount = distributionlength;
+                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                int[] sampleOrder = tuple.Item1;
+                //int[] sort = tuple.Item2;
+                //sort = DataTools.reverseArray(sort);
+                int[] newSamplingOrder = new int[distributionlength];
+                for (int i = 0; i < distributionlength; i++) 
+                    newSamplingOrder[i] = rankOrder[sampleOrder[i]];
+
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
+                int[] accumulationCurve = GetAccumulationCurve(callMatrix, newSamplingOrder);
+                // int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
                 var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
                 stats.WriteStats();
             } // ######################## END SMART SAMPLING #############################

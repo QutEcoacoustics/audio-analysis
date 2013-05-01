@@ -27,7 +27,7 @@ namespace AnalysisPrograms
 
     using Dong.Felt;
 
-    using FELT.Runner;
+    //using FELT.Runner;
 
     using log4net;
 
@@ -147,7 +147,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // Xueyan's FELT
                     { "dong.felt", FeltAnalysis.Dev },
