@@ -52,46 +52,44 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            // ShuiYan
-            //if (true)
-            //{
-            //    string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071011-182040.wav";
-            //    var recording = new AudioRecording(wavFilePath);
+            if(false)
+            {
+                // this bracket tests sampling from an array using a probability distribution
+                int distributionlength = 1435;
+                int sampleCount = 600;
 
-            //    // make random acoustic events
-            //    // TODO: make real acoustic events
-            //    var events = new List<AcousticEvent>() { 
-            //        new AcousticEvent(5.0,2.0,500,1000),   
-            //        new AcousticEvent(8.0,2.0,500,1000),
-            //        new AcousticEvent(11.0,2.0,500,1000),
-            //        new AcousticEvent(14.0,2.0,500,1000),
-            //        new AcousticEvent(17.0,2.0,500,1000),
-            //    };
+                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                int[] samples = tuple.Item1;
+                int[] sortedSamples = tuple.Item2;
+                sortedSamples = DataTools.reverseArray(sortedSamples);
 
-            //    foreach (var e in events)
-            //    {
-            //        e.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
-            //    }
+                for (int i = 0; i < samples.Length; i++) Console.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
 
-            //    var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
-            //    var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+                Log.WriteLine("# Finished everything!");
+                Console.ReadLine();
+                System.Environment.Exit(666);
+            }
+            if (false)
+            {
+                // this bracket tests sampling from an array using a probability distribution
+                int distributionlength = 1440;
+                int sampleCount = 60;
+                int trials = 10000;
+                int[] histogram = new int[distributionlength];
+                for (int i = 0; i < trials; i++)
+                {
+                    Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                    int[] samples = tuple.Item1;
+                    //int[] sortedSamples = tuple.Item2;
+                    //sortedSamples = DataTools.reverseArray(sortedSamples);
+                    for (int j = 0; j < samples.Length; j++) histogram[samples[j]]++;
+                }
+                DataTools.writeBarGraph(histogram);
 
-            //    var image = new Image_MultiTrack(spectrogram.GetImage(false, true));
-
-            //    image.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //    ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            //    image.AddTrack(Image_Track.GetSegmentationTrack(spectrogram));
-            //    image.AddEvents(events, spectrogram.NyquistFrequency, spectrogram.Configuration.FreqBinCount, spectrogram.FramesPerSecond);
-
-            //    image.Save(@"C:\SensorNetworks\Output\Test1.png");
-
-
-
-            //    Log.WriteLine("# Finished everything!");
-            //    Console.ReadLine();
-            //    System.Environment.Exit(666);
-            //}
-
+                Log.WriteLine("# Finished histogram!");
+                Console.ReadLine();
+                System.Environment.Exit(666);
+            }
 
 
             //i: Set up the dir and file names
@@ -103,9 +101,9 @@ namespace AnalysisPrograms
 
             // 2013 analysis  ...  LOCATION OF ANALYSIS FILES
             // 13th OCTOBER
-            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
-            //string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
-            //string callsFileName = "SE_2010Oct13_Calls.csv";
+            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
+            string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            string callsFileName = "SE_2010Oct13_Calls.csv";
             // 14th OCTOBER
             //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\14Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
@@ -119,10 +117,10 @@ namespace AnalysisPrograms
             //string indicesFilePath = Path.Combine(inputDir, "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             //string callsFileName = "SE_2010Oct16_Calls.csv";
             // 17th OCTOBER
-            string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
-            string indicesFilePath = Path.Combine(inputDir, "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
-            string callsFileName = "SE_2010Oct17_Calls.csv";
-            
+            //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\17Oct2010";
+            //string indicesFilePath = Path.Combine(inputDir, "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
+            //string callsFileName = "SE_2010Oct17_Calls.csv";
+
 
 
 
@@ -137,7 +135,7 @@ namespace AnalysisPrograms
 
             //READ CSV FILE TO MASSAGE DATA
             var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFilePath);
-            List<string> totalSpeciesList   = results1.Item1;
+            List<string> totalSpeciesList = results1.Item1;
             List<string> callingSpeciesList = results1.Item2; // Some species will not call in a particular day 
             byte[,] callMatrix = results1.Item3; // rows=minutes,  cols=species 
 
@@ -157,23 +155,22 @@ namespace AnalysisPrograms
                     sampleNumber++;
 
                     int count = 0;
-                    for(int i = 0; i < row.Length; i++) count += row[i];
+                    for (int i = 0; i < row.Length; i++) count += row[i];
                     speciesCount += count;
                     string line = String.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
                     text.Add(line);
                     LoggedConsole.WriteLine(line);
 
-                    for(int i = 0; i < row.Length; i++) if(row[i] == 1) DataTools.SetColumnZero(callMatrix, i);
+                    for (int i = 0; i < row.Length; i++) if (row[i] == 1) DataTools.SetColumnZero(callMatrix, i);
 
                 }
-
 
                 string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
                 FileTools.WriteTextFile(inputDir + outputfile, text);
 
                 int[] finalRowSums = DataTools.GetRowSums(callMatrix);
                 int totalSum = finalRowSums.Sum();
-                LoggedConsole.WriteLine("remaining species ="+totalSum);
+                LoggedConsole.WriteLine("remaining species =" + totalSum);
 
 
                 throw new AnalysisOptionDevilException();
@@ -216,7 +213,7 @@ namespace AnalysisPrograms
                     samples180[i] = stats.percentRecognitionWith180Samples;
                     samples240[i] = stats.percentRecognitionWith240Samples;
 
-                    if (i % 100 == 0) LoggedConsole.WriteLine("trial "+ i);
+                    if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
                 } //over all trials
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
@@ -227,10 +224,10 @@ namespace AnalysisPrograms
 
                 double avFixed10Sample, avFixed30Sample, avFixed60Sample, avFixed90Sample, avFixed120Sample, avFixed180Sample, avFixed240Sample;
                 double sdFixed10Sample, sdFixed30Sample, sdFixed60Sample, sdFixed90Sample, sdFixed120Sample, sdFixed180Sample, sdFixed240Sample;
-                NormalDist.AverageAndSD(samples10,  out avFixed10Sample,  out sdFixed10Sample);
-                NormalDist.AverageAndSD(samples30,  out avFixed30Sample,  out sdFixed30Sample);
-                NormalDist.AverageAndSD(samples60,  out avFixed60Sample,  out sdFixed60Sample);
-                NormalDist.AverageAndSD(samples90,  out avFixed90Sample,  out sdFixed90Sample);
+                NormalDist.AverageAndSD(samples10, out avFixed10Sample, out sdFixed10Sample);
+                NormalDist.AverageAndSD(samples30, out avFixed30Sample, out sdFixed30Sample);
+                NormalDist.AverageAndSD(samples60, out avFixed60Sample, out sdFixed60Sample);
+                NormalDist.AverageAndSD(samples90, out avFixed90Sample, out sdFixed90Sample);
                 NormalDist.AverageAndSD(samples120, out avFixed120Sample, out sdFixed120Sample);
                 NormalDist.AverageAndSD(samples180, out avFixed180Sample, out sdFixed180Sample);
                 NormalDist.AverageAndSD(samples240, out avFixed240Sample, out sdFixed240Sample);
@@ -303,16 +300,25 @@ namespace AnalysisPrograms
 
                 //###############################################################################################################################################
                 // OPTION 1: USE FOLLOWING two lines to rank by just a single column of acoustic indices matrix.
-                //int colNumber = 22;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 
+                //int colNumber = 22;  // 1=avAmplitude; 6=segCount; 12=H[spectralPeaks]; 15=ACI; 22=KNOWN UNIQUE CALL COUNT 
                 //LoggedConsole.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 // OPTION 2: USE FOLLOWING  line to rank by weighted multiple columns of acoustic indices matrix.
                 int[] rankOrder = GetRankOrder(indicesFilePath);
 
+                int distributionlength = 1435;
+                int sampleCount = 60;
+
+                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                //int[] rankOrder = tuple.Item1;
+                int[] sort = tuple.Item2;
+                sort = DataTools.reverseArray(sort);
+
+
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
-                bool doReverseOrder = true;
-                if (doReverseOrder) 
+                bool doReverseOrder = false;
+                if (doReverseOrder)
                     rankOrder = DataTools.reverseArray(rankOrder);
 
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
@@ -321,7 +327,7 @@ namespace AnalysisPrograms
                 stats.WriteStats();
             } // ######################## END SMART SAMPLING #############################
 
-            
+
             DateTime tEnd = DateTime.Now;
             TimeSpan timeSpan = tEnd - tStart;
             Log.WriteLine("# Elapsed Time = " + timeSpan.TotalSeconds + " seconds");
@@ -391,7 +397,7 @@ namespace AnalysisPrograms
         {
             string header1;
             double[] array = CsvTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
-            var results2   = DataTools.SortRowIDsByRankOrder(array);
+            var results2   = DataTools.SortArray(array);
             return results2.Item1;
         }
 
@@ -463,7 +469,7 @@ namespace AnalysisPrograms
                 combined[i] = (/* (wt1 * array1[i]) +*/ (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * chorusBias[i] * bgBias[i];
             }
 
-            var results2 = DataTools.SortRowIDsByRankOrder(combined);
+            var results2 = DataTools.SortArray(combined);
 
             int[] rankOrder = results2.Item1;
 
@@ -505,14 +511,14 @@ namespace AnalysisPrograms
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.06, 13.73, 17.1, 0.0, -9.49, 33.87, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -30.69 }; // 21 indices
             // FEATURE SET 8..... 3 features
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.24, 10.43, 0.0, 0.0, 42.76, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -16.72 }; // 21 indices
-            // FEATURE SET 9..... 2 features
+            // FEATURE SET 9 and FS30..... 2 features
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.46, 0.0, 0.0, 45.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -20.72 }; // 21 indices
             // FEATURE SET 10..... 1 feature ACI
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 59.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -19.02 }; // 21 indices
             // FEATURE SET 11..... 1 feature av cluster duration  -- sometimes need to multiply by -1.
-            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.047, 0.0, 0.0, 0.0, 0.00, 0.49 }; // 21 indices
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.047, 0.0, 0.0, 0.0, 0.00, -0.49 }; // 21 indices
             // FEATURE SET 12..... 1 feature av cluster 
-            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, -0.069, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -1.03 }; // 21 indices
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.069, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 1.03 }; // 21 indices
             // FEATURE SET 13..... 1 feature H[peaks] 
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 19.09, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, -9.38 }; // 21 indices
             // FEATURE SET 14..... 1 feature activity 
@@ -522,13 +528,12 @@ namespace AnalysisPrograms
             // FEATURE SET 16..... 1 feature # clusters 
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.47, 0.0, 0.0, 0.0, 0.0, 0.00, -0.023 }; // 21 indices
 
+            // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
+            //                 { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0, -9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // 21 indices
 
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
-            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
-
-
-            // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
-            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0 }; // 21 indices
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
 
 
 
@@ -551,10 +556,26 @@ namespace AnalysisPrograms
                 combined[count] = weightedSum + weights[wtCount-1]; //  *chorusBias[count] * bgBias[count]
                 count++;
             }
-            var results2 = DataTools.SortRowIDsByRankOrder(combined);
+
+            // CHORUS BIAS
+            //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
+            //combined = AdjustForChorusBias(combined, chorusBiasWeight);
+
+            var results2 = DataTools.SortArray(combined);
 
             int[] rankOrder = results2.Item1;
             return rankOrder;
+        }
+
+        public static double[] AdjustForChorusBias(double[] values, double chorusBiasWeight)
+        {
+            int length = values.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if ((i > 290) && (i < 471)) values[i] *= chorusBiasWeight;    //civil dawn plus 3 hours
+                //if ((i > 290) && (i < 532)) values[i] *= chorusBiasWeight;  //civil dawn plus 4 hours
+            }
+            return values;
         }
 
         public static double[] CalculateBGNoiseSamplingBias(double[] bgArray, double bgThreshold, double bgVarianceThreshold, double noiseBias)
