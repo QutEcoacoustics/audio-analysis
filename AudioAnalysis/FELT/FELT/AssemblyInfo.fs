@@ -33,7 +33,7 @@
     // You can specify all the values or you can default the Build and Revision Numbers
     // by using the ‘*’ as shown below:
     // [assembly: AssemblyVersion("1.0.*")]
-    [<assembly: AssemblyVersion("1.2.2217.3590")>]
-    [<assembly: AssemblyFileVersion("1.2.2217.3590")>]
+    [<assembly: AssemblyVersion("1.2.2268.3591")>]
+    [<assembly: AssemblyFileVersion("1.2.2268.3591")>]
 
     ()

@@ -93,33 +93,37 @@ namespace Dong.Felt
 
             // Do the noise removal
             const int BackgroundThreshold = 5;
-            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
             Log.Info("NoiseReduction");
+
+            //var testImage = StructureTensorTest.createNullBitmap();
+            //var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
 
             // Calculate the structure tensor
             var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
             Log.Info("partialDifference");
-            var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(partialDifference.Item1, partialDifference.Item2, 11);
-            Log.Info("meanStructureTensor");
 
-            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(meanOfStructureTensor);
+            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur,partialDifference.Item1, partialDifference.Item2);
+            Log.Info("GaussianStructureTensor");
+
+            //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("StructureTensor");
+
+            //var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(structureTensor, 5);
+            //Log.Info("meanStructureTensor");
+
+            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
             Log.Info("eigenValueDecomposition");
             var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
             Log.Info("getAttention");
 
-            //var maxAttention = PoiAnalysis.MaximumOfAttention(attention);
-            //Log.Info("maximumAttention");
-            //var l = PoiAnalysis.GetMaximumLenth(attention, maxAttention);
-            //Log.Info("maximumLength");
-            //var threshold = PoiAnalysis.GetThreshold(attention);
-            //Log.Info("getThreshold");
             var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
             Log.Info("extractPointsOfInterest");
 
             var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
             imageResult.AddPoints(pointsOfInterst);
             imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest.png");
+            imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest10.png");
             Log.Info("Show the result of PointsOfInterest");
 
             //// Find the local Maxima
