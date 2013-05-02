@@ -117,8 +117,8 @@ namespace AnalysisPrograms
             NormalDist.AverageAndSD(array, out av240, out sd240);
 
             LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
-            LoggedConsole.WriteLine("percent\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", av10, av30, av60, av90, av120, av180, av240);
-            LoggedConsole.WriteLine("percent\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", sd10, sd30, sd60, sd90, sd120, sd180, sd240);
+            LoggedConsole.WriteLine("avg %  \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", av10, av30, av60, av90, av120, av180, av240);
+            LoggedConsole.WriteLine("stdev %\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", sd10, sd30, sd60, sd90, sd120, sd180, sd240);
         }
 
 
@@ -403,7 +403,7 @@ namespace AnalysisPrograms
                 int[] rankOrder = GetRankOrder(indicesFilePath);
 
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
-                bool doReverseOrder = true;
+                bool doReverseOrder = false;
                 if (doReverseOrder)
                     rankOrder = DataTools.reverseArray(rankOrder);
 
@@ -415,12 +415,12 @@ namespace AnalysisPrograms
                 stats.WriteStats();
 
                 // OPTION 5: RANDOM SAMPLE FROM RANK ORDER USING PROBABILITY DISTRIBUTION 
-                var list = new List<SpeciesAccumulationStats>();
-                int reps = 5000;
-                //for (int i = 0; i < reps; i++ )
+                //var list = new List<SpeciesAccumulationStats>();
+                //int reps = 5000;
+                //for (int i = 0; i < reps; i++)
                 //{
                 //    if (i % 100 == 0) Console.WriteLine(i);
-                //    int seed2 = DateTime.Now.Millisecond+i; // add i in case speed of one iter < 1ms
+                //    int seed2 = DateTime.Now.Millisecond + i; // add i in case speed of one iter < 1ms
                 //    int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
                 //    int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
                 //    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
@@ -633,7 +633,8 @@ namespace AnalysisPrograms
 
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
             //                 { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
-            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0, -9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // 21 indices
+            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0, -9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.0, 0.2, 0.2, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
 
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
@@ -648,6 +649,9 @@ namespace AnalysisPrograms
             int count = 0;
             foreach (DataRow row in table.Rows)
             {
+                //string strValue1 = row[16].ToString();
+                //double value1 = Double.Parse(strValue1);
+                //if (value1 > 1.0) Console.WriteLine(value1);
                 double weightedSum = 0.0;
                 for (int i = 0; i < weights.Length; i++)
                 {
