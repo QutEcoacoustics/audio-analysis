@@ -9,7 +9,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    class SpeciesAccumulationStats
+    public class SpeciesAccumulationStats
     {
         // Fixed number of samples an ecologist is prepared to process. 
         public int s25  { get; set; }
@@ -17,6 +17,7 @@ namespace AnalysisPrograms
         public int s75  { get; set; }
         public int s100 { get; set; }
 
+        //these variables are for stats from a single run
         public double percentRecognitionWith10Samples  = 0;
         public double percentRecognitionWith30Samples  = 0;
         public double percentRecognitionWith60Samples  = 0;
@@ -25,6 +26,28 @@ namespace AnalysisPrograms
         public double percentRecognitionWith180Samples = 0;
         public double percentRecognitionWith240Samples = 0;
 
+        public void StoreStatisticsForSingleAccumulationCurve(int[] accumulationCurve, int totalSpeciesCount)
+        {
+            int s25threshold = (int)Math.Round(totalSpeciesCount * 0.25);
+            int s50threshold = (int)Math.Round(totalSpeciesCount * 0.50);
+            int s75threshold = (int)Math.Round(totalSpeciesCount * 0.75);
+            int s100threshold = totalSpeciesCount;
+
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { this.s25 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { this.s50 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { this.s75 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { this.s100 = i + 1; break; }
+
+            //% of total species identified with N samples
+            this.percentRecognitionWith10Samples = (int)Math.Round(accumulationCurve[10 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith30Samples = (int)Math.Round(accumulationCurve[30 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith60Samples = (int)Math.Round(accumulationCurve[60 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith90Samples = (int)Math.Round(accumulationCurve[90 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[120 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[180 - 1] * 100 / (double)totalSpeciesCount);
+            this.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[240 - 1] * 100 / (double)totalSpeciesCount);
+        }
+
         public void WriteStats()
         {
             LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.s25, this.s50, this.s75, this.s100);
@@ -32,6 +55,70 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.percentRecognitionWith10Samples, this.percentRecognitionWith30Samples,
                 this.percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
                 this.percentRecognitionWith180Samples, this.percentRecognitionWith240Samples);
+        }
+
+        public static void WriteArrayStats(List<SpeciesAccumulationStats> list)
+        {
+            int reps = list.Count;
+            double[] array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith10Samples;
+            }
+            double av10, sd10;
+            NormalDist.AverageAndSD(array, out av10, out sd10);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith30Samples;
+            }
+            double av30, sd30;
+            NormalDist.AverageAndSD(array, out av30, out sd30);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith60Samples;
+            }
+            double av60, sd60;
+            NormalDist.AverageAndSD(array, out av60, out sd60);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith90Samples;
+            }
+            double av90, sd90;
+            NormalDist.AverageAndSD(array, out av90, out sd90);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith120Samples;
+            }
+            double av120, sd120;
+            NormalDist.AverageAndSD(array, out av120, out sd120);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith180Samples;
+            }
+            double av180, sd180;
+            NormalDist.AverageAndSD(array, out av180, out sd180);
+
+            array = new double[reps];
+            for (int i = 0; i < reps; i++)
+            {
+                array[i] = list[i].percentRecognitionWith240Samples;
+            }
+            double av240, sd240;
+            NormalDist.AverageAndSD(array, out av240, out sd240);
+
+            LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
+            LoggedConsole.WriteLine("percent\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", av10, av30, av60, av90, av120, av180, av240);
+            LoggedConsole.WriteLine("percent\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", sd10, sd30, sd60, sd90, sd120, sd180, sd240);
         }
 
 
@@ -57,8 +144,10 @@ namespace AnalysisPrograms
                 // this bracket tests sampling from an array using a probability distribution
                 int distributionlength = 1435;
                 int sampleCount = 600;
+                //int seed3 = 666;
+                int seed3 = DateTime.Now.Millisecond;
 
-                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount, seed3);
                 int[] samples = tuple.Item1;
                 int[] sortedSamples = tuple.Item2;
                 sortedSamples = DataTools.reverseArray(sortedSamples);
@@ -74,11 +163,13 @@ namespace AnalysisPrograms
                 // this bracket tests sampling from an array using a probability distribution
                 int distributionlength = 1440;
                 int sampleCount = 60;
+                //int seed4 = 666;
+                int seed4 = DateTime.Now.Millisecond;
                 int trials = 10000;
                 int[] histogram = new int[distributionlength];
                 for (int i = 0; i < trials; i++)
                 {
-                    Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
+                    Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount, seed4);
                     int[] samples = tuple.Item1;
                     //int[] sortedSamples = tuple.Item2;
                     //sortedSamples = DataTools.reverseArray(sortedSamples);
@@ -178,7 +269,7 @@ namespace AnalysisPrograms
             }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
             //RANDOM SAMPLING OVER ENTIRE 24 HOURS
-            int seed = tStart.Millisecond;
+            int seed1 = tStart.Millisecond;
             if (false)
             {
                 int trialCount = 5000;
@@ -197,9 +288,11 @@ namespace AnalysisPrograms
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
-                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
+                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
-                    var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
+
+                    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                    stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = stats.s25;
                     s50array[i] = stats.s50;
@@ -262,10 +355,12 @@ namespace AnalysisPrograms
 
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
-                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
+                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
-                    var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
+                    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                    stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
+
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = stats.s25;
                     s50array[i] = stats.s50;
@@ -312,21 +407,27 @@ namespace AnalysisPrograms
                 if (doReverseOrder)
                     rankOrder = DataTools.reverseArray(rankOrder);
 
-                int distributionlength = rankOrder.Length;
-                int sampleCount = distributionlength;
-                Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount);
-                int[] sampleOrder = tuple.Item1;
-                //int[] sort = tuple.Item2;
-                //sort = DataTools.reverseArray(sort);
-                int[] newSamplingOrder = new int[distributionlength];
-                for (int i = 0; i < distributionlength; i++) 
-                    newSamplingOrder[i] = rankOrder[sampleOrder[i]];
-
-                //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                int[] accumulationCurve = GetAccumulationCurve(callMatrix, newSamplingOrder);
-                // int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
-                var stats = GetAccumulationCurveStatistics(accumulationCurve, callingSpeciesList.Count);
+                // OPTION 4: SAMPLE IN RANK ORDER 
+                int[] finalSamplingOrder = rankOrder;
+                int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
+                SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
                 stats.WriteStats();
+
+                // OPTION 5: RANDOM SAMPLE FROM RANK ORDER USING PROBABILITY DISTRIBUTION 
+                var list = new List<SpeciesAccumulationStats>();
+                int reps = 5000;
+                //for (int i = 0; i < reps; i++ )
+                //{
+                //    if (i % 100 == 0) Console.WriteLine(i);
+                //    int seed2 = DateTime.Now.Millisecond+i; // add i in case speed of one iter < 1ms
+                //    int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
+                //    int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
+                //    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                //    stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
+                //    list.Add(stats);
+                //}
+                //SpeciesAccumulationStats.WriteArrayStats(list);
             } // ######################## END SMART SAMPLING #############################
 
 
@@ -569,6 +670,20 @@ namespace AnalysisPrograms
             return rankOrder;
         }
 
+        public static int[] RandomSampleFromRankOrder(int[] rankOrder, int seed)
+        {
+            int distributionlength = rankOrder.Length;
+            int sampleCount = distributionlength;
+            Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount, seed);
+            int[] sampleOrder = tuple.Item1;
+            //int[] sort = tuple.Item2;
+            //sort = DataTools.reverseArray(sort);
+            int[] finalSamplingOrder = new int[distributionlength];
+            for (int i = 0; i < distributionlength; i++)
+                    finalSamplingOrder[i] = rankOrder[sampleOrder[i]];
+            return finalSamplingOrder;
+        }
+
         public static double[] AdjustForChorusBias(double[] values, double chorusBiasWeight)
         {
             int length = values.Length;
@@ -646,31 +761,6 @@ namespace AnalysisPrograms
             return accumlationCurve;
         }
 
-
-        public static SpeciesAccumulationStats GetAccumulationCurveStatistics(int[] accumulationCurve, int totalSpeciesCount)
-        {
-            int s25threshold = (int)Math.Round(totalSpeciesCount*0.25);
-            int s50threshold = (int)Math.Round(totalSpeciesCount*0.50);
-            int s75threshold = (int)Math.Round(totalSpeciesCount*0.75);
-            int s100threshold = totalSpeciesCount;
-
-            SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold)  { stats.s25 = i + 1;  break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold)  { stats.s50 = i + 1;  break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold)  { stats.s75 = i + 1;  break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { stats.s100 = i + 1; break; }
-
-            //% of total species identified with N samples
-            stats.percentRecognitionWith10Samples  = (int)Math.Round(accumulationCurve[10 - 1]  * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith30Samples  = (int)Math.Round(accumulationCurve[30 - 1]  * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith60Samples  = (int)Math.Round(accumulationCurve[60 - 1]  * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith90Samples  = (int)Math.Round(accumulationCurve[90 - 1]  * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[120 - 1] * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[180 - 1] * 100 / (double)totalSpeciesCount); 
-            stats.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[240 - 1] * 100 / (double)totalSpeciesCount); 
-
-            return stats;
-        }
 
         public static System.Tuple<List<string>, List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {

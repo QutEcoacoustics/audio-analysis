@@ -173,7 +173,7 @@ namespace TowseyLib
         public static double[] CreateInverseProbabilityDistribution(int length)
         {
             double[] distribution = new double[length];
-            for (int i = 0; i < length; i++) distribution[i] = 1 / (double)(i + 1);
+            for (int i = 0; i < length; i++) distribution[i] = 1 / (double)((i + 1) * (i + 1));
             //double sum = 0;
             //for (int i = 0; i < length; i++) sum += distribution[i];
             //Console.WriteLine("pre-sum = {0:f3}", sum);
@@ -192,7 +192,7 @@ namespace TowseyLib
             return distribution;
         }
 
-        public static Tuple<int[], int[]> RandomSamplingUsingProbabilityDistribution(int distributionlength, int sampleCount)
+        public static Tuple<int[], int[]> RandomSamplingUsingProbabilityDistribution(int distributionlength, int sampleCount, int seed)
         {
             double[] distribution = Statistics.CreateInverseProbabilityDistribution(distributionlength);
             //double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
@@ -209,7 +209,7 @@ namespace TowseyLib
             // int location = DataTools.WhichSideOfCentre(distribution, refValue, lowerIndex, upperIndex);
             // Console.WriteLine("location = " + location);
 
-            int[] samples = DataTools.SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(distribution, sampleCount);
+            int[] samples = DataTools.SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(distribution, sampleCount, seed);
             //for (int i = 0; i < sampleCount; i++) Console.WriteLine("s"+i+ "    " + samples[i]);
             Tuple<int[], int[]> tuple = DataTools.SortArray(samples);
             int[] sortedSamples = tuple.Item2;
