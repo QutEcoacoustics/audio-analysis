@@ -3313,10 +3313,8 @@ namespace TowseyLib
       return centre;
   }
 
-        public static int[] SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(double[] distribution, int sampleCount)
+        public static int[] SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(double[] distribution, int sampleCount, int seed)
         {
-            //int seed = 666;
-            int seed = DateTime.Now.Millisecond;
             RandomNumber generator = new RandomNumber(seed);
 
             // create list to handle non-resplacement of samples
