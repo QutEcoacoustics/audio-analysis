@@ -370,17 +370,18 @@ namespace Dong.Felt
                                                 {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
         // calculate the structure tensor for each point
-        public static List<Tuple<Point, double[,]>> StructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
+        public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
-            var structureTensor = new double[2, 2];
+            
             var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(0));
             var centerOffset = (int)(sizeOfGaussianBlur/2);
-            var result = new List<Tuple<Point, double[,]>>();
+            var result = new List<Tuple<PointOfInterest, double[,]>>();
 
             for (int row = 0; row < partialDifferenceX.GetLength(0); row++)
             {
                 for (int col = 0; col < partialDifferenceX.GetLength(1); col++)
                 {
+                    var structureTensor = new double[2, 2];
                     var sumTopLeft = 0.0;
                     var sumDiagonal = 0.0;
                     var sumBottomRight = 0.0;
@@ -410,20 +411,18 @@ namespace Dong.Felt
                         structureTensor[1, 0] = sumDiagonal;
                         structureTensor[1, 1] = sumBottomRight;
 
-                        result.Add(Tuple.Create(new Point(row, col), structureTensor));
+                        result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                 }            
             }           
             return result;
         }
 
-        // Bardeli: calculate the mean of the structure tensor
-        public static List<Tuple<PointOfInterest, double[,]>> MeanOfStructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY, int windowSize)
+        // Bardeli: calculate the structure tensor
+        public static List<Tuple<PointOfInterest, double[,]>> StructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
             var rowMaximumIndex = partialDifferenceX.GetLongLength(0);
             var colMaximumIndex = partialDifferenceX.GetLongLength(1);
-            var centerOffset = (int) (windowSize / 2);
 
-            
             var result = new List<Tuple<PointOfInterest, double[,]>>(); 
 
             for (int row = 0; row < rowMaximumIndex; row++)
@@ -431,41 +430,61 @@ namespace Dong.Felt
                 for (int col = 0; col < colMaximumIndex; col++)
                 {
                     var structureTensor = new double[2, 2];
-                    var sumX = 0.0;
-                    var sumY = 0.0;
 
-                    // calculate the sum of partial difference in a fixed neighborhood
-                    for (int i = -centerOffset; i <= centerOffset; i++)
-                    {
-                        for (int j = -centerOffset; j <= centerOffset; j++)
-                        {
-                            if (partialDifferenceX.PointIntersect(row + i, col + j))
-                            {
-                                sumX = sumX + partialDifferenceX[row + i, col + j];
-                            }
-
-                            if (partialDifferenceY.PointIntersect(row + i, col + j))
-                            {
-                                sumY = sumY + partialDifferenceY[row + i, col + j];
-                            }
-                        }
-                    }
-
-                    // calculate the mean of paritial difference with the current point as centeroid.
-                    // if the current point is out of range, its value is regarded zero.
-                    // So when calculate the average, the sum still needs to be divided by windowSize * windowSize
-                    var averageX = sumX / Math.Pow(windowSize, 2);
-                    var averageY = sumY / Math.Pow(windowSize, 2);
-
-                    structureTensor[0, 0] = Math.Pow(averageX, 2);
-                    structureTensor[0, 1] = averageX * averageY;
-                    structureTensor[1, 0] = averageX * averageY;
-                    structureTensor[1, 1] = Math.Pow(averageY, 2);
+                    structureTensor[0, 0] = Math.Pow(partialDifferenceX[row, col], 2);
+                    structureTensor[0, 1] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
+                    structureTensor[1, 0] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
+                    structureTensor[1, 1] = Math.Pow(partialDifferenceY[row, col], 2);
 
                     result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                 }
             }
 
+            return result;
+        }
+
+        // Bardeli: calculate the mean of the structure tensor
+        public static List<Tuple<PointOfInterest, double[,]>> MeanOfStructureTensor(List<Tuple<PointOfInterest, double[,]>> structureTensor, int windowSize)
+        {
+            var LengthOfStructureTensor = structureTensor.Count;
+            var rowMaximumIndex = structureTensor[LengthOfStructureTensor - 1].Item1.Point.X;
+            var colMaximumIndex = structureTensor[LengthOfStructureTensor - 1].Item1.Point.Y;
+
+            var centerOffset = (int)windowSize / 2;
+            var result = new List<Tuple<PointOfInterest, double[,]>>();
+
+            foreach (var st in structureTensor)
+            {
+                var newSt = new double[2, 2];
+                var sumStX = 0.0;
+                var sumStDiagonal = 0.0;
+                var sumStY = 0.0;
+                for (int i = -centerOffset; i <= centerOffset; i++)
+                {
+                    for (int j = -centerOffset; j <= centerOffset; j++)
+                    {
+                        var xRange = st.Item1.Point.X + i;
+                        var yRange = st.Item1.Point.Y + j;
+
+                        if (xRange >= 0 && xRange <= rowMaximumIndex && yRange >= 0 && yRange <= colMaximumIndex)
+                        {
+                            sumStX = sumStX + st.Item2[0, 0];
+                            sumStX = sumStX + st.Item2[1, 1];
+                            sumStDiagonal = st.Item2[0, 1];
+                        }
+                    }
+                }
+                var averageStX = sumStX / Math.Pow(windowSize, 2);
+                var averageStDiagonal = sumStDiagonal / Math.Pow(windowSize, 2);
+                var averageStY = sumStY / Math.Pow(windowSize, 2);
+
+                newSt[0, 0] = Math.Pow(averageStX, 2);
+                newSt[0, 1] = averageStDiagonal;
+                newSt[1, 0] = averageStDiagonal;
+                newSt[1, 1] = Math.Pow(averageStY, 2);
+
+                result.Add(Tuple.Create(new PointOfInterest(st.Item1.Point), newSt));
+            }
             return result;
         }
 
@@ -542,7 +561,8 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.96;  //  a fixed parameterl
+            var p = 0.03;  
+            //var p = 0.96;  //  a fixed parameterl
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -602,10 +622,7 @@ namespace Dong.Felt
 
             // each distinct part with 1000 columns has a threshold 
             var threshold = new double[maxIndexOfPart];
-            
-            // keep a list of attention and tempfor calculating threshold
-            var tempAttention = new List<Tuple<PointOfInterest, double>>();
-            
+                    
             var result = new List<PointOfInterest>();
 
             // calculate the threshold for each distinct part
@@ -613,9 +630,12 @@ namespace Dong.Felt
             {
                 // first, it is required to divided the original data into several parts with the width of 1000 colomn
                 // for each part, it will have a distinct threshold
+                // keep a list of attention and tempfor calculating threshold
+                var tempAttention = new List<Tuple<PointOfInterest, double>>();
+
                 if (numberOfColumn >= numberOfIncludedBins * (i + 1))
                 {
-                    
+               
                     // var tempAttention = new List<Tuple<Point, double>>();
                     foreach (var a in attention)
                     {
@@ -624,12 +644,11 @@ namespace Dong.Felt
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    //threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention);
 
                     foreach (var ev in tempAttention)
                     {
-                        //if (ev.Item2 > threshold[i])
-                        if (ev.Item2 > 7.0)
+                        if (ev.Item2 > threshold[i])
                         {
                             result.Add(ev.Item1);
                             ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
@@ -645,12 +664,11 @@ namespace Dong.Felt
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    //threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention);
 
                     foreach (var ev in tempAttention)
                     {
-                        //if (ev.Item2 > threshold[i])
-                        if (ev.Item2 > 7.0)
+                        if (ev.Item2 > threshold[i])
                         {
                             result.Add(ev.Item1);
                             ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
@@ -661,6 +679,7 @@ namespace Dong.Felt
 
             return result; 
         }
+
         /// <summary>
         /// The get absolute template.
         /// </summary>
