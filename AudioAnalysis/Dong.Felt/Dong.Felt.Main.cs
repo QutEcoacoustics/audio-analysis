@@ -15,6 +15,7 @@ namespace Dong.Felt
     using System.IO;
     using System.Reflection;
     using System.Text;
+    using System.Drawing;
     using AnalysisBase;
     using AudioAnalysisTools;
 
@@ -96,14 +97,15 @@ namespace Dong.Felt
             var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
             Log.Info("NoiseReduction");
 
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\TestImage2.png"));
             //var testImage = StructureTensorTest.createNullBitmap();
-            //var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
 
             // Calculate the structure tensor
-            var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
+            var partialDifference = PoiAnalysis.PartialDifference(testMatrix);
             Log.Info("partialDifference");
 
-            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur,partialDifference.Item1, partialDifference.Item2);
+            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
             Log.Info("GaussianStructureTensor");
 
             //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
@@ -120,11 +122,23 @@ namespace Dong.Felt
             var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
             Log.Info("extractPointsOfInterest");
 
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(pointsOfInterst);
-            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest10.png");
-            Log.Info("Show the result of PointsOfInterest");
+            foreach (var poi in pointsOfInterst)
+            {
+                testImage.SetPixel(poi.Point.Y, poi.Point.X, Color.Crimson);
+            }
+
+            testImage.Save(@"C:\Test recordings\Crows\TestImage4.png");
+
+            //var imageResult = new Image_MultiTrack((Image)testImage);
+            //imageResult.AddPoints(pointsOfInterst);
+            //imageResult.Save(@"C:\Test recordings\Crows\TestImage3.png");
+            Log.Info("Show the image result");
+
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult.AddPoints(pointsOfInterst);
+            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest13.png");
+            //Log.Info("Show the result of PointsOfInterest");
 
             //// Find the local Maxima
             //const int NeibourhoodWindowSize = 7;

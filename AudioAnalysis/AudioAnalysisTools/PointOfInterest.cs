@@ -98,11 +98,19 @@ namespace AudioAnalysisTools
         /// <param name="height">
         /// The maximum height of the draw surface.
         /// </param>
-        public void DrawPoint(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
+        public void DrawCircle(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
                 graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 4, 4);
+            }
+        }
+
+        public void DrawPoint(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
+        {
+            foreach (PointOfInterest poi in pointsOfInterest)
+            {
+                graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 2, 2);
             }
         }
 
