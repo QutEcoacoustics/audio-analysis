@@ -334,28 +334,16 @@ namespace Dong.Felt
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
 
-            for (int row = 0; row < MaximumXIndex; row++)
+            // trying to filter out points with zero value 
+            for (int row = 0; row < MaximumXIndex - 1; row++)
             {
-                for (int col = 0; col < MaximumYIndex; col++)
+                for (int col = 0; col < MaximumYIndex - 1; col++)
                 {
-                    if (m.PointIntersect(row + 1, col))
-                    {
-                        partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];
-                    }
-                    else
-                    {
-                        partialDifferenceX[row, col] = 0.0;
-                    }
-                    if (m.PointIntersect(row, col + 1))
-                    {
-                        partialDifferenceY[row, col] = m[row, col + 1] - m[row, col];
-                    }
-                    else
-                    {
-                        partialDifferenceY[row, col] = 0.0;
-                    }
-                 }      
+                    partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];                  
+                    partialDifferenceY[row, col] = m[row, col + 1] - m[row, col];
+                }      
             }
+            //PointF
             var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
             return result;
         } 
@@ -413,7 +401,8 @@ namespace Dong.Felt
 
                         result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                 }            
-            }           
+            } 
+          
             return result;
         }
 
@@ -561,7 +550,7 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.03;  
+            var p = 0.5;  
             //var p = 0.96;  //  a fixed parameterl
             var l = 0;
 
