@@ -77,6 +77,8 @@ namespace AudioAnalysisTools
         /// </summary>
         public double Intensity { get; set; }
 
+
+
         /// <summary>
         /// Gets or sets the point.
         /// </summary>
@@ -110,7 +112,8 @@ namespace AudioAnalysisTools
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
-                graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 2, 2);
+                graphics.DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1,1);
+                //graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 2, 2);
             }
         }
 
