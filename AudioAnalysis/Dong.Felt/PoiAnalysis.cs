@@ -325,6 +325,32 @@ namespace Dong.Felt
             return result;
         }
 
+        //public static List<PointOfInterest> FilterPoints(double[,] m)
+        //{
+        //    int MaximumXIndex = m.GetLength(0);
+        //    int MaximumYIndex = m.GetLength(1);
+        //    var result = new List<PointOfInterest>();
+
+        //    for (int row = 0; row < MaximumXIndex - 1; row++)
+        //    {
+        //        for (int col = 0; col < MaximumYIndex - 1; col++)
+        //        {
+        //            var rightPosition = m[row + 1, col];
+        //            var bottomPostion = m[row, col + 1];
+        //            var current = m[row, col];
+        //            var p1 = (current != 0.0);
+        //            //var p2 = (rightPosition != 0.0);
+        //            //var p3 = (bottomPostion != 0.0);
+        //            if (p1)
+        //            //if (p1 && p2 && p3)
+        //            {
+        //                result.Add(new PointOfInterest(new Point(row, col)) { Intensity = m[row, col] });
+        //            }
+        //        }
+        //    }
+        //    return result;
+        //}
+
         //  Calculate the difference between current pixel and its neighborhood pixel
         public static Tuple<double[,], double[,]> PartialDifference(double[,] m)
         {
@@ -333,20 +359,44 @@ namespace Dong.Felt
 
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
-
-            // trying to filter out points with zero value 
+              
             for (int row = 0; row < MaximumXIndex - 1; row++)
             {
                 for (int col = 0; col < MaximumYIndex - 1; col++)
                 {
-                    partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];                  
+                    partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];
                     partialDifferenceY[row, col] = m[row, col + 1] - m[row, col];
-                }      
+                }
             }
             //PointF
             var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
             return result;
         } 
+
+        ////  Calculate the difference between current pixel and its neighborhood pixel
+        //public static Tuple<double[,], double[,]> PartialDifference(double[,] m, List<PointOfInterest> nonZeroIntensityPoints)
+        //{
+        //    var numberOfVertex = nonZeroIntensityPoints.Count;
+        //    int MaximumXIndex = nonZeroIntensityPoints[numberOfVertex - 1].Point.X;
+        //    int MaximumYIndex = nonZeroIntensityPoints[numberOfVertex - 1].Point.Y;
+
+        //    var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
+        //    var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
+
+        //    foreach (var nP in nonZeroIntensityPoints)
+        //    {
+        //        var current = m[nP.Point.X, nP.Point.Y];
+        //        var right = m[nP.Point.X + 1, nP.Point.Y];
+        //        var above = m[nP.Point.X, nP.Point.Y + 1];
+
+        //        partialDifferenceX[nP.Point.X, nP.Point.Y] = current - current;
+        //        partialDifferenceY[nP.Point.X, nP.Point.Y] = above - current; 
+        //    }
+            
+        //    //PointF
+        //    var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
+        //    return result;
+        //} 
         
         // A 7 * 7 gaussian blur
         public static double[,] gaussianBlur = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
@@ -374,32 +424,35 @@ namespace Dong.Felt
                     var sumDiagonal = 0.0;
                     var sumBottomRight = 0.0;
 
+                    // Filter out points whose difference is zero in a fixed direction
+
+
                     // check whether the current point can be in the center of gaussian blur 
                     for (int i = -centerOffset; i <= centerOffset; i++)
-                        {
-                            for (int j = -centerOffset; j <= centerOffset; j++)
-                            {
-                                // check whether it's in the range of partialDifferenceX
-                                if (partialDifferenceX.PointIntersect(row + j, col - i))
-                                {
-                                    sumTopLeft = sumTopLeft + gaussianBlur[i + centerOffset, j + centerOffset] * Math.Pow(partialDifferenceX[row + j, col - i], 2);
-                                }
+                    {
+                         for (int j = -centerOffset; j <= centerOffset; j++)
+                         {
+                              // check whether it's in the range of partialDifferenceX
+                              if (partialDifferenceX.PointIntersect(row + j, col - i))
+                              {
+                                  sumTopLeft = sumTopLeft + gaussianBlur[i + centerOffset, j + centerOffset] * Math.Pow(partialDifferenceX[row + j, col - i], 2);
+                              }
                                 
-                                // check whether it's in the range of partialDifferenceX
-                                if (partialDifferenceY.PointIntersect(row + j, col - i))
-                                {
+                              // check whether it's in the range of partialDifferenceX
+                              if (partialDifferenceY.PointIntersect(row + j, col - i))
+                              {
                                     sumDiagonal = sumDiagonal + gaussianBlur[i + centerOffset, j + centerOffset] * partialDifferenceX[row + j, col - i] * partialDifferenceY[row + j, col - i];
                                     sumBottomRight = sumBottomRight + gaussianBlur[i + centerOffset, j + centerOffset] * Math.Pow(partialDifferenceY[row + j, col - i], 2);
-                                }
-                            }
-                        }
+                              }
+                         }
+                    }
 
-                        structureTensor[0, 0] = sumTopLeft;
-                        structureTensor[0, 1] = sumDiagonal;
-                        structureTensor[1, 0] = sumDiagonal;
-                        structureTensor[1, 1] = sumBottomRight;
+                    structureTensor[0, 0] = sumTopLeft;
+                    structureTensor[0, 1] = sumDiagonal;
+                    structureTensor[1, 0] = sumDiagonal;
+                    structureTensor[1, 1] = sumBottomRight;
 
-                        result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
+                    result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                 }            
             } 
           
@@ -500,15 +553,19 @@ namespace Dong.Felt
             foreach (var ev in eigenValue)
             {
                 // by default, the eigenvalue is in a ascend order, so just check whether they are equal
-                if (ev.Item2[0] == ev.Item2[1])
+                if (ev.Item2[1] > 0.0)
                 {
-                    ev.Item2[1] = 0.0;
                     result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
                 }
-                else
-                {
-                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
-                }           
+                //if (ev.Item2[0] == ev.Item2[1])
+                //{
+                //    ev.Item2[1] = 0.0;
+                //    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
+                //}
+                //else
+                //{
+                //    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
+                //}           
             }
 
             return result;
@@ -550,8 +607,7 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.5;  
-            //var p = 0.96;  //  a fixed parameterl
+            var p = 0.001;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
