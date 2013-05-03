@@ -400,11 +400,11 @@ namespace TowseyLib
         {
             if (dt == null) return null;
             List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
-            List<double[]> newList = new List<double[]>(); 
+            List<double[]> newColumns = new List<double[]>(); 
             for (int i = 0; i < columns.Count; i++)
             {
                 double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
-                newList.Add(processedColumn);
+                newColumns.Add(processedColumn);
             }
             string[] headers = DataTableTools.GetColumnNames(dt);
             Type[] types = DataTableTools.GetColumnTypes(dt);
@@ -414,8 +414,41 @@ namespace TowseyLib
                 else
                 if (types[i] == typeof(Int32)) types[i] = typeof(double);
             }
-            var processedtable = DataTableTools.CreateTable(headers, types, newList);
+            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
             return processedtable;
+        }
+        /// <summary>
+        /// normalises the column values in a data table to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable NormaliseColumnValues(DataTable dt, double[] minValue, double[] maxValue)
+        {
+            if (dt == null) return null;
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
+            List<double[]> newColumns = NormaliseColumnValues(columns, minValue, maxValue);
+            Type[] types = DataTableTools.GetColumnTypes(dt);
+            for (int i = 0; i < columns.Count; i++) types[i] = typeof(double);
+            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
+            return processedtable;
+        }
+
+        /// <summary>
+        /// normalises the column values in a data table to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static List<double[]> NormaliseColumnValues(List<double[]> columns, double[] minValue, double[] maxValue)
+        {
+            if ((columns == null) || (columns.Count == 0)) return null;
+            List<double[]> newColumns = new List<double[]>();
+            for (int i = 0; i < columns.Count; i++)
+            {
+                double[] processedColumn = DataTools.NormaliseInZeroOne(columns[i], minValue[i], maxValue[i]); //normalise all values in [0,1]
+                newColumns.Add(processedColumn);
+            }
+            return newColumns;
         }
 
 

@@ -120,10 +120,9 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("avg %  \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", av10, av30, av60, av90, av120, av180, av240);
             LoggedConsole.WriteLine("stdev %\t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", sd10, sd30, sd60, sd90, sd120, sd180, sd240);
         }
+    } // class SpeciesAccumulationStats
 
 
-
-    }
 
     class SpeciesAccumulationCurve
     {
@@ -631,34 +630,35 @@ namespace AnalysisPrograms
             // FEATURE SET 16..... 1 feature # clusters 
             //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.47, 0.0, 0.0, 0.0, 0.0, 0.00, -0.023 }; // 21 indices
 
+            // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
-            //                 { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
-            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0, -9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
-            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.0, 0.2, 0.2, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+            //                   { 0.1,  0.2,  0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2 }; // 21 indices
+            double[] weights =   { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+            //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0,-9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
+            //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.0, 0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
 
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
-            //double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
+            //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
 
-
+            //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7, 1.8, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
+            double[] minValues = { 0.0,-50.0,  3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.2,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             int wtCount = weights.Length;
             var table = CsvTools.ReadCSVToTable(fileName, true);
+            var columns1 = DataTableTools.ListOfColumnValues(table);
+            //table = DataTableTools.NormaliseColumnValues(table, minValues, maxValues);
+            var columns2 = DataTableTools.NormaliseColumnValues(columns1, minValues, maxValues);
             int rowCount = table.Rows.Count;
             double[] combined = new double[rowCount];
 
             int count = 0;
-            foreach (DataRow row in table.Rows)
+            for (int r = 0; r<rowCount; r++)
             {
-                //string strValue1 = row[16].ToString();
-                //double value1 = Double.Parse(strValue1);
-                //if (value1 > 1.0) Console.WriteLine(value1);
                 double weightedSum = 0.0;
-                for (int i = 0; i < weights.Length; i++)
+                for (int c = 0; c < weights.Length; c++)
                 {
-                    //double value1 = row[i + 1].
-                    string strValue = row[i + 1].ToString();
-                    double value = Double.Parse(strValue);
-                    weightedSum += (weights[i] * value);
+                    weightedSum += (weights[c] * columns2[c][r]);
                 }
                 combined[count] = weightedSum + weights[wtCount-1]; //  *chorusBias[count] * bgBias[count]
                 count++;
