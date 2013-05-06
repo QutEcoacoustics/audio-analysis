@@ -21,6 +21,8 @@ namespace Dong.Felt
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
 
+    public enum FeatureType { NONE, LOCALMAXIMA, STRUCTURE_TENSOR}
+    
     /// <summary>
     /// The acoustic event detection.
     /// </summary>
@@ -90,6 +92,46 @@ namespace Dong.Felt
             }
         }
 
+        public static List<PointOfInterest> ExactPointsOfInterest(double[,] matrix, FeatureType ft)
+        {
+            var result = new List<PointOfInterest>();
+            if (ft == FeatureType.LOCALMAXIMA)
+            {
+                // Find the local Maxima
+                const int NeibourhoodWindowSize = 7;
+                var localMaxima = PickLocalMaximum(matrix, NeibourhoodWindowSize);
+                result = localMaxima;          
+            }
+            else if (ft == FeatureType.STRUCTURE_TENSOR)
+            {
+
+            }
+
+            return result;
+        }
+         
+        public static List<PointOfInterest> HitPointsOfInterest(List<PointOfInterest> pointsofInterest)
+        {
+            var result = new List<PointOfInterest>();
+
+            // Filter out points
+            const int AmplitudeThreshold = 10;
+            var filterOutPoints = PoiAnalysis.FilterOutPoints(pointsofInterest, AmplitudeThreshold); // pink noise model threshold                
+
+            // Remove points which are too close
+            const int DistanceThreshold = 7;
+            var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+
+            // Calculate the distance between poi and points in the template
+            var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(17), finalPois);
+
+            // Get the metched anchor point (centroid)
+            const double AvgDistanceScoreThreshold = 5;
+            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
+
+            return result = matchedPoi;
+        }
+
         /// <summary>
         /// Pick the local maxima in a neighborhood,which means the maxima has an intensity peak.
         /// </summary>
@@ -102,11 +144,11 @@ namespace Dong.Felt
         /// <returns>
         /// return a list of PointOfInterest.
         /// </returns>
-        public static List<PointOfInterest> PickLocalMaximum(double[,] m, int neighborWindowSize)
+        public static List<PointOfInterest> PickLocalMaximum(double[,] m, int WindowSize)
         {
-            Contract.Requires(neighborWindowSize % 2 == 1, "Neighbourhood window size must be odd");
-            Contract.Requires(neighborWindowSize >= 1, "Neighbourhood window size must be at least 1");
-            int centerOffset = -(int)(neighborWindowSize / 2.0);
+            Contract.Requires(WindowSize % 2 == 1, "Neighbourhood window size must be odd");
+            Contract.Requires(WindowSize >= 1, "Neighbourhood window size must be at least 1");
+            int centerOffset = -(int)(WindowSize / 2.0);
             var results = new List<PointOfInterest>();
 
             // scan the whole matrix, if want to scan a fixed part of matrix, the range of row and col might be changed.
