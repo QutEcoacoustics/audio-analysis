@@ -83,19 +83,41 @@ namespace Dong.Felt
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             // }
 
-            // Writing my code here
-            // get wav.file path
-            string wavFilePath = analysisSettings.SourceFile.FullName; 
-                
-            // Read the .wav file
-            AudioRecording audioRecording;
-            var spectrogram = PoiAnalysis.AudioToSpectrogram(wavFilePath, out audioRecording);
-            Log.Info("AudioToSpectrogram");
+            string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
+            
+            foreach (string path in Files)
+            {
+                // Writing my code here
+                if (!File.Exists(path))
+                {
+                    throw new Exception("Can't find this recording file path: " + path);
+                }
 
-            // Do the noise removal
-            const int BackgroundThreshold = 5;
-            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            Log.Info("NoiseReduction");
+                //// get wav.file path
+                //string wavFilePath = analysisSettings.SourceFile.FullName;
+
+                // Read the .wav file
+                AudioRecording audioRecording;
+                var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
+                Log.Info("AudioToSpectrogram");
+
+                // Do the noise removal
+                const int BackgroundThreshold = 5;
+                var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold);
+                //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+                Log.Info("NoiseReduction");
+
+                var pointsOfinterest = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.LOCALMAXIMA);
+                var hitPoints = PoiAnalysis.HitPointsOfInterest(pointsOfinterest);
+                var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+
+                imageResult.AddPoints(pointsOfinterest);
+                imageResult.AddPoints(hitPoints);
+                imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+                
+                imageResult.Save(path + ".png");
+                Log.Info("Show the result of Final PointsOfInterest");
+            }
 
             //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\TestImage2.png"));
             ////var testImage = StructureTensorTest.createNullBitmap();
@@ -105,11 +127,12 @@ namespace Dong.Felt
             //var nonZeroMatrix = PoiAnalysis.FilterPoints(testMatrix);
             // Calculate the structure tensor
             //var partialDifference = PoiAnalysis.PartialDifference(testMatrix, nonZeroMatrix);
-            var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
-            Log.Info("partialDifference");
+            
+            //var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
+            //Log.Info("partialDifference");
 
-            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
-            Log.Info("GaussianStructureTensor");
+            //var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("GaussianStructureTensor");
 
             //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
             //Log.Info("StructureTensor");
@@ -117,13 +140,13 @@ namespace Dong.Felt
             //var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(structureTensor, 5);
             //Log.Info("meanStructureTensor");
 
-            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
-            Log.Info("eigenValueDecomposition");
-            var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
-            Log.Info("getAttention");
+            //var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
+            //Log.Info("eigenValueDecomposition");
+            //var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
+            //Log.Info("getAttention");
 
-            var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
-            Log.Info("extractPointsOfInterest");
+            //var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
+            //Log.Info("extractPointsOfInterest");
 
             //foreach (var poi in pointsOfInterst)
             //{
@@ -137,48 +160,6 @@ namespace Dong.Felt
             //imageResult.Save(@"C:\Test recordings\Crows\pointsOfInterest15.png");
             //Log.Info("Show the image result");
 
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(pointsOfInterst);
-            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\Crows\PointsOfInterest15.png");
-            Log.Info("Show the result of PointsOfInterest");
-
-            //// Find the local Maxima
-            //const int NeibourhoodWindowSize = 7;
-            //var localMaxima = PoiAnalysis.PickLocalMaximum(noiseReduction, NeibourhoodWindowSize);
-            //Log.Info("LocalMaxima");
-
-            //// Filter out points
-            //const int AmplitudeThreshold = 10;
-            //var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold
-            //Log.Info("FilterOutPoints");
-
-            //// Remove points which are too close
-            //const int DistanceThreshold = 7;
-            //var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
-            //Log.Info("RemoveClosePoints");           
-
-            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult.AddPoints(filterOutPoints);
-            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult.Save(@"C:\Test recordings\Crows\localMaxima7-filterOutPoints10-finalPois7.png");
-            //Log.Info("Show the result of FinalPoints");
-
-            //// Calculate the distance between poi and points in the template
-            //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(NumberOfTemplatePoints), finalPois);
-
-            //// Get the metched anchor point (centroid)
-            //const int AvgDistanceScoreThreshold = 6;
-            //var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
-
-            //// Get the absolute template for each matchedPoi
-            //var templatePoints = PoiAnalysis.GetAbsoluteTemplate2(matchedPoi);
-            
-            // Draw circle on different types of points 
-            
-            // .addPoints( templatePoints);
-            // imageResult.AddPoints(templatePoints);
-            // imageResult.AddPoints(matchedPoi);
             // addEvents(templateBoundingBoxes); 
             
             var result = new AnalysisResult();
@@ -238,18 +219,20 @@ namespace Dong.Felt
         /// </param>
         public static void Dev(string[] arguments)
         {
-            const string TempFile = @"C:\Test recordings\Crows\DM420036_min430Crows-1minute.wav";
-
+            
+            const string TempDirectory = @"C:\Test recordings\Test";
+            
             arguments = new string[2];
             arguments[0] = "-input";
-            arguments[1] = TempFile;
+            arguments[1] = TempDirectory;
 
-            // if (arguments.Length == 0)
-            // {
-            //    var testDirectory = @"C:\XUEYAN\targetDirectory";
-            //    string testConfig = @"C:\XUEYAN\config.yml";
-            //    arguments = new[] { testConfig, testDirectory };
-            // }
+            if (arguments.Length == 0)
+            {
+                var testDirectory = @"C:\XUEYAN\targetDirectory";
+                string testConfig = @"C:\XUEYAN\config.yml";
+                arguments = new[] { testConfig, testDirectory };
+            }
+
             string date = "# Date and Time:" + DateTime.Now;
             Log.Info("Read the wav. file path");
             Log.Info(date);
@@ -287,9 +270,9 @@ namespace Dong.Felt
 
             // get the file path from arguments
             string recordingPath = arguments[1];
-            if (!File.Exists(recordingPath))
+            if (!Directory.Exists(recordingPath))
             {
-                throw new Exception("Can't find this recordingfile path: "  + recordingPath);
+                throw new Exception("Can't find this recording file path: "  + recordingPath);
             }
 
             analysisSettings.SourceFile = new FileInfo(recordingPath);
