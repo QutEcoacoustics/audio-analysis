@@ -97,41 +97,66 @@ namespace Dong.Felt
             var result = new List<PointOfInterest>();
             if (ft == FeatureType.LOCALMAXIMA)
             {
-                // Find the local Maxima
-                const int NeibourhoodWindowSize = 7;
-                var localMaxima = PickLocalMaximum(matrix, NeibourhoodWindowSize);
-                result = localMaxima;          
+                result = HitLocalMaxima(matrix);          
             }
             else if (ft == FeatureType.STRUCTURE_TENSOR)
             {
-
+                result = HitStructureTensor(matrix);
             }
 
             return result;
         }
          
-        public static List<PointOfInterest> HitPointsOfInterest(List<PointOfInterest> pointsofInterest)
+        public static List<PointOfInterest> HitLocalMaxima(double[,] matrix)
         {
             var result = new List<PointOfInterest>();
 
+            // Find the local Maxima
+            const int NeibourhoodWindowSize = 7;
+            var localMaxima = PickLocalMaximum(matrix, NeibourhoodWindowSize);
+
             // Filter out points
             const int AmplitudeThreshold = 10;
-            var filterOutPoints = PoiAnalysis.FilterOutPoints(pointsofInterest, AmplitudeThreshold); // pink noise model threshold                
+            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
 
             // Remove points which are too close
             const int DistanceThreshold = 7;
             var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
 
-            // Calculate the distance between poi and points in the template
-            var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(17), finalPois);
+            //// Calculate the distance between poi and points in the template
+            //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(17), finalPois);
 
-            // Get the metched anchor point (centroid)
-            const double AvgDistanceScoreThreshold = 5;
-            var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
+            //// Get the metched anchor point (centroid)
+            //const double AvgDistanceScoreThreshold = 5;
+            //var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
 
-            return result = matchedPoi;
+            //return result = matchedPoi;
+            return result = finalPois;
         }
 
+        public static List<PointOfInterest> HitStructureTensor(double[,] matrix)
+        {
+            var result = new List<PointOfInterest>();
+
+            var partialDifference = PoiAnalysis.PartialDifference(matrix);
+
+            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
+
+            /// weights are all equal to 1
+            //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("StructureTensor");
+
+            //var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(structureTensor, 5);
+            //Log.Info("meanStructureTensor");
+
+            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
+           
+            var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);          
+
+            var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
+           
+            return result = pointsOfInterst; 
+        }
         /// <summary>
         /// Pick the local maxima in a neighborhood,which means the maxima has an intensity peak.
         /// </summary>
@@ -791,6 +816,7 @@ namespace Dong.Felt
             for (int index = 0; index < numberOfVertexes; index++)
             {
                 var temp = result[index];
+
                 temp.X += relativeFrame;
                 temp.Y += relativeFrequency;
                 result[index] = temp;
@@ -799,34 +825,34 @@ namespace Dong.Felt
             return result;
         }
 
-        /// <summary>
-        /// The get absolute template.
-        /// </summary>
-        /// <param name="matchedPoi">
-        /// The matched Poi.
-        /// </param>
-        /// <returns>
-        /// The list of Points represent the absoluteTemplate.
-        /// </returns>
-        public static List<PointOfInterest> GetAbsoluteTemplate2(List<PointOfInterest> matchedPoi)
-        {
-            var result = new List<PointOfInterest>();
-            foreach (var poi in matchedPoi)
-            {
-                var tempPoints = GetAbsoluteTemplate(poi.Point, TemplateTools.LewinsRailTemplate(18));
-                foreach (var tpoint in tempPoints)
-                {
-                    result.Add(new PointOfInterest(tpoint));
-                }
-            }
+        ///// <summary>
+        ///// The get absolute template.
+        ///// </summary>
+        ///// <param name="matchedPoi">
+        ///// The matched Poi.
+        ///// </param>
+        ///// <returns>
+        ///// The list of Points represent the absoluteTemplate.
+        ///// </returns>
+        //public static List<PointOfInterest> GetAbsoluteTemplate2(List<PointOfInterest> matchedPoi)
+        //{
+        //    var result = new List<PointOfInterest>();
+        //    foreach (var poi in matchedPoi)
+        //    {
+        //        var tempPoints = GetAbsoluteTemplate(poi.Point, TemplateTools.LewinsRailTemplate(18));
+        //        foreach (var tpoint in tempPoints)
+        //        {
+        //            result.Add(new PointOfInterest(tpoint));
+        //        }
+        //    }
 
-            foreach (PointOfInterest t in result)
-            {
-                t.DrawColor = PointOfInterest.TemplateColor;
-            }
+        //    foreach (PointOfInterest t in result)
+        //    {
+        //        t.DrawColor = PointOfInterest.TemplateColor;
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
         /// <summary>
         /// The euclidean distance.
