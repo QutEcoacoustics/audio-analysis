@@ -86,7 +86,13 @@ namespace TowseyLib
 
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="start"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static int[] Subarray(int[] A, int start, int length)
         {
             int end = start + length - 1;
@@ -103,6 +109,13 @@ namespace TowseyLib
             }
             return sa;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="start"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static double[] Subarray(double[] A, int start, int length)
         {
             int end = start + length - 1;

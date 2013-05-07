@@ -52,10 +52,21 @@ namespace AnalysisPrograms
 
         public static void Dev(string[] args)
         {
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            string configPath = @"C:\SensorNetworks\Output\AcousticIndices\Indices.cfg";
-            string outputDir = @"C:\SensorNetworks\Output\AcousticIndices\";
-            string csvPath = @"C:\SensorNetworks\Output\AcousticIndices\AcousticIndices.csv";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
+            //string configPath = @"C:\SensorNetworks\Output\AcousticIndices\Indices.cfg";
+            //string outputDir = @"C:\SensorNetworks\Output\AcousticIndices\";
+            //string csvPath = @"C:\SensorNetworks\Output\AcousticIndices\AcousticIndices.csv";
+
+            string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+            string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
+            string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
+            string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic.Indices.csv";
+
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
+            //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
+            //string outputDir = @"C:\SensorNetworks\Output\Crow\";
+            //string csvPath = @"C:\SensorNetworks\Output\Crow\Towsey.Acoustic.Indices.csv";
+
 
             string title = "# FOR EXTRACTION OF Acoustic Indices";
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -77,7 +88,7 @@ namespace AnalysisPrograms
             var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
             var cmdLineArgs = new List<string>();
-            if (false)
+            if (true) // task_ANALYSE
             {
                 cmdLineArgs.Add(task_ANALYSE);
                 cmdLineArgs.Add(recordingPath);
@@ -88,7 +99,7 @@ namespace AnalysisPrograms
                 cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
                 cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
             }
-            if (true)
+            if (false) // task_LOAD_CSV
             {
                 //string indicesImagePath = "some path or another";
                 cmdLineArgs.Add(task_LOAD_CSV);
@@ -234,12 +245,16 @@ namespace AnalysisPrograms
                 return analysisResults; // nothing to process 
             }
 
-            analysisResults.Data = results.Item1;
+            AcousticFeatures.Features indices = results.Item1;
+            DataTable dt = AcousticFeatures.Indices2DataTable(indices);
+            analysisResults.Data = dt;
             analysisResults.AudioDuration = results.Item2;
             var sonogram = results.Item3;
             var hits = results.Item4;
             var plots = results.Item5;
             var tracks = results.Item6;
+
+            // WRITE INDICES TO BINARY FILE HERE
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
