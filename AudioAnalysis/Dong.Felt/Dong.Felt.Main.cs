@@ -107,13 +107,13 @@ namespace Dong.Felt
                 //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
                 Log.Info("NoiseReduction");
 
-                var pointsOfinterest = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.LOCALMAXIMA);
-                var hitPoints = PoiAnalysis.HitPointsOfInterest(pointsOfinterest);
-                var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+                //var pointsOfinterest = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.LOCALMAXIMA);              
+                var hitPoints = TemplateTools.LewinsRailTemplate(17); 
+                var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
 
-                imageResult.AddPoints(pointsOfinterest);
+                //imageResult.AddPoints(pointsOfinterest);
                 imageResult.AddPoints(hitPoints);
-                imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+                //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
                 
                 imageResult.Save(path + ".png");
                 Log.Info("Show the result of Final PointsOfInterest");
@@ -127,26 +127,6 @@ namespace Dong.Felt
             //var nonZeroMatrix = PoiAnalysis.FilterPoints(testMatrix);
             // Calculate the structure tensor
             //var partialDifference = PoiAnalysis.PartialDifference(testMatrix, nonZeroMatrix);
-            
-            //var partialDifference = PoiAnalysis.PartialDifference(noiseReduction);
-            //Log.Info("partialDifference");
-
-            //var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("GaussianStructureTensor");
-
-            //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("StructureTensor");
-
-            //var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(structureTensor, 5);
-            //Log.Info("meanStructureTensor");
-
-            //var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
-            //Log.Info("eigenValueDecomposition");
-            //var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);
-            //Log.Info("getAttention");
-
-            //var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
-            //Log.Info("extractPointsOfInterest");
 
             //foreach (var poi in pointsOfInterst)
             //{
@@ -220,7 +200,7 @@ namespace Dong.Felt
         public static void Dev(string[] arguments)
         {
             
-            const string TempDirectory = @"C:\Test recordings\Test";
+            const string TempDirectory = @"C:\Test recordings\Test1";
             
             arguments = new string[2];
             arguments[0] = "-input";
