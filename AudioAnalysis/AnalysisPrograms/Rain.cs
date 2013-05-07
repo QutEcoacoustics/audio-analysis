@@ -566,9 +566,9 @@ namespace AnalysisPrograms
             var midbandSpectrogram = MatrixTools.Submatrix(spectrogram, 0, lowBinBound, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
-            var tuple = AcousticFeatures.CalculateEntropyOfSpectralAvAndVariance(midbandSpectrogram);
-            rainIndices.spectralEntropy = tuple.Item1;
-            //rainIndices.entropyOfVarianceSpectrum = tuple.Item2;
+            var tuple = AcousticFeatures.CalculateSpectralAvAndVariance(midbandSpectrogram);
+            rainIndices.spectralEntropy = DataTools.Entropy_normalised(tuple.Item1); //ENTROPY of spectral averages
+            if (double.IsNaN(rainIndices.spectralEntropy)) rainIndices.spectralEntropy = 1.0;
 
             // iv: CALCULATE Acoustic Complexity Index on the AMPLITUDE SPECTRUM
             var aciArray = AcousticFeatures.AcousticComplexityIndex(midbandSpectrogram);
