@@ -70,9 +70,9 @@ namespace AnalysisPrograms
                     // ########### ANALYSES for INDIVIDUAL CALLS - Called through DEV() or EXCECUTE() ############
 
                     // extracts acoustic indices from one minute segment
-                    // { "acousticIndices", Acoustic.Dev },
+                    { "acousticIndices", Acoustic.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    { "acousticIndices", Acoustic.Execute },
+                    // { "acousticIndices", Acoustic.Execute },
 
                     // IAnalyser - detects canetoad calls as acoustic events
                     // { "canetoad", Canetoad.Dev },

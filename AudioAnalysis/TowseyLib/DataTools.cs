@@ -291,7 +291,12 @@ namespace TowseyLib
             return M;
         }
 
-
+        /// <summary>
+        /// reduces length of the passed vector by combining consecutive values into an average
+        /// </summary>
+        /// <param name="V"></param>
+        /// <param name="factor"></param>
+        /// <returns></returns>
         public static double[] VectorReduceLength(double[] V, int factor)
         {
             int newLength = V.Length / factor;

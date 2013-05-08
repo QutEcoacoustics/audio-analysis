@@ -381,14 +381,14 @@ namespace AnalysisPrograms
             indices.hiFreqCover  = tuple_Cover.Item3;
 
             // vii: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
-            // Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
-            var tuple = CalculateSpectralAvAndVariance(spectrogramData);
+            // Entropy is a measure of ENERGY dispersal, therefore must return power spectrum i.e. square of the amplitude.
+            var tuple = CalculateSpectralAvAndVariance(spectrogramData); // returns the power spectrum
             indices.averageSpectrum = tuple.Item1;
             reducedSpectrum = DataTools.Subarray(tuple.Item1, lowBinBound, reducedLength); // remove low band
             indices.entropyOfAvSpectrum = DataTools.Entropy_normalised(reducedSpectrum);     // ENTROPY of spectral averages
             if (double.IsNaN(indices.entropyOfAvSpectrum)) indices.entropyOfAvSpectrum = 1.0;
 
-            // viii: ENTROPY OF VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
+            // viii: ENTROPY OF VARIANCE SPECTRUM - the spectrogram is a noise reduced amplitude spectrogram
             indices.varianceSpectrum = tuple.Item2;
             reducedSpectrum = DataTools.Subarray(tuple.Item2, lowBinBound, reducedLength); // remove low band
             indices.entropyOfVarianceSpectrum = DataTools.Entropy_normalised(reducedSpectrum);   // ENTROPY of spectral variances
@@ -407,7 +407,7 @@ namespace AnalysisPrograms
 
             // x: Get Spectral tracks
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
-            double threshold = 0.005;
+            double threshold = 0.07;
             TrackInfo trackInfo = GetTrackIndices(midBandSpectrogram, framesPerSecond, binWidth, lowFreqBound, threshold);
             indices.trackDuration_total = trackInfo.totalTrackDuration;
             indices.trackDuration_percent = trackInfo.percentDuration;

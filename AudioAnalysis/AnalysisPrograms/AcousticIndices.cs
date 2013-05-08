@@ -58,9 +58,9 @@ namespace AnalysisPrograms
             //string csvPath = @"C:\SensorNetworks\Output\AcousticIndices\AcousticIndices.csv";
 
             string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-            string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
             string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
-            string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic.Indices.csv";
+            string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
             //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
@@ -222,6 +222,13 @@ namespace AnalysisPrograms
             CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
             //DataTableTools.WriteTable2Console(dt);
 
+            // WRITE INDICES TO FILE HERE
+            //result.bgNoiseSpectrum
+            //result.ACIspectrum
+            //result.averageSpectrum
+            //result.varianceSpectrum
+
+
         } // ExecuteAnalysis()
 
 
@@ -248,13 +255,16 @@ namespace AnalysisPrograms
             AcousticFeatures.Features indices = results.Item1;
             DataTable dt = AcousticFeatures.Indices2DataTable(indices);
             analysisResults.Data = dt;
-            analysisResults.AudioDuration = results.Item2;
+            analysisResults.AudioDuration    = results.Item2;
+            analysisResults.bgNoiseSpectrum  = indices.bgNoiseSpectrum;
+            analysisResults.ACIspectrum      = indices.ACIspectrum;
+            analysisResults.averageSpectrum  = indices.averageSpectrum;
+            analysisResults.varianceSpectrum = indices.varianceSpectrum;
+
             var sonogram = results.Item3;
             var hits = results.Item4;
             var plots = results.Item5;
             var tracks = results.Item6;
-
-            // WRITE INDICES TO BINARY FILE HERE
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
