@@ -478,7 +478,7 @@ namespace Dong.Felt
         public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
             
-            var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(0));
+            var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(1));
             var centerOffset = (int)(sizeOfGaussianBlur/2);
             var result = new List<Tuple<PointOfInterest, double[,]>>();
 
@@ -492,7 +492,6 @@ namespace Dong.Felt
                     var sumBottomRight = 0.0;
 
                     // Filter out points whose difference is zero in a fixed direction
-
 
                     // check whether the current point can be in the center of gaussian blur 
                     for (int i = -centerOffset; i <= centerOffset; i++)
@@ -520,6 +519,7 @@ namespace Dong.Felt
                     structureTensor[1, 1] = sumBottomRight;
 
                     result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
+                    col++;                    
                 }            
             } 
           
@@ -623,16 +623,7 @@ namespace Dong.Felt
                 if (ev.Item2[1] > 0.0)
                 {
                     result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
-                }
-                //if (ev.Item2[0] == ev.Item2[1])
-                //{
-                //    ev.Item2[1] = 0.0;
-                //    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
-                //}
-                //else
-                //{
-                //    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
-                //}           
+                }       
             }
 
             return result;
@@ -674,7 +665,7 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.001;  //  a fixed parameterl Bardeli : 0.96
+            var p = 0.45;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -734,9 +725,22 @@ namespace Dong.Felt
 
             // each distinct part with 1000 columns has a threshold 
             var threshold = new double[maxIndexOfPart];
+
+            // for our data, the threshold is best between 150 - 200
+            //double threshold = 150.0;    
                     
             var result = new List<PointOfInterest>();
 
+            //foreach (var ev in attention)
+            //{
+            //    if (ev.Item2 > threshold)
+            //    {
+            //         result.Add(ev.Item1);
+            //         ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
+            //    }
+            //}
+
+            /// calculate the threshold for each distinct part
             // calculate the threshold for each distinct part
             for (int i = 0; i < maxIndexOfPart; i++)
             {
@@ -747,16 +751,16 @@ namespace Dong.Felt
 
                 if (numberOfColumn >= numberOfIncludedBins * (i + 1))
                 {
-               
+
                     // var tempAttention = new List<Tuple<Point, double>>();
                     foreach (var a in attention)
                     {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X  < (i + 1) * numberOfIncludedBins)
+                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X < (i + 1) * numberOfIncludedBins)
                         {
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    threshold[i] = GetThreshold(tempAttention);
+                   threshold[i] = GetThreshold(tempAttention);
 
                     foreach (var ev in tempAttention)
                     {
@@ -788,7 +792,6 @@ namespace Dong.Felt
                     }
                 }
             }
-
             return result; 
         }
 
