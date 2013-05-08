@@ -85,55 +85,49 @@ namespace Dong.Felt
 
             string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
             
-            foreach (string path in Files)
-            {
-                // Writing my code here
-                if (!File.Exists(path))
-                {
-                    throw new Exception("Can't find this recording file path: " + path);
-                }
-
-                //// get wav.file path
-                //string wavFilePath = analysisSettings.SourceFile.FullName;
-
-                // Read the .wav file
-                AudioRecording audioRecording;
-                var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
-                Log.Info("AudioToSpectrogram");
-
-                // Do the noise removal
-                const int BackgroundThreshold = 5;
-                var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold);
-                //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-                Log.Info("NoiseReduction");
-
-                //var pointsOfinterest = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.LOCALMAXIMA);              
-                var hitPoints = TemplateTools.LewinsRailTemplate(17); 
-                var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
-
-                //imageResult.AddPoints(pointsOfinterest);
-                imageResult.AddPoints(hitPoints);
-                //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-                
-                imageResult.Save(path + ".png");
-                Log.Info("Show the result of Final PointsOfInterest");
-            }
-
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\TestImage2.png"));
-            ////var testImage = StructureTensorTest.createNullBitmap();
-            //var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            //var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
-
-            //var nonZeroMatrix = PoiAnalysis.FilterPoints(testMatrix);
-            // Calculate the structure tensor
-            //var partialDifference = PoiAnalysis.PartialDifference(testMatrix, nonZeroMatrix);
-
-            //foreach (var poi in pointsOfInterst)
+            //foreach (string path in Files)
             //{
-            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //    // Writing my code here
+            //    if (!File.Exists(path))
+            //    {
+            //        throw new Exception("Can't find this recording file path: " + path);
+            //    }
+
+            //    //// get wav.file path
+            //    //string wavFilePath = analysisSettings.SourceFile.FullName;
+
+            //    // Read the .wav file
+            //    //AudioRecording audioRecording;
+            //    //var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
+            //    //Log.Info("AudioToSpectrogram");
+
+            //    //// Do the noise removal
+            //    //const int BackgroundThreshold = 5;
+            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            //    ////var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            //    //Log.Info("NoiseReduction");
+
+            //    var hitPoints = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.STRUCTURE_TENSOR);
+            //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //    imageResult.AddPoints(hitPoints);
+            //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));              
+            //    imageResult.Save(path + ".png");
+            //    Log.Info("Show the result of Final PointsOfInterest");
             //}
 
-            //testImage.Save(@"C:\Test recordings\Crows\TestImage7-p0.45.png");
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2.png"));
+            //var testImage = StructureTensorTest.createNullBitmap();
+            var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
+
+            var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(testMatrix, FeatureType.STRUCTURE_TENSOR);
+
+            foreach (var poi in pointsOfInterest)
+            {
+                testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            }
+
+            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage8-p0.45.png");
 
             //var imageResult = new Image_MultiTrack((Image)testImage);
             //imageResult.AddPoints(pointsOfInterst);

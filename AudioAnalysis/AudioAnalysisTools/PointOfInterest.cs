@@ -112,8 +112,9 @@ namespace AudioAnalysisTools
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
-                graphics.DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1,1);
-                //graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 2, 2);
+                var brush = new SolidBrush(Color.Crimson);
+                graphics.FillRectangle(brush, poi.Point.X, height - poi.Point.Y - 1, 1, 1);
+                //DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1, 1)
             }
         }
 
