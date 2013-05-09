@@ -83,8 +83,12 @@ namespace Dong.Felt
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             // }
 
+            // Read a bunch of recording files  
             string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
-            
+
+            // Read the file 
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2.png"));
+
             //foreach (string path in Files)
             //{
             //    // Writing my code here
@@ -93,41 +97,39 @@ namespace Dong.Felt
             //        throw new Exception("Can't find this recording file path: " + path);
             //    }
 
-            //    //// get wav.file path
-            //    //string wavFilePath = analysisSettings.SourceFile.FullName;
+            //    // get wav.file path
+            //    string wavFilePath = analysisSettings.SourceFile.FullName;
 
-            //    // Read the .wav file
-            //    //AudioRecording audioRecording;
-            //    //var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
-            //    //Log.Info("AudioToSpectrogram");
+            //     //Read the .wav file
+            //    AudioRecording audioRecording;
+            //    var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
+            //    Log.Info("AudioToSpectrogram");
 
-            //    //// Do the noise removal
-            //    //const int BackgroundThreshold = 5;
-            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            //    ////var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            //    //Log.Info("NoiseReduction");
+            //    // Do the noise removal
+            //    const int BackgroundThreshold = 5;
+            //    var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            //    Log.Info("NoiseReduction");
 
             //    var hitPoints = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.STRUCTURE_TENSOR);
             //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
             //    imageResult.AddPoints(hitPoints);
-            //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));              
+            //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
             //    imageResult.Save(path + ".png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
+          
+            //var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            //var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2.png"));
-            //var testImage = StructureTensorTest.createNullBitmap();
-            var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
+            //var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(testMatrix, FeatureType.STRUCTURE_TENSOR);
 
-            var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(testMatrix, FeatureType.STRUCTURE_TENSOR);
+            //foreach (var poi in pointsOfInterest)
+            //{
+            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //}
 
-            foreach (var poi in pointsOfInterest)
-            {
-                testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-            }
-
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage8-p0.45.png");
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage20-p0.25.png");
 
             //var imageResult = new Image_MultiTrack((Image)testImage);
             //imageResult.AddPoints(pointsOfInterst);

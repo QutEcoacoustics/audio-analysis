@@ -29,7 +29,26 @@ namespace Dong.Felt
     public class PoiAnalysis
     {
         private static readonly SonogramConfig StandardConfig = new SonogramConfig();
+        // A 7 * 7 gaussian blur
+        public static double[,] gaussianBlur7 = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
+                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
+                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
+                                                {0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771},
+                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
+                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
+                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
+        
+        public static double[,] gaussianBlur5 = {{0.0000,       0.0000,     0.0002,     0.0000,    0.0000},
+                                                 {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
+                                                 {0.0002,       0.0837,     0.6187,     0.0837,    0.0002},
+                                                 {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
+                                                 {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
+
+        // It has a kernel which is 3 * 3, and all values is equal to 1. 
+        public static GaussianBlur filter = new GaussianBlur(4, 1);
+        
+        //public static GaussianBlur filter1 = new GaussianBlur(4, 3);
         /// <summary>
         /// AudioToSpectrogram transforms an audio to a spectrogram. 
         /// </summary>
@@ -140,7 +159,7 @@ namespace Dong.Felt
 
             var partialDifference = PoiAnalysis.PartialDifference(matrix);
 
-            var structureTensor = PoiAnalysis.GaussianStructureTensor(PoiAnalysis.gaussianBlur, partialDifference.Item1, partialDifference.Item2);
+            var structureTensor = PoiAnalysis.GaussianStructureTensor(filter.Kernel, partialDifference.Item1, partialDifference.Item2);
 
             /// weights are all equal to 1
             //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
@@ -418,11 +437,58 @@ namespace Dong.Felt
         //    return result;
         //}
 
+        // Get the difference of Gaussian according to matlab code
+        public static void GetDifferenceOfGaussian(int maskSize)
+        {
+            
+            var gLeft = new double[maskSize, maskSize + 1];
+            var gRight = new double[maskSize, maskSize + 1];
+
+            var gTop = new double[maskSize + 1, maskSize];
+            var gBottom = new double[maskSize + 1, maskSize];
+
+            for (int i = 0; i < maskSize; i++)
+            {
+                for (int j = 0; j < maskSize; j++)
+                {
+                    gLeft[i,j] = gaussianBlur5[i, j];                 
+                    gTop[i,j] = gaussianBlur5[i,j];                
+                }
+            }
+
+            for (int i = 0; i < maskSize + 1; i++)
+            {
+                for (int j = 0; j < maskSize + 1; j++)
+                {
+                    gRight[i, j + 1] = gaussianBlur5[i, j];
+                    gBottom[i + 1, j] = gaussianBlur5[i, j];
+                }
+            }
+
+            for (int i = 0; i < maskSize; i++)
+            {
+                gLeft[i, maskSize] = 0.0;
+                gRight[i, 0] = 0.0;
+                gTop[maskSize,i] = 0.0;
+                gBottom[0,i] = 0.0;
+            }
+                
+        }
+
+        ////Using Dog to calculate the partialDifference 
+        //public static Tuple<double, double[,]> DoGPartialDifference(double[,] m)
+        //{
+            
+        //}
+
+
         //  Calculate the difference between current pixel and its neighborhood pixel
         public static Tuple<double[,], double[,]> PartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
+            //Convolution filter = new Convolution(filter.Kernel);
+            //filter.ApplyInPlace(m);
 
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
@@ -465,17 +531,9 @@ namespace Dong.Felt
         //    return result;
         //} 
         
-        // A 7 * 7 gaussian blur
-        public static double[,] gaussianBlur = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
-                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
-                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
-                                                {0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771},
-                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
-                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
-                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
         // calculate the structure tensor for each point
-        public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
+        public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(int[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
         {
             
             var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(1));
@@ -519,7 +577,7 @@ namespace Dong.Felt
                     structureTensor[1, 1] = sumBottomRight;
 
                     result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
-                    col++;                    
+                   // col = col + 3;                    
                 }            
             } 
           
@@ -665,7 +723,7 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.45;  //  a fixed parameterl Bardeli : 0.96
+            var p = 0.005;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
