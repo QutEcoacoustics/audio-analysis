@@ -323,6 +323,8 @@
             newSettings.SegmentMinDuration = SegmentMinDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMinDuration.Value.Ticks) : new TimeSpan?();
             newSettings.SegmentMaxDuration = SegmentMaxDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMaxDuration.Value.Ticks) : new TimeSpan?();
 
+            newSettings.StartOfSegment = StartOfSegment.HasValue ? TimeSpan.FromTicks(this.StartOfSegment.Value.Ticks) : new TimeSpan?();
+
             newSettings.SegmentTargetSampleRate = this.SegmentTargetSampleRate;
             newSettings.SampleRateOfOriginalAudioFile = this.SampleRateOfOriginalAudioFile.HasValue ? this.SampleRateOfOriginalAudioFile.Value : new int?();
             newSettings.SegmentMediaType = this.SegmentMediaType;
@@ -332,5 +334,7 @@
 
             return newSettings;
         }
+
+        public TimeSpan? StartOfSegment { get; set; }
     }
 }
