@@ -117,6 +117,7 @@
                         // can't use settings as each iteration modifies settings. This causes hard to track down bugs
                         // instead create a copy of the settings, and use that
                         var settingsForThisItem = settings.ShallowClone();
+                        
                         var result = this.PrepareFileAndRunAnalysis(item, analysis, settingsForThisItem);
                         results[index] = result;
                     });
@@ -200,6 +201,9 @@
             // May need original SR during the analysis, esp if have upsampled from the original SR.
             settings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
             settings.AudioFile = preparedFilePath;
+            
+            // Anthony: added so we knew the time of the segment we are working on (09 May 13)
+            settings.StartOfSegment = start;
 
             //if user requests, save the sonogram files 
             if (settings.ConfigDict.ContainsKey("SAVE_SONOGRAM_FILES"))
