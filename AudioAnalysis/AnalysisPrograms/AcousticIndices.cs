@@ -179,7 +179,8 @@ namespace AnalysisPrograms
             AnalysisSettings analysisSettings = tuple.Item1;
             TimeSpan tsStart = tuple.Item2;
             TimeSpan tsDuration = tuple.Item3;
-
+            analysisSettings.StartOfSegment = tsStart;
+            analysisSettings.SegmentMaxDuration = tsDuration;
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo fiSource = analysisSettings.SourceFile;
@@ -222,13 +223,19 @@ namespace AnalysisPrograms
             CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
             //DataTableTools.WriteTable2Console(dt);
 
-            // WRITE INDICES TO FILE HERE
-            //result.bgNoiseSpectrum
-            //result.ACIspectrum
-            //result.averageSpectrum
-            //result.varianceSpectrum
-
-
+            // WRITE SUMMARY SPECTRA TO FILE HERE
+            int ID = result.SegmentStartOffset.Minutes; 
+            string path = analysisSettings.IndicesFile.FullName;
+            string dir = Path.GetDirectoryName(path);
+            string fname = Path.GetFileNameWithoutExtension(path);
+            string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.bgNoiseSpectrum);
+            string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.ACIspectrum);
+            string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.averageSpectrum);
+            string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.varianceSpectrum);
         } // ExecuteAnalysis()
 
 
@@ -241,7 +248,12 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
+            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
             analysisResults.Data = null;
+            analysisResults.bgNoiseSpectrum = null;
+            analysisResults.averageSpectrum = null;
+            analysisResults.varianceSpectrum = null;
+            analysisResults.ACIspectrum = null;
 
             // ######################################################################
             var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings);

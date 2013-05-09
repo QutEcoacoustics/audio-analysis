@@ -392,6 +392,42 @@ namespace TowseyLib
             FileTools.WriteTextFile(opFileName, lines);
         }
 
+        /// <summary>
+        /// This method assumes that the first item in each row of CSV is a row number.
+        /// It also assumes that the first row contains simple string headers.
+        /// </summary>
+        /// <param name="csvFilePath"></param>
+        /// <param name="data"></param>
+        public static void AppendRow2CSVFile(string csvFilePath, int rowID, double[] data)
+        {
+            int length = data.Length;
+
+            FileInfo fi = new FileInfo(csvFilePath);
+
+            bool saveExistingFile = false;
+            if (! fi.Exists)
+            {
+                int year = DateTime.Now.Year;
+                int month = DateTime.Now.Month;
+                int day = DateTime.Now.Day;
+                int hour = DateTime.Now.Hour;
+                int min = DateTime.Now.Minute;
+                StringBuilder sb1 = new StringBuilder(String.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
+                for (int i = 0; i < length; i++) sb1.Append(",h" + i);
+                sb1.Append("\n" + rowID);
+                for (int i = 0; i < length; i++) sb1.Append("," + data[i]);
+                //sb.Append("\n");
+                FileTools.WriteTextFile(csvFilePath, sb1.ToString());
+            }
+            else
+            {
+                StringBuilder sb2 = new StringBuilder(rowID.ToString());
+                for (int i = 0; i < length; i++) sb2.Append("," + data[i]);
+                //sb.Append("\n");
+                FileTools.Append2TextFile(csvFilePath, sb2.ToString(), saveExistingFile);
+            }
+        }// end AppendRow2CSVFile()
+
 
 
 

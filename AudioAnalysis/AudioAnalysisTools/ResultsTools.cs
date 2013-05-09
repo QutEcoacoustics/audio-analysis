@@ -27,19 +27,36 @@ namespace AudioAnalysisTools
         public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
             DataTable datatable = null;
-            for (var index = 0; index < analyserResults.Count(); index++)
+            int count = 0;
+            foreach (var result in analyserResults)
             {
-                var analyserResult = analyserResults.Skip(index).FirstOrDefault();
-                if (analyserResult != null)
+                if (result != null)
                     datatable = AppendToDataTable(
                         datatable,
-                        analyserResult.Data,
-                        analyserResult.AudioDuration,
-                        analyserResult.SegmentStartOffset,
-                        index);
+                        result.Data,
+                        result.AudioDuration,
+                        result.SegmentStartOffset,
+                        count);
+                count++;
             }
             return datatable;
         }
+
+        public static List<double[,]> MergeSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults, string spectralID)
+        {
+            var bgnSg = new List<double[]>();
+            var aciSg = new List<double[]>();
+            var avgSg = new List<double[]>();
+            var varSg = new List<double[]>();
+            foreach (var result in analyserResults)
+            {
+                bgnSg.Add(result.bgNoiseSpectrum);
+            }
+            var list = new List<double[,]>();
+
+            return list;
+        }
+
 
         /// <summary>
         /// 
