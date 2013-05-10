@@ -21,10 +21,11 @@ namespace Dong.Felt
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
 
+    // several types of points of interest
     public enum FeatureType { NONE, LOCALMAXIMA, STRUCTURE_TENSOR}
     
     /// <summary>
-    /// The acoustic event detection.
+    /// The points of interest detection.
     /// </summary>
     public class PoiAnalysis
     {
@@ -38,7 +39,7 @@ namespace Dong.Felt
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
                                                 {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
-        
+        // A 5 * 5 gaussian blur
         public static double[,] gaussianBlur5 = {{0.0000,       0.0000,     0.0002,     0.0000,    0.0000},
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0002,       0.0837,     0.6187,     0.0837,    0.0002},
@@ -48,7 +49,6 @@ namespace Dong.Felt
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
         public static GaussianBlur filter = new GaussianBlur(4, 1);
         
-        //public static GaussianBlur filter1 = new GaussianBlur(4, 3);
         /// <summary>
         /// AudioToSpectrogram transforms an audio to a spectrogram. 
         /// </summary>
@@ -111,6 +111,18 @@ namespace Dong.Felt
             }
         }
 
+        /// <summary>
+        /// Extract a particular type of points of interest
+        /// </summary>
+        /// <param name="matrix">
+        /// the original spectrogram/image data 
+        /// </param>
+        /// <param name="ft">
+        /// a pariticular type of feature 
+        /// </param>
+        /// <returns>
+        /// return a list of Points of Interest
+        /// </returns>
         public static List<PointOfInterest> ExactPointsOfInterest(double[,] matrix, FeatureType ft)
         {
             var result = new List<PointOfInterest>();
@@ -125,7 +137,16 @@ namespace Dong.Felt
 
             return result;
         }
-         
+        
+        /// <summary>
+        /// get a list of localMaxima hit 
+        /// </summary>
+        /// <param name="matrix">
+        /// the original spectrogram/image data 
+        /// </param>
+        /// <returns>
+        /// return a list of points of interest 
+        /// </returns>
         public static List<PointOfInterest> HitLocalMaxima(double[,] matrix)
         {
             var result = new List<PointOfInterest>();
@@ -136,46 +157,45 @@ namespace Dong.Felt
 
             // Filter out points
             const int AmplitudeThreshold = 10;
-            var filterOutPoints = PoiAnalysis.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
+            var filterOutPoints = FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
 
             // Remove points which are too close
             const int DistanceThreshold = 7;
-            var finalPois = PoiAnalysis.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+            var finalPoi = RemoveClosePoints(filterOutPoints, DistanceThreshold);
 
-            //// Calculate the distance between poi and points in the template
-            //var avgDistanceScores = PoiAnalysis.AverageDistanceScores(TemplateTools.LewinsRailTemplate(17), finalPois);
+            // Calculate the distance between poi and points in the template
+            //var avgDistanceScores = AverageDistanceScores(TemplateTools.LewinsRailTemplate(17), finalPois);
 
-            //// Get the metched anchor point (centroid)
+            // Get the metched anchor point (centroid)
             //const double AvgDistanceScoreThreshold = 5;
             //var matchedPoi = PoiAnalysis.MatchedPointsOfInterest(finalPois, avgDistanceScores, AvgDistanceScoreThreshold);
 
-            //return result = matchedPoi;
-            return result = finalPois;
+            return result = finalPoi;
         }
 
+        /// <summary>
+        ///  get a list of structure Tensor hit 
+        /// </summary>
+        /// <param name="matrix">
+        /// the original spectrogram/image data
+        /// </param>
+        /// <returns>
+        /// return a list of points of interest 
+        /// </returns>
         public static List<PointOfInterest> HitStructureTensor(double[,] matrix)
         {
             var result = new List<PointOfInterest>();
 
-            var partialDifference = PoiAnalysis.PartialDifference(matrix);
-
-            var structureTensor = PoiAnalysis.GaussianStructureTensor(filter.Kernel, partialDifference.Item1, partialDifference.Item2);
-
-            /// weights are all equal to 1
-            //var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("StructureTensor");
-
-            //var meanOfStructureTensor = PoiAnalysis.MeanOfStructureTensor(structureTensor, 5);
-            //Log.Info("meanStructureTensor");
-
-            var eigenValueDecomposition = PoiAnalysis.EignvalueDecomposition(structureTensor);
-           
-            var attention = PoiAnalysis.GetAttention(eigenValueDecomposition);          
-
-            var pointsOfInterst = PoiAnalysis.ExactPointsOfInterest(attention);
+            var differenceOfGaussian = GetDifferenceOfGaussian(gaussianBlur5);
+            var partialDifference = DoGPartialDifference(matrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);         
+            var structureTensor = StructureTensor(partialDifference.Item1, partialDifference.Item2);
+            var eigenValueDecomposition = EignvalueDecomposition(structureTensor);         
+            var attention = GetAttention(eigenValueDecomposition);          
+            var pointsOfInterst = ExactPointsOfInterest(attention);
            
             return result = pointsOfInterst; 
         }
+
         /// <summary>
         /// Pick the local maxima in a neighborhood,which means the maxima has an intensity peak.
         /// </summary>
@@ -339,8 +359,7 @@ namespace Dong.Felt
 
             for (int i = 0; i < pointsOfInterest.Count; i++)
             {
-                var poi = pointsOfInterest;
-                
+                var poi = pointsOfInterest;               
                 Point centeroid = poi[i].Point;
                 var absoluteTemplate = GetAbsoluteTemplate(centeroid, template);
 
@@ -352,8 +371,7 @@ namespace Dong.Felt
                         // distance[index] = EuclideanDistance(absoluteTemplate[j], poi[index].Point);
                         distance[index] = ManhattanDistance(absoluteTemplate[j], poi[index].Point);
                     }
-
-                        minimumDistance[j] = distance.Min();
+                    minimumDistance[j] = distance.Min();
                 }
 
                 for (int k = 0; k < numberOfVertexes; k++)
@@ -402,8 +420,7 @@ namespace Dong.Felt
                     if (frequencyOffset < 6)
                     {
                         poi.DrawColor = PointOfInterest.HitsColor;
-                    }
-                   
+                    }                  
                     result.Add(poi);
                 }
             }
@@ -437,31 +454,39 @@ namespace Dong.Felt
         //    return result;
         //}
 
-        // Get the difference of Gaussian according to matlab code
-        public static void GetDifferenceOfGaussian(int maskSize)
+        /// <summary>
+        /// The get the difference of Gaussian .
+        /// </summary>
+        /// <param name="gaussianBlur">
+        /// a particular gaussianBlur
+        /// </param>
+        /// <returns>
+        /// A tuple of DifferenceX and DifferenceY of Gaussian 
+        /// </returns>
+        public static Tuple<double[,], double[,]> GetDifferenceOfGaussian(double[,] gaussianBlur)
         {
-            
+            var maskSize = gaussianBlur.GetLength(0);
+
             var gLeft = new double[maskSize, maskSize + 1];
             var gRight = new double[maskSize, maskSize + 1];
 
             var gTop = new double[maskSize + 1, maskSize];
             var gBottom = new double[maskSize + 1, maskSize];
 
-            for (int i = 0; i < maskSize; i++)
-            {
-                for (int j = 0; j < maskSize; j++)
-                {
-                    gLeft[i,j] = gaussianBlur5[i, j];                 
-                    gTop[i,j] = gaussianBlur5[i,j];                
-                }
-            }
+            var gDifferenceLR = new double[maskSize, maskSize + 1];
+            var gDifferenceTB = new double[maskSize + 1, maskSize];
 
-            for (int i = 0; i < maskSize + 1; i++)
+            var DifferenceOfGaussianX = new double[maskSize, maskSize];
+            var DifferenceOfGaussianY = new double[maskSize, maskSize];
+
+            for (int i = 1; i < maskSize + 1; i++)
             {
-                for (int j = 0; j < maskSize + 1; j++)
+                for (int j = 1; j < maskSize + 1; j++)
                 {
-                    gRight[i, j + 1] = gaussianBlur5[i, j];
-                    gBottom[i + 1, j] = gaussianBlur5[i, j];
+                    gLeft[i - 1, j - 1] = gaussianBlur[i - 1, j - 1];
+                    gRight[i - 1, j] = gaussianBlur[i - 1, j - 1];
+                    gTop[i - 1, j - 1] = gaussianBlur[i - 1, j - 1];
+                    gBottom[i, j - 1] = gaussianBlur[i - 1, j - 1];
                 }
             }
 
@@ -471,28 +496,203 @@ namespace Dong.Felt
                 gRight[i, 0] = 0.0;
                 gTop[maskSize,i] = 0.0;
                 gBottom[0,i] = 0.0;
+            } 
+          
+            for (int i = 0; i < maskSize; i++)
+            {
+                for (int j = 0; j < maskSize + 1; j++)
+                {
+                    gDifferenceLR[i,j] = gLeft[i,j] - gRight[i,j];                 
+                }
             }
-                
+
+            for (int i = 0; i < maskSize + 1; i++)
+            {
+                for (int j = 0; j < maskSize; j++)
+                {
+                    gDifferenceTB[i,j] = gTop[i,j] - gBottom[i,j];                  
+                }
+            }
+
+            for (int i = 0; i < maskSize; i++)
+            {
+                for (int j = 0; j < maskSize; j++)
+                {
+                    DifferenceOfGaussianX[i, j] = gDifferenceLR[i, j];
+                    DifferenceOfGaussianY[i, j] = gDifferenceTB[i, j];
+                }
+            }
+
+            var result = Tuple.Create(DifferenceOfGaussianX, DifferenceOfGaussianY);
+            return result;
         }
 
-        ////Using Dog to calculate the partialDifference 
-        //public static Tuple<double, double[,]> DoGPartialDifference(double[,] m)
-        //{
-            
-        //}
+        /// <summary>
+        /// The get the partial difference in a neighbourhood by using difference of Gaussian .
+        /// </summary>
+        /// <param name="m">
+        /// the original spectrogram / image data
+        /// </param>
+        /// <param name="differenceOfGaussianX">
+        /// the difference of GaussianX
+        /// </param>
+        /// /// <param name="differenceOfGaussianY">
+        /// the difference of GaussianY
+        /// </param>
+        /// <returns>
+        /// A tuple of DifferenceX and DifferenceY of Gaussian 
+        /// </returns>
+        public static Tuple<double[,], double[,]> DoGPartialDifference(double[,] m, double[,] differenceOfGaussianX, double[,] differenceOfGaussianY)
+        {
+            var sizeOfGaussianBlur = differenceOfGaussianX.GetLength(0);
+            var centerOffset = (int)(sizeOfGaussianBlur / 2);
 
+            int MaximumXIndex = m.GetLength(0);
+            int MaximumYIndex = m.GetLength(1);
 
-        //  Calculate the difference between current pixel and its neighborhood pixel
+            var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
+            var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
+
+            // Because the convolution class can only process the kernel with int[,] , here still use loops to do the convolution  
+            for (int row = 0; row < MaximumXIndex - 1; row++)
+            {
+                for (int col = 0; col < MaximumYIndex - 1; col++)
+                {
+    
+                    // check whether the current point can be in the center of gaussian blur 
+                    for (int i = -centerOffset; i <= centerOffset; i++)
+                    {
+                        for (int j = -centerOffset; j <= centerOffset; j++)
+                        {
+                            // check whether it's in the range of partialDifferenceX
+                            if (m.PointIntersect(row + j, col - i))
+                            {
+                                partialDifferenceX[row, col] = partialDifferenceX[row, col] + differenceOfGaussianX[i + centerOffset, j + centerOffset] * m[row + j, col - i];
+                                partialDifferenceY[row, col] = partialDifferenceY[row, col] + differenceOfGaussianY[i + centerOffset, j + centerOffset] * m[row + j, col - i];
+                            }
+                        }
+                    }
+                }
+            }
+
+            var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
+            return result;
+        }
+
+        /// <summary>
+        /// Calculate the magnitude of partialDifference.
+        /// </summary>
+        /// <param name="differenceOfGaussianX">
+        /// the partialDifferenceX
+        /// </param>
+        /// /// <param name="differenceOfGaussianY">
+        /// the particalDifferenceY
+        /// </param>
+        /// <returns>
+        /// return the magnitude of the partical difference for each point
+        /// </returns>
+        public static double[,] MagnitudeOfPartialDifference(double[,] paritialDifferenceX, double[,] partialDifferenceY)
+        {
+            var MaximumXIndex = paritialDifferenceX.GetLength(0);
+            var MaximumYIndex = paritialDifferenceX.GetLength(1);
+
+            var result = new double[MaximumXIndex, MaximumYIndex];
+
+            for (int i = 0; i < MaximumXIndex; i++)
+            {
+                for (int j = 0; j < MaximumYIndex; j++)
+                {
+                    result[i, j] = Math.Sqrt(Math.Pow(paritialDifferenceX[i, j], 2) + Math.Pow(partialDifferenceY[i, j], 2));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculate the phase of partialDifference.
+        /// </summary>
+        /// <param name="differenceOfGaussianX">
+        /// the partialDifferenceX
+        /// </param>
+        /// /// <param name="differenceOfGaussianY">
+        /// the particalDifferenceY
+        /// </param>
+        /// <returns>
+        /// return the phase of partial difference for each point
+        /// </returns>
+        public static double[,] PhaseOfPartialDifference(double[,] paritialDifferenceX, double[,] partialDifferenceY)
+        {
+            var MaximumXIndex = paritialDifferenceX.GetLength(0);
+            var MaximumYIndex = paritialDifferenceX.GetLength(1);
+
+            var result = new double[MaximumXIndex, MaximumYIndex];
+
+            for (int i = 0; i < MaximumXIndex; i++)
+            {
+                for (int j = 0; j < MaximumYIndex; j++)
+                {
+                    result[i, j] = Math.Atan2(partialDifferenceY[i, j], paritialDifferenceX[i, j]);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculate the structure tensor.
+        /// </summary>
+        /// <param name="partialDifferenceX">
+        /// the partialDifferenceX
+        /// </param>
+        /// /// <param name="partialDifferenceY">
+        /// the partialDifferenceY
+        /// </param>
+        /// <returns>
+        /// return the structure tensor for each point
+        /// </returns>
+        public static List<Tuple<PointOfInterest, double[,]>> StructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY)
+        {
+            var rowMaximumIndex = partialDifferenceX.GetLongLength(0);
+            var colMaximumIndex = partialDifferenceX.GetLongLength(1);
+
+            var result = new List<Tuple<PointOfInterest, double[,]>>();
+
+            for (int row = 0; row < rowMaximumIndex; row++)
+            {
+                for (int col = 0; col < colMaximumIndex; col++)
+                {
+                    var structureTensor = new double[2, 2];
+
+                    structureTensor[0, 0] = Math.Pow(partialDifferenceX[row, col], 2);
+                    structureTensor[0, 1] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
+                    structureTensor[1, 0] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
+                    structureTensor[1, 1] = Math.Pow(partialDifferenceY[row, col], 2);
+
+                    result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculate the difference between the current pixel and its neighborhood pixel.
+        /// </summary>
+        /// <param name="m">
+        /// the original spectrogram / image data
+        /// </param>
+        /// <returns>
+        /// A tuple of partialDifferenceX and partialDifferenceY
+        /// </returns>  
         public static Tuple<double[,], double[,]> PartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
-            //Convolution filter = new Convolution(filter.Kernel);
-            //filter.ApplyInPlace(m);
 
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
-              
+
             for (int row = 0; row < MaximumXIndex - 1; row++)
             {
                 for (int col = 0; col < MaximumYIndex - 1; col++)
@@ -504,38 +704,25 @@ namespace Dong.Felt
             //PointF
             var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
             return result;
-        } 
+        }
 
-        ////  Calculate the difference between current pixel and its neighborhood pixel
-        //public static Tuple<double[,], double[,]> PartialDifference(double[,] m, List<PointOfInterest> nonZeroIntensityPoints)
-        //{
-        //    var numberOfVertex = nonZeroIntensityPoints.Count;
-        //    int MaximumXIndex = nonZeroIntensityPoints[numberOfVertex - 1].Point.X;
-        //    int MaximumYIndex = nonZeroIntensityPoints[numberOfVertex - 1].Point.Y;
-
-        //    var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
-        //    var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
-
-        //    foreach (var nP in nonZeroIntensityPoints)
-        //    {
-        //        var current = m[nP.Point.X, nP.Point.Y];
-        //        var right = m[nP.Point.X + 1, nP.Point.Y];
-        //        var above = m[nP.Point.X, nP.Point.Y + 1];
-
-        //        partialDifferenceX[nP.Point.X, nP.Point.Y] = current - current;
-        //        partialDifferenceY[nP.Point.X, nP.Point.Y] = above - current; 
-        //    }
-            
-        //    //PointF
-        //    var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
-        //    return result;
-        //} 
-        
-
-        // calculate the structure tensor for each point
-        public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(int[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
-        {
-            
+        /// <summary>
+        /// Calculate the structure tensor with GaussianBlur.
+        /// </summary>
+        /// <param name="gaussianBlur">
+        /// a particular gaussianblur
+        /// </param>
+        /// <param name="partialDifferenceX">
+        /// the partialDifferenceX
+        /// </param>
+        /// /// <param name="partialDifferenceY">
+        /// the partialDifferenceY
+        /// </param>
+        /// <returns>
+        /// return the structure tensor for each point
+        /// </returns>
+        public static List<Tuple<PointOfInterest, double[,]>> GaussianStructureTensor(double[,] gaussianBlur, double[,] partialDifferenceX, double[,] partialDifferenceY)
+        {       
             var sizeOfGaussianBlur = Math.Max(gaussianBlur.GetLength(0), gaussianBlur.GetLength(1));
             var centerOffset = (int)(sizeOfGaussianBlur/2);
             var result = new List<Tuple<PointOfInterest, double[,]>>();
@@ -549,9 +736,7 @@ namespace Dong.Felt
                     var sumDiagonal = 0.0;
                     var sumBottomRight = 0.0;
 
-                    // Filter out points whose difference is zero in a fixed direction
-
-                    // check whether the current point can be in the center of gaussian blur 
+                    // check whether the current point is in the center of gaussian blur 
                     for (int i = -centerOffset; i <= centerOffset; i++)
                     {
                          for (int j = -centerOffset; j <= centerOffset; j++)
@@ -584,33 +769,18 @@ namespace Dong.Felt
             return result;
         }
 
-        // Bardeli: calculate the structure tensor
-        public static List<Tuple<PointOfInterest, double[,]>> StructureTensor(double[,] partialDifferenceX, double[,] partialDifferenceY)
-        {
-            var rowMaximumIndex = partialDifferenceX.GetLongLength(0);
-            var colMaximumIndex = partialDifferenceX.GetLongLength(1);
-
-            var result = new List<Tuple<PointOfInterest, double[,]>>(); 
-
-            for (int row = 0; row < rowMaximumIndex; row++)
-            {
-                for (int col = 0; col < colMaximumIndex; col++)
-                {
-                    var structureTensor = new double[2, 2];
-
-                    structureTensor[0, 0] = Math.Pow(partialDifferenceX[row, col], 2);
-                    structureTensor[0, 1] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
-                    structureTensor[1, 0] = partialDifferenceX[row, col] * partialDifferenceY[row, col];
-                    structureTensor[1, 1] = Math.Pow(partialDifferenceY[row, col], 2);
-
-                    result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
-                }
-            }
-
-            return result;
-        }
-
-        // Bardeli: calculate the mean of the structure tensor
+        /// <summary>
+        /// Calculate the mean structure tensor.
+        /// </summary>
+        /// <param name="structureTensor">
+        /// the structureTensor
+        /// </param>
+        /// <param name="windowSize">
+        /// calculate the mean structure tensor in the neighbourhood, it will give the size of neighbourhood 
+        /// </param> 
+        /// <returns>
+        /// return the structure tensor for each point
+        /// </returns>
         public static List<Tuple<PointOfInterest, double[,]>> MeanOfStructureTensor(List<Tuple<PointOfInterest, double[,]>> structureTensor, int windowSize)
         {
             var LengthOfStructureTensor = structureTensor.Count;
@@ -655,7 +825,15 @@ namespace Dong.Felt
             return result;
         }
 
-        // For each structure tensor matrix of each point, calculate its eigenvalues
+        /// <summary>
+        /// With eigenvalue decomposition, get the eigenvalues of the list of structure tensors.
+        /// </summary>
+        /// <param name="structureTensor">
+        /// A list of structureTensors
+        /// </param>
+        /// <returns>
+        /// return the eignvalue of each structure for a point 
+        /// </returns>
         public static List<Tuple<PointOfInterest, double[]>> EignvalueDecomposition(List<Tuple<PointOfInterest, double[,]>> structureTensors)
         {
             var result = new List<Tuple<PointOfInterest, double[]>>();
@@ -670,7 +848,15 @@ namespace Dong.Felt
             return result;
         }
 
-        // get the attention value for each structure tensor at each point, and keep the greater one
+        /// <summary>
+        /// Get the attention from the eigenvalues, it's actually the largest eigenvalue in the eigenvalues.
+        /// </summary>
+        /// <param name="eigenValue">
+        /// A list of eigenValues for each point
+        /// </param>
+        /// <returns>
+        /// return the list of attentions  
+        /// </returns>
         public static List<Tuple<PointOfInterest, double>> GetAttention(List<Tuple<PointOfInterest, double[]>> eigenValue)
         {
             var result = new List<Tuple<PointOfInterest, double>>();
@@ -687,7 +873,15 @@ namespace Dong.Felt
             return result;
         }
 
-        // get the threshold for keeping poi
+        /// <summary>
+        /// Get the threshold for keeping points of interest
+        /// </summary>
+        /// <param name="attention">
+        /// A list of attentions 
+        /// </param>
+        /// <returns>
+        /// return a threshold  
+        /// </returns>
         public static double GetThreshold(List<Tuple<PointOfInterest, double>> attention)
         {
             const int numberOfColumn = 1000;
@@ -697,16 +891,24 @@ namespace Dong.Felt
             return l * maxAttention / numberOfColumn;  
         }
 
-        // find out the maximum  of attention in a window with 1000 columns width
-        public static double MaximumOfAttention(List<Tuple<PointOfInterest, double>> listOfAttention)
+        /// <summary>
+        /// Find out the maximum  of a list of attention
+        /// </summary>
+        /// <param name="attention">
+        /// A list of attentions 
+        /// </param>
+        /// <returns>
+        /// return the maximum attention
+        /// </returns>
+        public static double MaximumOfAttention(List<Tuple<PointOfInterest, double>> attention)
         {
-            if (listOfAttention.Count == 0)
+            if (attention.Count == 0)
             {
                 throw new InvalidOperationException("Empty list");
             }
             double maxAttention = double.MinValue;
 
-            foreach (var la in listOfAttention)
+            foreach (var la in attention)
             {
                 if (la.Item2 > maxAttention)
                 {
@@ -723,7 +925,7 @@ namespace Dong.Felt
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.005;  //  a fixed parameterl Bardeli : 0.96
+            var p = 0.0003;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -781,12 +983,11 @@ namespace Dong.Felt
             var numberOfColumn = attention[LenghOfAttention - 1 ].Item1.Point.X;
             var maxIndexOfPart = (int)(numberOfColumn / numberOfIncludedBins) + 1;
 
-            // each distinct part with 1000 columns has a threshold 
+            // each part with 1000 columns has a different threshold 
             var threshold = new double[maxIndexOfPart];
 
             // for our data, the threshold is best between 150 - 200
-            //double threshold = 150.0;    
-                    
+            //double threshold = 150.0;                       
             var result = new List<PointOfInterest>();
 
             //foreach (var ev in attention)
@@ -803,13 +1004,10 @@ namespace Dong.Felt
             for (int i = 0; i < maxIndexOfPart; i++)
             {
                 // first, it is required to divided the original data into several parts with the width of 1000 colomn
-                // for each part, it will have a distinct threshold
-                // keep a list of attention and tempfor calculating threshold
                 var tempAttention = new List<Tuple<PointOfInterest, double>>();
 
                 if (numberOfColumn >= numberOfIncludedBins * (i + 1))
                 {
-
                     // var tempAttention = new List<Tuple<Point, double>>();
                     foreach (var a in attention)
                     {
@@ -820,13 +1018,13 @@ namespace Dong.Felt
                     }
                    threshold[i] = GetThreshold(tempAttention);
 
-                    foreach (var ev in tempAttention)
-                    {
-                        if (ev.Item2 > threshold[i])
-                        {
-                            result.Add(ev.Item1);
-                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-                        }
+                   foreach (var ev in tempAttention)
+                   {
+                       if (ev.Item2 > threshold[i])
+                       {
+                           result.Add(ev.Item1);
+                           ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
+                       }
                     }
                 }
                 else
@@ -850,6 +1048,7 @@ namespace Dong.Felt
                     }
                 }
             }
+
             return result; 
         }
 
@@ -877,7 +1076,6 @@ namespace Dong.Felt
             for (int index = 0; index < numberOfVertexes; index++)
             {
                 var temp = result[index];
-
                 temp.X += relativeFrame;
                 temp.Y += relativeFrequency;
                 result[index] = temp;
@@ -886,34 +1084,34 @@ namespace Dong.Felt
             return result;
         }
 
-        ///// <summary>
-        ///// The get absolute template.
-        ///// </summary>
-        ///// <param name="matchedPoi">
-        ///// The matched Poi.
-        ///// </param>
-        ///// <returns>
-        ///// The list of Points represent the absoluteTemplate.
-        ///// </returns>
-        //public static List<PointOfInterest> GetAbsoluteTemplate2(List<PointOfInterest> matchedPoi)
-        //{
-        //    var result = new List<PointOfInterest>();
-        //    foreach (var poi in matchedPoi)
-        //    {
-        //        var tempPoints = GetAbsoluteTemplate(poi.Point, TemplateTools.LewinsRailTemplate(18));
-        //        foreach (var tpoint in tempPoints)
-        //        {
-        //            result.Add(new PointOfInterest(tpoint));
-        //        }
-        //    }
+        /// <summary>
+        /// The get absolute template.
+        /// </summary>
+        /// <param name="matchedPoi">
+        /// The matched Poi.
+        /// </param>
+        /// <returns>
+        /// The list of Points represent the absoluteTemplate.
+        /// </returns>
+        public static List<PointOfInterest> GetAbsoluteTemplate(List<PointOfInterest> matchedPoi)
+        {
+            var result = new List<PointOfInterest>();
+            foreach (var poi in matchedPoi)
+            {
+                var tempPoints = GetAbsoluteTemplate(poi.Point, TemplateTools.LewinsRailTemplate(18));
+                foreach (var tpoint in tempPoints)
+                {
+                    result.Add(new PointOfInterest(tpoint));
+                }
+            }
 
-        //    foreach (PointOfInterest t in result)
-        //    {
-        //        t.DrawColor = PointOfInterest.TemplateColor;
-        //    }
+            foreach (PointOfInterest t in result)
+            {
+                t.DrawColor = PointOfInterest.TemplateColor;
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
 
         /// <summary>
         /// The euclidean distance.

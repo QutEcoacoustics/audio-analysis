@@ -18,9 +18,7 @@ namespace Dong.Felt
     using System.Drawing;
     using AnalysisBase;
     using AudioAnalysisTools;
-
     using TowseyLib;
-
     using log4net;
 
     /// <summary>
@@ -85,58 +83,64 @@ namespace Dong.Felt
 
             // Read a bunch of recording files  
             string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
+            // Read one specific file 
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage1.png"));
 
-            // Read the file 
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2.png"));
+            foreach (string path in Files)
+            {
+                // Writing my code here
+                if (!File.Exists(path))
+                {
+                    throw new Exception("Can't find this recording file path: " + path);
+                }
 
-            //foreach (string path in Files)
-            //{
-            //    // Writing my code here
-            //    if (!File.Exists(path))
-            //    {
-            //        throw new Exception("Can't find this recording file path: " + path);
-            //    }
+                // Get wav.file path
+                string wavFilePath = analysisSettings.SourceFile.FullName;
+                // Read the .wav file
+                AudioRecording audioRecording;
+                var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
+                Log.Info("AudioToSpectrogram");
 
-            //    // get wav.file path
-            //    string wavFilePath = analysisSettings.SourceFile.FullName;
+                // Do the noise removal
+                const int BackgroundThreshold = 5;
+                var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+                //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+                Log.Info("NoiseReduction");
 
-            //     //Read the .wav file
-            //    AudioRecording audioRecording;
-            //    var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
-            //    Log.Info("AudioToSpectrogram");
-
-            //    // Do the noise removal
-            //    const int BackgroundThreshold = 5;
-            //    var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            //    Log.Info("NoiseReduction");
-
-            //    var hitPoints = PoiAnalysis.ExactPointsOfInterest(noiseReduction, FeatureType.STRUCTURE_TENSOR);
-            //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //    imageResult.AddPoints(hitPoints);
-            //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //    imageResult.Save(path + ".png");
-            //    Log.Info("Show the result of Final PointsOfInterest");
-            //}
+                var differenceOfGaussian = PoiAnalysis.GetDifferenceOfGaussian(PoiAnalysis.gaussianBlur5);
+                Log.Info("differenceOfGaussian");
+                var partialDifference = PoiAnalysis.DoGPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
+                Log.Info("partialDifference");
+                var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
+                Log.Info("structureTensor");
+                var eigenValue = PoiAnalysis.EignvalueDecomposition(structureTensor);
+                Log.Info("eigenValue");
+                var attention = PoiAnalysis.GetAttention(eigenValue);
+                Log.Info("attention");
+                var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(attention);
+                Log.Info("pointsOfInterest");
+                
+                var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+                imageResult.AddPoints(pointsOfInterest);
+                imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+                imageResult.Save(path + ".png");
+                Log.Info("Show the result of Final PointsOfInterest");
+            }
           
+            // For test image 
             //var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             //var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
-
-            //var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(testMatrix, FeatureType.STRUCTURE_TENSOR);
-
+            //var differenceOfGaussian= PoiAnalysis.GetDifferenceOfGaussian(PoiAnalysis.gaussianBlur5);
+            //var partialDifference = PoiAnalysis.DoGPartialDifference(testMatrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
+            //var StructureTensor = PoiAnalysis.DoGStructureTensor(partialDifference.Item1, partialDifference.Item2);
+            //var eigenValue = PoiAnalysis.EignvalueDecomposition(StructureTensor);
+            //var attention = PoiAnalysis.GetAttention(eigenValue);
+            //var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(attention);
             //foreach (var poi in pointsOfInterest)
             //{
             //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
             //}
-
-            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage20-p0.25.png");
-
-            //var imageResult = new Image_MultiTrack((Image)testImage);
-            //imageResult.AddPoints(pointsOfInterst);
-            //imageResult.Save(@"C:\Test recordings\Crows\pointsOfInterest15.png");
-            //Log.Info("Show the image result");
-
-            // addEvents(templateBoundingBoxes); 
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage1-DoGPaitialDifference-p0.25.png");
             
             var result = new AnalysisResult();
             return result;
