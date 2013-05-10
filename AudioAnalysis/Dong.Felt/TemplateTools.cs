@@ -35,34 +35,34 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<PointOfInterest> LewinsRailTemplate(int frameOffset)
+        public static List<Point> LewinsRailTemplate(int frameOffset)
         {
-            var template = new List<PointOfInterest>()
+            var template = new List<Point>()
                                {
                                    // centeroid
-                                   new PointOfInterest(new Point(0, 0 - 23)),
-                                   new PointOfInterest(new Point(0 + frameOffset, 0 - 23)),
-                                   new PointOfInterest(new Point(0 - frameOffset, 0  - 23)),
-                                   new PointOfInterest(new Point(0 + 2 * frameOffset, 0 - 23)),                                  
-                                   new PointOfInterest(new Point(0 - 2 * frameOffset, 0 - 23)),                                                                  
+                                   new Point(0, 0 - 23),
+                                   new Point(0 + frameOffset, 0 - 23),
+                                   new Point(0 - frameOffset, 0  - 23),
+                                   new Point(0 + 2 * frameOffset, 0 - 23),                                  
+                                   new Point(0 - 2 * frameOffset, 0 - 23),                                                                  
 
-                                   new PointOfInterest(new Point(0, 0)),
-                                   new PointOfInterest(new Point(0 + frameOffset, 0)),
-                                   new PointOfInterest(new Point(0 - frameOffset, 0)),
-                                   new PointOfInterest(new Point(0 + 2 * frameOffset, 0)),                                   
-                                   new PointOfInterest(new Point(0 - 2 * frameOffset, 0)),                                
+                                   new Point(0, 0),
+                                   new Point(0 + frameOffset, 0),
+                                   new Point(0 - frameOffset, 0),
+                                   new Point(0 + 2 * frameOffset, 0),                                   
+                                   new Point(0 - 2 * frameOffset, 0),                                
 
-                                   new PointOfInterest(new Point(0, 0  + 11)),
-                                   new PointOfInterest(new Point(0 + frameOffset, 0 + 11)),
-                                   new PointOfInterest(new Point(0 - frameOffset, 0 + 12)),
-                                   new PointOfInterest(new Point(0 + 2 * frameOffset, 0 + 11)),                                   
-                                   new PointOfInterest(new Point(0 - 2 * frameOffset, 0 + 11)),
+                                   new Point(0, 0  + 11),
+                                   new Point(0 + frameOffset, 0 + 11),
+                                   new Point(0 - frameOffset, 0 + 12),
+                                   new Point(0 + 2 * frameOffset, 0 + 11),                                   
+                                   new Point(0 - 2 * frameOffset, 0 + 11),
 
-                                   new PointOfInterest(new Point(0, 0  + 20)),
-                                   new PointOfInterest(new Point(0 + frameOffset, 0 + 20)),
-                                   new PointOfInterest(new Point(0 - frameOffset, 0 + 20)),
-                                   new PointOfInterest(new Point(0 + 2 * frameOffset, 0 + 20)),                                   
-                                   new PointOfInterest(new Point(0 - 2 * frameOffset, 0 + 20)),
+                                   new Point(0, 0  + 20),
+                                   new Point(0 + frameOffset, 0 + 20),
+                                   new Point(0 - frameOffset, 0 + 20),
+                                   new Point(0 + 2 * frameOffset, 0 + 20),                                   
+                                   new Point(0 - 2 * frameOffset, 0 + 20),
                                };
 
             return template;
