@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Dong.Felt.FeltAnalysis" BaseTypeListCollapsed="true">
+    <Position X="2.75" Y="1" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AEAAEgAAAAIAAISAAAAAAIAEAAgAAgAAAAAAQAAAAAA=</HashCode>
+      <FileName>Dong.Felt.Main.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Dong.Felt.PoiAnalysis">
+    <Position X="5" Y="1" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>ARIEIAAEgAGkQQABFABQFCAAkAAAACiwAGASgAAYACA=</HashCode>
+      <FileName>PoiAnalysis.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Dong.Felt.StructureTensorTest">
+    <Position X="0.5" Y="1" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>StructureTensor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Dong.Felt.TemplateTools">
+    <Position X="1" Y="5.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAACAAAACAABAAAAAAACAAhAAAAAAAAAAAAASA=</HashCode>
+      <FileName>TemplateTools.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="Dong.Felt.FeatureType">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAAgAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PoiAnalysis.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

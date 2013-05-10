@@ -96,6 +96,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvolutionMatrix.cs" />
+    <Compile Include="Distance.Tools.cs" />
+    <Compile Include="LocalMaxima.cs" />
     <Compile Include="PoiAnalysis.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -125,6 +127,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

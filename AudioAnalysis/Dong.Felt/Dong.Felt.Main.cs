@@ -81,11 +81,12 @@ namespace Dong.Felt
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             // }
 
+            // Read one specific file 
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage1.png"));
+
             // Read a bunch of recording files  
             string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
-            // Read one specific file 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage1.png"));
-
+            
             foreach (string path in Files)
             {
                 // Writing my code here
@@ -107,17 +108,17 @@ namespace Dong.Felt
                 //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
                 Log.Info("NoiseReduction");
 
-                var differenceOfGaussian = PoiAnalysis.GetDifferenceOfGaussian(PoiAnalysis.gaussianBlur5);
+                var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
                 Log.Info("differenceOfGaussian");
-                var partialDifference = PoiAnalysis.DoGPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
+                var partialDifference = StructureTensor.DifferenceOfGaussianPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
                 Log.Info("partialDifference");
-                var structureTensor = PoiAnalysis.StructureTensor(partialDifference.Item1, partialDifference.Item2);
+                var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
                 Log.Info("structureTensor");
-                var eigenValue = PoiAnalysis.EignvalueDecomposition(structureTensor);
+                var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
                 Log.Info("eigenValue");
-                var attention = PoiAnalysis.GetAttention(eigenValue);
+                var attention = StructureTensor.GetTheAttention(eigenValue);
                 Log.Info("attention");
-                var pointsOfInterest = PoiAnalysis.ExactPointsOfInterest(attention);
+                var pointsOfInterest = StructureTensor.ExtractPointsOfInterest(attention);
                 Log.Info("pointsOfInterest");
                 
                 var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
