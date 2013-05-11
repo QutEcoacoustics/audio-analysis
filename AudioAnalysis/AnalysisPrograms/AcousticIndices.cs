@@ -229,13 +229,13 @@ namespace AnalysisPrograms
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
             string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.bgNoiseSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.bgnSpectrum);
             string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.ACIspectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.aciSpectrum);
             string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.averageSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.avgSpectrum);
             string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.varianceSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.varSpectrum);
         } // ExecuteAnalysis()
 
 
@@ -250,10 +250,10 @@ namespace AnalysisPrograms
             analysisResults.SettingsUsed = analysisSettings;
             analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
             analysisResults.Data = null;
-            analysisResults.bgNoiseSpectrum = null;
-            analysisResults.averageSpectrum = null;
-            analysisResults.varianceSpectrum = null;
-            analysisResults.ACIspectrum = null;
+            analysisResults.bgnSpectrum = null;
+            analysisResults.avgSpectrum = null;
+            analysisResults.varSpectrum = null;
+            analysisResults.aciSpectrum = null;
 
             // ######################################################################
             var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings);
@@ -267,16 +267,18 @@ namespace AnalysisPrograms
             AcousticFeatures.Features indices = results.Item1;
             DataTable dt = AcousticFeatures.Indices2DataTable(indices);
             analysisResults.Data = dt;
-            analysisResults.AudioDuration    = results.Item2;
-            analysisResults.bgNoiseSpectrum  = indices.bgNoiseSpectrum;
-            analysisResults.ACIspectrum      = indices.ACIspectrum;
-            analysisResults.averageSpectrum  = indices.averageSpectrum;
-            analysisResults.varianceSpectrum = indices.varianceSpectrum;
+            analysisResults.AudioDuration = results.Item2;
+            analysisResults.bgnSpectrum   = indices.bgNoiseSpectrum;
+            analysisResults.aciSpectrum   = indices.ACIspectrum;
+            analysisResults.avgSpectrum   = indices.averageSpectrum;
+            analysisResults.varSpectrum   = indices.varianceSpectrum;
+            analysisResults.cvrSpectrum   = indices.coverSpectrum;
+            analysisResults.tenSpectrum   = indices.HtSpectrum;
 
             var sonogram = results.Item3;
-            var hits = results.Item4;
-            var plots = results.Item5;
-            var tracks = results.Item6;
+            var hits     = results.Item4;
+            var plots    = results.Item5;
+            var tracks   = results.Item6;
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
