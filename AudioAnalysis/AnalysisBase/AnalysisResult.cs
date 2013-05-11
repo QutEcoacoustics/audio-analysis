@@ -154,11 +154,12 @@
         public TimeSpan SegmentStartOffset { get; set; }
 
         // four different spectra
-        public Double[] bgNoiseSpectrum { get; set; }
-        public Double[] ACIspectrum { get; set; }
-        public Double[] averageSpectrum { get; set; }
-        public Double[] varianceSpectrum { get; set; }
-
+        public Double[] bgnSpectrum { get; set; }
+        public Double[] aciSpectrum { get; set; }
+        public Double[] avgSpectrum { get; set; }
+        public Double[] varSpectrum { get; set; }
+        public Double[] cvrSpectrum { get; set; }
+        public Double[] tenSpectrum { get; set; }
 
     }
 }
