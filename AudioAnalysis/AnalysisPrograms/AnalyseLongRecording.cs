@@ -111,6 +111,15 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDir);
             }
 
+            // code to test reading of csv files into matrix into spectrogram
+            if (true)
+            {
+                string csvPath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.bgnSpectrum.csv";
+                string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.bgnSpectrum.png";
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN");
+                System.Environment.Exit(666);
+            }
+
             //1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
@@ -269,6 +278,53 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("");
                 SaveImageOfIndices(fiIndicesCSV.FullName, configPath, displayCSVImage);
             }
+
+            // if doing acoustic indices then write spectrograms to CSV files
+            if (analyserResults.ElementAt(0).AnalysisIdentifier.Equals("Towsey."+Acoustic.ANALYSIS_NAME))
+            {
+                string name = Path.GetFileNameWithoutExtension(fiSourceRecording.Name);
+                string csvPath  = null;
+                string imagePath = null;
+                List<TowseyLib.Spectrum> list;
+
+                list = ResultsTools.MergeBGNSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN");
+
+                list = ResultsTools.MergeAVGSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".avgSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".avgSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "AVG");
+
+                list = ResultsTools.MergeVARSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".varSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".varSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "VAR");
+                
+                list = ResultsTools.MergeACISpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".aciSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".aciSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "ACI");
+                
+                list = ResultsTools.MergeCVRSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "CVR");
+                
+                list = ResultsTools.MergeTENSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".tenSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".tenSpectrum.png");
+                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "TEN");
+            }
+
+
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         } // Main(string[] args)
 
