@@ -243,6 +243,7 @@
     </Compile>
     <Compile Include="Oblong.cs" />
     <Compile Include="SNR.cs" />
+    <Compile Include="Spectrum.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="TextUtilities.cs" />

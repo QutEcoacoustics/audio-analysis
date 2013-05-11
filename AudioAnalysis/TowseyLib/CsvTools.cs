@@ -351,6 +351,24 @@ namespace TowseyLib
             return System.Tuple.Create(headers, values);
         }
 
+        public static double[,] ReadCSVFile2Matrix(string csvFileName)
+        {
+            System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            List<double[]> columns = tuple.Item2;
+            int rows = columns[0].Length;
+            int cols = columns.Count;
+            double[,] matrix = new double[rows,cols];
+
+            for(int c=0; c <cols; c++ )
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    matrix[r, c] = columns[c][r];
+                }
+            }
+            return matrix;
+        }
+
         /// <summary>
         /// Returns the requested column of data from a CSV file and also returns the column header
         /// </summary>
