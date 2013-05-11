@@ -1643,6 +1643,35 @@ namespace TowseyLib
         }
 
         /// <summary>
+        /// Draws matrix
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrix(double[,] matrix, string pathName)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            Color[] grayScale = GrayScale();
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            double[,] norm = DataTools.normalise(matrix);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int greyId = (int)Math.Floor(norm[r, c] * 255);
+                    if (greyId < 0) greyId = 0;
+                    greyId = 255 - greyId; // reverse image
+                    bmp.SetPixel(c, r, grayScale[greyId]);
+                }//end all columns
+            }//end all rows
+
+
+            bmp.Save(pathName);
+        }
+        /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data</param>
@@ -1683,6 +1712,7 @@ namespace TowseyLib
                 {
                     //double val = norm[r, c];
                     int greyId = (int)Math.Floor(norm[r, c] * 255);
+                    if (greyId < 0) greyId = 0;
                     int xOffset = (XpixelsPerCell * c);
                     int yOffset = (YpixelsPerCell * r);
                     //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
@@ -1701,6 +1731,7 @@ namespace TowseyLib
 
             bmp.Save(pathName);
         }
+
 
         /// <summary>
         /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.

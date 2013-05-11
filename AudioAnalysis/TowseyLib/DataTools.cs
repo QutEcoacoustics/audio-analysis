@@ -2259,6 +2259,25 @@ namespace TowseyLib
 
             return (ret);
         }
+        public static double[,] NormaliseInZeroOne(double[,] m, double normMin, double normMax)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] ret = new double[rows,cols];
+            double range = normMax - normMin;
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    double value = (m[r,c] - normMin) / range;
+                    if (value > 1.0) value = 1.0;
+                    if (value < 0.0) value = 0.0;
+                    ret[r,c] = value;
+                }
+            }
+            return (ret);
+        }
 
         
         /// <summary>
@@ -2524,6 +2543,19 @@ namespace TowseyLib
       for (int i = 0; i < data.Length; i++) squaredArray[i] = data[i] * data[i];
       return squaredArray;
   }
+  public static double[] LogValues(double[] data)
+  {
+      if (data == null) return null;
+      var logArray = new double[data.Length];
+      for (int i = 0; i < data.Length; i++)
+      {
+          if(data[i] <= 0.0) logArray[i] = -1000000.0;
+          else
+          logArray[i] = Math.Log10(data[i]);
+      }
+      return logArray;
+  }
+
 
 
 //***************************************************************************************************************************************
