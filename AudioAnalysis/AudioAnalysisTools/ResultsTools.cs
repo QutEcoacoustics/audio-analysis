@@ -42,19 +42,59 @@ namespace AudioAnalysisTools
             return datatable;
         }
 
-        public static List<double[,]> MergeSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults, string spectralID)
+        public static List<TowseyLib.Spectrum> MergeBGNSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
         {
-            var bgnSg = new List<double[]>();
-            var aciSg = new List<double[]>();
-            var avgSg = new List<double[]>();
-            var varSg = new List<double[]>();
+            var s = new List<Spectrum>();
             foreach (var result in analyserResults)
             {
-                bgnSg.Add(result.bgNoiseSpectrum);
+                s.Add(new Spectrum(result.bgnSpectrum, result.SegmentStartOffset.Minutes, "bgNoiseSpectrum"));
             }
-            var list = new List<double[,]>();
-
-            return list;
+            return s;
+        }
+        public static List<TowseyLib.Spectrum> MergeAVGSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.avgSpectrum, result.SegmentStartOffset.Minutes, "averageSpectrum"));
+            }
+            return s;
+        }
+        public static List<TowseyLib.Spectrum> MergeVARSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.varSpectrum, result.SegmentStartOffset.Minutes, "varianceSpectrum"));
+            }
+            return s;
+        }
+        public static List<TowseyLib.Spectrum> MergeACISpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.aciSpectrum, result.SegmentStartOffset.Minutes, "aciSpectrum"));
+            }
+            return s;
+        }
+        public static List<TowseyLib.Spectrum> MergeCVRSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.cvrSpectrum, result.SegmentStartOffset.Minutes, "cvrSpectrum"));
+            }
+            return s;
+        }
+        public static List<TowseyLib.Spectrum> MergeTENSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.tenSpectrum, result.SegmentStartOffset.Minutes, "tenSpectrum"));
+            }
+            return s;
         }
 
 

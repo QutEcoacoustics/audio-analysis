@@ -254,6 +254,25 @@ namespace AudioAnalysisTools
         } //Sonogram2Image()
 
 
+        public static Image Matrix2SonogramImage(double[,] matrix, SonogramConfig config)
+        {
+            bool doHighlightSubband = false;
+            //ADD time and frequency scales
+            bool addScale = false;
+            //if (configDict.ContainsKey(Keys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
+            //else
+            //    if (configDict.ContainsKey(Keys.ADD_AXES)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict);
+            bool add1kHzLines = addScale;
+
+            BaseSonogram sonogram = new SpectralSonogram(config, matrix);
+            sonogram.Configuration.MaxFreqBand = 8800;
+            System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            Image_MultiTrack image = new Image_MultiTrack(img);
+            //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
+            return image.GetImage();
+        } //CSV2SonogramImage()
+
+
 
         public static int MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
