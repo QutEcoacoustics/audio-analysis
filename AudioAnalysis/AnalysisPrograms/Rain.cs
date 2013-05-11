@@ -586,6 +586,7 @@ namespace AnalysisPrograms
             rainIndices.lowFreqCover = tuple3.Item1;
             rainIndices.midFreqCover = tuple3.Item2;
             rainIndices.hiFreqCover  = tuple3.Item3;
+            // double[] coverSpectrum = tuple3.Item4;
 
             return rainIndices;
         }
