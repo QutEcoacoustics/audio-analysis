@@ -114,9 +114,11 @@ namespace AnalysisPrograms
             // code to test reading of csv files into matrix into spectrogram
             if (true)
             {
-                string csvPath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.bgnSpectrum.csv";
-                string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.bgnSpectrum.png";
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN");
+                string csvPath   = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.csv";
+                string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.png";
+                int X_interval = 60; // assume one minute spedctra and hourly time lines
+                int Y_interval = (int)Math.Round(1000 / (double)34.5);
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
                 System.Environment.Exit(666);
             }
 
@@ -286,42 +288,50 @@ namespace AnalysisPrograms
                 string csvPath  = null;
                 string imagePath = null;
                 List<TowseyLib.Spectrum> list;
+                int X_interval = 60; // assume one minute spedctra and hourly time lines
+                int Y_interval = (int)Math.Round(1000 / (double)34.5); // assume 256 freq bins and ~8840 nyquist
 
                 list = ResultsTools.MergeBGNSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN", X_interval, Y_interval);
 
                 list = ResultsTools.MergeAVGSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".avgSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".avgSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "AVG");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "AVG", X_interval, Y_interval);
 
                 list = ResultsTools.MergeVARSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".varSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".varSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "VAR");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "VAR", X_interval, Y_interval);
                 
                 list = ResultsTools.MergeACISpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".aciSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".aciSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "ACI");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "ACI", X_interval, Y_interval);
                 
                 list = ResultsTools.MergeCVRSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "CVR");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CVR", X_interval, Y_interval);
                 
                 list = ResultsTools.MergeTENSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".tenSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".tenSpectrum.png");
-                Spectrum.DrawSpectrogramsOfIndices(csvPath, imagePath, "TEN");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "TEN", X_interval, Y_interval);
+
+                list = ResultsTools.MergeCMBSpectraIntoSpectrograms(analyserResults);
+                csvPath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.csv");
+                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
+                imagePath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.png");
+                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
             }
 
 

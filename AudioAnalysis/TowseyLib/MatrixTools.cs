@@ -223,9 +223,6 @@ namespace TowseyLib
             return op;
         }
 
-
-
-
         /// <summary>
         /// bounds a matrix of numbers between a minimum and a maximum.
         /// Numbers that fall outside the bound are truncated to the bound.

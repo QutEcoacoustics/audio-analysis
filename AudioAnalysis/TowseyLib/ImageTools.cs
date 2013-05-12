@@ -1663,12 +1663,65 @@ namespace TowseyLib
                 {
                     int greyId = (int)Math.Floor(norm[r, c] * 255);
                     if (greyId < 0) greyId = 0;
-                    greyId = 255 - greyId; // reverse image
+                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows
 
 
+            bmp.Save(pathName);
+        }
+        /// <summary>
+        /// Draws matrix
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrixWithAxes(double[,] matrix, string pathName, int X_interval, int Y_interval)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            Color[] grayScale = GrayScale();
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            double[,] norm = DataTools.normalise(matrix);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int greyId = (int)Math.Floor(norm[r, c] * 255);
+                    if (greyId < 0) greyId = 0;
+                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    bmp.SetPixel(c, r, grayScale[greyId]);
+                }//end all columns
+            }//end all rows
+
+            // for rows draw in Y-axis line
+            for (int r = 0; r < rows; r++)
+            {
+                if ((r > 0) && (r % Y_interval == 0))
+                {
+                    int rowFromBottom = rows - r;
+                    for (int c = 0; c < cols; c++)
+                    {
+                        bmp.SetPixel(c, rowFromBottom, Color.Gray);
+                        c++;
+                    }
+                }
+            }
+            // for columns, draw in X-axis lines
+            for (int c = 0; c < cols; c++)
+            {
+                if ((c > 0) && (c % X_interval == 0))
+                {
+                    for (int r = 0; r < rows; r++)
+                    {
+                        bmp.SetPixel(c, r, Color.Gray);
+                        r++;
+                    }
+                }
+            }
             bmp.Save(pathName);
         }
         /// <summary>

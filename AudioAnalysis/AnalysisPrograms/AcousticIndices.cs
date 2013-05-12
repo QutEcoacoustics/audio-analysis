@@ -274,6 +274,7 @@ namespace AnalysisPrograms
             analysisResults.varSpectrum   = indices.varianceSpectrum;
             analysisResults.cvrSpectrum   = indices.coverSpectrum;
             analysisResults.tenSpectrum   = indices.HtSpectrum;
+            analysisResults.cmbSpectrum   = indices.comboSpectrum;
 
             var sonogram = results.Item3;
             var hits     = results.Item4;
