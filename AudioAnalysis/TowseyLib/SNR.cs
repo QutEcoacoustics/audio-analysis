@@ -1014,9 +1014,8 @@ namespace TowseyLib
         {
             //set parameters for histograms
             //*******************************************************************************************************************
-            int histoBarCount = 100; // number of pixel intensity bins
-            double upperLimitForMode = 0.666;
-                // sets upper limit to modal noise bin. Higher values = more severe noise removal.
+            int histoBarCount = 500; // number of pixel intensity bins
+            double upperLimitForMode = 0.666; // sets upper limit to modal noise bin. Higher values = more severe noise removal.
             int binLimit = (int)(histoBarCount * upperLimitForMode);
             //*******************************************************************************************************************
 

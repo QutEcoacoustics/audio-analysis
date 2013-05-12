@@ -26,10 +26,10 @@ namespace AnalysisPrograms
     {
         // public const string ANALYSIS_NAME = "Indices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; // used to select frames that have 3dB > background
-        public const int    DEFAULT_WINDOW_SIZE = 256;
-        public static int   lowFreqBound = 500; // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        public static int   midFreqBound = 3500;
-        public const  int   RESAMPLE_RATE = 17640; //chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
+        public const int DEFAULT_WINDOW_SIZE = 256;
+        public static int lowFreqBound = 500; // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
+        public static int midFreqBound = 3500;
+        public const int RESAMPLE_RATE = 17640; //chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
         // public const int RESAMPLE_RATE = 22050;
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file. 
@@ -37,32 +37,32 @@ namespace AnalysisPrograms
         public static string key_MID_FREQ_BOUND = "MID_FREQ_BOUND";
         public static string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
 
-        private const int    COL_NUMBER = 26;
+        private const int COL_NUMBER = 26;
 
         public static string header_count = Keys.INDICES_COUNT;
-        public const string header_startMin  = "start-min";
+        public const string header_startMin = "start-min";
         public const string header_SecondsDuration = "SegTimeSpan";
-        public const string header_avAmpdB   = "avAmp-dB";
-        public const string header_snrdB     = "snr-dB";
+        public const string header_avAmpdB = "avAmp-dB";
+        public const string header_snrdB = "snr-dB";
         public const string header_activeSnrdB = "activeSnr-dB";
-        public const string header_bgdB      = "bg-dB";
-        public const string header_activity  = "activity";
-        public const string header_segCount  = "segCount";
-        public const string header_avSegDur  = "avSegDur";
-        public const string header_hfCover   = "hfCover";
-        public const string header_mfCover   = "mfCover";
-        public const string header_lfCover   = "lfCover";
-        public const string header_HAmpl     = "H[temporal]";
+        public const string header_bgdB = "bg-dB";
+        public const string header_activity = "activity";
+        public const string header_segCount = "segCount";
+        public const string header_avSegDur = "avSegDur";
+        public const string header_hfCover = "hfCover";
+        public const string header_mfCover = "mfCover";
+        public const string header_lfCover = "lfCover";
+        public const string header_HAmpl = "H[temporal]";
         public const string header_HPeakFreq = "H[peakFreq]";
-        public const string header_HAvSpectrum  = "H[spectral]";
+        public const string header_HAvSpectrum = "H[spectral]";
         public const string header_HVarSpectrum = "H[spectralVar]";
         public const string header_AcComplexity = "AcComplexity";
-        public const string header_NumClusters  = "clusterCount";
-        public const string header_avClustDur   = "avClustDur";
+        public const string header_NumClusters = "clusterCount";
+        public const string header_avClustDur = "avClustDur";
         public const string header_TrigramCount = "3gramCount";
-        public const string header_TrigramRate  = "av3gramRepetition";
+        public const string header_TrigramRate = "av3gramRepetition";
         public const string header_SPTracksPerSec = "SpPkTracks/Sec";
-        public const string header_SPTracksDur  = "SpPkTracks%Dur";
+        public const string header_SPTracksDur = "SpPkTracks%Dur";
 
 
         private static System.Tuple<string[], Type[], bool[], double[]> InitOutputTableColumns()
@@ -71,32 +71,32 @@ namespace AnalysisPrograms
             string[] HEADERS = new string[COL_NUMBER];
             bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
             double[] COMBO_WEIGHTS = new double[COL_NUMBER];
-            HEADERS[0] = header_count;         COL_TYPES[0] = typeof(int);      DISPLAY_COLUMN[0] = false;  COMBO_WEIGHTS[0]  = 0.0;
-            HEADERS[1] = header_startMin;      COL_TYPES[1] = typeof(double);   DISPLAY_COLUMN[1] = false;  COMBO_WEIGHTS[1]  = 0.0;
-            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false;  COMBO_WEIGHTS[2]  = 0.0;
-            HEADERS[3] = header_avAmpdB;       COL_TYPES[3] = typeof(double);   DISPLAY_COLUMN[3] = true;   COMBO_WEIGHTS[3]  = 0.0;
-            HEADERS[4] = header_snrdB;         COL_TYPES[4] = typeof(double);   DISPLAY_COLUMN[4] = true;   COMBO_WEIGHTS[4]  = 0.0;
-            HEADERS[5] = header_activeSnrdB;   COL_TYPES[5] = typeof(double);   DISPLAY_COLUMN[5] = true;   COMBO_WEIGHTS[5]  = 0.0;
-            HEADERS[6] = header_bgdB;          COL_TYPES[6] = typeof(double);   DISPLAY_COLUMN[6] = true;   COMBO_WEIGHTS[6]  = 0.0;
-            HEADERS[7] = header_activity;      COL_TYPES[7] = typeof(double);   DISPLAY_COLUMN[7] = true;   COMBO_WEIGHTS[7]  = 0.0;
-            HEADERS[8] = header_segCount;      COL_TYPES[8] = typeof(int);      DISPLAY_COLUMN[8] = true;   COMBO_WEIGHTS[8]  = 0.0;
-            HEADERS[9] = header_avSegDur;      COL_TYPES[9] = typeof(double);   DISPLAY_COLUMN[9] = true;   COMBO_WEIGHTS[9]  = 0.0;
-            HEADERS[10] = header_hfCover;      COL_TYPES[10] = typeof(double);  DISPLAY_COLUMN[10] = true;  COMBO_WEIGHTS[10] = 0.0;
-            HEADERS[11] = header_mfCover;      COL_TYPES[11] = typeof(double);  DISPLAY_COLUMN[11] = true;  COMBO_WEIGHTS[11] = 0.0;
-            HEADERS[12] = header_lfCover;      COL_TYPES[12] = typeof(double);  DISPLAY_COLUMN[12] = true;  COMBO_WEIGHTS[12] = 0.0;
-            HEADERS[13] = header_HAmpl;        COL_TYPES[13] = typeof(double);  DISPLAY_COLUMN[13] = true;  COMBO_WEIGHTS[13] = -0.2;
-            HEADERS[14] = header_HPeakFreq;    COL_TYPES[14] = typeof(double);  DISPLAY_COLUMN[14] = false; COMBO_WEIGHTS[14] = 0.2;
-            HEADERS[15] = header_HAvSpectrum;  COL_TYPES[15] = typeof(double);  DISPLAY_COLUMN[15] = true;  COMBO_WEIGHTS[15] = 0.0;
-            HEADERS[16] = header_HVarSpectrum; COL_TYPES[16] = typeof(double);  DISPLAY_COLUMN[16] = false; COMBO_WEIGHTS[16] = 0.2;
-            HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double);  DISPLAY_COLUMN[17] = true;  COMBO_WEIGHTS[17] = 0.2;
-            HEADERS[18] = header_NumClusters;  COL_TYPES[18] = typeof(int);     DISPLAY_COLUMN[18] = true;  COMBO_WEIGHTS[18] = 0.2;
-            HEADERS[19] = header_avClustDur;   COL_TYPES[19] = typeof(double);  DISPLAY_COLUMN[19] = true;  COMBO_WEIGHTS[19] = 0.0;
-            HEADERS[20] = header_TrigramCount; COL_TYPES[20] = typeof(int);     DISPLAY_COLUMN[20] = true;  COMBO_WEIGHTS[20] = 0.0;
-            HEADERS[21] = header_TrigramRate;  COL_TYPES[21] = typeof(double);  DISPLAY_COLUMN[21] = true;  COMBO_WEIGHTS[21] = 0.0;
-            HEADERS[22] = header_SPTracksPerSec; COL_TYPES[22] = typeof(double);DISPLAY_COLUMN[22] = true;  COMBO_WEIGHTS[22] = 0.0;
-            HEADERS[23] = header_SPTracksDur;  COL_TYPES[23] = typeof(double);  DISPLAY_COLUMN[23] = true;  COMBO_WEIGHTS[23] = 0.0;
-            HEADERS[24] = Rain.header_rain;    COL_TYPES[24] = typeof(double);  DISPLAY_COLUMN[24] = true;  COMBO_WEIGHTS[24] = 0.0;
-            HEADERS[25] = Rain.header_cicada;  COL_TYPES[25] = typeof(double);  DISPLAY_COLUMN[25] = true;  COMBO_WEIGHTS[25] = 0.0;
+            HEADERS[0] = header_count; COL_TYPES[0] = typeof(int); DISPLAY_COLUMN[0] = false; COMBO_WEIGHTS[0] = 0.0;
+            HEADERS[1] = header_startMin; COL_TYPES[1] = typeof(double); DISPLAY_COLUMN[1] = false; COMBO_WEIGHTS[1] = 0.0;
+            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false; COMBO_WEIGHTS[2] = 0.0;
+            HEADERS[3] = header_avAmpdB; COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = true; COMBO_WEIGHTS[3] = 0.0;
+            HEADERS[4] = header_snrdB; COL_TYPES[4] = typeof(double); DISPLAY_COLUMN[4] = true; COMBO_WEIGHTS[4] = 0.0;
+            HEADERS[5] = header_activeSnrdB; COL_TYPES[5] = typeof(double); DISPLAY_COLUMN[5] = true; COMBO_WEIGHTS[5] = 0.0;
+            HEADERS[6] = header_bgdB; COL_TYPES[6] = typeof(double); DISPLAY_COLUMN[6] = true; COMBO_WEIGHTS[6] = 0.0;
+            HEADERS[7] = header_activity; COL_TYPES[7] = typeof(double); DISPLAY_COLUMN[7] = true; COMBO_WEIGHTS[7] = 0.0;
+            HEADERS[8] = header_segCount; COL_TYPES[8] = typeof(int); DISPLAY_COLUMN[8] = true; COMBO_WEIGHTS[8] = 0.0;
+            HEADERS[9] = header_avSegDur; COL_TYPES[9] = typeof(double); DISPLAY_COLUMN[9] = true; COMBO_WEIGHTS[9] = 0.0;
+            HEADERS[10] = header_hfCover; COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true; COMBO_WEIGHTS[10] = 0.0;
+            HEADERS[11] = header_mfCover; COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true; COMBO_WEIGHTS[11] = 0.0;
+            HEADERS[12] = header_lfCover; COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true; COMBO_WEIGHTS[12] = 0.0;
+            HEADERS[13] = header_HAmpl; COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true; COMBO_WEIGHTS[13] = -0.2;
+            HEADERS[14] = header_HPeakFreq; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = false; COMBO_WEIGHTS[14] = 0.2;
+            HEADERS[15] = header_HAvSpectrum; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = true; COMBO_WEIGHTS[15] = 0.0;
+            HEADERS[16] = header_HVarSpectrum; COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = false; COMBO_WEIGHTS[16] = 0.2;
+            HEADERS[17] = header_AcComplexity; COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true; COMBO_WEIGHTS[17] = 0.2;
+            HEADERS[18] = header_NumClusters; COL_TYPES[18] = typeof(int); DISPLAY_COLUMN[18] = true; COMBO_WEIGHTS[18] = 0.2;
+            HEADERS[19] = header_avClustDur; COL_TYPES[19] = typeof(double); DISPLAY_COLUMN[19] = true; COMBO_WEIGHTS[19] = 0.0;
+            HEADERS[20] = header_TrigramCount; COL_TYPES[20] = typeof(int); DISPLAY_COLUMN[20] = true; COMBO_WEIGHTS[20] = 0.0;
+            HEADERS[21] = header_TrigramRate; COL_TYPES[21] = typeof(double); DISPLAY_COLUMN[21] = true; COMBO_WEIGHTS[21] = 0.0;
+            HEADERS[22] = header_SPTracksPerSec; COL_TYPES[22] = typeof(double); DISPLAY_COLUMN[22] = true; COMBO_WEIGHTS[22] = 0.0;
+            HEADERS[23] = header_SPTracksDur; COL_TYPES[23] = typeof(double); DISPLAY_COLUMN[23] = true; COMBO_WEIGHTS[23] = 0.0;
+            HEADERS[24] = Rain.header_rain; COL_TYPES[24] = typeof(double); DISPLAY_COLUMN[24] = true; COMBO_WEIGHTS[24] = 0.0;
+            HEADERS[25] = Rain.header_cicada; COL_TYPES[25] = typeof(double); DISPLAY_COLUMN[25] = true; COMBO_WEIGHTS[25] = 0.0;
             //HEADERS[26] = "Weighted index"; COL_TYPES[26] = typeof(double); DISPLAY_COLUMN[26] = false; COMBO_WEIGHTS[26] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN, COMBO_WEIGHTS);
         }
@@ -110,9 +110,9 @@ namespace AnalysisPrograms
 
         // NORMALISING CONSTANTS FOR EXTRACTED FEATURES
         public const double AVG_MIN = -7.0;
-        public const double AVG_MAX =  0.5;
-        public const double VAR_MIN =-10.0;
-        public const double VAR_MAX =  0.5;
+        public const double AVG_MAX = 0.5;
+        public const double VAR_MIN = -10.0;
+        public const double VAR_MAX = 0.5;
         public const double BGN_MIN = -7.0;
         public const double BGN_MAX = 0.5;
         public const double ACI_MIN = 0.3;
@@ -144,11 +144,11 @@ namespace AnalysisPrograms
                               int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
             {
                 this.SegmentDuration = _segmentDuration;
-                this.SegmentOverlap  = _segmentOverlap;
-                this.ResampleRate    = _resampleRate;
-                this.FrameLength     = _frameLength;
-                this.FrameOverlap    = _frameOverlap;
-                this.LowFreqBound    = _lowFreqBound;
+                this.SegmentOverlap = _segmentOverlap;
+                this.ResampleRate = _resampleRate;
+                this.FrameLength = _frameLength;
+                this.FrameOverlap = _frameOverlap;
+                this.LowFreqBound = _lowFreqBound;
                 // DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; // av length of clusters > 1 frame.
                 // reportFormat    = _fileFormat;
             } // Parameters
@@ -162,7 +162,7 @@ namespace AnalysisPrograms
         {
             public double activeFrameCover, activeAvDB;
             public TimeSpan avSegmentDuration;
-            public int    activeFrameCount, segmentCount;
+            public int activeFrameCount, segmentCount;
             public bool[] activeFrames, segmentLocations;
 
             public Activity(bool[] _activeFrames, int _activeFrameCount, double _activity, double _activeAvDB, int _segmentCount, TimeSpan _avSegmentLength, bool[] _segments)
@@ -191,11 +191,11 @@ namespace AnalysisPrograms
             public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
             public double ACI; // acoustic complexity index
             public double rainScore, cicadaScore;
-            public int    segmentCount, clusterCount;
+            public int segmentCount, clusterCount;
             public TimeSpan recordingDuration, avSegmentDuration, avClusterDuration, trackDuration_total;
-            public int    triGramUniqueCount;
+            public int triGramUniqueCount;
             public double triGramRepeatRate;
-            public int    trackCount, trackDuration_percent;
+            public int trackCount, trackDuration_percent;
             public double tracksPerSec;
 
             // the following are vector spectra 
@@ -210,35 +210,35 @@ namespace AnalysisPrograms
                             double[] _coverSpectrum, double[] _HtSpectrum, double[] _comboSpectrum)
             {
                 recordingDuration = _recordingDuration;
-                snr        = _snr;
-                activeSnr  = _activeSnr;
-                bgNoise    = _bgNoise;
-                activity   = _activity;
+                snr = _snr;
+                activeSnr = _activeSnr;
+                bgNoise = _bgNoise;
+                activity = _activity;
                 segmentCount = _segmentCount;
                 avSegmentDuration = _avSegmentDuration;
-                avSig_dB   = _avSig_dB;
+                avSig_dB = _avSig_dB;
                 temporalEntropy = _entropyAmp;
-                hiFreqCover   = _hiFreqCover;
-                midFreqCover  = _midFreqCover;
-                lowFreqCover  = _lowFreqCover;
+                hiFreqCover = _hiFreqCover;
+                midFreqCover = _midFreqCover;
+                lowFreqCover = _lowFreqCover;
 
-                entropyOfPeakFreqDistr    = _peakFreqEntropy;
-                entropyOfAvSpectrum       = _entropyOfAvSpectrum;
+                entropyOfPeakFreqDistr = _peakFreqEntropy;
+                entropyOfAvSpectrum = _entropyOfAvSpectrum;
                 entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
-                ACI                = _ACI;
+                ACI = _ACI;
 
-                clusterCount       = _clusterCount;
-                avClusterDuration  = _avClusterDuration; //av length of clusters > 1 frame.
+                clusterCount = _clusterCount;
+                avClusterDuration = _avClusterDuration; //av length of clusters > 1 frame.
                 triGramUniqueCount = _triGramUniqueCount; // unique cluster trigrams
-                triGramRepeatRate  = _triGramRepeatRate;  // average repetitions of each cluster trigram
+                triGramRepeatRate = _triGramRepeatRate;  // average repetitions of each cluster trigram
 
                 trackDuration_total = _trackDuration_total;
                 trackCount = _trackCount;
                 trackDuration_percent = _trackDuration_percent;
                 tracksPerSec = _trackCount / recordingDuration.TotalSeconds;
-                
-                rainScore          = _rainScore;
-                cicadaScore        = _cicadaScore;
+
+                rainScore = _rainScore;
+                cicadaScore = _cicadaScore;
 
                 // assign spectra
                 bgNoiseSpectrum = _bgNoiseSpectrum;
@@ -246,7 +246,7 @@ namespace AnalysisPrograms
                 averageSpectrum = _averageSpectrum;
                 varianceSpectrum = _varianceSpectrum;
                 coverSpectrum = _coverSpectrum;
-                HtSpectrum    = _HtSpectrum;
+                HtSpectrum = _HtSpectrum;
                 comboSpectrum = _comboSpectrum;
             }
         } // struct Features
@@ -267,14 +267,14 @@ namespace AnalysisPrograms
                 if (_PrunedClusterWts != null)
                 {
                     clusterCount = _PrunedClusterWts.Count;
-                    if (_PrunedClusterWts[0] == null) 
+                    if (_PrunedClusterWts[0] == null)
                         clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
                 }
-                av2 = _av2; 
-                selectedFrames = _SelectedFrames; 
-                prunedClusterWts = _PrunedClusterWts; 
+                av2 = _av2;
+                selectedFrames = _SelectedFrames;
+                prunedClusterWts = _PrunedClusterWts;
                 clusterHits2 = _ClusterHits2;
-                triGramUniqueCount = _triGramUniqueCount; 
+                triGramUniqueCount = _triGramUniqueCount;
                 triGramRepeatRate = _triGramRepeatRate;
             }
         }
@@ -289,7 +289,7 @@ namespace AnalysisPrograms
             public int percentDuration; // percent of recording length
             public TrackInfo(List<SpectralTrack> _tracks, TimeSpan _totalTrackDuration, int _percentDuration)
             {
-                tracks     = _tracks;
+                tracks = _tracks;
                 totalTrackDuration = _totalTrackDuration;
                 percentDuration = _percentDuration;
             }
@@ -324,16 +324,16 @@ namespace AnalysisPrograms
 
             // get recording segment
             AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
-            int signalLength       = recording.GetWavReader().Samples.Length;
-            TimeSpan wavDuration   = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
+            int signalLength = recording.GetWavReader().Samples.Length;
+            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
             double duration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
-            TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration*TimeSpan.TicksPerSecond));
+            TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration * TimeSpan.TicksPerSecond));
 
 
             // i: EXTRACT ENVELOPE and FFTs
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             ////double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[] signalEnvelope   = results2.Envelope;
+            double[] signalEnvelope = results2.Envelope;
 
             // get amplitude spectrogram and remove the DC column ie column zero.
             double[,] spectrogramData = results2.Spectrogram;
@@ -346,7 +346,7 @@ namespace AnalysisPrograms
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
             var bgNoiseResults = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
-            var dBarray  = SNR.TruncateNegativeValues2Zero(bgNoiseResults.DBFrames);
+            var dBarray = SNR.TruncateNegativeValues2Zero(bgNoiseResults.DBFrames);
 
 
             // iii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
@@ -355,12 +355,12 @@ namespace AnalysisPrograms
             Features indices; // struct in which to store all indices
             indices.recordingDuration = wavDuration;                        // total duration of recording
             indices.activity = activity.activeFrameCover;                   // fraction of frames having acoustic activity 
-            indices.bgNoise  = bgNoiseResults.NoiseMode;                    // bg noise in dB
+            indices.bgNoise = bgNoiseResults.NoiseMode;                    // bg noise in dB
             indices.snr = bgNoiseResults.Snr;                               // snr
-            indices.activeSnr= activity.activeAvDB;                         // snr calculated from active frames only
+            indices.activeSnr = activity.activeAvDB;                         // snr calculated from active frames only
             indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());   // 10 times log of amplitude squared 
-            indices.temporalEntropy   = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
-            indices.segmentCount      = activity.segmentCount;              //number of segments whose duration > one frame
+            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
+            indices.segmentCount = activity.segmentCount;              //number of segments whose duration > one frame
             indices.avSegmentDuration = activity.avSegmentDuration;         //av segment duration in milliseconds
 
 
@@ -400,7 +400,7 @@ namespace AnalysisPrograms
             var tuple_Cover = CalculateSpectralCoverage(spectrogramData, SpectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
             indices.lowFreqCover = tuple_Cover.Item1;
             indices.midFreqCover = tuple_Cover.Item2;
-            indices.hiFreqCover  = tuple_Cover.Item3;
+            indices.hiFreqCover = tuple_Cover.Item3;
             indices.coverSpectrum = tuple_Cover.Item4;
 
 
@@ -440,26 +440,26 @@ namespace AnalysisPrograms
 
             //######################################################################
             // xii: calculate RAIN and CICADA indices.
-            indices.rainScore   = 0.0;
+            indices.rainScore = 0.0;
             indices.cicadaScore = 0.0;
             DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, spectrogramData, lowFreqBound, midFreqBound, binWidth);
             if (dt != null)
-            { 
+            {
                 DataRow row = dt.Rows[0];
-                indices.rainScore   = (double)row[Rain.header_rain];
+                indices.rainScore = (double)row[Rain.header_rain];
                 indices.cicadaScore = (double)row[Rain.header_cicada];
             }
 
             // #V#####################################################################################################################################################
             // xiii: calculate the COMBO INDEX from equal wieghted normalised indices.
             indices.comboSpectrum = new double[spectrogramData.GetLength(1)];
-            for (int i = 0; i < indices.comboSpectrum.Length; i++ )
+            for (int i = 0; i < indices.comboSpectrum.Length; i++)
             {
                 double cover = indices.coverSpectrum[i];
                 cover = DataTools.NormaliseInZeroOne(cover, CVR_MIN, CVR_MAX);
                 double aci = indices.ACIspectrum[i];
                 aci = DataTools.NormaliseInZeroOne(aci, ACI_MIN, ACI_MAX);
-                double entropy = indices.HtSpectrum[i]; 
+                double entropy = indices.HtSpectrum[i];
                 entropy = DataTools.NormaliseInZeroOne(entropy, TEN_MIN, TEN_MAX);
                 entropy = 1 - entropy;
                 double avg = indices.averageSpectrum[i];
@@ -502,12 +502,12 @@ namespace AnalysisPrograms
 
             // ######################################################################################################################################################
             // return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
-            if ((activity.activeFrameCount <= 2)||(indices.segmentCount == 0))   
+            if ((activity.activeFrameCount <= 2) || (indices.segmentCount == 0))
             {
                 indices.clusterCount = 0;
                 indices.avClusterDuration = TimeSpan.Zero; //av cluster durtaion in milliseconds
                 indices.triGramUniqueCount = 0;
-                indices.triGramRepeatRate  = 0.0;
+                indices.triGramRepeatRate = 0.0;
                 return Tuple.Create(indices, wavDuration, sonogram, hits, scores, trackInfo.tracks);
             }
             //#V#####################################################################################################################################################
@@ -515,10 +515,10 @@ namespace AnalysisPrograms
             // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             double binaryThreshold = 0.07; // for deriving binary spectrogram
             ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
-            indices.clusterCount = clusterInfo.clusterCount; 
+            indices.clusterCount = clusterInfo.clusterCount;
             indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
             indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
-            indices.triGramRepeatRate  = clusterInfo.triGramRepeatRate;
+            indices.triGramRepeatRate = clusterInfo.triGramRepeatRate;
 
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration
@@ -551,7 +551,7 @@ namespace AnalysisPrograms
         {
             int length = envelope.Length;
             // int isolatedSpikeCount = 0;
-            double peakIntenisty  = 0.0;
+            double peakIntenisty = 0.0;
             double spikeIntensity = 0.0;
 
             var peaks = DataTools.GetPeaks(envelope);
@@ -561,9 +561,9 @@ namespace AnalysisPrograms
                 if (!peaks[i]) continue; //count spikes
                 peakCount++;
                 double diffMinus1 = Math.Abs(envelope[i] - envelope[i - 1]);
-                double diffPlus1  = Math.Abs(envelope[i] - envelope[i + 1]);
+                double diffPlus1 = Math.Abs(envelope[i] - envelope[i + 1]);
                 double avDifference = (diffMinus1 + diffPlus1) / 2;
-                peakIntenisty    += avDifference;
+                peakIntenisty += avDifference;
                 if (avDifference > spikeThreshold)
                 {
                     //isolatedSpikeCount++; // count isolated spikes
@@ -585,7 +585,7 @@ namespace AnalysisPrograms
         public static Activity CalculateActivity(double[] dBarray, TimeSpan frameDuration, double db_Threshold)
         {
             bool[] activeFrames = new bool[dBarray.Length];
-            bool[] segments     = new bool[dBarray.Length];
+            bool[] segments = new bool[dBarray.Length];
             double activeAvDB = 0.0;
             int activeFrameCount = 0;
 
@@ -612,7 +612,7 @@ namespace AnalysisPrograms
             segments = activeFrames;
             for (int i = 1; i < activeFrames.Length - 1; i++)
             {
-                if (!segments[i - 1] && segments[i] && !segments[i + 1]) 
+                if (!segments[i - 1] && segments[i] && !segments[i + 1])
                     segments[i] = false; //remove solitary active frames
             }
 
@@ -620,7 +620,7 @@ namespace AnalysisPrograms
             for (int i = 2; i < activeFrames.Length; i++)
             {
                 if (!segments[i] && segments[i - 1] && segments[i - 2]) //count the ends of active segments
-                    segmentCount++; 
+                    segmentCount++;
             }
 
             if (segmentCount == 0)
@@ -629,7 +629,7 @@ namespace AnalysisPrograms
             int segmentFrameCount = DataTools.CountTrues(segments);
             var avSegmentDuration = TimeSpan.Zero;
 
-            if (segmentFrameCount > 0) 
+            if (segmentFrameCount > 0)
                 avSegmentDuration = TimeSpan.FromSeconds(frameDuration.TotalSeconds * segmentFrameCount / (double)segmentCount);   //av segment duration in milliseconds
 
             return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, segmentCount, avSegmentDuration, segments);
@@ -650,9 +650,9 @@ namespace AnalysisPrograms
         {
             //calculate boundary between hi, mid and low frequency spectrum
             //int freqBinCount = spectrogram.GetLength(1);
-            int lowFreqBinIndex  = (int)Math.Ceiling(lowFreqBound / binWidth);
-            int midFreqBinIndex  = (int)Math.Ceiling(midFreqBound / binWidth);
-            int highFreqBinIndex = spectrogram.GetLength(1)-1; // avoid top row which can have edge effects
+            int lowFreqBinIndex = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int midFreqBinIndex = (int)Math.Ceiling(midFreqBound / binWidth);
+            int highFreqBinIndex = spectrogram.GetLength(1) - 1; // avoid top row which can have edge effects
             int rows = spectrogram.GetLength(0); // frames
             int cols = spectrogram.GetLength(1); // # of freq bins
 
@@ -694,10 +694,10 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static Tuple<int[], int[]> HistogramOfSpectralPeaks(double[,] spectrogram)
         {
-            int frameCount   = spectrogram.GetLength(0);
+            int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
 
-            int[] peakBins  = new int[frameCount];   // store bin id of peaks - use later for imaging purposes
+            int[] peakBins = new int[frameCount];   // store bin id of peaks - use later for imaging purposes
             int[] histogram = new int[freqBinCount]; // histogram of peak locations
             for (int r = 0; r < frameCount; r++)
             {
@@ -706,8 +706,8 @@ namespace AnalysisPrograms
                 int j = DataTools.GetMaxIndex(spectrum); //locate maximum peak
                 //if (spectrogram[r, j] > peakThreshold) 
                 //{
-                    histogram[j] ++; //
-                    peakBins[r] = j;  //store bin of peak
+                histogram[j]++; //
+                peakBins[r] = j;  //store bin of peak
                 //}
             } // over all frames in dB array
 
@@ -724,7 +724,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static Tuple<double[], double[]> CalculateSpectralAvAndVariance(double[,] spectrogram)
         {
-            int frameCount   = spectrogram.GetLength(0);
+            int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
             double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
@@ -738,7 +738,7 @@ namespace AnalysisPrograms
                 double av, sd;
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
                 avgSpectrum[j] = av; // store average of the bin
-                varSpectrum[j] = sd *sd; // store var of the bin
+                varSpectrum[j] = sd * sd; // store var of the bin
             }
             return System.Tuple.Create(avgSpectrum, varSpectrum);
         } // CalculateSpectralAvAndVariance()
@@ -753,16 +753,16 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static double[] AcousticComplexityIndex(double[,] spectrogram)
         {
-            int frameCount   = spectrogram.GetLength(0);
+            int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] aciArray = new double[freqBinCount];      // array of acoustic complexity indices, one for each freq bin
             for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
             {
                 var deltaI = 0.0;          // set up an array to take all values in a freq bin i.e. column of matrix
-                var sumI   = 0.0;
-                for (int r = 0; r < frameCount-1; r++)
+                var sumI = 0.0;
+                for (int r = 0; r < frameCount - 1; r++)
                 {
-                    sumI   += spectrogram[r, j];
+                    sumI += spectrogram[r, j];
                     deltaI += Math.Abs(spectrogram[r, j] - spectrogram[r + 1, j]);
                 }
                 if (sumI > 0.0) aciArray[j] = deltaI / sumI;      //store normalised ACI value
@@ -816,10 +816,10 @@ namespace AnalysisPrograms
                 for (int i = 0; i < spectrum.Length; i++)
                 {
                     if (spectrum[i] >= binaryThreshold) spectrum[i] = 1.0;
-                    else                                spectrum[i] = 0.0;
+                    else spectrum[i] = 0.0;
                 }
 
-                for (int i = 1; i < spectrum.Length-1; i++)
+                for (int i = 1; i < spectrum.Length - 1; i++)
                 {
                     if ((spectrum[i] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 1] == 0.0))
                     {
@@ -829,10 +829,10 @@ namespace AnalysisPrograms
 
                 for (int i = 1; i < spectrum.Length - 2; i++)
                 {
-                    if ((spectrum[i] == 1.0) && (spectrum[i+1] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 2] == 0.0))
+                    if ((spectrum[i] == 1.0) && (spectrum[i + 1] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 2] == 0.0))
                     {
-                        spectrum[i]   = 0.0; //remove isolated peaks.
-                        spectrum[i+1] = 0.0; //remove isolated peaks.
+                        spectrum[i] = 0.0; //remove isolated peaks.
+                        spectrum[i + 1] = 0.0; //remove isolated peaks.
                     }
                 }
 
@@ -845,7 +845,7 @@ namespace AnalysisPrograms
             }
 
             // Return if no suitable training data for clustering
-            if (trainingData.Count  <= 8)
+            if (trainingData.Count <= 8)
             {
                 double avLength = 0.0;
                 return new ClusterInfo(null, avLength, selectedFrames, null, 0, 0);
@@ -856,22 +856,22 @@ namespace AnalysisPrograms
             //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
             double vigilance = 0.1;    //vigilance parameter - increasing this proliferates categories
-                                       //if vigilance=0.1, require similarity (AND/OR) > 10%
+            //if vigilance=0.1, require similarity (AND/OR) > 10%
             var tuple_Clusters = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterHits1        = tuple_Clusters.Item1;   //the cluster to which each frame belongs
+            int[] clusterHits1 = tuple_Clusters.Item1;   //the cluster to which each frame belongs
             List<double[]> clusterWts = tuple_Clusters.Item2;
             //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
 
             //PRUNE THE CLUSTERS
             double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-            int hitThreshold   = 4;               // used to remove wt vectors which have fewer than the threshold hits
+            int hitThreshold = 4;               // used to remove wt vectors which have fewer than the threshold hits
             var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
-            int[] prunedClusterHits         = tuple_output2.Item1;
+            int[] prunedClusterHits = tuple_output2.Item1;
             List<double[]> prunedClusterWts = tuple_output2.Item2;
 
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
             if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
-            
+
             // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
             int hitCount = 0;
@@ -880,7 +880,7 @@ namespace AnalysisPrograms
             {
                 if (selectedFrames[i]) // Select only frames having acoustic energy >= threshold
                 {
-                    clusterHits2[i] = prunedClusterHits[hitCount]; 
+                    clusterHits2[i] = prunedClusterHits[hitCount];
                     hitCount++;
                 }
             }
@@ -932,7 +932,7 @@ namespace AnalysisPrograms
             var tracks = SpectralTrack.GetSpectralPeakTracks(spectrogram, framesPerSecond, binWidth, herzOffset, threshold, minDuration, permittedGap, maxFreq);
             var duration = TimeSpan.Zero;
             int trackLength = 0;
-            foreach(SpectralTrack track in tracks)
+            foreach (SpectralTrack track in tracks)
             {
                 duration += track.Duration();
                 trackLength += track.Length;
@@ -1049,10 +1049,10 @@ namespace AnalysisPrograms
         public static double[,] AssembleClusterSpectrogram(int sigLength, double[,] spectrogram, int excludeBins, bool[] activeFrames,
                                                            double binaryThreshold, List<double[]> clusterWts, int[] clusterHits)
         {
-             
+
             int frameCount = spectrogram.GetLength(0);
-            int freqBinCount = spectrogram.GetLength(1); 
-            
+            int freqBinCount = spectrogram.GetLength(1);
+
             //reassemble spectrogram to visualise the clusters
             var clusterSpectrogram = new double[frameCount, freqBinCount];
             int count = 0;
@@ -1094,21 +1094,21 @@ namespace AnalysisPrograms
         //########################################################################################################################################################################
 
 
-         public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
-         {
-             if (weightArray.Length > dt.Columns.Count) return null; //weights do not match data table
-             List<double[]> columns = new List<double[]>();
-             List<double> weights = new List<double>();
-             for (int i = 0; i < weightArray.Length; i++)
-             {
-                 if (weightArray[i] != 0.0)
-                 {
-                     weights.Add(weightArray[i]);
-                     string colName = dt.Columns[i].ColumnName;
-                     double[] array = DataTableTools.Column2ArrayOfDouble(dt, colName);
-                     columns.Add(DataTools.NormaliseArea(array)); //normalize the arrays prior to obtaining weighted index.
-                 }
-             } //for
+        public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
+        {
+            if (weightArray.Length > dt.Columns.Count) return null; //weights do not match data table
+            List<double[]> columns = new List<double[]>();
+            List<double> weights = new List<double>();
+            for (int i = 0; i < weightArray.Length; i++)
+            {
+                if (weightArray[i] != 0.0)
+                {
+                    weights.Add(weightArray[i]);
+                    string colName = dt.Columns[i].ColumnName;
+                    double[] array = DataTableTools.Column2ArrayOfDouble(dt, colName);
+                    columns.Add(DataTools.NormaliseArea(array)); //normalize the arrays prior to obtaining weighted index.
+                }
+            } //for
 
             int arrayLength = columns[0].Length; //assume all columns are of same length 
             double[] weightedIndices = new double[arrayLength];
@@ -1141,13 +1141,13 @@ namespace AnalysisPrograms
         {
             var parameters = InitOutputTableColumns();
             var headers = parameters.Item1;
-            var types   = parameters.Item2;
+            var types = parameters.Item2;
             var dt = DataTableTools.CreateTable(headers, types);
             dt.Rows.Add(0, 0.0, 0.0, //add dummy values to the first two columns. These will be entered later.
                         indices.avSig_dB, indices.snr, indices.activeSnr, indices.bgNoise,
-                        indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, 
-                        indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum, 
-                        indices.ACI, 
+                        indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover,
+                        indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
+                        indices.ACI,
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds, indices.triGramUniqueCount, indices.triGramRepeatRate,
                         indices.tracksPerSec, indices.trackDuration_percent,
                         indices.rainScore, indices.cicadaScore);
@@ -1170,49 +1170,46 @@ namespace AnalysisPrograms
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+
             if (ID.Equals("ACI"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
             }
-            else
-                if (ID.Equals("TEN"))
+            else if (ID.Equals("TEN"))
+            {
+                // normalise and reverse
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+                int rowCount = matrix.GetLength(0);
+                int colCount = matrix.GetLength(1);
+                for (int r = 0; r < rowCount; r++)
                 {
-                    // normalise and reverse
-                    matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
-                    int rowCount = matrix.GetLength(0);
-                    int colCount = matrix.GetLength(1);
-                    for (int r = 0; r < rowCount; r++)
+                    for (int c = 0; c < colCount; c++)
                     {
-                        for (int c = 0; c < colCount; c++)
-                        {
-                            matrix[r, c] = 1 - matrix[r, c];
-                        }
+                        matrix[r, c] = 1 - matrix[r, c];
                     }
                 }
-                else
-                    if (ID.Equals("AVG"))
-                    {
-                        matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
-                    }
-                    else
-                        if (ID.Equals("BGN"))
-                        {
-                            matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.BGN_MIN, AcousticFeatures.BGN_MAX);
-                        }
-                        else
-                            if (ID.Equals("VAR"))
-                            {
-                                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.VAR_MIN, AcousticFeatures.VAR_MAX);
-                            }
-                            else
-                                if (ID.Equals("CVR"))
-                                {
-                                    matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
-                                }
-                                else
-                                {
-                                    matrix = DataTools.Normalise(matrix, 0, 1);
-                                }
+            }
+            else if (ID.Equals("AVG"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
+            }
+            else if (ID.Equals("BGN"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.BGN_MIN, AcousticFeatures.BGN_MAX);
+            }
+            else if (ID.Equals("VAR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.VAR_MIN, AcousticFeatures.VAR_MAX);
+            }
+            else if (ID.Equals("CVR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
+            }
+            else
+            {
+                matrix = DataTools.Normalise(matrix, 0, 1);
+            }
+
             ImageTools.DrawMatrixWithAxes(matrix, imagePath, X_interval, Y_interval);
         }
 
@@ -1237,7 +1234,7 @@ namespace AnalysisPrograms
             int speciesTotal = 0;
 
             // ignore last line
-            for (int i = 1; i < lines.Count - 1; i++) 
+            for (int i = 1; i < lines.Count - 1; i++)
             {
                 string[] words = lines[i].Split(',');
                 int speciesCount = int.Parse(words[1]);
