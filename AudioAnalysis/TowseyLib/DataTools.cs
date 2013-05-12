@@ -2243,6 +2243,23 @@ namespace TowseyLib
         /// <param name="normMin"></param>
         /// <param name="normMax"></param>
         /// <returns></returns>
+        public static double NormaliseInZeroOne(double value, double normMin, double normMax)
+        {
+            double range = normMax - normMin;
+            double norm  = (value - normMin) / range;
+            if (norm > 1.0) norm = 1.0;
+            if (norm < 0.0) norm = 0.0;            
+            return norm;
+        }
+        /// <summary>
+        /// normalises the values in a vector such that the passed min value = 0 
+        /// and the passed max value = 1.0
+        /// Values LT 0.0 and GT 1.0 are truncated.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="normMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
         public static double[] NormaliseInZeroOne(double[] v, double normMin, double normMax)
         {
             int length = v.Length;

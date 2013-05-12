@@ -65,47 +65,5 @@ namespace TowseyLib
             FileTools.WriteTextFile(path, lines);
         }
 
-        public static void DrawSpectrogramsOfIndices(string spectrogramCsvPath, string imagePath, string ID)
-        {
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(spectrogramCsvPath);
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0)-1, matrix.GetLength(1)-3); // -3 to avoid anomalies in top freq bin
-            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-            if(ID.Equals("ACI"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, 0.3, 0.7);
-            }else
-                if (ID.Equals("TEN"))
-                {
-                    matrix = DataTools.NormaliseInZeroOne(matrix, 0.5, 1.0);
-                }
-                else
-                if (ID.Equals("AVG"))
-                {
-                    matrix = DataTools.NormaliseInZeroOne(matrix, -7.0, 0.5);
-                }
-                else
-                if (ID.Equals("BGN"))
-                {
-                    matrix = DataTools.NormaliseInZeroOne(matrix, -7.0, 0.5);
-                }
-                else
-                if (ID.Equals("VAR"))
-                {
-                    matrix = DataTools.NormaliseInZeroOne(matrix, -10.0, 0.5);
-                }
-                else
-                if (ID.Equals("CVR"))
-                {
-                    matrix = DataTools.NormaliseInZeroOne(matrix, 0.0, 0.8);
-                }
-                else
-                {
-                matrix = DataTools.Normalise(matrix, 0, 1);
-            }
-            ImageTools.DrawMatrix(matrix, imagePath);
-        }
-
-
     } // class Spectrum
 }

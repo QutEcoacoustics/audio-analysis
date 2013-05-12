@@ -108,6 +108,20 @@ namespace AnalysisPrograms
             return items.Item4; // COMBO_WEIGHTS;
         }
 
+        // NORMALISING CONSTANTS FOR EXTRACTED FEATURES
+        public const double AVG_MIN = -7.0;
+        public const double AVG_MAX =  0.5;
+        public const double VAR_MIN =-10.0;
+        public const double VAR_MAX =  0.5;
+        public const double BGN_MIN = -7.0;
+        public const double BGN_MAX = 0.5;
+        public const double ACI_MIN = 0.3;
+        public const double ACI_MAX = 0.7;
+        public const double CVR_MIN = 0.0;
+        public const double CVR_MAX = 0.8;
+        public const double TEN_MIN = 0.5;
+        public const double TEN_MAX = 1.0;
+
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
@@ -185,7 +199,7 @@ namespace AnalysisPrograms
             public double tracksPerSec;
 
             // the following are vector spectra 
-            public double[] bgNoiseSpectrum, ACIspectrum, averageSpectrum, varianceSpectrum, coverSpectrum, HtSpectrum;
+            public double[] bgNoiseSpectrum, ACIspectrum, averageSpectrum, varianceSpectrum, coverSpectrum, HtSpectrum, comboSpectrum;
 
             public Features(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
@@ -193,7 +207,7 @@ namespace AnalysisPrograms
                             int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
                             TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore,
                             double[] _bgNoiseSpectrum, double[] _ACIspectrum, double[] _averageSpectrum, double[] _varianceSpectrum,
-                            double[] _coverSpectrum, double[] _HtSpectrum)
+                            double[] _coverSpectrum, double[] _HtSpectrum, double[] _comboSpectrum)
             {
                 recordingDuration = _recordingDuration;
                 snr        = _snr;
@@ -233,8 +247,9 @@ namespace AnalysisPrograms
                 varianceSpectrum = _varianceSpectrum;
                 coverSpectrum = _coverSpectrum;
                 HtSpectrum    = _HtSpectrum;
+                comboSpectrum = _comboSpectrum;
             }
-        } // struct Indices2
+        } // struct Features
 
 
         public struct ClusterInfo
@@ -325,6 +340,7 @@ namespace AnalysisPrograms
             spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
             int nyquistFreq = recording.Nyquist;
             double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
+            int nyquistBin = spectrogramData.GetLength(1) - 1;
 
 
             // ii: FRAME ENERGIES -
@@ -349,7 +365,6 @@ namespace AnalysisPrograms
 
 
             // calculate the bin id of boundary between mid and low frequency spectrum
-            int nyquistBin = spectrogramData.GetLength(1) - 1;
             int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
@@ -435,9 +450,25 @@ namespace AnalysisPrograms
                 indices.cicadaScore = (double)row[Rain.header_cicada];
             }
 
+            // #V#####################################################################################################################################################
+            // xiii: calculate the COMBO INDEX from equal wieghted normalised indices.
+            indices.comboSpectrum = new double[spectrogramData.GetLength(1)];
+            for (int i = 0; i < indices.comboSpectrum.Length; i++ )
+            {
+                double cover = indices.coverSpectrum[i];
+                cover = DataTools.NormaliseInZeroOne(cover, CVR_MIN, CVR_MAX);
+                double aci = indices.ACIspectrum[i];
+                aci = DataTools.NormaliseInZeroOne(aci, ACI_MIN, ACI_MAX);
+                double entropy = indices.HtSpectrum[i]; 
+                entropy = DataTools.NormaliseInZeroOne(entropy, TEN_MIN, TEN_MAX);
+                entropy = 1 - entropy;
+                double avg = indices.averageSpectrum[i];
+                avg = DataTools.NormaliseInZeroOne(avg, AVG_MIN, AVG_MAX);
+                indices.comboSpectrum[i] = (cover + aci + entropy + avg) / (double)4;
+            }
 
             // #V#####################################################################################################################################################
-            // xiii:  set up other info to return
+            // xiv:  set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = null;
             var scores = new List<Plot>();
@@ -481,7 +512,7 @@ namespace AnalysisPrograms
             }
             //#V#####################################################################################################################################################
 
-            // xii: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             double binaryThreshold = 0.07; // for deriving binary spectrogram
             ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
             indices.clusterCount = clusterInfo.clusterCount; 
@@ -495,7 +526,7 @@ namespace AnalysisPrograms
 
             //wavDuration
 
-            // xiii: STORE CLUSTERING IMAGES
+            // xvi: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
             {
                 //bool[] selectedFrames = tuple_Clustering.Item3;
@@ -695,7 +726,7 @@ namespace AnalysisPrograms
         {
             int frameCount   = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
-            double[] avSpectrum  = new double[freqBinCount];   // for average  of the spectral bins
+            double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
             double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
             for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
             {
@@ -706,10 +737,10 @@ namespace AnalysisPrograms
                 }
                 double av, sd;
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
-                avSpectrum[j]  = av;      //store average  of the bin
-                varSpectrum[j] = sd * sd; //store variance of the bin
+                avgSpectrum[j] = av; // store average of the bin
+                varSpectrum[j] = sd *sd; // store var of the bin
             }
-            return System.Tuple.Create(avSpectrum, varSpectrum);
+            return System.Tuple.Create(avgSpectrum, varSpectrum);
         } // CalculateSpectralAvAndVariance()
 
         /// <summary>
@@ -746,13 +777,13 @@ namespace AnalysisPrograms
         {
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
-            double[] teSp = new double[freqBinCount];      // array of H[t] indices, one for each freq bin
+            double[] tenSp = new double[freqBinCount];      // array of H[t] indices, one for each freq bin
             for (int j = 0; j < freqBinCount; j++)         // for all frequency bins
             {
                 double[] column = MatrixTools.GetColumn(spectrogram, j);
-                teSp[j] = DataTools.Entropy_normalised(DataTools.SquareValues(column)); // ENTROPY of freq bin
+                tenSp[j] = DataTools.Entropy_normalised(DataTools.SquareValues(column)); // ENTROPY of freq bin                
             }
-            return teSp;
+            return tenSp;
         }
 
 
@@ -1124,6 +1155,67 @@ namespace AnalysisPrograms
             //foreach (DataRow row in dt.Rows) { }
             return dt;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="spectrogramCsvPath"></param>
+        /// <param name="imagePath"></param>
+        /// <param name="ID"></param>
+        /// <param name="X_interval">pixel interval between X-axis lines</param>
+        /// <param name="Y_interval">pixel interval between Y-axis lines</param>
+        public static void DrawSpectrogramsOfIndices(string spectrogramCsvPath, string imagePath, string ID, int X_interval, int Y_interval)
+        {
+            double[,] matrix = CsvTools.ReadCSVFile2Matrix(spectrogramCsvPath);
+            // remove left most column - consists of index numbers
+            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
+            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+            if (ID.Equals("ACI"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
+            }
+            else
+                if (ID.Equals("TEN"))
+                {
+                    // normalise and reverse
+                    matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+                    int rowCount = matrix.GetLength(0);
+                    int colCount = matrix.GetLength(1);
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        for (int c = 0; c < colCount; c++)
+                        {
+                            matrix[r, c] = 1 - matrix[r, c];
+                        }
+                    }
+                }
+                else
+                    if (ID.Equals("AVG"))
+                    {
+                        matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
+                    }
+                    else
+                        if (ID.Equals("BGN"))
+                        {
+                            matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.BGN_MIN, AcousticFeatures.BGN_MAX);
+                        }
+                        else
+                            if (ID.Equals("VAR"))
+                            {
+                                matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.VAR_MIN, AcousticFeatures.VAR_MAX);
+                            }
+                            else
+                                if (ID.Equals("CVR"))
+                                {
+                                    matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
+                                }
+                                else
+                                {
+                                    matrix = DataTools.Normalise(matrix, 0, 1);
+                                }
+            ImageTools.DrawMatrixWithAxes(matrix, imagePath, X_interval, Y_interval);
+        }
+
 
 
 

@@ -153,13 +153,14 @@
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
 
-        // four different spectra
-        public Double[] bgnSpectrum { get; set; }
-        public Double[] aciSpectrum { get; set; }
-        public Double[] avgSpectrum { get; set; }
-        public Double[] varSpectrum { get; set; }
-        public Double[] cvrSpectrum { get; set; }
-        public Double[] tenSpectrum { get; set; }
-
+        // different spectra for displaying spectrograms of long duration recordings
+        // These spectra typically calculated from one minute of recording
+        public Double[] bgnSpectrum { get; set; } // background noise spectrum
+        public Double[] aciSpectrum { get; set; } // acoutic complexity index spectrum
+        public Double[] avgSpectrum { get; set; } // average spectrum
+        public Double[] varSpectrum { get; set; } // variance spectrum
+        public Double[] cvrSpectrum { get; set; } // bin coverage spectrum
+        public Double[] tenSpectrum { get; set; } // temporal entropy spectrum
+        public Double[] cmbSpectrum { get; set; } // combination of indices
     }
 }

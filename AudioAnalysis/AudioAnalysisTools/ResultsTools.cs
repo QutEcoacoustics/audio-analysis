@@ -96,6 +96,15 @@ namespace AudioAnalysisTools
             }
             return s;
         }
+        public static List<TowseyLib.Spectrum> MergeCMBSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
+        {
+            var s = new List<Spectrum>();
+            foreach (var result in analyserResults)
+            {
+                s.Add(new Spectrum(result.cmbSpectrum, result.SegmentStartOffset.Minutes, "cmbSpectrum"));
+            }
+            return s;
+        }
 
 
         /// <summary>
