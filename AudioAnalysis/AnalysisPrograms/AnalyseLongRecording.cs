@@ -112,7 +112,7 @@ namespace AnalysisPrograms
             }
 
             // code to test reading of csv files into matrix into spectrogram
-            if (true)
+            if (false)
             {
                 string csvPath   = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.csv";
                 string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.png";
