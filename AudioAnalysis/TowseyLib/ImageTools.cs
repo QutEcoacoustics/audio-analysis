@@ -12,13 +12,14 @@ namespace TowseyLib
 {
     public enum Kernal
     {
-        LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5, 
-                            DiagLine1, DiagLine2,
-                            Grid2, Grid3, Grid4, Grid2Wave, Grid3Wave, //grid filters
-                            Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS,
-                            SobelX, SobelY}
+        LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5,
+        DiagLine1, DiagLine2,
+        Grid2, Grid3, Grid4, Grid2Wave, Grid3Wave, //grid filters
+        Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS,
+        SobelX, SobelY
+    }
 
-    
+
     public class ImageTools
     {
         const string paintPath = @"C:\Windows\system32\mspaint.exe";
@@ -26,7 +27,7 @@ namespace TowseyLib
         public static bool Verbose { set; get; }
 
         // this is a list of predefined colors in the Color class.
-        public static string[] colorNames={"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet",
+        public static string[] colorNames ={"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet",
                             "Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan",
                             "DarkBlue", "DarkCyan","DarkGoldenrod","DarkGray","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange",
                             "DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkTurquoise","DarkViolet",
@@ -100,7 +101,7 @@ namespace TowseyLib
                                              { -0.3, -0.3, -0.3, -0.3, -0.3},
                                              { -0.3, -0.3, -0.3, -0.3, -0.3}};
 
-        static double[,] vertLineKernal = {{-0.5, 1.0, -0.5},{-0.5,1.0,-0.5},{-0.5,1.0,-0.5}};
+        static double[,] vertLineKernal = { { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 }, { -0.5, 1.0, -0.5 } };
         static double[,] horiLineKernal3 = { { -0.5, -0.5, -0.5 }, { 1.0, 1.0, 1.0 }, { -0.5, -0.5, -0.5 } };
         static double[,] horiLineKernal5 = { { -0.5, -0.5, -0.5, -0.5, -0.5 }, { 1.0, 1.0, 1.0, 1.0, 1.0 }, { -0.5, -0.5, -0.5, -0.5, -0.5 } };
         static double[,] diagLineKernal1 = { { 2.0, -1.0, -1.0 }, { -1.0, 2.0, -1.0 }, { -1.0, -1.0, 2.0 } };
@@ -200,7 +201,7 @@ namespace TowseyLib
         public static double[,] GreyScaleImage2Matrix(Bitmap bitmap)
         {
             int height = bitmap.Height; //height
-            int width  = bitmap.Width;   //width
+            int width = bitmap.Width;   //width
 
             var matrix = new double[height, width];
             for (int r = 0; r < height; r++)
@@ -226,7 +227,7 @@ namespace TowseyLib
             }
         } //GetPixel(Point position)
 
-        
+
         public static double[,] Convolve(double[,] matrix, Kernal name)
         {
             double[,] kernal;
@@ -266,7 +267,7 @@ namespace TowseyLib
                 case Kernal.Laplace4: kernal = Laplace4Kernal;
                     if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace4 Kernal");
                     break;
-                    
+
 
                 default:
                     throw new System.Exception("\nWARNING: INVALID MODE!");
@@ -277,8 +278,8 @@ namespace TowseyLib
             int mCols = matrix.GetLength(1);
             int kRows = kernal.GetLength(0);
             int kCols = kernal.GetLength(1);
-            int rNH   = kRows / 2;
-            int cNH   = kCols / 2;
+            int rNH = kRows / 2;
+            int cNH = kCols / 2;
 
             if ((rNH <= 0) && (cNH <= 0)) return matrix; //no operation required
 
@@ -311,13 +312,13 @@ namespace TowseyLib
                     newMatrix[r, c] = matrix[r, c];
                 }
             }
-            
+
             //now do bulk of image
             for (int r = rNH; r < (mRows - rNH); r++)
                 for (int c = cNH; c < (mCols - cNH); c++)
                 {
                     double sum = 0.0;
-                    for (int y = -rNH; y <rNH; y++)
+                    for (int y = -rNH; y < rNH; y++)
                     {
                         for (int x = -cNH; x < cNH; x++)
                         {
@@ -433,7 +434,7 @@ namespace TowseyLib
         public static double[,] GetNoise(double[,] m, int kRows, int kCols)
         {
             int mHeight = m.GetLength(0);
-            int mWidth  = m.GetLength(1);
+            int mWidth = m.GetLength(1);
 
             double[,] noise = new double[kRows, kCols];
             RandomNumber rn = new RandomNumber();
@@ -442,7 +443,7 @@ namespace TowseyLib
                 int randomRow = rn.GetInt(mHeight - kRows);
                 int randomCol = rn.GetInt(mWidth - kCols);
                 for (int c = 0; c < kCols; c++)
-                    noise[r, c] = m[randomRow, randomCol+c];
+                    noise[r, c] = m[randomRow, randomCol + c];
             }
             return noise;
         } //end getNoise()
@@ -490,7 +491,7 @@ namespace TowseyLib
                         {
                             if (j < 0) continue;
                             if (j >= cols) continue;
-                            X   +=  matrix[i, j];
+                            X += matrix[i, j];
                             Xe2 += (matrix[i, j] * matrix[i, j]);
                             count++;
                             //LoggedConsole.WriteLine(i+"  "+j+"   count="+count);
@@ -499,7 +500,7 @@ namespace TowseyLib
                     }
                     //LoggedConsole.WriteLine("End NH count="+count);
                     //calculate variance of the neighbourhood
-                    double mean     =  X / count;
+                    double mean = X / count;
                     double variance = (Xe2 / count) - (mean * mean);
                     double numerator = variance - colVar;
                     if (numerator < 0.0) numerator = 0.0;
@@ -508,10 +509,10 @@ namespace TowseyLib
                     double ratio = numerator / denominator;
                     outM[r, c] = mean + (ratio * (matrix[r, c] - mean));
 
-                    
 
-                   // LoggedConsole.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
-                   // Console.ReadLine();
+
+                    // LoggedConsole.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
+                    // Console.ReadLine();
                 }
             }
             return outM;
@@ -541,17 +542,17 @@ namespace TowseyLib
             double[] grid = new double[9]; //to represent 3x3 grid
             double min = Double.MaxValue; double max = -Double.MaxValue;
 
-            for (int y = 1; y < mRows-1; y++)
-                for (int x = 1; x < mCols-1; x++)
+            for (int y = 1; y < mRows - 1; y++)
+                for (int x = 1; x < mCols - 1; x++)
                 {
                     grid[a] = normM[y - 1, x - 1];
-                    grid[b] = normM[y,     x - 1];
+                    grid[b] = normM[y, x - 1];
                     grid[c] = normM[y + 1, x - 1];
                     grid[d] = normM[y - 1, x];
-                    grid[e] = normM[y,     x];
+                    grid[e] = normM[y, x];
                     grid[f] = normM[y + 1, x];
                     grid[g] = normM[y - 1, x + 1];
-                    grid[h] = normM[y,     x + 1];
+                    grid[h] = normM[y, x + 1];
                     grid[i] = normM[y + 1, x + 1];
                     double[] differences = new double[4];
                     double DivideAEI_avBelow = (grid[d] + grid[g] + grid[h]) / (double)3;
@@ -573,8 +574,8 @@ namespace TowseyLib
                     DataTools.MinMax(differences, out gridMin, out gridMax);
 
                     newMatrix[y, x] = gridMax;
-                    if(min > gridMin) min = gridMin;
-                    if(max < gridMax) max = gridMax;
+                    if (min > gridMin) min = gridMin;
+                    if (max < gridMax) max = gridMax;
                 }
 
             //double relThreshold = 0.2;
@@ -794,7 +795,7 @@ namespace TowseyLib
         public static void PercentileThresholds(double[,] M, double lowerCut, double upperCut, out double lowerThreshold, out double upperThreshold)
         {
             int binCount = 50;
-            int count = M.GetLength(0) * M.GetLength(1); 
+            int count = M.GetLength(0) * M.GetLength(1);
             double binWidth;
             double min; double max;
             int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
@@ -805,7 +806,7 @@ namespace TowseyLib
 
             //calculate threshold for upper percentile
             int clipCount = (int)(upperCut * count);
-            int i = binCount-1;
+            int i = binCount - 1;
             int sum = 0;
             while ((sum < clipCount) && (i > 0)) sum += powerHisto[i--];
             upperThreshold = min + (i * binWidth);
@@ -885,7 +886,7 @@ namespace TowseyLib
             return outM;
         }// end of TrimPercentiles()
 
-// ###################################################################################################################################
+        // ###################################################################################################################################
 
 
         /// <summary>
@@ -1007,7 +1008,7 @@ namespace TowseyLib
             int bandCount = 16;  // 16 bands, width=512pixels, 32pixels/band 
             double lowerShoulder = 0.5;   //used to increase or decrease the threshold from modal value
             double upperShoulder = 0.05;
-            
+
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
 
             int height = blurM.GetLength(0);
@@ -1131,9 +1132,9 @@ namespace TowseyLib
 
                     int colWidth; //colWidth of object
                     Oblong.Col_Width(m2, x, y, out colWidth);
-                    int x2 = x + colWidth; 
+                    int x2 = x + colWidth;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
- 
+
                     //find distance to nearest object in hi frequency direction
                     // and join the two if within threshold distance
                     int thresholdDistance = 15;
@@ -1200,7 +1201,7 @@ namespace TowseyLib
 
                     int colWidth; //colWidth of object
                     Oblong.Col_Width(m2, x, y, out colWidth);
-                    int x2 = x + colWidth-1;
+                    int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
                     //find distance to nearest object in hi frequency direction
@@ -1216,7 +1217,7 @@ namespace TowseyLib
             //transfer line objects to output matrix IF they overlap a high energy region in m1
             int objectCount = 0;
             double[,] outM = new double[height, width];
-            for (int y = 0; y < height-2; y++)
+            for (int y = 0; y < height - 2; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
@@ -1231,7 +1232,7 @@ namespace TowseyLib
                     bool overlapsHighEnergy = false;
                     for (int j = x; j < x2; j++)
                     {
-                        if ((m1[y+1, j] == 1.0) || (m1[y, j] == 1.0))
+                        if ((m1[y + 1, j] == 1.0) || (m1[y, j] == 1.0))
                         {
                             overlapsHighEnergy = true;
                             break;
@@ -1243,8 +1244,8 @@ namespace TowseyLib
                         objectCount++;
                         for (int j = x; j < x2; j++) outM[y, j] = 1.0;
                         for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
-                        for (int j = x; j < x2; j++) outM[y+1, j] = 1.0;
-                        for (int j = x; j < x2; j++) tmpM[y+1, j] = 0.0;
+                        for (int j = x; j < x2; j++) outM[y + 1, j] = 1.0;
+                        for (int j = x; j < x2; j++) tmpM[y + 1, j] = 0.0;
                     }
                 }//end cols
             }//end rows
@@ -1280,7 +1281,7 @@ namespace TowseyLib
             //get binary matrix showing high energy lines
             double[,] m2 = ImageTools.Convolve(tmp, Kernal.HorizontalLine5);
             threshold = 0.2;
-            m2 = DataTools.Threshold(m2, threshold); 
+            m2 = DataTools.Threshold(m2, threshold);
 
 
             //prepare to extract acoustic events or shapes
@@ -1360,9 +1361,9 @@ namespace TowseyLib
             if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
-        
-        
-        
+
+
+
         /// <summary>
         /// Returns a binary matrix containing high energy lines in the oriignal spectrogram 
         /// </summary>
@@ -1370,7 +1371,7 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] Shapes_lines(double[,] matrix)
         {
-            double threshold = 0.3;   
+            double threshold = 0.3;
 
             int fWindow = 5;
             int tWindow = 3;
@@ -1382,7 +1383,7 @@ namespace TowseyLib
             //int height = matrix.GetLength(0);
             //int width = matrix.GetLength(1);
             //double[,] M = new double[height, width];
-            double[,] M = DataTools.Threshold(tmpM, threshold); 
+            double[,] M = DataTools.Threshold(tmpM, threshold);
             return M;
         }// end of Shapes_lines()
 
@@ -1447,7 +1448,7 @@ namespace TowseyLib
             return M;
         }// end of Shapes_lines()
 
-        
+
 
 
         public static double[,] Shapes_RemoveSmall(double[,] m, int minRowWidth, int minColWidth)
@@ -1480,7 +1481,7 @@ namespace TowseyLib
                             }
                         }
                     }
-                    y += (rowWidth-1);
+                    y += (rowWidth - 1);
                 }//end y loop
             }//end x loop
             //M = m;
@@ -1548,7 +1549,7 @@ namespace TowseyLib
             int height = m.GetLength(0);
             int width = m.GetLength(1);
             //double[,] M = new double[height, width];
-            int area = ((2*cNH)+1)*((2*rNH)+1);
+            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);
             //LoggedConsole.WriteLine("area=" + area);
 
             for (int x = cNH; x < width - cNH; x++)
@@ -1561,13 +1562,13 @@ namespace TowseyLib
                         {
                             sum += m[y + r, x + c];
                         }
-                    double cover = sum /(double) area;
+                    double cover = sum / (double)area;
 
                     if (cover >= coverThreshold)
                     {
                         m[y, x] = 1.0;
-                        m[y-1, x] = 1.0;
-                        m[y+1, x] = 1.0;
+                        m[y - 1, x] = 1.0;
+                        m[y + 1, x] = 1.0;
                         //m[y - 2, x] = 1.0;
                         //m[y + 2, x] = 1.0;
                     }
@@ -1724,6 +1725,70 @@ namespace TowseyLib
             }
             bmp.Save(pathName);
         }
+
+        public static void DrawColourMatrixWithAxes(double[,] matrixAvg, double[,] matrixAci, double[,] matrixTen,
+            string pathName, int X_interval, int Y_interval)
+        {
+            double[,] matrixAvgNorm = DataTools.normalise(matrixAvg);
+            double[,] matrixAciNorm = DataTools.normalise(matrixAci);
+            double[,] matrixTenNorm = DataTools.normalise(matrixTen);
+
+            // assume all amtricies are the same lengths
+            int rows = matrixAvg.GetLength(0); //number of rows
+            int cols = matrixAvg.GetLength(1); //number
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            int MaxRGBValue = 255;
+            int MinRGBValue = 0;
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < cols; column++)
+                {
+                    int valueAvg = Convert.ToInt32(Math.Max(0, (1 - (matrixAvgNorm[row, column] * matrixAvgNorm[row, column])) * MaxRGBValue));
+                    int valueAci = Convert.ToInt32(Math.Max(0, (1 - (matrixAciNorm[row, column] * matrixAciNorm[row, column])) * MaxRGBValue));
+                    int valueTen = Convert.ToInt32(Math.Max(0, (1 - (matrixTenNorm[row, column] * matrixTenNorm[row, column])) * MaxRGBValue));
+
+                    Color colour = Color.FromArgb(valueAci, valueTen, valueAvg);
+                    bmp.SetPixel(column, row, colour);
+                }//end all columns
+            }//end all rows
+
+            // for rows draw in Y-axis line
+            for (int row = 0; row < rows; row++)
+            {
+                if ((row > 0) && (row % Y_interval == 0))
+                {
+                    int rowFromBottom = rows - row;
+                    for (int column = 0; column < cols; column++)
+                    {
+                        bmp.SetPixel(column, rowFromBottom, Color.Gray);
+                        column++;
+                    }
+                }
+            }
+
+            // for columns, draw in X-axis lines
+            for (int column = 0; column < cols; column++)
+            {
+                if ((column > 0) && (column % X_interval == 0))
+                {
+                    for (int row = 0; row < rows; row++)
+                    {
+                        bmp.SetPixel(column, row, Color.Gray);
+                        row++;
+                    }
+                }
+            }
+
+            // save image
+            bmp.Save(pathName);
+        }
+
+
+
+
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
@@ -1853,7 +1918,7 @@ namespace TowseyLib
         /// <param name="cellXpixels">X axis scale - pixels per cell</param>
         /// <param name="cellYpixels">Y axis scale - pixels per cell</param>
         /// <param name="pathName"></param>
-        public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels,  string pathName)
+        public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels, string pathName)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
@@ -1893,7 +1958,7 @@ namespace TowseyLib
 
         public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
-            double endThreshold    = centreThreshold / 2;
+            double endThreshold = centreThreshold / 2;
 
             if (m[row, col] < centreThreshold) return null; //to not proceed if current pixel is low intensity
 
@@ -1903,7 +1968,7 @@ namespace TowseyLib
             int maxAngle = -1;
             double intensitySum = 0.0;
 
-           // double sumThreshold = lineLength * sensitivity;
+            // double sumThreshold = lineLength * sensitivity;
             int degrees = 0;
 
             while (degrees < 180)  //loop over 180 degrees in jumps of 10 degrees.
