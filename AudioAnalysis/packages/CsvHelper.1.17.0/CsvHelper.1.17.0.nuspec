@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CsvHelper</id>
+    <version>1.17.0</version>
+    <title>CsvHelper</title>
+    <authors>Josh Close</authors>
+    <owners>Josh Close</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit</licenseUrl>
+    <projectUrl>https://github.com/JoshClose/CsvHelper</projectUrl>
+    <iconUrl>https://raw.github.com/JoshClose/CsvHelper/master/logo/Comma-Small.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A library for reading and writing CSV files. Extremely fast, flexible, and easy to use. Supports reading and writing of custom class objects.</description>
+    <releaseNotes>Added Features:
+-Made TypeConverterFactory thread safe.
+-Added TypeConverterFactory.Remove method.
+-Changed TypeConverterFactory.Set method to Add.
+Bugs Fixed:
+-Properties that can't be set will be ignored in attribute mapping.</releaseNotes>
+    <copyright />
+    <language />
+    <tags>csv csvhelper comma separated value delimited</tags>
+    <references>
+      <reference file="CsvHelper.dll" />
+    </references>
+  </metadata>
+</package>
