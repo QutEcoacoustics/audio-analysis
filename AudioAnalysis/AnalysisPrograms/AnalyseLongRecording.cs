@@ -122,6 +122,19 @@ namespace AnalysisPrograms
                 System.Environment.Exit(666);
             }
 
+            if (false)
+            {
+                var csvAvg = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.avgSpectrum.csv";
+                var csvAci = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.aciSpectrum.csv";
+                var csvTen = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.tenSpectrum.csv";
+
+                string imagePath = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cmbSpectrum_colour_towardsblack.png";
+                int X_interval = 60; // assume one minute spedctra and hourly time lines
+                int Y_interval = (int)Math.Round(1000 / (double)34.5);
+                AcousticFeatures.DrawColourSpectrogramsOfIndices(csvAvg, csvAci, csvTen, imagePath, "CMB", X_interval, Y_interval);
+                System.Environment.Exit(666);
+            }
+
             //1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
