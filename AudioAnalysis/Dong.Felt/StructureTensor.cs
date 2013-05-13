@@ -273,7 +273,7 @@
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.0003;  //  a fixed parameterl Bardeli : 0.96
+            var p = 0.0002;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -342,7 +342,7 @@
             var MaximumYIndex = paritialDifferenceX.GetLength(1);
 
             var result = new double[MaximumXIndex, MaximumYIndex];
-
+        
             for (int i = 0; i < MaximumXIndex; i++)
             {
                 for (int j = 0; j < MaximumYIndex; j++)
@@ -370,17 +370,17 @@
         {
             var MaximumXIndex = paritialDifferenceX.GetLength(0);
             var MaximumYIndex = paritialDifferenceX.GetLength(1);
-
+            
             var result = new double[MaximumXIndex, MaximumYIndex];
 
-            for (int i = 0; i < MaximumXIndex; i++)
-            {
-                for (int j = 0; j < MaximumYIndex; j++)
+                for (int i = 0; i < MaximumXIndex; i++)
                 {
-                    result[i, j] = Math.Atan2(partialDifferenceY[i, j], paritialDifferenceX[i, j]);
+                    for (int j = 0; j < MaximumYIndex; j++)
+                    {
+                        result[i, j] = Math.Atan2(partialDifferenceY[i, j], paritialDifferenceX[i, j]);
+                    }
                 }
-            }
-
+       
             return result;
         }
 
@@ -454,8 +454,11 @@
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
 
+            //var numberOfVetex = MaximumXIndex * MaximumYIndex;
+
             var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
             var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
+
 
             for (int row = 0; row < MaximumXIndex - 1; row++)
             {
@@ -507,6 +510,44 @@
             return result;
         }
 
+        // Calculate the coherence between two eigenValues, its value  is atually 1 or 0.
+        public static List<Tuple<PointOfInterest, double>> Coherence(List<Tuple<PointOfInterest, double[]>> eigenValue)
+        {
+            var numberOfVertex = eigenValue.Count;
+            var coherence = new List<Tuple<PointOfInterest, double>>();
+
+            for (int i = 0; i < numberOfVertex; i++)
+            {
+                var eigenValueOne = eigenValue[i].Item2[0];
+                var eigenValueTwo = eigenValue[i].Item2[1];
+
+                if (eigenValueOne + eigenValueTwo > 0)
+                {
+                    coherence.Add(Tuple.Create(eigenValue[i].Item1, Math.Pow((eigenValueOne - eigenValueTwo) / (eigenValueOne + eigenValueTwo), 2)));                   
+                }
+                else
+                {
+                    coherence.Add(Tuple.Create(eigenValue[i].Item1, 0.0));
+                }
+            }
+
+            return coherence; 
+        }
+
+        public static List<PointOfInterest> hitCoherence(List<Tuple<PointOfInterest, double>> coherence)
+        {
+            var result = new List<PointOfInterest>();
+
+            foreach (var co in coherence)
+            {
+                if (co.Item2 > 0)
+                {
+                    result.Add(co.Item1);
+                }
+            }
+
+            return result;
+        }
         /// <summary>
         /// Find out the maximum  of a list of attention
         /// </summary>
