@@ -2295,6 +2295,26 @@ namespace TowseyLib
             }
             return (ret);
         }
+        public static double[,] NormaliseReverseInZeroOne(double[,] m, double normMin, double normMax)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] ret = new double[rows, cols];
+            double range = normMax - normMin;
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    double value = (m[r, c] - normMin) / range;
+                    if (value > 1.0) value = 1.0;
+                    if (value < 0.0) value = 0.0;
+                    ret[r, c] = 1 - value;
+                }
+            }
+            return (ret);
+        }
+
 
         
         /// <summary>

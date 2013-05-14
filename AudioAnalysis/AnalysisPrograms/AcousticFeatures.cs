@@ -1217,13 +1217,15 @@ namespace AnalysisPrograms
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="spectrogramCsvPath"></param>
+        /// <param name="avgCsvPath"></param>
+        /// <param name="aciCsvPath"></param>
+        /// <param name="tenCsvPath"></param>
         /// <param name="imagePath"></param>
-        /// <param name="ID"></param>
+        /// <param name="colorSchemeID">Not yet used but could be used to determine type of false colour encoding</param>
         /// <param name="X_interval">pixel interval between X-axis lines</param>
         /// <param name="Y_interval">pixel interval between Y-axis lines</param>
         public static void DrawColourSpectrogramsOfIndices(string avgCsvPath, string csvAciPath, string csvTenPath, 
-            string imagePath, string ID, int X_interval, int Y_interval)
+            string imagePath, string colorSchemeID, int X_interval, int Y_interval)
         {
             double[,] matrixAvg = PrepareSpectrogramMatrix(avgCsvPath);
             matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
@@ -1231,19 +1233,17 @@ namespace AnalysisPrograms
             double[,] matrixAci = PrepareSpectrogramMatrix(csvAciPath);
             matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
 
-            double[,] matrixTen = PrepareSpectrogramMatrix(csvTenPath);
-            // normalise and reverse
-            matrixTen = DataTools.NormaliseInZeroOne(matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
-            int rowCount = matrixTen.GetLength(0);
-            int colCount = matrixTen.GetLength(1);
-            for (int r = 0; r < rowCount; r++)
-            {
-                for (int c = 0; c < colCount; c++)
-                {
-                    matrixTen[r, c] = 1 - matrixTen[r, c];
-                }
-            }
-
+            double[,] matrixTen = PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
+            matrixTen = DataTools.NormaliseReverseInZeroOne(matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+            //int rowCount = matrixTen.GetLength(0);
+            //int colCount = matrixTen.GetLength(1);
+            //for (int r = 0; r < rowCount; r++)
+            //{
+            //    for (int c = 0; c < colCount; c++)
+            //    {
+            //        matrixTen[r, c] = 1 - matrixTen[r, c];
+            //    }
+            //}
             ImageTools.DrawColourMatrixWithAxes(matrixAvg, matrixAci, matrixTen, imagePath, X_interval, Y_interval);
         }
 

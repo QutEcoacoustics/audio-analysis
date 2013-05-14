@@ -117,7 +117,10 @@ namespace AnalysisPrograms
                 string csvPath   = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.csv";
                 string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.png";
                 int X_interval = 60; // assume one minute spedctra and hourly time lines
-                int Y_interval = (int)Math.Round(1000 / (double)34.5);
+                int frame = 512;
+                int sampleRate = 17640;
+                double freqBinWidth = sampleRate / (double)frame;
+                int Y_interval = (int)Math.Round(1000 / freqBinWidth);
                 AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
                 System.Environment.Exit(666);
             }
@@ -294,7 +297,7 @@ namespace AnalysisPrograms
                 SaveImageOfIndices(fiIndicesCSV.FullName, configPath, displayCSVImage);
             }
 
-            // if doing acoustic indices then write spectrograms to CSV files
+            // if doing acoustic indices then write spectrograms to CSV files and draw their images
             if (analyserResults.ElementAt(0).AnalysisIdentifier.Equals("Towsey."+Acoustic.ANALYSIS_NAME))
             {
                 string name = Path.GetFileNameWithoutExtension(fiSourceRecording.Name);
@@ -345,8 +348,24 @@ namespace AnalysisPrograms
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.png");
                 AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
-            }
 
+                var csvAvgPath = Path.Combine(opdir.FullName, name + ".avgSpectrum.csv");
+                var csvAciPath = Path.Combine(opdir.FullName, name + ".aciSpectrum.csv");
+                var csvTenPath = Path.Combine(opdir.FullName, name + ".tenSpectrum.csv");
+
+                // draw false colour image that combines three spectrograms
+                imagePath = Path.Combine(opdir.FullName, name + ".colSpectrum.png");
+                int frame = 512;        // default value
+                int sampleRate = 17640; // default value
+                if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
+                    frame      = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
+                if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
+                    sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
+                double freqBinWidth = sampleRate / (double)frame;
+                int x_interval = 60; // assume one minute spectra and hourly time lines
+                int y_interval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
+                AcousticFeatures.DrawColourSpectrogramsOfIndices(csvAvgPath, csvAciPath, csvTenPath, imagePath, "COL", x_interval, y_interval);
+            }
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         } // Main(string[] args)
