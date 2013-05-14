@@ -83,10 +83,37 @@ namespace Dong.Felt
 
             // Read one specific file 
             var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage4\Test4.png"));
-
+            string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
             //// Read a bunch of recording files  
             //string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
-            
+
+            AudioRecording audioRecording;
+            var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
+            Log.Info("AudioToSpectrogram");
+
+            // Do the noise removal
+            const int BackgroundThreshold = 5;
+            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            Log.Info("NoiseReduction");
+
+            // Find the local Maxima
+            const int NeibourhoodWindowSize = 7;
+            var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
+
+            // Filter out points
+            const int AmplitudeThreshold = 10;
+            var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
+
+            // Remove points which are too close
+            const int DistanceThreshold = 7;
+            var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+
+            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            imageResult.AddPoints(finalPoi);
+            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
+            Log.Info("Show the result of Final PointsOfInterest");
             //foreach (string path in Files)
             //{
             //    // Writing my code here
@@ -128,60 +155,60 @@ namespace Dong.Felt
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
           
-            // For test image 
-            var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
+            //// For test image 
+            //var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            //var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
 
-            var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            Log.Info("differenceOfGaussian");
-            var partialDifference = StructureTensor.PartialDifference(testMatrix);
-            Log.Info("partialDifference");
-            var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("magnitude");
-            var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("phase");
-            var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("structureTensor");
-            var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            Log.Info("eigenValue");
-            var coherence = StructureTensor.Coherence(eigenValue);
-            Log.Info("coherence");
-            var hitCoherence = StructureTensor.hitCoherence(coherence);
-            Log.Info("hitCoherence");
+            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //Log.Info("differenceOfGaussian");
+            //var partialDifference = StructureTensor.PartialDifference(testMatrix);
+            //Log.Info("partialDifference");
+            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("magnitude");
+            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("phase");
+            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("structureTensor");
+            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            //Log.Info("eigenValue");
+            //var coherence = StructureTensor.Coherence(eigenValue);
+            //Log.Info("coherence");
+            //var hitCoherence = StructureTensor.hitCoherence(coherence);
+            //Log.Info("hitCoherence");
             
-            var numberOfVetex = structureTensor.Count;
-            var results = new List<string>();
+            //var numberOfVetex = structureTensor.Count;
+            //var results = new List<string>();
 
-            results.Add("eigenValue1, eigenValue2, coherence");
-            for (int i = 0; i < numberOfVetex; i++)
-            {
-                //Console.WriteLine(eigenValue[i].Item2[0] + eigenValue[i].Item2[1] + magnitude[i] + phase[i] + coherence[i]);
-                //Log.Info(string.Format("eigenValue1:{0}, eigenValue2:{1}, magnitude:{2}, phase:{3}, coherence:{4}",
-                //    eigenValue[i].Item2[0], eigenValue[i].Item2[1], magnitude[i], phase[i], coherence[i]));
+            //results.Add("eigenValue1, eigenValue2, coherence");
+            //for (int i = 0; i < numberOfVetex; i++)
+            //{
+            //    //Console.WriteLine(eigenValue[i].Item2[0] + eigenValue[i].Item2[1] + magnitude[i] + phase[i] + coherence[i]);
+            //    //Log.Info(string.Format("eigenValue1:{0}, eigenValue2:{1}, magnitude:{2}, phase:{3}, coherence:{4}",
+            //    //    eigenValue[i].Item2[0], eigenValue[i].Item2[1], magnitude[i], phase[i], coherence[i]));
 
-                results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1],  coherence[i].Item2));
-            }
-            File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text5.csv", results.ToArray());
+            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1],  coherence[i].Item2));
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text5.csv", results.ToArray());
 
-            var results1 = new List<string>();
-            results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
+            //var results1 = new List<string>();
+            //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
 
-            var maximumXindex = partialDifference.Item1.GetLength(0);
-            var maximumYindex = partialDifference.Item1.GetLength(1);
-            for (int i = 0; i < maximumXindex; i++)
-            {
-                for (int j = 0; j < maximumYindex; j++)
-                {
-                    results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i,j], partialDifference.Item2[i, j], magnitude[i, j], phase[i,j]));
-                }
-            }
-            File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text6.csv", results.ToArray());
+            //var maximumXindex = partialDifference.Item1.GetLength(0);
+            //var maximumYindex = partialDifference.Item1.GetLength(1);
+            //for (int i = 0; i < maximumXindex; i++)
+            //{
+            //    for (int j = 0; j < maximumYindex; j++)
+            //    {
+            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i,j], partialDifference.Item2[i, j], magnitude[i, j], phase[i,j]));
+            //    }
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text6.csv", results.ToArray());
             
-            foreach (var poi in hitCoherence)
-            {
-                testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-            }
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-2-hitCoherence0.png");
+            //foreach (var poi in hitCoherence)
+            //{
+            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //}
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-2-hitCoherence0.png");
             
             var result = new AnalysisResult();
             return result;
