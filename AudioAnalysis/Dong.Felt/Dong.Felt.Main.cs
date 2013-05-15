@@ -91,29 +91,29 @@ namespace Dong.Felt
             var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
             Log.Info("AudioToSpectrogram");
 
-            // Do the noise removal
-            const int BackgroundThreshold = 5;
-            var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            Log.Info("NoiseReduction");
+            //// Do the noise removal
+            //const int BackgroundThreshold = 5;
+            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            ////var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            //Log.Info("NoiseReduction");
 
-            // Find the local Maxima
-            const int NeibourhoodWindowSize = 7;
-            var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
+            //// Find the local Maxima
+            //const int NeibourhoodWindowSize = 7;
+            //var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
 
-            // Filter out points
-            const int AmplitudeThreshold = 10;
-            var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
+            //// Filter out points
+            //const int AmplitudeThreshold = 10;
+            //var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
 
-            // Remove points which are too close
-            const int DistanceThreshold = 7;
-            var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+            //// Remove points which are too close
+            //const int DistanceThreshold = 7;
+            //var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
 
-            var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            imageResult.AddPoints(finalPoi);
-            imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
-            Log.Info("Show the result of Final PointsOfInterest");
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult.AddPoints(finalPoi);
+            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
+            //Log.Info("Show the result of Final PointsOfInterest");
             //foreach (string path in Files)
             //{
             //    // Writing my code here
@@ -135,7 +135,7 @@ namespace Dong.Felt
             //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
             //    Log.Info("NoiseReduction");
 
-            //    var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //    var differenceOfGaussian = StructureTensor.BasicDifferenceOfGaussian(StructureTensor.gaussianBlur5);
             //    Log.Info("differenceOfGaussian");
             //    var partialDifference = StructureTensor.DifferenceOfGaussianPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
             //    Log.Info("partialDifference");
@@ -154,27 +154,27 @@ namespace Dong.Felt
             //    imageResult.Save(path + ".png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
-          
-            //// For test image 
-            //var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            //var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
 
-            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            //Log.Info("differenceOfGaussian");
-            //var partialDifference = StructureTensor.PartialDifference(testMatrix);
-            //Log.Info("partialDifference");
-            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("magnitude");
-            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("phase");
-            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("structureTensor");
-            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            //Log.Info("eigenValue");
-            //var coherence = StructureTensor.Coherence(eigenValue);
-            //Log.Info("coherence");
-            //var hitCoherence = StructureTensor.hitCoherence(coherence);
-            //Log.Info("hitCoherence");
+            // For test image 
+            var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
+
+            var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            Log.Info("differenceOfGaussian");
+            var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
+            Log.Info("partialDifference");
+            var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            Log.Info("magnitude");
+            var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            Log.Info("phase");
+            var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            Log.Info("structureTensor");
+            var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            Log.Info("eigenValue");
+            var coherence = StructureTensor.Coherence(eigenValue);
+            Log.Info("coherence");
+            var hitCoherence = StructureTensor.hitCoherence(coherence);
+            Log.Info("hitCoherence");
             
             //var numberOfVetex = structureTensor.Count;
             //var results = new List<string>();
@@ -203,12 +203,12 @@ namespace Dong.Felt
             //    }
             //}
             //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text6.csv", results.ToArray());
-            
-            //foreach (var poi in hitCoherence)
-            //{
-            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-            //}
-            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-2-hitCoherence0.png");
+
+            foreach (var poi in hitCoherence)
+            {
+                testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            }
+            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
             
             var result = new AnalysisResult();
             return result;

@@ -165,8 +165,8 @@ namespace AudioAnalysisTools
                     // stats.Analyze(); 
                     foreach (PointOfInterest poi in this.Points)
                     {
-                        //poi.DrawPoint(g, this.Points, this.sonogramImage.Height);
-                        poi.DrawCircle(g, this.Points, this.sonogramImage.Height);
+                        poi.DrawPoint(g, this.Points, this.sonogramImage.Height);
+                        //poi.DrawCircle(g, this.Points, this.sonogramImage.Height);
                     }       
                 }
 

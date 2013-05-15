@@ -441,7 +441,8 @@
         }
 
         /// <summary>
-        /// Calculate the difference between the current pixel and its neighborhood pixel.
+        /// Calculate the difference between the current pixel and its neighborhood pixel. Partically,EG, in the spectrogram, in the x direction, it will get the difference between 
+        /// current pixel and the pixel on the right; in the y direction, it will get the current pixel and the pixel on the above(but the case in the bitmap, it should be pixel on the bottom). 
         /// </summary>
         /// <param name="m">
         /// the original spectrogram / image data
@@ -449,7 +450,7 @@
         /// <returns>
         /// A tuple of partialDifferenceX and partialDifferenceY
         /// </returns>  
-        public static Tuple<double[,], double[,]> PartialDifference(double[,] m)
+        public static Tuple<double[,], double[,]> BasicPartialDifference(double[,] m)
         {
             int MaximumXIndex = m.GetLength(0);
             int MaximumYIndex = m.GetLength(1);
@@ -466,6 +467,52 @@
                 {
                     partialDifferenceX[row, col] = m[row + 1, col] - m[row, col];
                     partialDifferenceY[row, col] = m[row, col + 1] - m[row, col];
+                }
+            }
+            //PointF
+            var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
+            return result;
+        }
+
+        // Calculate the partial difference with Canny kernel 
+        public static Tuple<double[,], double[,]> CannyPartialDifference(double[,] m)
+        {
+            int MaximumXIndex = m.GetLength(0);
+            int MaximumYIndex = m.GetLength(1);
+
+            var CannyDifferenceX = new int[,] {{-1, 0, 1},
+                                              {-2, 0, 2},
+                                              {-1, 0, 1}};
+            var CannyDifferenceY = new int[,] {{1, 2, 1},
+                                               {0, 0, 0},
+                                               {-1, -2, -1}};
+
+            var offset = (int)(CannyDifferenceX.GetLength(0) / 2);
+            //var numberOfVetex = MaximumXIndex * MaximumYIndex;
+
+            var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
+            var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
+
+            for (int row = 0; row < MaximumXIndex; row++)
+            {
+                for (int col = 0; col < MaximumYIndex; col++)
+                {
+                    var TempDifferenceX = 0.0;
+                    var TempDifferenceY = 0.0;
+                    for (int indexX = -offset; indexX < offset; indexX++)
+                    {
+                        for (int indexY = -offset; indexY < offset; indexY++)
+                        {
+                            // Todo : fix the out of range
+                            //if ((row + indexX) >= 0 && (row + indexX) < MaximumXIndex && (col + indexX) >= 0 && (col + indexX) < MaximumYIndex) 
+                            //{
+                            //    TempDifferenceX = m[row + indexY, col + indexX] * CannyDifferenceX[indexX + offset, indexY + offset];
+                            //    TempDifferenceY = m[row + indexY, col + indexX] * CannyDifferenceY[indexX + offset, indexY + offset];
+                            //}
+                        }
+                    }
+                    partialDifferenceX[row, col] = TempDifferenceX;
+                    partialDifferenceY[row, col] = TempDifferenceY;
                 }
             }
             //PointF
