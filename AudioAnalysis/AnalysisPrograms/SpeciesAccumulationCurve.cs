@@ -401,7 +401,7 @@ namespace AnalysisPrograms
                 //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 // OPTION 2: USE FOLLOWING  line to rank by weighted multiple columns of acoustic indices matrix.
-//                int[] rankOrder = GetRankOrder(indicesFilePath);
+                int[] rankOrder = GetRankOrder(table);
 
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
 //                bool doReverseOrder = false;
@@ -409,29 +409,29 @@ namespace AnalysisPrograms
 //                    rankOrder = DataTools.reverseArray(rankOrder);
 
                 // OPTION 4: SAMPLE IN RANK ORDER 
-//                int[] finalSamplingOrder = rankOrder;
-//                int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
-//                SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-//                stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
-//                stats.WriteStats();
+                //int[] finalSamplingOrder = rankOrder;
+                //int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
+                //SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                //stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
+                //stats.WriteStats();
 
                 // OPTION 5: RANDOM SAMPLE FROM RANK ORDER USING PROBABILITY DISTRIBUTION 
-                //var list = new List<SpeciesAccumulationStats>();
-                //int reps = 5000;
-                //for (int i = 0; i < reps; i++)
-                //{
-                //    if (i % 100 == 0) Console.WriteLine(i);
-                //    int seed2 = DateTime.Now.Millisecond + i; // add i in case speed of one iter < 1ms
-                //    int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
-                //    int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
-                //    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-                //    stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
-                //    list.Add(stats);
-                //}
-                //SpeciesAccumulationStats.WriteArrayStats(list);
+                var list = new List<SpeciesAccumulationStats>();
+                int reps = 5000;
+                for (int i = 0; i < reps; i++)
+                {
+                    if (i % 100 == 0) Console.WriteLine(i);
+                    int seed2 = DateTime.Now.Millisecond + i; // add i in case speed of one iter < 1ms
+                    int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
+                    int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
+                    SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                    stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
+                    list.Add(stats);
+                }
+                SpeciesAccumulationStats.WriteArrayStats(list);
 
                 // OPTION 6: SEARCH WEIGHT SPACE FOR OPTIMSED RANK ORDER USING WEIGHTED COMBINATIONS OF INDICES 
-                OptimsedRankOrder(table, callMatrix, callingSpeciesList.Count);
+                //OptimsedRankOrder(table, callMatrix, callingSpeciesList.Count);
 
             } // ######################## END SMART SAMPLING #############################
 
@@ -638,12 +638,9 @@ namespace AnalysisPrograms
             // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
             //                   { 0.1,  0.2,  0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2 }; // 21 indices
-            double[] weights =   { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 8.0, 10.0, 12.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+            double[] weights =   { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0,-9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.0, 0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
-
-            // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
-            //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
 
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7, 1.8, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
             double[] minValues = { 0.0,-50.0,  3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -670,11 +667,11 @@ namespace AnalysisPrograms
                 {
                     weightedSum += (weights[c] * columns[c][r]);
                 }
-                combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
+                combined[count] = weightedSum; // +weights[wtCount - 1];
                 count++;
             }
 
-            // CHORUS BIAS
+            // DAWN CHORUS BIAS
             //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
             //combined = AdjustForChorusBias(combined, chorusBiasWeight);
 
@@ -687,8 +684,8 @@ namespace AnalysisPrograms
 
         public static void OptimsedRankOrder(DataTable table, byte[,] callMatrix, int speciesCount)
         {
-            //                 {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7, 1.8, 0.0, 0.0, 0.0, 0.0 }; 
-            double[] minValues = { 0.0, -50.0, 3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 }; 
+            double[] minValues = { 0.0, -50.0, 3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
@@ -707,50 +704,57 @@ namespace AnalysisPrograms
             double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             int wtCount = weights.Length;
             double maxScore = 0;
+            int range = 10;
 
-            for (int i = 1; i <= 10; i++)
+            for (int i = range; i >= 0; i--)
             {
-                for (int j = 1; j <= 10; j++)
+                for (int j = range; j >= 0; j--)
                 {
-                    for (int k = 1; k <= 10; k++)
+                    for (int k = range; k >= 0; k--)
                     {
-                        for (int m = 1; m <= 10; m++)
+                        for (int m = range; m >= 0; m--)
                         {
-                            weights[16] = i / 10.0;
-                            weights[15] = j / 10.0; //aci
-                            weights[14] = k / 10.0; //Hv
-                            weights[13] = m / 10.0; //Hs
+               //             for (int n = range; n >= 0; n--)
+               //             {
+                                weights[16] = i / (double)range; //clust#
+                                weights[15] = j / (double)range; //aci
+                                weights[14] = k / (double)range; //Hv
+                                weights[13] = m / (double)range; //Hs
+              //                  weights[11]  = n / (double)range; //Ht
+              //                  weights[7] = n / (double)range; //segDur
 
-                            double[] combined = new double[rowCount];
-                            int count = 0;
-                            for (int r = 0; r < rowCount; r++)
-                            {
-                                double weightedSum = 0.0;
-                                for (int c = 0; c < weights.Length; c++)
+                                double[] combined = new double[rowCount];
+                                int count = 0;
+                                for (int r = 0; r < rowCount; r++)
                                 {
-                                    weightedSum += (weights[c] * columns[c][r]);
+                                    double weightedSum = 0.0;
+                                    for (int c = 0; c < weights.Length; c++)
+                                    {
+                                        weightedSum += (weights[c] * columns[c][r]);
+                                    }
+                                    combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
+                                    count++;
                                 }
-                                combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
-                                count++;
-                            }
-                            // CHORUS BIAS
-                            //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
-                            //combined = AdjustForChorusBias(combined, chorusBiasWeight);
+                                // CHORUS BIAS
+                                //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
+                                //combined = AdjustForChorusBias(combined, chorusBiasWeight);
 
-                            var results2 = DataTools.SortArray(combined);
+                                var results2 = DataTools.SortArray(combined);
 
-                            int[] rankOrder = results2.Item1;
-                            int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
-                            SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-                            stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, speciesCount);
-                            double score = stats.percentRecognitionWith30Samples + stats.percentRecognitionWith60Samples + stats.percentRecognitionWith90Samples; // +stats.percentRecognitionWith120Samples;
-                            if (score >= maxScore)
-                            {
-                                Console.WriteLine("Score={0:f1}    60samples>{1}%   Hs(wt13)={2}   Hv(wt14)={3}  ACI(wt15)={4}  SpD(wt16)={5}", maxScore, stats.percentRecognitionWith60Samples,
-                                                                                            weights[13], weights[14], weights[15], weights[16]);
-                                maxScore = score;
-                            } // if (score >= maxScore)
-
+                                int[] rankOrder = results2.Item1;
+                                int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
+                                SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                                stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, speciesCount);
+                                double score = stats.percentRecognitionWith60Samples; // weighted x2
+                                score += (/*stats.percentRecognitionWith30Samples*/ +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples); // +stats.percentRecognitionWith120Samples;
+                                if (score >= maxScore)
+                                {
+                                    Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}", 
+                                        maxScore, stats.percentRecognitionWith60Samples, weights[1], weights[5],   weights[6],    weights[11],   weights[13],  weights[14],  weights[15],   weights[16]);
+                                   
+                                    maxScore = score;
+                                } // if (score >= maxScore)
+             //               } // n
                         } // m
                     } // k
                 } // j
