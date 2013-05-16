@@ -12,22 +12,6 @@
 
     class StructureTensor
     {
-        // A 7 * 7 gaussian blur
-        public static double[,] gaussianBlur7 = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
-                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
-                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
-                                                {0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771},
-                                                {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
-                                                {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
-                                                {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
-
-        // A 5 * 5 gaussian blur
-        public static double[,] gaussianBlur5 = {{0.0000,       0.0000,     0.0002,     0.0000,    0.0000},
-                                                 {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
-                                                 {0.0002,       0.0837,     0.6187,     0.0837,    0.0002},
-                                                 {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
-                                                 {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
-
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
         public static GaussianBlur filter = new GaussianBlur(4, 1);
 
@@ -474,51 +458,7 @@
             return result;
         }
 
-        // Calculate the partial difference with Canny kernel 
-        public static Tuple<double[,], double[,]> CannyPartialDifference(double[,] m)
-        {
-            int MaximumXIndex = m.GetLength(0);
-            int MaximumYIndex = m.GetLength(1);
-
-            var CannyDifferenceX = new int[,] {{-1, 0, 1},
-                                              {-2, 0, 2},
-                                              {-1, 0, 1}};
-            var CannyDifferenceY = new int[,] {{1, 2, 1},
-                                               {0, 0, 0},
-                                               {-1, -2, -1}};
-
-            var offset = (int)(CannyDifferenceX.GetLength(0) / 2);
-            //var numberOfVetex = MaximumXIndex * MaximumYIndex;
-
-            var partialDifferenceX = new double[MaximumXIndex, MaximumYIndex];
-            var partialDifferenceY = new double[MaximumXIndex, MaximumYIndex];
-
-            for (int row = 0; row < MaximumXIndex; row++)
-            {
-                for (int col = 0; col < MaximumYIndex; col++)
-                {
-                    var TempDifferenceX = 0.0;
-                    var TempDifferenceY = 0.0;
-                    for (int indexX = -offset; indexX < offset; indexX++)
-                    {
-                        for (int indexY = -offset; indexY < offset; indexY++)
-                        {
-                            // Todo : fix the out of range
-                            //if ((row + indexX) >= 0 && (row + indexX) < MaximumXIndex && (col + indexX) >= 0 && (col + indexX) < MaximumYIndex) 
-                            //{
-                            //    TempDifferenceX = m[row + indexY, col + indexX] * CannyDifferenceX[indexX + offset, indexY + offset];
-                            //    TempDifferenceY = m[row + indexY, col + indexX] * CannyDifferenceY[indexX + offset, indexY + offset];
-                            //}
-                        }
-                    }
-                    partialDifferenceX[row, col] = TempDifferenceX;
-                    partialDifferenceY[row, col] = TempDifferenceY;
-                }
-            }
-            //PointF
-            var result = Tuple.Create(partialDifferenceX, partialDifferenceY);
-            return result;
-        }
+        
 
         /// <summary>
         /// Calculate the structure tensor.
@@ -732,7 +672,7 @@
         {
             var result = new List<PointOfInterest>();
 
-            var differenceOfGaussian = DifferenceOfGaussian(gaussianBlur5);
+            var differenceOfGaussian = DifferenceOfGaussian(ImageTools.gaussianBlur5);
             var partialDifference = DifferenceOfGaussianPartialDifference(matrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
             var StructureTensor = structureTensor(partialDifference.Item1, partialDifference.Item2);
             var eigenValueDecomposition = EignvalueDecomposition(StructureTensor);

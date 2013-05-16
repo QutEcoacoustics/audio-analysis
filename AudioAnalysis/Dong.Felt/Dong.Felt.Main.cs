@@ -82,14 +82,19 @@ namespace Dong.Felt
             // }
 
             // Read one specific file 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage4\Test4.png"));
-            string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
-            //// Read a bunch of recording files  
-            //string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png"));
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));
+            //string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
+            //string outputPath = @"C:\Test recordings\Crows\Test\TestImage2\TestImage2-SobelEdgeDetector.png";
+            string outputPath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines-SobelRidgeDetector.png";
+            
+            
+            ////// Read a bunch of recording files  
+            ////string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
 
-            AudioRecording audioRecording;
-            var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
-            Log.Info("AudioToSpectrogram");
+            ////AudioRecording audioRecording;
+            //var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
+            //Log.Info("AudioToSpectrogram");
 
             //// Do the noise removal
             //const int BackgroundThreshold = 5;
@@ -155,40 +160,40 @@ namespace Dong.Felt
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
 
-            // For test image 
+            // For the test image 
             var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
 
-            var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            Log.Info("differenceOfGaussian");
-            var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
-            Log.Info("partialDifference");
-            var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("magnitude");
-            var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("phase");
-            var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            Log.Info("structureTensor");
-            var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            Log.Info("eigenValue");
-            var coherence = StructureTensor.Coherence(eigenValue);
-            Log.Info("coherence");
-            var hitCoherence = StructureTensor.hitCoherence(coherence);
-            Log.Info("hitCoherence");
-            
+            var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrix);
+            var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(testMatrix);
+            var IndexX = SobelRidgeMatrix.GetLength(0);
+            var IndexY = SobelRidgeMatrix.GetLength(1);
+            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //Log.Info("differenceOfGaussian");
+            //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
+            //Log.Info("partialDifference");
+            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("magnitude");
+            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("phase");
+            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("structureTensor");
+            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            //Log.Info("eigenValue");
+            //var coherence = StructureTensor.Coherence(eigenValue);
+            //Log.Info("coherence");
+            //var hitCoherence = StructureTensor.hitCoherence(coherence);
+            //Log.Info("hitCoherence");
+
             //var numberOfVetex = structureTensor.Count;
             //var results = new List<string>();
 
             //results.Add("eigenValue1, eigenValue2, coherence");
             //for (int i = 0; i < numberOfVetex; i++)
             //{
-            //    //Console.WriteLine(eigenValue[i].Item2[0] + eigenValue[i].Item2[1] + magnitude[i] + phase[i] + coherence[i]);
-            //    //Log.Info(string.Format("eigenValue1:{0}, eigenValue2:{1}, magnitude:{2}, phase:{3}, coherence:{4}",
-            //    //    eigenValue[i].Item2[0], eigenValue[i].Item2[1], magnitude[i], phase[i], coherence[i]));
-
-            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1],  coherence[i].Item2));
+            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
             //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text5.csv", results.ToArray());
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
 
             //var results1 = new List<string>();
             //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
@@ -199,17 +204,28 @@ namespace Dong.Felt
             //{
             //    for (int j = 0; j < maximumYindex; j++)
             //    {
-            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i,j], partialDifference.Item2[i, j], magnitude[i, j], phase[i,j]));
+            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
             //    }
             //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\text6.csv", results.ToArray());
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
+            //foreach (var poi in hitCoherence)
+            //{
+            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //}
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
 
-            foreach (var poi in hitCoherence)
+            for (int i = 0; i < IndexX; i++)
             {
-                testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+                for (int j = 0; j < IndexY; j++)
+                {
+                    if (SobelEdgeMatrix[i, j] == 1)
+                    {
+                        testImage.SetPixel(i, j, Color.Crimson);
+                    }
+                }
             }
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
-            
+            testImage.Save(outputPath);
+              
             var result = new AnalysisResult();
             return result;
         }
