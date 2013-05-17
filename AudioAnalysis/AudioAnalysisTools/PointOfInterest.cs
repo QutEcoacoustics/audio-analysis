@@ -6,6 +6,7 @@
 
 namespace AudioAnalysisTools
 {
+    using System;
     using System.Collections.Generic;
     using System.Drawing;
 
@@ -51,6 +52,11 @@ namespace AudioAnalysisTools
         {
             this.Point = point;
         }
+        public PointOfInterest(TimeSpan time, double herz)
+        {
+            this.TimeLocation = time;
+            this.Herz = herz;
+        }
 
         #endregion
 
@@ -73,16 +79,48 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Gets or sets the intensity.
+        /// Gets or sets the magnitude of what ever property is being measured.
         /// </summary>
         public double Intensity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Local Ridge Orientation.
+        /// </summary>
+        public double LocalRidgeOrientation { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Local Ridge Orientation.
+        /// </summary>
+        public int LocalOrientationCategory { get; set; }
 
         /// <summary>
         /// Gets or sets the point.
         /// </summary>
         public Point Point { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X-axis timescale seconds per pixel.
+        /// </summary>
+
+        /// <summary>
+        /// Gets or sets the time of the point of interest from beginning of recording.
+        /// </summary>
+        public TimeSpan TimeLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the frequency location of point of interest.
+        /// </summary>
+        public double Herz { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X-axis timescale seconds per pixel.
+        /// </summary>
+        public TimeSpan TimeScale { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Y-axis scale herz per pixel.
+        /// </summary>
+        public double HerzScale { get; set; }
 
         #endregion
 
@@ -115,6 +153,78 @@ namespace AudioAnalysisTools
                 var brush = new SolidBrush(Color.Crimson);
                 graphics.FillRectangle(brush, poi.Point.X, height - poi.Point.Y - 1, 1, 1);
                 //DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1, 1)
+            }
+        }
+
+
+        public void DrawPoint(Bitmap bmp, int spectrogramHeight, bool multiPixel)
+        {
+            //int x = this.Point.X;
+            //int y = this.Point.Y;
+            int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
+            int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+            int orientationCategory = (int)Math.Round((this.LocalRidgeOrientation * 8) / Math.PI); 
+            //orientation = indexMax * Math.PI / (double)8;
+
+            Color color = this.DrawColor;
+            bmp.SetPixel(x, y, color);
+            if (!multiPixel) return;
+
+            if (orientationCategory == 0)
+            {
+                bmp.SetPixel(x - 1, y, color);
+                bmp.SetPixel(x + 1, y, color);
+                bmp.SetPixel(x + 2, y, color);
+            }
+            else
+            {
+                if (orientationCategory == 1)
+                {
+                    bmp.SetPixel(x + 2, y, color);
+                    bmp.SetPixel(x + 1, y, color);
+                    bmp.SetPixel(x - 1, y, color);
+                }
+                else
+                {
+                    if (orientationCategory == 2)
+                    {
+                        bmp.SetPixel(x - 1, y + 1, color);
+                        bmp.SetPixel(x + 1, y - 1, color);
+                        bmp.SetPixel(x + 2, y - 2, color);
+                    }
+                    else
+                        if (orientationCategory == 3)
+                        {
+                            bmp.SetPixel(x, y - 1, color);
+                            bmp.SetPixel(x, y + 1, color);
+                            bmp.SetPixel(x, y + 2, color);
+                        }
+                        else
+                            if (orientationCategory == 4)
+                            {
+                                bmp.SetPixel(x, y - 1, color);
+                                bmp.SetPixel(x, y + 1, color);
+                                bmp.SetPixel(x, y + 2, color);
+                            }
+                            else if (orientationCategory == 5)
+                            {
+                                bmp.SetPixel(x, y - 1, color);
+                                bmp.SetPixel(x, y + 1, color);
+                                bmp.SetPixel(x, y + 2, color);
+                            }
+                            else if (orientationCategory == 6)
+                            {
+                                bmp.SetPixel(x + 2, y + 2, color);
+                                bmp.SetPixel(x + 1, y + 1, color);
+                                bmp.SetPixel(x - 1, y - 1, color);
+                            }
+                            else if (orientationCategory == 7)
+                            {
+                                bmp.SetPixel(x + 2, y, color);
+                                bmp.SetPixel(x + 1, y, color);
+                                bmp.SetPixel(x - 1, y, color);
+                            }
+                }
             }
         }
 
