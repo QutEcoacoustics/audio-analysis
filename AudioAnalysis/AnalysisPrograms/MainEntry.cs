@@ -31,7 +31,7 @@ namespace AnalysisPrograms
 
     using log4net;
 
-    using SammonProjection;
+    //using SammonProjection;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -70,9 +70,9 @@ namespace AnalysisPrograms
                     // ########### ANALYSES for INDIVIDUAL CALLS - Called through DEV() or EXCECUTE() ############
 
                     // extracts acoustic indices from one minute segment
-                    { "acousticIndices", Acoustic.Dev },
+                     { "acousticIndices", Acoustic.Dev },
                     // Execute() signed off: Michael Towsey 27th July 2012
-                    // { "acousticIndices", Acoustic.Execute },
+                    //{ "acousticIndices", Acoustic.Execute },
 
                     // IAnalyser - detects canetoad calls as acoustic events
                     // { "canetoad", Canetoad.Dev },
@@ -190,7 +190,7 @@ namespace AnalysisPrograms
                     { "test", AnalysisTemplate.Dev },
 
                     // a investigation into sammon projections
-                    { "sammon_projection", SammonProgram.Dev }
+                    //{ "sammon_projection", SammonProgram.Dev }
                 };
         }
 
