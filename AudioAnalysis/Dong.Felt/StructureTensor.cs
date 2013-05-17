@@ -672,7 +672,7 @@
         {
             var result = new List<PointOfInterest>();
 
-            var differenceOfGaussian = DifferenceOfGaussian(ImageTools.gaussianBlur5);
+            var differenceOfGaussian = DifferenceOfGaussian(ImageAnalysisTools.gaussianBlur5);
             var partialDifference = DifferenceOfGaussianPartialDifference(matrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
             var StructureTensor = structureTensor(partialDifference.Item1, partialDifference.Item2);
             var eigenValueDecomposition = EignvalueDecomposition(StructureTensor);
