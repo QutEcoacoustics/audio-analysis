@@ -191,6 +191,9 @@ namespace AnalysisPrograms
 
                     // a investigation into sammon projections
                     //{ "sammon_projection", SammonProgram.Dev }
+
+                    // Michael's play area
+                    { "sandpit", Sandpit.Dev },
                 };
         }
 
