@@ -34,11 +34,13 @@ namespace AnalysisPrograms
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
-                string annotatedImageFname = "test5_annotated.png";
+                string annotatedImageFname = "SC7_annotated.png";
+                double magnitudeThreshold = 6.0; // of ridge hieght above neighbours
+                double intensityThreshold = 5.0; // dB
 
                 //var testImage = (Bitmap)(Image.FromFile(imagePath));
                 var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD };
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
                 Plot scores = null; 
                 double eventThreshold = 0.5; // dummy variable - not used
@@ -67,17 +69,20 @@ namespace AnalysisPrograms
                         double magnitude, direction;
                         bool isRidge = false;
                         TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
-                        if (isRidge && (magnitude > 15)) 
+                        if (isRidge && (magnitude > magnitudeThreshold)) 
                         {
-                            //Point point = new Point(c, r);
+                            Point point = new Point(c, r);
                             //var poi = new PointOfInterest(point);
                             TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                             double herz = (freqBinCount-r -1) * herzScale;
                             var poi = new PointOfInterest(time, herz);
-                            poi.LocalRidgeOrientation = direction;
-                            poi.Intensity = magnitude;
+                            poi.Point = point;
+                            poi.RidgeOrientation = direction;
+                            poi.RidgeMagnitude = magnitude;
+                            poi.Intensity = matrix[r, c];
                             poi.TimeScale = timeScale;
                             poi.HerzScale = herzScale;
+                            poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
                             poiList.Add(poi);
                         }
                         //c++;
@@ -85,11 +90,22 @@ namespace AnalysisPrograms
                     //r++;
                 }
 
+                //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
+
+                //PointOfInterest.PruneSingletons(poiList, rows, cols);
+                //PointOfInterest.PruneDoublets(poiList, rows, cols);
+
                 foreach (PointOfInterest poi in poiList)
                 {
                     bool multiPixel = false;
                     poi.DrawColor = Color.Crimson;
                     poi.DrawPoint(bmp, (int)freqBinCount, multiPixel); 
+                }
+
+                foreach (PointOfInterest poi in poiList)
+                {
+                    poi.DrawColor = Color.Cyan;
+                    poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
 
                 imagePath = Path.Combine(outputDir, annotatedImageFname);
