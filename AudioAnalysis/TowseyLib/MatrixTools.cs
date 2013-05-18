@@ -88,6 +88,31 @@ namespace TowseyLib
         }
 
 
+        public static bool CentreIsLocalMaximum(double[,] m, double threshold)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+
+            int centreRow = rows / 2;
+            int centreCol = cols / 2;
+            double centreValue = m[centreRow, centreCol];
+            double sum = 0;
+            int count = rows * cols;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (m[r, c] > centreValue) return false;
+                    sum += m[r, c];
+                }
+            }
+            sum -= centreValue;
+            double av = sum / (double)(count - 1);
+            if ((centreValue - av) < threshold) return false;
+            //  throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+            return true;
+        }
+
 
 
 
@@ -247,7 +272,89 @@ namespace TowseyLib
             return newM;
         }
 
+        /// <summary>
+        /// Sets any element in matrix with value> 0.0 to zero if all surrounding elements also = zero
+        /// </summary>
+        /// <param name="m"></param>
+        public static void SetSingletonsToZero(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            int count = 0;
+            int total = 0;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (m[r, c] <= 0.0) continue;
+                    total++;
+                    if ( (m[r, c + 1] == 0.0) && (m[r - 1, c + 1] == 0.0) && (m[r - 1, c] == 0.0) && (m[r - 1, c - 1] == 0.0)
+                      && (m[r, c - 1] == 0.0) && (m[r + 1, c - 1] == 0.0) && (m[r + 1, c] == 0.0) && (m[r + 1, c + 1] == 0.0))
+                    {
+                        m[r, c] = 0.0;
+                        count++;
+                    }
 
+                }
+            } // for loop
+            Console.WriteLine("Zeroed {0} of {1} non-zero cells.", count, total);
+        } // SetSingletonsToZero
+
+
+        /// <summary>
+        /// Sets any element in matrix with value> 0.0 to zero if all surrounding elements also = zero
+        /// </summary>
+        /// <param name="m"></param>
+        public static void SetDoubletsToZero(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            int total = 0;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (m[r, c] <= 0.0) continue;
+
+                    // check if more than two poi's in nearest neighbours.
+                    int count = 0;
+                    for (int i = -1; i < 2; i++)
+                    {
+                        for (int j = -1; j < 2; j++)
+                        {
+                            if (m[r + i, c + j] > 0.0) count++;
+                        }
+                    }
+                    if (count > 2) continue;
+
+                    // now check the 8 directions. Assume adjacent because have already called PruneSingletons();
+                    if ((m[r, c + 1] > 0.0) && (m[r, c + 2] > 0.0)) continue; // three in a row 
+                    if ((m[r - 1, c + 1] > 0.0) && (m[r - 2, c + 2] > 0.0)) continue; // three on a diagonal 
+                    if ((m[r - 1, c] > 0.0) && (m[r - 2, c] > 0.0)) continue; // three in a col 
+                    if ((m[r - 1, c - 1] > 0.0) && (m[r - 2, c - 2] > 0.0)) continue; // three on a diagonal 
+                    if ((m[r, c - 1] > 0.0) && (m[r, c - 2] > 0.0)) continue; // three in a row 
+                    if ((m[r + 1, c - 1] > 0.0) && (m[r + 2, c - 2] > 0.0)) continue; // three on a diagonal 
+                    if ((m[r + 1, c] > 0.0) && (m[r + 2, c] > 0.0)) continue; // three in a col 
+                    if ((m[r + 1, c + 1] > 0.0) && (m[r + 2, c + 2] > 0.0)) continue; // three on a diagonal 
+
+                    //if ((m[r - 1, c] > 0.0) && (m[r + 1, c] == 0.0)) continue; // three in a column 
+                    //if ((m[r - 1, c - 1] > 0.0) && (m[r + 1, c + 1] == 0.0)) continue; // three on a diagonal
+                    //if ((m[r - 1, c + 1] > 0.0) && (m[r + 1, c - 1] == 0.0)) continue; // three on a diagonal
+
+                    // if get to here then must be a doublet.
+                    total++;
+                    // zero all cells
+                    for (int i = -1; i < 2; i++)
+                    {
+                        for (int j = -1; j < 2; j++)
+                        {
+                            m[r + i, c + j] = 0.0;
+                        }
+                    }
+                }
+            } // for loop
+            Console.WriteLine("Removed {0} doublets.", total);
+        } // SetSingletonsToZero
 
 
         /// <summary>

@@ -756,6 +756,7 @@ namespace TowseyLib
             for (int i = 0; i < 7; i++)
             {
                 differences[i] = (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 0]) + (ridgeMagnitudes[i, 1] - ridgeMagnitudes[i, 2]);
+                differences[i] /= 2; // want average of both differences because easier to select an appropiate decibel threshold for ridge magnitude. 
             }
             int indexMin, indexMax;
             double diffMin, diffMax;
@@ -763,8 +764,9 @@ namespace TowseyLib
 
 
             //double threshold = min + (max - min) / 4; //threshold is 1/5th of range above min
-
-            isRidge = ((ridgeMagnitudes[indexMax, 1] > ridgeMagnitudes[indexMax, 0]) && (ridgeMagnitudes[indexMax, 1] > ridgeMagnitudes[indexMax, 2]));
+            double threshold = 0; // dB
+            isRidge = ((ridgeMagnitudes[indexMax, 1] > (ridgeMagnitudes[indexMax, 0] + threshold))
+                    && (ridgeMagnitudes[indexMax, 1] > (ridgeMagnitudes[indexMax, 2] + threshold)));
             magnitude = diffMax;
             direction = indexMax * Math.PI / (double) 8;
         }

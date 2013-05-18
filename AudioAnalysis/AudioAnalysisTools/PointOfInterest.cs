@@ -63,37 +63,6 @@ namespace AudioAnalysisTools
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the draw color.
-        /// </summary>
-        public Color DrawColor
-        {
-            get
-            {
-                return this.drawColor ?? DefaultBorderColor;
-            }
-
-            set
-            {
-                this.drawColor = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the magnitude of what ever property is being measured.
-        /// </summary>
-        public double Intensity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Local Ridge Orientation.
-        /// </summary>
-        public double LocalRidgeOrientation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Local Ridge Orientation.
-        /// </summary>
-        public int LocalOrientationCategory { get; set; }
-
-        /// <summary>
         /// Gets or sets the point.
         /// </summary>
         public Point Point { get; set; }
@@ -121,6 +90,50 @@ namespace AudioAnalysisTools
         /// Gets or sets the Y-axis scale herz per pixel.
         /// </summary>
         public double HerzScale { get; set; }
+
+        /// <summary>
+        /// Gets or sets the draw color.
+        /// </summary>
+        public Color DrawColor
+        {
+            get
+            {
+                return this.drawColor ?? DefaultBorderColor;
+            }
+
+            set
+            {
+                this.drawColor = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the spectral intensity at the given point
+        /// </summary>
+        public double Intensity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Ridge Magnitude at the given point.
+        /// </summary>
+        public double RidgeMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Local Ridge Orientation.
+        /// </summary>
+        public double RidgeOrientation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Local Ridge Orientation.
+        /// </summary>
+        public int OrientationCategory { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets boolean - is POI a local maximum?
+        /// </summary>
+        public bool IsLocalMaximum { get; set; }
+
+        
 
         #endregion
 
@@ -156,6 +169,21 @@ namespace AudioAnalysisTools
             }
         }
 
+        public void DrawLocalMax(Bitmap bmp, int spectrogramHeight)
+        {
+            if(this.IsLocalMaximum)
+            {
+                int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
+                int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+                Color color = this.DrawColor;
+                bmp.SetPixel(x, y, color);
+                //bmp.SetPixel(x, y-1, color);
+                //bmp.SetPixel(x, y+1, color);
+                //bmp.SetPixel(x-1, y, color);
+                //bmp.SetPixel(x+1, y, color);
+            }
+        }
+
 
         public void DrawPoint(Bitmap bmp, int spectrogramHeight, bool multiPixel)
         {
@@ -163,7 +191,7 @@ namespace AudioAnalysisTools
             //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
-            int orientationCategory = (int)Math.Round((this.LocalRidgeOrientation * 8) / Math.PI); 
+            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI); 
             //orientation = indexMax * Math.PI / (double)8;
 
             Color color = this.DrawColor;
@@ -229,5 +257,58 @@ namespace AudioAnalysisTools
         }
 
         #endregion
+
+        #region Public STATIC Methods
+
+        public static void PruneSingletons(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            double[,] m = TransferPOIsToMatrix(poiList, rows, cols);
+            TowseyLib.MatrixTools.SetSingletonsToZero(m);
+            RemovePOIsFromList(poiList, m);
+        }
+        public static void PruneDoublets(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            double[,] m = TransferPOIsToMatrix(poiList, rows, cols);
+            TowseyLib.MatrixTools.SetDoubletsToZero(m);
+            RemovePOIsFromList(poiList, m);
+        }
+
+        public static double[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            double[,] m = new  double[rows, cols];
+            foreach (PointOfInterest poi in list)
+            {
+                m[poi.Point.Y, poi.Point.X] = poi.RidgeMagnitude;
+            }
+            return m;
+        }
+
+        public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
+        {
+            for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)
+            {
+                if (m[list[i].Point.Y, list[i].Point.X] == 0.0)
+                {
+                    list.Remove(list[i]);
+                }
+            }
+        } // RemovePOIsFromList
+
+        public static void RemoveLowIntensityPOIs(List<PointOfInterest> list, double threshold)
+        {
+            for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)
+            {
+                if (list[i].Intensity < threshold)
+                {
+                    list.Remove(list[i]);
+                }
+            }
+        } // RemovePOIsFromList
+
+
+        #endregion
+
+        
+
     }
 }
