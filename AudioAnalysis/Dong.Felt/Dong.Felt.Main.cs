@@ -82,11 +82,14 @@ namespace Dong.Felt
             // }
 
             // Read one specific file 
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png"));
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));
+            // with human beings
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png")); 
+            // just simple shapes
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));  
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));
             //string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
-            //string outputPath = @"C:\Test recordings\Crows\Test\TestImage2\TestImage2-SobelEdgeDetector.png";
-            string outputPath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines-SobelRidgeDetector.png";
+            string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-SobelEdgeDetector.png";
+            //string outputPath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines-SobelRidgeDetector.png";
             
             
             ////// Read a bunch of recording files  
@@ -161,70 +164,107 @@ namespace Dong.Felt
             //}
 
             // For the test image 
-            var testMatrix1 = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrix = TowseyLib.DataTools.MatrixTranspose(testMatrix1); //  Why I have to transpose it?
-
-            var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrix);
-            var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(testMatrix);
-            var IndexX = SobelRidgeMatrix.GetLength(0);
-            var IndexY = SobelRidgeMatrix.GetLength(1);
-            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            //Log.Info("differenceOfGaussian");
-            //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
-            //Log.Info("partialDifference");
-            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("magnitude");
-            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("phase");
-            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("structureTensor");
-            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            //Log.Info("eigenValue");
-            //var coherence = StructureTensor.Coherence(eigenValue);
-            //Log.Info("coherence");
-            //var hitCoherence = StructureTensor.hitCoherence(coherence);
-            //Log.Info("hitCoherence");
-
-            //var numberOfVetex = structureTensor.Count;
-            //var results = new List<string>();
-
-            //results.Add("eigenValue1, eigenValue2, coherence");
-            //for (int i = 0; i < numberOfVetex; i++)
+            var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix); //  Why I have to transpose it?
+            
+            // Sobel edge/Ridge detector
+            //var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrixTranspose);
+            //var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(testMatrixTranspose);
+            //var IndexX = SobelEdgeMatrix.GetLength(0);
+            //var IndexY = SobelEdgeMatrix.GetLength(1);
+            //for (int i = 0; i < IndexX; i++)
             //{
-            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
-            //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
-
-            //var results1 = new List<string>();
-            //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
-
-            //var maximumXindex = partialDifference.Item1.GetLength(0);
-            //var maximumYindex = partialDifference.Item1.GetLength(1);
-            //for (int i = 0; i < maximumXindex; i++)
-            //{
-            //    for (int j = 0; j < maximumYindex; j++)
+            //    for (int j = 0; j < IndexY; j++)
             //    {
-            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
+            //        if (SobelEdgeMatrix[i, j] == 1)
+            //        {
+            //            testImage.SetPixel(i, j, Color.Crimson);
+            //        }
             //    }
             //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
-            //foreach (var poi in hitCoherence)
-            //{
-            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-            //}
-            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
+            //testImage.Save(outputPath);
+
+            // Canny edge detector
+
+            var GradientImage = ImageAnalysisTools.FindGradientMagnitude(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            var Gradient = ImageAnalysisTools.FindGradient(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            var GradientDirection = ImageAnalysisTools.FindGradientDirection(Gradient.Item1, Gradient.Item2);
+            var NonMaximaImage = ImageAnalysisTools.NonMaximumSuppression(GradientImage, GradientDirection, 3);
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(NonMaximaImage);
+
+            var IndexX = doubleThreshold.GetLength(0);
+            var IndexY = doubleThreshold.GetLength(1);
 
             for (int i = 0; i < IndexX; i++)
             {
                 for (int j = 0; j < IndexY; j++)
                 {
-                    if (SobelEdgeMatrix[i, j] == 1)
+                    if (doubleThreshold[i, j] > 0.5)
                     {
                         testImage.SetPixel(i, j, Color.Crimson);
                     }
+                    else
+                    {
+                        if (doubleThreshold[i, j] > 0)
+                        {
+                            testImage.SetPixel(i, j, Color.Blue);
+                        }
+                        else
+                        {
+                            testImage.SetPixel(i, j, Color.Black);
+                        }
+                        
+                    }
                 }
             }
-            testImage.Save(outputPath);
+            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-doubleThresholdImage.png");
+                //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+                //Log.Info("differenceOfGaussian");
+                //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
+                //Log.Info("partialDifference");
+                //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+                //Log.Info("magnitude");
+                //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+                //Log.Info("phase");
+                //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+                //Log.Info("structureTensor");
+                //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+                //Log.Info("eigenValue");
+                //var coherence = StructureTensor.Coherence(eigenValue);
+                //Log.Info("coherence");
+                //var hitCoherence = StructureTensor.hitCoherence(coherence);
+                //Log.Info("hitCoherence");
+
+                //var numberOfVetex = structureTensor.Count;
+                //var results = new List<string>();
+
+                //results.Add("eigenValue1, eigenValue2, coherence");
+                //for (int i = 0; i < numberOfVetex; i++)
+                //{
+                //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
+                //}
+                //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
+
+                //var results1 = new List<string>();
+                //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
+
+                //var maximumXindex = partialDifference.Item1.GetLength(0);
+                //var maximumYindex = partialDifference.Item1.GetLength(1);
+                //for (int i = 0; i < maximumXindex; i++)
+                //{
+                //    for (int j = 0; j < maximumYindex; j++)
+                //    {
+                //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
+                //    }
+                //}
+                //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
+                //foreach (var poi in hitCoherence)
+                //{
+                //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+                //}
+                //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
+
+            
               
             var result = new AnalysisResult();
             return result;

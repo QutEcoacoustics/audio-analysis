@@ -103,7 +103,7 @@ namespace Dong.Felt
         // Finding gradients(also known as the edge strenghs): The edges should be marked where the gradients of the image has large magnitudes.
         // Sobel X and Y Masks are used to generate X & Y Gradients of Image; 
         // here the magnitude = |GX| + |GY| , OR it can be equal to euclidean distance measure 
-        public static double[,] FindGradient(double[,] m, double[,] edgeMaskX, double[,] edgeMaskY)
+        public static double[,] FindGradientMagnitude(double[,] m, double[,] edgeMaskX, double[,] edgeMaskY)
         {
             int MaximumXindex = m.GetLength(0);
             int MaximumYindex = m.GetLength(1);
@@ -126,6 +126,38 @@ namespace Dong.Felt
                         }
                     }
                     result[row, col] = Math.Abs(sumX) + Math.Abs(sumY);
+                }
+            }
+
+            return result;
+        }
+
+        public static Tuple<double[,], double[,]> FindGradient(double[,] m, double[,] edgeMaskX, double[,] edgeMaskY)
+        {
+            int MaximumXindex = m.GetLength(0);
+            int MaximumYindex = m.GetLength(1);
+
+            var gradientX = new double[MaximumXindex, MaximumYindex];
+            var gradientY = new double[MaximumXindex, MaximumYindex];
+            var result = new Tuple<double[,], double[,]>(gradientX, gradientY);
+            int edgeMaskRadius = edgeMaskX.GetLength(0) / 2;
+
+            for (int row = edgeMaskRadius; row < (MaximumXindex - edgeMaskRadius); row++)
+            {
+                for (int col = edgeMaskRadius; col < (MaximumYindex - edgeMaskRadius); col++)
+                {
+                    var sumX = 0.0;
+                    var sumY = 0.0;
+                    for (int i = -edgeMaskRadius; i <= edgeMaskRadius; i++)
+                    {
+                        for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
+                        {
+                            sumX = sumX + m[row + i, col + j] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
+                            sumY = sumY + m[row + i, col + j] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
+                        }
+                    }
+                    result.Item1[row, col] = sumX;
+                    result.Item2[row, col] = sumY;
                 }
             }
 
@@ -230,7 +262,42 @@ namespace Dong.Felt
             return result;
         }
   
-      //4.Double thresholding: Potential edges are determined by thresholding.
+      //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
+      // the high threshold are marked as strong; edge pixels weaker than the low threshold are marked as weak are suppressed and edge poxels between the two
+      // thresholds are marked as weak.   The vaule is 2.0, 4.0, 6.0, 8.0
+        public static double[,] DoubleThreshold(double[,] nonMaximaImage)
+        {         
+            int MaximumXindex = nonMaximaImage.GetLength(0);
+            int MaximumYindex = nonMaximaImage.GetLength(1);
+
+            var highThreshold = 0.6;
+            var lowThreshold = 0.4;
+
+            //var result = new double[MaximumXindex, MaximumYindex];
+            for (int i = 0; i < MaximumXindex; i++)
+            {
+                for (int j = 0; j < MaximumYindex; j++)
+                {
+                    if (nonMaximaImage[i, j] > highThreshold)
+                    {
+                        nonMaximaImage[i, j] = 1.0;
+                    }
+                    else{
+                        if (nonMaximaImage[i, j] < lowThreshold)
+                        {
+                            nonMaximaImage[i, j] = 0.0;
+                        }
+                        else
+                        {
+                            nonMaximaImage[i, j] = 0.5;
+                        }
+                        
+                    }
+                }
+            }
+
+            return nonMaximaImage;
+        }
 
       //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very certain (strong) edge.
 //      private void HysterisisThresholding(int[,] Edges)
