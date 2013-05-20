@@ -184,40 +184,36 @@ namespace Dong.Felt
             //}
             //testImage.Save(outputPath);
 
-            // Canny edge detector
+            // Canny edge detector         
+            var gradient = ImageAnalysisTools.Gradient(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2);
+            var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima);
 
-            var GradientImage = ImageAnalysisTools.FindGradientMagnitude(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
-            var Gradient = ImageAnalysisTools.FindGradient(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
-            var GradientDirection = ImageAnalysisTools.FindGradientDirection(Gradient.Item1, Gradient.Item2);
-            var NonMaximaImage = ImageAnalysisTools.NonMaximumSuppression(GradientImage, GradientDirection, 3);
-            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(NonMaximaImage);
+            var IndexX = nonMaxima.GetLength(0);
+            var IndexY = nonMaxima.GetLength(1);
 
-            var IndexX = doubleThreshold.GetLength(0);
-            var IndexY = doubleThreshold.GetLength(1);
-
-            for (int i = 0; i < IndexX; i++)
-            {
-                for (int j = 0; j < IndexY; j++)
-                {
-                    if (doubleThreshold[i, j] > 0.5)
-                    {
-                        testImage.SetPixel(i, j, Color.Crimson);
-                    }
-                    else
-                    {
-                        if (doubleThreshold[i, j] > 0)
-                        {
-                            testImage.SetPixel(i, j, Color.Blue);
-                        }
-                        else
-                        {
-                            testImage.SetPixel(i, j, Color.Black);
-                        }
-                        
-                    }
-                }
-            }
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-doubleThresholdImage.png");
+            double result1 = nonMaxima[127, 3];
+            Log.Info(result1);
+            //for (int i = 0; i < IndexX; i++)
+            //{
+            //    for (int j = 0; j < IndexY; j++)
+            //    {
+            //        if (nonMaxima[i, j] > 0)
+            //        {
+            //            testImage.SetPixel(i, j, Color.Crimson);
+            //        }
+            //        else
+            //        {
+            //            if (doubleThreshold[i, j] > 0)
+            //            {
+            //                testImage.SetPixel(i, j, Color.Blue);
+            //            }
+            //        }
+            //    }
+            //}
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-NonMaximaImage1.png");
                 //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
                 //Log.Info("differenceOfGaussian");
                 //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
