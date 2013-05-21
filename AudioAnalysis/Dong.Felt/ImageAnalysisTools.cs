@@ -146,6 +146,7 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
+                    // Manhattan distance not the Euclidean distance
                     result[row, col] = Math.Abs(gradientX[row, col]) + Math.Abs(gradientY[row, col]);
                 }
             }
@@ -159,7 +160,7 @@ namespace Dong.Felt
             int MaximumXindex = gradientX.GetLength(0);
             int MaximumYindex = gradientX.GetLength(1);
 
-            double[,] result = new double[MaximumXindex, MaximumYindex];
+            double[,] newAngle = new double[MaximumXindex, MaximumYindex];
 
             for (int row = 0; row < MaximumXindex; row++)
             {
@@ -169,39 +170,49 @@ namespace Dong.Felt
                     {
                         if (gradientY[row, col] == 0)
                         {
-                            result[row, col] = 0; 
+                            newAngle[row, col] = 0; 
                         }
                         else
                         {
-                            result[row, col] = 90; 
+                            newAngle[row, col] = 90; 
                         }
                     }
                     else
                     {
-                        result[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Math.PI;
-                    }
+                        newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Math.PI;
+                        if ((-22.5 < newAngle[row, col] && newAngle[row, col] <= 22.5) || (157.5 < newAngle[row, col] && newAngle[row, col] <= -157.5))
+                        {
+                            newAngle[row, col] = 0;                          
+                        }
+
+                        if ((22.5 < newAngle[row, col] && newAngle[row, col] <= 67.5) || (-157.5 < newAngle[row, col] && newAngle[row, col] <= -112.5))
+                        {
+                            newAngle[row, col] = 45;                          
+                        }
+
+                        if ((67.5 < newAngle[row, col] && newAngle[row, col] <= 112.5) || (-112.5 < newAngle[row, col] && newAngle[row, col] <= -67.5))
+                        {
+                            newAngle[row, col] = 90;                           
+                        }
+
+                        if ((-67.5 < newAngle[row, col] && newAngle[row, col] <= -22.5) || (112.5 < newAngle[row, col] && newAngle[row, col] <= 157.5))
+                        {
+                            newAngle[row, col] = -45;                          
+                        }
+                    }                 
                 }
             }
 
-            return result;
+            return newAngle;
         }
 
         // Non-maximum suppression: Only local maxima should be marked as edges, it should be very thin like a one pixel.
-        public static double[,] NonMaximumSuppression(double[,] gradient, double[,] direction, int neighborhoodSize)
+        // still something wrong with horizontal and vertical line, because it still has two pixels wide. 
+        public static double[,] NonMaximumSuppression(double[,] gradientMagnitude, double[,] direction, int neighborhoodSize)
         {
-            int MaximumXindex = gradient.GetLength(0);
-            int MaximumYindex = gradient.GetLength(1);
+            int MaximumXindex = gradientMagnitude.GetLength(0);
+            int MaximumYindex = gradientMagnitude.GetLength(1);
             int kernelRadius = neighborhoodSize / 2; 
-
-            var result = new double[MaximumXindex, MaximumYindex];
-            
-            for (int row = 0; row < MaximumXindex; row++)
-            {
-                for (int col = 0; col < MaximumYindex; col++)
-                {
-                    result[row, col] = gradient[row, col];
-                }
-            }
 
             // check the direction 
             for (int i = kernelRadius; i < MaximumXindex - kernelRadius; i++)
@@ -209,45 +220,52 @@ namespace Dong.Felt
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
                 {
                     // Horizontal edge
-                    if ((-22.5 < direction[i,j] && direction[i,j] <= 22.5) || (157.5 < direction[i,j] && direction[i,j] <= -157.5))
+                    if (direction[i, j] == 0)
                     {
-                        if ((gradient[i, j] < gradient[i, j + 1]) || (gradient[i, j] < gradient[i, j - 1])) 
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
                         {
-                            result[i, j] = 0;
-                        }                   
-                    }
-                    
-                    // Vertical Edge
-                    if ((-112.5 < direction[i,j] && direction[i,j] <= -67.5) || (67.5 < direction[i,j] && direction[i,j] <= 112.5))
-                    {
-                        if ((gradient[i, j] < gradient[i + 1, j]) || (gradient[i, j] < gradient[i - 1, j])) 
-                        {
-                            result[i, j] = 0;
-                        }                   
+                            // check whether it's connected with local maxima
+                            if (gradientMagnitude[i, j] == gradientMagnitude[i, j + 1] || gradientMagnitude[i, j] == gradientMagnitude[i, j - 1])
+                            {
+
+                            }
+                            else
+                            {
+                                gradientMagnitude[i, j] = 0;
+                            }
+                        }                    
                     }
 
-                    // +45 Degree Edge
-                    if ((-157.5 < direction[i,j] && direction[i,j] <= -112.5) || (112.5 < direction[i,j] && direction[i,j] <= 157.5))
+                    //45 Degree Edge
+                    if (direction[i, j] == 45)
                     {
-                        if ((gradient[i, j] < gradient[i + 1, j - 1]) || (gradient[i, j] < gradient[i - 1, j + 1])) 
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
                         {
-                            result[i, j] = 0;
-                        }                   
+                            gradientMagnitude[i, j] = 0;
+                        }
+                    }
+
+                    // Vertical Edge
+                    if (direction[i, j] == 90)
+                    {
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
+                        {
+                            gradientMagnitude[i, j] = 0;
+                        }
                     }
 
                     //-45 Degree Edge
-                    if ((-67.5 < direction[i,j] && direction[i,j] <= -22.5) || (22.5 < direction[i,j] && direction[i,j] <= 67.5))
+                    if (direction[i, j] == -45)
                     {
-                        if ((gradient[i, j] < gradient[i + 1, j + 1]) || (gradient[i, j] < gradient[i - 1, j - 1])) 
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
                         {
-                            result[i, j] = 0;
-                        }                   
+                            gradientMagnitude[i, j] = 0;
+                        }               
                     }
-
                 }
             }
 
-            return result;
+            return gradientMagnitude;
         }
   
       //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
@@ -260,153 +278,161 @@ namespace Dong.Felt
     
             double minimum; double maximum;
             DataTools.MinMax(nonMaxima, out minimum, out maximum);
-            //Array.Sort(nonMaxima);
-            var median = (minimum + maximum) / 2; 
-            double highThreshold = 1.66 * median;
-            double lowThreshold = 0.66 * median;
+            var normMatrix = DataTools.normalise(nonMaxima);
+            // Calculate the histogram of pixel intensity
+            const int maxIndex = 100;
+            var histogram = new int[maxIndex + 1];
+            for (int row = 1; row < MaximumXindex; row++)
+            {
+                for (int col = 21; col < MaximumYindex; col++)
+                {
+                    for (int i = 33; i <= maxIndex; i++)
+                    {
+                        if (normMatrix[row, col] >= (i / (double)maxIndex) && normMatrix[row, col] < ((i + 1) / (double)maxIndex))
+                        {
+                            histogram[i]++;
+                            break;
+                        }
+                    }
+                }
+            }
+            var sum = 0;
+            var numberOfPixel = MaximumXindex * MaximumYindex;
+            double highThreshold = 0.0;
+            double lowThreshold = 0.0;
+
+            for (int j = maxIndex; j >= 0 ; j--)
+            {   
+                sum = sum + histogram[j];
+                var percentageOfStrongEdge = 0.07;
+                if (sum >= percentageOfStrongEdge * numberOfPixel)
+                {
+                    highThreshold = j * 1 / (double)maxIndex;
+                    break; 
+                }
+            }
+            lowThreshold = 0.5 * highThreshold;
 
             for (int row = 0; row < MaximumXindex; row++)
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                    if (nonMaxima[row, col] >= highThreshold)
+                    if (normMatrix[row, col] > highThreshold)
                     {
-                        nonMaxima[row, col] = 1.0;
+                        normMatrix[row, col] = 1.0;
                     }
                     else
                     {
-                        if (nonMaxima[row, col] < lowThreshold)
+                        if (normMatrix[row, col] < lowThreshold)
                         {
-                            nonMaxima[row, col] = 0.0;
+                            normMatrix[row, col] = 0.0;
                         }
                         else
                         {
-                            nonMaxima[row, col] = 0.5;
+                            normMatrix[row, col] = 0.5;
+                        }
+                    }
+                }
+            }
+            //double highThreshold = 1.66 * median;
+            //double lowThreshold = 0.66 * median;
+            //var median = (minimum + maximum) / 2; 
+            //double highThreshold = 1.66 * median;
+            //double lowThreshold = 0.66 * median;
+
+            //for (int row = 0; row < MaximumXindex; row++)
+            //{
+            //    for (int col = 0; col < MaximumYindex; col++)
+            //    {
+            //        if (nonMaxima[row, col] >= highThreshold)
+            //        {
+            //            nonMaxima[row, col] = 1.0;
+            //        }
+            //        else
+            //        {
+            //            if (nonMaxima[row, col] < lowThreshold)
+            //            {
+            //                nonMaxima[row, col] = 0.0;
+            //            }
+            //            else
+            //            {
+            //                nonMaxima[row, col] = 0.5;
+            //            }
+            //        }
+            //    }
+            //}
+            return normMatrix;
+        }
+
+     //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very certain (strong) edge.
+        public static double[,] HysterisisThresholding(double[,] nonMaximaEdges, int kernelSize)
+        {
+            //travel in a 3 * 3 neighbourhood
+            int MaximumXindex = nonMaximaEdges.GetLength(0);
+            int MaximumYindex = nonMaximaEdges.GetLength(1); 
+            int kernelRadius = kernelSize / 2;
+
+            // only check the weak edge, here its intensity should be 0.5
+
+            var edgeMap = new double[MaximumXindex, MaximumYindex];
+            for (int i = kernelRadius; i < (MaximumXindex - 1) - kernelRadius; i++)
+            {
+                for (int j = kernelRadius; j < (MaximumYindex - 1) - kernelRadius; j++)
+                {
+                    if (nonMaximaEdges[i, j] == 0.5)
+                    {
+                        // Do the traverse
+                        // 1
+                        if (nonMaximaEdges[i + 1, j] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                        }
+                        // 2
+                        if (nonMaximaEdges[i + 1, j - 1] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                        }
+                        // 3
+                        if (nonMaximaEdges[i - 1, j] == 1.0)
+                        {
+                            nonMaximaEdges[i - 1, j] = 1.0;
+                        }
+                        // 4
+                        if (nonMaximaEdges[i - 1, j - 1] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                            
+                        }
+                        // 5
+                        if (nonMaximaEdges[i - 1, j] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                           
+                        }
+                        // 6
+                        if (nonMaximaEdges[i - 1, j + 1] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                           
+                        }
+                        // 7
+                        if (nonMaximaEdges[i, j + 1] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                            
+                        }
+                        // 8
+                        if (nonMaximaEdges[i + 1, j + 1] == 1.0)
+                        {
+                            nonMaximaEdges[i,j] = 1.0;
+                            
                         }
                     }
                 }
             }
 
-            return nonMaxima;
+            return nonMaximaEdges;
         }
-
-    //  //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very certain (strong) edge.
-    //    public void HysterisisThresholding(double[,] edges, int kernelSize)
-    //    {
-    //        int MaximumXindex = edges.GetLength(0);
-    //        int MaximumYindex = edges.GetLength(1); 
-
-    //        int kernelRadius = kernelSize / 2;
-
-    //        var edgeMap = new double[MaximumXindex, MaximumYindex];
-    //        for (int i = kernelRadius; i < (MaximumXindex - 1) - kernelRadius; i++)
-    //        {
-    //            for (int j = kernelRadius; j < (MaximumYindex - 1) - kernelRadius; j++)
-    //            {
-    //                if (edges[i, j] == 1)
-    //                {
-    //                    edgeMap[i, j] = 1;
-
-    //                }
-
-    //            }
-    //        }
-    //        for (int i = Limit; i <= (Width - 1) - Limit; i++)
-    //        {
-    //            for (int j = Limit; j <= (Height - 1) - Limit; j++)
-    //            {
-    //                if (Edges[i, j] == 1)
-    //                {
-    //                    EdgeMap[i, j] = 1;
-    //                    Travers(i, j);
-    //                    VisitedMap[i, j] = 1;
-    //                }
-    //            }
-    //        }
-    //        return;
-    //    }
-
-    //    //Recursive Procedure 
-    //    public void Travers(int X, int Y)
-    //    {
-    //        if (VisitedMap[X, Y] == 1)
-    //        {
-    //            return;
-    //        }
-
-    //        //1
-    //        if (EdgePoints[X + 1, Y] == 2)
-    //        {
-    //            EdgeMap[X + 1, Y] = 1;
-    //            VisitedMap[X + 1, Y] = 1;
-    //            Travers(X + 1, Y);
-    //            return;
-    //        }
-    //        //2
-    //        if (EdgePoints[X + 1, Y - 1] == 2)
-    //        {
-    //            EdgeMap[X + 1, Y - 1] = 1;
-    //            VisitedMap[X + 1, Y - 1] = 1;
-    //            Travers(X + 1, Y - 1);
-    //            return;
-    //        }
-
-    //        //3
-
-    //        if (EdgePoints[X, Y - 1] == 2)
-    //        {
-    //            EdgeMap[X, Y - 1] = 1;
-    //            VisitedMap[X, Y - 1] = 1;
-    //            Travers(X, Y - 1);
-    //            return;
-    //        }
-
-    //        //4
-    //        if (EdgePoints[X - 1, Y - 1] == 2)
-    //        {
-    //            EdgeMap[X - 1, Y - 1] = 1;
-    //            VisitedMap[X - 1, Y - 1] = 1;
-    //            Travers(X - 1, Y - 1);
-    //            return;
-    //        }
-    //        //5
-    //        if (EdgePoints[X - 1, Y] == 2)
-    //        {
-    //            EdgeMap[X - 1, Y] = 1;
-    //            VisitedMap[X - 1, Y] = 1;
-    //            Travers(X - 1, Y);
-    //            return;
-    //        }
-    //        //6
-    //        if (EdgePoints[X - 1, Y + 1] == 2)
-    //        {
-    //            EdgeMap[X - 1, Y + 1] = 1;
-    //            VisitedMap[X - 1, Y + 1] = 1;
-    //            Travers(X - 1, Y + 1);
-    //            return;
-    //        }
-    //        //7
-    //        if (EdgePoints[X, Y + 1] == 2)
-    //        {
-    //            EdgeMap[X, Y + 1] = 1;
-    //            VisitedMap[X, Y + 1] = 1;
-    //            Travers(X, Y + 1);
-    //            return;
-    //        }
-    //        //8
-
-    //        if (EdgePoints[X + 1, Y + 1] == 2)
-    //        {
-    //            EdgeMap[X + 1, Y + 1] = 1;
-    //            VisitedMap[X + 1, Y + 1] = 1;
-    //            Travers(X + 1, Y + 1);
-    //            return;
-    //        }
-    //        //VisitedMap[X, Y] = 1;
-    //        return;
-    //    }
-    //    //Canny Class Ends
-    //}
 
     }
 }
