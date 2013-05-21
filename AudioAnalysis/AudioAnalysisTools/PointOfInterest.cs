@@ -256,33 +256,153 @@ namespace AudioAnalysisTools
             }
         }
 
+        public void DrawOrientationPoint(Bitmap bmp, int spectrogramHeight)
+        {
+            //int x = this.Point.X;
+            //int y = this.Point.Y;
+            int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
+            int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
+            //orientation = indexMax * Math.PI / (double)8;
+            Color color = this.DrawColor;
+
+            if (orientationCategory == 0)
+            {
+                color = Color.Red;
+            }
+            else
+            {
+                if (orientationCategory == 1)
+                {
+                    color = Color.Orange;
+                }
+                else
+                {
+                    if (orientationCategory == 2)
+                    {
+                        color = Color.Green;
+                    }
+                    else
+                    {
+                        if (orientationCategory == 3)
+                        {
+                            color = Color.Cyan;
+                        }
+                        else
+                            if (orientationCategory == 4)
+                            {
+                                color = Color.Blue;
+                            }
+                            else if (orientationCategory == 5)
+                            {
+                                color = Color.LightBlue;
+                            }
+                            else if (orientationCategory == 6)
+                            {
+                                color = Color.Purple;
+                            }
+                            else if (orientationCategory == 7)
+                            {
+                                color = Color.Magenta;
+                            }
+                            else
+                            {
+                                color = Color.Black;
+                            }
+                    }
+                }
+            } // if (orientationCategory == 0) else
+            bmp.SetPixel(x, y, color);
+        } // DrawOrientationPoint
+
         #endregion
 
         #region Public STATIC Methods
 
         public static void PruneSingletons(List<PointOfInterest> poiList, int rows, int cols)
         {
-            double[,] m = TransferPOIsToMatrix(poiList, rows, cols);
+            double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
             TowseyLib.MatrixTools.SetSingletonsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
         public static void PruneDoublets(List<PointOfInterest> poiList, int rows, int cols)
         {
-            double[,] m = TransferPOIsToMatrix(poiList, rows, cols);
+            double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
             TowseyLib.MatrixTools.SetDoubletsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
 
-        public static double[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+
+        public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
-            double[,] m = new  double[rows, cols];
+            var M = TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 1; r < rows-1; r++)
+            {
+                for (int c = 1; c < cols-1; c++)
+                {
+                    if(M[r,c] == null) continue;
+                    if (M[r, c].OrientationCategory == 0)  // horizontal line
+                    {
+                        if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
+                        {
+                            if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r - 1, c] = null;
+                        }
+                        if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 0))
+                        {
+                            if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r + 1, c] = null;
+                        }
+                    } 
+                    else if (M[r, c].OrientationCategory == 4) // vertical line
+                    {
+                        if ((M[r, c-1] != null) && (M[r, c-1].OrientationCategory == 4))
+                        {
+                            if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
+                        }
+                        if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 4))
+                        {
+                            if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c + 1] = null;
+                        }
+                    } // if (OrientationCategory)
+                } // c
+            } // for r loop
+            return TransferPOIMatrix2List(M);
+        } // PruneAdjacentTracks()
+
+        public static PointOfInterest[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            foreach (PointOfInterest poi in list)
+            {
+                m[poi.Point.Y, poi.Point.X] = poi;
+            }
+            return m;
+        }
+
+        public static List<PointOfInterest> TransferPOIMatrix2List(PointOfInterest[,]m)
+        {
+            List<PointOfInterest> list = new List<PointOfInterest>();
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (m[r, c] != null) list.Add(m[r, c]);
+                }
+            }
+            return list;
+        }
+
+        public static double[,] TransferPOIsToDoublesMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            double[,] m = new double[rows, cols];
             foreach (PointOfInterest poi in list)
             {
                 m[poi.Point.Y, poi.Point.X] = poi.RidgeMagnitude;
             }
             return m;
         }
-
         public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
         {
             for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)

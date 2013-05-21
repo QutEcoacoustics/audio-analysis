@@ -669,6 +669,7 @@ namespace TowseyLib
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
         /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
@@ -686,7 +687,7 @@ namespace TowseyLib
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            if ((rows != 5) || (cols != 5)) 
+            if (rows != cols) // must be square matrix 
             {
                 isRidge = false;
                 magnitude = 0.0;
@@ -694,62 +695,72 @@ namespace TowseyLib
                 return;
             }
 
-            double[,] ridgeMagnitudes= new double[8, 3];
-            //ridge magnitude having slope=0;
-            ridgeMagnitudes[0, 1] = (m[2,0] + m[2,1] + m[2,2] + m[2,3] + m[2,4]) / (double)5; //KLMNO
-            //positve side magnitude
-            ridgeMagnitudes[0, 0] = (m[0,0] + m[0,1] + m[0,2] + m[0,3] + m[0,4] + m[1,0] + m[1,1] + m[1,2] + m[1,3] + m[1,4]) / (double)10; //ABCDE FGHIJ
-            //negative side magnitude
-            ridgeMagnitudes[0, 2] = (m[3,0] + m[3,1] + m[3,2] + m[3,3] + m[3,4] + m[4,0] + m[4,1] + m[4,2] + m[4,3] + m[4,4]) / (double)10; //PQRST UVWXY
+            int centreID = rows / 2;
+            int cm1 = centreID - 1;
+            int cp1 = centreID + 1;
+            int cm2 = centreID - 2;
+            int cp2 = centreID + 2;
+            double[,] ridgeMagnitudes = new double[8, 3];
 
+            //ridge magnitude having slope=0;
+            double[] rowSums = MatrixTools.SumRows(m);
+            ridgeMagnitudes[0, 1] = rowSums[centreID];
+            for (int r = 0; r < centreID; r++)        ridgeMagnitudes[0, 0] += rowSums[r]; //positve  side magnitude
+            for (int r = centreID + 1; r < rows; r++) ridgeMagnitudes[0, 2] += rowSums[r]; //negative side magnitude
+            ridgeMagnitudes[0, 0] /= (double)(centreID * cols);
+            ridgeMagnitudes[0, 1] /= (double)cols;
+            ridgeMagnitudes[0, 2] /= (double)(centreID * cols); 
+            
             //ridge magnitude having slope=Pi/8;
-            ridgeMagnitudes[1, 1] = (m[1,4] + m[2,3] + m[2,2] + m[2,1] + m[3,0]) / (double)5; //
+            ridgeMagnitudes[1, 1] = (m[cm1, cp2] + m[centreID, cp1] + m[centreID, centreID] + m[centreID, cm1] + m[cp1, cm2]) / (double)5; //
             //positve side magnitude
-            ridgeMagnitudes[1, 0] = (m[0,0] + m[0,1] + m[0,2] + m[0,3] + m[0,4] + m[1,0] + m[1,1] + m[1,2] + m[1,3] + m[2,0]) / (double)10; //
+            ridgeMagnitudes[1, 0] = (m[cm2, cm2] + m[cm2, cm1] + m[cm2, centreID] + m[cm2, cp1] + m[cm2, cp2] + m[cm1, cm2] + m[cm1, cm1] + m[cm1, centreID] + m[cm1, cp1] + m[centreID, cm2]) / (double)10; //
             //negative side magnitude
-            ridgeMagnitudes[1, 2] = (m[4,0] + m[4,1] + m[4,2] + m[4,3] + m[4,4] + m[3,1] + m[3,2] + m[3,3] + m[3,4] + m[2,4]) / (double)10; //
+            ridgeMagnitudes[1, 2] = (m[cp2, cm2] + m[cp2, cm1] + m[cp2, centreID] + m[cp2, cp1] + m[cp2, cp2] + m[cp1, cm1] + m[cp1, centreID] + m[cp1, cp1] + m[cp1, cp2] + m[centreID, cp2]) / (double)10; //
 
             //ridge magnitude having slope=2Pi/8;
-            ridgeMagnitudes[2, 1] = (m[0,4] + m[1,3] + m[2,2] + m[3,1] + m[4,0]) / (double)5; //
-            //positve side magnitude
-            ridgeMagnitudes[2, 0] = (m[0,0] + m[0,1] + m[0,2] + m[0,3] + m[1,0] + m[1,1] + m[1,2] + m[2,0] + m[2,1] + m[3,0]) / (double)10; //
-            //negative side magnitude
-            ridgeMagnitudes[2, 2] = (m[4,1] + m[4,2] + m[4,3] + m[4,4] + m[3,2] + m[3,3] + m[3,4] + m[2,3] + m[2,4] + m[1,4]) / (double)10; //
+            ridgeMagnitudes[2, 1] = MatrixTools.SumPositiveDiagonal(m) / (double)cols;
+            double upperAv, lowerAv;
+            MatrixTools.AverageValuesInTriangleAboveAndBelowPositiveDiagonal(m, out upperAv, out lowerAv);
+            ridgeMagnitudes[2, 0] = upperAv;
+            ridgeMagnitudes[2, 2] = lowerAv;
 
             //ridge magnitude having slope=3Pi/8;
-            ridgeMagnitudes[3, 1] = (m[0,3] + m[1,3] + m[2,2] + m[3,1] + m[4,1]) / (double)5; //
+            ridgeMagnitudes[3, 1] = (m[cm2, cp1] + m[cm1, cp1] + m[centreID, centreID] + m[cp1, cm1] + m[cp2, cm1]) / (double)5; //
             //positve side magnitude
-            ridgeMagnitudes[3, 0] = (m[0,0] + m[0,1] + m[0,2] + m[1,0] + m[1,1] + m[1,2] + m[2,0] + m[2,1] + m[3,0] + m[4,0]) / (double)10; //
+            ridgeMagnitudes[3, 0] = (m[cm2, cm2] + m[cm2, cm1] + m[cm2, centreID] + m[cm1, cm2] + m[cm1, cm1] + m[cm1, centreID] + m[centreID, cm2] + m[centreID, cm1] + m[cp1, cm2] + m[cp2, cm2]) / (double)10; //
             //negative side magnitude
-            ridgeMagnitudes[3, 2] = (m[4,2] + m[4,3] + m[4,4] + m[3,2] + m[3,3] + m[3,4] + m[2,3] + m[2,4] + m[1,4] + m[0,4]) / (double)10; //
+            ridgeMagnitudes[3, 2] = (m[cp2, centreID] + m[cp2, cp1] + m[cp2, cp2] + m[cp1, centreID] + m[cp1, cp1] + m[cp1, cp2] + m[centreID, cp1] + m[centreID, cp2] + m[cm1, cp2] + m[cm2, cp2]) / (double)10; //
 
             //ridge magnitude having slope=4Pi/8;
-            ridgeMagnitudes[4, 1] = (m[0,2] + m[1,2] + m[2,2] + m[3,2] + m[4,2]) / (double)5; //CHMRW
-            //positve side magnitude
-            ridgeMagnitudes[4, 0] = (m[0,0] + m[1,0] + m[2,0] + m[3,0] + m[4,0] + m[0,1] + m[1,1] + m[2,1] + m[3,1] + m[4,1]) / (double)10; //
-            //negative side magnitude
-            ridgeMagnitudes[4, 2] = (m[0,3] + m[1,3] + m[2,3] + m[3,3] + m[4,2] + m[0,4] + m[1,4] + m[2,4] + m[3,4] + m[4,4]) / (double)10; //
+            double[] colSums = MatrixTools.SumColumns(m);
+            ridgeMagnitudes[4, 1] = colSums[centreID];
+            for (int c = 0; c < centreID; c++)        ridgeMagnitudes[4, 0] += colSums[c]; //positve  side magnitude
+            for (int c = centreID + 1; c < rows; c++) ridgeMagnitudes[4, 2] += colSums[c]; //negative side magnitude
+            ridgeMagnitudes[4, 0] /= (double)(centreID * cols);
+            ridgeMagnitudes[4, 1] /= (double)cols;
+            ridgeMagnitudes[4, 2] /= (double)(centreID * cols);
 
             //ridge magnitude having slope=5Pi/8;
-            ridgeMagnitudes[5, 1] = (m[0,1] + m[1,2] + m[2,2] + m[3,2] + m[4,3]) / (double)5; //
+            ridgeMagnitudes[5, 1] = (m[cm2, cm1] + m[cm1, centreID] + m[centreID, centreID] + m[cp1, centreID] + m[cp2, cp1]) / (double)5; //
             //positve side magnitude
-            ridgeMagnitudes[5, 0] = (m[0,0] + m[1,0] + m[1,1] + m[2,0] + m[2,1] + m[3,0] + m[3,1] + m[4,0] + m[4,1] + m[4,2]) / (double)10; //ABCDE FGHIJ
+            ridgeMagnitudes[5, 0] = (m[cm2, cm2] + m[cm1, cm2] + m[cm1, cm1] + m[centreID, cm2] + m[centreID, cm1] + m[cp1, cm2] + m[cp1, cm1] + m[cp2, cm2] + m[cp2, cm1] + m[cp2, centreID]) / (double)10; //ABCDE FGHIJ
             //negative side magnitude
-            ridgeMagnitudes[5, 2] = (m[0,2] + m[0,3] + m[0,4] + m[1,3] + m[1,4] + m[2,3] + m[2,4] + m[3,3] + m[3,4] + m[4,4]) / (double)10; //PQRST UVWXY
+            ridgeMagnitudes[5, 2] = (m[cm2, centreID] + m[cm2, cp1] + m[cm2, cp2] + m[cm1, cp1] + m[cm1, cp2] + m[centreID, cp1] + m[centreID, cp2] + m[cp1, cp1] + m[cp1, cp2] + m[cp2, cp2]) / (double)10; //PQRST UVWXY
 
             //ridge magnitude having slope=6Pi/8;
-            ridgeMagnitudes[6, 1] = (m[0,0] + m[1,1] + m[2,2] + m[3,3] + m[4,4]) / (double)5; //
-            //positve side magnitude
-            ridgeMagnitudes[6, 0] = (m[1,0] + m[2,0] + m[2,1] + m[3,0] + m[3,1] + m[3,2] + m[4,0] + m[4,1] + m[4,2] + m[4,3]) / (double)10; //
-            //negative side magnitude
-            ridgeMagnitudes[6, 2] = (m[0,1] + m[0,2] + m[0,3] + m[0,4] + m[1,2] + m[1,3] + m[1,4] + m[2,3] + m[2,4] + m[3,4]) / (double)10; //PQRST UVWXY
+            ridgeMagnitudes[6, 1] = MatrixTools.SumNegativeDiagonal(m) / (double)cols;
+            //double upperAv, lowerAv;
+            MatrixTools.AverageValuesInTriangleAboveAndBelowNegativeDiagonal(m, out upperAv, out lowerAv);
+            ridgeMagnitudes[6, 0] = upperAv;
+            ridgeMagnitudes[6, 2] = lowerAv;
 
             //ridge magnitude having slope=7Pi/8;
-            ridgeMagnitudes[7, 1] = (m[1,0] + m[1,1] + m[2,2] + m[3,3] + m[3,4]) / (double)5; //
+            ridgeMagnitudes[7, 1] = (m[cm1, cm2] + m[cm1, cm1] + m[centreID, centreID] + m[cp1, cp1] + m[cp1, cp2]) / (double)5; //
             //positve side magnitude
-            ridgeMagnitudes[7, 0] = (m[2,0] + m[2,1] + m[3,0] + m[3,1] + m[3,2] + m[4,0] + m[4,1] + m[4,2] + m[4,3] + m[4,4]) / (double)10; //
+            ridgeMagnitudes[7, 0] = (m[centreID, cm2] + m[centreID, cm1] + m[cp1, cm2] + m[cp1, cm1] + m[cp1, centreID] + m[cp2, cm2] + m[cp2, cm1] + m[cp2, centreID] + m[cp2, cp1] + m[cp2, cp2]) / (double)10; //
             //negative side magnitude
-            ridgeMagnitudes[7, 2] = (m[0,0] + m[0,1] + m[0,2] + m[0,3] + m[0,4] + m[1,2] + m[1,3] + m[1,4] + m[2,3] + m[2,4]) / (double)10; //
+            ridgeMagnitudes[7, 2] = (m[cm2, cm2] + m[cm2, cm1] + m[cm2, centreID] + m[cm2, cp1] + m[cm2, cp2] + m[cm1, centreID] + m[cm1, cp1] + m[cm1, cp2] + m[centreID, cp1] + m[centreID, cp2]) / (double)10; //
 
 
             double[] differences = new double[7]; // difference for each direction
