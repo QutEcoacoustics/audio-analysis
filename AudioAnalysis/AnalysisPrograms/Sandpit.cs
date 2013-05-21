@@ -34,7 +34,7 @@ namespace AnalysisPrograms
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
-                string annotatedImageFname = "SC7_annotated.png";
+                string annotatedImageFname = "SC8_annotatedTEST.png";
                 double magnitudeThreshold = 6.0; // of ridge hieght above neighbours
                 double intensityThreshold = 5.0; // dB
 
@@ -58,14 +58,16 @@ namespace AnalysisPrograms
                 var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
                 double herzScale = spectrogram.FBinWidth;
                 double freqBinCount = spectrogram.Configuration.FreqBinCount;
+                int ridgeLength = 9; // dimension of NxN matrix to use for ridge detection - must be odd number
+                int halfLength = ridgeLength / 2;
 
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
-                for (int r = 4; r < rows - 4; r++)
+                for (int r = halfLength; r < rows - halfLength; r++)
                 {
-                    for (int c = 4; c < cols - 4; c++)
+                    for (int c = halfLength; c < cols - halfLength; c++)
                     {
-                        var subM = MatrixTools.Submatrix(matrix, r - 2, c - 2, r + 2, c + 2); // extract 5x5 submatrix
+                        var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                         double magnitude, direction;
                         bool isRidge = false;
                         TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
@@ -78,6 +80,7 @@ namespace AnalysisPrograms
                             var poi = new PointOfInterest(time, herz);
                             poi.Point = point;
                             poi.RidgeOrientation = direction;
+                            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                             poi.RidgeMagnitude = magnitude;
                             poi.Intensity = matrix[r, c];
                             poi.TimeScale = timeScale;
@@ -92,20 +95,20 @@ namespace AnalysisPrograms
 
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
 
-                //PointOfInterest.PruneSingletons(poiList, rows, cols);
+                PointOfInterest.PruneSingletons(poiList, rows, cols);
                 //PointOfInterest.PruneDoublets(poiList, rows, cols);
+                poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
 
                 foreach (PointOfInterest poi in poiList)
                 {
-                    bool multiPixel = false;
                     poi.DrawColor = Color.Crimson;
-                    poi.DrawPoint(bmp, (int)freqBinCount, multiPixel); 
-                }
+                    bool multiPixel = false;
+                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
 
-                foreach (PointOfInterest poi in poiList)
-                {
-                    poi.DrawColor = Color.Cyan;
-                    poi.DrawLocalMax(bmp, (int)freqBinCount);
+                    // draw local max
+                    //poi.DrawColor = Color.Cyan;
+                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
 
                 imagePath = Path.Combine(outputDir, annotatedImageFname);

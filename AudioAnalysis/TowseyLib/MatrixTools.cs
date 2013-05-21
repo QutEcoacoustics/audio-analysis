@@ -585,6 +585,25 @@ namespace TowseyLib
       return sum;
   }
 
+  public static double[] SumRows(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      double[] rowSums = new double[rows];
+      for (int r = 0; r < rows; r++)
+      {
+          double sum = 0.0;
+          for (int c = 0; c < cols; c++)
+          {
+              sum += m[r, c];
+          }
+          rowSums[r] = sum;
+      }
+      //sum = 0.0;
+      //for (int j = 0; j < cols; j++) sum += colSums[j];
+      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
+      return rowSums;
+  }
   public static double[] SumColumns(double[,] m)
   {
       int rows = m.GetLength(0);
@@ -640,6 +659,134 @@ namespace TowseyLib
           rowSums[r] = sum / cols;
       }
       return rowSums;
+  }
+
+  public static double SumPositiveDiagonal(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols) return Double.NaN;
+      double sum = 0.0;
+      for (int r = 0; r < rows; r++)
+      {
+          sum += m[r, cols-1-r];
+      }
+      return sum;
+  }
+  public static void SumTriangleAbovePositiveDiagonal(double[,] m, out double sum, out int count)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols)
+      {    
+          sum = Double.NaN;
+          count = 0;
+          return;
+      }
+      sum = 0.0;
+      count = 0;
+      for (int r = 0; r < rows-1; r++)
+      {
+          for (int c = 0; c < cols - 1 - r; c++)
+          {
+              sum += m[r, c];
+              count ++;
+          }
+      }
+  }
+  public static void SumTriangleBelowPositiveDiagonal(double[,] m, out double sum, out int count)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols)
+      {
+          sum = Double.NaN;
+          count = 0;
+          return;
+      }
+      sum = 0.0;
+      count = 0;
+      for (int r = 1; r < rows; r++)
+      {
+          for (int c = (cols-r); c < cols; c++)
+          {
+              sum += m[r, c];
+              count++;
+          }
+      }
+  }
+  public static void AverageValuesInTriangleAboveAndBelowPositiveDiagonal(double[,] m, out double upperAv, out double lowerAv)
+  {
+      int count;
+      double sum;
+      MatrixTools.SumTriangleAbovePositiveDiagonal(m, out sum, out count);
+      upperAv = sum / (double)count;
+      MatrixTools.SumTriangleBelowPositiveDiagonal(m, out sum, out count);
+      lowerAv = sum / (double)count;
+  }
+
+  public static double SumNegativeDiagonal(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols) return Double.NaN;
+      double sum = 0.0;
+      for (int r = 0; r < rows; r++)
+      {
+          sum += m[r, r];
+      }
+      return sum;
+  }
+  public static void SumTriangleAboveNegativeDiagonal(double[,] m, out double sum, out int count)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols)
+      {
+          sum = Double.NaN;
+          count = 0;
+          return;
+      }
+      sum = 0.0;
+      count = 0;
+      for (int r = 0; r < rows - 1; r++)
+      {
+          for (int c = r+1; c < cols; c++)
+          {
+              sum += m[r, c];
+              count++;
+          }
+      }
+  }
+  public static void SumTriangleBelowNegativeDiagonal(double[,] m, out double sum, out int count)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      if (rows != cols)
+      {
+          sum = Double.NaN;
+          count = 0;
+          return;
+      }
+      sum = 0.0;
+      count = 0;
+      for (int r = 1; r < rows; r++)
+      {
+          for (int c = 0; c < r; c++)
+          {
+              sum += m[r, c];
+              count++;
+          }
+      }
+  }
+  public static void AverageValuesInTriangleAboveAndBelowNegativeDiagonal(double[,] m, out double upperAv, out double lowerAv)
+  {
+      int count;
+      double sum;
+      MatrixTools.SumTriangleAboveNegativeDiagonal(m, out sum, out count);
+      upperAv = sum / (double)count;
+      MatrixTools.SumTriangleBelowNegativeDiagonal(m, out sum, out count);
+      lowerAv = sum / (double)count;
   }
 
 
