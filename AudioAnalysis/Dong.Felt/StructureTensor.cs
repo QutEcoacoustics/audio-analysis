@@ -571,8 +571,10 @@
 
             foreach (var la in listOfAttention)
             {
+                // be careful about / operatoration
                 var attentionValue = la.Item2 * numberOfBins / maxOfAttention;
                 var temp = (int)attentionValue;
+                // need to think about its effiency 
                 if (temp < numberOfBins)
                 {
                     histogram[temp]++;
