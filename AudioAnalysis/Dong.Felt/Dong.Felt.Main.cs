@@ -89,11 +89,10 @@ namespace Dong.Felt
             var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png")); 
             //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));
             //string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
-            //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-SobelEdgeDetector.png";
+            //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
             //string outputPath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines-SobelRidgeDetector.png";
             
-            
-            ////// Read a bunch of recording files  
+            //// Read a bunch of recording files  
             ////string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
 
             ////AudioRecording audioRecording;
@@ -167,10 +166,11 @@ namespace Dong.Felt
             // For the test image 
             var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix); //  Why I have to transpose it?
-            
-            // Sobel edge/Ridge detector
-            //var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrixTranspose);
-            //var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(testMatrixTranspose);
+            //var gaussianKernel = ImageAnalysisTools.GenerateGaussianKernel(7, 1.0);
+            //var gaussianblur = ImageAnalysisTools.GaussianFilter(testMatrixTranspose, gaussianKernel);
+            //// Sobel edge/Ridge detector
+            ////var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrixTranspose);
+            //var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(gaussianblur, 0.15);
             //var IndexX = SobelEdgeMatrix.GetLength(0);
             //var IndexY = SobelEdgeMatrix.GetLength(1);
             //for (int i = 0; i < IndexX; i++)
@@ -186,10 +186,10 @@ namespace Dong.Felt
             //testImage.Save(outputPath);
 
             // Canny edge detector         
-            //var gaussianFilter = ImageAnalysisTools.GaussianFilter(testMatrixTranspose, ImageAnalysisTools.GenerateGaussianKernel(3, 1.0));
+            var gaussianFilter = ImageAnalysisTools.GaussianFilter(testMatrixTranspose, ImageAnalysisTools.GenerateGaussianKernel(3, 1.0));
             var gradient = ImageAnalysisTools.Gradient(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
             var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
-            var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2);
+            var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
             var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
             var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima);
             var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, 3);
@@ -200,20 +200,35 @@ namespace Dong.Felt
             {
                 for (int j = 0; j < IndexY; j++)
                 {
-                    if (hysterisis[i, j] == 1.0)
+                    if (nonMaxima[i, j] > 0.0)  // 0 degree
                     {
                         testImage.SetPixel(i, j, Color.Crimson);
                     }
                     //else
                     //{
-                    //    if (doubleThreshold[i, j] > 0)
+                    //    if (nonMaxima[i, j] >= 0.8) // 45 degree
                     //    {
                     //        testImage.SetPixel(i, j, Color.Blue);
+
+                    //    }
+                    //    else
+                    //    {
+                    //        if (nonMaxima[i, j] >= 0.6) // 90 degree
+                    //        {
+                    //            testImage.SetPixel(i, j, Color.Purple);
+                    //        }
+                    //        else
+                    //        {
+                    //            if (nonMaxima[i, j] >= 0.4) // -45 degree
+                    //            {
+                    //                testImage.SetPixel(i, j, Color.Green);
+                    //            }
+                    //        }
                     //    }
                     //}
                 }
             }
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-HysterisisImage1.png");
+            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-NonMaximaImage5.png");
                 //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
                 //Log.Info("differenceOfGaussian");
                 //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
