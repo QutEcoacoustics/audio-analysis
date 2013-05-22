@@ -30,6 +30,7 @@ namespace AnalysisPrograms
     //using FELT.Runner;
 
     using log4net;
+    using SammonProjection;
 
     //using SammonProjection;
 
@@ -190,7 +191,7 @@ namespace AnalysisPrograms
                     { "test", AnalysisTemplate.Dev },
 
                     // a investigation into sammon projections
-                    //{ "sammon_projection", SammonProgram.Dev }
+                    { "sammon_projection", SammonProgram.Dev },
 
                     // Michael's play area
                     { "sandpit", Sandpit.Dev },
