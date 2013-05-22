@@ -28,9 +28,9 @@ namespace Dong.Felt
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
 
-        public static double[,] SobelX =  { {-1.0,  0.0,  1.0},
-                                            {-2.0,  0.0,  2.0},
-                                            {-1.0,  0.0,  1.0} };
+        public static double[,] SobelX =  { {1.0,  0.0,  -1.0},
+                                            {2.0,  0.0,  -2.0},
+                                            {1.0,  0.0,  -1.0} };
 
         public static double[,] SobelY =  { {1.0,  2.0,  1.0},
                                             {0.0,  0.0,  0.0},
@@ -123,8 +123,9 @@ namespace Dong.Felt
                     {
                         for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
                         {
-                            sumX = sumX + m[row + i, col + j] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
-                            sumY = sumY + m[row + i, col + j] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
+                            // be careful about the i and j for m
+                            sumX = sumX + m[row + j, col + i] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
+                            sumY = sumY + m[row + j, col + i] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
                         }
                     }
                     result.Item1[row, col] = sumX;
@@ -155,7 +156,7 @@ namespace Dong.Felt
         }
 
         // Finding the edge direction 
-        public static double[,] GradientDirection(double[,] gradientX, double[,] gradientY)
+        public static double[,] GradientDirection(double[,] gradientX, double[,] gradientY, double[,] gradientMagnitude)
         {
             int MaximumXindex = gradientX.GetLength(0);
             int MaximumYindex = gradientX.GetLength(1);
@@ -166,40 +167,36 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                    if (gradientX[row, col] == 0)
+                    if (!(gradientMagnitude[row, col] == 0.0))
                     {
-                        if (gradientY[row, col] == 0)
-                        {
-                            newAngle[row, col] = 0; 
+                        if (gradientX[row, col] == 0)
+                        {                    
+                            newAngle[row, col] = 90;
                         }
                         else
                         {
-                            newAngle[row, col] = 90; 
+                            newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Math.PI;
+                            if ((-22.5 < newAngle[row, col] && newAngle[row, col] <= 22.5) || (157.5 < newAngle[row, col] && newAngle[row, col] <= -157.5))
+                            {
+                                newAngle[row, col] = 0;
+                            }
+
+                            if ((22.5 < newAngle[row, col] && newAngle[row, col] <= 67.5) || (-157.5 < newAngle[row, col] && newAngle[row, col] <= -112.5))
+                            {
+                                newAngle[row, col] = 45;
+                            }
+
+                            if ((67.5 < newAngle[row, col] && newAngle[row, col] <= 112.5) || (-112.5 < newAngle[row, col] && newAngle[row, col] <= -67.5))
+                            {
+                                newAngle[row, col] = 90;
+                            }
+
+                            if ((-67.5 < newAngle[row, col] && newAngle[row, col] <= -22.5) || (112.5 < newAngle[row, col] && newAngle[row, col] <= 157.5))
+                            {
+                                newAngle[row, col] = -45;
+                            }
                         }
                     }
-                    else
-                    {
-                        newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Math.PI;
-                        if ((-22.5 < newAngle[row, col] && newAngle[row, col] <= 22.5) || (157.5 < newAngle[row, col] && newAngle[row, col] <= -157.5))
-                        {
-                            newAngle[row, col] = 0;                          
-                        }
-
-                        if ((22.5 < newAngle[row, col] && newAngle[row, col] <= 67.5) || (-157.5 < newAngle[row, col] && newAngle[row, col] <= -112.5))
-                        {
-                            newAngle[row, col] = 45;                          
-                        }
-
-                        if ((67.5 < newAngle[row, col] && newAngle[row, col] <= 112.5) || (-112.5 < newAngle[row, col] && newAngle[row, col] <= -67.5))
-                        {
-                            newAngle[row, col] = 90;                           
-                        }
-
-                        if ((-67.5 < newAngle[row, col] && newAngle[row, col] <= -22.5) || (112.5 < newAngle[row, col] && newAngle[row, col] <= 157.5))
-                        {
-                            newAngle[row, col] = -45;                          
-                        }
-                    }                 
                 }
             }
 
@@ -219,48 +216,43 @@ namespace Dong.Felt
             {
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
                 {
-                    // Horizontal edge
-                    if (direction[i, j] == 0)
+                    if (!(gradientMagnitude[i, j] == 0.0))
                     {
-                        if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
+                        // Horizontal edge
+                        if (direction[i, j] == 0)
                         {
-                            // check whether it's connected with local maxima
-                            if (gradientMagnitude[i, j] == gradientMagnitude[i, j + 1] || gradientMagnitude[i, j] == gradientMagnitude[i, j - 1])
+                            if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
                             {
-
+                                gradientMagnitude[i, j] = 0.0;
                             }
-                            else
+                        }
+
+                        //45 Degree Edge
+                        if (direction[i, j] == 45)
+                        {
+                            if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
                             {
-                                gradientMagnitude[i, j] = 0;
+                                gradientMagnitude[i, j] = 0.0;
                             }
-                        }                    
-                    }
-
-                    //45 Degree Edge
-                    if (direction[i, j] == 45)
-                    {
-                        if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
-                        {
-                            gradientMagnitude[i, j] = 0;
                         }
-                    }
 
-                    // Vertical Edge
-                    if (direction[i, j] == 90)
-                    {
-                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
+                        // Vertical Edge
+                        if (direction[i, j] == 90)
                         {
-                            gradientMagnitude[i, j] = 0;
+                            if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
+                            {
+                                gradientMagnitude[i, j] = 0.0;
+                            }
                         }
-                    }
 
-                    //-45 Degree Edge
-                    if (direction[i, j] == -45)
-                    {
-                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
+                        //-45 Degree Edge
+                        if (direction[i, j] == -45)
                         {
-                            gradientMagnitude[i, j] = 0;
-                        }               
+                            if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
+                            {
+                                gradientMagnitude[i, j] = 0.0;
+                            }
+                        }
                     }
                 }
             }
@@ -278,15 +270,16 @@ namespace Dong.Felt
     
             double minimum; double maximum;
             DataTools.MinMax(nonMaxima, out minimum, out maximum);
+            //var result = new double[MaximumXindex, MaximumYindex];
             var normMatrix = DataTools.normalise(nonMaxima);
             // Calculate the histogram of pixel intensity
             const int maxIndex = 100;
             var histogram = new int[maxIndex + 1];
             for (int row = 1; row < MaximumXindex; row++)
             {
-                for (int col = 21; col < MaximumYindex; col++)
+                for (int col = 1; col < MaximumYindex; col++)
                 {
-                    for (int i = 33; i <= maxIndex; i++)
+                    for (int i = 0; i <= maxIndex; i++)
                     {
                         if (normMatrix[row, col] >= (i / (double)maxIndex) && normMatrix[row, col] < ((i + 1) / (double)maxIndex))
                         {
@@ -301,17 +294,19 @@ namespace Dong.Felt
             double highThreshold = 0.0;
             double lowThreshold = 0.0;
 
-            for (int j = maxIndex; j >= 0 ; j--)
-            {   
+            for (int j = maxIndex; j >= 0; j--)
+            {
                 sum = sum + histogram[j];
                 var percentageOfStrongEdge = 0.07;
                 if (sum >= percentageOfStrongEdge * numberOfPixel)
                 {
                     highThreshold = j * 1 / (double)maxIndex;
-                    break; 
+                    break;
                 }
             }
             lowThreshold = 0.5 * highThreshold;
+            //var relThreshold = 0.2;
+            //var highThreshold = minimum + ((maximum - minimum) * relThreshold);
 
             for (int row = 0; row < MaximumXindex; row++)
             {
@@ -334,34 +329,8 @@ namespace Dong.Felt
                     }
                 }
             }
-            //double highThreshold = 1.66 * median;
-            //double lowThreshold = 0.66 * median;
-            //var median = (minimum + maximum) / 2; 
-            //double highThreshold = 1.66 * median;
-            //double lowThreshold = 0.66 * median;
-
-            //for (int row = 0; row < MaximumXindex; row++)
-            //{
-            //    for (int col = 0; col < MaximumYindex; col++)
-            //    {
-            //        if (nonMaxima[row, col] >= highThreshold)
-            //        {
-            //            nonMaxima[row, col] = 1.0;
-            //        }
-            //        else
-            //        {
-            //            if (nonMaxima[row, col] < lowThreshold)
-            //            {
-            //                nonMaxima[row, col] = 0.0;
-            //            }
-            //            else
-            //            {
-            //                nonMaxima[row, col] = 0.5;
-            //            }
-            //        }
-            //    }
-            //}
             return normMatrix;
+            
         }
 
      //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very certain (strong) edge.
