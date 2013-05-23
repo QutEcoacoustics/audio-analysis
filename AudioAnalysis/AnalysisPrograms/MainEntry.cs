@@ -56,7 +56,7 @@ namespace AnalysisPrograms
 
                     // 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an indices.csv file
                     // Signed off: Michael Towsey 4th December 2012
-                    { "audio2csv", strings => AnalyseLongRecording.Main(strings) },
+                    { "audio2csv", AnalyseLongRecording.Main },
 
                     // 3. Produces a sonogram from an audio file - EITHER custom OR via SOX
                     // Signed off: Michael Towsey 31st July 2012
@@ -64,7 +64,7 @@ namespace AnalysisPrograms
 
                     // 4. Produces a tracks image of column values in a csv file - one track per csv column.
                     // Signed off: Michael Towsey 27th July 2012
-                    { "indicesCsv2Image", strings => IndicesCsv2Display.Main(strings) },
+                    { "indicesCsv2Image", IndicesCsv2Display.Main },
 
 
 
@@ -148,7 +148,7 @@ namespace AnalysisPrograms
 
                     // anthony's attempt at FELT
                     // this runs his suggestion tool, and the actual FELT analysis
-                    //{ "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
+                    { "truskinger.felt", strings => FELT.Runner.Main.ProgramEntry(strings) },
 
                     // Xueyan's FELT
                     { "dong.felt", FeltAnalysis.Dev },
@@ -235,7 +235,7 @@ namespace AnalysisPrograms
                 {
                     var analysisFunc = KnownAnalyses[firstArg];
 
-                    //! execute the analysis
+                    // execute the analysis
                     analysisFunc(restOfArgs);
                 }
                 else
