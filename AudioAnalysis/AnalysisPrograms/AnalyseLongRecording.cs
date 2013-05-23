@@ -309,6 +309,9 @@ namespace AnalysisPrograms
                 int X_interval = 60; // assume one minute spedctra and hourly time lines
                 int Y_interval = (int)Math.Round(1000 / (double)34.5); // assume 256 freq bins and ~8840 nyquist
 
+
+                // SORTING NEEDED FOR PARALLELL IMPLEMENTATION
+
                 list = ResultsTools.MergeBGNSpectraIntoSpectrograms(analyserResults);
                 csvPath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.csv");
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
