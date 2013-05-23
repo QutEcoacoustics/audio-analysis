@@ -213,55 +213,73 @@
             //? unsure if this is correct
             spm.[l..h,*]
 
-        type FeatureAction = 
-            | Spectral of (AudioRecording -> SpectralSonogram -> Value)
-            | Sample of (AudioRecording -> Value)
-            | None of  (unit -> Value)
-        /// extractFeatures ->  for every event, and then every feature selected, extract those features
-        let extractFeatures (snippets:EventRect array) featureList audioCutter sourceFile : Data =
-
             // three types of features
             //  - statistical (need no prior claculation)
             //  - time-domain (needs raw pcm signals) -> needs cut files
             //  - spectral (needs spectrogram) -> needs cut spectrograms (of cut files)
+        type FeatureAction = 
+            | Spectral of (AudioRecording -> SpectralSonogram -> Value)
+            | Sample of (AudioRecording -> Value)
+            | Statistical of  (unit -> Value)
 
-            /// a mapping of feature names to functions and datatypes
-            let routeAction feature =
-                let (action:FeatureAction), headerName, dataType =
-                    match feature with
-                        | EqualsOut "bullshit" a -> None(fun () -> upcast( new Number(3.0))), a, DataType.Number;
-                        | _ -> raise <| new NotImplementedException()
-                action, (headerName, dataType)
+        /// a mapping of feature names to functions and datatypes
+        let routeAction feature =
+            let (action:FeatureAction), headerName, dataType =
+                match feature with
+                    // a feature for demoing
+                    | EqualsOut "bullshit" a -> Statistical(fun () -> upcast( new Number(3.0))), a, DataType.Number
+
+                    | EqualsOut "zeroCrossing" zc -> Sample(fun (audioRecording) -> upcast( new Number( ))), zc, DataType.Number
+
+                    | EqualsOut "averageAmplitude" avgamp -> Sample(fun (audioRecording) -> upcast (new Number())), avgamp, DataType.Number
+
+                    | EqualsOut "activity" activity -> Sample(fun (audioRecording) -> upcast( new Number( ))), activity, DataType.Number
+
+                    | _ -> raise <| new NotImplementedException()
+            action, (headerName, dataType)
+
+        /// extractFeatures ->  for every event, and then every feature selected, extract those features
+        let extractFeatures (snippets:EventRect array) featureList audioCutter sourceFile : Data =
 
             // prep: the set of operations to apply to each event
             let actions = List.map routeAction featureList
                 
             // Prep: create the Instances data structure
             let eventCount = Array.length snippets
-            let instances = List.fold (fun state (_, (name, _)) -> Map.add name (Array.zeroCreateUnchecked eventCount) state) Map.empty<ColumnHeader, Value[]> actions
+            // a map that contains an entry for each feature. each entry is an array. this is a datatable
+            let instances = 
+                List.fold 
+                    (fun state (_, (name, _)) -> Map.add name (Array.zeroCreateUnchecked eventCount) state)
+                    Map.empty<ColumnHeader, Value[]> 
+                    actions
+            
+            // guesses
             let classes = Array.zeroCreateUnchecked eventCount
 
             //+ execution
             let applyActionsToEvent (e:Index) ((instanceMap:Map<ColumnHeader, Value[]>), (classLabels:Class array)) (event: EventRect) =
+                
                 // pre-pare audio - we only want to cut this once, and reuse it for each feature
                 let getAudio =
-                    (fun () ->
+                    lazy (
                         // TODO: BROKEN
-                        new AudioRecording([||])
+                        
                     )
+                
                 // pre-pare spectrogram - we only want to calculate this once, and reuse it for each feature
                 let getSpectrogram =
-                    (fun () ->
+                    lazy (
                         // TODO: BROKEN()
-                        new SpectralSonogram("", null)
+                        snippetToSpectrogram (getAudio.Force())
+                       
                     )
 
                 let runAction (action, (headerName, (dataType:DataType))) =
                     let v =     
                         match action with 
-                            | None f -> raise <| new InvalidOperationException()
-                            | Spectral fftf -> fftf (getAudio()) (getSpectrogram())
-                            | Sample samplef -> samplef (getAudio())   
+                            | Statistical f -> raise <| new InvalidOperationException()
+                            | Spectral fftf -> fftf (getAudio.Force()) (getSpectrogram.Force())
+                            | Sample samplef -> samplef (getAudio.Force())   
                     instanceMap.[headerName].[e] <- v
 
                 List.iter (runAction) actions
@@ -310,6 +328,7 @@
 
         let convertToDomainUnits duration horizPixels  bound = 
             Bound.create (rToSeconds duration horizPixels bound.duration) (rToHertz bound.startFrequency) (rToHertz bound.endFrequency)
+
         let convertRectToDomainUnits duration horizPixels rect =
             let r = rToSeconds duration horizPixels
             cornersToRect (r <| left rect) (r <| right rect)  (rToHertz <| top rect) (rToHertz <| bottom rect)
