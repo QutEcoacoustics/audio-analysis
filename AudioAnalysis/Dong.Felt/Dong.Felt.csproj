@@ -100,6 +100,7 @@
   <ItemGroup>
     <Compile Include="ConvolutionMatrix.cs" />
     <Compile Include="Distance.Tools.cs" />
+    <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="ImageAnalysisTools.cs" />
     <Compile Include="LocalMaxima.cs" />
     <Compile Include="PoiAnalysis.cs" />
