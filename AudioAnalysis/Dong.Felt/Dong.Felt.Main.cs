@@ -20,7 +20,7 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using TowseyLib;
     using log4net;
-
+    
     /// <summary>
     /// The felt analysis.
     /// </summary>
@@ -79,49 +79,93 @@ namespace Dong.Felt
             //    //yaml.Load(reader);
             //    var serializer = new YamlSerializer();
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
-            // }
+            // }  
 
-            // Read one specific file 
-            // with human beings
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png")); 
-            // just simple shapes
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png")); 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png")); 
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));
-            //string lewinsRail = @"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040.wav";
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
             //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            //string outputPath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines-SobelRidgeDetector.png";
+            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\2CannyEdgeDetection-threshold-2.0-1.0-guassianblur-5-1.0.png";
+            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
+            var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
+            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix); 
             
-            //// Read a bunch of recording files  
-            ////string[] Files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
+            double[,] magnitude, direction;
+            ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
 
-            ////AudioRecording audioRecording;
-            //var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
-            //Log.Info("AudioToSpectrogram");
+            string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav";
+            var recording = new AudioRecording(wavFilePath);
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            List<PointOfInterest> poiList = new List<PointOfInterest>();
+            double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
+            var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
+            double herzScale = spectrogram.FBinWidth;
+            double freqBinCount = spectrogram.Configuration.FreqBinCount;
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            Plot scores = null; 
+            double eventThreshold = 0.5; // dummy variable - not used               
+            List<AcousticEvent> list = null;
+            Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, list, eventThreshold);
+            Bitmap bmp = (Bitmap)image;
+          
+            double magnitudeThreshold = 1.0;
+            //int rows = testMatrixTranspose.GetLength(0);
+            //int cols = testMatrixTranspose.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    // strong edge
+                    if (magnitude[c, r] > magnitudeThreshold)
+                    {
+                        //testImage.SetPixel(r, c, Color.Crimson);
+                        Point point = new Point(c, r);
+                        //var poi = new PointOfInterest(point);
+                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                        double herz = (freqBinCount - r - 1) * herzScale;
+                        var poi = new PointOfInterest(time, herz);
+                        poi.Point = point;
+                        poi.RidgeOrientation = direction[c, r];
+                        poi.OrientationCategory = (int)Math.Round((direction[c, r] * 8) / Math.PI);
+                        poi.RidgeMagnitude = magnitude[c, r];
+                        poi.Intensity = matrix[r, c];
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        //poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
+                        poiList.Add(poi);
+                        testImage.Save(outputFilePath);
+                    }
+                    else
+                    {
+                        if (magnitude[c, r] > 0)
+                        {
+                            testImage.SetPixel(c, r, Color.Blue);
+                        }
+                    }
+                }
+            }
+            PointOfInterest.PruneSingletons(poiList, rows, cols);
+                //PointOfInterest.PruneDoublets(poiList, rows, cols);
+                poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
 
-            //// Do the noise removal
-            //const int BackgroundThreshold = 5;
-            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            ////var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            //Log.Info("NoiseReduction");
+                foreach (PointOfInterest poi in poiList)
+                {
+                    poi.DrawColor = Color.Crimson;
+                    bool multiPixel = false;
+                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
 
-            //// Find the local Maxima
-            //const int NeibourhoodWindowSize = 7;
-            //var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
+                    // draw local max
+                    //poi.DrawColor = Color.Cyan;
+                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
+                }
+            
+            image.Save(outputFilePath);
 
-            //// Filter out points
-            //const int AmplitudeThreshold = 10;
-            //var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
 
-            //// Remove points which are too close
-            //const int DistanceThreshold = 7;
-            //var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
-
-            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult.AddPoints(finalPoi);
-            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
-            //Log.Info("Show the result of Final PointsOfInterest");
+            // Batch Process
             //foreach (string path in Files)
             //{
             //    // Writing my code here
@@ -162,121 +206,7 @@ namespace Dong.Felt
             //    imageResult.Save(path + ".png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
-
-            // For the test image 
-            var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix); //  Why I have to transpose it?
-            //var gaussianKernel = ImageAnalysisTools.GenerateGaussianKernel(7, 1.0);
-            //var gaussianblur = ImageAnalysisTools.GaussianFilter(testMatrixTranspose, gaussianKernel);
-            //// Sobel edge/Ridge detector
-            ////var SobelRidgeMatrix = TowseyLib.ImageTools.SobelRidgeDetection(testMatrixTranspose);
-            //var SobelEdgeMatrix = TowseyLib.ImageTools.SobelEdgeDetection(gaussianblur, 0.15);
-            //var IndexX = SobelEdgeMatrix.GetLength(0);
-            //var IndexY = SobelEdgeMatrix.GetLength(1);
-            //for (int i = 0; i < IndexX; i++)
-            //{
-            //    for (int j = 0; j < IndexY; j++)
-            //    {
-            //        if (SobelEdgeMatrix[i, j] == 1)
-            //        {
-            //            testImage.SetPixel(i, j, Color.Crimson);
-            //        }
-            //    }
-            //}
-            //testImage.Save(outputPath);
-
-            // Canny edge detector         
-            var gaussianFilter = ImageAnalysisTools.GaussianFilter(testMatrixTranspose, ImageAnalysisTools.GenerateGaussianKernel(3, 1.0));
-            var gradient = ImageAnalysisTools.Gradient(testMatrixTranspose, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
-            var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
-            var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
-            var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
-            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima);
-            var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, 3);
-            var IndexX = nonMaxima.GetLength(0);
-            var IndexY = nonMaxima.GetLength(1);
-
-            for (int i = 0; i < IndexX; i++)
-            {
-                for (int j = 0; j < IndexY; j++)
-                {
-                    if (nonMaxima[i, j] > 0.0)  // 0 degree
-                    {
-                        testImage.SetPixel(i, j, Color.Crimson);
-                    }
-                    //else
-                    //{
-                    //    if (nonMaxima[i, j] >= 0.8) // 45 degree
-                    //    {
-                    //        testImage.SetPixel(i, j, Color.Blue);
-
-                    //    }
-                    //    else
-                    //    {
-                    //        if (nonMaxima[i, j] >= 0.6) // 90 degree
-                    //        {
-                    //            testImage.SetPixel(i, j, Color.Purple);
-                    //        }
-                    //        else
-                    //        {
-                    //            if (nonMaxima[i, j] >= 0.4) // -45 degree
-                    //            {
-                    //                testImage.SetPixel(i, j, Color.Green);
-                    //            }
-                    //        }
-                    //    }
-                    //}
-                }
-            }
-            testImage.Save(@"C:\Test recordings\Crows\Test\TestImage3\Test3-cannydetector-NonMaximaImage5.png");
-                //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-                //Log.Info("differenceOfGaussian");
-                //var partialDifference = StructureTensor.CannyPartialDifference(testMatrix);
-                //Log.Info("partialDifference");
-                //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-                //Log.Info("magnitude");
-                //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-                //Log.Info("phase");
-                //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-                //Log.Info("structureTensor");
-                //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-                //Log.Info("eigenValue");
-                //var coherence = StructureTensor.Coherence(eigenValue);
-                //Log.Info("coherence");
-                //var hitCoherence = StructureTensor.hitCoherence(coherence);
-                //Log.Info("hitCoherence");
-
-                //var numberOfVetex = structureTensor.Count;
-                //var results = new List<string>();
-
-                //results.Add("eigenValue1, eigenValue2, coherence");
-                //for (int i = 0; i < numberOfVetex; i++)
-                //{
-                //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
-                //}
-                //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
-
-                //var results1 = new List<string>();
-                //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
-
-                //var maximumXindex = partialDifference.Item1.GetLength(0);
-                //var maximumYindex = partialDifference.Item1.GetLength(1);
-                //for (int i = 0; i < maximumXindex; i++)
-                //{
-                //    for (int j = 0; j < maximumYindex; j++)
-                //    {
-                //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
-                //    }
-                //}
-                //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
-                //foreach (var poi in hitCoherence)
-                //{
-                //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-                //}
-                //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
-
-            
-              
+           
             var result = new AnalysisResult();
             return result;
         }

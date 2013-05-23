@@ -7,7 +7,6 @@
     using AudioAnalysisTools;
     using System.IO;
     using System.Drawing;
-    using System.Collections.Generic;
     using Acoustics.Shared.Extensions;
     using System.Diagnostics.Contracts;
 
@@ -340,5 +339,37 @@
             return result;
         }
 
+        //Local Maxima
+        public static void GetLocalMaxima(double[,] matrix)
+        {
+
+            AudioRecording audioRecording;
+            //var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
+            //Log.Info("AudioToSpectrogram");
+
+            // Do the noise removal
+            const int BackgroundThreshold = 5;
+            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
+            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
+            //Log.Info("NoiseReduction");
+
+            // Find the local Maxima
+            const int NeibourhoodWindowSize = 7;
+            //var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
+
+            // Filter out points
+            const int AmplitudeThreshold = 10;
+            //var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
+
+            // Remove points which are too close
+            const int DistanceThreshold = 7;
+            //var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
+
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
+            //imageResult.AddPoints(finalPoi);
+            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
+            //Log.Info("Show the result of Final PointsOfInterest");
+        }
     }
 }

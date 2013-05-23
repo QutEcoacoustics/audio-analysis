@@ -9,6 +9,7 @@ namespace Dong.Felt
     using TowseyLib;
     using System.Data;   
     using System.Drawing;
+    using AudioAnalysisTools;
 
     class ImageAnalysisTools
     {
@@ -35,7 +36,8 @@ namespace Dong.Felt
         public static double[,] SobelY =  { {1.0,  2.0,  1.0},
                                             {0.0,  0.0,  0.0},
                                             {-1.0, -2.0, -1.0} };
-        
+
+        public const double Pi = Math.PI;
         /// Canny detector for edge detection in a noisy image 
         /// it involves five steps here, first, it needs to do the Gaussian convolution, then a simple derivative operator(like Roberts Cross or Sobel operator) is 
         /// applied to the smoothed image to highlight regions of the image. Finally, it will track .....
@@ -44,9 +46,9 @@ namespace Dong.Felt
         // Generate the gaussian kernel
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
-            double pi = (double)Math.PI;
+            
             var kernel = new double[sizeOfKernel, sizeOfKernel];
-            double coeffients1 = 2 * pi * sigma * sigma;
+            double coeffients1 = 2 * Pi * sigma * sigma;
             double coeffients2 = 2 * sigma * sigma;
 
             int kernelRadius = sizeOfKernel / 2; 
@@ -170,36 +172,64 @@ namespace Dong.Felt
                     if (!(gradientMagnitude[row, col] == 0.0))
                     {
                         if (gradientX[row, col] == 0)
-                        {                    
+                        {
                             newAngle[row, col] = 90;
                         }
                         else
                         {
-                            newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Math.PI;
-                            if ((-22.5 < newAngle[row, col] && newAngle[row, col] <= 22.5) || (157.5 < newAngle[row, col] && newAngle[row, col] <= -157.5))
+                            //newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Pi;
+                            newAngle[row, col] = Math.Atan(gradientY[row, col] / gradientX[row, col]);
+                                       
+                            const double MinNegativeZero = -7 * Pi / 8;
+                            const double MaxNegativeZero = -Pi / 8;
+                            const double MinPositiveZero= Pi / 8;
+                            const double MaxPositiveZero = 7 * Pi / 8;
+
+                            // the degree of direction is around 45/-135 degree neighbourhood
+                            const double MinNegative45= -7 * Pi / 8;
+                            const double MinPositive45 = Pi / 8; 
+                            const double MaxNegative45= -5 * Pi / 8;
+                            const double MaxPositive45 = 3 * Pi / 8; 
+
+                            // the degree of direction is around 90/-90 degree neighbourhood
+                            const double MaxNegative90= -3 * Pi / 8;
+                            const double MinPositive90 = 3 * Pi / 8; 
+                            const double MinNegative90= -5 * Pi / 8;
+                            const double MaxPositive90 = 5 * Pi / 8;
+ 
+                            // the degree of direction is around -45/135 degree neighbourhood
+                            const double MinNegative135= -3 * Pi / 8;
+                            const double MinPositive135 = 5 * Pi / 8; 
+                            const double MaxNegative135= -Pi / 8;
+                            const double MaxPositive135 = 7 * Pi / 8;
+
+                            if ((MaxNegativeZero < newAngle[row, col] && newAngle[row, col] <= MinPositiveZero) || (MaxPositiveZero < newAngle[row, col]) || (newAngle[row, col] <= MinNegativeZero))
                             {
                                 newAngle[row, col] = 0;
                             }
 
-                            if ((22.5 < newAngle[row, col] && newAngle[row, col] <= 67.5) || (-157.5 < newAngle[row, col] && newAngle[row, col] <= -112.5))
+                            if ((MinPositive45 < newAngle[row, col] && newAngle[row, col] <= MaxPositive45) || (MinNegative45 < newAngle[row, col] && newAngle[row, col] <= MaxNegative45))
                             {
                                 newAngle[row, col] = 45;
                             }
 
-                            if ((67.5 < newAngle[row, col] && newAngle[row, col] <= 112.5) || (-112.5 < newAngle[row, col] && newAngle[row, col] <= -67.5))
+                            if ((MinPositive90 < newAngle[row, col] && newAngle[row, col] <= MaxPositive90) || (MinNegative90 < newAngle[row, col] && newAngle[row, col] <= MaxNegative90))
                             {
                                 newAngle[row, col] = 90;
                             }
 
-                            if ((-67.5 < newAngle[row, col] && newAngle[row, col] <= -22.5) || (112.5 < newAngle[row, col] && newAngle[row, col] <= 157.5))
+                            if ((MinPositive135 < newAngle[row, col] && newAngle[row, col] <= MaxPositive135) || (MinNegative135 < newAngle[row, col] && newAngle[row, col] <= MaxNegative135))
                             {
                                 newAngle[row, col] = -45;
                             }
                         }
                     }
+                    else
+                    {
+                        newAngle[row, col] = 180;
+                    }
                 }
             }
-
             return newAngle;
         }
 
@@ -215,43 +245,40 @@ namespace Dong.Felt
             for (int i = kernelRadius; i < MaximumXindex - kernelRadius; i++)
             {
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
-                {
-                    if (!(gradientMagnitude[i, j] == 0.0))
+                {                
+                     // Horizontal edge
+                    if (direction[i, j] == 0)
                     {
-                        // Horizontal edge
-                        if (direction[i, j] == 0)
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
                         {
-                            if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
-                            {
-                                gradientMagnitude[i, j] = 0.0;
-                            }
+                            gradientMagnitude[i, j] = 0.0;
                         }
+                    }
 
-                        //45 Degree Edge
-                        if (direction[i, j] == 45)
+                    //45 Degree Edge
+                    if (direction[i, j] == 45)
+                    {
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
                         {
-                            if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
-                            {
-                                gradientMagnitude[i, j] = 0.0;
-                            }
+                            gradientMagnitude[i, j] = 0.0;
                         }
+                    }
 
-                        // Vertical Edge
-                        if (direction[i, j] == 90)
+                    // Vertical Edge
+                    if (direction[i, j] == 90)
+                    {
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
                         {
-                            if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
-                            {
-                                gradientMagnitude[i, j] = 0.0;
-                            }
+                            gradientMagnitude[i, j] = 0.0;
                         }
+                    }
 
-                        //-45 Degree Edge
-                        if (direction[i, j] == -45)
+                    //-45 Degree Edge
+                    if (direction[i, j] == -45)
+                    {
+                        if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
                         {
-                            if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
-                            {
-                                gradientMagnitude[i, j] = 0.0;
-                            }
+                            gradientMagnitude[i, j] = 0.0;
                         }
                     }
                 }
@@ -263,77 +290,36 @@ namespace Dong.Felt
       //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
       // the high threshold are marked as strong; edge pixels weaker than the low threshold are marked as weak are suppressed and edge poxels between the two
       // thresholds are marked as weak.   The vaule is 2.0, 4.0, 6.0, 8.0
-        public static double[,] DoubleThreshold(double[,] nonMaxima)
+        public static double[,] DoubleThreshold(double[,] nonMaxima, double highThreshold, double lowThreshold)
         {         
             int MaximumXindex = nonMaxima.GetLength(0);
             int MaximumYindex = nonMaxima.GetLength(1);
-    
-            double minimum; double maximum;
-            DataTools.MinMax(nonMaxima, out minimum, out maximum);
-            //var result = new double[MaximumXindex, MaximumYindex];
-            var normMatrix = DataTools.normalise(nonMaxima);
-            // Calculate the histogram of pixel intensity
-            const int maxIndex = 100;
-            var histogram = new int[maxIndex + 1];
-            for (int row = 1; row < MaximumXindex; row++)
-            {
-                for (int col = 1; col < MaximumYindex; col++)
-                {
-                    for (int i = 0; i <= maxIndex; i++)
-                    {
-                        if (normMatrix[row, col] >= (i / (double)maxIndex) && normMatrix[row, col] < ((i + 1) / (double)maxIndex))
-                        {
-                            histogram[i]++;
-                            break;
-                        }
-                    }
-                }
-            }
-            var sum = 0;
-            var numberOfPixel = MaximumXindex * MaximumYindex;
-            double highThreshold = 0.0;
-            double lowThreshold = 0.0;
-
-            for (int j = maxIndex; j >= 0; j--)
-            {
-                sum = sum + histogram[j];
-                var percentageOfStrongEdge = 0.07;
-                if (sum >= percentageOfStrongEdge * numberOfPixel)
-                {
-                    highThreshold = j * 1 / (double)maxIndex;
-                    break;
-                }
-            }
-            lowThreshold = 0.5 * highThreshold;
-            //var relThreshold = 0.2;
-            //var highThreshold = minimum + ((maximum - minimum) * relThreshold);
-
+              
             for (int row = 0; row < MaximumXindex; row++)
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                    if (normMatrix[row, col] > highThreshold)
+                    if (nonMaxima[row, col] > highThreshold)
                     {
-                        normMatrix[row, col] = 1.0;
+                        nonMaxima[row, col] = 1.0;
                     }
                     else
                     {
-                        if (normMatrix[row, col] < lowThreshold)
+                        if (nonMaxima[row, col] < lowThreshold)
                         {
-                            normMatrix[row, col] = 0.0;
+                            nonMaxima[row, col] = 0.0;
                         }
                         else
                         {
-                            normMatrix[row, col] = 0.5;
+                            nonMaxima[row, col] = 0.5;
                         }
                     }
                 }
             }
-            return normMatrix;
-            
+            return nonMaxima;            
         }
 
-     //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very certain (strong) edge.
+        //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very strong edge.
         public static double[,] HysterisisThresholding(double[,] nonMaximaEdges, int kernelSize)
         {
             //travel in a 3 * 3 neighbourhood
@@ -342,7 +328,6 @@ namespace Dong.Felt
             int kernelRadius = kernelSize / 2;
 
             // only check the weak edge, here its intensity should be 0.5
-
             var edgeMap = new double[MaximumXindex, MaximumYindex];
             for (int i = kernelRadius; i < (MaximumXindex - 1) - kernelRadius; i++)
             {
@@ -369,32 +354,27 @@ namespace Dong.Felt
                         // 4
                         if (nonMaximaEdges[i - 1, j - 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
-                            
+                            nonMaximaEdges[i,j] = 1.0;                           
                         }
                         // 5
                         if (nonMaximaEdges[i - 1, j] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
-                           
+                            nonMaximaEdges[i,j] = 1.0;                        
                         }
                         // 6
                         if (nonMaximaEdges[i - 1, j + 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
-                           
+                            nonMaximaEdges[i,j] = 1.0;                      
                         }
                         // 7
                         if (nonMaximaEdges[i, j + 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
-                            
+                            nonMaximaEdges[i,j] = 1.0;                           
                         }
                         // 8
                         if (nonMaximaEdges[i + 1, j + 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
-                            
+                            nonMaximaEdges[i,j] = 1.0;                           
                         }
                     }
                 }
@@ -402,6 +382,39 @@ namespace Dong.Felt
 
             return nonMaximaEdges;
         }
+
+        public static void CannyEdgeDetector(double[,] matrix, out double[,] magnitude, out double[,] direction)
+        {
+            // better be odd number, 3, 5
+            var kernelSizeOfGaussianBlur = 3;
+            double SigmaOfGaussianBlur = 1.0;
+            var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
+            var gradient = ImageAnalysisTools.Gradient(matrix, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
+            var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 2.0, 1.0);
+            var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, 3);
+            magnitude = hysterisis;
+            direction = gradientDirection;
+        }
+
+        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+
+            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
+
+            //Image_MultiTrack image = new Image_MultiTrack(img);
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+            if ((poi != null) && (poi.Count > 0))
+                image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            return image.GetImage();
+        } //DrawSonogram()
 
     }
 }

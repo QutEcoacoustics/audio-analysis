@@ -682,6 +682,53 @@
             var pointsOfInterst = ExtractPointsOfInterest(attention);
 
             return result = pointsOfInterst;
+
+            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //Log.Info("differenceOfGaussian");
+            //var partialDifference = StructureTensor.PartialDifference(testMatrix);
+            //Log.Info("partialDifference");
+            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("magnitude");
+            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("phase");
+            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("structureTensor");
+            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            //Log.Info("eigenValue");
+            //var coherence = StructureTensor.Coherence(eigenValue);
+            //Log.Info("coherence");
+            //var hitCoherence = StructureTensor.hitCoherence(coherence);
+            //Log.Info("hitCoherence");
+
+            //var numberOfVetex = structureTensor.Count;
+            //var results = new List<string>();
+
+            //results.Add("eigenValue1, eigenValue2, coherence");
+            //for (int i = 0; i < numberOfVetex; i++)
+            //{
+            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
+
+            // put it into csv.file
+            //var results1 = new List<string>();
+            //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
+
+            //var maximumXindex = partialDifference.Item1.GetLength(0);
+            //var maximumYindex = partialDifference.Item1.GetLength(1);
+            //for (int i = 0; i < maximumXindex; i++)
+            //{
+            //    for (int j = 0; j < maximumYindex; j++)
+            //    {
+            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
+            //    }
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
+            //foreach (var poi in hitCoherence)
+            //{
+            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //}
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
         }
 
     }
