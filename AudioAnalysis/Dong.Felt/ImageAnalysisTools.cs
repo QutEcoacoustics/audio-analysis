@@ -29,13 +29,13 @@ namespace Dong.Felt
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
 
-        public static double[,] SobelX =  { {1.0,  0.0,  -1.0},
-                                            {2.0,  0.0,  -2.0},
-                                            {1.0,  0.0,  -1.0} };
+        public static double[,] SobelX =  { {-1.0,  0.0,  1.0},
+                                          {-2.0,  0.0,  2.0},
+                                          {-1.0,  0.0,  1.0} };
 
         public static double[,] SobelY =  { {1.0,  2.0,  1.0},
-                                            {0.0,  0.0,  0.0},
-                                            {-1.0, -2.0, -1.0} };
+                                          {0.0,  0.0,  0.0},
+                                          {-1.0, -2.0, -1.0} };
 
         public const double Pi = Math.PI;
         /// Canny detector for edge detection in a noisy image 
@@ -130,8 +130,9 @@ namespace Dong.Felt
                             sumY = sumY + m[row + j, col + i] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
                         }
                     }
-                    result.Item1[row, col] = sumX;
-                    result.Item2[row, col] = sumY;
+                    var averageWeights = 1 ;
+                    result.Item1[row, col] = sumX * averageWeights;
+                    result.Item2[row, col] = sumY * averageWeights;
                 }
             }
 
@@ -320,7 +321,7 @@ namespace Dong.Felt
         }
 
         //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very strong edge.
-        public static double[,] HysterisisThresholding(double[,] nonMaximaEdges, int kernelSize)
+        public static double[,] HysterisisThresholding(double[,] nonMaximaEdges, double[,] direction, int kernelSize)
         {
             //travel in a 3 * 3 neighbourhood
             int MaximumXindex = nonMaximaEdges.GetLength(0);
@@ -339,42 +340,96 @@ namespace Dong.Felt
                         // 1
                         if (nonMaximaEdges[i + 1, j] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
+                            if (direction[i + 1, j] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else{
+                            nonMaximaEdges[i, j] = 1.0;}
                         }
                         // 2
                         if (nonMaximaEdges[i + 1, j - 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;
+                            if (direction[i + 1, j - 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }            
                         }
                         // 3
-                        if (nonMaximaEdges[i - 1, j] == 1.0)
+                        if (nonMaximaEdges[i, j - 1] == 1.0)
                         {
-                            nonMaximaEdges[i - 1, j] = 1.0;
+                            if (direction[i, j - 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }            
                         }
                         // 4
                         if (nonMaximaEdges[i - 1, j - 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;                           
+                            if (direction[i - 1, j - 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }                                  
                         }
                         // 5
                         if (nonMaximaEdges[i - 1, j] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;                        
+                            if (direction[i - 1, j] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }                        
                         }
                         // 6
                         if (nonMaximaEdges[i - 1, j + 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;                      
+                            if (direction[i - 1, j + 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }                         
                         }
                         // 7
                         if (nonMaximaEdges[i, j + 1] == 1.0)
                         {
-                            nonMaximaEdges[i,j] = 1.0;                           
+                            if (direction[i, j + 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }                              
                         }
                         // 8
-                        if (nonMaximaEdges[i + 1, j + 1] == 1.0)
+                        if (nonMaximaEdges[i + 1, j + 1] == 1.0 )
                         {
-                            nonMaximaEdges[i,j] = 1.0;                           
+                            if (direction[i + 1, j + 1] == direction[i, j])
+                            {
+                                nonMaximaEdges[i, j] = 0.0;
+                            }
+                            else
+                            {
+                                nonMaximaEdges[i, j] = 1.0;
+                            }                             
                         }
                     }
                 }
@@ -386,15 +441,17 @@ namespace Dong.Felt
         public static void CannyEdgeDetector(double[,] matrix, out double[,] magnitude, out double[,] direction)
         {
             // better be odd number, 3, 5
-            var kernelSizeOfGaussianBlur = 3;
+            var kernelSizeOfGaussianBlur = 5;
             double SigmaOfGaussianBlur = 1.0;
             var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
-            var gradient = ImageAnalysisTools.Gradient(matrix, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            var gradient = ImageAnalysisTools.Gradient(gaussianFilter, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
             var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
             var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
             var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
-            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 2.0, 1.0);
-            var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, 3);
+            // average sobel 
+            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.1, 0.03);
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 1.5, 1.0);
+            var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
             magnitude = hysterisis;
             direction = gradientDirection;
         }
