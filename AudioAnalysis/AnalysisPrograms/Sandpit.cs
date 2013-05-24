@@ -32,8 +32,8 @@ namespace AnalysisPrograms
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
-                string annotatedImageFname = "SC8_annotatedTEST.png";
-                double magnitudeThreshold = 6.0; // of ridge hieght above neighbours
+                string annotatedImageFname = "SC10MASK_annotatedTEST.png";
+                double magnitudeThreshold = 10.0; // of ridge hieght above neighbours
                 double intensityThreshold = 5.0; // dB
 
                 //var testImage = (Bitmap)(Image.FromFile(imagePath));
@@ -56,7 +56,7 @@ namespace AnalysisPrograms
                 var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
                 double herzScale = spectrogram.FBinWidth;
                 double freqBinCount = spectrogram.Configuration.FreqBinCount;
-                int ridgeLength = 9; // dimension of NxN matrix to use for ridge detection - must be odd number
+                int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
                 int halfLength = ridgeLength / 2;
 
                 int rows = matrix.GetLength(0);
@@ -68,7 +68,9 @@ namespace AnalysisPrograms
                         var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                         double magnitude, direction;
                         bool isRidge = false;
-                        TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        //TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        //TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        TowseyLib.ImageTools.Sobel5X5CornerDetection(subM, out isRidge, out magnitude, out direction);
                         if (isRidge && (magnitude > magnitudeThreshold)) 
                         {
                             Point point = new Point(c, r);
@@ -93,7 +95,7 @@ namespace AnalysisPrograms
 
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
 
-                PointOfInterest.PruneSingletons(poiList, rows, cols);
+                //PointOfInterest.PruneSingletons(poiList, rows, cols);
                 //PointOfInterest.PruneDoublets(poiList, rows, cols);
                 poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
 

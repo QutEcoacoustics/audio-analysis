@@ -1042,7 +1042,12 @@ namespace TowseyLib
         } //end
 
 
-
+        /// <summary>
+        /// Multiplies two matrices by summing m1[r,c]*m2[r,c]
+        /// </summary>
+        /// <param name="m1"></param>
+        /// <param name="m2"></param>
+        /// <returns></returns>
         public static double DotProduct(double[,] m1, double[,] m2)
         {
             //check m1 and m2 have same dimensions
@@ -1054,8 +1059,10 @@ namespace TowseyLib
             if (cols1 != cols2) throw new System.Exception("Matrices have unequal column numbers.");
             double sum = 0.0;
             for (int i = 0; i < rows1; i++)
+            {
                 for (int j = 0; j < cols1; j++)
                     sum += (m1[i, j] * m2[i, j]);
+            }
             return sum;
         }
 

@@ -782,6 +782,157 @@ namespace TowseyLib
             direction = indexMax * Math.PI / (double) 8;
         }
 
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols)||(rows != 5)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };
+
+            double[] ridgeMagnitudes = new double[4];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax/2;
+            direction = indexMax * Math.PI / (double)4;
+        }
+
+        public static void Sobel5X5CornerDetection(double[,] m, out bool isCorner, out double magnitude, out double direction)
+        {
+            // We have eight possible corners in directions 0, Pi/4, pi/2, 3Pi/4
+            // Corner categories are 0 to 7.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                isCorner = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir1Mask = { { 0.4,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1, 0.4,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir4Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir5Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1, 0.4,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1, 0.4}
+                                      };
+            double[,] ridgeDir6Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };
+
+            double[] cornerMagnitudes = new double[8];
+            cornerMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            cornerMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            cornerMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            cornerMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+            cornerMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
+            cornerMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
+            cornerMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
+            cornerMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(cornerMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isCorner = (cornerMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            direction = indexMax * Math.PI / (double)8;
+        }
+
+
 
         /// <summary>
         /// Reverses a 256 grey scale image
