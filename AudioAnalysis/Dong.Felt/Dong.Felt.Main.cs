@@ -20,6 +20,7 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using TowseyLib;
     using log4net;
+    using QutSensors.Shared;
     
     /// <summary>
     /// The felt analysis.
@@ -83,86 +84,163 @@ namespace Dong.Felt
 
             var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
             //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
             //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\2CannyEdgeDetection-threshold-2.0-1.0-guassianblur-5-1.0.png";
+            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\statistical-analysis-localMaxima.png";
             //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
+            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-nonMaxima-6.0-4.0-hysterisis-1.0.png";
             var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix); 
-            
-            double[,] magnitude, direction;
-            ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
+            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix);
 
-            string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav";
-            var recording = new AudioRecording(wavFilePath);
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-            List<PointOfInterest> poiList = new List<PointOfInterest>();
-            double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
-            var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
-            double herzScale = spectrogram.FBinWidth;
-            double freqBinCount = spectrogram.Configuration.FreqBinCount;
-            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            Plot scores = null; 
-            double eventThreshold = 0.5; // dummy variable - not used               
-            List<AcousticEvent> list = null;
-            Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, list, eventThreshold);
-            Bitmap bmp = (Bitmap)image;
-          
-            double magnitudeThreshold = 1.0;
-            //int rows = testMatrixTranspose.GetLength(0);
-            //int cols = testMatrixTranspose.GetLength(1);
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            for (int r = 0; r < rows; r++)
+            // Statistical Analysis on the spectrogram, mainly playing with its intensity 
+
+            var sizeOfNeighbourhood = 5;
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+
+            int rows = testMatrixTranspose.GetLength(0);
+            int cols = testMatrixTranspose.GetLength(1);
+            var maximum = new double[rows, cols];
+            var minimum = new double[rows, cols];
+            // local maxima is pointsOfInterest
+            var localMaxima = LocalMaxima.PickLocalMaxima(testMatrixTranspose, sizeOfNeighbourhood);
+
+            foreach (var loM in localMaxima)
             {
-                for (int c = 0; c < cols; c++)
+                if (loM.Intensity > 0.7)
                 {
-                    // strong edge
-                    if (magnitude[c, r] > magnitudeThreshold)
-                    {
-                        //testImage.SetPixel(r, c, Color.Crimson);
-                        Point point = new Point(c, r);
-                        //var poi = new PointOfInterest(point);
-                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                        double herz = (freqBinCount - r - 1) * herzScale;
-                        var poi = new PointOfInterest(time, herz);
-                        poi.Point = point;
-                        poi.RidgeOrientation = direction[c, r];
-                        poi.OrientationCategory = (int)Math.Round((direction[c, r] * 8) / Math.PI);
-                        poi.RidgeMagnitude = magnitude[c, r];
-                        poi.Intensity = matrix[r, c];
-                        poi.TimeScale = timeScale;
-                        poi.HerzScale = herzScale;
-                        //poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
-                        poiList.Add(poi);
-                        testImage.Save(outputFilePath);
-                    }
-                    else
-                    {
-                        if (magnitude[c, r] > 0)
-                        {
-                            testImage.SetPixel(c, r, Color.Blue);
-                        }
-                    }
+                    testImage.SetPixel(loM.Point.X, loM.Point.Y, Color.Crimson);
                 }
             }
-            PointOfInterest.PruneSingletons(poiList, rows, cols);
-                //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
 
-                foreach (PointOfInterest poi in poiList)
-                {
-                    poi.DrawColor = Color.Crimson;
-                    bool multiPixel = false;
-                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+            //for (int r = radiusOfNeighbourhood; r < rows - radiusOfNeighbourhood; r++)
+            //{
+            //    for (int c = radiusOfNeighbourhood; c < cols - radiusOfNeighbourhood; c++)
+            //    {
 
-                    // draw local max
-                    //poi.DrawColor = Color.Cyan;
-                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
-                }
+            //        //var subMatrix = MatrixTools.Submatrix(testMatrixTranspose, r - radiusOfNeighbourhood, c - radiusOfNeighbourhood, r + radiusOfNeighbourhood, c + radiusOfNeighbourhood);
+            //        //var tempMatrix = StatisticalAnalysis.MatrixTransformation(subMatrix);
+            //        //var statistics = new StatDescriptive(tempMatrix);
+            //        //statistics.Analyze();
+            //        //maximum[r, c] = statistics.Result.Max;
+            //        //minimum[r, c] = statistics.Result.Min;
+            //        //DataTools.normalise(maximum);
+            //        //int row = subMatrix.GetLength(0);
+            //        //int col = subMatrix.GetLength(1);
+            //        //var magnitude = new double[row, col];
+            //        //var direction = new double[row, col];
+            //        //ImageAnalysisTools.CannyEdgeDetector(subMatrix, out magnitude, out direction); 
+
+            //        double localThreshold = 0.7;
+                    
+            //                if (maximum[r, c] > localThreshold)
+            //                {
+            //                    testImage.SetPixel(r, c, Color.Crimson);
+            //                }
+            //                //else
+            //                //{
+            //                //    if (magnitude[i, j] > 0.5 * localThreshold)
+            //                //    {
+            //                //        testImage.SetPixel(r, c, Color.Crimson);
+            //                //    }
+            //                //}
+                        
+            //    }
+            //}
             
-            image.Save(outputFilePath);
+
+            ////put it into csv.file
+            //var results1 = new List<string>();
+            //results1.Add("localMaxima");
+
+            //var maximumXindex = maximum.GetLength(0);
+            //var maximumYindex = maximum.GetLength(1);
+            //for (int i = 0; i < maximumXindex; i++)
+            //{
+            //    for (int j = 0; j < maximumYindex; j++)
+            //    {
+            //        results1.Add(string.Format("{0}", maximum[i, j]));
+            //    }
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\localMaxima.csv", results1.ToArray());
+
+
+            //// Canny Edge Detection
+            //double[,] magnitude, direction;
+            //ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
+
+
+            //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav";
+            //var recording = new AudioRecording(wavFilePath);
+            //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            //List<PointOfInterest> poiList = new List<PointOfInterest>();
+            //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
+            //var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
+            //double herzScale = spectrogram.FBinWidth;
+            //double freqBinCount = spectrogram.Configuration.FreqBinCount;
+            //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            //Plot scores = null; 
+            //double eventThreshold = 0.5; // dummy variable - not used               
+            //List<AcousticEvent> list = null;
+            //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, list, eventThreshold);
+            //Bitmap bmp = (Bitmap)image;
+          
+            //double magnitudeThreshold = 1.0;
+            //int rows = testMatrixTranspose.GetLength(0);
+            //int cols = testMatrixTranspose.GetLength(1);
+            ////int rows = matrix.GetLength(0);
+            ////int cols = matrix.GetLength(1);
+            //for (int r = 0; r < rows; r++)
+            //{
+            //    for (int c = 0; c < cols; c++)
+            //    {
+            //        // strong edge
+            //        if (magnitude[r, c] >= magnitudeThreshold)
+            //        {
+            //            testImage.SetPixel(r, c, Color.Crimson);
+
+            //            //Point point = new Point(c, r);
+            //            ////var poi = new PointOfInterest(point);
+            //            //TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+            //            //double herz = (freqBinCount - r - 1) * herzScale;
+            //            //var poi = new PointOfInterest(time, herz);
+            //            //poi.Point = point;
+            //            //poi.RidgeOrientation = direction[c, r];
+            //            //poi.OrientationCategory = (int)Math.Round((direction[c, r] * 8) / Math.PI);
+            //            //poi.RidgeMagnitude = magnitude[c, r];
+            //            //poi.Intensity = matrix[r, c];
+            //            //poi.TimeScale = timeScale;
+            //            //poi.HerzScale = herzScale;
+            //            ////poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
+            //            //poiList.Add(poi);
+            //            //testImage.Save(outputFilePath);
+            //        }
+            //        else
+            //        {
+            //            if (magnitude[r, c] > 0)
+            //            {
+            //                testImage.SetPixel(r, c, Color.Blue);
+            //            }
+            //        }
+            //    }
+            //}
+            //PointOfInterest.PruneSingletons(poiList, rows, cols);
+            //    //PointOfInterest.PruneDoublets(poiList, rows, cols);
+            //    poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
+
+            //    foreach (PointOfInterest poi in poiList)
+            //    {
+            //        poi.DrawColor = Color.Crimson;
+            //        bool multiPixel = false;
+            //        //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+            //        poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+
+            //        // draw local max
+            //        //poi.DrawColor = Color.Cyan;
+            //        //poi.DrawLocalMax(bmp, (int)freqBinCount);
+            //    }
+            
+            testImage.Save(outputFilePath);
 
 
             // Batch Process
