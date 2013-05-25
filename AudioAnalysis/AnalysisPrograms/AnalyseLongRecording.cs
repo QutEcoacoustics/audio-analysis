@@ -321,7 +321,8 @@ namespace AnalysisPrograms
                 var spectrogramMatrixes = new Dictionary<string, double[,]>();
                 foreach (var spectrumKey in results[0].Spectrums.Keys)
                 {
-                    var lines = new string[results.Length];
+                    // +1 for header
+                    var lines = new string[results.Length + 1];
                     var numbers = new double[results.Length][];
                     foreach (var analysisResult in results)
                     {
@@ -359,9 +360,9 @@ namespace AnalysisPrograms
                 if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
                     sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
                 double freqBinWidth = sampleRate / (double)frame;
-                int x_interval = 60; // assume one minute spectra and hourly time lines
-                int y_interval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
-                AcousticFeatures.DrawColourSpectrogramsOfIndices(spectrogramMatrixes, colorImageSavePath, "COL", x_interval, y_interval);
+                int xIntervalColor = 60; // assume one minute spectra and hourly time lines
+                int yIntervalColor = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
+                AcousticFeatures.DrawColourSpectrogramsOfIndices(spectrogramMatrixes, colorImageSavePath, "COL", xIntervalColor, yIntervalColor);
 
 
              

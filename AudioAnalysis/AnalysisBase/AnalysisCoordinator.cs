@@ -106,6 +106,7 @@
             // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
             {
+                Log.Info("Parallel Analysis started\n");
                 var results = new AnalysisResult[analysisSegmentsCount];
 
                 Parallel.ForEach(
@@ -120,12 +121,14 @@
                         
                         var result = this.PrepareFileAndRunAnalysis(item, analysis, settingsForThisItem);
                         results[index] = result;
+
                     });
 
                 return results;
             }
             else // sequential
             {
+                Log.Info("Sequential Analysis started\n");
                 var results = new List<AnalysisResult>();
                 int count = 0;
                 foreach (var item in analysisSegments)
@@ -183,7 +186,7 @@
             tempFileDirectory = settings.AnalysisRunDirectory;
 #endif
 
-            Log.Warn("Using output directory: " + tempFileDirectory);
+            //Log.Warn("Using output directory: " + tempFileDirectory);
 
             // create the file for the analysis
             var preparedFile = this.SourcePreparer.PrepareFile(
