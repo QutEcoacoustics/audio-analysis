@@ -187,25 +187,22 @@ namespace TowseyLib
             }
         }
 
-        public static void WriteTextFile(string path, List<string> array)
+        public static void WriteTextFile(string path, IEnumerable<string> array, bool saveExistingFile = true)
         {
-            if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
+            if (File.Exists(path) && saveExistingFile)
+            {
+                File.Copy(path, path + "OLD.txt", true); //overwrite
+            }
 
-            int count = array.Count;
-            using (TextWriter writer = new StreamWriter(path))
-                foreach (string line in array)
-                    writer.WriteLine(line);
+//            int count = array.Count;
+//            using (TextWriter writer = new StreamWriter(path))
+//                foreach (string line in array)
+//                    writer.WriteLine(line);
+
+            File.WriteAllLines(path, array);
         }// end WriteTextFile()
 
-        public static void WriteTextFile(string path, List<string> array, bool saveExistingFile)
-        {
-            if ((File.Exists(path)) && (saveExistingFile)) File.Copy(path, path + "OLD.txt", true); //overwrite
 
-            int count = array.Count;
-            using (TextWriter writer = new StreamWriter(path))
-                foreach (string line in array)
-                    writer.WriteLine(line);
-        }// end WriteTextFile()
 
         //public static void WriteTextFile(string path, string line)
         //{

@@ -1995,7 +1995,7 @@ namespace TowseyLib
         }
 
         public static void DrawColourMatrixWithAxes(double[,] matrixAvg, double[,] matrixAci, double[,] matrixTen,
-            string pathName, int X_interval, int Y_interval)
+            string pathName, int xInterval, int yInterval)
         {
             double[,] matrixAvgNorm = DataTools.normalise(matrixAvg);
             double[,] matrixAciNorm = DataTools.normalise(matrixAci);
@@ -2026,7 +2026,7 @@ namespace TowseyLib
             // for rows draw in Y-axis line
             for (int row = 0; row < rows; row++)
             {
-                if ((row > 0) && (row % Y_interval == 0))
+                if ((row > 0) && (row % yInterval == 0))
                 {
                     int rowFromBottom = rows - row;
                     for (int column = 0; column < cols; column++)
@@ -2040,7 +2040,7 @@ namespace TowseyLib
             // for columns, draw in X-axis lines
             for (int column = 0; column < cols; column++)
             {
-                if ((column > 0) && (column % X_interval == 0))
+                if ((column > 0) && (column % xInterval == 0))
                 {
                     for (int row = 0; row < rows; row++)
                     {

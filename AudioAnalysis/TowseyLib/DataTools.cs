@@ -231,6 +231,21 @@ namespace TowseyLib
             return op;
         }
 
+        public static double[,] ConvertJaggedToMatrix(double[][] list)
+        {
+            int rows = list.Length;
+            int cols = list[0].Length; //assume all vectors in list are of same length
+            double[,] op = new double[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    op[i, j] = list[i][j];
+                }
+            }
+            return op;
+        }
+
         /*
          * converts a matrix to a vector by concatenating columns.
          */

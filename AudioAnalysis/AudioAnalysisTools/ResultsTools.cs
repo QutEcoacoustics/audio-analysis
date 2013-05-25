@@ -17,7 +17,7 @@ namespace AudioAnalysisTools
 {
     public static class ResultsTools
     {
-        public const string REPORT_FILE_EXT = ".csv";
+        public const string ReportFileExt = ".csv";
 
         /// <summary>
         /// 
@@ -41,7 +41,7 @@ namespace AudioAnalysisTools
             }
             return datatable;
         }
-
+        /*
         public static List<TowseyLib.Spectrum> MergeBGNSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
         {
             var s = new List<Spectrum>();
@@ -105,7 +105,7 @@ namespace AudioAnalysisTools
             }
             return s;
         }
-
+        */
 
         /// <summary>
         /// 
@@ -197,10 +197,10 @@ namespace AudioAnalysisTools
             {
                 //string sortString = (AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
                 //indicesDatatable = DataTableTools.SortTable(indicesDatatable, sortString);    //sort by start time
-                string reportfilePath = Path.Combine(opDir, fName + ".Indices" + REPORT_FILE_EXT);
+                string reportfilePath = Path.Combine(opDir, fName + ".Indices" + ReportFileExt);
                 CsvTools.DataTable2CSV(indicesDatatable, reportfilePath);
 
-                string target = Path.Combine(opDir, fName + ".Indices_BACKUP" + REPORT_FILE_EXT);
+                string target = Path.Combine(opDir, fName + ".Indices_BACKUP" + ReportFileExt);
                 File.Delete(target);               // Ensure that the target does not exist.
                 File.Copy(reportfilePath, target); // Copy the file 2 target
                 fiIndices = new FileInfo(reportfilePath);
@@ -210,10 +210,10 @@ namespace AudioAnalysisTools
             {
                 string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
                 eventsDatatable = DataTableTools.SortTable(eventsDatatable, sortString);    //sort by start time
-                string reportfilePath = Path.Combine(opDir, fName + ".Events" + REPORT_FILE_EXT);
+                string reportfilePath = Path.Combine(opDir, fName + ".Events" + ReportFileExt);
                 CsvTools.DataTable2CSV(eventsDatatable, reportfilePath);
 
-                string target = Path.Combine(opDir, fName + ".Events_BACKUP" + REPORT_FILE_EXT);
+                string target = Path.Combine(opDir, fName + ".Events_BACKUP" + ReportFileExt);
                 File.Delete(target);               // Ensure that the target does not exist.
                 File.Copy(reportfilePath, target); // Copy the file 2 target
                 fiEvents = new FileInfo(reportfilePath);

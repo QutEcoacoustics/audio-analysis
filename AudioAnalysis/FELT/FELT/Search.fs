@@ -229,11 +229,11 @@
                     // a feature for demoing
                     | EqualsOut "bullshit" a -> Statistical(fun () -> upcast( new Number(3.0))), a, DataType.Number
 
-                    | EqualsOut "zeroCrossing" zc -> Sample(fun (audioRecording) -> upcast( new Number( ))), zc, DataType.Number
+                    | EqualsOut "zeroCrossing" zc -> Sample(fun (audioRecording) -> upcast( new Number( 3.0))), zc, DataType.Number
 
-                    | EqualsOut "averageAmplitude" avgamp -> Sample(fun (audioRecording) -> upcast (new Number())), avgamp, DataType.Number
+                    | EqualsOut "averageAmplitude" avgamp -> Sample(fun (audioRecording) -> upcast (new Number(3.0))), avgamp, DataType.Number
 
-                    | EqualsOut "activity" activity -> Sample(fun (audioRecording) -> upcast( new Number( ))), activity, DataType.Number
+                    | EqualsOut "activity" activity -> Sample(fun (audioRecording) -> upcast( new Number(3.0 ))), activity, DataType.Number
 
                     | _ -> raise <| new NotImplementedException()
             action, (headerName, dataType)
@@ -260,10 +260,10 @@
             let applyActionsToEvent (e:Index) ((instanceMap:Map<ColumnHeader, Value[]>), (classLabels:Class array)) (event: EventRect) =
                 
                 // pre-pare audio - we only want to cut this once, and reuse it for each feature
-                let getAudio =
+                let getAudio : Lazy<AudioRecording> =
                     lazy (
                         // TODO: BROKEN
-                        
+                        new AudioRecording([||])
                     )
                 
                 // pre-pare spectrogram - we only want to calculate this once, and reuse it for each feature
