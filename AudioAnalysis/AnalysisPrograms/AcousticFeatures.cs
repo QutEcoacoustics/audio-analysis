@@ -1274,14 +1274,18 @@ namespace AnalysisPrograms
 
         public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
         {
+            var averageMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AverageKey]);
+            var aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticComplexityIndexKey]);
+            var tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[TemporalEntropyKey]);
+
             DrawColourSpectrogramsOfIndices(
                 savePath,
                 colorSchemeId,
                 xInterval,
                 yInterval,
-                spectrogramMatrixes[AverageKey],
-                spectrogramMatrixes[AcousticComplexityIndexKey],
-                spectrogramMatrixes[TemporalEntropyKey]);
+                averageMatrix,
+                aciMatrix,
+                tenMatrix);
         }
 
 
