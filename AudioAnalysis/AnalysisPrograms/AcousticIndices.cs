@@ -229,13 +229,13 @@ namespace AnalysisPrograms
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
             string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.bgnSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectrums[AcousticFeatures.BackgroundNoiseKey]);
             string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.aciSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectrums[AcousticFeatures.AcousticComplexityIndexKey]);
             string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.avgSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectrums[AcousticFeatures.AverageKey]);
             string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.varSpectrum);
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectrums[AcousticFeatures.VarianceKey]);
         } // ExecuteAnalysis()
 
 
@@ -250,10 +250,10 @@ namespace AnalysisPrograms
             analysisResults.SettingsUsed = analysisSettings;
             analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
             analysisResults.Data = null;
-            analysisResults.bgnSpectrum = null;
-            analysisResults.avgSpectrum = null;
-            analysisResults.varSpectrum = null;
-            analysisResults.aciSpectrum = null;
+//            analysisResults.bgnSpectrum = null;
+//            analysisResults.avgSpectrum = null;
+//            analysisResults.varSpectrum = null;
+//            analysisResults.aciSpectrum = null;
 
             // ######################################################################
             var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings);
@@ -268,6 +268,8 @@ namespace AnalysisPrograms
             DataTable dt = AcousticFeatures.Indices2DataTable(indices);
             analysisResults.Data = dt;
             analysisResults.AudioDuration = results.Item2;
+
+            /*
             analysisResults.bgnSpectrum   = indices.bgNoiseSpectrum;
             analysisResults.aciSpectrum   = indices.ACIspectrum;
             analysisResults.avgSpectrum   = indices.averageSpectrum;
@@ -275,6 +277,15 @@ namespace AnalysisPrograms
             analysisResults.cvrSpectrum   = indices.coverSpectrum;
             analysisResults.tenSpectrum   = indices.HtSpectrum;
             analysisResults.cmbSpectrum   = indices.comboSpectrum;
+             */
+
+            analysisResults.Spectrums.Add(AcousticFeatures.BackgroundNoiseKey, indices.bgNoiseSpectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.AcousticComplexityIndexKey, indices.ACIspectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.AverageKey, indices.averageSpectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.VarianceKey, indices.varianceSpectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.BinCoverageKey, indices.coverSpectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.TemporalEntropyKey, indices.HtSpectrum);
+            analysisResults.Spectrums.Add(AcousticFeatures.CombinationKey, indices.comboSpectrum);
 
             var sonogram = results.Item3;
             var hits     = results.Item4;

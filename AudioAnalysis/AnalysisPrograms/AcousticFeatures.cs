@@ -15,12 +15,15 @@ namespace AnalysisPrograms
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
 
     using AnalysisBase;
     using AudioAnalysisTools;
     using NeuralNets;
     using TowseyLib;
+
+    using log4net;
 
     public class AcousticFeatures
     {
@@ -107,6 +110,21 @@ namespace AnalysisPrograms
             var items = InitOutputTableColumns();
             return items.Item4; // COMBO_WEIGHTS;
         }
+
+        // CONST string for referring to indicies - these should really be an enum                
+        public const string BackgroundNoiseKey = "backgroundNoise";
+
+        public const string AcousticComplexityIndexKey = "acousticComplexityIndex";
+
+        public const string AverageKey = "average";
+
+        public const string VarianceKey = "variance";
+
+        public const string BinCoverageKey = "binCoverage";
+
+        public const string TemporalEntropyKey = "temporalEntropy";
+
+        public const string CombinationKey = "combination";
 
         // NORMALISING CONSTANTS FOR EXTRACTED FEATURES
         public const double AVG_MIN = -7.0;
@@ -1156,26 +1174,45 @@ namespace AnalysisPrograms
             return dt;
         }
 
+        public static double[,] DrawSpectrogramsOfIndices(double[][] jaggedMatrix, string imagePath, string id, int xInterval, int yInterval)
+        {
+            double[,] matrix = DataTools.ConvertJaggedToMatrix(jaggedMatrix);
+
+            DrawSpectrogramsOfIndices(matrix, imagePath, id, xInterval, yInterval);
+
+            return matrix;
+        }
+
+        public static void DrawSpectrogramsOfIndices(string spectrogramCsvPath, string imagePath, string id, int xInterval, int yInterval)
+        {
+            double[,] matrix = CsvTools.ReadCSVFile2Matrix(spectrogramCsvPath);
+
+            DrawSpectrogramsOfIndices(matrix, imagePath, id, xInterval, yInterval);
+        }
+
+        private static readonly ILog Logger =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="spectrogramCsvPath"></param>
         /// <param name="imagePath"></param>
-        /// <param name="ID"></param>
-        /// <param name="X_interval">pixel interval between X-axis lines</param>
-        /// <param name="Y_interval">pixel interval between Y-axis lines</param>
-        public static void DrawSpectrogramsOfIndices(string spectrogramCsvPath, string imagePath, string ID, int X_interval, int Y_interval)
+        /// <param name="id"></param>
+        /// <param name="xInterval">pixel interval between X-axis lines</param>
+        /// <param name="yInterval">pixel interval between Y-axis lines</param>
+        public static void DrawSpectrogramsOfIndices(double[,] matrix, string imagePath, string id, int xInterval, int yInterval)
         {
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(spectrogramCsvPath);
+            
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
-            if (ID.Equals("ACI"))
+            if (id == AcousticComplexityIndexKey) //.Equals("ACI"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
             }
-            else if (ID.Equals("TEN"))
+            else if (id == TemporalEntropyKey)//.Equals("TEN"))
             {
                 // normalise and reverse
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
@@ -1189,28 +1226,29 @@ namespace AnalysisPrograms
                     }
                 }
             }
-            else if (ID.Equals("AVG"))
+            else if (id == AverageKey)//.Equals("AVG"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
             }
-            else if (ID.Equals("BGN"))
+            else if (id == BackgroundNoiseKey)//.Equals("BGN"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.BGN_MIN, AcousticFeatures.BGN_MAX);
             }
-            else if (ID.Equals("VAR"))
+            else if (id == VarianceKey)//.Equals("VAR"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.VAR_MIN, AcousticFeatures.VAR_MAX);
             }
-            else if (ID.Equals("CVR"))
+            else if (id == BinCoverageKey)//.Equals("CVR"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
             }
             else
             {
+                Logger.Warn("DrawSpectrogramsOfIndicies is rendering an INDEX that is not specially normalised");
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
 
-            ImageTools.DrawMatrixWithAxes(matrix, imagePath, X_interval, Y_interval);
+            ImageTools.DrawMatrixWithAxes(matrix, imagePath, xInterval, yInterval);
         }
 
 
@@ -1228,13 +1266,31 @@ namespace AnalysisPrograms
             string imagePath, string colorSchemeID, int X_interval, int Y_interval)
         {
             double[,] matrixAvg = PrepareSpectrogramMatrix(avgCsvPath);
-            matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
-
             double[,] matrixAci = PrepareSpectrogramMatrix(csvAciPath);
-            matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
-
             double[,] matrixTen = PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
-            matrixTen = DataTools.NormaliseReverseInZeroOne(matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+
+            DrawColourSpectrogramsOfIndices(imagePath, colorSchemeID, X_interval, Y_interval, matrixAvg, matrixAci, matrixTen);
+        }
+
+        public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
+        {
+            DrawColourSpectrogramsOfIndices(
+                savePath,
+                colorSchemeId,
+                xInterval,
+                yInterval,
+                spectrogramMatrixes[AverageKey],
+                spectrogramMatrixes[AcousticComplexityIndexKey],
+                spectrogramMatrixes[TemporalEntropyKey]);
+        }
+
+
+        public static void DrawColourSpectrogramsOfIndices(string imagePath, string colorSchemeID, int X_interval, int Y_interval, double[,] matrixAvg, double[,] matrixAci, double[,] matrixTen)
+        {
+    
+            matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
+            matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
+            matrixTen = DataTools.NormaliseReverseInZeroOne( matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
             //int rowCount = matrixTen.GetLength(0);
             //int colCount = matrixTen.GetLength(1);
             //for (int r = 0; r < rowCount; r++)
@@ -1318,5 +1374,7 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine("speciesTotal= " + speciesTotal);
         }
+
+     
     } // class AcousticIndicesExtraction
 }
