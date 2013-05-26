@@ -95,9 +95,10 @@ namespace AnalysisPrograms
             string outputDir     = args[2];
             string tempFilesDir  = null;
 
-            if (args.Length > 3)
+            if (args.Length == 4)
             {
                 tempFilesDir = args[3];
+                args = args.Take(3).ToArray();
             }
 
             if (tempFilesDir == null)
@@ -456,6 +457,22 @@ namespace AnalysisPrograms
 
         public static void CheckArguments(string[] args)
         {
+            if (args.Length == 4)
+            {
+                // this is the special case temp directory argument (god we need a better way of doing this)
+                if (String.IsNullOrEmpty(args[3]) || !Directory.Exists(args[3]))
+                {
+                    LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.\nA Temp directory was specified in the foruth argument and does not exist");
+                    LoggedConsole.WriteLine("If you are trying to specify a start&end you are missing an argument");
+
+                    Usage();
+
+                    throw new AnalysisOptionInvalidArgumentsException();
+                }
+
+                return;
+            }
+
             if ((args.Length != 3) && (args.Length != 5))
             {
                 LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
