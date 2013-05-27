@@ -102,6 +102,40 @@ namespace Dong.Felt
             return result;
         }
 
+        public static Tuple<double[,], double[,]> GradientWithEqualWeightsMask(double[,] m, int sizeOfMask)
+        {
+            int MaximumXindex = m.GetLength(0);
+            int MaximumYindex = m.GetLength(1);
+
+            var gradientX = new double[MaximumXindex, MaximumYindex];
+            var gradientY = new double[MaximumXindex, MaximumYindex];
+            var result = new Tuple<double[,], double[,]>(gradientX, gradientY);
+            int edgeMaskRadius = sizeOfMask / 2;
+
+            for (int row = edgeMaskRadius; row < (MaximumXindex - edgeMaskRadius); row++)
+            {
+                for (int col = edgeMaskRadius; col < (MaximumYindex - edgeMaskRadius); col++)
+                {
+                    var sumX = 0.0;
+                    var sumY = 0.0;
+                    //if (m[row, col] > 0.2)
+                    //{
+                        for (int i = 1; i <= edgeMaskRadius; i++)
+                        {
+                            for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
+                            {
+                                sumX = sumX + m[row + i, col + j];
+                                sumY = sumY + m[row + j, col + i];
+                            }
+                        }
+                    //}
+                    result.Item1[row, col] = sumX;
+                    result.Item2[row, col] = sumY;
+                }
+            }
+
+            return result;
+        }
         // Finding gradients(also known as the edge strenghs): The edges should be marked where the gradients of the image has large magnitudes.
         // Sobel X and Y Masks are used to generate X & Y Gradients of Image; 
         // here the magnitude = |GX| + |GY| , OR it can be equal to euclidean distance measure 
@@ -121,13 +155,19 @@ namespace Dong.Felt
                 {
                     var sumX = 0.0;
                     var sumY = 0.0;
-                    for (int i = -edgeMaskRadius; i <= edgeMaskRadius; i++)
+                    if (m[row, col] > 0.3)
                     {
-                        for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
+                        for (int i = -edgeMaskRadius; i <= edgeMaskRadius; i++)
                         {
-                            // be careful about the i and j for m
-                            sumX = sumX + m[row + j, col + i] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
-                            sumY = sumY + m[row + j, col + i] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
+                            for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
+                            {
+                                // be careful about the i and j for m
+                                // Be careful about this magic number
+
+                                sumX = sumX + m[row + j, col + i] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
+                                sumY = sumY + m[row + j, col + i] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
+
+                            }
                         }
                     }
                     var averageWeights = 1 ;
@@ -152,6 +192,8 @@ namespace Dong.Felt
                 {
                     // Manhattan distance not the Euclidean distance
                     result[row, col] = Math.Abs(gradientX[row, col]) + Math.Abs(gradientY[row, col]);
+                    // can also be Euclidean distance
+                    //result[row, col] = Math.Sqrt(Math.Pow(gradientX[row, col], 2) + Math.Pow(gradientY[row, col], 2));
                 }
             }
 
@@ -170,14 +212,19 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                    if (!(gradientMagnitude[row, col] == 0.0))
-                    {
-                        if (gradientX[row, col] == 0)
-                        {
-                            newAngle[row, col] = 90;
-                        }
-                        else
-                        {
+                     if (gradientX[row, col] == 0)
+                     {
+                          if (gradientY[row, col] == 0)
+                          {
+                              newAngle[row, col] = 0;
+                          }
+                          else
+                          {
+                              newAngle[row, col] = 90;
+                          }                          
+                     }
+                     else
+                     {
                             //newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Pi;
                             newAngle[row, col] = Math.Atan(gradientY[row, col] / gradientX[row, col]);
                                        
@@ -223,12 +270,7 @@ namespace Dong.Felt
                             {
                                 newAngle[row, col] = -45;
                             }
-                        }
-                    }
-                    else
-                    {
-                        newAngle[row, col] = 180;
-                    }
+                       }
                 }
             }
             return newAngle;
@@ -300,6 +342,7 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
+                   
                     if (nonMaxima[row, col] > highThreshold)
                     {
                         nonMaxima[row, col] = 1.0;
@@ -320,6 +363,7 @@ namespace Dong.Felt
             return nonMaxima;            
         }
 
+        // this linking work still can do something
         //5.Edge tracking by hysteresis: Final edges are determined by suppressing all edges that are not connected to a very strong edge.
         public static double[,] HysterisisThresholding(double[,] nonMaximaEdges, double[,] direction, int kernelSize)
         {
@@ -334,102 +378,77 @@ namespace Dong.Felt
             {
                 for (int j = kernelRadius; j < (MaximumYindex - 1) - kernelRadius; j++)
                 {
-                    if (nonMaximaEdges[i, j] == 0.5)
+                    if (nonMaximaEdges[i, j] > 0)
                     {
+                        var sum = 0;
                         // Do the traverse
                         // 1
-                        if (nonMaximaEdges[i + 1, j] == 1.0)
+                        if (nonMaximaEdges[i + 1, j] > 0.0)
                         {
                             if (direction[i + 1, j] == direction[i, j])
-                            {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else{
-                            nonMaximaEdges[i, j] = 1.0;}
+                            {                               
+                                sum++;                              
+                            }                           
                         }
                         // 2
-                        if (nonMaximaEdges[i + 1, j - 1] == 1.0)
+                        if (nonMaximaEdges[i + 1, j - 1] > 0.0)
                         {
                             if (direction[i + 1, j - 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }            
+                                sum++;
+                            }                                    
                         }
                         // 3
-                        if (nonMaximaEdges[i, j - 1] == 1.0)
+                        if (nonMaximaEdges[i, j - 1] > 0.0)
                         {
                             if (direction[i, j - 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }            
+                                sum++;
+                            }                                   
                         }
                         // 4
-                        if (nonMaximaEdges[i - 1, j - 1] == 1.0)
+                        if (nonMaximaEdges[i - 1, j - 1] > 0.0)
                         {
                             if (direction[i - 1, j - 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }                                  
+                                sum++;
+                            }                                                       
                         }
                         // 5
-                        if (nonMaximaEdges[i - 1, j] == 1.0)
+                        if (nonMaximaEdges[i - 1, j] > 0.0)
                         {
                             if (direction[i - 1, j] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }                        
+                                sum++;
+                            }                                                
                         }
                         // 6
-                        if (nonMaximaEdges[i - 1, j + 1] == 1.0)
+                        if (nonMaximaEdges[i - 1, j + 1] > 0.0)
                         {
                             if (direction[i - 1, j + 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }                         
+                                sum++;
+                            }                                                
                         }
                         // 7
-                        if (nonMaximaEdges[i, j + 1] == 1.0)
+                        if (nonMaximaEdges[i, j + 1] > 0.0)
                         {
                             if (direction[i, j + 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }                              
+                                sum++;
+                            }                                                      
                         }
                         // 8
-                        if (nonMaximaEdges[i + 1, j + 1] == 1.0 )
+                        if (nonMaximaEdges[i + 1, j + 1] > 0.0 )
                         {
                             if (direction[i + 1, j + 1] == direction[i, j])
                             {
-                                nonMaximaEdges[i, j] = 0.0;
-                            }
-                            else
-                            {
-                                nonMaximaEdges[i, j] = 1.0;
-                            }                             
+                                sum++;
+                            }                                                     
+                        }
+                        if (sum >= 3)
+                        {
+                            nonMaximaEdges[i, j] = 0.0;
                         }
                     }
                 }
@@ -438,19 +457,119 @@ namespace Dong.Felt
             return nonMaximaEdges;
         }
 
+        //public static double[,] Thinning(double[,] magnitude, double[,] direction)
+        //{
+        //    int MaximumXindex = magnitude.GetLength(0);
+        //    int MaximumYindex = magnitude.GetLength(1);
+
+        //    var result = new double[MaximumXindex, MaximumYindex];
+        //    for (int i = 0; i < MaximumXindex - 1; i++)
+        //    {
+        //        for (int j = 0; j < MaximumYindex - 1; j++)
+        //        {
+        //            if (magnitude[i, j] > 0)
+        //            {
+        //                if (direction[i, j + 1] == direction[i, j])
+        //                {                        
+        //                     magnitude[i, j] = 0.0;
+        //                     continue;
+        //                }
+        //                // 2
+        //                if (magnitude[i + 1, j - 1] > 0)
+        //                {
+        //                    if (magnitude[i, j] <= magnitude[i + 1, j - 1])
+        //                    {
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    }
+
+        //                }
+        //                // 3
+        //                if (magnitude[i, j - 1] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i, j - 1])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+
+        //                }
+        //                // 4
+        //                if (magnitude[i - 1, j - 1] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i - 1, j - 1])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+
+        //                }
+        //                // 5
+        //                if (magnitude[i - 1, j] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i - 1, j])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+        //                }
+        //                // 6
+        //                if (magnitude[i - 1, j + 1] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i - 1, j + 1])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+
+        //                }
+        //                // 7
+        //                if (magnitude[i, j + 1] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i, j + 1])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+
+        //                }
+        //                // 8
+        //                if (magnitude[i + 1, j + 1] > 0)
+        //                {
+        //                    //if (magnitude[i, j] <= magnitude[i + 1, j + 1])
+        //                    //{
+        //                        magnitude[i, j] = 0.0;
+        //                        continue;
+        //                    //}
+
+        //                }
+
+        //                result[i, j] = magnitude[i, j];
+        //            }
+        //            else
+        //            {
+        //                result[i, j] = magnitude[i, j];
+        //            }
+        //        }    
+        //    }
+
+        //    return result;
+        //}
+
         public static void CannyEdgeDetector(double[,] matrix, out double[,] magnitude, out double[,] direction)
         {
-            // better be odd number, 3, 5
+             // better be odd number, 3, 5
             var kernelSizeOfGaussianBlur = 5;
             double SigmaOfGaussianBlur = 1.0;
             var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
-            var gradient = ImageAnalysisTools.Gradient(gaussianFilter, ImageAnalysisTools.SobelX, ImageAnalysisTools.SobelY);
+            //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(gaussianFilter, 3);
+            var gradient = ImageAnalysisTools.Gradient(gaussianFilter, SobelX, SobelY);
             var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
             var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
-            var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
-            // average sobel 
-            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.1, 0.03);
-            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 1.5, 1.0);
+            //var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
+            
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(gradientMagnitude, 2.0, 1.0);
+            //var thin = ImageAnalysisTools.Thinning(doubleThreshold);
             var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
             magnitude = hysterisis;
             direction = gradientDirection;
