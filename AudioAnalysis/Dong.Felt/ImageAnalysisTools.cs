@@ -39,8 +39,9 @@ namespace Dong.Felt
 
         public const double Pi = Math.PI;
         /// Canny detector for edge detection in a noisy image 
-        /// it involves five steps here, first, it needs to do the Gaussian convolution, then a simple derivative operator(like Roberts Cross or Sobel operator) is 
-        /// applied to the smoothed image to highlight regions of the image. Finally, it will track .....
+        /// it involves five steps here, first, it needs to do the Gaussian convolution, 
+        /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
+        /// 
         ///
 
         // Generate the gaussian kernel
@@ -74,7 +75,7 @@ namespace Dong.Felt
             return kernel;
         }
 
-        // Gaussian Filtering, smoothing the image
+        // Gaussian Filtering, smoothing the image using gaussian kernel convolution
         public static double[,] GaussianFilter(double[,] m, double[,] gaussianKernel)
         {
             int MaximumXindex = m.GetLength(0);
@@ -102,43 +103,8 @@ namespace Dong.Felt
             return result;
         }
 
-        public static Tuple<double[,], double[,]> GradientWithEqualWeightsMask(double[,] m, int sizeOfMask)
-        {
-            int MaximumXindex = m.GetLength(0);
-            int MaximumYindex = m.GetLength(1);
-
-            var gradientX = new double[MaximumXindex, MaximumYindex];
-            var gradientY = new double[MaximumXindex, MaximumYindex];
-            var result = new Tuple<double[,], double[,]>(gradientX, gradientY);
-            int edgeMaskRadius = sizeOfMask / 2;
-
-            for (int row = edgeMaskRadius; row < (MaximumXindex - edgeMaskRadius); row++)
-            {
-                for (int col = edgeMaskRadius; col < (MaximumYindex - edgeMaskRadius); col++)
-                {
-                    var sumX = 0.0;
-                    var sumY = 0.0;
-                    //if (m[row, col] > 0.2)
-                    //{
-                        for (int i = 1; i <= edgeMaskRadius; i++)
-                        {
-                            for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
-                            {
-                                sumX = sumX + m[row + i, col + j];
-                                sumY = sumY + m[row + j, col + i];
-                            }
-                        }
-                    //}
-                    result.Item1[row, col] = sumX;
-                    result.Item2[row, col] = sumY;
-                }
-            }
-
-            return result;
-        }
-        // Finding gradients(also known as the edge strenghs): The edges should be marked where the gradients of the image has large magnitudes.
-        // Sobel X and Y Masks are used to generate X & Y Gradients of Image; 
-        // here the magnitude = |GX| + |GY| , OR it can be equal to euclidean distance measure 
+        // Finding gradients(it is actually a vector), we could use different edgemasks to get it
+        // here, Sobel X and Y Masks are used to generate X & Y Gradients of Image
         public static Tuple<double[,], double[,]> Gradient(double[,] m, double[,] edgeMaskX, double[,] edgeMaskY)
         {
             int MaximumXindex = m.GetLength(0);
@@ -161,24 +127,56 @@ namespace Dong.Felt
                         {
                             for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
                             {
-                                // be careful about the i and j for m
-                                // Be careful about this magic number
-
                                 sumX = sumX + m[row + j, col + i] * edgeMaskX[i + edgeMaskRadius, j + edgeMaskRadius];
                                 sumY = sumY + m[row + j, col + i] * edgeMaskY[i + edgeMaskRadius, j + edgeMaskRadius];
-
                             }
                         }
                     }
-                    var averageWeights = 1 ;
-                    result.Item1[row, col] = sumX * averageWeights;
-                    result.Item2[row, col] = sumY * averageWeights;
+                    result.Item1[row, col] = sumX;
+                    result.Item2[row, col] = sumY;
                 }
             }
 
             return result;
         }
 
+        // For calculating the gradient, we can also use some edgeMask with equal weights(all are equal to 1.0)
+        // it could be 3*3, 5*5, 7*7......
+        public static Tuple<double[,], double[,]> GradientWithEqualWeightsMask(double[,] m, int sizeOfMask)
+        {
+            int MaximumXindex = m.GetLength(0);
+            int MaximumYindex = m.GetLength(1);
+
+            var gradientX = new double[MaximumXindex, MaximumYindex];
+            var gradientY = new double[MaximumXindex, MaximumYindex];
+            var result = new Tuple<double[,], double[,]>(gradientX, gradientY);
+            int edgeMaskRadius = sizeOfMask / 2;
+
+            for (int row = edgeMaskRadius; row < (MaximumXindex - edgeMaskRadius); row++)
+            {
+                for (int col = edgeMaskRadius; col < (MaximumYindex - edgeMaskRadius); col++)
+                {
+                    var sumX = 0.0;
+                    var sumY = 0.0;
+                    for (int i = 1; i <= edgeMaskRadius; i++)
+                    {
+                        for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
+                        {
+                            sumX = sumX + (m[row + i, col + j] - m[row - i, col + j]) /2.0;
+                            sumY = sumY + (m[row + j, col - i] - m[row + j, col + i]) /2.0;
+                        }
+                    }
+                    result.Item1[row, col] = sumX;
+                    result.Item2[row, col] = sumY;
+                }
+            }
+
+            return result;
+        }
+
+        // From the gradient, we can get the gradientMagnitude which means the edge strengh. Simply put, it means how much the intensity of pixels changes in an image. 
+        // If it is large, it changes quickly; otherwise, it changes slowly. 
+        // Here there are two ways to calculate: Manhattan distance = |GX| + |GY| , OR we can also use euclidean distance measure to get it
         public static double[,] GradientMagnitude(double[,] gradientX, double[,] gradientY)
         {
             int MaximumXindex = gradientX.GetLength(0);
@@ -192,7 +190,7 @@ namespace Dong.Felt
                 {
                     // Manhattan distance not the Euclidean distance
                     result[row, col] = Math.Abs(gradientX[row, col]) + Math.Abs(gradientY[row, col]);
-                    // can also be Euclidean distance
+                    // Euclidean distance
                     //result[row, col] = Math.Sqrt(Math.Pow(gradientX[row, col], 2) + Math.Pow(gradientY[row, col], 2));
                 }
             }
@@ -200,7 +198,9 @@ namespace Dong.Felt
             return result;
         }
 
-        // Finding the edge direction 
+        // Find the edge direction, from it we can know the intensity changes come along with which direction
+        // But, its direction always perpendicular with the direction of normal edge
+        // this is done based on the gradient of sobel edge mask, so it only calculate the direction in a 3* 3 neighbourhood 
         public static double[,] GradientDirection(double[,] gradientX, double[,] gradientY, double[,] gradientMagnitude)
         {
             int MaximumXindex = gradientX.GetLength(0);
@@ -212,7 +212,8 @@ namespace Dong.Felt
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                     if (gradientX[row, col] == 0)
+                    // here it's kind of tricky thing 
+                    if (gradientX[row, col] == 0)
                      {
                           if (gradientY[row, col] == 0)
                           {
@@ -276,8 +277,8 @@ namespace Dong.Felt
             return newAngle;
         }
 
-        // Non-maximum suppression: Only local maxima should be marked as edges, it should be very thin like a one pixel.
-        // still something wrong with horizontal and vertical line, because it still has two pixels wide. 
+        // Non-maximum suppression: Only local maxima (magnitude value) in a neighborhood should be marked as edges, it should be very thin like a one pixel.
+        // here the size of neighbourhood is just 3 * 3
         public static double[,] NonMaximumSuppression(double[,] gradientMagnitude, double[,] direction, int neighborhoodSize)
         {
             int MaximumXindex = gradientMagnitude.GetLength(0);
@@ -289,7 +290,7 @@ namespace Dong.Felt
             {
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
                 {                
-                     // Horizontal edge
+                     // Horizontal direction
                     if (direction[i, j] == 0)
                     {
                         if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
@@ -298,7 +299,7 @@ namespace Dong.Felt
                         }
                     }
 
-                    //45 Degree Edge
+                    //45 Degree direction
                     if (direction[i, j] == 45)
                     {
                         if ((gradientMagnitude[i, j] < gradientMagnitude[i - 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i + 1, j + 1]))
@@ -307,7 +308,7 @@ namespace Dong.Felt
                         }
                     }
 
-                    // Vertical Edge
+                    // Vertical direction
                     if (direction[i, j] == 90)
                     {
                         if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j]))
@@ -316,7 +317,7 @@ namespace Dong.Felt
                         }
                     }
 
-                    //-45 Degree Edge
+                    //-45 Degree direction
                     if (direction[i, j] == -45)
                     {
                         if ((gradientMagnitude[i, j] < gradientMagnitude[i + 1, j - 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i - 1, j + 1]))
@@ -387,7 +388,9 @@ namespace Dong.Felt
                         {
                             if (direction[i + 1, j] == direction[i, j])
                             {                               
-                                sum++;                              
+                                sum++; 
+                                nonMaximaEdges[i, j] = 0.0;
+                                continue;
                             }                           
                         }
                         // 2
@@ -457,121 +460,261 @@ namespace Dong.Felt
             return nonMaximaEdges;
         }
 
-        //public static double[,] Thinning(double[,] magnitude, double[,] direction)
-        //{
-        //    int MaximumXindex = magnitude.GetLength(0);
-        //    int MaximumYindex = magnitude.GetLength(1);
+        // Making the edge thin, search in a 3*3 neighbourhood
+        public static double[,] Thinning(double[,] magnitude, double[,] direction)
+        {
+            int MaximumXindex = magnitude.GetLength(0);
+            int MaximumYindex = magnitude.GetLength(1);
 
-        //    var result = new double[MaximumXindex, MaximumYindex];
-        //    for (int i = 0; i < MaximumXindex - 1; i++)
-        //    {
-        //        for (int j = 0; j < MaximumYindex - 1; j++)
-        //        {
-        //            if (magnitude[i, j] > 0)
-        //            {
-        //                if (direction[i, j + 1] == direction[i, j])
-        //                {                        
-        //                     magnitude[i, j] = 0.0;
-        //                     continue;
-        //                }
-        //                // 2
-        //                if (magnitude[i + 1, j - 1] > 0)
-        //                {
-        //                    if (magnitude[i, j] <= magnitude[i + 1, j - 1])
-        //                    {
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    }
+            var result = new double[MaximumXindex, MaximumYindex];
+            for (int i = 0; i < MaximumXindex - 1; i++)
+            {
+                for (int j = 0; j < MaximumYindex - 1; j++)
+                {
+                    if (magnitude[i, j] > 0)
+                    {
+                        if (magnitude[i + 1, j] > 0)
+                        {
+                            if (direction[i + 1, j] == direction[i, j])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
+                        }
+                        // 2
+                        if (magnitude[i + 1, j - 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i + 1, j - 1])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
 
-        //                }
-        //                // 3
-        //                if (magnitude[i, j - 1] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i, j - 1])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
+                        }
+                        // 3
+                        if (magnitude[i, j - 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i, j - 1])
+                            {
+                            magnitude[i, j] = 0.0;
+                            continue;
+                            }
 
-        //                }
-        //                // 4
-        //                if (magnitude[i - 1, j - 1] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i - 1, j - 1])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
+                        }
+                        // 4
+                        if (magnitude[i - 1, j - 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i - 1, j - 1])
+                            {
+                            magnitude[i, j] = 0.0;
+                            continue;
+                            }
 
-        //                }
-        //                // 5
-        //                if (magnitude[i - 1, j] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i - 1, j])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
-        //                }
-        //                // 6
-        //                if (magnitude[i - 1, j + 1] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i - 1, j + 1])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
+                        }
+                        // 5
+                        if (magnitude[i - 1, j] > 0)
+                        {
+                            if (direction[i, j] == direction[i - 1, j])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
+                        }
+                        // 6
+                        if (magnitude[i - 1, j + 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i - 1, j + 1])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
 
-        //                }
-        //                // 7
-        //                if (magnitude[i, j + 1] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i, j + 1])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
+                        }
+                        // 7
+                        if (magnitude[i, j + 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i, j + 1])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
 
-        //                }
-        //                // 8
-        //                if (magnitude[i + 1, j + 1] > 0)
-        //                {
-        //                    //if (magnitude[i, j] <= magnitude[i + 1, j + 1])
-        //                    //{
-        //                        magnitude[i, j] = 0.0;
-        //                        continue;
-        //                    //}
+                        }
+                        // 8
+                        if (magnitude[i + 1, j + 1] > 0)
+                        {
+                            if (direction[i, j] == direction[i + 1, j + 1])
+                            {
+                                magnitude[i, j] = 0.0;
+                                continue;
+                            }
 
-        //                }
+                        }
 
-        //                result[i, j] = magnitude[i, j];
-        //            }
-        //            else
-        //            {
-        //                result[i, j] = magnitude[i, j];
-        //            }
-        //        }    
-        //    }
+                        result[i, j] = magnitude[i, j];
+                    }
+                    else
+                    {
+                        result[i, j] = magnitude[i, j];
+                    }
+                }
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
+
+        // Remove edge with small intensity in a neighbourhood
+        public static double[,] filterPointsOfInterest(double[,] magnitude, double[,] matrix, int sizeOfNeighbourhood)
+        {
+            int MaximumXindex = magnitude.GetLength(0);
+            int MaximumYindex = magnitude.GetLength(1);
+
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            var result = new double[MaximumXindex, MaximumYindex];
+
+            for (int row = 0; row < MaximumXindex; row++)
+            {
+                for (int col = 0; col < MaximumYindex; col++)
+                {
+                    var magnitudeThreshold = 0.25;
+                    if (magnitude[row, col] > magnitudeThreshold)
+                    {
+                        //check whether its neibourhood has a strong intensity pixel, 
+                        // first check the intensity is greater than 0.2 in the neighbourhood  
+                        double threshold = 0.4;
+                        for (int i = - radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                        {
+                            for (int j = - radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
+                            {
+                                if (matrix[row + i, col + j] > threshold)
+                                {                                   
+                                    result[row, col] = magnitude[row, col];
+                                }
+                            }
+                        }                   
+                    }
+                }
+            }
+
+            return result; 
+        }
+
+        public static double[,] removeClosePoi(double[,] magnitude, int sizeOfNeighbourhood)
+        {
+            int MaximumXindex = magnitude.GetLength(0);
+            int MaximumYindex = magnitude.GetLength(1);
+
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            var visitedFlag = new bool[MaximumXindex, MaximumYindex];
+            var result = new double[MaximumXindex, MaximumYindex];
+
+            for (int row = radiusOfNeighbourhood; row < MaximumXindex - radiusOfNeighbourhood; row++)
+            {
+                for (int col = radiusOfNeighbourhood; col < MaximumYindex - radiusOfNeighbourhood; col++)
+                {
+                    if (magnitude[row, col] > 0)
+                    {
+                        visitedFlag[row, col] = true;
+                        for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                        {
+                            for (int j = -radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
+                            {
+                                if (magnitude[row + i, col + j] > 0 && visitedFlag[row + i, col + j] == false)
+                                {
+                                    magnitude[row, col]  = 0.0;
+                                    visitedFlag[row + i, col + j] = true;  
+                                }
+                            }
+                        }       
+                    }
+                }
+            }
+
+            result = magnitude;
+            return result; 
+        }
+
+        public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
+        {
+            //define indices into grid using Lindley notation
+            const int a = 0; const int b = 1; const int c = 2; const int d = 3; const int e = 4;
+            const int f = 5; const int g = 6; const int h = 7; const int i = 8;
+            int mRows = m.GetLength(0);
+            int mCols = m.GetLength(1);
+            double[,] normM = DataTools.normalise(m);
+            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[] grid = new double[9]; //to represent 3x3 grid
+            double min = Double.MaxValue; double max = -Double.MaxValue;
+
+            for (int y = 1; y < mRows - 1; y++)
+                for (int x = 1; x < mCols - 1; x++)
+                {
+                    grid[a] = normM[y - 1, x - 1];
+                    grid[b] = normM[y, x - 1];
+                    grid[c] = normM[y + 1, x - 1];
+                    grid[d] = normM[y - 1, x];
+                    grid[e] = normM[y, x];
+                    grid[f] = normM[y + 1, x];
+                    grid[g] = normM[y - 1, x + 1];
+                    grid[h] = normM[y, x + 1];
+                    grid[i] = normM[y + 1, x + 1];
+                    double[] differences = new double[4];
+                    double DivideAEI_avBelow = (grid[d] + grid[g] + grid[h]) / (double)3;
+                    double DivideAEI_avAbove = (grid[b] + grid[c] + grid[f]) / (double)3;
+                    differences[0] = Math.Abs(DivideAEI_avAbove - DivideAEI_avBelow);
+
+                    double DivideBEH_avBelow = (grid[a] + grid[d] + grid[g]) / (double)3;
+                    double DivideBEH_avAbove = (grid[c] + grid[f] + grid[i]) / (double)3;
+                    differences[1] = Math.Abs(DivideBEH_avAbove - DivideBEH_avBelow);
+
+                    double DivideCEG_avBelow = (grid[f] + grid[h] + grid[i]) / (double)3;
+                    double DivideCEG_avAbove = (grid[a] + grid[b] + grid[d]) / (double)3;
+                    differences[2] = Math.Abs(DivideCEG_avAbove - DivideCEG_avBelow);
+
+                    double DivideDEF_avBelow = (grid[g] + grid[h] + grid[i]) / (double)3;
+                    double DivideDEF_avAbove = (grid[a] + grid[b] + grid[c]) / (double)3;
+                    differences[3] = Math.Abs(DivideDEF_avAbove - DivideDEF_avBelow);
+                    double gridMin; double gridMax;
+                    DataTools.MinMax(differences, out gridMin, out gridMax);
+
+                    newMatrix[y, x] = gridMax;
+                    if (min > gridMin) min = gridMin;
+                    if (max < gridMax) max = gridMax;
+                }
+
+            //double relThreshold = 0.2;
+            double threshold = min + ((max - min) * relThreshold);
+
+            for (int y = 1; y < mRows - 1; y++)
+            {
+                for (int x = 1; x < mCols - 1; x++)
+                {
+                    if (newMatrix[y, x] <= threshold) newMatrix[y, x] = 0.0;
+                }
+
+            }
+            return newMatrix;       
+        }
 
         public static void CannyEdgeDetector(double[,] matrix, out double[,] magnitude, out double[,] direction)
         {
              // better be odd number, 3, 5
-            var kernelSizeOfGaussianBlur = 5;
-            double SigmaOfGaussianBlur = 1.0;
-            var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
-            //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(gaussianFilter, 3);
-            var gradient = ImageAnalysisTools.Gradient(gaussianFilter, SobelX, SobelY);
-            var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            //var kernelSizeOfGaussianBlur = 5;
+            //double SigmaOfGaussianBlur = 1.0;
+            //var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
+            //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(matrix, 5);
+            var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
+            //var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
             var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
-            //var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
-            
-            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(gradientMagnitude, 2.0, 1.0);
-            //var thin = ImageAnalysisTools.Thinning(doubleThreshold);
-            var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
-            magnitude = hysterisis;
+            var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
+            //var sobelEdge = ImageTools.SobelEdgeDetection(matrix);
+            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 1.5, 1.5);
+            var thin = ImageAnalysisTools.Thinning(nonMaxima, gradientDirection);
+            var removepoi = ImageAnalysisTools.filterPointsOfInterest(gradientMagnitude, matrix, 3);
+            var removeClose = ImageAnalysisTools.removeClosePoi(removepoi, 3);
+            //var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
+            magnitude = removeClose; 
             direction = gradientDirection;
         }
 

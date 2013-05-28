@@ -86,23 +86,25 @@ namespace Dong.Felt
             //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
             //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
             //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\cannyEdge-DoubleThreshold-2.0-1.0-hysterisis-0-gaussianblur-5-1.0.png";
+            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-sobelMask-localThreshold-0.2-nonMaxima-thin-removeclosepoi.png";
+            //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-SobelMask-doubleThreshold-1.0-0.5.png";
             //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
-            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector-GradientMagnitude-7-6.png";
+            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector.png";
             var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix);
 
+            
             // Statistical Analysis on the spectrogram, mainly playing with its intensity 
-
+          
             //var sizeOfNeighbourhood = 5;
             //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             int rows = testMatrixTranspose.GetLength(0);
             int cols = testMatrixTranspose.GetLength(1);
             var magnitude = new double[rows, cols];
             var direction = new double[rows, cols];
-            DataTools.normalise(testMatrixTranspose);
-            //var sobelEdge = ImageTools.SobelRidgeDetection(testMatrixTranspose);
+            //DataTools.normalise(testMatrixTranspose);
             ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
+           //ImageTools.SobelRidgeDetection(testMatrixTranspose);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
