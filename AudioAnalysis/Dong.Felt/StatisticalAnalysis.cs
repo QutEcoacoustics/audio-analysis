@@ -27,5 +27,16 @@ namespace Dong.Felt
             return result; 
         }
 
+        // check wether it's an integer
+        public static bool checkIfInteger(int value)
+        {
+            var result = false;
+            if (value - Math.Floor((double)value) < 0.00000000001)
+            {
+                result = true;
+            }
+
+            return result;
+        } 
     }
 }

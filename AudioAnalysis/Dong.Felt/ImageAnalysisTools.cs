@@ -13,7 +13,7 @@ namespace Dong.Felt
 
     class ImageAnalysisTools
     {
-        // A 7 * 7 gaussian blur
+        // 7 * 7 gaussian blur
         public static double[,] gaussianBlur7 = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
                                                 {0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117},
@@ -22,29 +22,142 @@ namespace Dong.Felt
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
                                                 {0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067}};
 
-        // A 5 * 5 gaussian blur
+        //5 * 5 gaussian blur
         public static double[,] gaussianBlur5 = {{0.0000,       0.0000,     0.0002,     0.0000,    0.0000},
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0002,       0.0837,     0.6187,     0.0837,    0.0002},
                                                  {0.0000,       0.0113,     0.0837,     0.0113,    0.0000},
                                                  {0.0000,       0.0000,     0.0002,     0.0000,    0.0000}};
 
+        // 3* 3 Sobel edge mask
         public static double[,] SobelX =  { {-1.0,  0.0,  1.0},
-                                          {-2.0,  0.0,  2.0},
-                                          {-1.0,  0.0,  1.0} };
+                                            {-2.0,  0.0,  2.0},
+                                            {-1.0,  0.0,  1.0} };
 
-        public static double[,] SobelY =  { {1.0,  2.0,  1.0},
-                                          {0.0,  0.0,  0.0},
-                                          {-1.0, -2.0, -1.0} };
+        public static double[,] SobelY =  { { 1.0,  2.0,  1.0},
+                                            { 0.0,  0.0,  0.0},
+                                            {-1.0, -2.0, -1.0} };
+
+        // 7 * 7 rectangular Sobel ridge mask
+        public static double[,] SobelRidge7X = { {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                                 {0.0,  0.0,  -1.0,  2.0,  -1.0,  0.0,  0.0},
+                                               };
+
+        public static double[,] SobelRidge7Y = { { 0.0,  0.0,    0.0,   0.0,   0.0,   0.0,   0.0 },
+                                                 { 0.0,  0.0,    0.0,   0.0,   0.0,   0.0,   0.0 },
+                                                 {-1.0, -1.0,   -1.0,  -1.0,  -1.0,  -1.0,  -1.0 },
+                                                 { 2.0,  2.0,    2.0,   2.0,   2.0,   2.0,   2.0 },
+                                                 {-1.0, -1.0,   -1.0,  -1.0,  -1.0,  -1.0,  -1.0 },
+                                                 { 0.0,  0.0,    0.0,   0.0,   0.0,   0.0,   0.0 },
+                                                 { 0.0,  0.0,    0.0,   0.0,   0.0,   0.0,   0.0 },
+                                               };
+
+        // 3 * 3 sobel ridge mask
+        public static double[,] SobelRidge3X = { {-1.0,  2.0,  -1.0},
+                                                 {-2.0,  4.0,  -2.0},
+                                                 {-1.0,  2.0,  -1.0} };
+
+        public static double[,] SobelRidge3Y = { {-1.0,  -2.0,  -1.0},
+                                                 { 2.0,   4.0,   2.0},
+                                                 {-1.0,  -2.0,  -1.0} };
+
+        // 5 * 5 sobel ridge mask
+        public static double[,] SobelRidge5X = { { 0.0,  -1.0,  2.0,  -1.0,  0.0},
+                                                 {-1.0,  -2.0,  4.0,  -2.0, -1.0},
+                                                 {-2.0,  -4.0,  12.0, -4.0, -2.0},
+                                                 {-1.0,  -2.0,  4.0,  -2.0, -1.0},
+                                                 { 0.0,  -1.0,  2.0,  -1.0, 0.0} };
+
+        public static double[,] SobelRidge5Y = { {0.0,   -1.0,  -2.0, -1.0,  0.0},
+                                                 {-1.0,  -2.0,  -4.0, -2.0, -1.0},
+                                                 {2.0,    4.0,  12.0,  4.0,  2.0},
+                                                 {-1.0,  -2.0,  -4.0, -2.0, -1.0}, 
+                                                 {0.0,   -1.0,  -2.0, -1.0,  0.0} };
+
+        // 5 * 5 Corner mask, still need to think about it
+        public static double[,] SobelCorner = { {0.0,  -1.0,  2.0,  -1.0,   0.0},
+                                                {0.0,  -1.0,  2.0,  -1.0,  -1.0},
+                                                {0.0,  -1.0,  2.0,   2.0,   2.0},
+                                                {0.0,  -1.0, -1.0,  -1.0,  -1.0},
+                                                {0.0,   0.0,  0.0,   0.0,   0.0} };
+
+        public static double[,] SobelCornerY = { { 0.0,  -1.0,  2.0,  -1.0,  0.0},
+                                                {-1.0,  -2.0,  4.0,  -2.0, -1.0},
+                                                {-2.0,  -4.0,  12.0, -4.0, -2.0},
+                                                {-1.0,  -2.0,  4.0,  -2.0, -1.0},
+                                                { 0.0,  -1.0,  2.0,  -1.0,  0.0} };
 
         public const double Pi = Math.PI;
         /// Canny detector for edge detection in a noisy image 
         /// it involves five steps here, first, it needs to do the Gaussian convolution, 
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
-        /// 
-        ///
+        
+        // Generate the sobelRidge mask automatically
+        public static double[,] GenerateSobelRidgeMaskX(int sizeOfMask)
+        {
+            // middle points must store positive values
+            var middleColumn = new int[sizeOfMask];
+            // both left and right column must store negative values
+            var leftColumn = new int[sizeOfMask];
+            var rightColumn = new int[sizeOfMask];
+            var centerPosition = sizeOfMask / 2;
+            // now it's a magic number because I actually want to make it as a maxima of an integer
+            var maximumValue = 1000;
 
-        // Generate the gaussian kernel
+            var result = new double[sizeOfMask, sizeOfMask];
+
+
+            for (int n = 4; n < maximumValue; n++)
+            {
+                var sum = 0;
+                for (int j = 0; j <= centerPosition; j++)
+                {
+                   for (int i = centerPosition; i >= 1; i--)
+                   {                    
+                        middleColumn[i] = n;
+                        leftColumn[i] = - middleColumn[i] / 2;
+                        rightColumn[i] = leftColumn[i];
+
+                        middleColumn[i - j] = middleColumn[i] / 2;
+                        middleColumn[i + j] = middleColumn[i - j];
+                        
+                        // check whether it's an integer and greater than 1
+                        var temp1 = StatisticalAnalysis.checkIfInteger(middleColumn[i]);
+                        var temp2 = StatisticalAnalysis.checkIfInteger(leftColumn[i]);
+                        var temp3 = StatisticalAnalysis.checkIfInteger(rightColumn[i]);
+                        if (temp1 && Math.Abs(middleColumn[i]) >= 1 &&
+                            temp2 && Math.Abs(leftColumn[i]) >= 1 &&
+                            temp3 && Math.Abs(rightColumn[i]) >= 1)
+                        {
+                            result[i, i] = middleColumn[i];
+                            result[i, i - j] = leftColumn[i];
+                            result[i, i + j] = rightColumn[i];
+                            sum++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                     }
+                 }
+
+                if (sum == sizeOfMask)
+                {
+                    break;
+                }  
+            }
+
+            return result; 
+        }
+
+       
+
+        // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
             
@@ -132,8 +245,9 @@ namespace Dong.Felt
                             }
                         }
                     }
-                    result.Item1[row, col] = sumX;
-                    result.Item2[row, col] = sumY;
+                    // on average to normalise the value for 5 * 5 ridge detection
+                    result.Item1[row, col] = sumX / 24;
+                    result.Item2[row, col] = sumY / 24;
                 }
             }
 
@@ -496,8 +610,8 @@ namespace Dong.Felt
                         {
                             if (direction[i, j] == direction[i, j - 1])
                             {
-                            magnitude[i, j] = 0.0;
-                            continue;
+                                magnitude[i, j] = 0.0;
+                                continue;
                             }
 
                         }
@@ -506,8 +620,8 @@ namespace Dong.Felt
                         {
                             if (direction[i, j] == direction[i - 1, j - 1])
                             {
-                            magnitude[i, j] = 0.0;
-                            continue;
+                                magnitude[i, j] = 0.0;
+                                continue;
                             }
 
                         }
@@ -528,7 +642,6 @@ namespace Dong.Felt
                                 magnitude[i, j] = 0.0;
                                 continue;
                             }
-
                         }
                         // 7
                         if (magnitude[i, j + 1] > 0)
@@ -538,7 +651,6 @@ namespace Dong.Felt
                                 magnitude[i, j] = 0.0;
                                 continue;
                             }
-
                         }
                         // 8
                         if (magnitude[i + 1, j + 1] > 0)
@@ -548,7 +660,6 @@ namespace Dong.Felt
                                 magnitude[i, j] = 0.0;
                                 continue;
                             }
-
                         }
 
                         result[i, j] = magnitude[i, j];
@@ -575,30 +686,35 @@ namespace Dong.Felt
             for (int row = 0; row < MaximumXindex; row++)
             {
                 for (int col = 0; col < MaximumYindex; col++)
-                {
-                    var magnitudeThreshold = 0.25;
-                    if (magnitude[row, col] > magnitudeThreshold)
+                {                                      
+                    if (magnitude[row, col] > 0)
                     {
-                        //check whether its neibourhood has a strong intensity pixel, 
-                        // first check the intensity is greater than 0.2 in the neighbourhood  
-                        double threshold = 0.4;
-                        for (int i = - radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                        double threshold = 0.3;
+                        // for ridge detection, check whether its intensity is greater than a value
+                        if (matrix[row, col] > threshold)
                         {
-                            for (int j = - radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
-                            {
-                                if (matrix[row + i, col + j] > threshold)
-                                {                                   
-                                    result[row, col] = magnitude[row, col];
-                                }
-                            }
-                        }                   
+                            result[row, col] = magnitude[row, col];
+                        }
                     }
+                    // for edge detection
+                    //check whether its neibourhood has a strong intensity pixel, 
+                    //for (int i = - radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                    //{
+                    //    for (int j = - radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
+                    //    {
+                    //        if (matrix[row + i, col + j] > threshold)
+                    //        {                                   
+                    //            result[row, col] = magnitude[row, col];
+                    //        }
+                    //    }
+                    //}                           
                 }
             }
 
             return result; 
         }
 
+        // Remove the poi which are too close in a 3 * 3 neighbourhood 
         public static double[,] removeClosePoi(double[,] magnitude, int sizeOfNeighbourhood)
         {
             int MaximumXindex = magnitude.GetLength(0);
@@ -698,21 +814,36 @@ namespace Dong.Felt
 
         public static void CannyEdgeDetector(double[,] matrix, out double[,] magnitude, out double[,] direction)
         {
-             // better be odd number, 3, 5
+            var MaximumXIndex = matrix.GetLength(0);
+            var MaximumYIndex = matrix.GetLength(1);
+
+            var sizeOfRidge = 5;
+            var halfLength = sizeOfRidge/2; 
+            // better be odd number 3, 5
             //var kernelSizeOfGaussianBlur = 5;
             //double SigmaOfGaussianBlur = 1.0;
             //var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
             //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(matrix, 5);
-            var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
-            //var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
-            var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
+            //var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
+            
+            //for (int row = halfLength; row < MaximumXIndex - halfLength; row++)
+            //{
+            //    for (int col = halfLength; col < MaximumYIndex - halfLength; col++)
+            //    {
+            //        var sumMatrix = MatrixTools.Submatrix(matrix, row - halfLength, col - halfLength, row + halfLength, col + halfLength);
+            //        var gradient = ImageAnalysisTools.Gradient(sumMatrix, SobelRidge5X, SobelRidge5Y); 
+            //    }
+            //}
+            var gradient = ImageAnalysisTools.Gradient(matrix, SobelRidge5X, SobelRidge5Y);
+            var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            //var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
             var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
             var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
             //var sobelEdge = ImageTools.SobelEdgeDetection(matrix);
-            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 1.5, 1.5);
-            var thin = ImageAnalysisTools.Thinning(nonMaxima, gradientDirection);
-            var removepoi = ImageAnalysisTools.filterPointsOfInterest(gradientMagnitude, matrix, 3);
-            var removeClose = ImageAnalysisTools.removeClosePoi(removepoi, 3);
+            var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.1, 0.1);
+            var thin = ImageAnalysisTools.Thinning(doubleThreshold, gradientDirection);
+            var filterpoi = ImageAnalysisTools.filterPointsOfInterest(thin, matrix, 3);
+            var removeClose = ImageAnalysisTools.removeClosePoi(filterpoi, 3);
             //var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
             magnitude = removeClose; 
             direction = gradientDirection;
