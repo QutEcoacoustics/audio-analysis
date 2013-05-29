@@ -2115,6 +2115,28 @@ namespace TowseyLib
             return Math.Sqrt(sum);
         } //end
 
+        /// <summary>
+        /// returns EUCLIDIAN DISTANCE BETWEEN two vectors
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public static double EuclidianDistance(byte[] v1, byte[] v2)
+        {
+            //check v1 and v2 have same length
+            if (v1.Length != v2.Length) 
+                throw new System.Exception("Vectors have unequal length.");
+
+            //calculate euclidian distance
+            double sum = 0.0;
+            for (int i = 0; i < v1.Length; i++)
+            {
+                    double v = v1[i] - v2[i];
+                    sum += (v * v);
+            }
+            return Math.Sqrt(sum);
+        } //end
+
 
 
         public static double DotProduct(double[,] m1, double[,] m2)
