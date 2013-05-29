@@ -82,29 +82,34 @@ namespace Dong.Felt
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             // }  
 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
-            //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-sobelMask-localThreshold-0.2-nonMaxima-thin-removeclosepoi.png";
-            //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-SobelMask-doubleThreshold-1.0-0.5.png";
-            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
-            //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector.png";
+            //check wether the function is working
+            //var sobelRidgeMask = ImageAnalysisTools.GenerateSobelRidgeMaskX(3);
+            //Log.Info("sobelRidgeMaskTEST");
+
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Test\1.png"));
+            // var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
+            //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
+            //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
+            //// //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
+            //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-sobelRidge5Mask-Average-OveralThreshold-0.1-nonMaxima-thin-filter-0.1-0.3-removeClose.png";
+            //// //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-SobelMask-doubleThreshold-1.0-0.5.png";
+            //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
+            //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector.png";
+            string outputFilePath = @"C:\Test recordings\Test\1-edgeDetection2.png";
             var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix);
-
             
-            // Statistical Analysis on the spectrogram, mainly playing with its intensity 
+           ////// // Statistical Analysis on the spectrogram, mainly playing with its intensity 
           
-            //var sizeOfNeighbourhood = 5;
-            //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+           ////// //var sizeOfNeighbourhood = 5;
+           ////// //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             int rows = testMatrixTranspose.GetLength(0);
             int cols = testMatrixTranspose.GetLength(1);
             var magnitude = new double[rows, cols];
             var direction = new double[rows, cols];
             //DataTools.normalise(testMatrixTranspose);
             ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
-           //ImageTools.SobelRidgeDetection(testMatrixTranspose);
+            ////ImageTools.SobelRidgeDetection(testMatrixTranspose);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -167,11 +172,14 @@ namespace Dong.Felt
                 //double[,] magnitude, direction;
                 //ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
 
-
-                //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav";
-                //var recording = new AudioRecording(wavFilePath);
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            //string outputPath = @"C:\Test recordings\Test\2";
+            //string wavFilePath = @"C:\Test recordings\Test\1.wav";
+            //var recording = new AudioRecording(wavFilePath);
+            //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
+            //// imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
+            //imageResult.Save(outputPath + ".png");
                 //List<PointOfInterest> poiList = new List<PointOfInterest>();
                 //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
                 //var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
@@ -239,7 +247,7 @@ namespace Dong.Felt
                 //        //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 //    }
 
-                testImage.Save(outputFilePath);
+            testImage.Save(outputFilePath);
 
 
             // Batch Process
