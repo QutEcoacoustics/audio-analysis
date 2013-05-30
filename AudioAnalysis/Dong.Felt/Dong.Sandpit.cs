@@ -74,33 +74,33 @@
 
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
-                for (int r = halfLength; r < rows - halfLength; r++)
-                {
-                    for (int c = halfLength; c < cols - halfLength; c++)
-                    {
-                       double[,] magnitude; 
-                       double[,] direction;
-                       ImageAnalysisTools.CannyEdgeDetector(matrix, out magnitude, out direction);
-                       if ( magnitude[r, c] > magnitudeThreshold)
-                       {
-                            Point point = new Point(c, r);
-                            //var poi = new PointOfInterest(point);
-                            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                            double herz = (freqBinCount - r - 1) * herzScale;
-                            var poi = new PointOfInterest(time, herz);
-                            poi.Point = point;
-                            poi.RidgeOrientation = direction[r, c];
-                            poi.OrientationCategory = (int)Math.Round((direction[r, c] * 8) / Math.PI);
-                            poi.RidgeMagnitude = magnitude[r, c];
-                            poi.Intensity = matrix[r, c];
-                            poi.TimeScale = timeScale;
-                            poi.HerzScale = herzScale;
-                            poiList.Add(poi);
-                        }
-                        //c++;
-                    }
-                    //r++;
-                }
+                //for (int r = halfLength; r < rows - halfLength; r++)
+                //{
+                //    for (int c = halfLength; c < cols - halfLength; c++)
+                //    {
+                //       double[,] magnitude; 
+                //       double[,] direction;
+                //       //ImageAnalysisTools.CannyEdgeDetector(matrix, out magnitude, out direction);
+                //       if ( magnitude[r, c] > magnitudeThreshold)
+                //       {
+                //            Point point = new Point(c, r);
+                //            //var poi = new PointOfInterest(point);
+                //            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                //            double herz = (freqBinCount - r - 1) * herzScale;
+                //            var poi = new PointOfInterest(time, herz);
+                //            poi.Point = point;
+                //            poi.RidgeOrientation = direction[r, c];
+                //            poi.OrientationCategory = (int)Math.Round((direction[r, c] * 8) / Math.PI);
+                //            poi.RidgeMagnitude = magnitude[r, c];
+                //            poi.Intensity = matrix[r, c];
+                //            poi.TimeScale = timeScale;
+                //            poi.HerzScale = herzScale;
+                //            poiList.Add(poi);
+                //        }
+                //        //c++;
+                //    }
+                //    //r++;
+                //}
 
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
 
