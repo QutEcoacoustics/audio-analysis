@@ -86,16 +86,16 @@ namespace Dong.Felt
             //var sobelRidgeMask = ImageAnalysisTools.GenerateSobelRidgeMaskX(3);
             //Log.Info("sobelRidgeMaskTEST");
 
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Test\1.png"));
-            // var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
+            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Test\1.png"));
+            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
             //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
             //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
             //// //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-sobelRidge5Mask-Average-OveralThreshold-0.1-nonMaxima-thin-filter-0.1-0.3-removeClose.png";
+            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\Michael's algorithm- threshold-0.2.png";
             //// //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-SobelMask-doubleThreshold-1.0-0.5.png";
             //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
             //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector.png";
-            string outputFilePath = @"C:\Test recordings\Test\1-edgeDetection2.png";
+            //string outputFilePath = @"C:\Test recordings\Test\1-edgeDetection2.png";
             var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
             var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix);
             
@@ -105,18 +105,36 @@ namespace Dong.Felt
            ////// //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             int rows = testMatrixTranspose.GetLength(0);
             int cols = testMatrixTranspose.GetLength(1);
-            var magnitude = new double[rows, cols];
-            var direction = new double[rows, cols];
+            //var magnitude = new double[rows, cols];
+            //var direction = new double[rows, cols];
             //DataTools.normalise(testMatrixTranspose);
-            ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
+            var edge = ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose);
             ////ImageTools.SobelRidgeDetection(testMatrixTranspose);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (magnitude[r, c] > 0)
+                    if (edge.Item1[r, c] > 0)
                     {
-                        testImage.SetPixel(r, c, Color.Crimson);
+                        if (edge.Item2[r, c] == 0)
+                        {
+                            testImage.SetPixel(r, c, Color.Crimson);
+                        }
+
+                        if (edge.Item2[r, c] == 1 * Math.PI / (double)4)
+                        {
+                            testImage.SetPixel(r, c, Color.Blue);
+                        }
+
+                        if (edge.Item2[r, c] == 2 * Math.PI / (double)4)
+                        {
+                            testImage.SetPixel(r, c, Color.Green);
+                        }
+
+                        if (edge.Item2[r, c] == 3 * Math.PI / (double)4)
+                        {
+                            testImage.SetPixel(r, c, Color.Cyan);
+                        }
                     }
                 }
             }
