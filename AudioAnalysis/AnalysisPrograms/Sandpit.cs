@@ -153,12 +153,12 @@ namespace AnalysisPrograms
                 discreteIndices[11, R] = 0.95; discreteIndices[11, G] = 0.95; discreteIndices[11, B] = 0.95; // black
 
                 int N = 12; // number of discrete colours
-                byte[,] colourValues = new byte[N, 3]; // Ht, ACI and Ampl values in 0,255
-                for (int r = 0; r < colourValues.GetLength(0); r++)
+                byte[,] discreteColourValues = new byte[N, 3]; // Ht, ACI and Ampl values in 0,255
+                for (int r = 0; r < discreteColourValues.GetLength(0); r++)
                 {
-                    for (int c = 0; c < colourValues.GetLength(1); c++)
+                    for (int c = 0; c < discreteColourValues.GetLength(1); c++)
                     {
-                        colourValues[r,c] = (byte)Math.Floor((1 - discreteIndices[r, c]) * 255);
+                        discreteColourValues[r,c] = (byte)Math.Floor((1 - discreteIndices[r, c]) * 255);
                     }
                 }
 
@@ -166,7 +166,7 @@ namespace AnalysisPrograms
                 Color[] colourPalette = new Color[N]; //palette
                 for (int c = 0; c < N; c++)
                 {
-                    colourPalette[c] = Color.FromArgb(colourValues[c, R], colourValues[c, G], colourValues[c, B]);
+                    colourPalette[c] = Color.FromArgb(discreteColourValues[c, R], discreteColourValues[c, G], discreteColourValues[c, B]);
                 }
 
                 // read in the image
@@ -185,9 +185,9 @@ namespace AnalysisPrograms
                         for (int c = 0; c < N; c++)
                         {
                             byte[] colourVector = new byte[3];
-                            colourVector[0] = colourValues[c, 0];
-                            colourVector[1] = colourValues[c, 1];
-                            colourVector[2] = colourValues[c, 2];
+                            colourVector[0] = discreteColourValues[c, 0];
+                            colourVector[1] = discreteColourValues[c, 1];
+                            colourVector[2] = discreteColourValues[c, 2];
                             distance[c] = DataTools.EuclidianDistance(imageColorVector, colourVector);
                         }
                         int minindex, maxindex;

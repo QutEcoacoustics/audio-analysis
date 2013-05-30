@@ -70,6 +70,10 @@
         //private AnalysisCoordinator analysisCoordinator;
         private PluginHelper pluginHelper;
 
+        private Pen pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
+
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -347,11 +351,108 @@
         }
 
 
+        private void btnViewColourSpectrogram_Click(object sender, EventArgs e)
+        {
+
+            //OPEN A FILE DIALOGUE TO FIND IMAGE FILE
+            OpenFileDialog fdlg = new OpenFileDialog();
+            fdlg.Title = "Open Image Dialogue";
+            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
+            fdlg.Filter = "PNG files (*.png)|*.png";
+            fdlg.FilterIndex = 2;
+            fdlg.RestoreDirectory = false;
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var fiImageFile = new FileInfo(fdlg.FileName);
+                this.browserSettings.fiCSVFile = fiImageFile; // store in settings so can be accessed later.
+
+                this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiImageFile.FullName)); // change to selected directory
+                this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
+                this.labelSonogramFileName.Text = "Spectrogram file name";
+
+                // clear console window
+                this.textBoxConsole.Clear();
+                LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(date);
+
+                // ## LOAD A PNG IMAGE ##############################################################################################
+                int status = this.LoadColourSpectrogramFile(fiImageFile.FullName);
+                // ##################################################################################################################
+                if (status >= 3)
+                {
+                    //this.tabControlMain.SelectTab("tabPageConsole");
+                    //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                    //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
+                    //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                    //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("# Display of false colour spectrogram: " + fiImageFile.FullName);
+                    this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+                    this.pictureBoxBarTrack.Image = this.selectionTrackImage;
+
+                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                    this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
+                    //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
+                    this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+                    this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
+                    this.pictureBoxSonogram.Location = new Point(3, 0);
+                    this.pictureBoxPen = new Pen(Color.Black, 1.0F); // used to draw vertical hairs
+
+
+                    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiImageFile.FullName);
+                    if (status == 0)
+                    {
+                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiImageFile.FullName);
+                        this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
+                    }
+                    else
+                    {
+                        this.labelSourceFileName.Text = String.Format("WARNING: ERROR loading image file <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiImageFile.FullName));
+                        this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
+                    }
+                    this.tabControlMain.SelectTab("tabPageDisplay");
+                } // (status)
+            } // if (DialogResult.OK)
+
+        }
+        /// <summary>
+        /// loads an image file. Assume it is a false colour spectrogram derived from three acoustic indices
+        /// returns a status integer. 0= no error
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
+        private int LoadColourSpectrogramFile(string imagePath)
+        {
+            int error = 0;
+            string analysisName = "Towsey.Indices"; // assume the analysis type if Towsey.Acoustic
+
+            //var op = LoadAnalysisConfigFile(analysisName);
+            //this.browserSettings.fiAnalysisConfig = op.Item1;
+            //this.analysisParams = op.Item2;
+
+            // label to show selected analysis type for viewing CSV file.
+            this.labelDisplayInfo.Text = "Analysis type = " + analysisName + ". ";
+            //display column headers in the list box of displayed tracks
+            string labelText = "Indices used to create image";
+            this.labelCSVHeaders.Text = labelText;
+            this.listBoxDisplayedTracks.Items.Clear(); //remove previous entries in list box.
+            this.listBoxDisplayedTracks.Items.Add("Temporal Entropy");
+            this.listBoxDisplayedTracks.Items.Add("Acoustic Complexity Index");
+            this.listBoxDisplayedTracks.Items.Add("Average Power");
+
+            // read the image
+            var fiImage = new FileInfo(imagePath);
+            this.pictureBoxVisualIndices.Image = new Bitmap(fiImage.FullName);
+            this.sourceRecording_MinutesDuration = this.pictureBoxVisualIndices.Image.Width; //CAUTION: assume one value per minute - sets global variable !!!!
+            return error;
+        }
+
+
         private void btnViewFileOfIndices_Click(object sender, EventArgs e)
         {
-            //USE FOLLOWING LINE TO LOAD A PNG IMAGE
-            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
-
             //OPEN A FILE DIALOGUE TO FIND CSV FILE
             OpenFileDialog fdlg = new OpenFileDialog();
             fdlg.Title = "Open File Dialogue";
@@ -533,14 +634,13 @@
             Graphics g = this.pictureBoxVisualIndices.CreateGraphics();
             g.DrawImage(this.pictureBoxVisualIndices.Image, 0, 0);
             float[] dashValues = { 2, 2, 2, 2 };
-            Pen pen = new Pen(Color.Red, 1.0F);
-            pen.DashPattern = dashValues;
+            this.pictureBoxPen.DashPattern = dashValues;
             Point pt1 = new Point(myX - 1, 2);
             Point pt2 = new Point(myX - 1, this.pictureBoxVisualIndices.Height);
-            g.DrawLine(pen, pt1, pt2);
+            g.DrawLine(this.pictureBoxPen, pt1, pt2);
             pt1 = new Point(myX + 1, 2);
             pt2 = new Point(myX + 1, this.pictureBoxVisualIndices.Height);
-            g.DrawLine(pen, pt1, pt2);
+            g.DrawLine(this.pictureBoxPen, pt1, pt2);
 
             if ((trackValues == null) || (trackValues.Length < 2)) return;
             if (myX >= this.trackValues.Length - 1)
@@ -560,22 +660,30 @@
             LoggedConsole.WriteLine(date);
             LoggedConsole.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
-            //Infer source file name from CSV file name
-            FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
-            if (inferredSourceFile == null)
+            if ((this.browserSettings.fiSourceRecording != null) && (this.browserSettings.fiSourceRecording.Exists))
             {
-                browserSettings.fiSourceRecording = null;
-                LoggedConsole.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
-                LoggedConsole.WriteLine("    Cannot proceed with display of segment sonogram.");
-                return;
+                LoggedConsole.WriteLine("Source Directory: {0}\\", this.browserSettings.diSourceDir);
+                LoggedConsole.WriteLine("Source File Name: {0}", this.browserSettings.fiSourceRecording);
             }
-            else
+            else // Infer source file name from CSV file name
             {
-                browserSettings.fiSourceRecording = inferredSourceFile;
-                LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
-                LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
+                FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
+                if (inferredSourceFile == null)
+                {
+                    browserSettings.fiSourceRecording = null;
+                    LoggedConsole.WriteLine("# \tWARNING: Cannot find source mp3/wav for this file: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
+                    LoggedConsole.WriteLine("    Cannot display spectrogram of requested segment.");
+                    LoggedConsole.WriteLine("#   Try entering SOURCE FILE by clicking on the [[Analyse Audio File]] tab.");
+                    return;
+                }
+                else
+                {
+                    browserSettings.fiSourceRecording = inferredSourceFile;
+                    LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
+                    LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
+                    LoggedConsole.WriteLine("# \t\tIF NOT, enter correct SOURCE FILE by clicking on the [[Analyse Audio File]] tab.");
+                } // Infer source file name from CSV file name
             }
-
 
             // GET MOUSE LOCATION
             int myX = e.X;
@@ -1388,9 +1496,6 @@
 
         private void btnAnalysisFile_Click(object sender, EventArgs e)
         {
-            //USE FOLLOWING LINE TO LOAD A PNG IMAGE
-            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
-
             //OPEN A FILE DIALOGUE TO FIND MP3 FILE
             OpenFileDialog fdlg = new OpenFileDialog();
             fdlg.Title = "Open Audio File Dialogue";
@@ -1404,7 +1509,9 @@
                 this.browserSettings.fiSourceRecording = fiAudioFile; // store in settings so can be accessed later.
                 this.txtBoxAnalysisFile.Text = fiAudioFile.Name;
                 this.browserSettings.diSourceDir = new DirectoryInfo(Path.GetDirectoryName(fiAudioFile.FullName)); // change to selected directory
-                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;                
+                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;
+                LoggedConsole.WriteLine("Source Directory: {0}\\", this.browserSettings.diSourceDir);
+                LoggedConsole.WriteLine("Audio File Name : {0}", fiAudioFile);
             } // if (DialogResult.OK)
         }
 
