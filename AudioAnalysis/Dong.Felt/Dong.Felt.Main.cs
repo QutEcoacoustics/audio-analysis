@@ -80,194 +80,9 @@ namespace Dong.Felt
             //    //yaml.Load(reader);
             //    var serializer = new YamlSerializer();
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
-            // }  
-
-            //check wether the function is working
-            //var sobelRidgeMask = ImageAnalysisTools.GenerateSobelRidgeMaskX(3);
-            //Log.Info("sobelRidgeMaskTEST");
-
-            //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Test\1.png"));
-            var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.png"));
-            //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png"));
-            //// //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage6\TestImage6.png"));
-            //// //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-            string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\Michael's algorithm- threshold-0.2.png";
-            //// //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\CannyEdgeDetection-SobelMask-doubleThreshold-1.0-0.5.png";
-            //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-CannyEdgeDetection-1.0.png";
-            //// //string outputFilePath = @"C:\Test recordings\Crows\Test\TestImage6\TestImage6-CannyEdgeDetection-Sobledetector.png";
-            //string outputFilePath = @"C:\Test recordings\Test\1-edgeDetection2.png";
-            var testMatrix = TowseyLib.ImageTools.GreyScaleImage2Matrix(testImage);
-            var testMatrixTranspose = TowseyLib.DataTools.MatrixTranspose(testMatrix);
-            
-           ////// // Statistical Analysis on the spectrogram, mainly playing with its intensity 
-          
-           ////// //var sizeOfNeighbourhood = 5;
-           ////// //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
-            int rows = testMatrixTranspose.GetLength(0);
-            int cols = testMatrixTranspose.GetLength(1);
-            //var magnitude = new double[rows, cols];
-            //var direction = new double[rows, cols];
-            //DataTools.normalise(testMatrixTranspose);
-            var edge = ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose);
-            ////ImageTools.SobelRidgeDetection(testMatrixTranspose);
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    if (edge.Item1[r, c] > 0)
-                    {
-                        if (edge.Item2[r, c] == 0)
-                        {
-                            testImage.SetPixel(r, c, Color.Crimson);
-                        }
-
-                        if (edge.Item2[r, c] == 1 * Math.PI / (double)4)
-                        {
-                            testImage.SetPixel(r, c, Color.Blue);
-                        }
-
-                        if (edge.Item2[r, c] == 2 * Math.PI / (double)4)
-                        {
-                            testImage.SetPixel(r, c, Color.Green);
-                        }
-
-                        if (edge.Item2[r, c] == 3 * Math.PI / (double)4)
-                        {
-                            testImage.SetPixel(r, c, Color.Cyan);
-                        }
-                    }
-                }
-            }
-                //var maximum = new double[rows, cols];
-                //var minimum = new double[rows, cols];
-                //// local maxima is pointsOfInterest
-                //var localMaxima = LocalMaxima.PickLocalMaxima(testMatrixTranspose, sizeOfNeighbourhood);
-
-                //foreach (var loM in localMaxima)
-                //{
-                //    if (loM.Intensity > 0.7)
-                //    {
-                //        testImage.SetPixel(loM.Point.X, loM.Point.Y, Color.Crimson);
-                //    }
-                //}
-
-                //for (int r = radiusOfNeighbourhood; r < rows - radiusOfNeighbourhood; r++)
-                //{
-                //    for (int c = radiusOfNeighbourhood; c < cols - radiusOfNeighbourhood; c++)
-                //    {
-
-                //        //var subMatrix = MatrixTools.Submatrix(testMatrixTranspose, r - radiusOfNeighbourhood, c - radiusOfNeighbourhood, r + radiusOfNeighbourhood, c + radiusOfNeighbourhood);
-                //        //var tempMatrix = StatisticalAnalysis.MatrixTransformation(subMatrix);
-                //        //var statistics = new StatDescriptive(tempMatrix);
-                //        //statistics.Analyze();
-                //        //maximum[r, c] = statistics.Result.Max;
-                //        //minimum[r, c] = statistics.Result.Min;
-                //        //DataTools.normalise(maximum);
-                //        //int row = subMatrix.GetLength(0);
-                //        //int col = subMatrix.GetLength(1);
-                //        //var magnitude = new double[row, col];
-                //        //var direction = new double[row, col];
-                //        //ImageAnalysisTools.CannyEdgeDetector(subMatrix, out magnitude, out direction); 
-
-                //        double localThreshold = 0.7;
-
-                //                if (maximum[r, c] > localThreshold)
-                //                {
-                //                    testImage.SetPixel(r, c, Color.Crimson);
-                //                }
-                //                //else
-                //                //{
-                //                //    if (magnitude[i, j] > 0.5 * localThreshold)
-                //                //    {
-                //                //        testImage.SetPixel(r, c, Color.Crimson);
-                //                //    }
-                //                //}
-
-                //    }
-                //}
-
-                //// Canny Edge Detection
-                //double[,] magnitude, direction;
-                //ImageAnalysisTools.CannyEdgeDetector(testMatrixTranspose, out magnitude, out direction);
-
-            //string outputPath = @"C:\Test recordings\Test\2";
-            //string wavFilePath = @"C:\Test recordings\Test\1.wav";
-            //var recording = new AudioRecording(wavFilePath);
-            //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-            //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, false));
-            //// imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult.Save(outputPath + ".png");
-                //List<PointOfInterest> poiList = new List<PointOfInterest>();
-                //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
-                //var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
-                //double herzScale = spectrogram.FBinWidth;
-                //double freqBinCount = spectrogram.Configuration.FreqBinCount;
-                //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-                //Plot scores = null; 
-                //double eventThreshold = 0.5; // dummy variable - not used               
-                //List<AcousticEvent> list = null;
-                //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, list, eventThreshold);
-                //Bitmap bmp = (Bitmap)image;
-
-                //double magnitudeThreshold = 1.0;
-                //int rows = testMatrixTranspose.GetLength(0);
-                //int cols = testMatrixTranspose.GetLength(1);
-                ////int rows = matrix.GetLength(0);
-                ////int cols = matrix.GetLength(1);
-                //for (int r = 0; r < rows; r++)
-                //{
-                //    for (int c = 0; c < cols; c++)
-                //    {
-                //        // strong edge
-                //        if (magnitude[r, c] >= magnitudeThreshold)
-                //        {
-                //            testImage.SetPixel(r, c, Color.Crimson);
-
-                //            //Point point = new Point(c, r);
-                //            ////var poi = new PointOfInterest(point);
-                //            //TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                //            //double herz = (freqBinCount - r - 1) * herzScale;
-                //            //var poi = new PointOfInterest(time, herz);
-                //            //poi.Point = point;
-                //            //poi.RidgeOrientation = direction[c, r];
-                //            //poi.OrientationCategory = (int)Math.Round((direction[c, r] * 8) / Math.PI);
-                //            //poi.RidgeMagnitude = magnitude[c, r];
-                //            //poi.Intensity = matrix[r, c];
-                //            //poi.TimeScale = timeScale;
-                //            //poi.HerzScale = herzScale;
-                //            ////poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
-                //            //poiList.Add(poi);
-                //            //testImage.Save(outputFilePath);
-                //        }
-                //        else
-                //        {
-                //            if (magnitude[r, c] > 0)
-                //            {
-                //                testImage.SetPixel(r, c, Color.Blue);
-                //            }
-                //        }
-                //    }
-                //}
-                //PointOfInterest.PruneSingletons(poiList, rows, cols);
-                //    //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                //    poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
-
-                //    foreach (PointOfInterest poi in poiList)
-                //    {
-                //        poi.DrawColor = Color.Crimson;
-                //        bool multiPixel = false;
-                //        //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                //        poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-
-                //        // draw local max
-                //        //poi.DrawColor = Color.Cyan;
-                //        //poi.DrawLocalMax(bmp, (int)freqBinCount);
-                //    }
-
-            testImage.Save(outputFilePath);
-
-
+            // } 
+ 
+            Dong.Play();
             // Batch Process
             //foreach (string path in Files)
             //{
@@ -309,7 +124,7 @@ namespace Dong.Felt
             //    imageResult.Save(path + ".png");
             //    Log.Info("Show the result of Final PointsOfInterest");
             //}
-           
+         
             var result = new AnalysisResult();
             return result;
         }
@@ -401,7 +216,7 @@ namespace Dong.Felt
             {
                 throw new Exception("odd number of arguments and values");
             }
-
+      
             // create a new "analysis"
             var felt = new FeltAnalysis(); 
         

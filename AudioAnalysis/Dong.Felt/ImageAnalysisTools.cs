@@ -109,67 +109,7 @@ namespace Dong.Felt
         /// Canny detector for edge detection in a noisy image 
         /// it involves five steps here, first, it needs to do the Gaussian convolution, 
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
-        
-        // Generate the sobelRidge mask automatically
-        public static double[,] GenerateSobelRidgeMaskX(int sizeOfMask)
-        {
-            // middle points must store positive values
-            var middleColumn = new int[sizeOfMask];
-            // both left and right column must store negative values
-            var leftColumn = new int[sizeOfMask];
-            var rightColumn = new int[sizeOfMask];
-            var centerPosition = sizeOfMask / 2;
-            // now it's a magic number because I actually want to make it as a maxima of an integer
-            var maximumValue = 1000;
-
-            var result = new double[sizeOfMask, sizeOfMask];
-
-
-            for (int n = 4; n < maximumValue; n++)
-            {
-                var sum = 0;
-                for (int j = 0; j <= centerPosition; j++)
-                {
-                   for (int i = centerPosition; i >= 1; i--)
-                   {                    
-                        middleColumn[i] = n;
-                        leftColumn[i] = - middleColumn[i] / 2;
-                        rightColumn[i] = leftColumn[i];
-
-                        middleColumn[i - j] = middleColumn[i] / 2;
-                        middleColumn[i + j] = middleColumn[i - j];
-                        
-                        // check whether it's an integer and greater than 1
-                        var temp1 = StatisticalAnalysis.checkIfInteger(middleColumn[i]);
-                        var temp2 = StatisticalAnalysis.checkIfInteger(leftColumn[i]);
-                        var temp3 = StatisticalAnalysis.checkIfInteger(rightColumn[i]);
-                        if (temp1 && Math.Abs(middleColumn[i]) >= 1 &&
-                            temp2 && Math.Abs(leftColumn[i]) >= 1 &&
-                            temp3 && Math.Abs(rightColumn[i]) >= 1)
-                        {
-                            result[i, i] = middleColumn[i];
-                            result[i, i - j] = leftColumn[i];
-                            result[i, i + j] = rightColumn[i];
-                            sum++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                     }
-                 }
-
-                if (sum == sizeOfMask)
-                {
-                    break;
-                }  
-            }
-
-            return result; 
-        }
-
-       
-
+    
         // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
@@ -587,7 +527,7 @@ namespace Dong.Felt
             return nonMaximaEdges;
         }
 
-        // Making the edge thin, search in a 3*3 neighbourhood
+        // Making the edge thin, search in a neighbourhood
         public static double[,] Thinning(double[,] magnitude, double[,] direction, int sizeOfNeighbour)
         {
             int MaximumXindex = magnitude.GetLength(0);
@@ -616,82 +556,6 @@ namespace Dong.Felt
                             }
                         }
                         result[row, col] = magnitude[row, col];
-                    //        if (magnitude[i + 1, j] > 0)
-                    //        {
-                    //            if (direction[i + 1, j] == direction[i, j])
-                    //            {
-                    //                magnitude[i, j] = 0.0;
-                    //                continue;
-                    //            }
-                    //        }
-                    //    // 2
-                    //    if (magnitude[i + 1, j - 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i + 1, j - 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-
-                    //    }
-                    //    // 3
-                    //    if (magnitude[i, j - 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i, j - 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-
-                    //    }
-                    //    // 4
-                    //    if (magnitude[i - 1, j - 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i - 1, j - 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-
-                    //    }
-                    //    // 5
-                    //    if (magnitude[i - 1, j] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i - 1, j])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-                    //    }
-                    //    // 6
-                    //    if (magnitude[i - 1, j + 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i - 1, j + 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-                    //    }
-                    //    // 7
-                    //    if (magnitude[i, j + 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i, j + 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-                    //    }
-                    //    // 8
-                    //    if (magnitude[i + 1, j + 1] > 0)
-                    //    {
-                    //        if (direction[i, j] == direction[i + 1, j + 1])
-                    //        {
-                    //            magnitude[i, j] = 0.0;
-                    //            continue;
-                    //        }
-                    //    }
-
-                    //    result[i, j] = magnitude[i, j];
                     }
                     else
                     {
@@ -748,20 +612,7 @@ namespace Dong.Felt
                     //            }
                     //        }
                     //    }
-                    //}
-                    
-                    // for edge detection
-                    //check whether its neibourhood has a strong intensity pixel, 
-                    //for (int i = - radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
-                    //{
-                    //    for (int j = - radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
-                    //    {
-                    //        if (matrix[row + i, col + j] > threshold)
-                    //        {                                   
-                    //            result[row, col] = magnitude[row, col];
-                    //        }
-                    //    }
-                    //}                           
+                    //}                 
                 }
             }
             //result = magnitude; 
@@ -868,47 +719,14 @@ namespace Dong.Felt
 
         public static Tuple<double[,], double[,]> CannyEdgeDetector(double[,] matrix)
         {
-            // (, out double[,] magnitude, out double[,] direction)
-            //var sizeOfRidge = 5;
-            //var halfLength = sizeOfRidge/2; 
-            // better be odd number 3, 5
-            //var kernelSizeOfGaussianBlur = 5;
-            //double SigmaOfGaussianBlur = 1.0;
-            //var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
-            //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(matrix, 5);
-            //var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
-            
-            //for (int row = halfLength; row < MaximumXIndex - halfLength; row++)
-            //{
-            //    for (int col = halfLength; col < MaximumYIndex - halfLength; col++)
-            //    {
-            //        var sumMatrix = MatrixTools.Submatrix(matrix, row - halfLength, col - halfLength, row + halfLength, col + halfLength);
-            //        var gradient = ImageAnalysisTools.Gradient(sumMatrix, SobelRidge5X, SobelRidge5Y); 
-            //    }
-            //}
-            //var gradient = ImageAnalysisTools.Gradient(matrix, SobelRidge5X, SobelRidge5Y);
-            ////var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
-            //////var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
-            ////var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
-            
-            //var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
-            ////var sobelEdge = ImageTools.SobelEdgeDetection(matrix);
-            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.15, 0.15);
-            //var thin = ImageAnalysisTools.Thinning(doubleThreshold, gradientDirection, 3);
-            //var filterpoi = ImageAnalysisTools.filterPointsOfInterest(thin, matrix, 7);
-            //var removeClose = ImageAnalysisTools.removeClosePoi(filterpoi, 3);
-            ////var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
-            //magnitude = removeClose; 
-            //direction = gradientDirection;
+            // For using Michael's sobel edge algorithm
 
-            // For Michael's sobel edge algorithm
-            
             var MaximumXIndex = matrix.GetLength(0);
             var MaximumYIndex = matrix.GetLength(1);
             var result1 = new double[MaximumXIndex, MaximumYIndex];
             var result2 = new double[MaximumXIndex, MaximumYIndex];
             var result = new Tuple<double[,], double[,]>(result1, result2);
-            var sizeOfMatrix = 5; 
+            var sizeOfMatrix = 5;
             var radiusOfMatrix = sizeOfMatrix / 2;
             var magnitudeThreshold = 0.15;
 
@@ -924,30 +742,37 @@ namespace Dong.Felt
                     if (isRidge && (magnitude > magnitudeThreshold))
                     {
                         result1[row, col] = 1.0;
-                        result2[row, col] = direction; 
+                        result2[row, col] = direction;
                     }
                 }
             }
+
+            //var sizeOfRidge = 5;
+            //var halfLength = sizeOfRidge/2; 
+            // better be odd number 3, 5
+            //var kernelSizeOfGaussianBlur = 5;
+            //double SigmaOfGaussianBlur = 1.0;
+            //var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
+            //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(matrix, 5);
+            //var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
+            
+            //var gradient = ImageAnalysisTools.Gradient(matrix, SobelRidge5X, SobelRidge5Y);
+            ////var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
+            //////var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
+            ////var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
+            
+            //var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
+            ////var sobelEdge = ImageTools.SobelEdgeDetection(matrix);
+            //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.15, 0.15);
+            //var thin = ImageAnalysisTools.Thinning(doubleThreshold, gradientDirection, 3);
+            //var filterpoi = ImageAnalysisTools.filterPointsOfInterest(thin, matrix, 7);
+            //var removeClose = ImageAnalysisTools.removeClosePoi(filterpoi, 3);
+            ////var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
+            //magnitude = removeClose; 
+            //direction = gradientDirection;
+            
             result = Tuple.Create(result1, result2);
             return result;   
         }
-
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold)
-        {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
-            if ((poi != null) && (poi.Count > 0))
-                image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            return image.GetImage();
-        } //DrawSonogram()
-
     }
 }
