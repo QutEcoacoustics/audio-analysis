@@ -198,7 +198,6 @@ namespace AnalysisPrograms
                         image.SetPixel(x, y, colourPalette[minindex]);
                     }
                 }
-
                 ImageTools.WriteBitmap2File(image, outputPath);
             
             } // experiments with false colour images - categorising/discretising the colours
