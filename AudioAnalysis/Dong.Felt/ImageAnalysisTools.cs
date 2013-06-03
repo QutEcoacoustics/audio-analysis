@@ -774,5 +774,122 @@ namespace Dong.Felt
             result = Tuple.Create(result1, result2);
             return result;   
         }
+
+
+        // cut off the overlapped lines in the same direction
+        public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 1; r < rows - 1; r++)
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (M[r, c] == null) continue;
+                    if (M[r, c].OrientationCategory == 0)  // horizontal line
+                    {
+                        if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
+                        {
+                            if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r - 1, c] = null;
+                        }
+                        if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 0))
+                        {
+                            if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r + 1, c] = null;
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 4) // vertical line
+                    {
+                        if ((M[r , c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
+                        {
+                            if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
+                        }
+                        if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 4))
+                        {
+                            if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c + 1] = null;
+                        }
+                    } // if (OrientationCategory)
+                    else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
+                    {                        
+                        if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 2))
+                            {
+                                if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r - 1, c] = null;
+                                }
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 2))
+                            {
+                                if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r + 1, c] = null;
+                                }
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
+                            {
+                                if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r, c - 1] = null;
+                                }
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 2)) //
+                            {
+                                if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r, c + 1] = null;
+                                }
+                            }
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 6)  // negative diagonal line
+                    {                       
+                        if ((M[r + 1, c + 1] != null) && (M[r + 1, c + 1].OrientationCategory == 6))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 6))
+                            {
+                                if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r - 1, c] = null;
+                                }
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 6))
+                            {
+                                if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r + 1, c] = null;
+                                }
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
+                            {
+                                if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r, c - 1] = null;
+                                }
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 6)) //
+                            {
+                                if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r, c + 1] = null;
+                                }
+                            }
+                        }
+                    }        
+                } // c
+            } // for r loop
+            return PointOfInterest.TransferPOIMatrix2List(M);
+        } // PruneAdjacentTracks()
+
+        // cut off the overlapped lines in the different direction in a 3 * 3 neighbourhood
+        public static void PruneNeighbourTracks()
+        {
+
+        }
+
+
     }
 }

@@ -14,6 +14,7 @@ namespace Dong.Felt
     using System.Drawing;
     using System.Linq;
     using AudioAnalysisTools;
+    using TowseyLib;
 
     /// <summary>
     /// The template tools.
@@ -77,28 +78,64 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<Point> CrowTemplate(int frameOffset)
+        public static List<PointOfInterest> UnknownTemplate(List<PointOfInterest> poiList, int rows,int cols)
         {
-            var template = new List<Point>()
-                               {
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                                   new Point(),
-                               };
-            return template;
+            // it looks like a hook 
+            // the anchorPoint's frequency range is (3000, 6000)           
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            int numberOfLeft = 0;
+            int numberOfRight = 0;
+            var miniFrequencyForAnchor = 84;  // around 3000hz
+            var maxiFrequencyForAnchor = 168;  // around 6000hz
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (M[r, c] == null) continue;
+
+                    numberOfLeft = 0;
+                    numberOfRight = 0;
+                    if (M[r, c].OrientationCategory == 6 && r < maxiFrequencyForAnchor && r > miniFrequencyForAnchor)  // anchor point
+                    {
+                        // search on the top left  
+                        // the search area is 3 pixels wide and 9 pixels height.                      
+                        for (int i = 0; i < 9; i++)
+                        {
+                            for (int j = 0; j < 4; j++)
+                            {
+                                if ((r - i) >= 0 && (c - j) >= 0 && (M[r - i, c - j] != null) && (M[r - i, c - j].OrientationCategory == 4))
+                                {
+                                    numberOfLeft++;
+                                }
+                            }
+                        }
+                        // search on the bottom right
+                        // the search area is 7 pixels wide, 7 pixels height
+                        for (int i = 0; i < 7; i++)
+                        {
+                            for (int j = 0; j < 7; j++)
+                            {
+                                if ((r + i) < cols && (c + j) > cols && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
+                                {
+                                    numberOfRight++;
+                                }
+                            }
+                        }
+                        if (numberOfLeft < 4 && numberOfRight < 4)
+                        {
+                            M[r, c] = null;
+                        } //end if               
+                    }
+                    else
+                    {
+                        M[r, c] = null;
+                    }
+                } // c
+                
+            } // for r loop
+
+            return PointOfInterest.TransferPOIMatrix2List(M);
+        // PruneAdjacentTracks()
         }
 
         /// <summary>
@@ -132,7 +169,7 @@ namespace Dong.Felt
             // find the nearest point the to centeroid
             for (int j = 0; j < numberOfVertex; j++)
             {
-                distance[j] = EuclideanDistance(tempCenteroid, points[j]);
+                distance[j] = Distance.EuclideanDistance(tempCenteroid, points[j]);
                 if (distance[j] < minimumDistance)
                 {
                     minimumDistance = distance[j];
@@ -193,24 +230,6 @@ namespace Dong.Felt
             return (int)(framePerSecond / SecondToMillionsecond);
         }
 
-        /// <summary>
-        /// The euclidean distance.
-        /// </summary>
-        /// <param name="p1">
-        /// The p 1.
-        /// </param>
-        /// <param name="p2">
-        /// The p 2.
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        public static double EuclideanDistance(Point p1, Point p2)
-        {
-            var deltaX = Math.Pow(p2.X - p1.X, 2);
-            var deltaY = Math.Pow(p2.Y - p1.Y, 2);
-
-            return Math.Sqrt(deltaX + deltaY);
-        }
+        
     }
 }
