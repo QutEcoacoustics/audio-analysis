@@ -46,8 +46,8 @@
                 // read one specific recording
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
-                string imageFileName = "test1.png";
-                string annotatedImageFileName = "annotatedTEST1.png";
+                string imageFileName = "test2.png";
+                string annotatedImageFileName = "annotatedTEST7.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -100,29 +100,35 @@
                            poi.HerzScale = herzScale;
                            poiList.Add(poi);
                        }
+
                     }
                 }
 
-                /// filter out some redundant poi
-                
+                /// filter out some redundant poi                
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
                 //PointOfInterest.PruneSingletons(poiList, rows, cols);
                 //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
+                poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+                //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
+                var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
 
                 // draw poi with paint
-                foreach (PointOfInterest poi in poiList)
+                foreach (PointOfInterest poi in hitPoiList)
                 {
                     poi.DrawColor = Color.Crimson;
                     //bool multiPixel = false;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    if (poi != null && poi.OrientationCategory == 6)
+                    {
+                        bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
+                    }
 
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
                     //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
-
+                
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
