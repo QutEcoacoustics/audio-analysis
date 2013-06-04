@@ -132,11 +132,11 @@ namespace AnalysisPrograms
 
                 string inputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\DM420036.colSpectrum.png";
                 string outputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\DM420036.discreteColSpectrum.png";
-                
+
                 const int R = 0;
                 const int G = 1;
                 const int B = 2;
-                double[,] discreteIndices = new double[12,3]; // Ht, ACI and Ampl values in 0,1
+                double[,] discreteIndices = new double[12, 3]; // Ht, ACI and Ampl values in 0,1
                 discreteIndices[0, R] = 0.00; discreteIndices[0, G] = 0.00; discreteIndices[0, B] = 0.00; // white
                 discreteIndices[1, R] = 0.20; discreteIndices[1, G] = 0.00; discreteIndices[1, B] = 0.00; // pale blue
                 discreteIndices[2, R] = 0.60; discreteIndices[2, G] = 0.20; discreteIndices[2, B] = 0.10; // medium blue
@@ -158,7 +158,7 @@ namespace AnalysisPrograms
                 {
                     for (int c = 0; c < discreteColourValues.GetLength(1); c++)
                     {
-                        discreteColourValues[r,c] = (byte)Math.Floor((1 - discreteIndices[r, c]) * 255);
+                        discreteColourValues[r, c] = (byte)Math.Floor((1 - discreteIndices[r, c]) * 255);
                     }
                 }
 
@@ -199,7 +199,7 @@ namespace AnalysisPrograms
                     }
                 }
                 ImageTools.WriteBitmap2File(image, outputPath);
-            
+
             } // experiments with false colour images - categorising/discretising the colours
 
             Log.WriteLine("# Finished!");

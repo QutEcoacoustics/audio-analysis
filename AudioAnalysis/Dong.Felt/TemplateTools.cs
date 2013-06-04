@@ -83,53 +83,108 @@ namespace Dong.Felt
             // it looks like a hook 
             // the anchorPoint's frequency range is (3000, 6000)           
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-            int numberOfLeft = 0;
-            int numberOfRight = 0;
-            var miniFrequencyForAnchor = 84;  // around 3000hz
-            var maxiFrequencyForAnchor = 168;  // around 6000hz
+            int numberOfLeft;
+            int numberOfRight;
+            //var miniFrequencyForAnchor = 89;  // 84 around 3000hz  257 - 84 = 173
+            //var maxiFrequencyForAnchor = 173;  //168 around 6000hz  257 - 168 = 89
+            //var miniIndexX = 10000;
+            //var miniIndexY = 10000;
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
                     if (M[r, c] == null) continue;
-
-                    numberOfLeft = 0;
-                    numberOfRight = 0;
-                    if (M[r, c].OrientationCategory == 6 && r < maxiFrequencyForAnchor && r > miniFrequencyForAnchor)  // anchor point
+                    if (M[r, c].OrientationCategory == 4)
                     {
-                        // search on the top left  
-                        // the search area is 3 pixels wide and 9 pixels height.                      
-                        for (int i = 0; i < 9; i++)
+                        numberOfLeft = 0;
+                        numberOfRight = 0;
+                        var neighbourhoodSize = 11;
+                        // Draw a box on the detected events
+                        // From the beginning, trying to find verticle lines
+                        // search in a small neighbourhood
+                        for (int i = 0; i <= neighbourhoodSize; i++)
                         {
-                            for (int j = 0; j < 4; j++)
+                            for (int j = 0; j <= neighbourhoodSize / 2; j++)
+                           {
+                               if ((r + i) < rows && (c + j) < cols)
+                               {
+                                   if ((M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 4))                                  
+                                   { 
+                                       numberOfLeft++; 
+                                   }
+                               }
+                           }
+                        }
+                        // search on the right
+                        var neighbourhoolSize2 = 9;
+                        for (int i = neighbourhoodSize; i <= (neighbourhoolSize2 + neighbourhoodSize) / 2; i++)
+                        {
+                            for (int j = neighbourhoodSize / 2; j <= neighbourhoolSize2 + neighbourhoodSize; j++)
                             {
-                                if ((r - i) >= 0 && (c - j) >= 0 && (M[r - i, c - j] != null) && (M[r - i, c - j].OrientationCategory == 4))
+                                if ((r + i) < rows && (c + j) < cols)
                                 {
-                                    numberOfLeft++;
+                                    if ((M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
+                                    {
+                                        numberOfRight++;
+                                    }
                                 }
                             }
                         }
-                        // search on the bottom right
-                        // the search area is 7 pixels wide, 7 pixels height
-                        for (int i = 0; i < 7; i++)
-                        {
-                            for (int j = 0; j < 7; j++)
-                            {
-                                if ((r + i) < cols && (c + j) > cols && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
-                                {
-                                    numberOfRight++;
-                                }
-                            }
-                        }
-                        if (numberOfLeft < 4 && numberOfRight < 4)
+                        if (numberOfLeft < 4 || numberOfRight < 4)
                         {
                             M[r, c] = null;
-                        } //end if               
+                        }
+                        else
+                        {
+                        }
                     }
                     else
                     {
                         M[r, c] = null;
                     }
+                        // find red lines
+                        //for (int i = 0; i < 3; i++)
+                        //{
+                        //   for (int j = 0; j < 10; j++)
+                        //   {
+                        //       if ((r + i) >= 0 && (c + j) >= 0 && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
+                        //       {
+                        //           numberOfRight++;
+                        //       }
+                        //   }
+                        //}
+
+
+                    //if (M[r, c].OrientationCategory == 6 && r < maxiFrequencyForAnchor && r > miniFrequencyForAnchor)  // anchor point
+                    //{
+                    //    // search on the top left  
+                    //    // the search area is 4 pixels wide and 8 pixels height.                      
+                    //    for (int i = 0; i < 9; i++)
+                    //    {
+                    //        for (int j = 0; j < 5; j++)
+                    //        {
+                    //            if ((r - i) >= 0 && (c - j) >= 0 && (M[r - i, c - j] != null) && (M[r - i, c - j].OrientationCategory == 4)) // verticle lines
+                    //            {
+                    //                numberOfLeft++;
+                    //            }                               
+                    //        }
+                    //    }
+                    //    //// search on the bottom right
+                    //    //for (int i = 0; i < neighbourhoodSize; i++)
+                    //    //{
+                    //    //    for (int j = 0; j < neighbourhoodSize; j++)
+                    //    //    {
+                    //    //        if ((r + i) < cols && (c + j) < rows && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
+                    //    //        {
+                    //    //            numberOfRight++;
+                    //    //        }
+                    //    //    }
+                    //    //}
+                    //    if (numberOfLeft < 2)  // || numberOfRight < 4
+                    //    {
+                    //        M[r, c] = null;
+                    //    } //end if               
+                    
                 } // c
                 
             } // for r loop

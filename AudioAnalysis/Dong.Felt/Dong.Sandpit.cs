@@ -47,7 +47,7 @@
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test2.png";
-                string annotatedImageFileName = "annotatedTEST7.png";
+                string annotatedImageFileName = "annotatedTEST5.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -118,12 +118,11 @@
                     poi.DrawColor = Color.Crimson;
                     //bool multiPixel = false;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                    if (poi != null && poi.OrientationCategory == 6)
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);                    
+                    if (poi != null)
                     {
                         bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
                     }
-
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
                     //poi.DrawLocalMax(bmp, (int)freqBinCount);

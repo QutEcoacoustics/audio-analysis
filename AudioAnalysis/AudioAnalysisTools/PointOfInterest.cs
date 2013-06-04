@@ -378,7 +378,7 @@ namespace AudioAnalysisTools
             return m;
         }
 
-        public static List<PointOfInterest> TransferPOIMatrix2List(PointOfInterest[,]m)
+        public static List<PointOfInterest> TransferPOIMatrix2List(PointOfInterest[,] m)
         {
             List<PointOfInterest> list = new List<PointOfInterest>();
             int rows = m.GetLength(0);
