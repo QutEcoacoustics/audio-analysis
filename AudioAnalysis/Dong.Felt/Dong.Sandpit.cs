@@ -113,6 +113,7 @@
                 var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
 
                 // draw poi with paint
+
                 foreach (PointOfInterest poi in hitPoiList)
                 {
                     poi.DrawColor = Color.Crimson;
@@ -121,7 +122,23 @@
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount);                    
                     if (poi != null)
                     {
-                        bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
+                            {
+                                if (i == 0 && j == 0)
+                                {
+                                    bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
+                                }
+                                else
+                                {
+                                    if ((poi.Point.X + i < cols) && (poi.Point.Y + j < rows) && (poi.Point.X + i > 0) && (poi.Point.Y + j > 0))
+                                    {
+                                        bmp.SetPixel(poi.Point.X + i, poi.Point.Y + j, Color.Blue);
+                                    }
+                                }
+                            }
+                        }                       
                     }
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
