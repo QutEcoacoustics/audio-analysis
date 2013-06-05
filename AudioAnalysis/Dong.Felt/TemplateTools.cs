@@ -89,6 +89,8 @@ namespace Dong.Felt
             //var maxiFrequencyForAnchor = 173;  //168 around 6000hz  257 - 168 = 89
             //var miniIndexX = 10000;
             //var miniIndexY = 10000;
+            var thresholdForNumberOfLeft = 4;
+            var thresholdForNumberOfRight = 4;
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -98,7 +100,7 @@ namespace Dong.Felt
                     {
                         numberOfLeft = 0;
                         numberOfRight = 0;
-                        var neighbourhoodSize = 11;
+                        var neighbourhoodSize = 9;
                         // Draw a box on the detected events
                         // From the beginning, trying to find verticle lines
                         // search in a small neighbourhood
@@ -130,61 +132,15 @@ namespace Dong.Felt
                                 }
                             }
                         }
-                        if (numberOfLeft < 4 || numberOfRight < 4)
+                        if (numberOfLeft < thresholdForNumberOfLeft || numberOfRight < thresholdForNumberOfRight)
                         {
                             M[r, c] = null;
-                        }
-                        else
-                        {
                         }
                     }
                     else
                     {
                         M[r, c] = null;
                     }
-                        // find red lines
-                        //for (int i = 0; i < 3; i++)
-                        //{
-                        //   for (int j = 0; j < 10; j++)
-                        //   {
-                        //       if ((r + i) >= 0 && (c + j) >= 0 && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
-                        //       {
-                        //           numberOfRight++;
-                        //       }
-                        //   }
-                        //}
-
-
-                    //if (M[r, c].OrientationCategory == 6 && r < maxiFrequencyForAnchor && r > miniFrequencyForAnchor)  // anchor point
-                    //{
-                    //    // search on the top left  
-                    //    // the search area is 4 pixels wide and 8 pixels height.                      
-                    //    for (int i = 0; i < 9; i++)
-                    //    {
-                    //        for (int j = 0; j < 5; j++)
-                    //        {
-                    //            if ((r - i) >= 0 && (c - j) >= 0 && (M[r - i, c - j] != null) && (M[r - i, c - j].OrientationCategory == 4)) // verticle lines
-                    //            {
-                    //                numberOfLeft++;
-                    //            }                               
-                    //        }
-                    //    }
-                    //    //// search on the bottom right
-                    //    //for (int i = 0; i < neighbourhoodSize; i++)
-                    //    //{
-                    //    //    for (int j = 0; j < neighbourhoodSize; j++)
-                    //    //    {
-                    //    //        if ((r + i) < cols && (c + j) < rows && (M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
-                    //    //        {
-                    //    //            numberOfRight++;
-                    //    //        }
-                    //    //    }
-                    //    //}
-                    //    if (numberOfLeft < 2)  // || numberOfRight < 4
-                    //    {
-                    //        M[r, c] = null;
-                    //    } //end if               
-                    
                 } // c
                 
             } // for r loop
