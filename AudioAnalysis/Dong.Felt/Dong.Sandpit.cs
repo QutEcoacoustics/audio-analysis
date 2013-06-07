@@ -46,8 +46,8 @@
                 // read one specific recording
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
-                string imageFileName = "test2.png";
-                string annotatedImageFileName = "annotatedTEST5.png";
+                string imageFileName = "test.png";
+                string annotatedImageFileName = "annotatedTEST3.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -59,7 +59,7 @@
                 List<AcousticEvent> list = null;
                 Image image = DrawSonogram(spectrogram, scores, list, eventThreshold);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                image.Save(imagePath, ImageFormat.Png);
+                //image.Save(imagePath, ImageFormat.Png);
 
                 Bitmap bmp = (Bitmap)image;
 
@@ -110,36 +110,51 @@
                 //PointOfInterest.PruneDoublets(poiList, rows, cols);
                 poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
                 //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
-                var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
+                var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 11);
+
+
+                //var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
 
                 // draw poi with paint
 
-                foreach (PointOfInterest poi in hitPoiList)
+                //foreach (PointOfInterest poi in filterPoiList)
+                foreach (FeatureVector fv in featureVector)
                 {
-                    poi.DrawColor = Color.Crimson;
+                    //poi.DrawColor = Color.Crimson;
                     //bool multiPixel = false;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);                    
-                    if (poi != null)
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
+                    var percentageFeatureVector = new double[4];
+                    percentageFeatureVector[0] = 0.5;
+                    percentageFeatureVector[1] = 0.1;
+                    percentageFeatureVector[2] = 0.4;
+                    percentageFeatureVector[3] = 0.0;
+                    var similarityMatching = TemplateTools.CalculateSimilarityScore(TemplateTools.HoneyeaterTemplate(percentageFeatureVector), fv);
+                    if (similarityMatching.SmilarityScore > 0)
                     {
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            for (int j = -1; j <= 1; j++)
-                            {
-                                if (i == 0 && j == 0)
-                                {
-                                    bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
-                                }
-                                else
-                                {
-                                    if ((poi.Point.X + i < cols) && (poi.Point.Y + j < rows) && (poi.Point.X + i > 0) && (poi.Point.Y + j > 0))
-                                    {
-                                        bmp.SetPixel(poi.Point.X + i, poi.Point.Y + j, Color.Blue);
-                                    }
-                                }
-                            }
-                        }                       
+                        bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);
                     }
+                    //if (poi != null)
+                    //{
+                    //    for (int i = -1; i <= 1; i++)
+                    //    {
+                    //        for (int j = -1; j <= 1; j++)
+                    //        {
+                    //            if (i == 0 && j == 0)
+                    //            {
+                    //                bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
+                    //            }
+                    //            else
+                    //            {
+                    //                if ((poi.Point.X + i < cols) && (poi.Point.Y + j < rows) && (poi.Point.X + i > 0) && (poi.Point.Y + j > 0))
+                    //                {
+                    //                    bmp.SetPixel(poi.Point.X + i, poi.Point.Y + j, Color.Blue);
+                    //                }
+                    //            }
+                    //        }
+                    //    }                       
+                    //}
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
                     //poi.DrawLocalMax(bmp, (int)freqBinCount);
