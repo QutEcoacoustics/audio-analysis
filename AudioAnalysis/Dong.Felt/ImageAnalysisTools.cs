@@ -885,9 +885,40 @@ namespace Dong.Felt
         } // PruneAdjacentTracks()
 
         // cut off the overlapped lines in the different direction in a 3 * 3 neighbourhood
-        public static void PruneNeighbourTracks()
+        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList,  int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
-
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (M[r, c] == null) continue;
+                    else                   
+                    {
+                        var numberOfpoi = 0; 
+                        // search in a neighbourhood
+                        for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                        {
+                            for (int j = -radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
+                            {
+                                if (r + i >= 0 && c + j >= 0 && r + i < rows && c + j < cols)
+                                {
+                                    if (M[r + i, c + j] != null)
+                                    {
+                                        numberOfpoi++; 
+                                    }
+                                }
+                            }
+                        }
+                        if (numberOfpoi < thresholdForLeastPoint)
+                        {
+                            M[r, c] = null;
+                        }
+                    }                   
+                }
+            }
+            return PointOfInterest.TransferPOIMatrix2List(M);
         }
 
 

@@ -74,10 +74,10 @@ namespace AnalysisPrograms
                         if (isRidge && (magnitude > magnitudeThreshold)) 
                         {
                             Point point = new Point(c, r);
-                            //var poi = new PointOfInterest(point);
+                            var poi = new PointOfInterest(point);
                             TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                             double herz = (freqBinCount-r -1) * herzScale;
-                            var poi = new PointOfInterest(time, herz);
+                            //var poi = new PointOfInterest(time, herz);
                             poi.Point = point;
                             poi.RidgeOrientation = direction;
                             poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);

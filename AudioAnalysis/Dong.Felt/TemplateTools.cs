@@ -27,6 +27,47 @@ namespace Dong.Felt
         public static readonly int CentroidFrequencyOfLewinsRailTemplate = 91;
         public static readonly int CentroidFrequencyOfCrowTemplate = 80;
 
+
+        ///<summary>
+        ///general template for honey eater
+        /// </summary>
+        public static FeatureVector HoneyeaterTemplate(double[] feacutreVector)
+        {
+            var result = new FeatureVector(feacutreVector);
+            return result;
+        }
+
+        public static FeatureVector CalculateSimilarityScore(FeatureVector instance, FeatureVector template)
+        {
+            var count = instance.PercentageVector.Count();
+            var result = new FeatureVector(template.PercentageVector);
+            
+                if (Math.Abs(instance.PercentageVector[0]- template.Vertical) < 0.1
+                    && Math.Abs(instance.PercentageVector[1] - template.Horizontal) < 0.1
+                    && Math.Abs(instance.PercentageVector[2] - template.PositiveDiagonal) < 0.1
+                    && Math.Abs(instance.PercentageVector[3] - template.NegativeDiagonal) < 0.1)
+                {
+                    result.SmilarityScore = 0.9;
+                    result.point = new Point(template.point.X, template.point.Y);
+                }
+                //if (Math.Abs(instance.PercentageVector[1] - template.Horizontal) < 0.1)
+                //{
+                //    result.SmilarityScore = 0.9;
+                //    result.point = new Point(template.point.X, template.point.Y);
+                //}
+                //if (Math.Abs(instance.PercentageVector[2] - template.PositiveDiagonal) < 0.1)
+                //{
+                //    result.SmilarityScore = 0.9;
+                //    result.point = new Point(template.point.X, template.point.Y);
+                //}
+                //if (Math.Abs(instance.PercentageVector[3] - template.NegativeDiagonal) < 0.1)
+                //{
+                //    result.SmilarityScore = 0.9;
+                //    result.point = new Point(template.point.X, template.point.Y);
+                //}
+           
+            return result; 
+        }
         /// <summary>
         /// The Lewins' Rail template.
         /// </summary>
@@ -70,7 +111,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// The crow template.
+        /// The one type of honey eater template.
         /// </summary>
         /// <param name="frameOffset">
         /// The frame offset.
@@ -79,9 +120,7 @@ namespace Dong.Felt
         /// The <see cref="List"/>.
         /// </returns>
         public static List<PointOfInterest> UnknownTemplate(List<PointOfInterest> poiList, int rows,int cols)
-        {
-            // it looks like a hook 
-            // the anchorPoint's frequency range is (3000, 6000)           
+        {        
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
             int numberOfLeft;
             int numberOfRight;
@@ -89,8 +128,8 @@ namespace Dong.Felt
             //var maxiFrequencyForAnchor = 173;  //168 around 6000hz  257 - 168 = 89
             //var miniIndexX = 10000;
             //var miniIndexY = 10000;
-            var thresholdForNumberOfLeft = 4;
-            var thresholdForNumberOfRight = 4;
+            var thresholdForNumberOfVerticle = 4;
+            var thresholdForNumberOfHorizontal = 4;
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -101,7 +140,6 @@ namespace Dong.Felt
                         numberOfLeft = 0;
                         numberOfRight = 0;
                         var neighbourhoodSize = 9;
-                        // Draw a box on the detected events
                         // From the beginning, trying to find verticle lines
                         // search in a small neighbourhood
                         for (int i = 0; i <= neighbourhoodSize; i++)
@@ -132,7 +170,7 @@ namespace Dong.Felt
                                 }
                             }
                         }
-                        if (numberOfLeft < thresholdForNumberOfLeft || numberOfRight < thresholdForNumberOfRight)
+                        if (numberOfLeft < thresholdForNumberOfVerticle || numberOfRight < thresholdForNumberOfHorizontal)
                         {
                             M[r, c] = null;
                         }
@@ -149,6 +187,7 @@ namespace Dong.Felt
         // PruneAdjacentTracks()
         }
 
+        
         /// <summary>
         /// The get centroid.
         /// </summary>
