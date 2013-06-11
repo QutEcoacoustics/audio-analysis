@@ -531,8 +531,9 @@ namespace AnalysisPrograms
             //#V#####################################################################################################################################################
 
             // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            int reductionFactor = 3; // for reducing lenth of the vector
             double binaryThreshold = 0.07; // for deriving binary spectrogram
-            ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold);
+            ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold, reductionFactor);
             indices.clusterCount = clusterInfo.clusterCount;
             indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
             indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
@@ -814,7 +815,7 @@ namespace AnalysisPrograms
         /// <param name="excludeBins"></param>
         /// <param name="binaryThreshold"></param>
         /// <returns></returns>
-        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, double binaryThreshold)
+        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, double binaryThreshold, int reductionFactor)
         {
             //binaryThreshold = 0.15;
             spectrogram = ImageTools.WienerFilter(spectrogram, 3);
@@ -828,8 +829,8 @@ namespace AnalysisPrograms
             for (int r = 0; r < spectroLength; r++)
             {
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
-                spectrum = DataTools.VectorReduceLength(spectrum, 3);  // reduce length of the vector by factor of N
-                spectrum = DataTools.filterMovingAverage(spectrum, 3); // additional smoothing to remove noise
+                spectrum = DataTools.VectorReduceLength(spectrum, reductionFactor); // reduce length of the vector by factor of N
+                spectrum = DataTools.filterMovingAverage(spectrum, 3);              // additional smoothing to remove noise
                 //convert to binary
                 for (int i = 0; i < spectrum.Length; i++)
                 {
