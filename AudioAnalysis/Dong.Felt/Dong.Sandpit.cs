@@ -47,7 +47,7 @@
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "annotatedTEST3.png";
+                string annotatedImageFileName = "annotatedTEST5.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -111,8 +111,9 @@
                 poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
                 //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
-                var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 11);
-
+                var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 9);
+                //var featureVector = FeatureVector.GenerateBitOfFeatureVectors(filterPoiList, rows, cols, 9);
+                //var mask = FeatureVector.GenerateMask(5);
 
                 //var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
 
@@ -126,11 +127,11 @@
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
                     var percentageFeatureVector = new double[4];
-                    percentageFeatureVector[0] = 0.5;
-                    percentageFeatureVector[1] = 0.1;
-                    percentageFeatureVector[2] = 0.4;
-                    percentageFeatureVector[3] = 0.0;
-                    var similarityMatching = TemplateTools.CalculateSimilarityScore(TemplateTools.HoneyeaterTemplate(percentageFeatureVector), fv);
+                    percentageFeatureVector[0] = 0.4;// 0.5;
+                    percentageFeatureVector[1] = 0.3;// 0.4;
+                    percentageFeatureVector[2] = 0.1; //0.0;
+                    percentageFeatureVector[3] = 0.2;//0.1
+                    var similarityMatching = TemplateTools.CalculateSimilarityScore(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
                     if (similarityMatching.SmilarityScore > 0)
                     {
                         bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);

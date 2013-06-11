@@ -34,39 +34,25 @@ namespace Dong.Felt
         public static FeatureVector HoneyeaterTemplate(double[] feacutreVector)
         {
             var result = new FeatureVector(feacutreVector);
+            result.PercentageBitVector = feacutreVector;
             return result;
         }
 
         public static FeatureVector CalculateSimilarityScore(FeatureVector instance, FeatureVector template)
         {
-            var count = instance.PercentageVector.Count();
-            var result = new FeatureVector(template.PercentageVector);
-            
-                if (Math.Abs(instance.PercentageVector[0]- template.Vertical) < 0.1
-                    && Math.Abs(instance.PercentageVector[1] - template.Horizontal) < 0.1
-                    && Math.Abs(instance.PercentageVector[2] - template.PositiveDiagonal) < 0.1
-                    && Math.Abs(instance.PercentageVector[3] - template.NegativeDiagonal) < 0.1)
+            var result = new FeatureVector(new Point(instance.point.X, instance.point.Y)) {PercentageBitVector = instance.PercentageBitVector};
+
+            if (instance.PercentageBitVector != null && template.PercentageBitVector != null)
+            {
+                if (Math.Abs(instance.PercentageBitVector[0] - template.PercentageBitVector[0]) < 0.5
+                    && Math.Abs(instance.PercentageBitVector[1] - template.PercentageBitVector[1]) < 0.5
+                    && Math.Abs(instance.PercentageBitVector[2] - template.PercentageBitVector[2]) < 0.5
+                    && Math.Abs(instance.PercentageBitVector[3] - template.PercentageBitVector[3]) < 0.5)
                 {
                     result.SmilarityScore = 0.9;
-                    result.point = new Point(template.point.X, template.point.Y);
                 }
-                //if (Math.Abs(instance.PercentageVector[1] - template.Horizontal) < 0.1)
-                //{
-                //    result.SmilarityScore = 0.9;
-                //    result.point = new Point(template.point.X, template.point.Y);
-                //}
-                //if (Math.Abs(instance.PercentageVector[2] - template.PositiveDiagonal) < 0.1)
-                //{
-                //    result.SmilarityScore = 0.9;
-                //    result.point = new Point(template.point.X, template.point.Y);
-                //}
-                //if (Math.Abs(instance.PercentageVector[3] - template.NegativeDiagonal) < 0.1)
-                //{
-                //    result.SmilarityScore = 0.9;
-                //    result.point = new Point(template.point.X, template.point.Y);
-                //}
-           
-            return result; 
+            }
+            return result;
         }
         /// <summary>
         /// The Lewins' Rail template.
