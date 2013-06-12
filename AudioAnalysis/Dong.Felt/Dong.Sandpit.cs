@@ -47,7 +47,7 @@
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "annotatedTEST5.png";
+                string annotatedImageFileName = "annotatedTEST7.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -57,7 +57,8 @@
                 Plot scores = null;
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;
-                Image image = DrawSonogram(spectrogram, scores, list, eventThreshold);
+                var poiList1 = new List<PointOfInterest>();
+                Image image = DrawSonogram(spectrogram, scores, list, eventThreshold, poiList1);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
                 //image.Save(imagePath, ImageFormat.Png);
 
@@ -111,12 +112,10 @@
                 poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
                 //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
-                var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 9);
-                //var featureVector = FeatureVector.GenerateBitOfFeatureVectors(filterPoiList, rows, cols, 9);
-                //var mask = FeatureVector.GenerateMask(5);
-
+                //var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 9);               
+                var featureVector = FeatureVector.GenerateBitOfFeatureVectors(filterPoiList, rows, cols, 11);
                 //var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
-
+                var finalPoiList = new List<PointOfInterest>();
                 // draw poi with paint
 
                 //foreach (PointOfInterest poi in filterPoiList)
@@ -126,41 +125,33 @@
                     //bool multiPixel = false;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
-                    var percentageFeatureVector = new double[4];
-                    percentageFeatureVector[0] = 0.4;// 0.5;
-                    percentageFeatureVector[1] = 0.3;// 0.4;
-                    percentageFeatureVector[2] = 0.1; //0.0;
-                    percentageFeatureVector[3] = 0.2;//0.1
-                    var similarityMatching = TemplateTools.CalculateSimilarityScore(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
-                    if (similarityMatching.SmilarityScore > 0)
+                    // percentageFeatureVector 
+                    //var percentageFeatureVector = new double[4];
+                    //percentageFeatureVector[0] = 0.4;// 0.5;
+                    //percentageFeatureVector[1] = 0.4;// 0.4;
+                    //percentageFeatureVector[2] = 0.0; //0.0;
+                    //percentageFeatureVector[3] = 0.2;//0.1;
+
+                    // bit feature Vector
+                    var verticalBit = new int[11] {3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    var horizontalBit = new int[11] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
+                    //var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
+                    var similarityScore = TemplateTools.CalculateSimilarityScoreForBitPresentation(fv, TemplateTools.HoneyeaterTemplate(verticalBit, horizontalBit));
+                    if (similarityScore > 0)
                     {
+                        //finalPoiList.Add(new PointOfInterest(new Point(fv.point.Y, fv.point.X)));
                         bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);
                     }
-                    //if (poi != null)
-                    //{
-                    //    for (int i = -1; i <= 1; i++)
-                    //    {
-                    //        for (int j = -1; j <= 1; j++)
-                    //        {
-                    //            if (i == 0 && j == 0)
-                    //            {
-                    //                bmp.SetPixel(poi.Point.X, poi.Point.Y, poi.DrawColor);
-                    //            }
-                    //            else
-                    //            {
-                    //                if ((poi.Point.X + i < cols) && (poi.Point.Y + j < rows) && (poi.Point.X + i > 0) && (poi.Point.Y + j > 0))
-                    //                {
-                    //                    bmp.SetPixel(poi.Point.X + i, poi.Point.Y + j, Color.Blue);
-                    //                }
-                    //            }
-                    //        }
-                    //    }                       
-                    //}
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
                     //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
-                
+                //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, 5);
+                //foreach (var fiv in finalPoiList)
+                //{
+                //    bmp.SetPixel(fiv.Point.X, fiv.Point.Y, Color.Crimson);
+                //}             
+                //image = DrawSonogram(spectrogram, scores, list, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
@@ -257,7 +248,7 @@
             System.Environment.Exit(666);
         } // Dev()
 
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold)
+        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -268,6 +259,8 @@
             //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //Add this line below
+            image.AddPoints(poiList);
             if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             if ((poi != null) && (poi.Count > 0))
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

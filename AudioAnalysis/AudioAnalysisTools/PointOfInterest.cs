@@ -158,7 +158,12 @@ namespace AudioAnalysisTools
                 graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 4, 4);
             }
         }
-
+        /// <summary>
+        /// Draw a point on the pointOfInterest
+        /// </summary>
+        /// <param name="graphics"></param>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="height"></param>
         public void DrawPoint(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
         {
             foreach (PointOfInterest poi in pointsOfInterest)
@@ -166,6 +171,21 @@ namespace AudioAnalysisTools
                 var brush = new SolidBrush(Color.Crimson);
                 graphics.FillRectangle(brush, poi.Point.X, height - poi.Point.Y - 1, 1, 1);
                 //DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1, 1)
+            }
+        }
+        /// <summary>
+        /// Draw a box from a point at top left with radius width and radius length
+        /// </summary>
+        /// <param name="graphics"></param>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="radius"></param>
+        public void DrawBox(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest,int radius)
+        {
+            foreach (PointOfInterest poi in pointsOfInterest)
+            {
+                var pen = new Pen(Color.Green);
+                //graphics.DrawRectangle(pen, poi.Point.X, height - poi.Point.Y - 1, radius, radius);
+                graphics.DrawRectangle(pen, poi.Point.X, poi.Point.Y, radius, radius);
             }
         }
 
