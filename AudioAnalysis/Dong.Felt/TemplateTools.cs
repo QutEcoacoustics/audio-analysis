@@ -38,21 +38,55 @@ namespace Dong.Felt
             return result;
         }
 
-        public static FeatureVector CalculateSimilarityScore(FeatureVector instance, FeatureVector template)
+        ///<summary>
+        ///general template for honey eater at bitFeatureVector
+        /// </summary>
+        public static FeatureVector HoneyeaterTemplate(int[] verticalBit, int[] horizontalBit)
         {
-            var result = new FeatureVector(new Point(instance.point.X, instance.point.Y)) {PercentageBitVector = instance.PercentageBitVector};
-
-            if (instance.PercentageBitVector != null && template.PercentageBitVector != null)
-            {
-                if (Math.Abs(instance.PercentageBitVector[0] - template.PercentageBitVector[0]) < 0.5
-                    && Math.Abs(instance.PercentageBitVector[1] - template.PercentageBitVector[1]) < 0.5
-                    && Math.Abs(instance.PercentageBitVector[2] - template.PercentageBitVector[2]) < 0.5
-                    && Math.Abs(instance.PercentageBitVector[3] - template.PercentageBitVector[3]) < 0.5)
-                {
-                    result.SmilarityScore = 0.9;
-                }
-            }
+            var result = new FeatureVector(new Point(0,0));
+            result.VerticalBitVector = verticalBit;
+            result.HorizontalBitVector = horizontalBit;
             return result;
+        }
+        //public static FeatureVector CalculateSimilarityScore(FeatureVector instance, FeatureVector template)
+        public static double CalculateSimilarityScoreForPercentagePresention(FeatureVector instance, FeatureVector template)
+        {
+            //var result = new FeatureVector(new Point(instance.point.X, instance.point.Y)) {PercentageBitVector = instance.PercentageBitVector};
+            double similarityScore = 0.0;
+            if (Math.Abs(instance.Vertical - template.PercentageBitVector[0]) < 0.1
+                    && Math.Abs(instance.Horizontal - template.PercentageBitVector[1]) < 0.1
+                    && Math.Abs(instance.PositiveDiagonal - template.PercentageBitVector[2]) < 0.1
+                    && Math.Abs(instance.NegativeDiagonal - template.PercentageBitVector[3]) <= 0.2)
+            {
+                 similarityScore = 0.9;
+            }
+          
+            return similarityScore;
+        }
+
+        public static double CalculateSimilarityScoreForBitPresentation(FeatureVector instance, FeatureVector template)
+        {
+            var count = instance.HorizontalBitVector.Count();
+
+            double similarityScore = 0.0;
+            var numberOfhorizontal = 0;
+            var numberOfvertical = 0;
+            for (int i = 0; i < count; i++)
+            {
+                if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 7)
+                {
+                    numberOfhorizontal++;                    
+                }               
+            }
+            if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 3)
+            {
+                numberOfvertical++;
+            }
+            if (numberOfhorizontal > 9 && numberOfvertical > 9)
+            {
+                similarityScore = 1;
+            }
+            return similarityScore;
         }
         /// <summary>
         /// The Lewins' Rail template.

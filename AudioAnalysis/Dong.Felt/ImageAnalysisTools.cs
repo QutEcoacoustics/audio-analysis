@@ -109,7 +109,8 @@ namespace Dong.Felt
         /// Canny detector for edge detection in a noisy image 
         /// it involves five steps here, first, it needs to do the Gaussian convolution, 
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
-    
+
+        
         // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {

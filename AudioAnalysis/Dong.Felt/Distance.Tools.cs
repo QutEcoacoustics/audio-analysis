@@ -5,9 +5,40 @@
     using System.Linq;
     using System.Text;
     using System.Drawing;
+    using System.ComponentModel;
 
-    class Distance
+    public enum Direction
     {
+        None = 0,
+
+        /// <summary>
+        /// This is North. Also known as vertical.
+        /// </summary>
+        [Description("This is North. Also known as vertical.")]
+        North = 1,
+
+        /// <summary>
+        /// This is North East. Also known as forward slash or diagonal.
+        /// </summary>
+        [Description("This is North East. Also known as forward slash or diagonal.")]
+        NorthEast = 2,
+
+        /// <summary>
+        /// This is East. Also known as horizontal.
+        /// </summary>
+        [Description("This is East. Also known as horizontal.")]
+        East = 4,
+
+        /// <summary>
+        /// This is SouthEast. Also known as backward slash or diagonal.
+        /// </summary>
+        [Description("This is SouthEast. Also known as backward slash or diagonal.")]
+        SouthEast = 8,
+    }
+
+    public class Distance
+    {
+
         /// <summary>
         /// The euclidean distance.
         /// </summary>
