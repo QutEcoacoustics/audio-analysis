@@ -182,7 +182,7 @@ out double[] r)
                  if (doNoiseremoval)
                  {
                      double Q, oneSD;
-                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                     amplitudeArray = SNR.SubtractBackgroundNoiseFromWaveform(amplitudeArray, out Q, out oneSD);
                  }
                  //double noiseThreshold = 0.005;
                  //for (int i = 1; i < amplitudeArray.Length - 1; i++)
@@ -283,7 +283,7 @@ out double[] r)
              var events = new List<Dictionary<string, double>>();
              //DataTools.writeBarGraph(amplitudeArray);
 
-             var segmentStartEnds = SNR.SegmentIntensityArray(smoothedArray, noiseThreshold, minSegmentLength);
+             var segmentStartEnds = SNR.SegmentArrayOfIntensityvalues(smoothedArray, noiseThreshold, minSegmentLength);
 
              //loop over the segments only
              foreach (int[] segment in segmentStartEnds)
@@ -400,7 +400,7 @@ out double[] r)
              if (doNoiseRemoval)
              {
                  double Q, oneSD;
-                 dBArray = SNR.NoiseSubtractMode(dBArray, out Q, out oneSD);
+                 dBArray = SNR.SubtractBackgroundNoiseFromWaveform(dBArray, out Q, out oneSD);
              }
 
              bool[] peaks = DataTools.GetPeaks(dBArray);

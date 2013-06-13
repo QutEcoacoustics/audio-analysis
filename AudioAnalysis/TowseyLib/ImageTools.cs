@@ -1066,7 +1066,7 @@ namespace TowseyLib
             int count = M.GetLength(0) * M.GetLength(1);
             double binWidth;
             double min; double max;
-            int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
+            int[] powerHisto = Histogram.Histo(M, binCount, out binWidth, out min, out max);
             powerHisto[binCount - 1] = 0;   //just in case it is the max ????????????????????????????????????? !!!!!!!!!!!!!!!
             double[] smooth = DataTools.filterMovingAverage(powerHisto, 3);
             int maxindex;

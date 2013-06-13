@@ -63,7 +63,7 @@ namespace AudioAnalysisTools
             else
             {
                 analyser = null;
-                Image image = Audio2SonogramImage(fiAudio, config.GetDictionary());
+                Image image = SonogramTools.Audio2SonogramImage(fiAudio, config.GetDictionary());
                 if (image != null)
                 {
                     if (fiImage.Exists) fiImage.Delete();
@@ -82,7 +82,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            BaseSonogram sonogram = Audio2Sonogram(fiAudio, configDict);
+            BaseSonogram sonogram = SonogramTools.Audio2Sonogram(fiAudio, configDict);
             var mti = Sonogram2MultiTrackImage(sonogram, configDict);
             var image = mti.GetImage();
             return image;
@@ -149,11 +149,11 @@ namespace AudioAnalysisTools
 
         public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            int frameLength = 512;
+            int frameLength = 512; // default value
             if (configDict.ContainsKey(Keys.FRAME_LENGTH))
                 frameLength = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, configDict);
 
-            double frameOverlap = 0.0;
+            double frameOverlap = 0.0; // default value
             if (configDict.ContainsKey(Keys.FRAME_OVERLAP))
                 frameOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, configDict);
 

@@ -363,7 +363,7 @@ namespace AnalysisPrograms
 
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
-            var bgNoiseResults = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(signalEnvelope));
+            var bgNoiseResults = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope));
             var dBarray = SNR.TruncateNegativeValues2Zero(bgNoiseResults.DBFrames);
 
 
@@ -1040,7 +1040,7 @@ namespace AnalysisPrograms
             DataTools.getMaxIndex(clusters, out maxIndex);
             int binCount = clusters[maxIndex] + 1;
             double binWidth;
-            int[] histo = DataTools.Histo(clusters, binCount, out binWidth, out min, out max);
+            int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
             LoggedConsole.WriteLine("Sum = " + histo.Sum());
             DataTools.writeArray(histo);
             //DataTools.writeBarGraph(histo);

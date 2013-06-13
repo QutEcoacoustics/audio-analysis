@@ -371,7 +371,7 @@ namespace AnalysisPrograms
                 if (doNoiseremoval)
                 {
                     double Q, oneSD;
-                    amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                    amplitudeArray = SNR.SubtractBackgroundNoiseFromWaveform(amplitudeArray, out Q, out oneSD);
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
