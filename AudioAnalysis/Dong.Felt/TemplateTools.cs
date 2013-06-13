@@ -100,7 +100,7 @@ namespace Dong.Felt
                 }
             }
             
-            if (numberOfhorizontal > 9 && numberOfvertical > 9)
+            if (numberOfhorizontal > 10 && numberOfvertical > 9)
             {
                 similarityScore = 1;
             }

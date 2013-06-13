@@ -42,12 +42,12 @@
                 //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
                 //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result";
                 //string imageFileName = "CannyEdgeDetector1.png";
-                
+
                 // read one specific recording
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "annotatedTEST8-similarBitCount-9-9-v-7-h-5-DrawBox.png";
+                string annotatedImageFileName = "annotatedTEST8-similarBitCount-10-9-v-7-h-5-DrawBox.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -74,6 +74,20 @@
                 int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
                 int halfLength = ridgeLength / 2;
 
+                /* just an example
+                var convert = poiList
+                    .OrderBy(poi => poi.Point.X)
+                    .ThenBy(poi => poi.Point.Y)
+                    .Aggregate<PointOfInterest, double[,]>(
+                        new double[poiList.Max(poi => poi.Point.X), poiList.Max(poi => poi.Point.Y)], 
+                        (double[,] aggregation, PointOfInterest current) =>
+                        {
+                            aggregation[current.Point.X, current.Point.Y] = current.Intensity;
+                            return aggregation;
+                        }
+                );
+                */
+
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
                 for (int r = halfLength; r < rows - halfLength; r++)
@@ -82,25 +96,25 @@
                     {
 
                         var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                        double magnitude; 
+                        double magnitude;
                         double direction;
-                        bool isRidge = false; 
+                        bool isRidge = false;
                         TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                       if ( magnitude > magnitudeThreshold)
-                       {
-                           Point point = new Point(c, r);
-                           TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                           double herz = (freqBinCount - r - 1) * herzScale;
-                           var poi = new PointOfInterest(time, herz);
-                           poi.Point = point;
-                           poi.RidgeOrientation = direction;
-                           poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                           poi.RidgeMagnitude = magnitude;
-                           poi.Intensity = matrix[r, c];
-                           poi.TimeScale = timeScale;
-                           poi.HerzScale = herzScale;
-                           poiList.Add(poi);
-                       }
+                        if (magnitude > magnitudeThreshold)
+                        {
+                            Point point = new Point(c, r);
+                            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                            double herz = (freqBinCount - r - 1) * herzScale;
+                            var poi = new PointOfInterest(time, herz);
+                            poi.Point = point;
+                            poi.RidgeOrientation = direction;
+                            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                            poi.RidgeMagnitude = magnitude;
+                            poi.Intensity = matrix[r, c];
+                            poi.TimeScale = timeScale;
+                            poi.HerzScale = herzScale;
+                            poiList.Add(poi);
+                        }
 
                     }
                 }
@@ -133,8 +147,8 @@
                     //percentageFeatureVector[3] = 0.2;//0.1;
 
                     // bit feature Vector
-                    var verticalBit = new int[11] {6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2};
-                    var horizontalBit = new int[11] {0, 0, 0, 0, 0, 0, 3, 3, 2, 5, 5};
+                    var verticalBit = new int[11] { 6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2 };
+                    var horizontalBit = new int[11] { 0, 0, 0, 0, 0, 0, 3, 3, 2, 3, 5 };
                     //var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
                     var similarityScore = TemplateTools.CalculateSimilarityScoreForBitPresentation(fv, TemplateTools.HoneyeaterTemplate(verticalBit, horizontalBit));
                     if (similarityScore > 0)

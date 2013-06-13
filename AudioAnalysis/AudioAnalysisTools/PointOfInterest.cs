@@ -98,6 +98,7 @@ namespace AudioAnalysisTools
         {
             get
             {
+                //return (this.drawColor.HasValue ? this.drawColor.Value : DefaultBorderColor);
                 return this.drawColor ?? DefaultBorderColor;
             }
 
