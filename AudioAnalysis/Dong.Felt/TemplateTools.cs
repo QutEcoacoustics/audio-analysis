@@ -76,12 +76,13 @@ namespace Dong.Felt
                 if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 7)
                 {
                     numberOfhorizontal++;                    
-                }               
+                }
+                if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 3)
+                {
+                    numberOfvertical++;
+                }
             }
-            if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 3)
-            {
-                numberOfvertical++;
-            }
+            
             if (numberOfhorizontal > 9 && numberOfvertical > 9)
             {
                 similarityScore = 1;
