@@ -228,6 +228,7 @@
     <Compile Include="DSP_Frames.cs" />
     <Compile Include="FFT.cs" />
     <Compile Include="Gratings.cs" />
+    <Compile Include="Histogram.cs" />
     <Compile Include="ImageTools.cs" />
     <Compile Include="LLR.cs" />
     <Compile Include="Log.cs" />

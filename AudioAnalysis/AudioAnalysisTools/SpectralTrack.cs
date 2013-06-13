@@ -380,8 +380,8 @@ namespace AudioAnalysisTools
             {
                 lengths[i] = tracks[i].Length;
             }
-            DataTools.writeConciseHistogram(lengths);
-            int[] histo = DataTools.Histo_FixedWidth(lengths, 1, 0, 20);
+            Histogram.writeConciseHistogram(lengths);
+            int[] histo = Histogram.Histo_FixedWidth(lengths, 1, 0, 20);
             DataTools.writeBarGraph(histo);
         }
 

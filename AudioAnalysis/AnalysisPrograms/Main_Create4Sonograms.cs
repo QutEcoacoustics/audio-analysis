@@ -81,10 +81,10 @@ namespace AnalysisPrograms
             mnr = SNR.SetDynamicRange(output.Item1, 0.0, dynamicRange);
 
             //3: Spectral tracks sonogram
-            byte[,] binary = SNR.IdentifySpectralRidges(mnr);
-            binary = SNR.ThresholdBinarySpectrum(binary, mnr, 10);
-            binary = SNR.RemoveOrphanOnesInBinaryMatrix(binary);
-            //binary = SNR.PickOutLines(binary); //syntactic approach
+            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr);
+            binary = MatrixTools.ThresholdBinarySpectrum(binary, mnr, 10);
+            binary = MatrixTools.RemoveOrphanOnesInBinaryMatrix(binary);
+            //binary = MatrixTools.PickOutLines(binary); //syntactic approach
 
             sonogram.SetBinarySpectrum(binary);
             //sonogram.Data = SNR.SpectralRidges2Intensity(binary, originalSg);
