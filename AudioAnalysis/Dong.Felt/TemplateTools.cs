@@ -73,13 +73,30 @@ namespace Dong.Felt
             var numberOfvertical = 0;
             for (int i = 0; i < count; i++)
             {
-                if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 7)
+                if (template.HorizontalBitVector[i] == 0) // they must match with each other in an exact way
                 {
-                    numberOfhorizontal++;                    
+                    if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 1)
+                        numberOfhorizontal++;
                 }
-                if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 3)
+                else  // it can have some varieations in such a case
                 {
-                    numberOfvertical++;
+                    if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 4)
+                    {
+                        numberOfhorizontal++;
+                    }
+                }
+
+                if (template.VerticalBitVector[i] == 0) // they must match with each other in an exact way
+                {
+                    if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 1)
+                        numberOfvertical++;
+                }
+                else  // it can have some varieations in such a case
+                {
+                    if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 4)
+                    {
+                        numberOfvertical++;
+                    }
                 }
             }
             
@@ -87,6 +104,18 @@ namespace Dong.Felt
             {
                 similarityScore = 1;
             }
+            //if (numberOfhorizontal > 10 && numberOfvertical > 9)
+            //{
+            //    similarityScore = 0.9;
+            //}
+            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
+            //{
+            //    similarityScore = 0.9;
+            //}
+            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
+            //{
+            //    similarityScore = 0.9;
+            //}
             return similarityScore;
         }
         /// <summary>

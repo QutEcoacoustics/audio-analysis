@@ -8,6 +8,7 @@ namespace Dong.Felt
     using System.Text;
     using AudioAnalysisTools;
     using System.Drawing;
+    using TowseyLib;
     public class FeatureVector
     {
         #region Public Properties
@@ -56,7 +57,113 @@ namespace Dong.Felt
 
         #region Public Method
 
-        // one general representation 
+        //public static List<FeatureVector> GenerateBitOfFeatureVectors(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood)
+        //{
+        //    var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+        //    var result = new List<FeatureVector>();
+
+        //    var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+        //    for (int r = 0; r < rows; r++)
+        //    {
+        //        for (int c = 0; c < cols; c++)
+        //        {
+                    
+        //                // search in a neighbourhood
+        //                var verticalDirection = new int[sizeOfNeighbourhood];
+        //                var horizontalDirection = new int[sizeOfNeighbourhood];
+        //                //var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+        //                //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+        //                for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex < radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+        //                {
+        //                    for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex < radiusOfNeighbourhood; colNeighbourhoodIndex++)
+        //                    {
+        //                        if (r + rowNeighbourhoodIndex < rows && c + colNeighbourhoodIndex < cols)
+        //                        {
+        //                            if ((M[r + rowNeighbourhoodIndex, c + colNeighbourhoodIndex] != null) && M[r + rowNeighbourhoodIndex, c + colNeighbourhoodIndex].OrientationCategory == 0)
+        //                            {
+        //                                horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
+        //                            }
+        //                        }
+        //                    }
+        //                }
+
+        //                // For a vertical direction, we need to check each column
+        //                for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex < radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+        //                {
+        //                    for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex < radiusOfNeighbourhood; colNeighbourhoodIndex++)
+        //                    {
+        //                        if (r + rowNeighbourhoodIndex < rows && c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood < cols)
+        //                        {
+        //                            if ((M[r + rowNeighbourhoodIndex, c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood] != null) && M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood].OrientationCategory == 4)
+        //                            {
+        //                                verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
+        //                            }
+        //                        }
+        //                    }
+        //                }
+
+        //                //// For a positiveDiagonal direction, we need to check each diagonal, it's usually has sizeOfneighbourhood + sizeOfNeighbourhood -1
+        //                //    for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
+        //                //    {
+        //                //        for (int k = 0; k <= colNeighbourhoodIndex; k++)
+        //                //        {
+        //                //            // scan along the first row, so the i = 0 
+        //                //            if ((r + 0 - k >= 0) && (c + colNeighbourhoodIndex - k >= 0) && (c + colNeighbourhoodIndex - k < cols))
+        //                //            {
+        //                //                if ((M[r + 0 - k, c + colNeighbourhoodIndex - k] != null) && M[r + 0 - k, c + colNeighbourhoodIndex - k].OrientationCategory == 2)
+        //                //                {
+        //                //                    negativeDiagonalDirection[sizeOfNeighbourhood - colNeighbourhoodIndex - 1]++;
+        //                //                }
+        //                //            }
+
+        //                //        }
+        //                //   }
+        //                //   for (int rowNeighbourhoodIndex = 1; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
+        //                //   {
+        //                //        for (int k = 0; k <= sizeOfNeighbourhood - rowNeighbourhoodIndex - 1; k++)
+        //                //        {
+        //                //            if ((r + rowNeighbourhoodIndex - k >= 0) && (r + rowNeighbourhoodIndex - k < rows) && (c + sizeOfNeighbourhood - 1 - k >= 0) && (c + sizeOfNeighbourhood - 1 - k < cols))
+        //                //            // scan along the last col, so the column here is sizeOfNeighbourhood - 1
+        //                //            if ((M[r + rowNeighbourhoodIndex - k, c + sizeOfNeighbourhood - 1 - k] != null) && M[r + rowNeighbourhoodIndex - k, c + sizeOfNeighbourhood - 1 - k].OrientationCategory == 2)
+        //                //            {
+        //                //                 positiveDiagonalDirection[sizeOfNeighbourhood + rowNeighbourhoodIndex - 1]++; 
+        //                //            }
+        //                //        }
+        //                //    }
+
+        //                //    // For a negativeDiagonal direction, we need to check each diagonal, it's usually has sizeOfneighbourhood + sizeOfNeighbourhood -1
+        //                //    for (int colNeighbourhoodIndex = sizeOfNeighbourhood - 1; colNeighbourhoodIndex >= 0; colNeighbourhoodIndex--)
+        //                //    {
+        //                //        for (int k = 0; k <= sizeOfNeighbourhood - colNeighbourhoodIndex - 1; k++)
+        //                //        {
+        //                //            if ((r + 0 + k < rows) && (c + colNeighbourhoodIndex + k < cols))
+        //                //            // scan along the first row, but in a versus direction
+        //                //            if ((M[r + 0 + k, c + colNeighbourhoodIndex + k] != null) && M[r + 0 + k, c + colNeighbourhoodIndex + k].OrientationCategory == 6)
+        //                //            {
+        //                //                 negativeDiagonalDirection[sizeOfNeighbourhood - colNeighbourhoodIndex - 1]++;
+        //                //            }
+        //                //        }
+        //                //   }
+        //                //   for (int rowNeighbourhoodIndex = 1; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
+        //                //   {
+        //                //       for (int k = 0; k <= sizeOfNeighbourhood - rowNeighbourhoodIndex - 1; k++)
+        //                //       {
+        //                //            if ((r + rowNeighbourhoodIndex + k < rows) && (c + 0 + k < cols))
+        //                //            // scan along the first column
+        //                //            if ((M[r + rowNeighbourhoodIndex + k, c + 0 + k] != null) && M[r + rowNeighbourhoodIndex + k, c + 0 + k].OrientationCategory == 6)
+        //                //            {
+        //                //                 negativeDiagonalDirection[sizeOfNeighbourhood + rowNeighbourhoodIndex - 1]++; 
+        //                //            }
+        //                //       }
+        //                //   }       
+        //                result.Add(new FeatureVector(new Point(r, c)) { HorizontalBitVector = horizontalDirection, VerticalBitVector = verticalDirection });
+
+        //        }
+        //    }
+        //    return result;
+        //}
+
+         //one general representation 
         public static List<FeatureVector> GenerateBitOfFeatureVectors(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood)
         {           
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
@@ -78,7 +185,6 @@ namespace Dong.Felt
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         //var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
                         //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
-
                         for (int rowNeighbourhoodIndex = 0; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
@@ -98,9 +204,9 @@ namespace Dong.Felt
                         {
                             for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                if (r + colNeighbourhoodIndex < rows && c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood < cols)
+                                if (r + colNeighbourhoodIndex < rows && c + rowNeighbourhoodIndex < cols)
                                 {
-                                    if ((M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood] != null) && M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex + colNeighbourhoodIndex * sizeOfNeighbourhood].OrientationCategory == 4)
+                                    if ((M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex] != null) && M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex].OrientationCategory == 4)
                                     {
                                         verticalDirection[rowNeighbourhoodIndex]++;
                                     }
@@ -162,9 +268,8 @@ namespace Dong.Felt
                         //            }
                         //       }
                         //   }       
-                        result.Add(new FeatureVector(new Point(r, c)) { HorizontalBitVector = horizontalDirection, VerticalBitVector = verticalDirection}); 
-                    }
-                    
+                        result.Add(new FeatureVector(new Point(r, c)) { HorizontalBitVector = horizontalDirection, VerticalBitVector = verticalDirection });
+                    }  
                 }
             }
             return result;
