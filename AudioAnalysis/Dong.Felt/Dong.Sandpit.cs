@@ -47,7 +47,7 @@
                 string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "annotatedTEST7.png";
+                string annotatedImageFileName = "annotatedTEST8-similarBitCount-9-9-v-7-h-5-DrawBox.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -133,25 +133,25 @@
                     //percentageFeatureVector[3] = 0.2;//0.1;
 
                     // bit feature Vector
-                    var verticalBit = new int[11] {3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                    var horizontalBit = new int[11] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
+                    var verticalBit = new int[11] {6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2};
+                    var horizontalBit = new int[11] {0, 0, 0, 0, 0, 0, 3, 3, 2, 5, 5};
                     //var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
                     var similarityScore = TemplateTools.CalculateSimilarityScoreForBitPresentation(fv, TemplateTools.HoneyeaterTemplate(verticalBit, horizontalBit));
                     if (similarityScore > 0)
                     {
-                        //finalPoiList.Add(new PointOfInterest(new Point(fv.point.Y, fv.point.X)));
-                        bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);
+                        finalPoiList.Add(new PointOfInterest(new Point(fv.point.Y, fv.point.X)));
+                        //bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);
                     }
                     // draw local max
                     //poi.DrawColor = Color.Cyan;
                     //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
-                //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, 5);
+                finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, 5);
                 //foreach (var fiv in finalPoiList)
                 //{
                 //    bmp.SetPixel(fiv.Point.X, fiv.Point.Y, Color.Crimson);
                 //}             
-                //image = DrawSonogram(spectrogram, scores, list, eventThreshold, finalPoiList);
+                image = DrawSonogram(spectrogram, scores, list, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
