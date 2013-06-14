@@ -1,6 +1,4 @@
-﻿
-
-namespace Dong.Felt
+﻿namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
@@ -9,51 +7,75 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using System.Drawing;
     using TowseyLib;
+
+    /// <summary>
+    /// A class for generating featureVector for decribing the acoustic events(bird calls).
+    /// </summary>   
     public class FeatureVector
     {
         #region Public Properties
-        
-        public int[] HorizontalBitVector { get; set; }
-
-        public int[] VerticalBitVector { get; set; }
-
-        public int[] PositiveBitVector { get; set; }
-
-        public int[] NegativeBitVector { get; set; }
         /// <summary>
-        /// Gets or sets the point
+        /// Gets or sets the HorizontalByteVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>
-        public Point point { get; set; }
+        public int[] HorizontalByteVector { get; set; }
+
         /// <summary>
-        /// Gets or sets the percentageBitVector
+        /// Gets or sets the VerticalByteVector, part of composite edge featurevector, representing the vertital direction of edge(one kind of feature).
         /// </summary>
-        public double[] PercentageBitVector { get; set; }
+        public int[] VerticalByteVector { get; set; }
 
-        public double Vertical { get; set; }
+        /// <summary>
+        /// Gets or sets the PositiveDiagonalByteVector, part of composite edge featurevector, representing the NorthEast direction of edge(one kind of feature).
+        /// </summary>
+        public int[] PositiveDiagonalByteVector { get; set; }
 
-        public double Horizontal { get; set; }
+        /// <summary>
+        /// Gets or sets the NegativeDiagonalByteVector, part of composite edge feature vector, representing the NorthWest direction of edge(one kind of feature).
+        /// </summary>
+        public int[] NegativeDiagonalByteVector { get; set; }
 
-        public double PositiveDiagonal { get; set; }
+        /// <summary>
+        /// Gets or sets the point of a particular pointsOfInterest
+        /// </summary>
+        public Point Point { get; set; }
 
-        public double NegativeDiagonal { get; set; }
+        /// <summary>
+        /// Gets or sets the percentageByteVector, another type of edge feature vector, representing the percentage of each direction of edge account for. 
+        /// Especially, it [0], horizontal, [1], vertical, [2], positiveDiagonal, [3], negativeDiagonal.
+        /// </summary>
+        public double[] PercentageByteVector { get; set; }
+ 
         /// <summary>
         /// Gets or sets the similarityScore
         /// </summary>
         public double SmilarityScore { get; set; }
 
-        // constructor 
-        public FeatureVector(double[] percentageVector)
+        /// <summary>
+        /// Gets or sets the NeighbourhoodSize, it can determine the search area for generating feature vectors.
+        /// </summary>
+        public int NeighbourhoodSize { get; set; }
+
+        #region constructor
+        /// <summary>
+        /// A constructor takes in percentageByteVector
+        /// </summary>
+        /// <param name="percentageVector"></param>
+        public FeatureVector(double[] percentageByteVector)
         {
-            PercentageBitVector = percentageVector;
+            PercentageByteVector = percentageByteVector;
         }
 
-        // constructor for four direction of percentage bit vector
-        public FeatureVector(Point pointofInterest)
+        /// <summary>
+        /// A constructor takes in point
+        /// </summary>
+        /// <param name="pointofInterest"></param>
+        public FeatureVector(Point point)
         {
-            point = pointofInterest; 
+            Point = point; 
         }
+        #endregion constructor
 
-        #endregion
+        #endregion public property
 
         #region Public Method
 
@@ -164,34 +186,49 @@ namespace Dong.Felt
         //}
 
          //one general representation 
-        public static List<FeatureVector> GenerateBitOfFeatureVectors(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood)
+        /// <summary>
+        /// The method of DirectionByteFeatureVectors can be used to generate directionByteFeatureVectors, which means it includes sub-feature vector 
+        /// for each direction. And the size of each sub-featureVector is determined by sizeOfNeighbourhood.
+        /// </summary>
+        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
+        /// <param name="rowsCount"> the column count of original spectrogram. </param> 
+        /// <param name="colsCount"> the row count of original spectrogram. </param>
+        /// <param name="sizeOfNeighbourhood"> 
+        /// the size of Neighbourhood will determine the size of search area.</param>
+        /// <returns>
+        /// It will return a list of featureVector objects whose DirectionByteFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// </returns>
+        public static List<FeatureVector> DirectionByteFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {           
-            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             var result = new List<FeatureVector>();
-
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-            for (int r = 0; r < rows; r++)
+            
+            // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            for (int row = 0; row < rowsCount; row++)
             {
-                for (int c = 0; c < cols; c++)
+                for (int c = 0; c < colsCount; c++)
                 {
-                    if (M[r, c] == null)
+                    if (Matrix[row, c] == null)
                     {
                         continue;
                     }
                     else
                     {
-                        // search in a neighbourhood
+                        // search from the first pointOfInterest which has edge value, and then search its right and down with the size of NeighbourhoodSize
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         //var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
-                        //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+                        //var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1]; 
+                        
+                        // For the calculation of horizontal direction byte, we need to check each row 
                         for (int rowNeighbourhoodIndex = 0; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                if (r + rowNeighbourhoodIndex < rows && c + colNeighbourhoodIndex < cols)
+                                // check boundary of index 
+                                if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, c + colNeighbourhoodIndex, rowsCount, colsCount))
                                 {
-                                    if ((M[r + rowNeighbourhoodIndex, c + colNeighbourhoodIndex] != null) && M[r + rowNeighbourhoodIndex, c + colNeighbourhoodIndex].OrientationCategory == 0)
+                                    if ((Matrix[row + rowNeighbourhoodIndex, c + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, c + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
                                     {
                                         horizontalDirection[rowNeighbourhoodIndex]++;
                                     }
@@ -199,14 +236,14 @@ namespace Dong.Felt
                             }
                         }
 
-                        // For a vertical direction, we need to check each column
+                        // For the calculation of vertical direction byte, we need to check each column
                         for (int rowNeighbourhoodIndex = 0; rowNeighbourhoodIndex < sizeOfNeighbourhood; rowNeighbourhoodIndex++)
                         {
                             for (int colNeighbourhoodIndex = 0; colNeighbourhoodIndex < sizeOfNeighbourhood; colNeighbourhoodIndex++)
                             {
-                                if (r + colNeighbourhoodIndex < rows && c + rowNeighbourhoodIndex < cols)
+                                if (StatisticalAnalysis.checkBoundary(row + colNeighbourhoodIndex, c + rowNeighbourhoodIndex, rowsCount, colsCount))
                                 {
-                                    if ((M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex] != null) && M[r + colNeighbourhoodIndex, c + rowNeighbourhoodIndex].OrientationCategory == 4)
+                                    if ((Matrix[row + colNeighbourhoodIndex, c + rowNeighbourhoodIndex] != null) && Matrix[row + colNeighbourhoodIndex, c + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
                                     {
                                         verticalDirection[rowNeighbourhoodIndex]++;
                                     }
@@ -268,29 +305,40 @@ namespace Dong.Felt
                         //            }
                         //       }
                         //   }       
-                        result.Add(new FeatureVector(new Point(r, c)) { HorizontalBitVector = horizontalDirection, VerticalBitVector = verticalDirection });
+                        result.Add(new FeatureVector(new Point(row, c)) { HorizontalByteVector = horizontalDirection, VerticalByteVector = verticalDirection });
                     }  
                 }
             }
             return result;
         }
 
-        public static List<FeatureVector> GeneratePercentageOfFeatureVectors(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood)
+        /// <summary>
+        /// This method is to generate percentageByteFeatureVectors in where each of byte represents hte percentage of each direction accounts for.
+        /// it will be done in a fixed neighbourhood. 
+        /// </summary>
+        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
+        /// <param name="rowsCount"> the column count of original spectrogram.</param>
+        /// <param name="colsCount"> the row count of original spectrogram.</param>
+        /// <param name="sizeOfNeighbourhood"> the size of Neighbourhood will determine the size of search area.</param>
+        /// <returns> 
+        /// It will return a list of featureVector objects whose PercentageByteFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// </returns>
+        public static List<FeatureVector> PercentageByteFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {                                     
             var result = new List<FeatureVector>();
-            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-            //var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;  
-            for (int r = 56; r < rows; r++)
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+
+            for (int row = 0; row < rowsCount; row++)
             {
-                for (int c = 39; c < cols; c++)
+                for (int col = 0; col < colsCount; col++)
                 {
-                    if (Matrix[r, c] == null)
+                    if (Matrix[row, col] == null)
                     {
                         continue;
                     }
                     else
                     {
-                        // search in a neighbourhood
+                        // search from the first pointOfInterest which has edge value, and then search its right and down with the size of NeighbourhoodSize
                         int numberOfverticalDirection = 0;
                         int numberOfhorizontalDirection = 0;
                         int numberOfpositiveDiagonalDirection = 0;
@@ -299,31 +347,34 @@ namespace Dong.Felt
                         var percentageOfpositiveDiagonal = 0.0; var percentageOfnegativeDiagonal = 0.0;
                         var numberOfDirections = 4;
                         var percentageVector = new double[numberOfDirections];
-                        //for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
-                        for (int i = 0; i < sizeOfNeighbourhood; i++)
+                       
+                        for (int rowIndex = 0; rowIndex < sizeOfNeighbourhood; rowIndex++)
                         {
-                            //for (int j = -radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
-                            for (int j = 0; j < sizeOfNeighbourhood; j++)
+                            for (int colIndex = 0; colIndex < sizeOfNeighbourhood; colIndex++)
                             {
-                                if (r + i >= 0 && c + j >= 0 && r + i < rows && c + j < cols)
+                                if (StatisticalAnalysis.checkBoundary(row + rowIndex, col + colIndex, rowsCount, colsCount))
                                 {
-                                    if (Matrix[r + i, c + j] != null)
-                                    {
-                                        if (Matrix[r + i, c + j].OrientationCategory == 4)
-                                        {
-                                            numberOfverticalDirection++;
-                                        }
-                                        if (Matrix[r + i, c + j].OrientationCategory == 0)
+                                    if (Matrix[row + rowIndex, col + colIndex] != null)
+                                    {                            
+                                        if (Matrix[row + rowIndex, col + colIndex].OrientationCategory == (int)Direction.East)
                                         {
                                             numberOfhorizontalDirection++;
+                                            continue;
                                         }
-                                        if (Matrix[r + i, c + j].OrientationCategory == 2)
+                                        if (Matrix[row + rowIndex, col + colIndex].OrientationCategory == (int)Direction.North)
+                                        {
+                                            numberOfverticalDirection++;
+                                            continue;
+                                        }
+                                        if (Matrix[row + rowIndex, col + colIndex].OrientationCategory == (int)Direction.NorthEast)
                                         {
                                             numberOfpositiveDiagonalDirection++;
+                                            continue;
                                         }
-                                        if (Matrix[r + i, c + j].OrientationCategory == 6)
+                                        if (Matrix[row + rowIndex, col + colIndex].OrientationCategory == (int)Direction.NorthWest)
                                         {
                                             numberOfnegativeDiagonalDirection++;
+                                            continue;
                                         }
                                     }
                                 }
@@ -335,60 +386,61 @@ namespace Dong.Felt
                         percentageOfpositiveDiagonal = numberOfpositiveDiagonalDirection / sum;
                         percentageOfnegativeDiagonal = numberOfnegativeDiagonalDirection / sum;
 
-                        percentageVector[0] = percentageOfVertical;
-                        percentageVector[1] = percentageOfHorizontal;
+                        percentageVector[0] = percentageOfHorizontal;
+                        percentageVector[1] = percentageOfVertical;
                         percentageVector[2] = percentageOfpositiveDiagonal;
                         percentageVector[3] = percentageOfnegativeDiagonal;
-                        result.Add(new FeatureVector(new Point(r, c)) { PercentageBitVector = percentageVector });
+                        result.Add(new FeatureVector(new Point(row, col)) { PercentageByteVector = percentageVector });
                     }
                 }                 
             }
             return result;
         }
 
+        /// <summary>
+        /// This mask is unuseful at this moment. Maybe use it later
+        /// </summary>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <returns></returns>
         public static int[,] DiagonalMask(int sizeOfNeighbourhood)
         {
             var result = new int[sizeOfNeighbourhood, sizeOfNeighbourhood];
 
             // above part
-            for (int i = 0; i < sizeOfNeighbourhood / 2; i++)
+            for (int row = 0; row < sizeOfNeighbourhood / 2; row++)
             {               
-                for (int j = 0; j < sizeOfNeighbourhood / 2 - i; j++)
+                for (int col = 0; col < sizeOfNeighbourhood / 2 - row; col++)
                 {
-                    result[i, j] = 0;                    
+                    result[row, col] = 0;                    
                 }
-                for (int k = -i; k <= i; k++)
+                for (int colOffset = - row; colOffset <= row; colOffset++)
                 {
-                    result[i, sizeOfNeighbourhood / 2 + k] = 1;
+                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
                 }
             }
 
             // for middle part
-            for (int j = 0; j < sizeOfNeighbourhood; j++)
+            for (int col = 0; col < sizeOfNeighbourhood; col++)
             {
-                result[sizeOfNeighbourhood / 2, j] = 1; 
+                result[sizeOfNeighbourhood / 2, col] = 1; 
             }
 
             // for below part
-            for (int i = sizeOfNeighbourhood / 2 + 1; i < sizeOfNeighbourhood; i++)
+            for (int row = sizeOfNeighbourhood / 2 + 1; row < sizeOfNeighbourhood; row++)
             {
-                for (int j = 0; j < sizeOfNeighbourhood - i; j++)
+                for (int col = 0; col < sizeOfNeighbourhood - row; col++)
                 {
-                    result[i, j] = 0;                 
+                    result[row, col] = 0;                 
                 }
-                for (int k = -(sizeOfNeighbourhood - i - 1); k <= sizeOfNeighbourhood - i - 1; k++)
+                for (int colOffset = -(sizeOfNeighbourhood - row - 1); colOffset <= sizeOfNeighbourhood - row - 1; colOffset++)
                 {
-                    result[i, sizeOfNeighbourhood / 2 + k] = 1;
+                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
                 }
             }
             return result;
         }
 
-
-        //public static bool checkBoundary(int miniXIndex, int maxiXIndex, int rowCount,int colsCount)
-        //{
-        //    if ()
-        //}
         #endregion
+      
     }
 }

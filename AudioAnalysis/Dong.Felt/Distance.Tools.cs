@@ -9,13 +9,11 @@
 
     public enum Direction
     {
-        None = 0,
-
         /// <summary>
         /// This is North. Also known as vertical.
         /// </summary>
         [Description("This is North. Also known as vertical.")]
-        North = 1,
+        East = 0,
 
         /// <summary>
         /// This is North East. Also known as forward slash or diagonal.
@@ -27,13 +25,13 @@
         /// This is East. Also known as horizontal.
         /// </summary>
         [Description("This is East. Also known as horizontal.")]
-        East = 4,
+        North = 4,
 
         /// <summary>
         /// This is SouthEast. Also known as backward slash or diagonal.
         /// </summary>
-        [Description("This is SouthEast. Also known as backward slash or diagonal.")]
-        SouthEast = 8,
+        [Description("This is NorthWest. Also known as backward slash or diagonal.")]
+        NorthWest = 6,
     }
 
     public class Distance

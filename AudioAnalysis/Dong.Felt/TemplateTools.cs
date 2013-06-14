@@ -22,102 +22,16 @@ namespace Dong.Felt
     public class TemplateTools
     {
         /// <summary>
-        /// The centroid frequency.
+        /// The centroid frequency for LewinsRailTemplate.
         /// </summary>
         public static readonly int CentroidFrequencyOfLewinsRailTemplate = 91;
+
+        /// <summary>
+        /// The centroid frequency for Crow.
+        /// </summary>
         public static readonly int CentroidFrequencyOfCrowTemplate = 80;
 
-
-        ///<summary>
-        ///general template for honey eater
-        /// </summary>
-        public static FeatureVector HoneyeaterTemplate(double[] feacutreVector)
-        {
-            var result = new FeatureVector(feacutreVector);
-            result.PercentageBitVector = feacutreVector;
-            return result;
-        }
-
-        ///<summary>
-        ///general template for honey eater at bitFeatureVector
-        /// </summary>
-        public static FeatureVector HoneyeaterTemplate(int[] verticalBit, int[] horizontalBit)
-        {
-            var result = new FeatureVector(new Point(0,0));
-            result.VerticalBitVector = verticalBit;
-            result.HorizontalBitVector = horizontalBit;
-            return result;
-        }
-        //public static FeatureVector CalculateSimilarityScore(FeatureVector instance, FeatureVector template)
-        public static double CalculateSimilarityScoreForPercentagePresention(FeatureVector instance, FeatureVector template)
-        {
-            //var result = new FeatureVector(new Point(instance.point.X, instance.point.Y)) {PercentageBitVector = instance.PercentageBitVector};
-            double similarityScore = 0.0;
-            if (Math.Abs(instance.Vertical - template.PercentageBitVector[0]) < 0.1
-                    && Math.Abs(instance.Horizontal - template.PercentageBitVector[1]) < 0.1
-                    && Math.Abs(instance.PositiveDiagonal - template.PercentageBitVector[2]) < 0.1
-                    && Math.Abs(instance.NegativeDiagonal - template.PercentageBitVector[3]) <= 0.2)
-            {
-                 similarityScore = 0.9;
-            }
-          
-            return similarityScore;
-        }
-
-        public static double CalculateSimilarityScoreForBitPresentation(FeatureVector instance, FeatureVector template)
-        {
-            var count = instance.HorizontalBitVector.Count();
-
-            double similarityScore = 0.0;
-            var numberOfhorizontal = 0;
-            var numberOfvertical = 0;
-            for (int i = 0; i < count; i++)
-            {
-                if (template.HorizontalBitVector[i] == 0) // they must match with each other in an exact way
-                {
-                    if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 1)
-                        numberOfhorizontal++;
-                }
-                else  // it can have some varieations in such a case
-                {
-                    if (Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]) < 4)
-                    {
-                        numberOfhorizontal++;
-                    }
-                }
-
-                if (template.VerticalBitVector[i] == 0) // they must match with each other in an exact way
-                {
-                    if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 1)
-                        numberOfvertical++;
-                }
-                else  // it can have some varieations in such a case
-                {
-                    if (Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]) < 4)
-                    {
-                        numberOfvertical++;
-                    }
-                }
-            }
-            
-            if (numberOfhorizontal > 10 && numberOfvertical > 9)
-            {
-                similarityScore = 1;
-            }
-            //if (numberOfhorizontal > 10 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
-            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
-            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
-            return similarityScore;
-        }
+        
         /// <summary>
         /// The Lewins' Rail template.
         /// </summary>
@@ -161,7 +75,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// The one type of honey eater template.
+        /// The one type of honey eater template, this is an exact representation of the template.
         /// </summary>
         /// <param name="frameOffset">
         /// The frame offset.
@@ -169,9 +83,9 @@ namespace Dong.Felt
         /// <returns>
         /// The <see cref="List"/>.
         /// </returns>
-        public static List<PointOfInterest> UnknownTemplate(List<PointOfInterest> poiList, int rows,int cols)
+        public static List<PointOfInterest> HoneryEaterExactTemplate(List<PointOfInterest> poiList, int rowsCount,int colsCount)
         {        
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             int numberOfLeft;
             int numberOfRight;
             //var miniFrequencyForAnchor = 89;  // 84 around 3000hz  257 - 84 = 173
@@ -180,25 +94,25 @@ namespace Dong.Felt
             //var miniIndexY = 10000;
             var thresholdForNumberOfVerticle = 4;
             var thresholdForNumberOfHorizontal = 4;
-            for (int r = 0; r < rows; r++)
+            for (int row = 0; row < rowsCount; row++)
             {
-                for (int c = 0; c < cols; c++)
+                for (int col = 0; col < colsCount; col++)
                 {
-                    if (M[r, c] == null) continue;
-                    if (M[r, c].OrientationCategory == 4)
+                    if (Matrix[row, col] == null) continue;
+                    if (Matrix[row, col].OrientationCategory == 4)
                     {
                         numberOfLeft = 0;
                         numberOfRight = 0;
                         var neighbourhoodSize = 9;
                         // From the beginning, trying to find verticle lines
                         // search in a small neighbourhood
-                        for (int i = 0; i <= neighbourhoodSize; i++)
+                        for (int rowIndex = 0; rowIndex <= neighbourhoodSize; rowIndex++)
                         {
-                            for (int j = 0; j <= neighbourhoodSize / 2; j++)
+                            for (int colIndex = 0; colIndex <= neighbourhoodSize / 2; colIndex++)
                            {
-                               if ((r + i) < rows && (c + j) < cols)
+                               if ((row + rowIndex) < rowsCount && (col + colIndex) < colsCount)
                                {
-                                   if ((M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 4))                                  
+                                   if ((Matrix[row + rowIndex, col + colIndex] != null) && (Matrix[row + rowIndex, col + colIndex].OrientationCategory == 4))                                  
                                    { 
                                        numberOfLeft++; 
                                    }
@@ -207,13 +121,13 @@ namespace Dong.Felt
                         }
                         // search on the right
                         var neighbourhoolSize2 = 9;
-                        for (int i = neighbourhoodSize; i <= (neighbourhoolSize2 + neighbourhoodSize) / 2; i++)
+                        for (int rowIndex = neighbourhoodSize; rowIndex <= (neighbourhoolSize2 + neighbourhoodSize) / 2; rowIndex++)
                         {
-                            for (int j = neighbourhoodSize / 2; j <= neighbourhoolSize2 + neighbourhoodSize; j++)
+                            for (int colIndex = neighbourhoodSize / 2; colIndex <= neighbourhoolSize2 + neighbourhoodSize; colIndex++)
                             {
-                                if ((r + i) < rows && (c + j) < cols)
+                                if ((row + rowIndex) < rowsCount && (col + colIndex) < colsCount)
                                 {
-                                    if ((M[r + i, c + j] != null) && (M[r + i, c + j].OrientationCategory == 0))
+                                    if ((Matrix[row + rowIndex, col + colIndex] != null) && (Matrix[row + rowIndex, col + colIndex].OrientationCategory == 0))
                                     {
                                         numberOfRight++;
                                     }
@@ -222,24 +136,55 @@ namespace Dong.Felt
                         }
                         if (numberOfLeft < thresholdForNumberOfVerticle || numberOfRight < thresholdForNumberOfHorizontal)
                         {
-                            M[r, c] = null;
+                            Matrix[row, col] = null;
                         }
                     }
                     else
                     {
-                        M[r, c] = null;
+                        Matrix[row, col] = null;
                     }
-                } // c
-                
-            } // for r loop
+                }                
+            } 
 
-            return PointOfInterest.TransferPOIMatrix2List(M);
-        // PruneAdjacentTracks()
+            return PointOfInterest.TransferPOIMatrix2List(Matrix);
         }
 
-        
+        ///<summary>
+        ///A template of honey eater is represented with percentage byte Vector.
+        /// </summary>
+        /// <param name="neighbourhoodSize">
+        /// it will determine the size of search area to get the feature vector.
+        /// </param>
+        public static FeatureVector HoneyeaterPercentageTemplate(int neighbourhoodSize)
+        {
+            var result = new FeatureVector(new Point(0,0));
+            var percentageFeatureVector = new double[4];
+            percentageFeatureVector[0] = 0.4;// 0.5;
+            percentageFeatureVector[1] = 0.4;// 0.4;
+            percentageFeatureVector[2] = 0.0; //0.0;
+            percentageFeatureVector[3] = 0.2;//0.1;
+            result.PercentageByteVector = percentageFeatureVector;
+            result.NeighbourhoodSize = neighbourhoodSize;
+            return result;
+        }
+
+        ///<summary>
+        ///A template of honey eater is represented with direction byte vector.
+        /// </summary>
+        public static FeatureVector HoneyeaterDirectionByteTemplate()
+        {
+            var result = new FeatureVector(new Point(0, 0));
+            var verticalByte = new int[]   { 6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2 };
+            var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 3, 3, 2, 3, 5 };
+
+            result.VerticalByteVector = verticalByte;
+            result.HorizontalByteVector = horizontalByte;
+            result.NeighbourhoodSize = verticalByte.Count();
+            return result;
+        }
+
         /// <summary>
-        /// The get centroid.
+        /// The get centroid. It will calculate the centroid in a fixed area where many points are. 
         /// </summary>
         /// <param name="points">
         /// The points.
@@ -250,9 +195,7 @@ namespace Dong.Felt
         public static Point GetCentroid(List<Point> points)
         {
             var centeroid = new Point();
-
             var numberOfVertex = points.Count;
-
             var distance = new double[numberOfVertex];
             var minimumDistance = double.MaxValue;
 
@@ -260,10 +203,8 @@ namespace Dong.Felt
             var minY = points.Max(p => p.Y);
             var maxX = points.Min(p => p.X);
             var maxY = points.Max(p => p.Y);
-
             var centeroidX = (maxX + minX) / 2;
             var centeroidY = (maxY + minY) / 2;
-
             var tempCenteroid = new Point(centeroidX, centeroidY);
 
             // find the nearest point the to centeroid
