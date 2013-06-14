@@ -17,7 +17,6 @@
 
         public static void Play()
         {
-
             //SET VERBOSITY
             DateTime tStart = DateTime.Now;
             Log.Verbosity = 1;
@@ -28,7 +27,6 @@
             {
                 /// Read a bunch of recordings  
                 //string[] files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
-
 
                 /// Read one specific file name/path 
                 // with human beings
@@ -44,10 +42,11 @@
                 //string imageFileName = "CannyEdgeDetector1.png";
 
                 // read one specific recording
-                string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
+                //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
+                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\SE_SE727_20101014-074800.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "annotatedTEST8-similarBitCount-10-9-v-7-h-5-DrawBox.png";
+                string annotatedImageFileName = "annotatedTEST15-DrawBoxInside.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -63,7 +62,6 @@
                 //image.Save(imagePath, ImageFormat.Png);
 
                 Bitmap bmp = (Bitmap)image;
-
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
 
                 List<PointOfInterest> poiList = new List<PointOfInterest>();
@@ -126,11 +124,10 @@
                 poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
                 //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
-                //var featureVector = FeatureVector.GeneratePercentageOfFeatureVectors(filterPoiList, rows, cols, 9);               
-                var featureVector = FeatureVector.GenerateBitOfFeatureVectors(filterPoiList, rows, cols, 11);
+                //var featureVector = FeatureVector.PercentageByteFeatureVectors(filterPoiList, rows, cols, 9);               
+                var featureVector = FeatureVector.DirectionByteFeatureVectors(filterPoiList, rows, cols, 11);
                 //var hitPoiList = TemplateTools.UnknownTemplate(poiList, rows, cols);
                 var finalPoiList = new List<PointOfInterest>();
-                // draw poi with paint
 
                 //foreach (PointOfInterest poi in filterPoiList)
                 foreach (FeatureVector fv in featureVector)
@@ -139,28 +136,17 @@
                     //bool multiPixel = false;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
-                    // percentageFeatureVector 
-                    //var percentageFeatureVector = new double[4];
-                    //percentageFeatureVector[0] = 0.4;// 0.5;
-                    //percentageFeatureVector[1] = 0.4;// 0.4;
-                    //percentageFeatureVector[2] = 0.0; //0.0;
-                    //percentageFeatureVector[3] = 0.2;//0.1;
-
-                    // bit feature Vector
-                    var verticalBit = new int[11] { 6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2 };
-                    var horizontalBit = new int[11] { 0, 0, 0, 0, 0, 0, 3, 3, 2, 3, 5 };
                     //var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
-                    var similarityScore = TemplateTools.CalculateSimilarityScoreForBitPresentation(fv, TemplateTools.HoneyeaterTemplate(verticalBit, horizontalBit));
+                    //var similarityScore = SimilarityMatching.SimilarityScoreOfDirectionByteVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    var similarityScore = SimilarityMatching.SimilarityScoreOfFuzzyDirectionVector(fv);
                     if (similarityScore > 0)
                     {
-                        finalPoiList.Add(new PointOfInterest(new Point(fv.point.Y, fv.point.X)));
+                        finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)));
                         //bmp.SetPixel(fv.point.Y, fv.point.X, Color.Crimson);
                     }
-                    // draw local max
-                    //poi.DrawColor = Color.Cyan;
-                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
                 finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, 5);
+                //var poiInsideBox = ShowupPoiInsideBox(poiList, finalPoiList, rows, cols);
                 //foreach (var fiv in finalPoiList)
                 //{
                 //    bmp.SetPixel(fiv.Point.X, fiv.Point.Y, Color.Crimson);
@@ -269,8 +255,6 @@
 
             //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             //Add this line below
@@ -280,6 +264,40 @@
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         } //DrawSonogram()
+
+        // This function still needs to be considered. 
+        public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
+        {
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(filterPoiList, rowsCount, colsCount);
+            var result = new PointOfInterest[rowsCount, colsCount];
+            for (int row = 0; row < rowsCount; row++)
+            {
+                for (int col = 0; col < colsCount; col++)
+                {
+                    if (Matrix[row, col] == null) continue;
+                    else
+                    {
+                        foreach (var fpoi in finalPoiList)
+                        {
+                            if (row == fpoi.Point.Y && col == fpoi.Point.X)
+                            {
+                                for (int i = 0; i < 11; i++)
+                                {
+                                    for (int j = 0; j < 11; j++)
+                                    {
+                                        if (StatisticalAnalysis.checkBoundary(row + i, col + j, rowsCount, colsCount))
+                                        {
+                                            result[row + i, col + j] = Matrix[row + i, col + j];
+                                        }
+                                    }
+                                }
+                            }
+                        }                      
+                    }
+                }
+            }
+            return PointOfInterest.TransferPOIMatrix2List(result); 
+        }
 
     } // class dong.sandpit
 }
