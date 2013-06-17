@@ -174,8 +174,8 @@ namespace Dong.Felt
         public static FeatureVector HoneyeaterDirectionByteTemplate()
         {
             var result = new FeatureVector(new Point(0, 0));
-            var verticalByte = new int[]   { 6, 4, 2, 2, 0, 1, 0, 2, 0, 0, 2 };
-            var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 3, 3, 2, 3, 5 };
+            var verticalByte = new int[]   { 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0 };
+            var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3 };
 
             result.VerticalByteVector = verticalByte;
             result.HorizontalByteVector = horizontalByte;
