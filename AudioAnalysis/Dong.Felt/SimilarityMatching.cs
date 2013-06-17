@@ -103,8 +103,8 @@
                     }
                 }
             }
-            int matchHorizontalByteThreshold = 10;
-            int matchVerticalByteThreshold = 9;
+            int matchHorizontalByteThreshold = 12;
+            int matchVerticalByteThreshold = 12;
             if (numberOfSameHorizontalByte > matchHorizontalByteThreshold && numberOfSameVerticalByte > matchVerticalByteThreshold)
             {
                 similarityScore = 1;
@@ -134,45 +134,54 @@
             {
                 if (byteIndex == 0)
                 {
-                    // instance.VerticalByteVector[byteIndex] != 0
-                    if (
-                       (instance.VerticalByteVector[byteIndex] != 0 && instance.VerticalByteVector[byteIndex + 1] != 0)
-                    || (instance.VerticalByteVector[byteIndex] != 0 && instance.VerticalByteVector[byteIndex + 1] != 0 && instance.VerticalByteVector[byteIndex + 2] != 0)
-                    || (instance.VerticalByteVector[byteIndex] != 0 && instance.VerticalByteVector[byteIndex + 1] != 0 && instance.VerticalByteVector[byteIndex + 2] != 0 && instance.VerticalByteVector[byteIndex + 3] != 0))
+                    var numberOfOffset = 5;
+                    for (int index1 = 0; index1 <= numberOfOffset; index1++)
                     {
-                        if ((instance.VerticalByteVector[byteIndex]
-                            + instance.VerticalByteVector[byteIndex + 1]
-                            + instance.VerticalByteVector[byteIndex + 1]
-                            + instance.VerticalByteVector[byteIndex + 1]) > 3)
+                        if (instance.VerticalByteVector[byteIndex + index1] != 0
+                            || (instance.VerticalByteVector[byteIndex + index1] != 0 && instance.VerticalByteVector[byteIndex + index1 + 1] != 0)
+                            || (instance.VerticalByteVector[byteIndex + index1] != 0 && instance.VerticalByteVector[byteIndex + index1 + 1] != 0 && instance.VerticalByteVector[byteIndex + 2] != 0))
                         {
-                            fuzzyVerticalLine = true;
+                            if ((instance.VerticalByteVector[byteIndex]
+                                + instance.VerticalByteVector[byteIndex + index1 + 1]
+                                + instance.VerticalByteVector[byteIndex + index1 + 2]) > 3)
+                            {
+                                fuzzyVerticalLine = true;
+                            }
                         }
                     }
+
                 }
-                if (byteIndex == 7)
+
+                var lastHorizontalLineIndex = 5;
+                if (byteIndex == horizontalByteCount - lastHorizontalLineIndex - 1)
                 {
-                    if (instance.HorizontalByteVector[byteIndex] != 0
-                    || (instance.HorizontalByteVector[byteIndex] != 0 && instance.HorizontalByteVector[byteIndex + 1] != 0)
-                    || (instance.HorizontalByteVector[byteIndex] != 0 && instance.HorizontalByteVector[byteIndex + 1] != 0 && instance.HorizontalByteVector[byteIndex + 2] != 0)
-                    || (instance.HorizontalByteVector[byteIndex] != 0 && instance.HorizontalByteVector[byteIndex + 1] != 0 && instance.HorizontalByteVector[byteIndex + 2] != 0 && instance.HorizontalByteVector[byteIndex + 3] != 0))
+                    var numberOfOffset = 5;
+                    for (int index1 = 0; index1 <= numberOfOffset; index1++)
                     {
-                        if ((instance.HorizontalByteVector[byteIndex]
-                            + instance.HorizontalByteVector[byteIndex + 1]
-                            + instance.HorizontalByteVector[byteIndex + 1]
-                            + instance.HorizontalByteVector[byteIndex + 1]) > 2)
+                        if ((byteIndex + index1 + 2) < horizontalByteCount)
                         {
-                            fuzzyHorizontalLine = true;
+                            if (instance.HorizontalByteVector[byteIndex + index1] != 0
+                                || (instance.HorizontalByteVector[byteIndex + index1] != 0 && instance.HorizontalByteVector[byteIndex + index1 + 1] != 0)
+                                || (instance.HorizontalByteVector[byteIndex + index1] != 0 && instance.HorizontalByteVector[byteIndex + index1 + 1] != 0 && instance.HorizontalByteVector[byteIndex + 2] != 0))
+                            {
+                                if ((instance.HorizontalByteVector[byteIndex]
+                                    + instance.HorizontalByteVector[byteIndex + index1 + 1]
+                                    + instance.HorizontalByteVector[byteIndex + index1 + 2]) > 1)
+                                {
+                                    fuzzyHorizontalLine = true;
+                                }
+                            }
                         }
                     }
                 }
             }
-
             if (fuzzyVerticalLine && fuzzyHorizontalLine)
             {
                 similarityScore = 1;
             }
             return similarityScore;
         }
+           
 
     }
 }
