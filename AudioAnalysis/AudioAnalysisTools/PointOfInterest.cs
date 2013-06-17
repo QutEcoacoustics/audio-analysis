@@ -206,6 +206,8 @@ namespace AudioAnalysisTools
         }
 
 
+
+
         public void DrawPoint(Bitmap bmp, int spectrogramHeight, bool multiPixel)
         {
             //int x = this.Point.X;
@@ -424,6 +426,82 @@ namespace AudioAnalysisTools
             }
             return m;
         }
+
+        public static int[,] TransferPOIsToOrientationMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            int[,] m = new int[rows, cols];
+            foreach (PointOfInterest poi in list)
+            {
+                int orientation = poi.OrientationCategory;
+                int r = poi.Point.Y;
+                int c = poi.Point.X;
+                m[r, c] = orientation + 1; // do not want a zero category
+                if (orientation == 0)
+                {
+                    m[r, c - 1] = orientation + 1;
+                    m[r, c + 1] = orientation + 1;
+                    //m[r, c + 2] = orientation + 1;
+                }
+                else
+                {
+                    if (orientation == 1)
+                    {
+                        m[r, c - 1] = orientation + 1;
+                        m[r, c + 1] = orientation + 1;
+                        //m[r, c + 2] = orientation + 1;
+                    }
+                    else
+                    {
+                        if (orientation == 2)
+                        {
+                            m[r + 1, c - 1] = orientation + 1;
+                            m[r - 1, c + 1] = orientation + 1;
+                            //m[r - 2, c + 2] = orientation + 1;
+                        }
+                        else
+                            if (orientation == 3)
+                            {
+                                m[r - 1, c] = orientation + 1;
+                                m[r + 1, c] = orientation + 1;
+                                //m[x + 2, y] = orientation + 1;
+                                //m[x, y - 1] = orientation + 1;
+                                //m[x, y + 1] = orientation + 1;
+                                //m[x, y + 2] = orientation + 1;
+                            }
+                            else
+                                if (orientation == 4)
+                                {
+                                    m[r - 1, c] = orientation + 1;
+                                    m[r + 1, c] = orientation + 1;
+                                    //m[x + 2, y] = orientation + 1;
+                                }
+                                else if (orientation == 5)
+                                {
+                                    m[r - 1, c] = orientation + 1;
+                                    m[r + 1, c] = orientation + 1;
+                                    //m[r + 2, c] = orientation + 1;
+                                }
+                                else if (orientation == 6)
+                                {
+                                    //m[r + 2, c + 2] = orientation + 1;
+                                    m[r + 1, c + 1] = orientation + 1;
+                                    m[r - 1, c - 1] = orientation + 1;
+                                }
+                                else if (orientation == 7)
+                                {
+                                    m[r, c - 1] = orientation + 1;
+                                    m[r, c + 1] = orientation + 1;
+                                    //m[r, c + 2] = orientation + 1;
+                                    //m[x + 2, y] = orientation + 1;
+                                    //m[x + 1, y] = orientation + 1;
+                                    //m[x - 1, y] = orientation + 1;
+                                }
+                    }
+                }
+            } // foreach
+            return m;
+        } // TransferPOIsToOrientationMatrix()
+
         public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
         {
             for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)
@@ -445,6 +523,23 @@ namespace AudioAnalysisTools
                 }
             }
         } // RemovePOIsFromList
+
+        public static void CountPOIsInMatrix(int[,] m, out int poiCount, out double fraction)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            poiCount = 0;
+            int cellCount = 0;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (m[r, c] > 0.5) poiCount++;
+                    cellCount++;
+                }
+            }
+            fraction = poiCount / (double)cellCount;
+        } // CountPOIsInMatrix()
 
 
         #endregion

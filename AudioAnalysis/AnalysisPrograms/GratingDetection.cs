@@ -370,8 +370,9 @@ namespace AnalysisPrograms
 
                 if (doNoiseremoval)
                 {
-                    double Q, oneSD;
-                    amplitudeArray = SNR.SubtractBackgroundNoiseFromWaveform(amplitudeArray, out Q, out oneSD);
+                    double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
+                    SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(amplitudeArray, StandardDeviationCount);
+                    amplitudeArray = bgn.noiseReducedSignal;
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);

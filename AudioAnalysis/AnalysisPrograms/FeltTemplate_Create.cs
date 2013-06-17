@@ -181,8 +181,9 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             
             //calculate the modal noise profile
-            double[] modalNoise = SNR.CalculateModalNoise(sonogram.Data); //calculate modal noise profile
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 7);    //smooth the noise profile
+            double SD_COUNT = 0.1; // number of noise standard deviations used to calculate noise threshold
+            SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(sonogram.Data, SD_COUNT); //calculate modal noise profile
+            double[] modalNoise = DataTools.filterMovingAverage(profile.noiseMode, 7);    //smooth the noise profile
             //extract modal noise values of the required event
             double[] noiseSubband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
             
@@ -195,7 +196,7 @@ namespace AnalysisPrograms
             ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
 
             //truncate noise
-            sonogram.Data = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(sonogram.Data, modalNoise);
+            sonogram.Data = SNR.TruncateBgNoiseFromSpectrogram(sonogram.Data, modalNoise);
             sonogram.Data = SNR.RemoveNeighbourhoodBackgroundNoise(sonogram.Data, backgroundThreshold);
 
             double[,] targetMinusNoise = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,

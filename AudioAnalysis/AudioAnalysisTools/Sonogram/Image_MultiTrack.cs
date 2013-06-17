@@ -22,6 +22,7 @@ namespace AudioAnalysisTools
         double[,] SuperimposedMatrix { get; set; }
         double[,] SuperimposedRedTransparency { get; set; }
         double[,] SuperimposedRainbowTransparency { get; set; }
+        int[,] SuperimposedDiscreteColorMatrix { get; set; }
         private double superImposedMaxScore;
         private int[] FreqHits;
         private int nyquistFreq; //sets the frequency scale for drawing events
@@ -86,7 +87,8 @@ namespace AudioAnalysisTools
 
         public void OverlayRedMatrix(Double[,] m, double maxScore)
         {
-            this.SuperimposedMatrix = m;
+            //this.SuperimposedMatrix = m; // TODO:  This line does not work !!?? Use next line
+            this.SuperimposedRedTransparency = m;
             this.superImposedMaxScore = maxScore;
         }
 
@@ -99,7 +101,11 @@ namespace AudioAnalysisTools
         {
             this.SuperimposedRainbowTransparency = m;
         }
-
+        
+        public void OverlayDiscreteColorMatrix(int[,] m)
+        {
+            this.SuperimposedDiscreteColorMatrix = m;
+        }
 
         public void AddFreqHitValues(int[] f, int nyquist)
         {
@@ -183,6 +189,7 @@ namespace AudioAnalysisTools
                 if (this.SuperimposedMatrix != null) this.OverlayMatrix(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRedTransparency != null) this.OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRainbowTransparency != null) this.OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedDiscreteColorMatrix != null) this.OverlayDiscreteColorMatrix(g, (Bitmap)this.sonogramImage);
             }
 
             //now add tracks to the image
@@ -335,6 +342,48 @@ namespace AudioAnalysisTools
                 }
             }
         } //OverlayRainbowTransparency()
+
+
+        /// <summary>
+        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
+        /// ASSUME MATRIX consists of integers >=0; 
+        /// </summary>
+        /// <param name="g"></param>
+        void OverlayDiscreteColorMatrix(Graphics g, Bitmap bmp)
+        {
+            int rows = this.SuperimposedDiscreteColorMatrix.GetLength(0);
+            int cols = this.SuperimposedDiscreteColorMatrix.GetLength(1);
+            int min, max;
+            MatrixTools.MinMax(this.SuperimposedDiscreteColorMatrix, out min, out max);
+
+            int length = max - min + 1;
+
+            int palleteLength = ImageTools.darkColors.Length;
+            //Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet, Color.Purple };
+            int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 1; c < cols; c++)//traverse columns - skip DC column
+                {
+                    int index = this.SuperimposedDiscreteColorMatrix[r, c];
+                    if (index <= 0) continue; //nothing to show
+                    //Color pixel = bmp.GetPixel(r, imageHt - c);
+                    //if (pixel.R > 250) continue; //by-pass white
+                    //int index = (int)Math.Floor((value * 9));//get index into pallette
+                    if (index >= palleteLength) index = index % palleteLength;
+                    Color newColor = ImageTools.darkColors[index];
+                    //double factor = pixel.R / (double)(255 * 1.2);  //1.2 is a color intensity adjustment
+                    //int red = (int)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
+                    //int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
+                    //int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
+                    //g.DrawLine(new Pen(Color.FromArgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
+                    g.DrawLine(new Pen(newColor), r, imageHt - c, r + 1, imageHt - c);
+                }
+            }
+        } //OverlayDiscreteColorMatrix()
+        
+
 
         #region IDisposable Members
 

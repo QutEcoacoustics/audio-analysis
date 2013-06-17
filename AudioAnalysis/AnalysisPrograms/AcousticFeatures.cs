@@ -20,7 +20,7 @@ namespace AnalysisPrograms
 
     using AnalysisBase;
     using AudioAnalysisTools;
-    using NeuralNets;
+    //using NeuralNets;
     using TowseyLib;
 
     using log4net;
@@ -269,34 +269,6 @@ namespace AnalysisPrograms
             }
         } // struct Features
 
-
-        public struct ClusterInfo
-        {
-            public int clusterCount;
-            public double av2;
-            public bool[] selectedFrames;
-            public List<double[]> prunedClusterWts;
-            public int[] clusterHits2;
-            public double triGramRepeatRate;
-            public int triGramUniqueCount;
-            public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames, int[] _ClusterHits2, int _triGramUniqueCount, double _triGramRepeatRate)
-            {
-                clusterCount = 0;
-                if (_PrunedClusterWts != null)
-                {
-                    clusterCount = _PrunedClusterWts.Count;
-                    if (_PrunedClusterWts[0] == null)
-                        clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
-                }
-                av2 = _av2;
-                selectedFrames = _SelectedFrames;
-                prunedClusterWts = _PrunedClusterWts;
-                clusterHits2 = _ClusterHits2;
-                triGramUniqueCount = _triGramUniqueCount;
-                triGramRepeatRate = _triGramRepeatRate;
-            }
-        }
-
         /// <summary>
         /// this struct describes spectral tracks ie whistles and chirps.
         /// </summary>
@@ -334,7 +306,7 @@ namespace AnalysisPrograms
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
             // get parameters for the analysis
-            int frameSize = DEFAULT_WINDOW_SIZE;
+            int frameSize = AcousticFeatures.DEFAULT_WINDOW_SIZE;
             frameSize = config.ContainsKey(Keys.FRAME_LENGTH) ? ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config) : frameSize;
             lowFreqBound = config.ContainsKey(key_LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config) : lowFreqBound;
             midFreqBound = config.ContainsKey(key_MID_FREQ_BOUND) ? ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config) : midFreqBound;
@@ -363,8 +335,9 @@ namespace AnalysisPrograms
 
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
-            var bgNoiseResults = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope));
-            var dBarray = SNR.TruncateNegativeValues2Zero(bgNoiseResults.DBFrames);
+            double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
+            var bgNoise = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope), StandardDeviationCount);
+            var dBarray = SNR.TruncateNegativeValues2Zero(bgNoise.noiseReducedSignal);
 
 
             // iii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
@@ -373,9 +346,9 @@ namespace AnalysisPrograms
             Features indices; // struct in which to store all indices
             indices.recordingDuration = wavDuration;                        // total duration of recording
             indices.activity = activity.activeFrameCover;                   // fraction of frames having acoustic activity 
-            indices.bgNoise = bgNoiseResults.NoiseMode;                    // bg noise in dB
-            indices.snr = bgNoiseResults.Snr;                               // snr
-            indices.activeSnr = activity.activeAvDB;                         // snr calculated from active frames only
+            indices.bgNoise = bgNoise.NoiseMode;                            // bg noise in dB
+            indices.snr = bgNoise.Snr;                                      // snr
+            indices.activeSnr = activity.activeAvDB;                        // snr calculated from active frames only
             indices.avSig_dB = 20 * Math.Log10(signalEnvelope.Average());   // 10 times log of amplitude squared 
             indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
             indices.segmentCount = activity.segmentCount;              //number of segments whose duration > one frame
@@ -404,12 +377,13 @@ namespace AnalysisPrograms
             indices.HtSpectrum = CalculateTemporalEntropySpectrum(spectrogramData);
 
             // vi: remove background noise from the full spectrogram
+            double SD_COUNT = 0.0;
             double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[] modalValues = SNR.CalculateModalValues(spectrogramData); // calculate modal value for each freq bin.
-            modalValues = DataTools.filterMovingAverage(modalValues, 7);      // smooth the modal profile
-            spectrogramData = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogramData, modalValues);
+            SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); // calculate noise value for each freq bin.
+            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the modal profile
+            spectrogramData = SNR.TruncateBgNoiseFromSpectrogram(spectrogramData, noiseValues);
             spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
-            indices.bgNoiseSpectrum = DataTools.SquareValues(modalValues);
+            indices.bgNoiseSpectrum = DataTools.SquareValues(noiseValues);
             indices.bgNoiseSpectrum = DataTools.LogValues(indices.bgNoiseSpectrum);
             //ImageTools.DrawMatrix(spectrogramData, @"C:\SensorNetworks\WavFiles\Crows\image.png", false);
             //DataTools.writeBarGraph(modalValues);
@@ -531,14 +505,33 @@ namespace AnalysisPrograms
             //#V#####################################################################################################################################################
 
             // xv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
-            int reductionFactor = 3; // for reducing lenth of the vector
-            double binaryThreshold = 0.07; // for deriving binary spectrogram
-            ClusterInfo clusterInfo = ClusterAnalysis(midBandSpectrogram, binaryThreshold, reductionFactor);
-            indices.clusterCount = clusterInfo.clusterCount;
-            indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
-            indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
-            indices.triGramRepeatRate = clusterInfo.triGramRepeatRate;
+            double binaryThreshold = 0.06; // for deriving binary spectrogram
+            double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
+            var parameters = new SpectralClustering.ClusteringParameters(lowBinBound, midBandSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
 
+            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(spectrogramData, parameters);
+
+            SpectralClustering.ClusterInfo clusterInfo;
+            // cluster pruning parameters
+            double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
+            int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
+            if (data.trainingData.Count <= 8)     // Skip clustering if not enough suitable training data
+            {
+                clusterInfo.clusterHits2 = null;
+                indices.clusterCount       = 0;
+                indices.avClusterDuration  = TimeSpan.Zero;
+                indices.triGramUniqueCount = 0;
+                indices.triGramRepeatRate  = 0;
+            }
+            else
+            {
+                clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
+                //Console.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
+                indices.clusterCount = clusterInfo.clusterCount;
+                indices.avClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds); //av cluster duration
+                indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
+                indices.triGramRepeatRate = clusterInfo.triGramRepeatRate;
+            }
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration
             //indices.avTrackDuration = indices.avTrackDuration / (double)tracks.Count;
@@ -555,10 +548,6 @@ namespace AnalysisPrograms
                 string label = String.Format(indices.clusterCount + " Clusters");
                 if (clusterHits == null) clusterHits = new int[dBarray.Length];      // array of zeroes
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
-
-                //no need for the following line in normal usage - mostly for debugging
-                //double[,] clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins, selectedFrames, binaryThreshold, clusterWts, clusterHits);
-                //MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
             }
 
             return Tuple.Create(indices, wavDuration, sonogram, hits, scores, trackInfo.tracks);
@@ -806,142 +795,6 @@ namespace AnalysisPrograms
         }
 
 
-        /// <summary>
-        /// Clusters the spectra in a spectrogram. USED to determine the spectral diversity and persistence of spectral types.
-        /// The spectrogram is passed as a matrix. Note that the spectrogram is in amplitude values in [0, 1];
-        /// First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB.   An amplitude threhold of 0.05 = -26dB.
-        /// </summary>
-        /// <param name="spectrogram"></param>
-        /// <param name="excludeBins"></param>
-        /// <param name="binaryThreshold"></param>
-        /// <returns></returns>
-        public static ClusterInfo ClusterAnalysis(double[,] spectrogram, double binaryThreshold, int reductionFactor)
-        {
-            //binaryThreshold = 0.15;
-            spectrogram = ImageTools.WienerFilter(spectrogram, 3);
-
-            int spectroLength = spectrogram.GetLength(0);
-            bool[] selectedFrames = new bool[spectroLength];
-            var trainingData = new List<double[]>();    //training data that will be used for clustering
-
-            double rowSumThreshold = 5.0;  //ACTIVITY THRESHOLD - require activity in at least N bins to include for training
-            int selectedFrameCount = 0;
-            for (int r = 0; r < spectroLength; r++)
-            {
-                double[] spectrum = DataTools.GetRow(spectrogram, r);
-                spectrum = DataTools.VectorReduceLength(spectrum, reductionFactor); // reduce length of the vector by factor of N
-                spectrum = DataTools.filterMovingAverage(spectrum, 3);              // additional smoothing to remove noise
-                //convert to binary
-                for (int i = 0; i < spectrum.Length; i++)
-                {
-                    if (spectrum[i] >= binaryThreshold) spectrum[i] = 1.0;
-                    else spectrum[i] = 0.0;
-                }
-
-                for (int i = 1; i < spectrum.Length - 1; i++)
-                {
-                    if ((spectrum[i] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 1] == 0.0))
-                    {
-                        spectrum[i] = 0.0; //remove isolated peaks.
-                    }
-                }
-
-                for (int i = 1; i < spectrum.Length - 2; i++)
-                {
-                    if ((spectrum[i] == 1.0) && (spectrum[i + 1] == 1.0) && (spectrum[i - 1] == 0.0) && (spectrum[i + 2] == 0.0))
-                    {
-                        spectrum[i] = 0.0; //remove isolated peaks.
-                        spectrum[i + 1] = 0.0; //remove isolated peaks.
-                    }
-                }
-
-                if (spectrum.Sum() > rowSumThreshold)  //only include frames where activity exceeds threshold 
-                {
-                    trainingData.Add(spectrum);
-                    selectedFrames[r] = true;
-                    selectedFrameCount++;
-                }
-            }
-
-            // Return if no suitable training data for clustering
-            if (trainingData.Count <= 8)
-            {
-                double avLength = 0.0;
-                return new ClusterInfo(null, avLength, selectedFrames, null, 0, 0);
-            }
-
-            //DO CLUSTERING - if have suitable data
-            BinaryCluster.Verbose = false;
-            //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
-            BinaryCluster.RandomiseTrnSetOrder = false;
-            double vigilance = 0.1;    //vigilance parameter - increasing this proliferates categories
-            //if vigilance=0.1, require similarity (AND/OR) > 10%
-            var tuple_Clusters = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterHits1 = tuple_Clusters.Item1;   //the cluster to which each frame belongs
-            List<double[]> clusterWts = tuple_Clusters.Item2;
-            //if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
-
-            //PRUNE THE CLUSTERS
-            double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
-            int hitThreshold = 4;               // used to remove wt vectors which have fewer than the threshold hits
-            var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
-            int[] prunedClusterHits = tuple_output2.Item1;
-            List<double[]> prunedClusterWts = tuple_output2.Item2;
-
-            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
-
-            // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
-            //  first:  reassemble cluster hits into an array matching the original array of active frames.
-            int hitCount = 0;
-            int[] clusterHits2 = new int[spectroLength]; // after pruning of clusters
-            for (int i = 0; i < spectroLength; i++)
-            {
-                if (selectedFrames[i]) // Select only frames having acoustic energy >= threshold
-                {
-                    clusterHits2[i] = prunedClusterHits[hitCount];
-                    hitCount++;
-                }
-            }
-
-            //  second:  calculate duration (ms) of each spectral event
-            List<int> hitDurations = new List<int>();
-            int currentDuration = 1;
-            for (int i = 1; i < clusterHits2.Length; i++)
-            {
-                if (clusterHits2[i] != clusterHits2[i - 1]) //if the spectrum changes
-                {
-                    if ((clusterHits2[i - 1] != 0) && (currentDuration > 1)) hitDurations.Add(currentDuration); //do not add if cluster = 0
-                    currentDuration = 1;
-                }
-                else
-                {
-                    currentDuration++;
-                }
-            }
-            double av2, sd2;
-            NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
-
-            int ngramValue = 3;     // length of character n-grams
-            Dictionary<string, int> nGrams = TextUtilities.ConvertIntegerArray2NgramCount(clusterHits2, ngramValue);
-            int triGramUniqueCount = 0;
-            int repeats = 0;
-            foreach (KeyValuePair<string, int> kvp in nGrams)
-            {
-                if (kvp.Key.Contains(",0")) continue; // not interested in ngrams with no hit
-                triGramUniqueCount++;
-                if (kvp.Value > 1)
-                {
-                    repeats += kvp.Value;
-                }
-            }
-            double triGramRepeatRate = 0.0;
-            if (triGramUniqueCount != 0) triGramRepeatRate = repeats / (double)triGramUniqueCount;
-
-            return new ClusterInfo(prunedClusterWts, av2, selectedFrames, clusterHits2, triGramUniqueCount, triGramRepeatRate);
-        }
-
-
         public static TrackInfo GetTrackIndices(double[,] spectrogram, double framesPerSecond, double binWidth, int herzOffset, double threshold)
         {
             var minDuration = TimeSpan.FromMilliseconds(150);
@@ -981,134 +834,6 @@ namespace AnalysisPrograms
         } //GetImageFromAudioSegment()
 
 
-
-        public static void MakeAndDrawSonogram(AudioRecording recording, List<double[]> scores, double[,] hits)
-        {
-            //i: MAKE SONOGRAM
-            Log.WriteIfVerbose("# Make sonogram.");
-            SonogramConfig sonoConfig = new SonogramConfig(); // default values config
-            sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
-            sonoConfig.WindowOverlap = 0.0;                   // set default value
-            sonoConfig.DoMelScale = false;
-            //sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
-            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MODAL values assumed to be dB values
-            //sonoConfig.NoiseReductionType = NoiseReductionType.MODAL;    //MODAL values not dependent on dB values
-            sonoConfig.NoiseReductionType = NoiseReductionType.BINARY;     //MODAL values assumed to be dB values
-            sonoConfig.NoiseReductionParameter = 4.0; //ie 4 dB threshold for BG noise removal
-
-            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            SpectralSonogram sonogram = new SpectralSonogram(basegram);         //spectrogram has dim[N,257]
-
-
-            //ii: DRAW SONOGRAM AND SCORES
-            //Log.WriteLine("# Draw sonogram.");
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            int length = sonogram.FrameCount;
-
-            using (Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            using (Image_MultiTrack image = new Image_MultiTrack(img))
-            {
-                //add time scale
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                //int maxindex = DataTools.GetMaxIndex(array);
-
-                if (scores != null)
-                {
-                    for (int i = 1; i < scores.Count; i++)
-                    {
-                        int maxIndex = DataTools.GetMaxIndex(scores[i]);
-                        double max = scores[i][maxIndex];
-                        if (max <= 0.0) max = 1.0;
-                        image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(scores[i], length), 0.0, max, 0.1));
-                    }
-                }
-            } // using
-        } // MakeAndDrawSonogram()
-
-
-
-        /// <summary>
-        /// displays a histogram of cluster counts.
-        /// the argument clusters is an array of integer. Indicates cluster assigned to each binary frame. 
-        /// </summary>
-        /// <param name="clusters"></param>
-        public static void OutputClusterAndWeightInfo(int[] clusters, List<double[]> wts, string imagePath)
-        {
-            int min, max;
-            int maxIndex;
-            DataTools.getMaxIndex(clusters, out maxIndex);
-            int binCount = clusters[maxIndex] + 1;
-            double binWidth;
-            int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
-            LoggedConsole.WriteLine("Sum = " + histo.Sum());
-            DataTools.writeArray(histo);
-            //DataTools.writeBarGraph(histo);
-
-            //make image of the wts matrix
-            wts = DataTools.RemoveNullElementsFromList(wts);
-            var m = DataTools.ConvertList2Matrix(wts);
-            m = DataTools.MatrixTranspose(m);
-            ImageTools.DrawMatrixInColour(m, imagePath, false);
-        }
-
-        /// <summary>
-        /// this method is used only to visualize the clusters and which frames they hit.
-        /// Create a new spectrogram of same size as the passed spectrogram.
-        /// Later on it is superimposed on a detailed spectrogram.
-        /// </summary>
-        /// <param name="sigLength"></param>
-        /// <param name="spectrogram">spectrogram used to derive spectral richness indices</param>
-        /// <param name="excludeBins">bottom N freq bins that are excluded because likely to contain traffic and wind noise.</param>
-        /// <param name="activeFrames"></param>
-        /// <param name="binaryThreshold">used to select values in reduced spectrogram</param>
-        /// <param name="clusterWts"></param>
-        /// <param name="clusterHits"></param>
-        /// <returns></returns>
-        public static double[,] AssembleClusterSpectrogram(int sigLength, double[,] spectrogram, int excludeBins, bool[] activeFrames,
-                                                           double binaryThreshold, List<double[]> clusterWts, int[] clusterHits)
-        {
-
-            int frameCount = spectrogram.GetLength(0);
-            int freqBinCount = spectrogram.GetLength(1);
-
-            //reassemble spectrogram to visualise the clusters
-            var clusterSpectrogram = new double[frameCount, freqBinCount];
-            int count = 0;
-            for (int i = 0; i < frameCount; i++) //loop over original frames
-            {
-                if (activeFrames[i])
-                {
-                    for (int j = excludeBins; j < freqBinCount; j++)
-                    {
-                        if (spectrogram[i, j] > binaryThreshold)
-                            clusterSpectrogram[i, j] = clusterHits[count] + 1;//+1 so do not have zero index for a cluster 
-                        if (clusterSpectrogram[i, j] < 0) clusterSpectrogram[i, j] = 0; //correct for case where set hit count < 0 for pruned wts.
-                    }
-                    count++;
-                }
-            }
-
-            //add in the weights to first part of spectrogram
-            //int space = 10;
-            //int col = space;
-            //for (int i = 0; i < clusterWts.Count; i++)
-            //{
-            //    if (clusterWts[i] == null) continue;
-            //    for (int c = 0; c < space; c++)
-            //    {
-            //        col++;
-            //        //for (int j = 0; j < clusterSpectrogram.GetLength(1); j++) clusterSpectrogram[col, j] = clusterWts.Count+3;
-            //        for (int j = 0; j < clusterWts[i].Length; j++)
-            //        {
-            //            if (clusterWts[i][j] > 0.0) clusterSpectrogram[col, excludeBins + j - 1] = i + 1;
-            //        }
-            //    }
-            //    //col += 2;
-            //}
-
-            return clusterSpectrogram;
-        }
 
         //########################################################################################################################################################################
 

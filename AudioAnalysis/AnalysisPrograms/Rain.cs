@@ -432,8 +432,9 @@ namespace AnalysisPrograms
 
             // ii: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
-            var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalextract.Envelope));
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
+            double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
+            var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalextract.Envelope), StandardDeviationCount);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
 
 
             //// vii: remove background noise from the full spectrogram i.e. BIN 1 to Nyquist
@@ -540,8 +541,9 @@ namespace AnalysisPrograms
         public static Indices Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)   
         {
             // i: FRAME ENERGIES - 
-            var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signal));//use Lamel et al. Only search in range 10dB above min dB.
-            var dBarray  = SNR.TruncateNegativeValues2Zero(results3.DBFrames);
+            double StandardDeviationCount = 0.1;
+            var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signal), StandardDeviationCount); //use Lamel et al.
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticFeatures.DEFAULT_activityThreshold_dB) activeFrames[i] = true;

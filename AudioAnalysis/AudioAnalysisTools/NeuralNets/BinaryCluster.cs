@@ -36,12 +36,12 @@ namespace NeuralNets
     ///Initialise Uncommitted array := true
     ///Initialize weight array
     /// </summary>
-    public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialWtVectorCount)
+    public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialClusterCount)
     {
-        if (initialWtVectorCount > trainingData.Count) initialWtVectorCount = trainingData.Count;
+        if (initialClusterCount > trainingData.Count) initialClusterCount = trainingData.Count;
         this.wts = new List<double[]>();
         int dataSetSize = trainingData.Count;
-        for (int i = 0; i < initialWtVectorCount; i++)
+        for (int i = 0; i < initialClusterCount; i++)
         {
             int id = randomIntegers[i];
             wts.Add(trainingData[id]);
@@ -50,7 +50,7 @@ namespace NeuralNets
 
         //set committed nodes = false
         this.committedNode = new bool[OPSize];
-        for (int uNo = 0; uNo < initialWtVectorCount; uNo++) committedNode[uNo] = true;
+        for (int uNo = 0; uNo < initialClusterCount; uNo++) committedNode[uNo] = true;
     }
 
 
@@ -461,13 +461,12 @@ namespace NeuralNets
     }
 
 
-    public static System.Tuple<int[], List<double[]>> ClusterBinaryVectors(List<double[]> trainingData, double vigilance)
+    public static System.Tuple<int[], List<double[]>> ClusterBinaryVectors(List<double[]> trainingData, int initialClusterCount , double vigilance)
     {
         int trnSetSize = trainingData.Count;
         int IPSize = trainingData[0].Length;
         if (trnSetSize <= 1) return null;
         //************************** INITIALISE PARAMETER VALUES *************************
-        int initialWtCount = 10;
         int seed = 12345;           //to seed random number generator
         double beta = 0.5;          //NOT USED AT PRESENT  - Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
         int maxIterations = 20;
@@ -480,7 +479,7 @@ namespace NeuralNets
             LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
             LoggedConsole.WriteLine("\n BEGIN TRAINING");
         }
-        var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialWtCount);
+        var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialClusterCount);
         int iterCount     = output.Item1;
         int clusterCount  = output.Item2;
         int[] clusterHits = output.Item3;

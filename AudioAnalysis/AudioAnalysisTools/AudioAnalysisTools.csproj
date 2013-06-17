@@ -187,6 +187,7 @@
     <Compile Include="Sonogram\Image_MultiTrack.cs" />
     <Compile Include="Sonogram\Image_Track.cs" />
     <Compile Include="Sonogram\PointOfInterest.cs" />
+    <Compile Include="SpectralClustering.cs" />
     <Compile Include="SpectralTrack.cs" />
     <Compile Include="SprTools.cs" />
     <Compile Include="ResultsTools.cs">
