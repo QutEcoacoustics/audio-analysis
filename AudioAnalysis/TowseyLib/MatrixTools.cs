@@ -216,17 +216,17 @@ namespace TowseyLib
         /*
          * converts a matrix of doubles to binary using passed threshold
          */
-        public static double[,] ThresholdMatrix2Binary(double[,] M, double threshold)
+        public static int[,] ThresholdMatrix2Binary(double[,] M, double threshold)
         {
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            double[,] op = new double[rowCount, colCount];
+            var op = new int[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)
                 {
-                    if (M[r, c] > threshold) op[r, c] = 1.0;
+                    if (M[r, c] > threshold) op[r, c] = 1;
                 }
             }
             return op;
@@ -860,6 +860,21 @@ namespace TowseyLib
                     ret[c, r] = m[rows - r - 1, c];
             return ret;
         }
+        /// Rotates a matrix 90 degrees clockwise.
+        /// </summary>
+        /// <param name="M">the matrix to rotate</param>
+        /// <returns></returns>
+
+        public static int[,] MatrixRotate90Clockwise(int[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new int[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows - r - 1, c];
+            return ret;
+        }
         /// <summary>
         /// Rotates a matrix 90 degrees anticlockwise.
         /// Used for Syntactic pattern recognition
@@ -1211,6 +1226,24 @@ namespace TowseyLib
 				else if (data[i,j] > max)
                     max = data[i,j];
             }//end double loop
+        }
+        /// <summary>
+        /// returns the min and max values in a matrix
+        /// </summary>
+        static public void MinMax(int[,] data, out int min, out int max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            min = data[0, 0];
+            max = data[0, 0];
+            for (int i = 1; i < rows; i++)
+                for (int j = 1; j < cols; j++)
+                {
+                    if (data[i, j] < min)
+                        min = data[i, j];
+                    else if (data[i, j] > max)
+                        max = data[i, j];
+                }//end double loop
         }
 
   //=============================================================================

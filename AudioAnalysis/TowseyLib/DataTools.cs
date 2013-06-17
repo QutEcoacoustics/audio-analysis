@@ -2948,7 +2948,6 @@ namespace TowseyLib
 
   public static double[] filterMovingAverage(double[] signal, int width)
   { 
-    if(width <= 1) return signal;    // no filter required
     int  length = signal.Length;
     if(length <= 3) return signal;   // not worth the effort!
     

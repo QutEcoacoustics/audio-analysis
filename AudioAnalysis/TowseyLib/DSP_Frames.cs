@@ -174,7 +174,7 @@ namespace TowseyLib
                 ////f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 ////f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
 
-                f1 = DataTools.filterMovingAverage(f1, 5); //smooth spectrum to reduce variance
+                f1 = DataTools.filterMovingAverage(f1, 3); //smooth spectrum to reduce variance
                 for (int j = 0; j < fft.CoeffCount; j++)   //foreach freq bin
                     spectrogram[i, j] = f1[j];             //transfer amplitude
                 

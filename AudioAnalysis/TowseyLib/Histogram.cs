@@ -239,31 +239,5 @@ namespace TowseyLib
         }
 
 
-
-        public static void GetModeAndOneStandardDeviation(double[] histo, int upperBoundOfMode, out int indexOfMode, out int indexOfOneSD)
-        {
-            indexOfMode = DataTools.GetMaxIndex(histo);
-            if(indexOfMode > upperBoundOfMode) indexOfMode = upperBoundOfMode;
-
-            //calculate SD of the background noise
-            double totalAreaUnderLowerCurve = 0.0;
-            for (int i = 0; i <= indexOfMode; i++) totalAreaUnderLowerCurve += histo[i];
-
-            indexOfOneSD = indexOfMode;
-            double partialSum = 0.0; //sum
-            double thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one standard deviation
-            for (int i = indexOfMode; i > 0; i--) 
-            {
-                partialSum += histo[i];
-                indexOfOneSD = i;
-                if (partialSum > thresholdSum) // we have passed the one SD point
-                {
-                    break;
-                }
-            } // for loop
-        } // GetModeAndOneStandardDeviation()
-
-
-
     } // class Histrogram
 }

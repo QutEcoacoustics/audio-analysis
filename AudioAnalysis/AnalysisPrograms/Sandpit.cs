@@ -25,16 +25,28 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
-            // experiments with Sobel ridge detector
+
+            // experiments with clustering the spectra within spectrograms
             if (false)
             {
+                SpectralClustering.Sandpit();
+            } // end if (true)
+            
+
+
+            // experiments with Sobel ridge detector
+            if (true)
+            {
+                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
+                //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
                 //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
-                string annotatedImageFname = "SC10MASK_annotatedTEST.png";
-                double magnitudeThreshold = 10.0; // of ridge hieght above neighbours
-                double intensityThreshold = 5.0; // dB
+                string annotatedImageFname = "BAC2_annotatedTEST.png";
+                double magnitudeThreshold = 7.0; // of ridge height above neighbours
 
                 //var testImage = (Bitmap)(Image.FromFile(imagePath));
                 var recording = new AudioRecording(wavFilePath);
@@ -43,11 +55,9 @@ namespace AnalysisPrograms
                 Plot scores = null; 
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;
-                Image image = DrawSonogram(spectrogram, scores, list, eventThreshold);
+                Image image = DrawSonogram(spectrogram, scores, list, eventThreshold, null);
                 string imagePath = Path.Combine(outputDir, imageFname);
                 image.Save(imagePath, ImageFormat.Png);
-
-                Bitmap bmp = (Bitmap)image;
 
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
 
@@ -61,23 +71,23 @@ namespace AnalysisPrograms
 
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
-                for (int r = halfLength; r < rows - halfLength; r++)
+                for (int r = 5 + halfLength; r < rows - halfLength -14; r++) // avoid top 5 freq bins and bottom 14 bins
                 {
                     for (int c = halfLength; c < cols - halfLength; c++)
                     {
                         var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                         double magnitude, direction;
                         bool isRidge = false;
-                        //TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
                         //TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                        TowseyLib.ImageTools.Sobel5X5CornerDetection(subM, out isRidge, out magnitude, out direction);
+                        //TowseyLib.ImageTools.Sobel5X5CornerDetection(subM, out isRidge, out magnitude, out direction);
                         if (isRidge && (magnitude > magnitudeThreshold)) 
                         {
                             Point point = new Point(c, r);
-                            var poi = new PointOfInterest(point);
+                            //var poi = new PointOfInterest(point);
                             TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                             double herz = (freqBinCount-r -1) * herzScale;
-                            //var poi = new PointOfInterest(time, herz);
+                            var poi = new PointOfInterest(time, herz);
                             poi.Point = point;
                             poi.RidgeOrientation = direction;
                             poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
@@ -87,32 +97,43 @@ namespace AnalysisPrograms
                             poi.HerzScale = herzScale;
                             poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
                             poiList.Add(poi);
-                        }
-                        //c++;
-                    }
-                    //r++;
+                        } // c++;
+                    } // r++;
                 }
 
+                //double intensityThreshold = 6.0; // dB
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
 
-                //PointOfInterest.PruneSingletons(poiList, rows, cols);
+                PointOfInterest.PruneSingletons(poiList, rows, cols);
                 //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
+                //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
 
-                foreach (PointOfInterest poi in poiList)
-                {
-                    poi.DrawColor = Color.Crimson;
-                    bool multiPixel = false;
-                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                //Bitmap bmp = (Bitmap)image;
+                //foreach (PointOfInterest poi in poiList)
+                //{
+                //    poi.DrawColor = Color.Crimson;
+                //    bool multiPixel = true;
+                //    poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
 
-                    // draw local max
-                    //poi.DrawColor = Color.Cyan;
-                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
-                }
+                //    // draw local max
+                //    //poi.DrawColor = Color.Cyan;
+                //    //poi.DrawLocalMax(bmp, (int)freqBinCount);
+                //}
+
+                int[,] poiMatrix = PointOfInterest.TransferPOIsToOrientationMatrix(poiList, rows, cols);
+                int poiCount;
+                double fraction;
+                PointOfInterest.CountPOIsInMatrix(poiMatrix, out poiCount, out fraction);
+                Console.WriteLine("poiCount={0};  fraction={1}", poiCount, fraction);
+
+                poiMatrix = MatrixTools.MatrixRotate90Clockwise(poiMatrix);
+                image = DrawSonogram(spectrogram, scores, poiMatrix);
 
                 imagePath = Path.Combine(outputDir, annotatedImageFname);
                 image.Save(imagePath, ImageFormat.Png);
+                //image = (Image) bmp;
+                //bmp.Save(imagePath);
                 FileInfo fiImage = new FileInfo(imagePath);
                 if (fiImage.Exists)
                 {
@@ -122,8 +143,14 @@ namespace AnalysisPrograms
 
             } // experiments with Sobel ridge detector
 
+
+
+
+
+
+
             // experiments with false colour images - categorising/discretising the colours
-            if (true)
+            if (false)
             {
                 Console.WriteLine("Reading image");
                 //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
@@ -208,23 +235,32 @@ namespace AnalysisPrograms
         } // Dev()
 
 
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold)
+        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-
-            //Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             if ((poi != null) && (poi.Count > 0))
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            if (overlay != null)
+            {
+                var m = MatrixTools.ThresholdMatrix2Binary(overlay, 0.5);
+                image.OverlayDiscreteColorMatrix(m);
+            }
             return image.GetImage();
         } //DrawSonogram()
 
+        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, int[,] overlay)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.OverlayDiscreteColorMatrix(overlay);
+            return image.GetImage();
+        } //DrawSonogram()
 
     } // class Sandpit
 
