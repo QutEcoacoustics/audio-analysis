@@ -55,6 +55,8 @@
         /// </summary>
         public int NeighbourhoodSize { get; set; }
 
+        public double Intensity { get; set; }
+
         #region constructor
         /// <summary>
         /// A constructor takes in percentageByteVector
@@ -322,7 +324,7 @@
                         //            }
                         //       }
                         //   }       
-                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalByteVector = horizontalDirection, VerticalByteVector = verticalDirection });
+                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalByteVector = horizontalDirection, VerticalByteVector = verticalDirection, Intensity = Matrix[row, col].Intensity });
                     }
                 }
             }

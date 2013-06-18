@@ -184,7 +184,7 @@ namespace AudioAnalysisTools
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
-                var pen = new Pen(Color.Green);
+                var pen = new Pen(Color.Crimson);
                 //graphics.DrawRectangle(pen, poi.Point.X, height - poi.Point.Y - 1, radius, radius);
                 graphics.DrawRectangle(pen, poi.Point.X, poi.Point.Y, radius, radius);
             }
