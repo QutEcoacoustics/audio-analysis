@@ -64,14 +64,14 @@
         /// </returns>
         public static double SimilarityScoreOfDirectionByteVector(FeatureVector instance, FeatureVector template)
         {
-            var count = instance.HorizontalByteVector.Count();
+            var bitCount = instance.HorizontalByteVector.Count();
 
             double similarityScore = 0.0;
             var numberOfSameHorizontalByte = 0;
             var numberOfSameVerticalByte = 0;
             var horizontalThreshold = new double[] { 1, 4 }; // threshold[0], exact match for null direction,  threshold[1], 
-            var verticalThreshold = new double[] {1, 4 }; 
-            for (int byteIndex = 0; byteIndex < count; byteIndex++)
+            var verticalThreshold = new double[] {1, 4 };
+            for (int byteIndex = 0; byteIndex < bitCount; byteIndex++)
             {
                 if (template.HorizontalByteVector[byteIndex] == 0) // they must match with each other in an exact way
                 {
@@ -103,24 +103,26 @@
                     }
                 }
             }
-            int matchHorizontalByteThreshold = 12;
-            int matchVerticalByteThreshold = 12;
-            if (numberOfSameHorizontalByte > matchHorizontalByteThreshold && numberOfSameVerticalByte > matchVerticalByteThreshold)
+            if (numberOfSameHorizontalByte > bitCount - 1 && numberOfSameVerticalByte > bitCount - 1)
             {
                 similarityScore = 1;
             }
-            //if (numberOfhorizontal > 10 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
-            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
-            //if (numberOfhorizontal > 9 && numberOfvertical > 9)
-            //{
-            //    similarityScore = 0.9;
-            //}
+            else
+            {
+                if (numberOfSameHorizontalByte > bitCount - 2 && numberOfSameVerticalByte > bitCount - 2)
+                //|| (numberOfSameHorizontalByte > bitCount - 1 && numberOfSameVerticalByte > bitCount - 2)
+                //|| (numberOfSameHorizontalByte > bitCount - 2 && numberOfSameVerticalByte > bitCount - 1))
+                {
+                    similarityScore = 0.9;
+                }
+                else
+                {
+                    if (numberOfSameHorizontalByte > bitCount - 3 && numberOfSameVerticalByte > bitCount - 3)
+                    {
+                        similarityScore = 0.8;
+                    }
+                }
+            }
             return similarityScore;
         }
 

@@ -186,7 +186,7 @@
 
         /// <summary>
         /// To remove points which are too close. 
-        /// e.g. there are two close points, require to check whose amplitude is higher, then keep this one.
+        /// e.g. there are two close points, require to check whose amplitude is higher, then keep the higher amplitude one.
         /// </summary>
         /// <param name="pointsOfInterest">
         /// The points of interest.
@@ -198,12 +198,11 @@
         /// The list of PointOfInterest after remove too close points.
         /// </returns>
         public static List<PointOfInterest> RemoveClosePoints(List<PointOfInterest> pointsOfInterest, int offset)
-        {
-            var maxIndex = pointsOfInterest.Count;
-
+        {           
+            var maxIndex = pointsOfInterest.Count();
+            var poi = new List<PointOfInterest>(pointsOfInterest);
             for (int i = 0; i < maxIndex; i++)
-            {
-                var poi = pointsOfInterest;
+            {               
                 for (int j = 0; j < maxIndex; j++)
                 {
                     if (poi[i] == poi[j])
@@ -221,14 +220,12 @@
                             if (poi[j].Intensity >= poi[i].Intensity)
                             {
                                 pointsOfInterest.Remove(poi[i]);
-                                maxIndex = pointsOfInterest.Count();
                             }
                             else
                             {
                                 pointsOfInterest.Remove(poi[j]);
-                                maxIndex = pointsOfInterest.Count();
                             }
-                        }
+                        }                     
                     }
                 }
             }

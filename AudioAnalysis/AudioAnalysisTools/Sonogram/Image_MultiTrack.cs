@@ -172,7 +172,7 @@ namespace AudioAnalysisTools
                     foreach (PointOfInterest poi in this.Points)
                     {
                         //poi.DrawPoint(g, this.Points, this.sonogramImage.Height);
-                        const int Radius = 9;
+                        const int Radius = 12;
                         poi.DrawBox(g, this.Points, Radius);
                     }       
                 }
