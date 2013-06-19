@@ -31,6 +31,38 @@
         #endregion
 
         /// <summary>
+        /// Calculate the distance between two featureVectors. one is from template, one is from another event
+        /// </summary>
+        /// <param name="instance"> one of featureVectors needs to be compared.</param>
+        /// <param name="template"> a particular species featureVector needs to be compared.</param>
+        /// <returns>
+        /// return the avgDistance.
+        /// </returns>
+        public static double AvgDistance(FeatureVector instance, FeatureVector template)
+        {
+            var avgdistance = 0.0;           
+            var numberOfScaleCount = instance.VerticalByteVector.Count();
+            var sumV = 0.0;
+            var sumH = 0.0;
+            for (int i = 0; i < numberOfScaleCount; i++)
+            {        
+                // kind of Manhattan distance calculation    
+                sumV = sumV + Math.Abs(instance.VerticalByteVector[i] - template.VerticalByteVector[i]);
+                sumH = sumH = Math.Abs(instance.HorizontalByteVector[i] - template.HorizontalByteVector[i]);
+            }
+            var sum = (sumH + sumV) / 2;    
+            avgdistance = sum / numberOfScaleCount; 
+
+            return avgdistance; 
+        }
+
+        public static double SimilarityScoreForAvgDistance(double avgDistance, int neighbourhoodSize)
+        {
+            var similarityScore = 1 - avgDistance / neighbourhoodSize;
+
+            return similarityScore;
+        }
+        /// <summary>
         /// One way to calculate Similarity Score for percentage byte vector representation.
         /// </summary>
         /// <param name="instance"> the instance's feature vector to be compared. </param>
@@ -183,7 +215,8 @@
             }
             return similarityScore;
         }
-           
+         
+        
 
     }
 }

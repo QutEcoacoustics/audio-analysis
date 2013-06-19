@@ -174,9 +174,11 @@ namespace Dong.Felt
         public static FeatureVector HoneyeaterDirectionByteTemplate()
         {
             var result = new FeatureVector(new Point(0, 0));
+            // fuzzy presentation
+            //var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            //var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
             var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
-
             result.VerticalByteVector = verticalByte;
             result.HorizontalByteVector = horizontalByte;
             result.NeighbourhoodSize = verticalByte.Count();
