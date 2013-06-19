@@ -67,5 +67,25 @@
             }
         }
 
+        //public static List<double> DistanceHistogram(List<FeatureVector> distance, int neighbourhoodSize)
+        //{
+        //    var numberOfHistogramBar = neighbourhoodSize;
+        //    var histogram = new int[neighbourhoodSize];
+
+        //    foreach (var d in distance)
+        //    {
+        //        for (int histogramIndex = 0; histogramIndex < numberOfHistogramBar; histogramIndex++)
+        //        {
+        //            if ((d >= histogramIndex / neighbourhoodSize) && (d < (histogramIndex + 1) / neighbourhoodSize))
+        //            {
+        //                histogram[histogramIndex]++;
+        //            }
+        //        }
+        //    }
+        //    return histogram; 
+        //}
+
+
+
     }
 }

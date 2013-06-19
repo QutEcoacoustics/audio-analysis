@@ -43,10 +43,10 @@
 
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
-                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800-from5-to6minute.wav"; 
+                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\Samford7_20080701-065230.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-051800-from5-to6minute-similarityThreshold-0.8-new.png";
+                string annotatedImageFileName = "Samford7_20080701-065230-avgDistance-0.6.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -135,15 +135,16 @@
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
                     ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
-                    var similarityScore = SimilarityMatching.SimilarityScoreOfDirectionByteVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                    ////var similarityScore = SimilarityMatching.SimilarityScoreOfFuzzyDirectionVector(fv);
-                    var similairtyThreshold = 0.7;
-                    if (similarityScore > similairtyThreshold)
+                    
+                    var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    var similarityThreshold = 0.6;
+                    if (avgDistance < similarityThreshold)
                     {
-                        finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) {Intensity = fv.Intensity} );
+                        finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
                     }
                 }
-                var thresholdOfdistanceforClosePoi = 7;
+
+                var thresholdOfdistanceforClosePoi = 8;
                 finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
                 image = DrawSonogram(spectrogram, scores, list, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
