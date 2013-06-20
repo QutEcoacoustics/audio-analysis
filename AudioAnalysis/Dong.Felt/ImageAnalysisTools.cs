@@ -13,6 +13,8 @@ namespace Dong.Felt
 
     class ImageAnalysisTools
     {
+        #region public property
+
         // 7 * 7 gaussian blur
         public static double[,] gaussianBlur7 = {{0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067},
                                                 {0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292},
@@ -106,6 +108,8 @@ namespace Dong.Felt
                                                 { 0.0,  -1.0,  2.0,  -1.0,  0.0} };
 
         public const double Pi = Math.PI;
+
+        #endregion
         /// Canny detector for edge detection in a noisy image 
         /// it involves five steps here, first, it needs to do the Gaussian convolution, 
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
@@ -591,29 +595,6 @@ namespace Dong.Felt
                             result[row, col] = magnitude[row, col];
                         }
                     }
-
-                    // Improved2 trying to improve it for filtering out more points
-                    //if (magnitude[row, col] > 0)
-                    //{
-                    //    var subMatrix = TowseyLib.DataTools.Submatrix(magnitude, row - radiusOfNeighbourhood, col - radiusOfNeighbourhood, row + radiusOfNeighbourhood, col + radiusOfNeighbourhood);
-                    //    var localMaxima = LocalMaxima.PickLocalMaxima(subMatrix, sizeOfNeighbourhood);// in a 7 * 7 neighbourhood, find the local maxima, and filter out the points is less than the maxima a lot
-                    //    for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
-                    //    {
-                    //        for (int j = -radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
-                    //        {
-                    //            var threshold = 0.1;
-                    //            if (Math.Abs(magnitude[row + i, col + j] - localMaxima[0].Intensity) < threshold)
-                    //            {
-                    //                double threshold2 = 0.4;
-                    //                // for ridge detection, check whether its intensity is greater than a value
-                    //                if (matrix[row + i, col + j] > threshold2)
-                    //                {
-                    //                    result[row + i, col + j] = magnitude[row + i, col + j];
-                    //                }
-                    //            }
-                    //        }
-                    //    }
-                    //}                 
                 }
             }
             //result = magnitude; 
@@ -654,6 +635,70 @@ namespace Dong.Felt
 
             result = magnitude;
             return result; 
+        }
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };
+
+            double[] ridgeMagnitudes = new double[4];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            direction = indexMax * Math.PI / (double)4;
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)

@@ -43,10 +43,10 @@
 
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
-                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\Samford7_20080701-065230.wav"; 
+                string wavFilePath = @"C:\Test recordings\Crows\DM420036_min430Crows-contains scarlet honeyeater.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "Samford7_20080701-065230-avgDistance-0.6.png";
+                string annotatedImageFileName = "DM420036_min430Crows-contains scarlet honeyeater.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -96,7 +96,7 @@
                         double magnitude;
                         double direction;
                         bool isRidge = false;
-                        TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        ImageAnalysisTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
                         if (magnitude > magnitudeThreshold)
                         {
                             Point point = new Point(c, r);
@@ -114,7 +114,8 @@
                         }
                     }
                 }
-
+                var timeUnit = 1;  // 1 second
+                var edgeStatistic = FeatureVector.EdgeStatistics(poiList, rows, cols, timeUnit, secondsScale);
                 /// filter out some redundant poi                
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
                 //PointOfInterest.PruneSingletons(poiList, rows, cols);
@@ -125,8 +126,10 @@
                 var numberOfEdge = 3;
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
                 ////var featureVector = FeatureVector.PercentageByteFeatureVectors(filterPoiList, rows, cols, 9);  
-                var searchNeighbourhoodSize = 13;
-                var featureVector = FeatureVector.DirectionByteFeatureVectors(filterPoiList, rows, cols, searchNeighbourhoodSize);
+                var widthOfSearchNeighbourhood = 13;
+                var lengthOfSearchNeighbourhood = 13;
+                var featureVector = FeatureVector.OriginalDirectionFeatureVectors(filterPoiList, rows, cols, widthOfSearchNeighbourhood, lengthOfSearchNeighbourhood);
+                featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
                 var finalPoiList = new List<PointOfInterest>();
 
                 //foreach (PointOfInterest poi in filterPoiList)
@@ -136,12 +139,18 @@
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
                     ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
                     
-                    var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                    var similarityThreshold = 0.6;
-                    if (avgDistance < similarityThreshold)
+                    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    //var similarityThreshold = 0.6;
+                    //if (avgDistance < similarityThreshold)
+                    //{
+                    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                    //}
+                    var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    var distanceThreshold = 5;
+                    if (distance < distanceThreshold)
                     {
                         finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                    }
+                    }                 
                 }
 
                 var thresholdOfdistanceforClosePoi = 8;

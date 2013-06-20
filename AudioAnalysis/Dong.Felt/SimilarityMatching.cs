@@ -29,7 +29,6 @@
         public double SimilarityScore { get; set; }
 
         #endregion
-
         /// <summary>
         /// Calculate the distance between two featureVectors. one is from template, one is from another event
         /// </summary>
@@ -41,19 +40,37 @@
         public static double AvgDistance(FeatureVector instance, FeatureVector template)
         {
             var avgdistance = 0.0;           
-            var numberOfScaleCount = instance.VerticalByteVector.Count();
+            var numberOfScaleCount = instance.VerticalBitVector.Count();
             var sumV = 0.0;
             var sumH = 0.0;
             for (int i = 0; i < numberOfScaleCount; i++)
             {        
                 // kind of Manhattan distance calculation    
-                sumV = sumV + Math.Abs(instance.VerticalByteVector[i] - template.VerticalByteVector[i]);
-                sumH = sumH = Math.Abs(instance.HorizontalByteVector[i] - template.HorizontalByteVector[i]);
+                sumV = sumV + Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]);
+                sumH = sumH = Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]);
             }
             var sum = (sumH + sumV) / 2;    
             avgdistance = sum / numberOfScaleCount; 
 
             return avgdistance; 
+        }
+
+        public static int distanceForBitFeatureVector(FeatureVector instance, FeatureVector template)
+        {
+            var distance = 0;
+            var numberOfBitCount = instance.VerticalBitVector.Count();
+            var sumV = 0;
+            var sumH = 0;
+            for (int i = 0; i < numberOfBitCount; i++)
+            {
+                // kind of Manhattan distance calculation    
+                sumV = sumV + Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]);
+                sumH = sumH + Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]);
+            }
+            var sum = (sumH + sumV) / 2;
+            distance = sum;
+
+            return distance; 
         }
 
         public static double SimilarityScoreForAvgDistance(double avgDistance, int neighbourhoodSize)
@@ -62,6 +79,8 @@
 
             return similarityScore;
         }
+
+
         /// <summary>
         /// One way to calculate Similarity Score for percentage byte vector representation.
         /// </summary>
@@ -96,7 +115,7 @@
         /// </returns>
         public static double SimilarityScoreOfDirectionByteVector(FeatureVector instance, FeatureVector template)
         {
-            var bitCount = instance.HorizontalByteVector.Count();
+            var bitCount = instance.HorizontalBitVector.Count();
 
             double similarityScore = 0.0;
             var numberOfSameHorizontalByte = 0;
@@ -105,31 +124,31 @@
             var verticalThreshold = new double[] {1, 4 };
             for (int byteIndex = 0; byteIndex < bitCount; byteIndex++)
             {
-                if (template.HorizontalByteVector[byteIndex] == 0) // they must match with each other in an exact way
+                if (template.HorizontalBitVector[byteIndex] == 0) // they must match with each other in an exact way
                 {
-                    if (Math.Abs(instance.HorizontalByteVector[byteIndex] - template.HorizontalByteVector[byteIndex]) < horizontalThreshold[(int)MatchIndex.Exact])
+                    if (Math.Abs(instance.HorizontalBitVector[byteIndex] - template.HorizontalBitVector[byteIndex]) < horizontalThreshold[(int)MatchIndex.Exact])
                     {
                         numberOfSameHorizontalByte++;
                     }
                 }
                 else  // it can have some varieations in such a case
                 {
-                    if (Math.Abs(instance.HorizontalByteVector[byteIndex] - template.HorizontalByteVector[byteIndex]) < horizontalThreshold[(int)MatchIndex.Variation])
+                    if (Math.Abs(instance.HorizontalBitVector[byteIndex] - template.HorizontalBitVector[byteIndex]) < horizontalThreshold[(int)MatchIndex.Variation])
                     {
                         numberOfSameHorizontalByte++;
                     }
                 }
 
-                if (template.VerticalByteVector[byteIndex] == 0) // they must match with each other in an exact way
+                if (template.VerticalBitVector[byteIndex] == 0) // they must match with each other in an exact way
                 {
-                    if (Math.Abs(instance.VerticalByteVector[byteIndex] - template.VerticalByteVector[byteIndex]) < verticalThreshold[(int)MatchIndex.Exact])
+                    if (Math.Abs(instance.VerticalBitVector[byteIndex] - template.VerticalBitVector[byteIndex]) < verticalThreshold[(int)MatchIndex.Exact])
                     {
                         numberOfSameVerticalByte++;
                     }
                 }
                 else  // it can have some varieations in such a case
                 {
-                    if (Math.Abs(instance.VerticalByteVector[byteIndex] - template.VerticalByteVector[byteIndex]) < verticalThreshold[(int)MatchIndex.Variation])
+                    if (Math.Abs(instance.VerticalBitVector[byteIndex] - template.VerticalBitVector[byteIndex]) < verticalThreshold[(int)MatchIndex.Variation])
                     {
                         numberOfSameVerticalByte++;
                     }
@@ -161,7 +180,7 @@
         public static double SimilarityScoreOfFuzzyDirectionVector(FeatureVector instance)
         {
             double similarityScore = 0.0;
-            var horizontalByteCount = instance.HorizontalByteVector.Count();
+            var horizontalByteCount = instance.HorizontalBitVector.Count();
             var fuzzyVerticalLine = false;
             var fuzzyHorizontalLine = false;
             for (int byteIndex = 0; byteIndex < horizontalByteCount; byteIndex++)
@@ -171,13 +190,13 @@
                     var numberOfOffset = 5;
                     for (int index1 = 0; index1 <= numberOfOffset; index1++)
                     {
-                        if (instance.VerticalByteVector[byteIndex + index1] != 0
-                            || (instance.VerticalByteVector[byteIndex + index1] != 0 && instance.VerticalByteVector[byteIndex + index1 + 1] != 0)
-                            || (instance.VerticalByteVector[byteIndex + index1] != 0 && instance.VerticalByteVector[byteIndex + index1 + 1] != 0 && instance.VerticalByteVector[byteIndex + 2] != 0))
+                        if (instance.VerticalBitVector[byteIndex + index1] != 0
+                            || (instance.VerticalBitVector[byteIndex + index1] != 0 && instance.VerticalBitVector[byteIndex + index1 + 1] != 0)
+                            || (instance.VerticalBitVector[byteIndex + index1] != 0 && instance.VerticalBitVector[byteIndex + index1 + 1] != 0 && instance.VerticalBitVector[byteIndex + 2] != 0))
                         {
-                            if ((instance.VerticalByteVector[byteIndex]
-                                + instance.VerticalByteVector[byteIndex + index1 + 1]
-                                + instance.VerticalByteVector[byteIndex + index1 + 2]) > 3)
+                            if ((instance.VerticalBitVector[byteIndex]
+                                + instance.VerticalBitVector[byteIndex + index1 + 1]
+                                + instance.VerticalBitVector[byteIndex + index1 + 2]) > 3)
                             {
                                 fuzzyVerticalLine = true;
                             }
@@ -194,13 +213,13 @@
                     {
                         if ((byteIndex + index1 + 2) < horizontalByteCount)
                         {
-                            if (instance.HorizontalByteVector[byteIndex + index1] != 0
-                                || (instance.HorizontalByteVector[byteIndex + index1] != 0 && instance.HorizontalByteVector[byteIndex + index1 + 1] != 0)
-                                || (instance.HorizontalByteVector[byteIndex + index1] != 0 && instance.HorizontalByteVector[byteIndex + index1 + 1] != 0 && instance.HorizontalByteVector[byteIndex + 2] != 0))
+                            if (instance.HorizontalBitVector[byteIndex + index1] != 0
+                                || (instance.HorizontalBitVector[byteIndex + index1] != 0 && instance.HorizontalBitVector[byteIndex + index1 + 1] != 0)
+                                || (instance.HorizontalBitVector[byteIndex + index1] != 0 && instance.HorizontalBitVector[byteIndex + index1 + 1] != 0 && instance.HorizontalBitVector[byteIndex + 2] != 0))
                             {
-                                if ((instance.HorizontalByteVector[byteIndex]
-                                    + instance.HorizontalByteVector[byteIndex + index1 + 1]
-                                    + instance.HorizontalByteVector[byteIndex + index1 + 2]) > 1)
+                                if ((instance.HorizontalBitVector[byteIndex]
+                                    + instance.HorizontalBitVector[byteIndex + index1 + 1]
+                                    + instance.HorizontalBitVector[byteIndex + index1 + 2]) > 1)
                                 {
                                     fuzzyHorizontalLine = true;
                                 }

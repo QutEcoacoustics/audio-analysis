@@ -177,11 +177,11 @@ namespace Dong.Felt
             // fuzzy presentation
             //var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             //var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
-            var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
-            result.VerticalByteVector = verticalByte;
-            result.HorizontalByteVector = horizontalByte;
-            result.NeighbourhoodSize = verticalByte.Count();
+            var verticalBitByte = new int[]   { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            var horizontaBitlByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 };
+            result.VerticalBitVector = verticalBitByte;
+            result.HorizontalBitVector = horizontaBitlByte;
+            result.NeighbourhoodSize = verticalBitByte.Count();
             return result;
         }
 
