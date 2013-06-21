@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using AudioAnalysisTools;
+    using System.Drawing;
 
     class StatisticalAnalysis
     {
@@ -30,6 +32,31 @@
             }
 
             return result; 
+        }
+
+        public static PointOfInterest[,] Submatrix(PointOfInterest[,] M, int r1, int c1, int r2, int c2)
+        {
+            int subRowCount = r2 - r1;
+            int subColCount = c2 - c1;
+
+            var subMatrix = new PointOfInterest[subRowCount, subColCount];
+            for (int i = 0; i < subRowCount; i++)
+            {
+                for (int j = 0; j < subColCount; j++)
+                {
+                    
+                    subMatrix[i, j] = new PointOfInterest(new Point(0,0));
+                }
+            }
+
+            for (int i = 0; i < subRowCount; i++)
+            {
+                for (int j = 0; j < subColCount; j++)
+                {
+                    subMatrix[i, j] = M[r1 + i, c1 + j];
+                }
+            }
+            return subMatrix;
         }
 
         // check wether it's an integer
