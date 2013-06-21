@@ -43,7 +43,7 @@
 
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
-                string wavFilePath = @"C:\Test recordings\Crows\DM420036_min430Crows-contains scarlet honeyeater.wav"; 
+                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\Samford7_20080701-065230.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
                 string annotatedImageFileName = "DM420036_min430Crows-contains scarlet honeyeater.png";
@@ -66,7 +66,7 @@
 
                 List<PointOfInterest> poiList = new List<PointOfInterest>();
                 double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
-                var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond)); // Time scale here is millionSecond? 
+                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
                 double herzScale = spectrogram.FBinWidth;
                 double freqBinCount = spectrogram.Configuration.FreqBinCount;
                 int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
@@ -126,32 +126,36 @@
                 var numberOfEdge = 3;
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
                 ////var featureVector = FeatureVector.PercentageByteFeatureVectors(filterPoiList, rows, cols, 9);  
-                var widthOfSearchNeighbourhood = 13;
-                var lengthOfSearchNeighbourhood = 13;
-                var featureVector = FeatureVector.OriginalDirectionFeatureVectors(filterPoiList, rows, cols, widthOfSearchNeighbourhood, lengthOfSearchNeighbourhood);
-                featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
+                var sizeOfSearchNeighbourhood = 13;
+                //var featureVector = FeatureVector.IntegarDirectionFeatureVectors(filterPoiList, rows, cols, sizeOfSearchNeighbourhood);
+                //featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
+                var maxFrequency = 6000;
+                var minFrequency = 5000;
+                var duration = 0.3;  // second
+                var herzPerSlice = 550; // 13 pixels
+                var durationPerSlice = 0.15;  // 13 pixels
+                var featureVector = FeatureVector.FeatureVectorForQuery(filterPoiList, maxFrequency, minFrequency, duration, herzPerSlice, durationPerSlice, herzScale, secondsScale, spectrogram.SampleRate / 2, rows, cols);
                 var finalPoiList = new List<PointOfInterest>();
 
                 //foreach (PointOfInterest poi in filterPoiList)
-                foreach (FeatureVector fv in featureVector)
-                {
-                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
-                    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate(percentageFeatureVector));
-                    
-                    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                    //var similarityThreshold = 0.6;
-                    //if (avgDistance < similarityThreshold)
-                    //{
-                    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                    //}
-                    var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                    var distanceThreshold = 5;
-                    if (distance < distanceThreshold)
-                    {
-                        finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                    }                 
-                }
+                //foreach (FeatureVector fv in featureVector)
+                //{
+                //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
+                //    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate                  (percentageFeatureVector));                   
+                //    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                //    //var similarityThreshold = 0.6;
+                //    //if (avgDistance < similarityThreshold)
+                //    //{
+                //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                //    //}
+                //    //var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                //    //var distanceThreshold = 5;
+                //    //if (distance < distanceThreshold)
+                //    //{
+                //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                //    //}                 
+                //}
 
                 var thresholdOfdistanceforClosePoi = 8;
                 finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
