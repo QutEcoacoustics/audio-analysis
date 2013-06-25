@@ -98,6 +98,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Clustering.cs" />
     <Compile Include="ConvolutionMatrix.cs" />
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
