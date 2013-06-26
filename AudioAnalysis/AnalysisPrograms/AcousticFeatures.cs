@@ -1038,28 +1038,39 @@ namespace AnalysisPrograms
             if(colorSchemeID.Equals("ACI-TEN-CVR-REV"))
             {
                 doReverseColour = true;
-                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
             } else
             if (colorSchemeID.Equals("ACI-TEN-CVR"))
             {
-                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
             }
             else
             if (colorSchemeID.Equals("ACI-CVR-TEN"))
             {
-                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, cvrMatrix, tenMatrix, doReverseColour, X_interval, Y_interval);
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, cvrMatrix, tenMatrix, doReverseColour);
             }
             else
             if (colorSchemeID.Equals("ACI-TEN-AVG-REV")) //R-G-B
             {
                 doReverseColour = true;
-                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, avgMatrix, doReverseColour, X_interval, Y_interval);
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, avgMatrix, doReverseColour);
+            }
+            else // the default
+            if (colorSchemeID.Equals("ACI-TEN-CVR_AVG")) //R-G-B-GREY
+            {
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
+            }
+            else // the default
+            if (colorSchemeID.Equals("ACI-TEN-CVR_AVG-REV")) //R-G-B-GREY
+            {
+                doReverseColour = true;
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
             }
             else // the default
             {
-                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+                bmp = ImageTools.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
             }
-
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
             return bmp;
         }
 

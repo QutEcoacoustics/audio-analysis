@@ -153,14 +153,16 @@ namespace AnalysisPrograms
                 string avgCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.avgSpectrum.csv";
                 string csvAciPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.aciSpectrum.csv";
                 string csvTenPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.tenSpectrum.csv";
-                string imagePath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrumTest8.png";
+                string imagePath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrumTest10.png";
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into AcousticFeatures.DrawFalseColourSpectrogramOfIndices()
-                string colorSchemeID = "DEFAULT"; //R-G-B
+                //string colorSchemeID = "DEFAULT"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR-REV";
                 //string colorSchemeID = "ACI-CVR-TEN";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
+                string colorSchemeID = "ACI-TEN-CVR_AVG";
 
                 // set the X and Y axis scales for the spectrograms 
                 int X_interval = 60; // assume one minute spectra and hourly time lines
