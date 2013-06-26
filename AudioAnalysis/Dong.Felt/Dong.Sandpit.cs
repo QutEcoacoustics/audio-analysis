@@ -131,7 +131,9 @@
                 //featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
                 var maxFrequency = 6000;
                 var minFrequency = 5000;
-                var duration = 0.3;  // second
+                var startTime = 0.0;
+                var endTime = 0.3;
+                var duration = endTime - startTime;  // second
                 var herzPerSlice = 550; // 13 pixels
                 var durationPerSlice = 0.15;  // 13 pixels
                 var featureVector = FeatureVector.FeatureVectorForQuery(filterPoiList, maxFrequency, minFrequency, duration, herzPerSlice, durationPerSlice, herzScale, secondsScale, spectrogram.SampleRate / 2, rows, cols);
@@ -159,7 +161,7 @@
                 var acousticEvents = Clustering.ClusterEdge(filterPoiList, rows, cols);
                 //var thresholdOfdistanceforClosePoi = 8;
                 //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
-                image = DrawSonogram(spectrogram, scores, acousticEvents, eventThreshold, finalPoiList);
+                image = DrawSonogram(spectrogram, scores, acousticEvents, eventThreshold, filterPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
@@ -185,7 +187,6 @@
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             //Add this line below
-            image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             if ((poi != null) && (poi.Count > 0))
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

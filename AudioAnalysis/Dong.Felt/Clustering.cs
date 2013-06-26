@@ -15,7 +15,7 @@ namespace Dong.Felt
     {
         
         /// <summary>
-        /// The ClusterEdge method wants to cluster edges. 
+        /// The ClusterEdge method wants to cluster edges which are connected into a acousticEvent. 
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rowsCount"></param>
@@ -37,47 +37,66 @@ namespace Dong.Felt
                     {
                         var minRowIndex = row;                       
                         var minColIndex = col;
-                        var tuple = Traverse(matrix, row, col);
-                        var maxRowIndex = tuple.Item1;
-                        var maxColIndex = tuple.Item2;
-                        result.Add(new AcousticEvent(minColIndex * 0.0116, (maxColIndex - minColIndex) * 0.0116, 11025 - maxRowIndex * 43.0, 11025 - minRowIndex * 43.0)); 
+                        int count = 0;
+                        var tuple = Traverse(matrix, row, col, count);
+                        var maxRowIndex = tuple.Item1 + 1;
+                        var maxColIndex = tuple.Item2 + 1;
+                        result.Add(new AcousticEvent(minColIndex * 0.0116, (maxColIndex - minColIndex) * 0.0116, 11025 - maxRowIndex * 43.0, 11025 - minRowIndex * 43.0));
                     }
                 }
             }
 
             return result;
         }
+        
+        // keep the edges which haven't been clustered. And leave it out for those edges that have been grouped.  
 
-        public static Tuple<int, int> Traverse(PointOfInterest[,] m,int r, int c)
+        /// <summary>
+        /// Traverse method is used to iteratively search edges connected each other. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="count">
+        /// To calculate the number of times this method is called. 
+        /// </param>
+        /// <returns></returns>
+        public static Tuple<int, int> Traverse(PointOfInterest[,] matrix,int row, int col, int count)
         {
-            var rowsCount = m.GetLength(0);
-            var colsCount = m.GetLength(1);
-            var maxRowIndex = r;
-            var maxColIndex = c;
-            if (StatisticalAnalysis.checkBoundary(r + 1, c + 1, rowsCount, colsCount) && (m[r, c + 1] != null || m[r + 1, c] != null || m[r + 1, c + 1] != null))
+            var rowsCount = matrix.GetLength(0);
+            var colsCount = matrix.GetLength(1);         
+            var rightPoi = matrix[row, col + 1];
+            var bottomPoi = matrix[row + 1, col];
+            var rightBottomPoi = matrix[row + 1, col + 1];
+            //var traversedFlag = new bool[rowsCount, colsCount];
+            // base condition (limit condition)
+            if ((!StatisticalAnalysis.checkBoundary(row + 1, col + 1, rowsCount, colsCount)) || (rightPoi == null && bottomPoi == null && rightBottomPoi == null))
+            {                          
+                return Tuple.Create(row, col);               
+            }
+            // continuation
+            else 
             {
-                if (m[r + 1, c] != null)
+                if (matrix[row, col + 1] != null && matrix[row + 1, col] == null && matrix[row + 1, col + 1] == null)
                 {
-                    maxRowIndex++;
-                    Traverse(m, maxRowIndex, maxColIndex);
+                    matrix[row, col + 1] = null;
+                    return Traverse(matrix, row, col + 1, count + 1);
+                }
+                else if (matrix[row + 1, col] != null && matrix[row, col + 1] == null && matrix[row + 1, col + 1] == null)
+                {
+                    matrix[row + 1, col] = null;
+                    return Traverse(matrix, row + 1, col, count + 1);
+                }
+                else if (matrix[row + 1, col + 1] != null && matrix[row, col + 1] == null && matrix[row + 1, col] == null)
+                {
+                    matrix[row + 1, col + 1] = null;
+                    return Traverse(matrix, row, col + 1, count + 1);
                 }
                 else
                 {
-                    if (m[r, c + 1] != null)
-                    {
-                        maxColIndex++;
-                        Traverse(m, maxRowIndex, maxColIndex);
-                    }
-                    else if (m[r + 1, c + 1] != null)
-                    {
-                        maxRowIndex++;
-                        maxColIndex++;
-                        Traverse(m, maxRowIndex, maxColIndex);
-                    }
+                    return Traverse(matrix, row + 1, col + 1, count + 1);
                 }
             }
-            var result = Tuple.Create(maxRowIndex, maxColIndex);
-            return result;           
         }
 
 
