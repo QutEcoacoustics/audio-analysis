@@ -403,23 +403,6 @@ namespace AnalysisPrograms
                 Spectrum.ListOfSpectra2CSVFile(csvPath, list);
                 imagePath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.png");
                 AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", xInterval, yInterval);
-
-                var csvAvgPath = Path.Combine(opdir.FullName, name + ".avgSpectrum.csv");
-                var csvAciPath = Path.Combine(opdir.FullName, name + ".aciSpectrum.csv");
-                var csvTenPath = Path.Combine(opdir.FullName, name + ".tenSpectrum.csv");
-
-                // draw false colour image that combines three spectrograms
-                imagePath = Path.Combine(opdir.FullName, name + ".colSpectrum.png");
-                int frame = 512;        // default value
-                int sampleRate = 17640; // default value
-                if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
-                    frame      = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
-                if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
-                    sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
-                double freqBinWidth = sampleRate / (double)frame;
-                int x_interval = 60; // assume one minute spectra and hourly time lines
-                int y_interval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
-                AcousticFeatures.DrawColourSpectrogramsOfIndices(csvAvgPath, csvAciPath, csvTenPath, imagePath, "COL", x_interval, y_interval);
                  * */
             }
 

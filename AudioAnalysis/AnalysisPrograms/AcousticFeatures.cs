@@ -974,7 +974,8 @@ namespace AnalysisPrograms
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
 
-            ImageTools.DrawMatrixWithAxes(matrix, imagePath, xInterval, yInterval); 
+            Image bmp = ImageTools.DrawMatrixWithAxes(matrix, xInterval, yInterval);
+            bmp.Save(imagePath);
         }
 
 
@@ -991,12 +992,13 @@ namespace AnalysisPrograms
         public static void DrawColourSpectrogramsOfIndices(string avgCsvPath, string cvrCsvPath, string csvAciPath, string csvTenPath, 
             string imagePath, string colorSchemeID, int X_interval, int Y_interval)
         {
-            double[,] matrixAvg = AcousticFeatures.PrepareSpectrogramMatrix(avgCsvPath);
+            double[,] avgMatrix = AcousticFeatures.PrepareSpectrogramMatrix(avgCsvPath);
             double[,] matrixCvr = AcousticFeatures.PrepareSpectrogramMatrix(cvrCsvPath);
             double[,] matrixAci = AcousticFeatures.PrepareSpectrogramMatrix(csvAciPath);
             double[,] matrixTen = AcousticFeatures.PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
 
-            AcousticFeatures.DrawFalseColourSpectrogramOfIndices(imagePath, colorSchemeID, X_interval, Y_interval, matrixAvg, matrixCvr, matrixAci, matrixTen);
+            Image bmp = AcousticFeatures.DrawFalseColourSpectrogramOfIndices(colorSchemeID, X_interval, Y_interval, avgMatrix, matrixCvr, matrixAci, matrixTen);
+            bmp.Save(imagePath);
         }
         public static double[,] PrepareSpectrogramMatrix(string csvPath)
         {
@@ -1004,37 +1006,61 @@ namespace AnalysisPrograms
 
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
-            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
             return matrix;
         }
 
         public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
         {
-            var avgMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AverageKey]);
-            var cvrMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AverageKey]);
-            var aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AcousticComplexityIndexKey]);
-            var tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.TemporalEntropyKey]);
+            var avgMatrix = spectrogramMatrixes[AcousticFeatures.AverageKey];
+            var cvrMatrix = spectrogramMatrixes[AcousticFeatures.AverageKey];
+            var aciMatrix = spectrogramMatrixes[AcousticFeatures.AcousticComplexityIndexKey];
+            var tenMatrix = spectrogramMatrixes[AcousticFeatures.TemporalEntropyKey];
 
-            AcousticFeatures.DrawFalseColourSpectrogramOfIndices(
-                savePath,
-                colorSchemeId,
-                xInterval,
-                yInterval,
-                avgMatrix,
-                cvrMatrix,
-                aciMatrix,
-                tenMatrix);
+            Image bmp = AcousticFeatures.DrawFalseColourSpectrogramOfIndices(colorSchemeId, xInterval, yInterval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
+            bmp.Save(savePath);
         }
 
 
-        public static void DrawFalseColourSpectrogramOfIndices(string imagePath, string colorSchemeID, int X_interval, int Y_interval, double[,] matrixAvg, double[,] matrixCvr, double[,] matrixAci, double[,] matrixTen)
-        {    
-            matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
-            matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
-            matrixCvr = DataTools.NormaliseInZeroOne(matrixCvr, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
-            matrixTen = DataTools.NormaliseReverseInZeroOne(matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
-            Image bmp = ImageTools.DrawColourMatrixWithAxes(matrixCvr, matrixAci, matrixTen, X_interval, Y_interval);
-            bmp.Save(imagePath);
+        public static Image DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
+        {
+            avgMatrix = MatrixTools.MatrixRotate90Anticlockwise(avgMatrix);
+            avgMatrix = DataTools.NormaliseInZeroOne(avgMatrix, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
+            aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(aciMatrix);
+            aciMatrix = DataTools.NormaliseInZeroOne(aciMatrix, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
+            cvrMatrix = MatrixTools.MatrixRotate90Anticlockwise(cvrMatrix);
+            cvrMatrix = DataTools.NormaliseInZeroOne(cvrMatrix, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
+            tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(tenMatrix);
+            tenMatrix = DataTools.NormaliseReverseInZeroOne(tenMatrix, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+
+            // default is R,G,B -> aci, ten, avg/cvr
+            bool doReverseColour = false;
+            Image bmp = null;
+            if(colorSchemeID.Equals("ACI-TEN-CVR-REV"))
+            {
+                doReverseColour = true;
+                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+            } else
+            if (colorSchemeID.Equals("ACI-TEN-CVR"))
+            {
+                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+            }
+            else
+            if (colorSchemeID.Equals("ACI-CVR-TEN"))
+            {
+                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, cvrMatrix, tenMatrix, doReverseColour, X_interval, Y_interval);
+            }
+            else
+            if (colorSchemeID.Equals("ACI-TEN-AVG-REV")) //R-G-B
+            {
+                doReverseColour = true;
+                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, avgMatrix, doReverseColour, X_interval, Y_interval);
+            }
+            else // the default
+            {
+                bmp = ImageTools.DrawRGBColourMatrixWithAxes(aciMatrix, tenMatrix, cvrMatrix, doReverseColour, X_interval, Y_interval);
+            }
+
+            return bmp;
         }
 
 
@@ -1101,5 +1127,5 @@ namespace AnalysisPrograms
         }
 
      
-    } // class AcousticIndicesExtraction
+    } // class AcousticFeatures
 }
