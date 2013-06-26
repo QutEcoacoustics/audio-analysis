@@ -135,7 +135,7 @@ namespace AnalysisPrograms
         public const double BGN_MAX = 0.5;
         public const double ACI_MIN = 0.3;
         public const double ACI_MAX = 0.7;
-        public const double CVR_MIN = 0.0;
+        public const double CVR_MIN = 0.1;
         public const double CVR_MAX = 0.8;
         public const double TEN_MIN = 0.5;
         public const double TEN_MAX = 1.0;
@@ -974,7 +974,7 @@ namespace AnalysisPrograms
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
 
-            ImageTools.DrawMatrixWithAxes(matrix, imagePath, xInterval, yInterval);
+            ImageTools.DrawMatrixWithAxes(matrix, imagePath, xInterval, yInterval); 
         }
 
 
@@ -988,51 +988,16 @@ namespace AnalysisPrograms
         /// <param name="colorSchemeID">Not yet used but could be used to determine type of false colour encoding</param>
         /// <param name="X_interval">pixel interval between X-axis lines</param>
         /// <param name="Y_interval">pixel interval between Y-axis lines</param>
-        public static void DrawColourSpectrogramsOfIndices(string avgCsvPath, string csvAciPath, string csvTenPath, 
+        public static void DrawColourSpectrogramsOfIndices(string avgCsvPath, string cvrCsvPath, string csvAciPath, string csvTenPath, 
             string imagePath, string colorSchemeID, int X_interval, int Y_interval)
         {
-            double[,] matrixAvg = PrepareSpectrogramMatrix(avgCsvPath);
-            double[,] matrixAci = PrepareSpectrogramMatrix(csvAciPath);
-            double[,] matrixTen = PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
+            double[,] matrixAvg = AcousticFeatures.PrepareSpectrogramMatrix(avgCsvPath);
+            double[,] matrixCvr = AcousticFeatures.PrepareSpectrogramMatrix(cvrCsvPath);
+            double[,] matrixAci = AcousticFeatures.PrepareSpectrogramMatrix(csvAciPath);
+            double[,] matrixTen = AcousticFeatures.PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
 
-            DrawColourSpectrogramsOfIndices(imagePath, colorSchemeID, X_interval, Y_interval, matrixAvg, matrixAci, matrixTen);
+            AcousticFeatures.DrawFalseColourSpectrogramOfIndices(imagePath, colorSchemeID, X_interval, Y_interval, matrixAvg, matrixCvr, matrixAci, matrixTen);
         }
-
-        public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
-        {
-            var averageMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AverageKey]);
-            var aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticComplexityIndexKey]);
-            var tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[TemporalEntropyKey]);
-
-            DrawColourSpectrogramsOfIndices(
-                savePath,
-                colorSchemeId,
-                xInterval,
-                yInterval,
-                averageMatrix,
-                aciMatrix,
-                tenMatrix);
-        }
-
-
-        public static void DrawColourSpectrogramsOfIndices(string imagePath, string colorSchemeID, int X_interval, int Y_interval, double[,] matrixAvg, double[,] matrixAci, double[,] matrixTen)
-        {
-    
-            matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
-            matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
-            matrixTen = DataTools.NormaliseReverseInZeroOne( matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
-            //int rowCount = matrixTen.GetLength(0);
-            //int colCount = matrixTen.GetLength(1);
-            //for (int r = 0; r < rowCount; r++)
-            //{
-            //    for (int c = 0; c < colCount; c++)
-            //    {
-            //        matrixTen[r, c] = 1 - matrixTen[r, c];
-            //    }
-            //}
-            ImageTools.DrawColourMatrixWithAxes(matrixAvg, matrixAci, matrixTen, imagePath, X_interval, Y_interval);
-        }
-
         public static double[,] PrepareSpectrogramMatrix(string csvPath)
         {
             double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
@@ -1042,6 +1007,36 @@ namespace AnalysisPrograms
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
             return matrix;
         }
+
+        public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
+        {
+            var avgMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AverageKey]);
+            var cvrMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AverageKey]);
+            var aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.AcousticComplexityIndexKey]);
+            var tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrixes[AcousticFeatures.TemporalEntropyKey]);
+
+            AcousticFeatures.DrawFalseColourSpectrogramOfIndices(
+                savePath,
+                colorSchemeId,
+                xInterval,
+                yInterval,
+                avgMatrix,
+                cvrMatrix,
+                aciMatrix,
+                tenMatrix);
+        }
+
+
+        public static void DrawFalseColourSpectrogramOfIndices(string imagePath, string colorSchemeID, int X_interval, int Y_interval, double[,] matrixAvg, double[,] matrixCvr, double[,] matrixAci, double[,] matrixTen)
+        {    
+            matrixAvg = DataTools.NormaliseInZeroOne(matrixAvg, AcousticFeatures.AVG_MIN, AcousticFeatures.AVG_MAX);
+            matrixAci = DataTools.NormaliseInZeroOne(matrixAci, AcousticFeatures.ACI_MIN, AcousticFeatures.ACI_MAX);
+            matrixCvr = DataTools.NormaliseInZeroOne(matrixCvr, AcousticFeatures.CVR_MIN, AcousticFeatures.CVR_MAX);
+            matrixTen = DataTools.NormaliseReverseInZeroOne(matrixTen, AcousticFeatures.TEN_MIN, AcousticFeatures.TEN_MAX);
+            Image bmp = ImageTools.DrawColourMatrixWithAxes(matrixCvr, matrixAci, matrixTen, X_interval, Y_interval);
+            bmp.Save(imagePath);
+        }
+
 
 
         //############################################################################################################################################################

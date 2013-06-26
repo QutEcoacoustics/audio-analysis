@@ -193,7 +193,7 @@ namespace AnalysisPrograms
             if (tsDuration.TotalSeconds == 0) // Process entire file
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE });
-            }
+            }                                                                                               
             else
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
@@ -229,13 +229,13 @@ namespace AnalysisPrograms
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
             string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectrums[AcousticFeatures.BackgroundNoiseKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[AcousticFeatures.BackgroundNoiseKey]);
             string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectrums[AcousticFeatures.AcousticComplexityIndexKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[AcousticFeatures.AcousticComplexityIndexKey]);
             string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectrums[AcousticFeatures.AverageKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[AcousticFeatures.AverageKey]);
             string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectrums[AcousticFeatures.VarianceKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[AcousticFeatures.VarianceKey]);
         } // ExecuteAnalysis()
 
 
@@ -279,13 +279,13 @@ namespace AnalysisPrograms
             analysisResults.cmbSpectrum   = indices.comboSpectrum;
              */
 
-            analysisResults.Spectrums.Add(AcousticFeatures.BackgroundNoiseKey, indices.bgNoiseSpectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.AcousticComplexityIndexKey, indices.ACIspectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.AverageKey, indices.averageSpectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.VarianceKey, indices.varianceSpectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.BinCoverageKey, indices.coverSpectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.TemporalEntropyKey, indices.HtSpectrum);
-            analysisResults.Spectrums.Add(AcousticFeatures.CombinationKey, indices.comboSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.BackgroundNoiseKey, indices.bgNoiseSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.AcousticComplexityIndexKey, indices.ACIspectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.AverageKey, indices.averageSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.VarianceKey, indices.varianceSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.BinCoverageKey, indices.coverSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.TemporalEntropyKey, indices.HtSpectrum);
+            analysisResults.Spectra.Add(AcousticFeatures.CombinationKey, indices.comboSpectrum);
 
             var sonogram = results.Item3;
             var hits     = results.Item4;

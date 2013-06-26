@@ -1994,31 +1994,31 @@ namespace TowseyLib
             bmp.Save(pathName);
         }
 
-        public static void DrawColourMatrixWithAxes(double[,] matrixAvg, double[,] matrixAci, double[,] matrixTen,
-            string pathName, int xInterval, int yInterval)
+        public static Image DrawColourMatrixWithAxes(double[,] m1, double[,] m2, double[,] m3, int xInterval, int yInterval)
         {
-            double[,] matrixAvgNorm = DataTools.normalise(matrixAvg);
-            double[,] matrixAciNorm = DataTools.normalise(matrixAci);
-            double[,] matrixTenNorm = DataTools.normalise(matrixTen);
-
-            // assume all amtricies are the same lengths
-            int rows = matrixAvg.GetLength(0); //number of rows
-            int cols = matrixAvg.GetLength(1); //number
+            // assume all amtricies are normalised and of the same dimensions
+            int rows = m1.GetLength(0); //number of rows
+            int cols = m1.GetLength(1); //number
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
             int MaxRGBValue = 255;
-            int MinRGBValue = 0;
+            // int MinRGBValue = 0;
 
             for (int row = 0; row < rows; row++)
             {
-                for (int column = 0; column < cols; column++)
+                for (int column = 0; column < cols; column++) // note that the matrix valeus are squared.
                 {
-                    int valueAvg = Convert.ToInt32(Math.Max(0, (1 - (matrixAvgNorm[row, column] * matrixAvgNorm[row, column])) * MaxRGBValue));
-                    int valueAci = Convert.ToInt32(Math.Max(0, (1 - (matrixAciNorm[row, column] * matrixAciNorm[row, column])) * MaxRGBValue));
-                    int valueTen = Convert.ToInt32(Math.Max(0, (1 - (matrixTenNorm[row, column] * matrixTenNorm[row, column])) * MaxRGBValue));
-
-                    Color colour = Color.FromArgb(valueAci, valueTen, valueAvg);
+                    int v1 = Convert.ToInt32(Math.Max(0, (1 - (m1[row, column] * m1[row, column])) * MaxRGBValue));
+                    int v2 = Convert.ToInt32(Math.Max(0, (1 - (m2[row, column] * m2[row, column])) * MaxRGBValue));
+                    int v3 = Convert.ToInt32(Math.Max(0, (1 - (m3[row, column] * m3[row, column])) * MaxRGBValue));
+                    // default is v1,v2,v3 -> aci, ten, avg/cvr
+                    //Color colour = Color.FromArgb(v1, v2, v3);
+                    //Color colour = Color.FromArgb(v1, v3, v2);
+                    //Color colour = Color.FromArgb(v2, v1, v3);
+                    Color colour = Color.FromArgb(v2, v3, v1); // DEFAULT
+                    //Color colour = Color.FromArgb(v3, v1, v2);
+                    //Color colour = Color.FromArgb(v3, v2, v1);
                     bmp.SetPixel(column, row, colour);
                 }//end all columns
             }//end all rows
@@ -2049,9 +2049,7 @@ namespace TowseyLib
                     }
                 }
             }
-
-            // save image
-            bmp.Save(pathName);
+            return bmp;
         }
 
 

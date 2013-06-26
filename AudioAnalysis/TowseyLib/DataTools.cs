@@ -231,6 +231,11 @@ namespace TowseyLib
             return op;
         }
 
+        /// <summary>
+        /// converts an array of arrays to a matrix
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         public static double[,] ConvertJaggedToMatrix(double[][] list)
         {
             int rows = list.Length;
