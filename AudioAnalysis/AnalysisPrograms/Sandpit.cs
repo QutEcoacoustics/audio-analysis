@@ -35,7 +35,7 @@ namespace AnalysisPrograms
 
 
             // experiments with Sobel ridge detector
-            if (true)
+            if (false)
             {
                 //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
                 //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
@@ -146,8 +146,24 @@ namespace AnalysisPrograms
 
 
 
+            // experiments with false colour images - categorising/discretising the colours
+            if (true)
+            {
+                string cvrCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.cvrSpectrum.csv";
+                string avgCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.avgSpectrum.csv";
+                string csvAciPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.aciSpectrum.csv";
+                string csvTenPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.tenSpectrum.csv";
+                string imagePath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrumTest1.png";
+                string colorSchemeID = "VVV";
 
-
+                // set the X and Y axis scales for the spectrograms 
+                int X_interval = 60; // assume one minute spectra and hourly time lines
+                int frameWidth = 512;   // default value - from which spectrogram was derived
+                int sampleRate = 17640; // default value - after resampling
+                double freqBinWidth = sampleRate / (double)frameWidth;
+                int Y_interval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
+                AcousticFeatures.DrawColourSpectrogramsOfIndices(avgCsvPath, cvrCsvPath, csvAciPath, csvTenPath, imagePath, colorSchemeID, X_interval, Y_interval);
+            }
 
             // experiments with false colour images - categorising/discretising the colours
             if (false)

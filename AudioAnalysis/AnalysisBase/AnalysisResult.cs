@@ -165,7 +165,7 @@
 
         public readonly Dictionary<string, double[]> spectrumsDict = new Dictionary<string, double[]>();
 
-        public Dictionary<string, double[]> Spectrums
+        public Dictionary<string, double[]> Spectra
         {
             get
             {
