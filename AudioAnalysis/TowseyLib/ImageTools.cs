@@ -1945,7 +1945,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static void DrawMatrixWithAxes(double[,] matrix, string pathName, int X_interval, int Y_interval)
+        public static Image DrawMatrixWithAxes(double[,] matrix, int X_interval, int Y_interval)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
@@ -1991,34 +1991,38 @@ namespace TowseyLib
                     }
                 }
             }
-            bmp.Save(pathName);
+            return bmp;
         }
 
-        public static Image DrawColourMatrixWithAxes(double[,] m1, double[,] m2, double[,] m3, int xInterval, int yInterval)
+        public static Image DrawRGBColourMatrixWithAxes(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour, int xInterval, int yInterval)
         {
             // assume all amtricies are normalised and of the same dimensions
-            int rows = m1.GetLength(0); //number of rows
-            int cols = m1.GetLength(1); //number
+            int rows = redM.GetLength(0); //number of rows
+            int cols = redM.GetLength(1); //number
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
             int MaxRGBValue = 255;
             // int MinRGBValue = 0;
+            int v1, v2, v3;
 
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < cols; column++) // note that the matrix valeus are squared.
                 {
-                    int v1 = Convert.ToInt32(Math.Max(0, (1 - (m1[row, column] * m1[row, column])) * MaxRGBValue));
-                    int v2 = Convert.ToInt32(Math.Max(0, (1 - (m2[row, column] * m2[row, column])) * MaxRGBValue));
-                    int v3 = Convert.ToInt32(Math.Max(0, (1 - (m3[row, column] * m3[row, column])) * MaxRGBValue));
-                    // default is v1,v2,v3 -> aci, ten, avg/cvr
-                    //Color colour = Color.FromArgb(v1, v2, v3);
-                    //Color colour = Color.FromArgb(v1, v3, v2);
-                    //Color colour = Color.FromArgb(v2, v1, v3);
-                    Color colour = Color.FromArgb(v2, v3, v1); // DEFAULT
-                    //Color colour = Color.FromArgb(v3, v1, v2);
-                    //Color colour = Color.FromArgb(v3, v2, v1);
+                    if (doReverseColour)
+                    {
+                        v1 = Convert.ToInt32(Math.Max(0, (1 - (redM[row, column] * redM[row, column])) * MaxRGBValue));
+                        v2 = Convert.ToInt32(Math.Max(0, (1 - (grnM[row, column] * grnM[row, column])) * MaxRGBValue));
+                        v3 = Convert.ToInt32(Math.Max(0, (1 - (bluM[row, column] * bluM[row, column])) * MaxRGBValue));
+                    }
+                    else
+                    {
+                        v1 = Convert.ToInt32(Math.Max(0, (redM[row, column] * redM[row, column]) * MaxRGBValue));
+                        v2 = Convert.ToInt32(Math.Max(0, (grnM[row, column] * grnM[row, column]) * MaxRGBValue));
+                        v3 = Convert.ToInt32(Math.Max(0, (bluM[row, column] * bluM[row, column]) * MaxRGBValue));
+                    }
+                    Color colour = Color.FromArgb(v1, v2, v3);
                     bmp.SetPixel(column, row, colour);
                 }//end all columns
             }//end all rows
