@@ -12,7 +12,7 @@
         /// <summary>
         /// This is North. Also known as vertical.
         /// </summary>
-        [Description("This is North. Also known as vertical.")]
+        [Description("This is East. Also known as horizontal.")]
         East = 0,
 
         /// <summary>
@@ -24,7 +24,7 @@
         /// <summary>
         /// This is East. Also known as horizontal.
         /// </summary>
-        [Description("This is East. Also known as horizontal.")]
+        [Description("This is North. Also known as vertital.")]
         North = 4,
 
         /// <summary>

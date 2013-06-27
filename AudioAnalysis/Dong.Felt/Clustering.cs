@@ -7,6 +7,7 @@ namespace Dong.Felt
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
+    using System.Drawing;
 
     /// <summary>
     /// A class for clustering (grouping) events according to some rules. 
@@ -20,10 +21,10 @@ namespace Dong.Felt
         /// <param name="poiList"></param>
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
-        public static List<AcousticEvent> ClusterEdge(List<PointOfInterest> poiList, int rowsCount, int colsCount)
+        public static List<AcousticEvents> ClusterEdges(List<PointOfInterest> poiList, int rowsCount, int colsCount)
         {
             var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            var result = new List<AcousticEvent>();
+            var result = new List<AcousticEvents>();
             //search for poi connected with each other in three positions, on the right, below and the right-below.
             for (int row = 0; row < rowsCount; row++)
             {
@@ -39,15 +40,48 @@ namespace Dong.Felt
                         var minColIndex = col;
                         int count = 0;
                         var tuple = Traverse(matrix, row, col, count);
-                        var maxRowIndex = tuple.Item1 + 1;
+                        var maxRowIndex = tuple.Item1;
                         var maxColIndex = tuple.Item2 + 1;
-                        result.Add(new AcousticEvent(minColIndex * 0.0116, (maxColIndex - minColIndex) * 0.0116, 11025 - maxRowIndex * 43.0, 11025 - minRowIndex * 43.0));
+                        result.Add(new AcousticEvents(minColIndex * 0.0116, (maxColIndex - minColIndex) * 0.0116, 11025 - maxRowIndex * 43.0, 11025 - minRowIndex * 43.0));
                     }
                 }
             }
 
             return result;
         }
+
+        public static List<AcousticEvents> ClusterEvents(List<AcousticEvents> acousticEvent, int threshold)
+        {
+            var result = new List<AcousticEvents>();
+            var copyAcousticEvents = new List<AcousticEvents>(acousticEvent);
+            foreach (var ae in acousticEvent)
+            {
+                foreach (var ae1 in copyAcousticEvents)
+                {
+                    if (ae == ae1)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        //if (Distance.ManhattanDistance(ae.Centroid, ae1.Centroid) < threshold)
+                        //{
+                        //    result.Add(new AcousticEvents(AcousticEvents.MergeEvents(ae, ae1).TimeStart,
+                        //                                  AcousticEvents.MergeEvents(ae, ae1).Duration,
+                        //                                  AcousticEvents.MergeEvents(ae, ae1).MinFreq,
+                        //                                  AcousticEvents.MergeEvents(ae, ae1).MaxFreq));
+                        //    acousticEvent.Remove(ae);
+                        //}
+                        result.Add(new AcousticEvents(AcousticEvents.MergeEvents(ae, ae1).TimeStart,
+                                                      AcousticEvents.MergeEvents(ae, ae1).Duration,
+                                                      AcousticEvents.MergeEvents(ae, ae1).MinFreq,
+                                                      AcousticEvents.MergeEvents(ae, ae1).MaxFreq));
+                    }
+                }
+            }
+            return result; 
+        }
+
         
         // keep the edges which haven't been clustered. And leave it out for those edges that have been grouped.  
 
@@ -90,7 +124,7 @@ namespace Dong.Felt
                 else if (matrix[row + 1, col + 1] != null && matrix[row, col + 1] == null && matrix[row + 1, col] == null)
                 {
                     matrix[row + 1, col + 1] = null;
-                    return Traverse(matrix, row, col + 1, count + 1);
+                    return Traverse(matrix, row + 1, col + 1, count + 1);
                 }
                 else
                 {

@@ -98,6 +98,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticEvents.cs" />
     <Compile Include="Clustering.cs" />
     <Compile Include="ConvolutionMatrix.cs" />
     <Compile Include="Distance.Tools.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="StructureTensor.cs" />
     <Compile Include="TemplateTools.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">

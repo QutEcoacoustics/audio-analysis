@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.IO;
-using TowseyLib;
-using System.Text.RegularExpressions;
-
-namespace AudioAnalysisTools
+﻿namespace Dong.Felt
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using System.IO;
+    using TowseyLib;
+    using System.Text.RegularExpressions;
     using Acoustics.Shared;
-
-    public class AcousticEvent
+    using AudioAnalysisTools;
+    public class AcousticEvents
     {
         public static Color DEFAULT_BORDER_COLOR = Color.Crimson;
         public static Color DEFAULT_SCORE_COLOR = Color.Black;
@@ -45,6 +44,7 @@ namespace AudioAnalysisTools
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
+        public Point  Centroid {get; set;}
         public string Name { get; set; }
         public string Name2 { get; set; }
 
@@ -101,7 +101,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        public AcousticEvent(double startTime, double duration, double minFreq, double maxFreq)
+        public AcousticEvents(double startTime, double duration, double minFreq, double maxFreq)
         {
             this.TimeStart = startTime;
             this.Duration = duration;
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools
         /// <param name="o"></param>
         /// <param name="frameOffset">seconds between frame starts i.e. inverse of frames per second. Sets the time scale for an event</param>
         /// <param name="binWidth">sets the frequency scale for an event</param>
-        public AcousticEvent(Oblong o, double frameOffset, double binWidth)
+        public void AcousticEvent(Oblong o, double frameOffset, double binWidth)
         {
             this.oblong = o;
             this.FreqBinWidth = binWidth;
@@ -134,6 +134,70 @@ namespace AudioAnalysisTools
             HerzBinIDs2Freq(o.c1, o.c2, binWidth, out minF, out maxF);
             this.MinFreq = minF;
             this.MaxFreq = maxF;
+        }
+
+        // leave it here to improve.
+        public void CentroidOfAcousticEvents(AcousticEvents acousticEvent)
+        {
+            var x = (int)((acousticEvent.MaxFreq - acousticEvent.MinFreq) / (2 * 43));
+            var y = (int)((acousticEvent.TimeStart - acousticEvent.TimeEnd) * 86);
+            this.Centroid = new Point(x, y); 
+        }
+
+        // Merge events
+        public static AcousticEvents MergeEvents(AcousticEvents acousticEvent1, AcousticEvents acousticEvent2)
+        {
+            var timeStart1 = acousticEvent1.TimeStart;
+            var duration1 = acousticEvent1.Duration;
+            var maxFrequency1 = acousticEvent1.MaxFreq;
+            var minFrequency1 = acousticEvent1.MinFreq;
+            var timeStart2 = acousticEvent2.TimeStart;
+            var duration2 = acousticEvent2.Duration;
+            var maxFrequency2 = acousticEvent2.MaxFreq;
+            var minFrequency2 = acousticEvent2.MinFreq;
+            var result = new AcousticEvents(acousticEvent1.TimeStart, acousticEvent1.TimeEnd - acousticEvent1.TimeStart,acousticEvent1.MaxFreq, acousticEvent1.MinFreq);
+            // Merge the overlapped events
+            if (timeStart1 < timeStart2 && duration2 < duration1 && minFrequency1 < minFrequency2 && maxFrequency2 < maxFrequency1)
+            {
+                result.TimeStart = timeStart1;
+                result.Duration = duration1;
+                result.MinFreq = minFrequency1;
+                result.MaxFreq = maxFrequency1;
+            }
+
+            //if (timeStart1 < timeStart2)
+            //{
+            //    result.TimeStart = timeStart1;
+            //}
+            //else
+            //{
+            //    result.TimeStart = timeStart2;
+            //}
+            //if (duration1 < duration2)
+            //{
+            //    result.Duration = duration2;
+            //}
+            //else
+            //{
+            //    result.Duration = duration1;
+            //}
+            //if (minFrequency1 < minFrequency2)
+            //{
+            //    result.MinFreq = minFrequency1;
+            //}
+            //else
+            //{
+            //    result.MinFreq = minFrequency2;
+            //}
+            //if (maxFrequency1 < maxFrequency2)
+            //{
+            //    result.MaxFreq= maxFrequency2;
+            //}
+            //else
+            //{
+            //    result.MaxFreq = maxFrequency1;
+            //}
+            return result;
         }
 
         public void DoMelScale(bool doMelscale, int freqBinCount)
@@ -157,7 +221,7 @@ namespace AudioAnalysisTools
             this.FreqBinCount = binCount; //required for conversions to & from MEL scale
             this.FreqBinWidth = binWidth; //required for freq-binID conversions
 
-            if (this.oblong == null) this.oblong = AcousticEvent.ConvertEvent2Oblong(this);
+            if (this.oblong == null) this.oblong = AcousticEvents.ConvertEvent2Oblong(this);
 
         }
 
@@ -170,7 +234,7 @@ namespace AudioAnalysisTools
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
 
-            if (this.oblong == null) this.oblong = AcousticEvent.ConvertEvent2Oblong(this);
+            if (this.oblong == null) this.oblong = AcousticEvents.ConvertEvent2Oblong(this);
         }
 
 
@@ -179,7 +243,7 @@ namespace AudioAnalysisTools
         /// This method called only by previous method:- SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
         /// </summary>
         /// <returns></returns>
-        public static Oblong ConvertEvent2Oblong(AcousticEvent ae)
+        public static Oblong ConvertEvent2Oblong(AcousticEvents ae)
         {
             //translate time/freq dimensions to coordinates in a matrix.
             //columns of matrix are the freq bins. Origin is top left - as per matrix in the sonogram class.
@@ -219,8 +283,8 @@ namespace AudioAnalysisTools
 
         public void DrawEvent(Graphics g, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
-            Pen p1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR); // default colour
-            Pen p2 = new Pen(AcousticEvent.DEFAULT_SCORE_COLOR);
+            Pen p1 = new Pen(AcousticEvents.DEFAULT_BORDER_COLOR); // default colour
+            Pen p2 = new Pen(AcousticEvents.DEFAULT_SCORE_COLOR);
             if (this.BorderColour != null) p1 = new Pen(this.BorderColour);
 
             //calculate top and bottom freq bins
@@ -256,22 +320,15 @@ namespace AudioAnalysisTools
             g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
         }
 
-
-
-
-
-
-
-
         /// <summary>
         /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
         /// If no event overlaps return null.
         /// </summary>
         /// <param name="events"></param>
         /// <returns></returns>
-        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
+        public AcousticEvents OverlapsEventInList(List<AcousticEvents> events)
         {
-            foreach (AcousticEvent ae in events)
+            foreach (AcousticEvents ae in events)
             {
                 if ((this.SourceFileName.Equals(ae.SourceFileName)) && (this.Overlaps(ae))) return ae;
             }
@@ -286,7 +343,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="ae"></param>
         /// <returns></returns>
-        public bool Overlaps(AcousticEvent ae)
+        public bool Overlaps(AcousticEvents ae)
         {
             if ((this.TimeStart < ae.TimeEnd) && (this.TimeEnd > ae.TimeStart))
                 return true;
@@ -304,7 +361,7 @@ namespace AudioAnalysisTools
         /// <param name="event1">an acoustic event</param>
         /// <param name="event2">an acoustic event</param>
         /// <returns></returns>
-        public static double EventFractionalOverlap(AcousticEvent event1, AcousticEvent event2)
+        public static double EventFractionalOverlap(AcousticEvents event1, AcousticEvents event2)
         {
             //if (event1.EndTime < event2.StartTime) return 0.0;
             //if (event2.EndTime < event1.StartTime) return 0.0;
@@ -427,7 +484,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
+        public static void WriteEvents(List<AcousticEvents> eventList, ref StringBuilder sb)
         {
             if (eventList.Count == 0)
             {
@@ -440,11 +497,11 @@ namespace AudioAnalysisTools
             }
             else
             {
-                AcousticEvent ae1 = eventList[0];
+                AcousticEvents ae1 = eventList[0];
                 string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             "     Event Name", "Start", "End", "MinF", "MaxF", "Score", ae1.Score2Name, "SourceFile");
                 sb.AppendLine(line);
-                foreach (AcousticEvent ae in eventList)
+                foreach (AcousticEvents ae in eventList)
                 {
                     line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                          ae.Name, ae.TimeStart, ae.TimeEnd, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFileName);
@@ -458,7 +515,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="eventList"></param>
         /// <param name="str"></param>
-        public static StringBuilder WriteEvents(List<AcousticEvent> eventList, string str)
+        public static StringBuilder WriteEvents(List<AcousticEvents> eventList, string str)
         {
             StringBuilder sb = new StringBuilder();
             if (eventList.Count == 0)
@@ -469,7 +526,7 @@ namespace AudioAnalysisTools
             }
             else
             {
-                foreach (AcousticEvent ae in eventList)
+                foreach (AcousticEvents ae in eventList)
                 {
                     string line = String.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                          ae.Name, ae.TimeStart, ae.TimeEnd, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFileName);
@@ -492,7 +549,7 @@ namespace AudioAnalysisTools
         /// <param name="minDuration">minimum duration of an event</param>
         /// <param name="maxDuration">maximum duration of an event</param>
         /// <returns></returns>
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram,
+        public static System.Tuple<List<AcousticEvents>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram,
                             bool doSegmentation, int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
@@ -500,8 +557,8 @@ namespace AudioAnalysisTools
                 double oneSD = 0.0; 
                 double dBThreshold = 0.0;
                 double[] intensity = null;
-                List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
-                var ae = new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz);
+                List<AcousticEvents> segmentEvents = new List<AcousticEvents>();
+                var ae = new AcousticEvents(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz);
                 ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
                 segmentEvents.Add(ae);
                 return System.Tuple.Create(segmentEvents, 0.0, oneSD, dBThreshold, intensity);
@@ -511,7 +568,7 @@ namespace AudioAnalysisTools
             return tuple; 
         }
 
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram, 
+        public static System.Tuple<List<AcousticEvents>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram, 
                                     int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;
@@ -520,9 +577,9 @@ namespace AudioAnalysisTools
             double Q = tuple.Item2;      //baseline dB in the original scale
             double oneSD = tuple.Item3;  //1 SD in dB around the baseline 
             double dBThreshold = thresholdSD * oneSD;
-            var segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,           
+            var segmentEvents = AcousticEvents.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,           
                                                            dBThreshold, minDuration, maxDuration);
-            foreach (AcousticEvent ev in segmentEvents)
+            foreach (AcousticEvents ev in segmentEvents)
             {
                 ev.SourceFileName = sonogram.Configuration.SourceFName;
                 //ev.Name = callName;
@@ -539,10 +596,10 @@ namespace AudioAnalysisTools
         /// <param name="eventList"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static List<AcousticEvent> GetEventsInFile(List<AcousticEvent> eventList, string fileName)
+        public static List<AcousticEvents> GetEventsInFile(List<AcousticEvents> eventList, string fileName)
         {
-            var events = new List<AcousticEvent>();
-            foreach (AcousticEvent ae in eventList)
+            var events = new List<AcousticEvents>();
+            foreach (AcousticEvents ae in eventList)
             {
                 if (ae.SourceFileName.Equals(fileName)) events.Add(ae);
             }
@@ -564,10 +621,10 @@ namespace AudioAnalysisTools
         /// <param name="match">file/recording name to match</param>
         /// <param name="labelsText">info to return as text</param>
         /// <returns>a list of Acoustic events</returns>
-        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path, string match, out string labelsText)
+        public static List<AcousticEvents> GetAcousticEventsFromLabelsFile(string path, string match, out string labelsText)
         {
             var sb = new StringBuilder();
-            var events = new List<AcousticEvent>();
+            var events = new List<AcousticEvents>();
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
@@ -600,7 +657,7 @@ namespace AudioAnalysisTools
                 //LoggedConsole.WriteLine(line);
                 sb.Append(line + "\n");
 
-                var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
+                var ae = new AcousticEvents(start, (end - start), minFreq, maxfreq);
                 ae.Score = intensity;
                 ae.Name = tag;
                 ae.SourceFileName = file;
@@ -613,10 +670,10 @@ namespace AudioAnalysisTools
         } //end method GetLabelsInFile(List<string> labels, string file)
 
 
-        public static List<AcousticEvent> GetTaggedEventsInFile(List<AcousticEvent> labeledEvents, string filename)
+        public static List<AcousticEvents> GetTaggedEventsInFile(List<AcousticEvents> labeledEvents, string filename)
         {
-            var events = new List<AcousticEvent>();
-            foreach (AcousticEvent ae in events)
+            var events = new List<AcousticEvents>();
+            foreach (AcousticEvents ae in events)
             {
                 if(ae.SourceFileName.Equals(filename)) events.Add(ae);
             }
@@ -630,7 +687,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="events"></param>
         /// <param name="secondsGap"></param>
-        public static void MergeAdjacentEvents(List<AcousticEvent> events, int secondsGap)
+        public static void MergeAdjacentEvents(List<AcousticEvents> events, int secondsGap)
         {
             for (int e = events.Count-2; e >=0; e--)
             {
@@ -659,7 +716,7 @@ namespace AudioAnalysisTools
         /// <param name="recall"></param>
         /// <param name="accuracy"></param>
         /// <param name="resultsText"></param>
-        public static void CalculateAccuracy(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
+        public static void CalculateAccuracy(List<AcousticEvents> results, List<AcousticEvents> labels, out int tp, out int fp, out int fn,
                                          out double precision, out double recall, out double accuracy, out string resultsText)
         {
             //init  values
@@ -675,13 +732,13 @@ namespace AudioAnalysisTools
             var sb = new StringBuilder(header + "\n");
             string previousSourceFile = "  ";
 
-            foreach (AcousticEvent ae in results)
+            foreach (AcousticEvents ae in results)
             {
                 count++;
                 double end = ae.TimeStart + ae.Duration; //calculate end time of the result event
-                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.SourceFileName); //get all & only those labelled events in same file as result ae
+                var labelledEvents = AcousticEvents.GetEventsInFile(labels, ae.SourceFileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.SourceFileName);   //keep list of source files that the detected events come from
-                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                AcousticEvents overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
@@ -716,7 +773,7 @@ namespace AudioAnalysisTools
             fn = 0;
             count = 0;
             previousSourceFile = " "; //this is just a device to achieve a formatting hwich is easier to interpret
-            foreach (AcousticEvent ae in labels)
+            foreach (AcousticEvents ae in labels)
             {
                 count++;
                 string hitFile = "";
@@ -775,7 +832,7 @@ namespace AudioAnalysisTools
         /// <param name="recall"></param>
         /// <param name="accuracy"></param>
         /// <param name="resultsText"></param>
-        public static void CalculateAccuracyOnOneRecording(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
+        public static void CalculateAccuracyOnOneRecording(List<AcousticEvents> results, List<AcousticEvents> labels, out int tp, out int fp, out int fn,
                                          out double precision, out double recall, out double accuracy, out string resultsText)
         {
             //init  values
@@ -791,13 +848,13 @@ namespace AudioAnalysisTools
             string line = null;
             var sb = new StringBuilder(header + "\n");
 
-            foreach (AcousticEvent ae in results)
+            foreach (AcousticEvents ae in results)
             {
                 count++;
                 double end = ae.TimeStart + ae.Duration; //calculate end time of the result event
-                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.SourceFileName); //get all & only those labelled events in same file as result ae
+                var labelledEvents = AcousticEvents.GetEventsInFile(labels, ae.SourceFileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.SourceFileName);   //keep list of source files that the detected events come from
-                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                AcousticEvents overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
@@ -819,7 +876,7 @@ namespace AudioAnalysisTools
             //LoggedConsole.WriteLine();
             sb.Append("\n");
             count = 0;
-            foreach (AcousticEvent ae in labels)
+            foreach (AcousticEvents ae in labels)
             {
                 count++;
                 if (ae.Tag == false)
@@ -870,11 +927,11 @@ namespace AudioAnalysisTools
         
 
 
-        public static List<AcousticEvent> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
+        public static List<AcousticEvents> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth, double scoreThreshold, double minDuration, double maxDuration)
         {
             int count = values.Length;
-            var events = new List<AcousticEvent>();
+            var events = new List<AcousticEvents>();
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
             double startTime = 0.0;
@@ -896,7 +953,7 @@ namespace AudioAnalysisTools
                         double duration = endTime - startTime;
                         //if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        AcousticEvents ev = new AcousticEvents(startTime, duration, minHz, maxHz);
                         ev.Name = "Acoustic Segment"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
@@ -929,11 +986,11 @@ namespace AudioAnalysisTools
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <param name="callID">  name of the event to be added to AcousticEvent class</param>
         /// <returns>a list of acoustic events</returns>
-        public static List<AcousticEvent> ConvertScoreArray2Events(double[] scores, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
+        public static List<AcousticEvents> ConvertScoreArray2Events(double[] scores, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
                                                                    double scoreThreshold, double minDuration, double maxDuration)
         {
             int count = scores.Length;
-            var events = new List<AcousticEvent>();
+            var events = new List<AcousticEvents>();
             double maxPossibleScore = 5 * scoreThreshold; // used to calcualte a normalised score bewteen 0 - 1.0 
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
@@ -956,7 +1013,7 @@ namespace AudioAnalysisTools
                         double duration = endTime - startTime;
                         // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        AcousticEvents ev = new AcousticEvents(startTime, duration, minHz, maxHz);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                         // obtain an average score for the duration of the event.
@@ -1002,7 +1059,7 @@ namespace AudioAnalysisTools
         /// <param name="qualitySD"></param>
         /// <param name="qualityThreshold"></param>
         /// <returns></returns>
-        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string targetName)
+        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvents> events, int arraySize, string targetName)
         //public static double[] ExtractScoreArray(List<AcousticEvent> events, string iniFile, int arraySize, string targetName)
         {
             double[] scores = new double[arraySize];
@@ -1039,6 +1096,7 @@ namespace AudioAnalysisTools
         } //end method
 
         //##############################################################################################################################################
+
 
 
     }
