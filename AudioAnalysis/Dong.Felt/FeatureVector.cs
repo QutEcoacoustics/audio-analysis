@@ -123,6 +123,129 @@
 
         #region Public Method
 
+        public static List<FeatureVector> ImprovedIntegerDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        {
+            var result = new List<FeatureVector>();
+
+            // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
+            var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            // limite the frequency rang
+            for (int row = 12; row < rowsCount; row++)
+            {
+                for (int col = 12; col < colsCount; col++)
+                {
+                    if (Matrix[row, col] == null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
+                        var verticalDirection = new int[sizeOfNeighbourhood];
+                        var horizontalDirection = new int[sizeOfNeighbourhood];
+                        var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+                        var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+
+                        // For the calculation of horizontal direction byte, we need to check each row 
+                        for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+                        {
+                            for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
+                            {
+                                // check boundary of index 
+                                if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
+                                {
+                                    if ((Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && Matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
+                                    {
+                                        horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
+                                    }
+                                }
+                            }
+                        }
+
+                        // For the calculation of vertical direction byte, we need to check each column
+                        for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+                        {
+                            for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
+                            {
+                                if (StatisticalAnalysis.checkBoundary(row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex, rowsCount, colsCount))
+                                {
+                                    if ((Matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex] != null) && Matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
+                                    {
+                                        verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
+                                    }
+                                }
+                            }
+                        }
+                        // For the calculation of negativeDiagonal direction, we need to check each diagonal line.
+                        for (int offset = 0; offset < sizeOfNeighbourhood; offset++)
+                        {
+                            for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                            {
+                                if (StatisticalAnalysis.checkBoundary(row + offsetIndex + offset, col + offsetIndex, rowsCount - row + radiusOfNeighbourhood, colsCount - col + radiusOfNeighbourhood, rowsCount - row - radiusOfNeighbourhood - 1, colsCount - col - radiusOfNeighbourhood - 1))
+                                {
+                                    if ((Matrix[row + offsetIndex + offset, col + offsetIndex] != null) && (Matrix[row + offsetIndex + offset, col + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
+                                    {
+                                        negativeDiagonalDirection[sizeOfNeighbourhood - offset - 1]++;
+                                    }
+                                }
+                            }
+                        }
+                        for (int offset = 1; offset < sizeOfNeighbourhood; offset++)
+                        {
+                            for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                            {
+                                if (StatisticalAnalysis.checkBoundary(row + offsetIndex - offset, col + offsetIndex, rowsCount - row + radiusOfNeighbourhood, colsCount - col + radiusOfNeighbourhood, rowsCount - row - radiusOfNeighbourhood - 1, colsCount - col - radiusOfNeighbourhood - 1))
+                                {
+                                    if ((Matrix[row + offsetIndex - offset, col + offsetIndex] != null) && (Matrix[row + offsetIndex - offset, col + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
+                                    {
+                                        negativeDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
+                                    }
+                                }
+                            }
+                        }
+
+                        // For the calculation of positiveDiagonal direction, we need to check each diagonal line.
+                        for (int offset = 0; offset < sizeOfNeighbourhood; offset++)
+                        {
+                            for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                            {
+                                if (StatisticalAnalysis.checkBoundary(row + offsetIndex, col - offsetIndex - offset, rowsCount - row + radiusOfNeighbourhood, colsCount - col + radiusOfNeighbourhood, rowsCount - row - radiusOfNeighbourhood - 1, colsCount - col - radiusOfNeighbourhood - 1))
+                                {
+                                    if ((Matrix[row + offsetIndex, col - offsetIndex - offset] != null) && (Matrix[row + offsetIndex, col - offsetIndex - offset].OrientationCategory == (int)Direction.NorthEast))
+                                    {
+                                        positiveDiagonalDirection[sizeOfNeighbourhood - offset - 1]++;
+                                    }
+                                }
+                            }
+                        }
+                        for (int offset = 1; offset < sizeOfNeighbourhood; offset++)
+                        {
+                            for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                            {
+                                if (StatisticalAnalysis.checkBoundary(row + offsetIndex, col - offsetIndex + offset, rowsCount - row + radiusOfNeighbourhood, colsCount - col + radiusOfNeighbourhood, rowsCount - row - radiusOfNeighbourhood - 1, colsCount - col - radiusOfNeighbourhood - 1))
+                                {
+                                    if ((Matrix[row + offsetIndex, col - offsetIndex + offset] != null) && (Matrix[row + offsetIndex, col - offsetIndex + offset].OrientationCategory == (int)Direction.NorthEast))
+                                    {
+                                        positiveDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        result.Add(new FeatureVector(new Point(row, col))
+                        {
+                            HorizontalVector = horizontalDirection,
+                            VerticalVector = verticalDirection,
+                            PositiveDiagonalVector = positiveDiagonalDirection,
+                            NegativeDiagonalVector = negativeDiagonalDirection
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
         /// <summary>
         /// The method of DirectionByteFeatureVectors can be used to generate integer directionFeatureVectors, which means it includes sub-feature vector 
         /// for each direction. And the size of each sub-featureVector is determined by sizeOfNeighbourhood.
@@ -135,17 +258,17 @@
         /// <returns>
         /// It will return a list of featureVector objects whose DirectionByteFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> IntegarDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<FeatureVector> IntegerDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
             var result = new List<FeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
-            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             // limite the frequency rang
-            for (int row = 116; row < 140; row++)
+            for (int row = 12; row < rowsCount; row++)
             {
-                for (int col = 0; col < colsCount; col++)
+                for (int col = 12; col < colsCount; col++)
                 {
                     if (Matrix[row, col] == null)
                     {
@@ -157,7 +280,7 @@
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
-                        var negativeDiagonalDirection = new int[sizeOfNeighbourhood]; 
+                        var negativeDiagonalDirection = new int[sizeOfNeighbourhood];
 
                         // For the calculation of horizontal direction byte, we need to check each row 
                         for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
@@ -194,13 +317,13 @@
                         {
                             for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
                             {
-                                 if (StatisticalAnalysis.checkBoundary(row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex, rowsCount, colsCount))
-                                 {
-                                     if ((Matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex] != null) && Matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthEast)
-                                       {
-                                            positiveDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
-                                       }
-                                 }
+                                if (StatisticalAnalysis.checkBoundary(row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex, rowsCount, colsCount))
+                                {
+                                    if ((Matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex] != null) && Matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthEast)
+                                    {
+                                        positiveDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
+                                    }
+                                }
                             }
                         }
 
@@ -213,16 +336,20 @@
                                 {
                                     if ((Matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex] != null) && Matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthWest)
                                     {
-                                         negativeDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
+                                        negativeDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
                                     }
                                 }
                             }
                         }
-                        
-                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalVector = horizontalDirection, VerticalVector = verticalDirection,
-                                                                            PositiveDiagonalVector = positiveDiagonalDirection,
-                                                                            NegativeDiagonalVector = negativeDiagonalDirection});
-                    } 
+
+                        result.Add(new FeatureVector(new Point(row, col))
+                        {
+                            HorizontalVector = horizontalDirection,
+                            VerticalVector = verticalDirection,
+                            PositiveDiagonalVector = positiveDiagonalDirection,
+                            NegativeDiagonalVector = negativeDiagonalDirection
+                        });
+                    }
                 }
             }
             return result;
@@ -244,7 +371,7 @@
                 result[i] = array[i] / (double)histogramCount;
             }
 
-            return result; 
+            return result;
         }
 
         /// <summary>
@@ -258,8 +385,8 @@
         {
             var horizontalBitVectorCount = featureVectorList[0].HorizontalBitVector.Count();
             var verticalBitVectorCount = featureVectorList[0].VerticalBitVector.Count();
-          
-            var thresholdForBitVector = 0.2;          
+
+            var thresholdForBitVector = 0.2;
             foreach (var fv in featureVectorList)
             {
                 var normalizedHorizontalBitVector = NormalizedFeatureVector(fv.HorizontalVector);
@@ -305,8 +432,8 @@
                     }
                 }
             }
-            
-            return featureVectorList; 
+
+            return featureVectorList;
         }
 
         /// <summary>
@@ -401,7 +528,7 @@
                                 }
                             }
                         }
-                   
+
                         result.Add(new FeatureVector(new Point(row, col))
                         {
                             HorizontalFractionVector = NormalizedFeatureVector(horizontalDirection),
@@ -593,13 +720,12 @@
         /// <returns></returns>
         public static List<List<FeatureVector>> FeatureVectorForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
                                                                double duration, int herzPerSlice, double durationPerSlice, double herzScale, double timeScale,
-                                                               double sampleRate, int rowsCount, int colsCount)
+                                                               double nyquistFrequency, int rowsCount, int colsCount)
         {
             var rowsCountPerSlice = (int)Math.Ceiling(herzPerSlice / herzScale);  // 13 pixels  560Hz
             var colsCountPerSlice = (int)Math.Ceiling(durationPerSlice / timeScale); // 13 pixels 0.15 second
-            var MaxRowIndex = (int)Math.Ceiling((sampleRate - minFrequency) / herzScale);
-            var MinRowIndex = (int)Math.Floor((sampleRate - maxFrequency) / herzScale);
-            var radiusOfSlice = rowsCountPerSlice / 2;
+            var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
+            var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
             var numberOfRowSlices = (int)Math.Ceiling((maxFrequency - minFrequency) / herzPerSlice);
             var numberOfColSlices = (int)Math.Ceiling(duration / durationPerSlice);
             //var result1 = new List<FeatureVector>[numberOfRowSlices, numberOfColSlices];
@@ -614,7 +740,7 @@
                     for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
                     {
                         for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
-                        {                           
+                        {
                             if (StatisticalAnalysis.checkBoundary(row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice, rowsCount, colsCount))
                             {
                                 var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row + sliceRowIndex * rowsCountPerSlice, col + sliceColIndex * colsCountPerSlice, row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice);
@@ -637,7 +763,7 @@
 
         public static FeatureVector SliceDirectionFeatureVectors(PointOfInterest[,] matrix, int PointX, int PointY)
         {
-            var result = new FeatureVector(new Point(PointX, PointY)); 
+            var result = new FeatureVector(new Point(PointX, PointY));
             var sizeOfNeighbourhood = matrix.GetLength(0);
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
@@ -645,7 +771,7 @@
             for (int row = 0; row < sizeOfNeighbourhood; row++)
             {
                 for (int col = 0; col < sizeOfNeighbourhood; col++)
-                {    
+                {
                     // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
                     var verticalDirection = new int[sizeOfNeighbourhood];
                     var horizontalDirection = new int[sizeOfNeighbourhood];
@@ -655,66 +781,66 @@
                     // For the calculation of horizontal direction byte, we need to check each row 
                     for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
                     {
-                         for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
-                         {
-                             // check boundary of index 
-                             if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                             {
-                                 if ((matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
-                                 {
-                                     horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
-                                 }
-                             }
-                         }
-                     }
-
-                     // For the calculation of vertical direction byte, we need to check each column
-                     for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
-                     {
-                         for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
-                         {
-                             if (StatisticalAnalysis.checkBoundary(row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                              {
-                                  if ((matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex] != null) && matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
-                                  {
-                                      verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
-                                  }
-                              }
-                         }
-                     }
-                     // For the calculation of positive diagonal direction byte, we need to check each diagnal column
-                     for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
-                     {
-                          for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
-                          {
-                              if (StatisticalAnalysis.checkBoundary(row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                              {
-                                  if ((matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex] != null) && matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthEast)
-                                  {
-                                      positiveDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
-                                  }
-                              }
-                          }
-                      }
-
-                      // For the calculation of negative diagonal direction byte, we need to check each diagnal column
-                      for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
-                      {
-                           for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
-                           {
-                               if (StatisticalAnalysis.checkBoundary(row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                        for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
+                        {
+                            // check boundary of index 
+                            if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                            {
+                                if ((matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
                                 {
-                                    if ((matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex] != null) && matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthWest)
-                                    {
-                                        negativeDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
-                                    }
+                                    horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
                                 }
                             }
                         }
-                        result.HorizontalVector = horizontalDirection;
-                        result.VerticalVector = verticalDirection;
-                        result.PositiveDiagonalVector = positiveDiagonalDirection;
-                        result.NegativeDiagonalVector = negativeDiagonalDirection;
+                    }
+
+                    // For the calculation of vertical direction byte, we need to check each column
+                    for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+                    {
+                        for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
+                        {
+                            if (StatisticalAnalysis.checkBoundary(row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                            {
+                                if ((matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex] != null) && matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
+                                {
+                                    verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
+                                }
+                            }
+                        }
+                    }
+                    // For the calculation of positive diagonal direction byte, we need to check each diagnal column
+                    for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                    {
+                        for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
+                        {
+                            if (StatisticalAnalysis.checkBoundary(row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                            {
+                                if ((matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex] != null) && matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthEast)
+                                {
+                                    positiveDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
+                                }
+                            }
+                        }
+                    }
+
+                    // For the calculation of negative diagonal direction byte, we need to check each diagnal column
+                    for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
+                    {
+                        for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
+                        {
+                            if (StatisticalAnalysis.checkBoundary(row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                            {
+                                if ((matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex] != null) && matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthWest)
+                                {
+                                    negativeDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
+                                }
+                            }
+                        }
+                    }
+                    result.HorizontalVector = horizontalDirection;
+                    result.VerticalVector = verticalDirection;
+                    result.PositiveDiagonalVector = positiveDiagonalDirection;
+                    result.NegativeDiagonalVector = negativeDiagonalDirection;
                 }
             }
             return result;

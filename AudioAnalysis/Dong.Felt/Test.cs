@@ -1,6 +1,4 @@
-﻿
-
-namespace Dong.Felt
+﻿namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
@@ -8,18 +6,43 @@ namespace Dong.Felt
     using System.Text;
     using System.Drawing;
     using TowseyLib;
+    using AudioAnalysisTools;
     // using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    class StructureTensorTest
+    public class StructureTensorTest
     {
         public double[,] testMatrix1 = {{0.0, 0.0, 0.0, 0.0, 0.0},
                                         {0.0, 0.0, 0.0, 0.0, 0.0},
                                         {13.86, 18.03, 18.81, 14.9, 0.0},
                                         {6.66, 18.8, 16.69, 3.12, 0.0},
                                         {2.3, 18.0, 17.9, 5.9, 5.9}};
-
+                                                           //1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+        public static int[,] testMatrixForRepresentation = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //1
+                                                            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //2 
+                                                            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //3
+                                                            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //4 
+                                                            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //5
+                                                            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //6 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //7 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //8
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //9 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //10 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //11 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //12 
+                                                            {5, 5, 5, 5, 5, 5, 4, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //13 
+                                                            {5, 5, 5, 5, 6, 5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //14
+                                                            {5, 5, 5, 5, 5, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //15
+                                                            {5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //16
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //17
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //18
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //19
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //20
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //21
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //22
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //23
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //24
+                                                            {5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}}; //25
         // construct a fake bitmap
-        
         public static Bitmap createNullBitmap()
         {
             int height = 4133;
@@ -70,13 +93,34 @@ namespace Dong.Felt
 
         //double[,] TowseyLib.ImageTools.GreyScaleImage2Matrix(bmp);
 
-            /// <summary>
-        /// A test for structureTensor.
-        /// </summary>
-        public void StrutureTensorTest()
+        public static List<PointOfInterest> createFalsePoiFromMatrix(int[,] RepresentationMatrix)
         {
-            
+            var result = new List<PointOfInterest>();
+            var rowCount = RepresentationMatrix.GetLength(0);
+            var colCount = RepresentationMatrix.GetLength(1);
+
+            for (int row = 0; row < rowCount; row++)
+            {
+                for (int col = 0; col < colCount; col++)
+                {
+                    result.Add(new PointOfInterest(new Point(row, col)) {OrientationCategory = RepresentationMatrix[row, col]});
+                }
+            }
+            return result;
         }
 
+        public static PointOfInterest[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            foreach (PointOfInterest poi in list)
+            {
+                m[poi.Point.X, poi.Point.Y] = poi;
+            }
+            return m;
+        }
+
+    
+    
+    
     }
 }
