@@ -114,33 +114,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDir);
             }
 
-            // code to test reading of csv files into matrix into spectrogram
-            if (false)
-            {
-                string csvPath   = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.csv";
-                string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.png";
-                int X_interval = 60; // assume one minute spedctra and hourly time lines
-                int frame = 512;
-                int sampleRate = 17640;
-                double freqBinWidth = sampleRate / (double)frame;
-                int Y_interval = (int)Math.Round(1000 / freqBinWidth);
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
-                System.Environment.Exit(666);
-            }
-
-            if (false)
-            {
-                var csvAvg = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.avgSpectrum.csv";
-                var csvCvr = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cvrSpectrum.csv";
-                var csvAci = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.aciSpectrum.csv";
-                var csvTen = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.tenSpectrum.csv";
-
-                string imagePath = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cmbSpectrum_colour_towardsblack.png";
-                int X_interval = 60; // assume one minute spedctra and hourly time lines
-                int Y_interval = (int)Math.Round(1000 / (double)34.5);
-                AcousticFeatures.DrawColourSpectrogramsOfIndices(csvAvg, csvCvr, csvAci, csvTen, imagePath, "CMB", X_interval, Y_interval);
-                System.Environment.Exit(666);
-            }
 
             // 1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
@@ -351,7 +324,7 @@ namespace AnalysisPrograms
 
                     // prepare image and write to disk
                     var imagePath = Path.Combine(opdir.FullName, name + "."+ spectrumKey +".png");
-                    var matrix = AcousticFeatures.DrawSpectrogramsOfIndices(numbers, imagePath, spectrumKey, xInterval, yInterval);
+                    var matrix = ColourSpectrogram.DrawSpectrogramsOfIndices(numbers, imagePath, spectrumKey, xInterval, yInterval);
 
                     // store all the spectrograms as matrices to use later
                     spectrogramMatrixes.Add(spectrumKey, matrix);
@@ -359,7 +332,7 @@ namespace AnalysisPrograms
 
                 // now write the special version
                 var colorImageSavePath = Path.Combine(opdir.FullName, name + ".colSpectrum.png");
-                AcousticFeatures.DrawColourSpectrogramsOfIndices(spectrogramMatrixes, colorImageSavePath, "COL", xInterval, yInterval);
+                ColourSpectrogram.DrawColourSpectrogramsOfIndices(spectrogramMatrixes, colorImageSavePath, "COL", xInterval, yInterval);
 
                 /*
                 list = ResultsTools.MergeBGNSpectraIntoSpectrograms(analyserResults);

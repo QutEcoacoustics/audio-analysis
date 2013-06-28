@@ -1966,67 +1966,14 @@ namespace TowseyLib
                 }//end all columns
             }//end all rows
 
-            // for rows draw in Y-axis line
-            for (int r = 0; r < rows; r++)
-            {
-                if ((r > 0) && (r % Y_interval == 0))
-                {
-                    int rowFromBottom = rows - r;
-                    for (int c = 0; c < cols; c++)
-                    {
-                        bmp.SetPixel(c, rowFromBottom, Color.Gray);
-                        c++;
-                    }
-                }
-            }
-            // for columns, draw in X-axis lines
-            for (int c = 0; c < cols; c++)
-            {
-                if ((c > 0) && (c % X_interval == 0))
-                {
-                    for (int r = 0; r < rows; r++)
-                    {
-                        bmp.SetPixel(c, r, Color.Gray);
-                        r++;
-                    }
-                }
-            }
+            DrawGridLinesOnImage(bmp, X_interval, Y_interval);
             return bmp;
         }
 
-        public static Image DrawRGBColourMatrixWithAxes(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour, int xInterval, int yInterval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, int xInterval, int yInterval)
         {
-            // assume all amtricies are normalised and of the same dimensions
-            int rows = redM.GetLength(0); //number of rows
-            int cols = redM.GetLength(1); //number
-
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-
-            int MaxRGBValue = 255;
-            // int MinRGBValue = 0;
-            int v1, v2, v3;
-
-            for (int row = 0; row < rows; row++)
-            {
-                for (int column = 0; column < cols; column++) // note that the matrix valeus are squared.
-                {
-                    if (doReverseColour)
-                    {
-                        v1 = Convert.ToInt32(Math.Max(0, (1 - (redM[row, column] * redM[row, column])) * MaxRGBValue));
-                        v2 = Convert.ToInt32(Math.Max(0, (1 - (grnM[row, column] * grnM[row, column])) * MaxRGBValue));
-                        v3 = Convert.ToInt32(Math.Max(0, (1 - (bluM[row, column] * bluM[row, column])) * MaxRGBValue));
-                    }
-                    else
-                    {
-                        v1 = Convert.ToInt32(Math.Max(0, (redM[row, column] * redM[row, column]) * MaxRGBValue));
-                        v2 = Convert.ToInt32(Math.Max(0, (grnM[row, column] * grnM[row, column]) * MaxRGBValue));
-                        v3 = Convert.ToInt32(Math.Max(0, (bluM[row, column] * bluM[row, column]) * MaxRGBValue));
-                    }
-                    Color colour = Color.FromArgb(v1, v2, v3);
-                    bmp.SetPixel(column, row, colour);
-                }//end all columns
-            }//end all rows
-
+            int rows = bmp.Height;
+            int cols = bmp.Width;
             // for rows draw in Y-axis line
             for (int row = 0; row < rows; row++)
             {
@@ -2040,7 +1987,6 @@ namespace TowseyLib
                     }
                 }
             }
-
             // for columns, draw in X-axis lines
             for (int column = 0; column < cols; column++)
             {
@@ -2053,10 +1999,7 @@ namespace TowseyLib
                     }
                 }
             }
-            return bmp;
-        }
-
-
+        } // DrawGridLInesOnImage()
 
 
         /// <summary>
