@@ -1912,32 +1912,13 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// Draws matrix
+        /// Draws matrix and save image
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
-            int rows = matrix.GetLength(0); //number of rows
-            int cols = matrix.GetLength(1); //number
-
-            Color[] grayScale = GrayScale();
-
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-
-            double[,] norm = DataTools.normalise(matrix);
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    int greyId = (int)Math.Floor(norm[r, c] * 255);
-                    if (greyId < 0) greyId = 0;
-                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
-                    bmp.SetPixel(c, r, grayScale[greyId]);
-                }//end all columns
-            }//end all rows
-
-
+            Image bmp = DrawMatrix(matrix);
             bmp.Save(pathName);
         }
         /// <summary>
@@ -1945,7 +1926,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static Image DrawMatrixWithAxes(double[,] matrix, int X_interval, int Y_interval)
+        public static Image DrawMatrix(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
@@ -1965,8 +1946,6 @@ namespace TowseyLib
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows
-
-            DrawGridLinesOnImage(bmp, X_interval, Y_interval);
             return bmp;
         }
 

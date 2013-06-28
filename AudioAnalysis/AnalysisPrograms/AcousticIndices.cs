@@ -270,7 +270,7 @@ namespace AnalysisPrograms
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_AcousticComplexityIndex, indices.ACIspectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_Average, indices.averageSpectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_Variance, indices.varianceSpectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BinCoverage, indices.coverSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BinCover, indices.coverSpectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_TemporalEntropy, indices.HtSpectrum);
 
             var sonogram = results.Item3;
