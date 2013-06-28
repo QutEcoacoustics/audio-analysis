@@ -34,26 +34,27 @@
             return result; 
         }
 
-        public static PointOfInterest[,] Submatrix(PointOfInterest[,] M, int r1, int c1, int r2, int c2)
+        /// <summary>
+        /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="row1"></param>
+        /// <param name="col1"></param>
+        /// <param name="row2"></param>
+        /// <param name="col2"></param>
+        /// <returns></returns>
+        public static PointOfInterest[,] Submatrix(PointOfInterest[,] matrix, int row1, int col1, int row2, int col2)
         {
-            int subRowCount = r2 - r1;
-            int subColCount = c2 - c1;
+            int subRowCount = row2 - row1;
+            int subColCount = col2 - col1;
 
             var subMatrix = new PointOfInterest[subRowCount, subColCount];
-            for (int i = 0; i < subRowCount; i++)
+            for (int row = 0; row < subRowCount; row++)
             {
-                for (int j = 0; j < subColCount; j++)
+                for (int col = 0; col < subColCount; col++)
                 {
-                    
-                    subMatrix[i, j] = new PointOfInterest(new Point(0,0));
-                }
-            }
-
-            for (int i = 0; i < subRowCount; i++)
-            {
-                for (int j = 0; j < subColCount; j++)
-                {
-                    subMatrix[i, j] = M[r1 + i, c1 + j];
+                    subMatrix[row, col] = new PointOfInterest(new Point(row1 + row, col1 + col));
+                    subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
                 }
             }
             return subMatrix;
@@ -92,6 +93,88 @@
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// To calculate how many edges per timeUnit(such as per second)
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="timeUnit"></param>
+        /// <param name="secondScale"></param>
+        /// <returns>
+        /// returns an average value for a recording
+        /// </returns>
+        public static int EdgeStatistics(List<PointOfInterest> poiList, int rowsCount, int colsCount, double timeUnit, double secondScale)
+        {
+            var SecondToMillionSecondUnit = 1000;
+            var numberOfframePerTimeunit = (int)(timeUnit * (SecondToMillionSecondUnit / (secondScale * SecondToMillionSecondUnit)));
+            var UnitCount = (int)(colsCount / numberOfframePerTimeunit);
+            var countOfpoi = poiList.Count();
+            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);
+            //var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            //var result = new int[CeilCount];
+            //for (int i = 0; i < CeilCount; i++)
+            //{
+            //    for (int col = i * numberOfframePerTimeunit; col < (i + 1) * numberOfframePerTimeunit; col++)
+            //    {
+            //         for (int row = 0; row < rowsCount; row++)
+            //         {
+            //             if (StatisticalAnalysis.checkBoundary(row, col, rowsCount, colsCount))
+            //             {
+            //                 if (Matrix[row, col] != null)
+            //                 {
+            //                     result[i]++;
+            //                 }
+            //             }
+            //         }
+            //    }
+            //}
+            return avgEdgePerTimeunit;
+        }
+
+        /// <summary>
+        /// This mask is unuseful at this moment. Maybe use it later
+        /// </summary>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <returns></returns>
+        public static int[,] DiagonalMask(int sizeOfNeighbourhood)
+        {
+            var result = new int[sizeOfNeighbourhood, sizeOfNeighbourhood];
+
+            // above part
+            for (int row = 0; row < sizeOfNeighbourhood / 2; row++)
+            {
+                for (int col = 0; col < sizeOfNeighbourhood / 2 - row; col++)
+                {
+                    result[row, col] = 0;
+                }
+                for (int colOffset = -row; colOffset <= row; colOffset++)
+                {
+                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
+                }
+            }
+
+            // for middle part
+            for (int col = 0; col < sizeOfNeighbourhood; col++)
+            {
+                result[sizeOfNeighbourhood / 2, col] = 1;
+            }
+
+            // for below part
+            for (int row = sizeOfNeighbourhood / 2 + 1; row < sizeOfNeighbourhood; row++)
+            {
+                for (int col = 0; col < sizeOfNeighbourhood - row; col++)
+                {
+                    result[row, col] = 0;
+                }
+                for (int colOffset = -(sizeOfNeighbourhood - row - 1); colOffset <= sizeOfNeighbourhood - row - 1; colOffset++)
+                {
+                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
+                }
+            }
+            return result;
         }
 
         //public static List<double> DistanceHistogram(List<FeatureVector> distance, int neighbourhoodSize)
