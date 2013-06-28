@@ -147,15 +147,17 @@ namespace AnalysisPrograms
             // code to test reading of csv files into matrix into spectrogram
             if (false)
             {
+                var cs = new ColourSpectrogram();
+                // set the X and Y axis scales for the spectrograms 
+                cs.X_interval = 60;    // assume one minute spectra and hourly time lines
+                cs.FrameWidth = 512;   // default value - from which spectrogram was derived
+                cs.SampleRate = 17640; // default value - after resampling
+
                 string csvPath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.csv";
-                string imagePath = @"C:\SensorNetworks\Output\LSKiwi3\Towsey.Acoustic\TUITCE_20091215_220004.cmbSpectrum.png";
-                int X_interval = 60; // assume one minute spedctra and hourly time lines
-                int frame = 512;
-                int sampleRate = 17640;
-                double freqBinWidth = sampleRate / (double)frame;
-                int Y_interval = (int)Math.Round(1000 / freqBinWidth);
-                ColourSpectrogram.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", X_interval, Y_interval);
-                System.Environment.Exit(666);
+                string imagePath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\TEST11.png";
+                string key = ColourSpectrogram.KEY_BinCover;
+                cs.ReadSpectrogram(key, csvPath);
+                cs.DrawGreyscaleSpectrogramOfIndex(key, imagePath);
             }
 
 
@@ -171,11 +173,17 @@ namespace AnalysisPrograms
                 //string imagePath = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cmbSpectrum_colour_towardsblack.png";
 
                 // SERF 13th October 2010
+                string bgnCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.bgnSpectrum.csv";
                 string cvrCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.cvrSpectrum.csv";
                 string avgCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.avgSpectrum.csv";
                 string aciCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.aciSpectrum.csv";
                 string tenCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.tenSpectrum.csv";
-                string imagePath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrumTest11.png";
+
+                string imagePath1 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.COLSpectroTest11.png";
+                string imagePath2 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.BGNSpectroTest11.png";
+                string imagePath3 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TENSpectroTest11.png";
+                string imagePath4 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.CMBSpectroTest11.png";
+                string imagePath5 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TWOSpectroTest11.png";
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into ColourSpectrogram.DrawFalseColourSpectrogramOfIndices()
                 //string colorSchemeID = "DEFAULT"; //R-G-B
@@ -192,12 +200,22 @@ namespace AnalysisPrograms
                 cs.FrameWidth = 512;   // default value - from which spectrogram was derived
                 cs.SampleRate = 17640; // default value - after resampling
                 cs.ColorSchemeID = colorSchemeID;
-                cs.ReadSpectrogram(ColourSpectrogram.KEY_BinCoverage, cvrCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_BackgroundNoise, bgnCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_BinCover, cvrCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_AcousticComplexityIndex, aciCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_TemporalEntropy, tenCsvPath);
-                cs.DrawColourSpectrogramsOfIndices(imagePath);
+                cs.DrawFalseColourSpectrogramOfIndices(imagePath1);
+                // draw gray scale spectrogram
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BackgroundNoise, imagePath2);
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_TemporalEntropy, imagePath3);
+
+                cs.DrawCombinedAverageSpectrogram(imagePath4);
+                cs.DrawDoubleSpectrogram(imagePath5);
             }
+
+
+
 
 
             // experiments with false colour images - categorising/discretising the colours

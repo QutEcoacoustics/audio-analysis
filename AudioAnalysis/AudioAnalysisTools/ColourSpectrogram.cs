@@ -26,13 +26,15 @@ namespace AudioAnalysisTools
     public class ColourSpectrogram
     {
 
-        // CONST string for referring to different spectrograms - these should really be an enum                
-        public const string KEY_BackgroundNoise = "backgroundNoise";
-        public const string KEY_AcousticComplexityIndex = "acousticComplexityIndex";
-        public const string KEY_Average = "average";
-        public const string KEY_Variance = "variance";
-        public const string KEY_BinCoverage = "binCoverage";
-        public const string KEY_TemporalEntropy = "temporalEntropy";
+        // CONST string for referring to different types of spectrogram - these should really be an enum                
+        public const string KEY_BackgroundNoise = "BGN";
+        public const string KEY_AcousticComplexityIndex = "ACI";
+        public const string KEY_Average = "AVG";
+        public const string KEY_Variance = "VAR";
+        public const string KEY_BinCover = "CVR";
+        public const string KEY_TemporalEntropy = "TEN";
+        public const string KEY_Combined = "CMB";
+        public const string KEY_Colour   = "COL";
 
         // NORMALISING CONSTANTS FOR INDICES
         public const double AVG_MIN = -7.0;
@@ -79,7 +81,7 @@ namespace AudioAnalysisTools
 
         public string ColorSchemeID { get; set; } //within current recording     
 
-        Dictionary<string, double[,]> spectrogramMatrixes = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+        Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
 
 
 
@@ -91,58 +93,111 @@ namespace AudioAnalysisTools
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-            spectrogramMatrixes.Add(key, matrix);
+            spectrogramMatrices.Add(key, matrix);
         }
 
+        /// <summary>
+        /// All matrices must be in spectrogram orientation before adding to list of spectrograms.
+        /// Call this method if the matrix rows are freq bins and the matrix columns are spectra for one frame.
+        /// If not, then call the next method AddRotatedSpectrogram(string key, double[,] matrix)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="matrix"></param>
         public void AddSpectrogram(string key, double[,] matrix)
         {
-            spectrogramMatrixes.Add(key, matrix);
+            spectrogramMatrices.Add(key, matrix);
         }
         public void AddRotatedSpectrogram(string key, double[,] matrix)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-            spectrogramMatrixes.Add(key, matrix);
+            spectrogramMatrices.Add(key, matrix);
         }
 
-        public void DrawCombinedAverageSpectrogram(List<string> keys) 
+        public void DrawGreyscaleSpectrogramOfIndex(string key, string imagePath)
         {
-            var spectrograms = new List<double[,]>();
-            foreach (var key in keys)
+            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key]);
+            Image bmp = ImageTools.DrawMatrix(matrix);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+            bmp.Save(imagePath);
+        }
+
+
+        /// <summary>
+        /// Calculates a COMBO spectrogram from four equal weighted normalised indices.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        public void DrawCombinedAverageSpectrogram(string imagePath) 
+        {
+            var avgMatrix = NormaliseSpectrogramMatrix(ColourSpectrogram.KEY_Average, spectrogramMatrices[ColourSpectrogram.KEY_Average]);
+            var cvrMatrix = NormaliseSpectrogramMatrix(ColourSpectrogram.KEY_BinCover, spectrogramMatrices[ColourSpectrogram.KEY_BinCover]);
+            var aciMatrix = NormaliseSpectrogramMatrix(ColourSpectrogram.KEY_AcousticComplexityIndex, spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex]);
+            var tenMatrix = NormaliseSpectrogramMatrix(ColourSpectrogram.KEY_TemporalEntropy, spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy]);
+
+            // assume all matrices have same rows and columns
+            int rows = avgMatrix.GetLength(0);
+            int cols = avgMatrix.GetLength(1);
+            var combo = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
             {
-                spectrograms.Add(this.spectrogramMatrixes[key]);
+                for (int c = 0; c < cols; c++)
+                {
+                    // comboSpectrum[r, c] = (cover + aci + entropy + avg) / (double)4;
+                    double value = avgMatrix[r, c] + cvrMatrix[r, c] + aciMatrix[r, c] + (1 - tenMatrix[r, c]); // reverse temporal entropy
+                    combo[r, c] = value / (double)4; 
+                }
             }
-            int count = spectrograms.Count;
 
-
-            // xiii: calculate the COMBO INDEX from equal wieghted normalised indices.
-            //indices.comboSpectrum = new double[spectrogramData.GetLength(1)];
-            //for (int i = 0; i < indices.comboSpectrum.Length; i++)
-            //{
-            //    double cover = indices.coverSpectrum[i];
-            //    cover = DataTools.NormaliseInZeroOne(cover, CVR_MIN, CVR_MAX);
-            //    double aci = indices.ACIspectrum[i];
-            //    aci = DataTools.NormaliseInZeroOne(aci, ACI_MIN, ACI_MAX);
-            //    double entropy = indices.HtSpectrum[i];
-            //    entropy = DataTools.NormaliseInZeroOne(entropy, TEN_MIN, TEN_MAX);
-            //    entropy = 1 - entropy;
-            //    double avg = indices.averageSpectrum[i];
-            //    avg = DataTools.NormaliseInZeroOne(avg, AVG_MIN, AVG_MAX);
-            //    indices.comboSpectrum[i] = (cover + aci + entropy + avg) / (double)4;
-            //}
-
+            Image bmp = ImageTools.DrawMatrix(combo);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+            bmp.Save(imagePath);
         }
 
-
-
-        public void DrawColourSpectrogramsOfIndices(string imagePath)
+        public void DrawFalseColourSpectrogramOfIndices(string imagePath)
         {
-            var avgMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_Average];
-            var cvrMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_Average];
-            var aciMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_AcousticComplexityIndex];
-            var tenMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_TemporalEntropy];
+            var avgMatrix = spectrogramMatrices[ColourSpectrogram.KEY_Average];
+            var cvrMatrix = spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
+            var aciMatrix = spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
+            var tenMatrix = spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
 
             Image bmp = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);            
             bmp.Save(imagePath);
+        }
+
+        public void DrawDoubleSpectrogram(string imagePath)
+        {
+            var bgnMatrix = ColourSpectrogram.NormaliseSpectrogramMatrix(ColourSpectrogram.KEY_BackgroundNoise, this.spectrogramMatrices[ColourSpectrogram.KEY_BackgroundNoise]);
+            Image bmp1 = ImageTools.DrawMatrix(bgnMatrix);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, X_interval, Y_interval);
+
+            var avgMatrix = spectrogramMatrices[ColourSpectrogram.KEY_Average];
+            var cvrMatrix = spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
+            var aciMatrix = spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
+            var tenMatrix = spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
+
+            Image bmp2 = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
+
+            int imageWidth = bmp1.Width;
+            int trackHeight = 20;
+            int imageHt = bmp1.Height + bmp2.Height + trackHeight + trackHeight + trackHeight;
+            string title = String.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS  (c) QUT.EDU.AU.   (scale = hours x kHz)");
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+            int timeScale = 60;
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
+
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            int offset = 0;
+            gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+            offset += titleBmp.Height;
+            gr.DrawImage(bmp2, 0, offset); //dra
+            offset += bmp2.Height;
+            gr.DrawImage(timeBmp, 0, offset); //dra
+            offset += timeBmp.Height;
+            gr.DrawImage(bmp1, 0, offset); //dr
+            offset += bmp1.Height;
+            gr.DrawImage(timeBmp, 0, offset); //dra
+            compositeBmp.Save(imagePath);
         }
 
 
@@ -150,26 +205,13 @@ namespace AudioAnalysisTools
         //# STATIC METHODS ###########################################################################################################################################
         //############################################################################################################################################################
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="spectrogramCsvPath"></param>
-        /// <param name="imagePath"></param>
-        /// <param name="id"></param>
-        /// <param name="xInterval">pixel interval between X-axis lines</param>
-        /// <param name="yInterval">pixel interval between Y-axis lines</param>
-        public static void DrawSpectrogramsOfIndices(double[,] matrix, string imagePath, string id, int xInterval, int yInterval)
+        public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix)
         {
-
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
-            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-
-            if (id == KEY_AcousticComplexityIndex) //.Equals("ACI"))
+            if (key == KEY_AcousticComplexityIndex) //.Equals("ACI"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.ACI_MIN, ColourSpectrogram.ACI_MAX);
             }
-            else if (id == KEY_TemporalEntropy)//.Equals("TEN"))
+            else if (key == KEY_TemporalEntropy)//.Equals("TEN"))
             {
                 // normalise and reverse
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.TEN_MIN, ColourSpectrogram.TEN_MAX);
@@ -183,19 +225,19 @@ namespace AudioAnalysisTools
                     }
                 }
             }
-            else if (id == KEY_Average)//.Equals("AVG"))
+            else if (key == KEY_Average)//.Equals("AVG"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.AVG_MIN, ColourSpectrogram.AVG_MAX);
             }
-            else if (id == KEY_BackgroundNoise)//.Equals("BGN"))
+            else if (key == KEY_BackgroundNoise)//.Equals("BGN"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.BGN_MIN, ColourSpectrogram.BGN_MAX);
             }
-            else if (id == KEY_Variance)//.Equals("VAR"))
+            else if (key == KEY_Variance)//.Equals("VAR"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.VAR_MIN, ColourSpectrogram.VAR_MAX);
             }
-            else if (id == KEY_BinCoverage)//.Equals("CVR"))
+            else if (key == KEY_BinCover)//.Equals("CVR"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, ColourSpectrogram.CVR_MIN, ColourSpectrogram.CVR_MAX);
             }
@@ -205,80 +247,14 @@ namespace AudioAnalysisTools
                 Console.WriteLine("DrawSpectrogramsOfIndicies is rendering an INDEX that is not specially normalised");
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
-
-            Image bmp = ImageTools.DrawMatrixWithAxes(matrix, xInterval, yInterval);
-            bmp.Save(imagePath);
-        }
-
-
-        public static double[,] DrawSpectrogramsOfIndices(double[][] jaggedMatrix, string imagePath, string id, int xInterval, int yInterval)
-        {
-            double[,] matrix = DataTools.ConvertJaggedToMatrix(jaggedMatrix);
-
-            ColourSpectrogram.DrawSpectrogramsOfIndices(matrix, imagePath, id, xInterval, yInterval);
-
             return matrix;
         }
-
-        public static void DrawSpectrogramsOfIndices(string spectrogramCsvPath, string imagePath, string id, int xInterval, int yInterval)
-        {
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(spectrogramCsvPath);
-
-            ColourSpectrogram.DrawSpectrogramsOfIndices(matrix, imagePath, id, xInterval, yInterval);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="avgCsvPath"></param>
-        /// <param name="aciCsvPath"></param>
-        /// <param name="tenCsvPath"></param>
-        /// <param name="imagePath"></param>
-        /// <param name="colorSchemeID">Not yet used but could be used to determine type of false colour encoding</param>
-        /// <param name="X_interval">pixel interval between X-axis lines</param>
-        /// <param name="Y_interval">pixel interval between Y-axis lines</param>
-        //public static void DrawColourSpectrogramsOfIndices(string avgCsvPath, string cvrCsvPath, string csvAciPath, string csvTenPath,
-        //    string imagePath, string colorSchemeID, int X_interval, int Y_interval)
-        //{
-        //    double[,] avgMatrix = PrepareSpectrogramMatrix(avgCsvPath);
-        //    double[,] matrixCvr = PrepareSpectrogramMatrix(cvrCsvPath);
-        //    double[,] matrixAci = PrepareSpectrogramMatrix(csvAciPath);
-        //    double[,] matrixTen = PrepareSpectrogramMatrix(csvTenPath);  // prepare, normalise and reverse
-
-        //    Image bmp = DrawFalseColourSpectrogramOfIndices(colorSchemeID, X_interval, Y_interval, avgMatrix, matrixCvr, matrixAci, matrixTen);
-        //    bmp.Save(imagePath);
-        //}
-        public static double[,] PrepareSpectrogramMatrix(string csvPath)
-        {
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
-
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
-            return matrix;
-        }
-
-        public static void DrawColourSpectrogramsOfIndices(Dictionary<string, double[,]> spectrogramMatrixes, string savePath, string colorSchemeId, int xInterval, int yInterval)
-        {
-            var avgMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_Average];
-            var cvrMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_Average];
-            var aciMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_AcousticComplexityIndex];
-            var tenMatrix = spectrogramMatrixes[ColourSpectrogram.KEY_TemporalEntropy];
-
-            Image bmp = DrawFalseColourSpectrogramOfIndices(colorSchemeId, xInterval, yInterval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
-            bmp.Save(savePath);
-        }
-
-
+                
         public static Image DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
         {
-            avgMatrix = MatrixTools.MatrixRotate90Anticlockwise(avgMatrix);
             avgMatrix = DataTools.NormaliseInZeroOne(avgMatrix, ColourSpectrogram.AVG_MIN, ColourSpectrogram.AVG_MAX);
-            aciMatrix = MatrixTools.MatrixRotate90Anticlockwise(aciMatrix);
             aciMatrix = DataTools.NormaliseInZeroOne(aciMatrix, ColourSpectrogram.ACI_MIN, ColourSpectrogram.ACI_MAX);
-            cvrMatrix = MatrixTools.MatrixRotate90Anticlockwise(cvrMatrix);
             cvrMatrix = DataTools.NormaliseInZeroOne(cvrMatrix, ColourSpectrogram.CVR_MIN, ColourSpectrogram.CVR_MAX);
-            tenMatrix = MatrixTools.MatrixRotate90Anticlockwise(tenMatrix);
             tenMatrix = DataTools.NormaliseReverseInZeroOne(tenMatrix, ColourSpectrogram.TEN_MIN, ColourSpectrogram.TEN_MAX);
 
             // default is R,G,B -> aci, ten, avg/cvr
@@ -306,20 +282,20 @@ namespace AudioAnalysisTools
                 bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, avgMatrix, doReverseColour);
             }
             else // the default
-                if (colorSchemeID.Equals("ACI-TEN-CVR_AVG")) //R-G-B-GREY
-                {
-                    bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
-                }
-                else // the default
-                    if (colorSchemeID.Equals("ACI-TEN-CVR_AVG-REV")) //R-G-B-GREY
-                    {
-                        doReverseColour = true;
-                        bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
-                    }
-                    else // the default
-                    {
-                        bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
-                    }
+            if (colorSchemeID.Equals("ACI-TEN-CVR_AVG")) //R-G-B-GREY
+            {
+                bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
+            }
+            else // the default
+            if (colorSchemeID.Equals("ACI-TEN-CVR_AVG-REV")) //R-G-B-GREY
+            {
+                doReverseColour = true;
+                bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, avgMatrix, doReverseColour);
+            }
+            else // the default
+            {
+                bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
+            }
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
             return bmp;
         }
@@ -360,6 +336,16 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
+        /// <summary>
+        /// A technique to derive a spectrogram from four different indices 
+        /// same as above method but multiply index value by the amplitude value instead of squaring the value
+        /// </summary>
+        /// <param name="redM"></param>
+        /// <param name="grnM"></param>
+        /// <param name="bluM"></param>
+        /// <param name="greM"></param>
+        /// <param name="doReverseColour"></param>
+        /// <returns></returns>
         public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColour)
         {
             // assume all amtricies are normalised and of the same dimensions

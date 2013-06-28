@@ -279,9 +279,8 @@ namespace AnalysisPrograms
             {
                 // ensure results are sorted in order
                 var results = analyserResults.ToArray();
+                string name = Path.GetFileNameWithoutExtension(fiSourceRecording.Name);
 
-                // set the X and Y axis scales for the spectrograms 
-                int xInterval = 60; // assume one minute spectra and hourly time lines
 
                 int frameWidth = 512;   // default value
                 int sampleRate = 17640; // default value
@@ -289,18 +288,25 @@ namespace AnalysisPrograms
                     frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
                 if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
                     sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
-                double freqBinWidth = sampleRate / (double)frameWidth;
-                int yInterval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
-               
-                
-                string name = Path.GetFileNameWithoutExtension(fiSourceRecording.Name);
+                //string colorSchemeID = "DEFAULT"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR-REV";
+                //string colorSchemeID = "ACI-CVR-TEN";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
+                string colorSchemeID = "ACI-TEN-CVR_AVG";
 
+                // gather spectra to form spectrograms.  Assume same spectra in all analyser results
                 // this is the most effcient way to do this
                 // gather up numbers and strings store in memory, write to disk one time
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
-                // gather spectra up to form spectrograms
-                // Assume same spectra in all analyser results
-                var spectrogramMatrixes = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+                //var spectrogramMatrixes = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+                var colourSpectrogram = new ColourSpectrogram();
+                var cs = new ColourSpectrogram();
+                // set the X and Y axis scales for the spectrograms 
+                cs.X_interval = 60;    // assume one minute spectra and hourly time lines
+                cs.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs.SampleRate = sampleRate; // default value - after resampling
                 foreach (var spectrumKey in results[0].Spectra.Keys)
                 {
                     // +1 for header
@@ -318,66 +324,24 @@ namespace AnalysisPrograms
                 
                     // write spectrogram to disk as CSV file
                     var saveCsvPath = Path.Combine(opdir.FullName, name + "." + spectrumKey + ".csv");
-                    // add in header
-                    lines[0] = Spectrum.GetHeader(numbers[0].Length);
+                    lines[0] = Spectrum.GetHeader(numbers[0].Length);  // add in header
                     FileTools.WriteTextFile(saveCsvPath, lines);
 
                     // prepare image and write to disk
                     var imagePath = Path.Combine(opdir.FullName, name + "."+ spectrumKey +".png");
-                    var matrix = ColourSpectrogram.DrawSpectrogramsOfIndices(numbers, imagePath, spectrumKey, xInterval, yInterval);
+                    double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
 
                     // store all the spectrograms as matrices to use later
-                    spectrogramMatrixes.Add(spectrumKey, matrix);
-                }
+                    cs.AddRotatedSpectrogram(spectrumKey, matrix);
+                    cs.DrawGreyscaleSpectrogramOfIndex(spectrumKey, imagePath);
+                } // foreach spectrumKey
 
-                // now write the special version
-                var colorImageSavePath = Path.Combine(opdir.FullName, name + ".colSpectrum.png");
-                ColourSpectrogram.DrawColourSpectrogramsOfIndices(spectrogramMatrixes, colorImageSavePath, "COL", xInterval, yInterval);
+                // now Draw the false colour spectrogram
+                var colorImageSavePath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".png");
+                cs.ColorSchemeID = colorSchemeID;
+                cs.DrawFalseColourSpectrogramOfIndices(colorImageSavePath);
 
-                /*
-                list = ResultsTools.MergeBGNSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".bgnSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "BGN", xInterval, yInterval);
-
-                list = ResultsTools.MergeAVGSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".avgSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".avgSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "AVG", xInterval, yInterval);
-
-                list = ResultsTools.MergeVARSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".varSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".varSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "VAR", xInterval, yInterval);
-                
-                list = ResultsTools.MergeACISpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".aciSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".aciSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "ACI", xInterval, yInterval);
-                
-                list = ResultsTools.MergeCVRSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".cvrSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CVR", xInterval, yInterval);
-                
-                list = ResultsTools.MergeTENSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".tenSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".tenSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "TEN", v, yInterval);
-
-                list = ResultsTools.MergeCMBSpectraIntoSpectrograms(analyserResults);
-                csvPath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.csv");
-                Spectrum.ListOfSpectra2CSVFile(csvPath, list);
-                imagePath = Path.Combine(opdir.FullName, name + ".cmbSpectrum.png");
-                AcousticFeatures.DrawSpectrogramsOfIndices(csvPath, imagePath, "CMB", xInterval, yInterval);
-                 * */
-            }
+            } // if doing acoustic indices
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         } // Main(string[] args)
