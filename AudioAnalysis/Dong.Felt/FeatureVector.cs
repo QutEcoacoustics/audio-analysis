@@ -17,7 +17,6 @@
         /// <summary>
         /// Gets or sets the HorizontalByteVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>
-        public List<int> HorizontalVector1 { get; set; }
         public int[] HorizontalVector { get; set; }
 
         /// <summary>
@@ -33,7 +32,6 @@
         /// <summary>
         /// Gets or sets the VerticalBitVector, part of composite edge featurevector, representing the vertital direction of edge(one kind of feature).
         /// </summary>
-        public List<int> VerticalVector1 { get; set; }
         public int[] VerticalVector { get; set; }
 
         /// <summary>
@@ -77,7 +75,7 @@
         public double[] NegativeDiagonalFractionVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the point of a particular pointsOfInterest
+        /// Gets or sets the anchor point of search neighbourhood. 
         /// </summary>
         public Point Point { get; set; }
 
@@ -123,7 +121,16 @@
 
         #region Public Method
 
-        public static List<FeatureVector> ImprovedIntegerDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        /// <summary>
+        /// This method uses another diagonal orientation edge representation.  And e.g. the neighbourhoodWindow size is 13 * 13, then the feature vector can 
+        /// be up to 13(vertical edge) + 13(horizontal edge) + 25 (positiveDiagonal edge) + 25 (negativeDiagonal edge).
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <returns></returns>
+        public static List<FeatureVector> IntegerEdgeOrientationFeatureVectors2(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
             var result = new List<FeatureVector>();
 
@@ -247,8 +254,8 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteFeatureVectors can be used to generate integer directionFeatureVectors, which means it includes sub-feature vector 
-        /// for each direction. And the size of each sub-featureVector is determined by sizeOfNeighbourhood.
+        /// The method of DirectionByteFeatureVectors can be used to generate integer directionFeatureVectors, it include 13 * 13 values for a 
+        /// 13 * 13 neighbourhoodsize.
         /// </summary>
         /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
         /// <param name="rowsCount"> the column count of original spectrogram. </param> 
@@ -258,7 +265,7 @@
         /// <returns>
         /// It will return a list of featureVector objects whose DirectionByteFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> IntegerDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<FeatureVector> IntegerEdgeOrientationFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
             var result = new List<FeatureVector>();
 
@@ -694,234 +701,6 @@
                         percentageVector[3] = percentageOfnegativeDiagonal;
                         result.Add(new FeatureVector(new Point(row, col)) { PercentageByteVector = percentageVector });
                     }
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// This feacture vector generation can be got by user providing an event. 
-        /// </summary>
-        /// <param name="poiList"></param>
-        /// <param name="maxFrequency"></param>
-        /// 
-        /// <param name="minFrequency"></param>
-        /// <param name="duration"></param>
-        /// <param name="herzPerSlice"></param>
-        /// <param name="durationPerSlice">
-        /// Its unit should be second unit.
-        /// </param>
-        /// <param name="herzScale"></param>
-        /// Represents the frequency range of one pixel covers.
-        /// <param name="timeScale">
-        /// Represents the duration of one pixel account for.
-        /// </param>
-        /// <param name="sampleRate"></param>
-        /// <returns></returns>
-        public static List<List<FeatureVector>> FeatureVectorForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
-                                                               double duration, int herzPerSlice, double durationPerSlice, double herzScale, double timeScale,
-                                                               double nyquistFrequency, int rowsCount, int colsCount)
-        {
-            var rowsCountPerSlice = (int)Math.Ceiling(herzPerSlice / herzScale);  // 13 pixels  560Hz
-            var colsCountPerSlice = (int)Math.Ceiling(durationPerSlice / timeScale); // 13 pixels 0.15 second
-            var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
-            var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
-            var numberOfRowSlices = (int)Math.Ceiling((maxFrequency - minFrequency) / herzPerSlice);
-            var numberOfColSlices = (int)Math.Ceiling(duration / durationPerSlice);
-            //var result1 = new List<FeatureVector>[numberOfRowSlices, numberOfColSlices];
-            var result = new List<List<FeatureVector>>();
-            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            // search along the time axis
-            for (int row = MinRowIndex; row < MaxRowIndex; row += rowsCountPerSlice)
-            {
-                // leave it here to consider about its efficiency
-                for (int col = 0; col < colsCount; col++)
-                {
-                    for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
-                    {
-                        for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
-                        {
-                            if (StatisticalAnalysis.checkBoundary(row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice, rowsCount, colsCount))
-                            {
-                                var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row + sliceRowIndex * rowsCountPerSlice, col + sliceColIndex * colsCountPerSlice, row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice);
-                                var partialFeatureVector = FeatureVector.SliceDirectionFeatureVectors(subMatrix, row, col);
-                                result.Add(new List<FeatureVector>());
-                                result[sliceRowIndex * numberOfColSlices + sliceColIndex].Add(new FeatureVector(new Point(row, col))
-                                     {
-                                         HorizontalVector = partialFeatureVector.HorizontalVector,
-                                         VerticalVector = partialFeatureVector.VerticalVector,
-                                         PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
-                                         NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector
-                                     });
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        public static FeatureVector SliceDirectionFeatureVectors(PointOfInterest[,] matrix, int PointX, int PointY)
-        {
-            var result = new FeatureVector(new Point(PointX, PointY));
-            var sizeOfNeighbourhood = matrix.GetLength(0);
-            // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
-            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
-            // limite the frequency rang
-            for (int row = 0; row < sizeOfNeighbourhood; row++)
-            {
-                for (int col = 0; col < sizeOfNeighbourhood; col++)
-                {
-                    // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
-                    var verticalDirection = new int[sizeOfNeighbourhood];
-                    var horizontalDirection = new int[sizeOfNeighbourhood];
-                    var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
-                    var negativeDiagonalDirection = new int[sizeOfNeighbourhood];
-
-                    // For the calculation of horizontal direction byte, we need to check each row 
-                    for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
-                    {
-                        for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
-                        {
-                            // check boundary of index 
-                            if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                            {
-                                if ((matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex] != null) && matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
-                                {
-                                    horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
-                                }
-                            }
-                        }
-                    }
-
-                    // For the calculation of vertical direction byte, we need to check each column
-                    for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
-                    {
-                        for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
-                        {
-                            if (StatisticalAnalysis.checkBoundary(row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                            {
-                                if ((matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex] != null) && matrix[row + colNeighbourhoodIndex, col + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
-                                {
-                                    verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
-                                }
-                            }
-                        }
-                    }
-                    // For the calculation of positive diagonal direction byte, we need to check each diagnal column
-                    for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
-                    {
-                        for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
-                        {
-                            if (StatisticalAnalysis.checkBoundary(row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                            {
-                                if ((matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex] != null) && matrix[row + offsetIndex + NeighbourhoodIndex, col + offsetIndex - NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthEast)
-                                {
-                                    positiveDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
-                                }
-                            }
-                        }
-                    }
-
-                    // For the calculation of negative diagonal direction byte, we need to check each diagnal column
-                    for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
-                    {
-                        for (int NeighbourhoodIndex = -radiusOfNeighbourhood; NeighbourhoodIndex <= radiusOfNeighbourhood; NeighbourhoodIndex++)
-                        {
-                            if (StatisticalAnalysis.checkBoundary(row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
-                            {
-                                if ((matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex] != null) && matrix[row - offsetIndex + NeighbourhoodIndex, col + offsetIndex + NeighbourhoodIndex].OrientationCategory == (int)Direction.NorthWest)
-                                {
-                                    negativeDiagonalDirection[offsetIndex + radiusOfNeighbourhood]++;
-                                }
-                            }
-                        }
-                    }
-                    result.HorizontalVector = horizontalDirection;
-                    result.VerticalVector = verticalDirection;
-                    result.PositiveDiagonalVector = positiveDiagonalDirection;
-                    result.NegativeDiagonalVector = negativeDiagonalDirection;
-                }
-            }
-            return result;
-        }
-        /// <summary>
-        /// To calculate how many edges per timeUnit(such as per second)
-        /// </summary>
-        /// <param name="poiList"></param>
-        /// <param name="rowsCount"></param>
-        /// <param name="colsCount"></param>
-        /// <param name="timeUnit"></param>
-        /// <param name="secondScale"></param>
-        /// <returns>
-        /// returns an average value for a recording
-        /// </returns>
-        public static int EdgeStatistics(List<PointOfInterest> poiList, int rowsCount, int colsCount, double timeUnit, double secondScale)
-        {
-            var SecondToMillionSecondUnit = 1000;
-            var numberOfframePerTimeunit = (int)(timeUnit * (SecondToMillionSecondUnit / (secondScale * SecondToMillionSecondUnit)));
-            var UnitCount = (int)(colsCount / numberOfframePerTimeunit);
-            var countOfpoi = poiList.Count();
-            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);
-            //var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            //var result = new int[CeilCount];
-            //for (int i = 0; i < CeilCount; i++)
-            //{
-            //    for (int col = i * numberOfframePerTimeunit; col < (i + 1) * numberOfframePerTimeunit; col++)
-            //    {
-            //         for (int row = 0; row < rowsCount; row++)
-            //         {
-            //             if (StatisticalAnalysis.checkBoundary(row, col, rowsCount, colsCount))
-            //             {
-            //                 if (Matrix[row, col] != null)
-            //                 {
-            //                     result[i]++;
-            //                 }
-            //             }
-            //         }
-            //    }
-            //}
-            return avgEdgePerTimeunit;
-        }
-
-        /// <summary>
-        /// This mask is unuseful at this moment. Maybe use it later
-        /// </summary>
-        /// <param name="sizeOfNeighbourhood"></param>
-        /// <returns></returns>
-        public static int[,] DiagonalMask(int sizeOfNeighbourhood)
-        {
-            var result = new int[sizeOfNeighbourhood, sizeOfNeighbourhood];
-
-            // above part
-            for (int row = 0; row < sizeOfNeighbourhood / 2; row++)
-            {
-                for (int col = 0; col < sizeOfNeighbourhood / 2 - row; col++)
-                {
-                    result[row, col] = 0;
-                }
-                for (int colOffset = -row; colOffset <= row; colOffset++)
-                {
-                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
-                }
-            }
-
-            // for middle part
-            for (int col = 0; col < sizeOfNeighbourhood; col++)
-            {
-                result[sizeOfNeighbourhood / 2, col] = 1;
-            }
-
-            // for below part
-            for (int row = sizeOfNeighbourhood / 2 + 1; row < sizeOfNeighbourhood; row++)
-            {
-                for (int col = 0; col < sizeOfNeighbourhood - row; col++)
-                {
-                    result[row, col] = 0;
-                }
-                for (int colOffset = -(sizeOfNeighbourhood - row - 1); colOffset <= sizeOfNeighbourhood - row - 1; colOffset++)
-                {
-                    result[row, sizeOfNeighbourhood / 2 + colOffset] = 1;
                 }
             }
             return result;

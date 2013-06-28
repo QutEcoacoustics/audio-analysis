@@ -7,16 +7,16 @@
     using System.Drawing;
     using TowseyLib;
     using AudioAnalysisTools;
-    // using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     public class StructureTensorTest
     {
+
+        // using Microsoft.VisualStudio.TestTools.UnitTesting;
         public double[,] testMatrix1 = {{0.0, 0.0, 0.0, 0.0, 0.0},
                                         {0.0, 0.0, 0.0, 0.0, 0.0},
                                         {13.86, 18.03, 18.81, 14.9, 0.0},
                                         {6.66, 18.8, 16.69, 3.12, 0.0},
                                         {2.3, 18.0, 17.9, 5.9, 5.9}};
-                                                           //1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+        //1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
         public static int[,] testMatrixForRepresentation = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //1
                                                             {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //2 
                                                             {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},  //3
@@ -49,12 +49,12 @@
             int width = 257;
             Bitmap bmp = new Bitmap(width, height);
 
-       
+
             // Remember fillRectangular is more efficient than pixel
-            
+
             Graphics g = Graphics.FromImage(bmp);
             // for the first 1000 frames
-            
+
             Rectangle rect1 = new Rectangle(20, 500, 1, 30);
             // for the second 1000 frames
             Rectangle rect2 = new Rectangle(40, 1200, 200, 1);
@@ -64,7 +64,7 @@
             // for the fourth 1000 frames
             Rectangle rect4 = new Rectangle(100, 3200, 100, 20);
             // for the fifth 1000 frames
-            Rectangle rect5 = new Rectangle(200, 4002, 1, 1);          
+            Rectangle rect5 = new Rectangle(200, 4002, 1, 1);
             SolidBrush brush = new SolidBrush(Color.White);
             g.FillRectangle(brush, rect1);
             g.FillRectangle(brush, rect2);
@@ -73,10 +73,10 @@
 
             for (int col = 0; col < width; col++)
             {
-                for (int row = 0; row< height; row++)
+                for (int row = 0; row < height; row++)
                 {
                     var currentColor = bmp.GetPixel(col, row);
-                    if (currentColor == Color.FromArgb(0, 0, 0,0))
+                    if (currentColor == Color.FromArgb(0, 0, 0, 0))
                     {
                         bmp.SetPixel(col, row, Color.White);
                     }
@@ -84,15 +84,16 @@
                     {
                         bmp.SetPixel(col, row, Color.Black);
                     }
-                    
+
                 }
             }
-            return  bmp;
+            return bmp;
         }
-       
-
-        //double[,] TowseyLib.ImageTools.GreyScaleImage2Matrix(bmp);
-
+        /// <summary>
+        /// Create a false pointOfinterest from a test edge matrix.  
+        /// </summary>
+        /// <param name="RepresentationMatrix"></param>
+        /// <returns></returns>
         public static List<PointOfInterest> createFalsePoiFromMatrix(int[,] RepresentationMatrix)
         {
             var result = new List<PointOfInterest>();
@@ -103,12 +104,19 @@
             {
                 for (int col = 0; col < colCount; col++)
                 {
-                    result.Add(new PointOfInterest(new Point(row, col)) {OrientationCategory = RepresentationMatrix[row, col]});
+                    result.Add(new PointOfInterest(new Point(col, row)) { RidgeOrientation = RepresentationMatrix[row, col] });
                 }
             }
             return result;
         }
 
+        /// <summary>
+        /// I am trying to represent the query, but it's not easy. From a box into a pointofInterest matrix.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
         public static PointOfInterest[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
@@ -119,8 +127,8 @@
             return m;
         }
 
-    
-    
-    
+
+
+
     }
 }

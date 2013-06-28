@@ -92,7 +92,7 @@
                 //{
                 //    for (int c = halfLength; c < cols - halfLength; c++)
                 //    {
-                //        var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                        //var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                 //        double magnitude;
                 //        double direction;
                 //        bool isRidge = false;
@@ -139,7 +139,8 @@
                 //var featureVector = FeatureVector.FeatureVectorForQuery(filterPoiList, maxFrequency, minFrequency, duration, herzPerSlice, durationPerSlice, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
                 var finalPoiList = new List<PointOfInterest>();
                 var poiList2 = StructureTensorTest.createFalsePoiFromMatrix(StructureTensorTest.testMatrixForRepresentation);
-                var featureVector = FeatureVector.ImprovedIntegerDirectionFeatureVectors(poiList2, 25, 25, 13);
+                //var featureVector = FeatureVector.ImprovedIntegerDirectionFeatureVectors(poiList2, 25, 25, 13);
+                var representation = RectangularRepresentation.RepresentationForIndexing(poiList2, 19.0, 7.0, 13.0, 13, 1.0, 1.0, 25.0, 25, 25);
                 //foreach (PointOfInterest poi in filterPoiList)
                 ////foreach (FeatureVector fv in featureVector)
                 //{

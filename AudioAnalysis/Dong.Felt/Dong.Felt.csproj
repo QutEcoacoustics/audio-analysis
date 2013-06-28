@@ -109,6 +109,7 @@
     <Compile Include="PoiAnalysis.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RectangularRepresentation.cs" />
     <Compile Include="SimilarityMatching.cs" />
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="StructureTensor.cs" />
