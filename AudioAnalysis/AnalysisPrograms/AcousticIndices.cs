@@ -229,13 +229,13 @@ namespace AnalysisPrograms
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
             string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[AcousticFeatures.BackgroundNoiseKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[ColourSpectrogram.KEY_BackgroundNoise]);
             string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[AcousticFeatures.AcousticComplexityIndexKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[ColourSpectrogram.KEY_AcousticComplexityIndex]);
             string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[AcousticFeatures.AverageKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[ColourSpectrogram.KEY_Average]);
             string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[AcousticFeatures.VarianceKey]);
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[ColourSpectrogram.KEY_Variance]);
         } // ExecuteAnalysis()
 
 
@@ -250,10 +250,6 @@ namespace AnalysisPrograms
             analysisResults.SettingsUsed = analysisSettings;
             analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
             analysisResults.Data = null;
-//            analysisResults.bgnSpectrum = null;
-//            analysisResults.avgSpectrum = null;
-//            analysisResults.varSpectrum = null;
-//            analysisResults.aciSpectrum = null;
 
             // ######################################################################
             var results = AcousticFeatures.Analysis(fiAudioF, analysisSettings);
@@ -269,23 +265,13 @@ namespace AnalysisPrograms
             analysisResults.Data = dt;
             analysisResults.AudioDuration = results.Item2;
 
-            /*
-            analysisResults.bgnSpectrum   = indices.bgNoiseSpectrum;
-            analysisResults.aciSpectrum   = indices.ACIspectrum;
-            analysisResults.avgSpectrum   = indices.averageSpectrum;
-            analysisResults.varSpectrum   = indices.varianceSpectrum;
-            analysisResults.cvrSpectrum   = indices.coverSpectrum;
-            analysisResults.tenSpectrum   = indices.HtSpectrum;
-            analysisResults.cmbSpectrum   = indices.comboSpectrum;
-             */
-
-            analysisResults.Spectra.Add(AcousticFeatures.BackgroundNoiseKey, indices.bgNoiseSpectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.AcousticComplexityIndexKey, indices.ACIspectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.AverageKey, indices.averageSpectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.VarianceKey, indices.varianceSpectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.BinCoverageKey, indices.coverSpectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.TemporalEntropyKey, indices.HtSpectrum);
-            analysisResults.Spectra.Add(AcousticFeatures.CombinationKey, indices.comboSpectrum);
+            // Accumulate spectra in Dictionary
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BackgroundNoise, indices.bgNoiseSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_AcousticComplexityIndex, indices.ACIspectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_Average, indices.averageSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_Variance, indices.varianceSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BinCoverage, indices.coverSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_TemporalEntropy, indices.HtSpectrum);
 
             var sonogram = results.Item3;
             var hits     = results.Item4;
