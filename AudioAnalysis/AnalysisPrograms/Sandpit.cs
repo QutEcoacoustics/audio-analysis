@@ -188,11 +188,11 @@ namespace AnalysisPrograms
                 // Need to add new ones into ColourSpectrogram.DrawFalseColourSpectrogramOfIndices()
                 //string colorSchemeID = "DEFAULT"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR-REV";
                 //string colorSchemeID = "ACI-CVR-TEN";
                 //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
-                string colorSchemeID = "ACI-TEN-CVR_AVG";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG";
 
                 var cs = new ColourSpectrogram();
                 // set the X and Y axis scales for the spectrograms 

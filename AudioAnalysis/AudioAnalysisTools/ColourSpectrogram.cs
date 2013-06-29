@@ -169,17 +169,17 @@ namespace AudioAnalysisTools
             Image bmp1 = ImageTools.DrawMatrix(bgnMatrix);
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, X_interval, Y_interval);
 
-            var avgMatrix = spectrogramMatrices[ColourSpectrogram.KEY_Average];
-            var cvrMatrix = spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
-            var aciMatrix = spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
-            var tenMatrix = spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
+            var avgMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_Average];
+            var cvrMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
+            var aciMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
+            var tenMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
 
             Image bmp2 = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
 
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
             int imageHt = bmp1.Height + bmp2.Height + trackHeight + trackHeight + trackHeight;
-            string title = String.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS  (c) QUT.EDU.AU.   (scale = hours x kHz)");
+            string title = String.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", this.ColorSchemeID);
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
             int timeScale = 60;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
@@ -197,6 +197,11 @@ namespace AudioAnalysisTools
             gr.DrawImage(bmp1, 0, offset); //dr
             offset += bmp1.Height;
             gr.DrawImage(timeBmp, 0, offset); //dra
+
+            //draw a colour spectrum of basic colours
+            Image scale = ColourSpectrogram.DrawColourScale(trackHeight - 2);
+            int xLocation = imageWidth * 2 / 3;
+            gr.DrawImage(scale, xLocation, 1); //dra
             compositeBmp.Save(imagePath);
         }
 
@@ -383,6 +388,55 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
+        /// <summary>
+        /// draw a colour spectrum of basic colours
+        /// </summary>
+        /// <param name="side"></param>
+        /// <returns></returns>
+        public static Image DrawColourScale(int side)
+        {
+            Bitmap colorScale = new Bitmap(8*side, side);
+            Graphics gr = Graphics.FromImage(colorScale);
+            int offset = side + 1;
+            int width  = side - 1;
+
+            Bitmap colorBmp = new Bitmap(width, side);
+            Graphics gr2 = Graphics.FromImage(colorBmp);
+            Color c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            int x = 0;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            c = Color.FromArgb(250, 15, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //yellow
+            c = Color.FromArgb(250, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //green
+            c = Color.FromArgb(15, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // pale blue
+            c = Color.FromArgb(15, 250, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // blue
+            c = Color.FromArgb(15, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // purple
+            c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            return (Image)colorScale;
+        }
 
 
             public static void Sandpit()
