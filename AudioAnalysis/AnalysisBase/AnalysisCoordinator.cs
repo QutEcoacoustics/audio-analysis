@@ -136,8 +136,8 @@
                     // this can use settings, as it is modified each iteration, but this is run synchronously.
                     var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
-                    LoggedConsole.Write(".");
-                    if (count % 100 == 0) LoggedConsole.Write("#");
+                    //LoggedConsole.Write(".");
+                    if (count % 60 == 0) LoggedConsole.Write("\n{0}hr ", count/60);
                     else
                     if (count % 10  == 0) LoggedConsole.Write(":");
                     else LoggedConsole.Write(".");

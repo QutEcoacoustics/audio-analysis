@@ -199,7 +199,8 @@ namespace AudioAnalysisTools
             gr.DrawImage(timeBmp, 0, offset); //dra
 
             //draw a colour spectrum of basic colours
-            Image scale = ColourSpectrogram.DrawColourScale(trackHeight - 2);
+            int maxScaleLength = imageWidth / 3;
+            Image scale = ColourSpectrogram.DrawColourScale(maxScaleLength, trackHeight - 2);
             int xLocation = imageWidth * 2 / 3;
             gr.DrawImage(scale, xLocation, 1); //dra
             compositeBmp.Save(imagePath);
@@ -391,16 +392,19 @@ namespace AudioAnalysisTools
         /// <summary>
         /// draw a colour spectrum of basic colours
         /// </summary>
-        /// <param name="side"></param>
+        /// <param name="ht"></param>
         /// <returns></returns>
-        public static Image DrawColourScale(int side)
+        public static Image DrawColourScale(int maxScaleLength, int ht)
         {
-            Bitmap colorScale = new Bitmap(8*side, side);
+            int width = maxScaleLength / 7;
+            if (width > ht) width = ht;
+            else if (width < 3) width = 3;
+            Bitmap colorScale = new Bitmap(8 * width, ht);
             Graphics gr = Graphics.FromImage(colorScale);
-            int offset = side + 1;
-            int width  = side - 1;
+            int offset = width + 1;
+            if (width < 5) offset = width;
 
-            Bitmap colorBmp = new Bitmap(width, side);
+            Bitmap colorBmp = new Bitmap(width-1, ht);
             Graphics gr2 = Graphics.FromImage(colorBmp);
             Color c = Color.FromArgb(250, 15, 250);
             gr2.Clear(c);
@@ -441,30 +445,54 @@ namespace AudioAnalysisTools
 
             public static void Sandpit()
             {
+                //KIWI one hour recording
+                //var csvAvg = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.avgSpectrum.csv";
+                //var csvCvr = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cvrSpectrum.csv";
+                //var csvAci = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.aciSpectrum.csv";
+                //var csvTen = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.tenSpectrum.csv";
+                //string imagePath = @"C:\Work\Software Dev\ColourSpectrogram\TUITCE_20091215_220004.cmbSpectrum_colour_towardsblack.png";
+
+                // SERF 13th October 2010
+                string bgnCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.bgnSpectrum.csv";
                 string cvrCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.cvrSpectrum.csv";
                 string avgCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.avgSpectrum.csv";
-                string csvAciPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.aciSpectrum.csv";
-                string csvTenPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.tenSpectrum.csv";
-                string imagePath  = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrumTest10.png";
+                string aciCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.aciSpectrum.csv";
+                string tenCsvPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.tenSpectrum.csv";
+
+                string imagePath1 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.COLSpectroTest11.png";
+                string imagePath2 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.BGNSpectroTest11.png";
+                string imagePath3 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TENSpectroTest11.png";
+                string imagePath4 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.CMBSpectroTest11.png";
+                string imagePath5 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TWOSpectroTest11.png";
+
                 // colour scheme IDs for RGB plus reverse
-                // Need to add new ones into AcousticFeatures.DrawFalseColourSpectrogramOfIndices()
+                // Need to add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
                 //string colorSchemeID = "DEFAULT"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR-REV";
                 //string colorSchemeID = "ACI-CVR-TEN";
                 //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
-                string colorSchemeID = "ACI-TEN-CVR_AVG";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG";
 
-
-
+                var cs = new ColourSpectrogram();
                 // set the X and Y axis scales for the spectrograms 
-                int X_interval = 60; // assume one minute spectra and hourly time lines
-                int frameWidth = 512;   // default value - from which spectrogram was derived
-                int sampleRate = 17640; // default value - after resampling
-                double freqBinWidth = sampleRate / (double)frameWidth;
-                int Y_interval = (int)Math.Round(1000 / freqBinWidth); // mark 1 kHz intervals
-                //AcousticFeatures.DrawColourSpectrogramsOfIndices(avgCsvPath, cvrCsvPath, csvAciPath, csvTenPath, imagePath, colorSchemeID, X_interval, Y_interval);
+                cs.X_interval = 60;    // assume one minute spectra and hourly time lines
+                cs.FrameWidth = 512;   // default value - from which spectrogram was derived
+                cs.SampleRate = 17640; // default value - after resampling
+                cs.ColorSchemeID = colorSchemeID;
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_BackgroundNoise, bgnCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_BinCover, cvrCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_AcousticComplexityIndex, aciCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_TemporalEntropy, tenCsvPath);
+                cs.DrawFalseColourSpectrogramOfIndices(imagePath1);
+                // draw gray scale spectrogram
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BackgroundNoise, imagePath2);
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_TemporalEntropy, imagePath3);
+
+                cs.DrawCombinedAverageSpectrogram(imagePath4);
+                cs.DrawDoubleSpectrogram(imagePath5);
             }
 
 
