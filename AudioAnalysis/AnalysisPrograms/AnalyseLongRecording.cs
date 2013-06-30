@@ -27,6 +27,15 @@ namespace AnalysisPrograms
     {
         //use the following paths for the command line.
 
+        // COMMAND LINES FOR  ACOUSTIC INDICES
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"         "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"           "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav"          "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
+        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
+        // SUNSHINE COAST
+        // audio2csv  "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1"
+        // audio2csv  "C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast"
+
         // MULTI-ANALYSER DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3
         //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
         //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
@@ -49,14 +58,6 @@ namespace AnalysisPrograms
         //FOR  LITTLE SPOTTED KIWI3
         // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg" C:\SensorNetworks\Output\LSKiwi3\
         
-        // FOR  ACOUSTIC INDICES
-        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav"                  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
-        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"                   "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
-        // audio2csv  "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"          "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\LSKiwi3"
-
-        // SUNSHINE COAST
-        // audio2csv  "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1"
-
         //RAIN
         // audio2csv "C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" "C:\SensorNetworks\Output\Rain"
 
@@ -274,7 +275,7 @@ namespace AnalysisPrograms
                 SaveImageOfIndices(fiIndicesCSV.FullName, configPath, displayCSVImage);
             }
 
-            // if doing acoustic indices then write spectrograms to CSV files and draw their images
+            // if doing ACOUSTIC INDICES then write SPECTROGRAMS to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.ANALYSIS_NAME))
             {
                 // ensure results are sorted in order
@@ -288,13 +289,6 @@ namespace AnalysisPrograms
                     frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
                 if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
                     sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
-                //string colorSchemeID = "DEFAULT"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR-REV";
-                //string colorSchemeID = "ACI-CVR-TEN";
-                //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
-                string colorSchemeID = "ACI-TEN-CVR_AVG";
 
                 // gather spectra to form spectrograms.  Assume same spectra in all analyser results
                 // this is the most effcient way to do this
@@ -337,9 +331,33 @@ namespace AnalysisPrograms
                 } // foreach spectrumKey
 
                 // now Draw the false colour spectrogram
-                var colorImageSavePath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".png");
+                //string colorSchemeID = "DEFAULT"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR-REV";
+                //string colorSchemeID = "ACI-CVR-TEN";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
+                string colorSchemeID = "ACI-TEN-CVR_AVG";
                 cs.ColorSchemeID = colorSchemeID;
-                cs.DrawFalseColourSpectrogramOfIndices(colorImageSavePath);
+                // draw background spectrogram
+                var spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_BackgroundNoise + ".png");
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BackgroundNoise, spectroPath);
+                // draw gray scale spectrogram
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_TemporalEntropy + ".png");
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_TemporalEntropy, spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_BinCover + ".png");
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BinCover, spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_AcousticComplexityIndex + ".png");
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_AcousticComplexityIndex, spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Average + ".png");
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_Average, spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + ".CMB.png");
+                cs.DrawCombinedAverageSpectrogram(spectroPath);
+                // colour spectrograms
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".png");
+                cs.DrawFalseColourSpectrogramOfIndices(spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + ".TWO.png");
+                cs.DrawDoubleSpectrogram(spectroPath);
 
             } // if doing acoustic indices
 
