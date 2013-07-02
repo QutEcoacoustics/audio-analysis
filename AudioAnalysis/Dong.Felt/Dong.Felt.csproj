@@ -100,7 +100,6 @@
   <ItemGroup>
     <Compile Include="AcousticEvents.cs" />
     <Compile Include="Clustering.cs" />
-    <Compile Include="ConvolutionMatrix.cs" />
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="FeatureVector.cs" />
