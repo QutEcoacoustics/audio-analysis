@@ -46,7 +46,7 @@
                 string wavFilePath = @"C:\Test recordings\Scarlet honey eater\Samford7_20080701-065230.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "DM420036_min430Crows-contains scarlet honeyeater-acousticEvents3.png";
+                string annotatedImageFileName = "DM420036_min430Crows-contains scarlet honeyeater-8directionEdge.png";
                 double magnitudeThreshold = 7.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -86,45 +86,42 @@
                 );
                 */
 
-                //int rows = matrix.GetLength(0);
-                //int cols = matrix.GetLength(1);
-                //for (int r = halfLength; r < rows - halfLength; r++)
-                //{
-                //    for (int c = halfLength; c < cols - halfLength; c++)
-                //    {
-                        //var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                //        double magnitude;
-                //        double direction;
-                //        bool isRidge = false;
-                //        ImageAnalysisTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                //        if (magnitude > magnitudeThreshold)
-                //        {
-                //            Point point = new Point(c, r);
-                //            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                //            double herz = (freqBinCount - r - 1) * herzScale;
-                //            var poi = new PointOfInterest(time, herz);
-                //            poi.Point = point;
-                //            poi.RidgeOrientation = direction;
-                //            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                //            poi.RidgeMagnitude = magnitude;
-                //            poi.Intensity = matrix[r, c];
-                //            poi.TimeScale = timeScale;
-                //            poi.HerzScale = herzScale;
-                //            poiList.Add(poi);
-                //        }
-                //    }
-                //}
+                int rows = matrix.GetLength(0);
+                int cols = matrix.GetLength(1);
+                for (int r = halfLength; r < rows - halfLength; r++)
+                {
+                    for (int c = halfLength; c < cols - halfLength; c++)
+                    {
+                        var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                        double magnitude;
+                        double direction;
+                        bool isRidge = false;
+                        ImageAnalysisTools.Sobel5X5RidgeDetection8Direction(subM, out isRidge, out magnitude, out direction);
+                        if (magnitude > magnitudeThreshold)
+                        {
+                            Point point = new Point(c, r);
+                            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                            double herz = (freqBinCount - r - 1) * herzScale;
+                            var poi = new PointOfInterest(time, herz);
+                            poi.Point = point;
+                            poi.RidgeOrientation = direction;
+                            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                            poi.RidgeMagnitude = magnitude;
+                            poi.Intensity = matrix[r, c];
+                            poi.TimeScale = timeScale;
+                            poi.HerzScale = herzScale;
+                            poiList.Add(poi);
+                        }
+                    }
+                }
                 //var timeUnit = 1;  // 1 second
                 //var edgeStatistic = FeatureVector.EdgeStatistics(poiList, rows, cols, timeUnit, secondsScale);
                 /// filter out some redundant poi                
                 //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
-                //PointOfInterest.PruneSingletons(poiList, rows, cols);
-                //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                //poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-                //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
-                //var filterNeighbourhoodSize = 7;
-                //var numberOfEdge = 3;
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
+                poiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+                var filterNeighbourhoodSize = 7;
+                var numberOfEdge = 3;
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
                 ////var featureVector = FeatureVector.PercentageByteFeatureVectors(filterPoiList, rows, cols, 9);  
                 //var sizeOfSearchNeighbourhood = 13;
                 //var featureVector = FeatureVector.IntegarDirectionFeatureVectors(filterPoiList, rows, cols, sizeOfSearchNeighbourhood);
@@ -137,29 +134,29 @@
                 //var herzPerSlice = 550; // 13 pixels
                 //var durationPerSlice = 0.15;  // 13 pixels
                 //var featureVector = FeatureVector.FeatureVectorForQuery(filterPoiList, maxFrequency, minFrequency, duration, herzPerSlice, durationPerSlice, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
-                var finalPoiList = new List<PointOfInterest>();
-                var poiList2 = StructureTensorTest.createFalsePoiFromMatrix(StructureTensorTest.testMatrixForRepresentation);
-                //var featureVector = FeatureVector.ImprovedIntegerDirectionFeatureVectors(poiList2, 25, 25, 13);
-                var representation = RectangularRepresentation.RepresentationForIndexing(poiList2, 19.0, 7.0, 13.0, 13, 1.0, 1.0, 25.0, 25, 25);
-                //foreach (PointOfInterest poi in filterPoiList)
-                ////foreach (FeatureVector fv in featureVector)
-                //{
-                ////    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                //    poi.DrawOrientationPoint(bmp, (int)freqBinCount); 
-                ////    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate                  (percentageFeatureVector));                   
-                ////    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                ////    //var similarityThreshold = 0.6;
-                ////    //if (avgDistance < similarityThreshold)
-                ////    //{
-                ////    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                ////    //}
-                ////    //var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                ////    //var distanceThreshold = 5;
-                ////    //if (distance < distanceThreshold)
-                ////    //{
-                ////    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                ////    //}                 
-                //}
+                //var finalPoiList = new List<PointOfInterest>();
+                //var poiList2 = StructureTensorTest.createFalsePoiFromMatrix(StructureTensorTest.testMatrixForRepresentation);
+                ////var featureVector = FeatureVector.ImprovedIntegerDirectionFeatureVectors(poiList2, 25, 25, 13);
+                //var representation = RectangularRepresentation.RepresentationForIndexing(poiList2, 19.0, 6.0, 13.0, 13, 1.0, 1.0, 25.0, 25, 25, 2, 2);
+                foreach (PointOfInterest poi in filterPoiList)
+                //foreach (FeatureVector fv in featureVector)
+                {
+                    //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    //    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate                  (percentageFeatureVector));                   
+                    //    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    //    //var similarityThreshold = 0.6;
+                    //    //if (avgDistance < similarityThreshold)
+                    //    //{
+                    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                    //    //}
+                    //    //var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                    //    //var distanceThreshold = 5;
+                    //    //if (distance < distanceThreshold)
+                    //    //{
+                    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                    //    //}                 
+                }
                 //var acousticEvents = Clustering.ClusterEdges(filterPoiList, rows, cols);
                 ////var mergeAcousticEvents = Clustering.ClusterEvents(acousticEvents, 5);
                 var finalAcousticEvents = new List<AcousticEvent>();
@@ -170,7 +167,7 @@
               
                 //var thresholdOfdistanceforClosePoi = 8;
                 //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
-                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);

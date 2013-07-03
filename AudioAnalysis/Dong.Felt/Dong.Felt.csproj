@@ -104,6 +104,7 @@
     <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="FeatureVector.cs" />
     <Compile Include="ImageAnalysisTools.cs" />
+    <Compile Include="Index.cs" />
     <Compile Include="LocalMaxima.cs" />
     <Compile Include="PoiAnalysis.cs" />
     <Compile Include="Dong.Felt.Main.cs" />

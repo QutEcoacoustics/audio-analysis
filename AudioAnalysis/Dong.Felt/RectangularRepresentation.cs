@@ -53,6 +53,9 @@ namespace Dong.Felt
         /// required for conversions to & from MEL scale AND for drawing event on spectrum.
         /// </summary>
         public double FramesPerSecond { get; set; }
+
+        
+
         #endregion
 
         #region Pulic Methods
@@ -104,11 +107,17 @@ namespace Dong.Felt
         /// <returns></returns>
         public static List<List<FeatureVector>> RepresentationForIndexing(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
-                                                               double nyquistFrequency, int rowsCount, int colsCount)
+                                                               double nyquistFrequency, int rowsCount, int colsCount, int searchStep, int frequencyOffset)
         {
-
             var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
             var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
+            
+            var extendedFrequencyRange = 0;
+            if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedFrequencyRange = (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+            }
+            var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
             var numberOfRowSlices = (int)Math.Ceiling((maxFrequency - minFrequency) / sizeofNeighbourhood);
             var numberOfColSlices = (int)Math.Ceiling(duration / sizeofNeighbourhood);
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
@@ -116,10 +125,10 @@ namespace Dong.Felt
             var result = new List<List<FeatureVector>>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
-            for (int row = MinRowIndex; row < MaxRowIndex; row += sizeofNeighbourhood)
+            for (int row = MinRowIndex - halfExtendedFrequencyRange; row <= MaxRowIndex + halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             {
                 // search along time position one by one. 
-                for (int col = 0; col < colsCount; col++)
+                for (int col = 0; col < colsCount; col += searchStep)
                 {
                     for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
                     {
@@ -130,12 +139,14 @@ namespace Dong.Felt
                                 var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row + sliceRowIndex * sizeofNeighbourhood, col + sliceColIndex * sizeofNeighbourhood, row + (sliceRowIndex + 1) * sizeofNeighbourhood, col + (sliceColIndex + 1) * sizeofNeighbourhood);
                                 var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
                                 result.Add(new List<FeatureVector>());
-                                result[sliceRowIndex * sizeofNeighbourhood + sliceColIndex + col].Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+                                result[sliceRowIndex * sizeofNeighbourhood + sliceColIndex + col / searchStep].Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                                 {
                                     HorizontalVector = partialFeatureVector.HorizontalVector,
                                     VerticalVector = partialFeatureVector.VerticalVector,
                                     PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
-                                    NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector
+                                    NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
+                                    TimePosition = col,
+                                    FrequencyBand = row
                                 });
                             }
                         }

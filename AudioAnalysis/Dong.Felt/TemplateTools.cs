@@ -212,7 +212,7 @@ namespace Dong.Felt
             // find the nearest point the to centeroid
             for (int j = 0; j < numberOfVertex; j++)
             {
-                distance[j] = Distance.EuclideanDistance(tempCenteroid, points[j]);
+                distance[j] = Distance.EuclideanDistanceForPoint(tempCenteroid, points[j]);
                 if (distance[j] < minimumDistance)
                 {
                     minimumDistance = distance[j];

@@ -685,7 +685,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
 
-            double[] ridgeMagnitudes = new double[4];
+            double[] ridgeMagnitudes = new double[8];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
@@ -701,6 +701,87 @@ namespace Dong.Felt
             direction = indexMax * Math.PI / (double)4;
         }
 
+        public static void Sobel5X5RidgeDetection8Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            
+            double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir4Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1}
+                                      };
+            double[,] ridgeDir6Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };         
+            double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+
+            double[] ridgeMagnitudes = new double[8];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+            ridgeMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
+            ridgeMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
+            ridgeMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
+            ridgeMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            direction = indexMax * Math.PI / (double)8;
+        }
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
