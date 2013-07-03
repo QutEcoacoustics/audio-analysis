@@ -97,6 +97,16 @@
 
         public double Intensity { get; set; }
 
+        /// <summary>
+        /// to keep the time position in the long audio file for calculating the representation for this position. 
+        /// </summary>
+        public int TimePosition { get; set; }
+
+        /// <summary>
+        /// to keep the frequencyband for calculating the representation for this position. 
+        /// </summary>
+        public int FrequencyBand { get; set; }
+
         #region constructor
         /// <summary>
         /// A constructor takes in percentageByteVector

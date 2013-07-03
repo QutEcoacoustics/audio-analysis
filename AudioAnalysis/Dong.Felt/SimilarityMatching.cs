@@ -39,20 +39,20 @@
         /// </returns>
         public static double AvgDistance(FeatureVector instance, FeatureVector template)
         {
-            var avgdistance = 0.0;           
+            var avgdistance = 0.0;
             var numberOfScaleCount = instance.VerticalBitVector.Count();
             var sumV = 0.0;
             var sumH = 0.0;
             for (int i = 0; i < numberOfScaleCount; i++)
-            {        
+            {
                 // kind of Manhattan distance calculation    
                 sumV = sumV + Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]);
                 sumH = sumH = Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]);
             }
-            var sum = (sumH + sumV) / 2;    
-            avgdistance = sum / numberOfScaleCount; 
+            var sum = (sumH + sumV) / 2;
+            avgdistance = sum / numberOfScaleCount;
 
-            return avgdistance; 
+            return avgdistance;
         }
 
         public static int distanceForBitFeatureVector(FeatureVector instance, FeatureVector template)
@@ -70,7 +70,7 @@
             var sum = (sumH + sumV) / 2;
             distance = sum;
 
-            return distance; 
+            return distance;
         }
 
         public static double SimilarityScoreForAvgDistance(double avgDistance, int neighbourhoodSize)
@@ -79,7 +79,6 @@
 
             return similarityScore;
         }
-
 
         /// <summary>
         /// One way to calculate Similarity Score for percentage byte vector representation.
@@ -93,7 +92,7 @@
         {
             // Initialize
             double similarityScore = 0.0;
-            var threshold = new double[] {0.1, 0.1, 0.1, 0.3};
+            var threshold = new double[] { 0.1, 0.1, 0.1, 0.3 };
             if (Math.Abs(instance.PercentageByteVector[0] - template.PercentageByteVector[0]) < threshold[0]
              && Math.Abs(instance.PercentageByteVector[1] - template.PercentageByteVector[1]) < threshold[1]
              && Math.Abs(instance.PercentageByteVector[2] - template.PercentageByteVector[2]) < threshold[2]
@@ -105,6 +104,30 @@
             return similarityScore;
         }
 
+        // To calculate the distance between query and potentialEvent. The return value is equal to the sum of every orientation subdistance. 
+        public static double SimilarityScoreOfDirectionVector(FeatureVector potentialEvent, FeatureVector query)
+        {
+            var numberOfFeaturevector = query.HorizontalVector.Count();
+            var numberOfdiagonalFeaturevector = query.PositiveDiagonalVector.Count();
+            var horizontalDistance = 0.0;
+            var verticalDistance = 0.0;
+            var positiveDiagonalDistance = 0.0;
+            var negativeDiagonalDistance = 0.0;
+            var result = 0.0;
+            for (int i = 0; i < numberOfFeaturevector; i++)
+            {
+                horizontalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent.HorizontalVector[i], 0.0, (double)query.HorizontalVector[i], 0.0);
+                verticalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent.VerticalVector[i], 0.0, (double)query.VerticalVector[i], 0.0);
+            }
+            for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
+            {
+                positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent.PositiveDiagonalVector[j], 0.0, (double)query.PositiveDiagonalVector[j], 0.0);
+                negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent.NegativeDiagonalVector[j], 0.0, (double)query.NegativeDiagonalVector[j], 0.0);
+            }
+
+            result = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
+            return result;
+        }
         /// <summary>
         /// One way to calculate Similarity Score for direction byte vector representation.
         /// </summary>
@@ -121,7 +144,7 @@
             var numberOfSameHorizontalByte = 0;
             var numberOfSameVerticalByte = 0;
             var horizontalThreshold = new double[] { 1, 4 }; // threshold[0], exact match for null direction,  threshold[1], 
-            var verticalThreshold = new double[] {1, 4 };
+            var verticalThreshold = new double[] { 1, 4 };
             for (int byteIndex = 0; byteIndex < bitCount; byteIndex++)
             {
                 if (template.HorizontalBitVector[byteIndex] == 0) // they must match with each other in an exact way
@@ -234,8 +257,8 @@
             }
             return similarityScore;
         }
-         
-        
+
+
 
     }
 }

@@ -49,7 +49,7 @@
         /// <returns>
         /// The distance between two points.
         /// </returns>
-        public static double EuclideanDistance(Point p1, Point p2)
+        public static double EuclideanDistanceForPoint(Point p1, Point p2)
         {
             var deltaX = Math.Pow(p2.X - p1.X, 2);
             var deltaY = Math.Pow(p2.Y - p1.Y, 2);
@@ -57,6 +57,13 @@
             return Math.Sqrt(deltaX + deltaY);
         }
 
+        public static double EuclideanDistanceForCordinates(double x1, double y1, double x2, double y2)
+        {
+            var deltaX = Math.Pow(x2 - x1, 2);
+            var deltaY = Math.Pow(y2 - y1, 2);
+
+            return Math.Sqrt(deltaX + deltaY);
+        }
         /// <summary>
         /// The manhanton distance.
         /// </summary>
