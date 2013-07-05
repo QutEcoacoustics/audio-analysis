@@ -54,7 +54,7 @@ namespace Dong.Felt
         /// </summary>
         public double FramesPerSecond { get; set; }
 
-        
+
 
         #endregion
 
@@ -111,48 +111,56 @@ namespace Dong.Felt
         {
             var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
             var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
-            
+
             var extendedFrequencyRange = 0;
             if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
             {
                 extendedFrequencyRange = (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
             }
+            var numberOfFrames = duration / timeScale;
             var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
-            var numberOfRowSlices = (int)Math.Ceiling((maxFrequency - minFrequency) / sizeofNeighbourhood);
-            var numberOfColSlices = (int)Math.Ceiling(duration / sizeofNeighbourhood);
+            var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
+            var numberOfColSlices = (int)Math.Ceiling((double)numberOfFrames / sizeofNeighbourhood);
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
             var result = new List<List<FeatureVector>>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            // search along the fixed frequency range.
-            for (int row = MinRowIndex - halfExtendedFrequencyRange; row <= MaxRowIndex + halfExtendedFrequencyRange; row += sizeofNeighbourhood)
+            var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
+            var listCount = 0;
+
+            //search along time position searchstep by searchstep. 
+            for (int col = 0; col < colsCount; col += searchStep)
             {
-                // search along time position one by one. 
-                for (int col = 0; col < colsCount; col += searchStep)
+                result.Add(new List<FeatureVector>());
+                listCount++;
+                for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
                 {
-                    for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
+                    for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
                     {
-                        for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
+                        var startRowIndexInSlice = startRowIndex + (sliceRowIndex * sizeofNeighbourhood);
+                        var endRowIndexInSlice = startRowIndex + ((sliceRowIndex + 1) * sizeofNeighbourhood);
+                        var startColIndexInSlice = col + (sliceColIndex * sizeofNeighbourhood);
+                        var endColIndexInSlice = col + ((sliceColIndex + 1) * sizeofNeighbourhood);
+                        if (StatisticalAnalysis.checkBoundary(endRowIndexInSlice, endColIndexInSlice, rowsCount, colsCount))
                         {
-                            if (StatisticalAnalysis.checkBoundary(row + (sliceRowIndex + 1) * sizeofNeighbourhood, col + (sliceColIndex + 1) * sizeofNeighbourhood, rowsCount, colsCount))
+                            var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
+                            var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
+                            var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
+                            var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                            //            result[sliceRowIndex * sizeofNeighbourhood + sliceColIndex + col / searchStep].Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+                            result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                             {
-                                var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row + sliceRowIndex * sizeofNeighbourhood, col + sliceColIndex * sizeofNeighbourhood, row + (sliceRowIndex + 1) * sizeofNeighbourhood, col + (sliceColIndex + 1) * sizeofNeighbourhood);
-                                var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
-                                result.Add(new List<FeatureVector>());
-                                result[sliceRowIndex * sizeofNeighbourhood + sliceColIndex + col / searchStep].Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
-                                {
-                                    HorizontalVector = partialFeatureVector.HorizontalVector,
-                                    VerticalVector = partialFeatureVector.VerticalVector,
-                                    PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
-                                    NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                                    TimePosition = col,
-                                    FrequencyBand = row
-                                });
-                            }
+                                HorizontalVector = partialFeatureVector.HorizontalVector,
+                                VerticalVector = partialFeatureVector.VerticalVector,
+                                PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
+                                NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
+                                TimePosition = col,
+                            });
                         }
                     }
                 }
             }
+
             return result;
         }
 
@@ -183,7 +191,7 @@ namespace Dong.Felt
                     // check boundary of index 
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
                     {
-                        if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex] != null) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].RidgeOrientation == (int)Direction.East)
+                        if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex] != null) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
                         {
                             horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
                         }
@@ -198,7 +206,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
                     {
-                        if ((matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex] != null) && matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].RidgeOrientation == (int)Direction.North)
+                        if ((matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex] != null) && matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
                         {
                             verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
                         }
@@ -213,7 +221,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].RidgeOrientation == (int)Direction.NorthWest))
+                        if ((matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
                             negativeDiagonalDirection[sizeOfNeighbourhood - offset - 1]++;
                         }
@@ -226,7 +234,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].RidgeOrientation == (int)Direction.NorthWest))
+                        if ((matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
                             negativeDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
                         }
@@ -284,67 +292,53 @@ namespace Dong.Felt
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static List<List<FeatureVector>> RepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
-                                                               double duration, int herzPerSlice, double durationPerSlice, double herzScale, double timeScale,
+        public static List<FeatureVector> RepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
+                                                               double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount)
         {
-            var rowsCountPerSlice = (int)Math.Ceiling(herzPerSlice / herzScale);  // 13 pixels  560Hz
-            var colsCountPerSlice = (int)Math.Ceiling(durationPerSlice / timeScale); // 13 pixels 0.15 second
             var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
             var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
-            var numberOfRowSlices = (int)Math.Ceiling((maxFrequency - minFrequency) / herzPerSlice);
-            var numberOfColSlices = (int)Math.Ceiling(duration / durationPerSlice);
-            var halfNumberOfRowSlices = numberOfRowSlices / 2;
-            var halfNumberOfColSlices = numberOfColSlices / 2;
-            var result = new List<List<FeatureVector>>();
+            var MinColIndex = (int)Math.Floor(startTime / timeScale);
+            var MaxColIndex = (int)Math.Ceiling((startTime + duration) / timeScale);
+            var extendedFrequencyRange = 0;
+            var extendedTimeRange = 0;
+            if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedFrequencyRange = (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+            }
+            if ((MaxColIndex - MinColIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedTimeRange = (MaxColIndex - MinColIndex) % sizeofNeighbourhood;
+            }
+            var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
+            var halfExtendedTimeRange = extendedTimeRange / 2;
+            var halfRowNeighbourhood = sizeofNeighbourhood / 2;
+            var halfColNeighbourhood = sizeofNeighbourhood / 2;
+            var result = new List<FeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
-            for (int row = MinRowIndex; row < MaxRowIndex; row += rowsCountPerSlice)
+            for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             {
                 // search along time position one by one. 
-                for (int col = 0; col < colsCount; col++)
+                for (int col = MinColIndex - halfExtendedTimeRange; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 {
-                    for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
+                    if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
-                        for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
+                        var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
+                        var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                         {
-                            if (StatisticalAnalysis.checkBoundary(row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice, rowsCount, colsCount))
-                            {
-                                var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row + sliceRowIndex * rowsCountPerSlice, col + sliceColIndex * colsCountPerSlice, row + (sliceRowIndex + 1) * rowsCountPerSlice, col + (sliceColIndex + 1) * colsCountPerSlice);
-                                var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfNumberOfRowSlices, col + halfNumberOfColSlices);
-                                result.Add(new List<FeatureVector>());
-                                result[sliceRowIndex * numberOfColSlices + sliceColIndex].Add(new FeatureVector(new Point(row, col))
-                                {
-                                    HorizontalVector = partialFeatureVector.HorizontalVector,
-                                    VerticalVector = partialFeatureVector.VerticalVector,
-                                    PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
-                                    NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector
-                                });
-                            }
-                        }
+                            HorizontalVector = partialFeatureVector.HorizontalVector,
+                            VerticalVector = partialFeatureVector.VerticalVector,
+                            PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
+                            NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
+                        });
                     }
                 }
             }
             return result;
         }
 
-        public static void RectangularToMatrix(RectangularRepresentation rectangular, double nyquistFrequency)
-        {
-            var maxRowIndex = (int)Math.Ceiling((nyquistFrequency - rectangular.MinFrequency) / rectangular.FrequencyBinWidth);
-            var minRowIndex = (int)Math.Floor((nyquistFrequency - rectangular.MaxFrequency) / rectangular.FrequencyBinWidth);
-            var startTimeIndex = (int)(rectangular.StartTime * rectangular.FramesPerSecond);
-            var endTimeIndex = (int)((rectangular.Duration - rectangular.StartTime) * rectangular.FramesPerSecond);
-            var rowsCount = maxRowIndex - minRowIndex;
-            var colsCount = endTimeIndex - startTimeIndex;
-            var matrix = new PointOfInterest[rowsCount, colsCount];
-            for (int row = 0; row < rowsCount; row++)
-            {
-                for (int col = 0; col < colsCount; col++)
-                {
-                    matrix[row, col].Intensity = 0.0;
-                }
-            }
-        }
         #endregion
 
     }

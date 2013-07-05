@@ -54,7 +54,15 @@
                 for (int col = 0; col < subColCount; col++)
                 {
                     subMatrix[row, col] = new PointOfInterest(new Point(row1 + row, col1 + col));
-                    subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
+                    if (matrix[row1 + row, col1 + col] != null)
+                    {
+                        subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
+                    }
+                    else
+                    {
+                        subMatrix[row, col].OrientationCategory = 20;
+                    }
+
                 }
             }
             return subMatrix;
