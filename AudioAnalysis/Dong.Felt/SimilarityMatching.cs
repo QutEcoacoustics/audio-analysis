@@ -113,6 +113,8 @@
                 var numberOfFeaturevector = query[0].HorizontalVector.Count();
                 var numberOfdiagonalFeaturevector = query[0].PositiveDiagonalVector.Count();
                 var numberOfSlices = query.Count();
+                // Option 2 according to potential event length 
+                // var numberOfSlices = potentiaEvent.Count();
                 var horizontalDistance = 0.0;
                 var verticalDistance = 0.0;
                 var positiveDiagonalDistance = 0.0;

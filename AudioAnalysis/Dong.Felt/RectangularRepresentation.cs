@@ -115,7 +115,7 @@ namespace Dong.Felt
             var extendedFrequencyRange = 0;
             if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
             {
-                extendedFrequencyRange = (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+                extendedFrequencyRange = sizeofNeighbourhood - (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
             }
             var numberOfFrames = duration / timeScale;
             var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
@@ -131,6 +131,13 @@ namespace Dong.Felt
             //search along time position searchstep by searchstep. 
             for (int col = 0; col < colsCount; col += searchStep)
             {
+                // option one for the box that is not enough for a entire box, just ignore this part
+                // here, you need to check whether i
+                var boxMaxColIndex = col + numberOfColSlices * sizeofNeighbourhood;
+                if (!(boxMaxColIndex < colsCount))
+                {
+                    break;
+                }
                 result.Add(new List<FeatureVector>());
                 listCount++;
                 for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
@@ -155,6 +162,7 @@ namespace Dong.Felt
                                 PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                                 NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
                                 TimePosition = col,
+
                             });
                         }
                     }
@@ -304,11 +312,11 @@ namespace Dong.Felt
             var extendedTimeRange = 0;
             if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
             {
-                extendedFrequencyRange = (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+                extendedFrequencyRange = sizeofNeighbourhood - (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
             }
             if ((MaxColIndex - MinColIndex) % sizeofNeighbourhood != 0)
             {
-                extendedTimeRange = (MaxColIndex - MinColIndex) % sizeofNeighbourhood;
+                extendedTimeRange = sizeofNeighbourhood - (MaxColIndex - MinColIndex) % sizeofNeighbourhood;
             }
             var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
             var halfExtendedTimeRange = extendedTimeRange / 2;
@@ -318,8 +326,10 @@ namespace Dong.Felt
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
             for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
+            //for (int row = 149; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
             {
                 // search along time position one by one. 
+                //for (int col = 308; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 for (int col = MinColIndex - halfExtendedTimeRange; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
                 {
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
