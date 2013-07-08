@@ -44,10 +44,10 @@
 
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
-                string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NEJB_NE465_20101013-151200-305-310.wav"; 
+                string wavFilePath = @"C:\Test recordings\Grey Fantail1\SE_SE727_20101013-060000-300-360-segments.wav"; 
                 string outputDirectory = @"C:\Test recordings\Output\Test";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NEJB_NE465_20101013-151200-305-310-similaritySearch-changed threshold-6.0.png";
+                string annotatedImageFileName = "SE_SE727_20101013-060000-300-360-segments-4directionsEdge-changed threshold-6.0.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
 
@@ -127,57 +127,85 @@
                 //var sizeOfSearchNeighbourhood = 13;
                 //var featureVector = FeatureVector.IntegarDirectionFeatureVectors(filterPoiList, rows, cols, sizeOfSearchNeighbourhood);
                 //featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
-                var maxFrequency = 5124.90;
-                var minFrequency = 3359.18;
-                var startTime = 2.0;
-                var endTime = 4.0;
-                var duration = endTime - startTime;  // second
-                var neighbourhoodSize = 13;
-                
                 //var herzPerSlice = 550; // 13 pixels
                 //var durationPerSlice = 0.15;  // 13 pixels
-                var queryFeatureVector = RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration,neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
-                var searchStep = 1;
+                
+                // generate feature vector for a box
+                var parametersForDifferentEvents = new List<Tuple<double, double, double, double,int>>();
+                // For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
+                //var maxFrequency = 5124.90;
+                //var minFrequency = 3359.18;
+                //var startTime = 188.0;//3.0; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                //var endTime = 189.1;//4.1;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var duration = endTime - startTime;  // second
+                //var neighbourhoodSize = 13;
+                // For Rofous whistler 4
+                var maxFrequency = 8355.0;
+                var minFrequency = 4522.0;
+                var startTime = 47.482; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                var endTime = 49.059;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                var duration = endTime - startTime;  // second
+                var neighbourhoodSize = 13;
+                // For Grey Fantail 1
+                // Torreisian Crow 1
+
+                var queryFeatureVector = RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
+                var searchStep = 3;
                 var frequencyOffset = 0;
-                var featureVectorList = RectangularRepresentation.RepresentationForIndexing(poiList, maxFrequency, minFrequency, duration, neighbourhoodSize,
+                var featureVectorList = RectangularRepresentation.RepresentationForIndexing(filterPoiList, maxFrequency, minFrequency, duration, neighbourhoodSize,
                                                                                             herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols,
                                                                                             searchStep, frequencyOffset);
                 var finalPoiList = new List<PointOfInterest>();
-                //foreach (PointOfInterest poi in filterPoiList)
-                foreach (var fl in featureVectorList)
+                var listOfPositions = new List<int>();
+                foreach (PointOfInterest poi in filterPoiList)
+                //foreach (var fl in featureVectorList)
                 {
-                //    //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                //    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                //    //    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate                  (percentageFeatureVector));                   
-                //    //    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                //    //    //var similarityThreshold = 0.6;
-                //    //    //if (avgDistance < similarityThreshold)
-                //    //    //{
-                //    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                //    //    //}
-                //    //    //var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
-                //    //    //var distanceThreshold = 5;
-                //    //    //if (distance < distanceThreshold)
-                //    //    //{
-                //    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
-                //    //    //} 
-                    var distance = SimilarityMatching.SimilarityScoreOfDirectionVector(fl, queryFeatureVector);
-                    if (distance < 1)
-                    {
-                        var timePosition = fl[0].TimePosition;
-                    }
+                //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                ////    //    ////var similarityScore = TemplateTools.CalculateSimilarityScoreForPercentagePresention(fv, TemplateTools.HoneyeaterTemplate                  (percentageFeatureVector));                   
+                ////    //    //var avgDistance = SimilarityMatching.AvgDistance(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                ////    //    //var similarityThreshold = 0.6;
+                ////    //    //if (avgDistance < similarityThreshold)
+                ////    //    //{
+                ////    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                ////    //    //}
+                ////    //    //var distance = SimilarityMatching.distanceForBitFeatureVector(fv, TemplateTools.HoneyeaterDirectionByteTemplate());
+                ////    //    //var distanceThreshold = 5;
+                ////    //    //if (distance < distanceThreshold)
+                ////    //    //{
+                ////    //    //    finalPoiList.Add(new PointOfInterest(new Point(fv.Point.Y, fv.Point.X)) { Intensity = fv.Intensity });
+                ////    //    //} 
+                    //var distance = SimilarityMatching.SimilarityScoreOfDirectionVector(fl, queryFeatureVector);
+                    // Exact match with query, the query is from our tag data.
+                    //distanceThreshold = 0.0;
+                    //if (distance == distanceThreshold)
+                    // similarity search with a long recording.
+                    //var distanceThreshold = 200.0;
+                    //if (distance <= distanceThreshold)
+                    //{
+                    //    listOfPositions.Add(fl[0].TimePosition);
+                    //}
+
                 }
                 
                 //var acousticEvents = Clustering.ClusterEdges(filterPoiList, rows, cols);
                 ////var mergeAcousticEvents = Clustering.ClusterEvents(acousticEvents, 5);
-                var finalAcousticEvents = new List<AcousticEvent>();
+                //var finalAcousticEvents = new List<AcousticEvent>();
+                //foreach (var p in listOfPositions)
+                //{
+                //    var startTimePosition = p * secondsScale;
+                //    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, minFrequency, maxFrequency));
+                //}
                 //foreach (var mae in filterPoiList)
                 //{
                 //    finalAcousticEvents.Add(new AcousticEvent(mae.TimeStart, mae.Duration, mae.MinFreq, mae.MaxFreq));
                 //}             
                 //var thresholdOfdistanceforClosePoi = 8;
                 //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
-                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
+                // output edge image
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
+                // output events image
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
