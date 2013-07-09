@@ -97,6 +97,8 @@
 
         public double Intensity { get; set; }
 
+        public Point Centroid { get; set; }
+
         /// <summary>
         /// to keep the time position in the long audio file for calculating the representation for this position. 
         /// </summary>
@@ -714,6 +716,14 @@
                 }
             }
             return result;
+        }
+
+        public static Point GetCentroid(double frequencyBinWidth, double framePerSecond, double maxFrequency, double minFrequency, double timeStart, double timeEnd)
+        {
+            var centroid = new Point(0, 0);
+            var x = (int)((maxFrequency - minFrequency) / frequencyBinWidth * 0.5);
+            var y = (int)((timeEnd - timeStart) * framePerSecond * 0.5);
+            return centroid = new Point(x, y);
         }
 
         #endregion

@@ -342,6 +342,7 @@ namespace Dong.Felt
                             VerticalVector = partialFeatureVector.VerticalVector,
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
+                            TimePosition = MinColIndex
                         });
                     }
                 }
