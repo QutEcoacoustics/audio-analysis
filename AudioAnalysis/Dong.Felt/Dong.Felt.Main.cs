@@ -243,6 +243,7 @@ namespace Dong.Felt
             analysisSettings.ConfigDict["my_custom_setting"] = "hello xueyan";
 
             var result = felt.Analyse(analysisSettings);
+            string date = "# Date and Time:" + DateTime.Now;
             Log.Info("Finished, yay!");
         }
 
