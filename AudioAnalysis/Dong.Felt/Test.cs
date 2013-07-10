@@ -7,6 +7,8 @@
     using System.Drawing;
     using TowseyLib;
     using AudioAnalysisTools;
+    using System.IO;
+
     public class StructureTensorTest
     {
 
@@ -127,6 +129,136 @@
             return m;
         }
 
+        public static void featureVectorToCSV(List<FeatureVector> listOfFeatureVector, string path)
+        {
+            var results = new List<string>();
+            results.Add("SliceNumber, HorizontalVector");
+            for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+            {
+                results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
+                sliceIndex, listOfFeatureVector[sliceIndex].HorizontalVector[0],
+                listOfFeatureVector[sliceIndex].HorizontalVector[1],
+                listOfFeatureVector[sliceIndex].HorizontalVector[2],
+                listOfFeatureVector[sliceIndex].HorizontalVector[3],
+                listOfFeatureVector[sliceIndex].HorizontalVector[4],
+                listOfFeatureVector[sliceIndex].HorizontalVector[5],
+                listOfFeatureVector[sliceIndex].HorizontalVector[6],
+                listOfFeatureVector[sliceIndex].HorizontalVector[7],
+                listOfFeatureVector[sliceIndex].HorizontalVector[8],
+                listOfFeatureVector[sliceIndex].HorizontalVector[9],
+                listOfFeatureVector[sliceIndex].HorizontalVector[10],
+                listOfFeatureVector[sliceIndex].HorizontalVector[11],
+                listOfFeatureVector[sliceIndex].HorizontalVector[12], " "));
+            }
+            File.WriteAllLines(path + ".csv", results.ToArray());
+
+            //var results1 = new List<string>();
+            //results1.Add("SliceNumber, VerticalVector");
+            //for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+            //{
+            //    results1.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
+            //    sliceIndex, listOfFeatureVector[sliceIndex].VerticalVector[0],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[1],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[2],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[3],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[4],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[5],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[6],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[7],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[8],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[9],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[10],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[11],
+            //    listOfFeatureVector[sliceIndex].VerticalVector[12], " "));
+
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Output\CandidatesVerticalFeatureVector.csv", results1.ToArray());
+
+            //var results2 = new List<string>();
+            //results2.Add("SliceNumber, PositiveDiagonalVector");
+            //for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+            //{
+            //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},                       {21}, {22}, {23}, {24}, {25}, {26}",
+            //    sliceIndex, listOfFeatureVector[sliceIndex].PositiveDiagonalVector[0],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[1],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[2],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[3],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[4],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[5],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[6],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[7],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[8],
+            //                listOfFeatureVector[sliceIndex].PositiveDiagonalVector[9],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[10],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[11],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[12],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[13],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[14],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[15],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[16],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[17],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[18],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[19],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[20],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[21],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[22],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[23],
+            //    listOfFeatureVector[sliceIndex].PositiveDiagonalVector[24], " "));
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Output\CandidatesPositiveDiagonalFeatureVector.csv", results2.ToArray());
+            //results.Add("SliceNumber, NegativeDiagonalVector");
+            //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
+            //{
+            //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},                       {21}, {22}, {23}, {24}, {25}, {26}",
+            //    sliceIndex, queryFeatureVector[sliceIndex].NegativeDiagonalVector[0],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[1],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[2],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[3],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[4],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[5],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[6],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[7],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[8],
+            //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[9],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[10],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[11],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[12],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[13],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[14],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[15],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[16],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[17],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[18],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[19],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[20],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[21],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[22],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[23],
+            //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[24], " "));
+
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Output\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
+
+            //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
+            //{
+            //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
+            //    sliceIndex, queryFeatureVector[sliceIndex].VerticalVector[0],
+            //    queryFeatureVector[sliceIndex].VerticalVector[1],
+            //    queryFeatureVector[sliceIndex].VerticalVector[2],
+            //    queryFeatureVector[sliceIndex].VerticalVector[3],
+            //    queryFeatureVector[sliceIndex].VerticalVector[4],
+            //    queryFeatureVector[sliceIndex].VerticalVector[5],
+            //    queryFeatureVector[sliceIndex].VerticalVector[6],
+            //    queryFeatureVector[sliceIndex].VerticalVector[7],
+            //    queryFeatureVector[sliceIndex].VerticalVector[8],
+            //    queryFeatureVector[sliceIndex].VerticalVector[9],
+            //    queryFeatureVector[sliceIndex].VerticalVector[10],
+            //    queryFeatureVector[sliceIndex].VerticalVector[11],
+            //    queryFeatureVector[sliceIndex].VerticalVector[12], " "));
+
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Output\queryVerticalFeatureVector.csv", results.ToArray());
+        }
 
 
 

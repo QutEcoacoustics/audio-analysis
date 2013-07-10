@@ -6,6 +6,8 @@
     using System.Text;
     using AudioAnalysisTools;
     using System.Drawing;
+    using System.IO;
+    using System.Reflection;
 
     class StatisticalAnalysis
     {
@@ -203,7 +205,64 @@
         //    return histogram; 
         //}
 
+        public static int NumberOfpoiInSlice(List<FeatureVector> fv)
+        {
+            int result = 0;
+            foreach (var f in fv)
+            {
+                if (f != null)
+                {
+                    result++;
+                }
+            }
+            return result; 
+        }
 
+        public static int NumberOfpoiInSlice(FeatureVector fv)
+        {
+            int result = 0;
+            var horizontalIndex = fv.HorizontalVector.GetLength(0);
+            var DiagonalIndex = fv.PositiveDiagonalVector.GetLength(0);
+
+            for (int i = 0; i < horizontalIndex; i++)
+            {
+                if (fv.HorizontalVector[i] != 0)
+                {
+                    result++;
+                }
+                if (fv.VerticalVector[i] != 0)
+                {
+                    result++;
+                }
+            }
+
+            for (int j = 0; j < DiagonalIndex; j++)
+            {
+                if (fv.PositiveDiagonalVector[j] != 0)
+                {
+                    result++;
+                }
+                if (fv.NegativeDiagonalVector[j] != 0)
+                {
+                    result++;
+                }
+            }
+                return result;
+        }
+
+        public static void WriteCSV<T>(IEnumerable<T> items, string path)
+        {
+            Type itemType = typeof(T);
+            var props = itemType.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name);
+            using (var writer = new StreamWriter(path))
+            {
+                writer.WriteLine(string.Join(", ", props.Select(p => p.Name)));
+                foreach (var item in items)
+                {
+                    writer.WriteLine(string.Join(", ", props.Select(p => p.GetValue(item, null))));
+                }
+            }
+        }
 
     }
 }

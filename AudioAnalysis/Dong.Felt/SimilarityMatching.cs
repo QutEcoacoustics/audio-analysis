@@ -119,7 +119,7 @@
                 var verticalDistance = 0.0;
                 var positiveDiagonalDistance = 0.0;
                 var negativeDiagonalDistance = 0.0;
-                
+
                 for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
                 {
                     for (int i = 0; i < numberOfFeaturevector; i++)
@@ -266,6 +266,70 @@
                 similarityScore = 1;
             }
             return similarityScore;
+        }
+
+        public static double SimilarityScoreOfDifferentWeights(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        {
+            var result = 0.0;
+            if (query != null && potentialEvent != null)
+            {
+                var thresholdOfNumberOfPoi = 1;
+                
+                    var numberOfFeaturevector = query[0].HorizontalVector.Count();
+                    var numberOfdiagonalFeaturevector = query[0].PositiveDiagonalVector.Count();
+                    var numberOfSlices = query.Count();
+                    // Option 2 according to potential event length 
+                    // var numberOfSlices = potentiaEvent.Count();
+                    var horizontalDistance = 0.0;
+                    var verticalDistance = 0.0;
+                    var positiveDiagonalDistance = 0.0;
+                    var negativeDiagonalDistance = 0.0;
+                    var temperalResult = 0.0;
+                    
+                var startPointY = 0.0;
+                var endPointY = 0.0;
+                    for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
+                    {                       
+                        if (StatisticalAnalysis.NumberOfpoiInSlice(query[sliceIndex]) > 0)
+                        {
+
+                        for (int i = 0; i < numberOfFeaturevector; i++)
+                        {
+                            var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
+                            var horizontalEndPointX = query[sliceIndex].HorizontalVector[i];
+                            var verticalStartPointX = potentialEvent[sliceIndex].VerticalVector[i];
+                            var verticalEndPointX = query[sliceIndex].VerticalVector[i];
+
+                            horizontalDistance += Distance.EuclideanDistanceForCordinates(horizontalStartPointX, startPointY, horizontalEndPointX, endPointY);
+                            verticalDistance += Distance.EuclideanDistanceForCordinates(verticalStartPointX, startPointY, verticalEndPointX, endPointY);
+                        }
+                        for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
+                        {
+                            var positiveDiagonalStartPointX = potentialEvent[sliceIndex].PositiveDiagonalVector[j];
+                            var positiveDiagonalEndPointX = query[sliceIndex].PositiveDiagonalVector[j];
+                            var negativeDiagonalStartPointX = potentialEvent[sliceIndex].NegativeDiagonalVector[j];
+                            var negativeDiagonalEndPointX = query[sliceIndex].NegativeDiagonalVector[j];
+                            positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
+                            negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
+                        }
+                        if (StatisticalAnalysis.NumberOfpoiInSlice(potentialEvent[sliceIndex]) == 0)
+                        {
+                            temperalResult = 10000;
+                        }
+                        else temperalResult = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
+                    }
+                        else
+                        {
+                            result = temperalResult + 10000;
+                        }
+                }
+                
+            }
+            else
+            {
+                result = 10000;
+            }
+            return result;
         }
 
 
