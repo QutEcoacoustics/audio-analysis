@@ -273,26 +273,27 @@
             var result = 0.0;
             if (query != null && potentialEvent != null)
             {
-                var thresholdOfNumberOfPoi = 1;
-                
-                    var numberOfFeaturevector = query[0].HorizontalVector.Count();
-                    var numberOfdiagonalFeaturevector = query[0].PositiveDiagonalVector.Count();
-                    var numberOfSlices = query.Count();
-                    // Option 2 according to potential event length 
-                    // var numberOfSlices = potentiaEvent.Count();
-                    var horizontalDistance = 0.0;
-                    var verticalDistance = 0.0;
-                    var positiveDiagonalDistance = 0.0;
-                    var negativeDiagonalDistance = 0.0;
-                    var temperalResult = 0.0;
-                    
+                //var thresholdOfNumberOfPoi = 1;
+                var numberOfFeaturevector = query[0].HorizontalVector.Count();
+                var numberOfdiagonalFeaturevector = query[0].PositiveDiagonalVector.Count();
+                var numberOfSlices = query.Count();
+                // Option 2 according to potential event length 
+                // var numberOfSlices = potentiaEvent.Count();
+                var horizontalDistance = 0.0;
+                var verticalDistance = 0.0;
+                var positiveDiagonalDistance = 0.0;
+                var negativeDiagonalDistance = 0.0;
+
                 var startPointY = 0.0;
                 var endPointY = 0.0;
-                    for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
-                    {                       
-                        if (StatisticalAnalysis.NumberOfpoiInSlice(query[sliceIndex]) > 0)
-                        {
-
+                for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
+                {
+                    if (checkNullFeatureVectorList(potentialEvent))
+                    {
+                        result = 1000000;
+                    }
+                    else
+                    {
                         for (int i = 0; i < numberOfFeaturevector; i++)
                         {
                             var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
@@ -312,27 +313,42 @@
                             positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
                             negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
                         }
-                        if (StatisticalAnalysis.NumberOfpoiInSlice(potentialEvent[sliceIndex]) == 0)
-                        {
-                            temperalResult = 10000;
-                        }
-                        else temperalResult = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
-                    }
-                        else
-                        {
-                            result = temperalResult + 10000;
-                        }
+                        result = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
+                    }                       
                 }
-                
             }
             else
             {
-                result = 10000;
+                result = 100000000;
             }
             return result;
         }
 
+        public static bool checkNullFeatureVectorList(List<FeatureVector> featureVectorList)
+        {           
+            var result = 0;
+            var numberOfSlices = featureVectorList.Count();
+            if (featureVectorList != null)
+            {
+                
+                for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
+                {
+                    if (StatisticalAnalysis.NumberOfpoiInSlice(featureVectorList[sliceIndex]) == 0)
+                    {
+                        result++;
+                    }
+                }                
+            }
+            if (result == numberOfSlices)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
 
+        }
 
     }
 }
