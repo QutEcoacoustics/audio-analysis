@@ -129,28 +129,36 @@
             return m;
         }
 
-        public static void featureVectorToCSV(List<FeatureVector> listOfFeatureVector, string path)
+        //public static void featureVectorToCSV(List<FeatureVector> listOfFeatureVector, string path)
+        public static void featureVectorToCSV(List<Tuple<double, int, List<FeatureVector>>> listOfPositions)
         {
             var results = new List<string>();
-            results.Add("SliceNumber, HorizontalVector");
-            for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+            results.Add("FrameNumber, Distance, SliceNumber, HorizontalVector");
+            foreach (var lp in listOfPositions)
             {
-                results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
-                sliceIndex, listOfFeatureVector[sliceIndex].HorizontalVector[0],
-                listOfFeatureVector[sliceIndex].HorizontalVector[1],
-                listOfFeatureVector[sliceIndex].HorizontalVector[2],
-                listOfFeatureVector[sliceIndex].HorizontalVector[3],
-                listOfFeatureVector[sliceIndex].HorizontalVector[4],
-                listOfFeatureVector[sliceIndex].HorizontalVector[5],
-                listOfFeatureVector[sliceIndex].HorizontalVector[6],
-                listOfFeatureVector[sliceIndex].HorizontalVector[7],
-                listOfFeatureVector[sliceIndex].HorizontalVector[8],
-                listOfFeatureVector[sliceIndex].HorizontalVector[9],
-                listOfFeatureVector[sliceIndex].HorizontalVector[10],
-                listOfFeatureVector[sliceIndex].HorizontalVector[11],
-                listOfFeatureVector[sliceIndex].HorizontalVector[12], " "));
+                //var newPath = Path.Combine(outputDirectory, " " + lp.Item2);
+                var listOfFeatureVector = lp.Item3;
+                for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+                {
+                    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}",
+                    listOfFeatureVector[sliceIndex].TimePosition * 0.0116, lp.Item1, sliceIndex, listOfFeatureVector[sliceIndex].HorizontalVector[0],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[1],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[2],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[3],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[4],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[5],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[6],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[7],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[8],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[9],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[10],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[11],
+                    listOfFeatureVector[sliceIndex].HorizontalVector[12], " "));
+                }
+                File.WriteAllLines(@"C:\Test recordings\Output\Candidates-horizontalVector-improvedNeighbourhood.csv", results.ToArray());
+                //StructureTensorTest.featureVectorToCSV(lp.Item3);
             }
-            File.WriteAllLines(path + ".csv", results.ToArray());
+            
 
             //var results1 = new List<string>();
             //results1.Add("SliceNumber, VerticalVector");

@@ -34,11 +34,6 @@ namespace Dong.Felt
         /// </summary>
         public double StartTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the centroid of the box.  
-        /// </summary>
-        public Point Centroid { get; set; }
-
         /// <summary> 
         /// required for conversions to & from MEL scale AND for drawing event on spectrum.
         /// </summary>
@@ -53,8 +48,6 @@ namespace Dong.Felt
         /// required for conversions to & from MEL scale AND for drawing event on spectrum.
         /// </summary>
         public double FramesPerSecond { get; set; }
-
-
 
         #endregion
 
@@ -84,7 +77,6 @@ namespace Dong.Felt
             var framePerSecond = 86.0;
             var x = (int)((acousticEvent.MaxFreq - acousticEvent.MinFreq) / frequencyBinWidth * 0.5);
             var y = (int)((acousticEvent.TimeStart - acousticEvent.TimeEnd) * framePerSecond * 0.5);
-            this.Centroid = new Point(x, y);
         }
 
         /// <summary>
@@ -154,7 +146,10 @@ namespace Dong.Felt
                             var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                             var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
                             var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-                            //            result[sliceRowIndex * sizeofNeighbourhood + sliceColIndex + col / searchStep].Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+
+                        //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
+                        //    var centroid = GetCentroid(subMatrix1);
+
                             result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                             {
                                 HorizontalVector = partialFeatureVector.HorizontalVector,
@@ -162,7 +157,7 @@ namespace Dong.Felt
                                 PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                                 NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
                                 TimePosition = col,
-
+                                //Centroid = new Point(centroid.X, centroid.Y)
                             });
                         }
                     }
@@ -170,6 +165,35 @@ namespace Dong.Felt
             }
 
             return result;
+        }
+
+        public static Point GetCentroid(PointOfInterest[,] subMatrix)
+        {
+            var rowMaxIndex = subMatrix.GetLength(0);
+            var colMaxIndex = subMatrix.GetLength(1);
+            var frequencyList = new List<int>();
+            var frameList = new List<int>();
+
+            for (int i = 0; i < rowMaxIndex; i++)
+            {
+                for (int j = 0; j < colMaxIndex; j++)
+                {
+                    if (subMatrix[i, j] != null && subMatrix[i, j].OrientationCategory < 10)
+                    {
+                        frequencyList.Add(subMatrix[i, j].Point.X);
+                        frameList.Add(subMatrix[i, j].Point.Y);
+                    }
+                }
+            }
+            frequencyList.Sort();
+            var maxFrequency = frequencyList[0];
+            var minFrequency = frequencyList[frequencyList.Count - 1];
+
+            frameList.Sort();
+            var minFrame = frameList[0];
+            var maxFrame = frameList[frameList.Count - 1];
+            var centroid = new Point(Math.Abs(maxFrequency - minFrequency), Math.Abs(maxFrame - minFrame));
+            return centroid;
         }
 
         /// <summary>
@@ -322,6 +346,8 @@ namespace Dong.Felt
             var halfExtendedTimeRange = extendedTimeRange / 2;
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
+            //var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
+            //var numberOfColSlices = (int)Math.Ceiling((double)(MaxColIndex - MinColIndex) / sizeofNeighbourhood);
             var result = new List<FeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
@@ -336,13 +362,18 @@ namespace Dong.Felt
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
                         var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
+                        var startColIndex = MinColIndex - halfExtendedTimeRange;
+                        //var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndex, startColIndex + numberOfRowSlices * sizeofNeighbourhood, startColIndex, startColIndex + numberOfRowSlices * sizeofNeighbourhood);
+                        //var centroid = GetCentroid(subMatrix1);
                         result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                         {
                             HorizontalVector = partialFeatureVector.HorizontalVector,
                             VerticalVector = partialFeatureVector.VerticalVector,
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                            TimePosition = MinColIndex
+                            TimePosition = MinColIndex,
+                            //Centroid = new Point(centroid.X, centroid.Y)
                         });
                     }
                 }
