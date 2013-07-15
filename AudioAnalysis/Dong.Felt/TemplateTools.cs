@@ -31,7 +31,57 @@ namespace Dong.Felt
         /// </summary>
         public static readonly int CentroidFrequencyOfCrowTemplate = 80;
 
-        
+       public static double[,] ReadCSVFile2Matrix(string csvFileName)
+        {
+            System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            List<double[]> columns = tuple.Item2;
+            int rows = columns[0].Length;
+            int cols = columns.Count;
+            double[,] matrix = new double[rows,cols];
+
+            for(int c=0; c <cols; c++ )
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    matrix[r, c] = columns[c][r];
+                }
+            }
+            return matrix;
+       }
+
+       public static List<FeatureVector> GreyShrike_thrush4(double[,] matrix, double[,] matrix1, double[,] matrix2, double[,] matrix3)
+       {
+           var result = new List<FeatureVector>();
+           var rowsCount = matrix.GetLength(0);
+           var colsCount = matrix.GetLength(1);
+           var colsCount1 = matrix2.GetLength(1);
+           for (int i = 0; i < rowsCount; i++)
+           {
+               var  horizontalVector = new int[colsCount];
+               var  verticalVector = new int[colsCount];
+               for(int j = 0; j < colsCount; j++)
+               {
+                  horizontalVector[j] = (int)matrix[i, j];                 
+                  verticalVector[j] = (int)matrix1[i, j];                  
+               }
+               var positiveDiagonalVector = new int[colsCount1];
+               var negativeDiagonalVector = new int[colsCount1];
+               for (int j = 0; j < colsCount1; j++)
+               {
+                   positiveDiagonalVector[j] = (int)matrix2[i, j];
+                   negativeDiagonalVector[j] = (int)matrix3[i, j];                  
+               }
+               result.Add(new FeatureVector(new Point(0, 0))
+               {
+                   HorizontalVector = horizontalVector,
+                   VerticalVector = verticalVector,
+                   PositiveDiagonalVector = positiveDiagonalVector,
+                   NegativeDiagonalVector = negativeDiagonalVector
+               });
+           }
+           return result;
+
+       }
         /// <summary>
         /// The Lewins' Rail template.
         /// </summary>

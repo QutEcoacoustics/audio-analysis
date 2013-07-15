@@ -155,7 +155,8 @@
                     listOfFeatureVector[sliceIndex].HorizontalVector[11],
                     listOfFeatureVector[sliceIndex].HorizontalVector[12], " "));
                 }
-                File.WriteAllLines(@"C:\Test recordings\Output\Candidates-horizontalVector-improvedNeighbourhood.csv", results.ToArray());
+                //File.WriteAllLines(@"C:\Test recordings\Output\Candidates-horizontalVector-improvedNeighbourhood.csv", results.ToArray());
+                File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Brown Cuckoo-dove1\Training\Output result\Candidates2-horizontalVector-improvedNeighbourhood.csv", results.ToArray());
                 //StructureTensorTest.featureVectorToCSV(lp.Item3);
             }
             
