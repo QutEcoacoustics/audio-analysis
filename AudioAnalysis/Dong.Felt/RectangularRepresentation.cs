@@ -101,8 +101,8 @@ namespace Dong.Felt
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount, int searchStep, int frequencyOffset)
         {
-            var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
-            var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
+            var MaxRowIndex = (int)((nyquistFrequency - minFrequency) / herzScale);
+            var MinRowIndex = (int)((nyquistFrequency - maxFrequency) / herzScale);
 
             var extendedFrequencyRange = 0;
             if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
@@ -112,7 +112,13 @@ namespace Dong.Felt
             var numberOfFrames = duration / timeScale;
             var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
             var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
-            var numberOfColSlices = (int)Math.Ceiling((double)numberOfFrames / sizeofNeighbourhood);
+            var numberOfColSlices = 0;
+            if (numberOfFrames % sizeofNeighbourhood != 0)
+            {
+                numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood + 1;
+            }
+            else
+            { numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood; }
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
             var result = new List<List<FeatureVector>>();
@@ -328,10 +334,10 @@ namespace Dong.Felt
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount)
         {
-            var MaxRowIndex = (int)Math.Ceiling((nyquistFrequency - minFrequency) / herzScale);
-            var MinRowIndex = (int)Math.Floor((nyquistFrequency - maxFrequency) / herzScale);
-            var MinColIndex = (int)Math.Floor(startTime / timeScale);
-            var MaxColIndex = (int)Math.Ceiling((startTime + duration) / timeScale);
+            var MaxRowIndex = (int)((nyquistFrequency - minFrequency) / herzScale);
+            var MinRowIndex = (int)((nyquistFrequency - maxFrequency) / herzScale);
+            var MinColIndex = (int)(startTime / timeScale);
+            var MaxColIndex = (int)((startTime + duration) / timeScale);
             var extendedFrequencyRange = 0;
             var extendedTimeRange = 0;
             if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
@@ -340,7 +346,7 @@ namespace Dong.Felt
             }
             if ((MaxColIndex - MinColIndex) % sizeofNeighbourhood != 0)
             {
-                extendedTimeRange = sizeofNeighbourhood - (MaxColIndex - MinColIndex) % sizeofNeighbourhood;
+                extendedTimeRange = sizeofNeighbourhood - (int)(MaxColIndex - MinColIndex) % sizeofNeighbourhood;
             }
             var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
             var halfExtendedTimeRange = extendedTimeRange / 2;
