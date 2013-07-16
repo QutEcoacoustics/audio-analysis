@@ -15,6 +15,9 @@ namespace Dong.Felt
     using System.Linq;
     using AudioAnalysisTools;
     using TowseyLib;
+using System.IO;
+    using CsvHelper;
+    using System.Text;
 
     /// <summary>
     /// The template tools.
@@ -31,6 +34,28 @@ namespace Dong.Felt
         /// </summary>
         public static readonly int CentroidFrequencyOfCrowTemplate = 80;
 
+        //public const string VectorTypeHorizontal = "h";
+        //public const string VectorTypeHorizontal = "v";
+        //public const string VectorTypeHorizontal = "pd";
+        //public const string VectorTypeHorizontal = "nd";
+
+        //public static IEnumerable<FeatureVector> ReadCSVFileToFeatureVector(FileInfo filePath)
+        //{
+        //    using(var textReader = filePath.OpenText())
+        //    using (var csv = new CsvReader(textReader))
+        //    {
+        //        while (csv.Read())
+        //        {
+        //            var frameNumber = csv.GetField<double>("FrameNumber");
+        //            var distance = csv.GetField<double>("Distance");
+        //            var sliceNumber = csv.GetField<int>("SliceNumber");
+        //            var vectorDirection = csv.GetField<string>("VectorDirection");
+        //            var values = csv.CurrentRecord.Skip(4);
+                    
+        //        }
+        //    }
+        //}
+ 
        public static double[,] ReadCSVFile2Matrix(string csvFileName)
         {
             System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
@@ -47,6 +72,46 @@ namespace Dong.Felt
                 }
             }
             return matrix;
+       }
+
+       public static void featureVectorToCSV(List<Tuple<double, int, List<FeatureVector>>> listOfPositions, string filePath)
+       {
+           var results = new List<string>();
+           var timeScale = 0.0116;
+           results.Add("FrameNumber, Distance, SliceNumber, VectorDirection, Values");
+           foreach (var lp in listOfPositions)
+           {
+               var listOfFeatureVector = lp.Item3;
+               for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+               {
+                   results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "HorizontalVector", listOfFeatureVector[sliceIndex].HorizontalVector));
+               }
+               for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+               {
+                   results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "VerticalVector", listOfFeatureVector[sliceIndex].VerticalVector));
+               }
+               for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+               {
+                   results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "PositiveDiagonalVector", listOfFeatureVector[sliceIndex].PositiveDiagonalVector));
+               }
+               for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
+               {
+                   results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "NegativeDiagonalVector", listOfFeatureVector[sliceIndex].NegativeDiagonalVector));
+               }
+           }
+           File.WriteAllLines(filePath, results.ToArray());
+       }
+
+       public static string FeatureVectorItemToString(double frameNumber, double distance, int sliceNumber, string vectorDirection, int[] values)
+       {
+           var sb = new StringBuilder(string.Format("{0}, {1}, {2}, {3}", frameNumber, distance, sliceNumber, vectorDirection));
+
+           for (int index = 0; index < values.Length; index++)
+           {
+               sb.Append(",");
+               sb.Append(values[index]);
+           }
+           return sb.ToString();
        }
 
        public static List<FeatureVector> GreyShrike_thrush4(double[,] matrix, double[,] matrix1, double[,] matrix2, double[,] matrix3)
