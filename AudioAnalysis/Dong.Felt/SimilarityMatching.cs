@@ -105,9 +105,10 @@
         }
 
         // To calculate the distance between query and potentialEvent. The return value is equal to the sum of every orientation subdistance. 
-        public static double SimilarityScoreOfDirectionVector(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        public static int SimilarSliceNumberOfFeatureVector(List<FeatureVector> potentialEvent, List<FeatureVector> query)
         {
-            var result = 0.0;
+            var result = 0;
+            var distanceThreshold = 15;
             if (query != null && potentialEvent != null)
             {
                 var numberOfFeaturevector = query[0].HorizontalVector.Count();
@@ -124,20 +125,57 @@
                 {
                     for (int i = 0; i < numberOfFeaturevector; i++)
                     {
-                        horizontalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].HorizontalVector[i], 0.0, (double)query[sliceIndex].HorizontalVector[i], 0.0);
-                        verticalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].VerticalVector[i], 0.0, (double)query[sliceIndex].VerticalVector[i], 0.0);
+                        // check wether the query is null, then check if the potential is null, too.Yes, then it's similar. Otherwise, it is different.
+                        if (checkNullFeatureVector(query[sliceIndex]))
+                        {
+                            if (checkNullFeatureVector(potentialEvent[sliceIndex]))
+                            {
+                                result++;
+                            }
+                        }
+                        else
+                        {
+                            if (!checkNullFeatureVector(potentialEvent[sliceIndex]))
+                            {
+                                horizontalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].HorizontalVector[i], 0.0, (double)query[sliceIndex].HorizontalVector[i], 0.0);
+                                verticalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].VerticalVector[i], 0.0, (double)query[sliceIndex].VerticalVector[i], 0.0);
+                            }
+                        }               
                     }
                     for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
                     {
-                        positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].PositiveDiagonalVector[j], 0.0, (double)query[sliceIndex].PositiveDiagonalVector[j], 0.0);
-                        negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].NegativeDiagonalVector[j], 0.0, (double)query[sliceIndex].NegativeDiagonalVector[j], 0.0);
+                        if (checkNullFeatureVector(query[sliceIndex]))
+                        {
+                            if (checkNullFeatureVector(potentialEvent[sliceIndex]))
+                            {
+                                result++;
+                            }
+                        }
+                        else
+                        {
+                            if (!checkNullFeatureVector(potentialEvent[sliceIndex]))
+                            {
+                                positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].PositiveDiagonalVector[j], 0.0, (double)query[sliceIndex].PositiveDiagonalVector[j], 0.0);
+                                negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].NegativeDiagonalVector[j], 0.0, (double)query[sliceIndex].NegativeDiagonalVector[j], 0.0);
+                            }
+                        }
                     }
                 }
-
-                result = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
+                if (horizontalDistance < distanceThreshold && verticalDistance < distanceThreshold && positiveDiagonalDistance < distanceThreshold && negativeDiagonalDistance < distanceThreshold)
+                {
+                     result++;
+                }
             }
             return result;
         }
+
+        public static double SimilarityScoreOfFeatureVector(List<FeatureVector> query, int similarSliceCount)
+        {
+            var totalNumberOfSlice = query.Count();
+            var score = similarSliceCount / totalNumberOfSlice;
+            return score;
+        }
+
         /// <summary>
         /// One way to calculate Similarity Score for direction byte vector representation.
         /// </summary>
@@ -294,50 +332,102 @@
                     }
                     else
                     {
-                        for (int i = 0; i < numberOfFeaturevector; i++)
-                        {
-                            var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
-                            var horizontalEndPointX = query[sliceIndex].HorizontalVector[i];
-                            var verticalStartPointX = potentialEvent[sliceIndex].VerticalVector[i];
-                            var verticalEndPointX = query[sliceIndex].VerticalVector[i];
+                        //if (!checkNullFeatureVector(query[sliceIndex]) && !checkNullFeatureVector(potentialEvent[sliceIndex]))
+                        //{
+                            for (int i = 0; i < numberOfFeaturevector; i++)
+                            {
+                                var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
+                                var horizontalEndPointX = query[sliceIndex].HorizontalVector[i];
+                                var verticalStartPointX = potentialEvent[sliceIndex].VerticalVector[i];
+                                var verticalEndPointX = query[sliceIndex].VerticalVector[i];
+                                horizontalDistance += Distance.EuclideanDistanceForCordinates(horizontalStartPointX, startPointY, horizontalEndPointX, endPointY);
+                                verticalDistance += Distance.EuclideanDistanceForCordinates(verticalStartPointX, startPointY, verticalEndPointX, endPointY);
+                            }
+                            for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
+                            {
+                                var positiveDiagonalStartPointX = potentialEvent[sliceIndex].PositiveDiagonalVector[j];
+                                var positiveDiagonalEndPointX = query[sliceIndex].PositiveDiagonalVector[j];
+                                var negativeDiagonalStartPointX = potentialEvent[sliceIndex].NegativeDiagonalVector[j];
+                                var negativeDiagonalEndPointX = query[sliceIndex].NegativeDiagonalVector[j];
 
-                            horizontalDistance += Distance.EuclideanDistanceForCordinates(horizontalStartPointX, startPointY, horizontalEndPointX, endPointY);
-                            verticalDistance += Distance.EuclideanDistanceForCordinates(verticalStartPointX, startPointY, verticalEndPointX, endPointY);
-                        }
-                        for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
-                        {
-                            var positiveDiagonalStartPointX = potentialEvent[sliceIndex].PositiveDiagonalVector[j];
-                            var positiveDiagonalEndPointX = query[sliceIndex].PositiveDiagonalVector[j];
-                            var negativeDiagonalStartPointX = potentialEvent[sliceIndex].NegativeDiagonalVector[j];
-                            var negativeDiagonalEndPointX = query[sliceIndex].NegativeDiagonalVector[j];
-                            positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
-                            negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
-                        }
+                                positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
+                                negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
+                            }// end for
+                        //}// end if (double check)
+                        //else
+                        //{
+                        //    if(checkNullFeatureVector(potentialEvent[sliceIndex]))
+                        //    {
+                        //        result += 10000000;
+                        //    }
+                        //}
                         result = horizontalDistance + verticalDistance + positiveDiagonalDistance + negativeDiagonalDistance;
-                    }                       
-                }
-            }
+                    }// end else
+                }// end for
+            }// end if
             else
             {
                 result = 100000000;
             }
+
             return result;
         }
 
+        public static bool checkNullFeatureVector(FeatureVector featureVector)
+        {
+            var result = 0;
+            var numberOfHorizontalFeatureVectorBit = featureVector.HorizontalVector.Count();
+            var numberOfDiagonalFeatureVectorBit = featureVector.PositiveDiagonalVector.Count();
+            if (featureVector != null)
+            {
+                for (int i = 0; i < numberOfHorizontalFeatureVectorBit; i++)
+                {
+                    if (featureVector.HorizontalVector[i] != 0)
+                    {
+                        result++;
+                    }
+                    if (featureVector.HorizontalVector[i] != 0)
+                    {
+                        result++;
+                    }
+                }
+                for (int j = 0; j < numberOfDiagonalFeatureVectorBit; j++)
+                {
+                    if (featureVector.PositiveDiagonalVector[j] != 0)
+                    {
+                        result++;
+                    }
+                    if (featureVector.NegativeDiagonalVector[j] != 0)
+                    {
+                        result++;
+                    }
+                }
+            }
+            if (result == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
         public static bool checkNullFeatureVectorList(List<FeatureVector> featureVectorList)
-        {           
+        {
             var result = 0;
             var numberOfSlices = featureVectorList.Count();
             if (featureVectorList != null)
             {
-                
+
                 for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
                 {
                     if (StatisticalAnalysis.NumberOfpoiInSlice(featureVectorList[sliceIndex]) == 0)
                     {
                         result++;
                     }
-                }                
+                }
             }
             if (result == numberOfSlices)
             {

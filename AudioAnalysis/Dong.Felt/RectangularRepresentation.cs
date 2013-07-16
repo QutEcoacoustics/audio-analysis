@@ -285,11 +285,17 @@ namespace Dong.Felt
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex - offset, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    var startPointRowIndex = anchorPoint.X + offsetIndex + offset;
+                    var startPointColIndex = anchorPoint.Y - offsetIndex;
+                    var maxRowIndex = sizeOfNeighbourhood;
+                    var maxColIndex = sizeOfNeighbourhood;
+                    if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, maxRowIndex, maxColIndex))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex - offset] != null) && (matrix[anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex - offset].RidgeOrientation == (int)Direction.NorthEast))
+                        // 
+                        if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
-                            positiveDiagonalDirection[sizeOfNeighbourhood - offset - 1]++;
+                            var index = sizeOfNeighbourhood - offset - 1;
+                            positiveDiagonalDirection[index]++;
                         }
                     }
                 }
@@ -298,10 +304,15 @@ namespace Dong.Felt
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex + offset, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    var startPointRowIndex = anchorPoint.X + offsetIndex - offset;
+                    var startPointColIndex = anchorPoint.Y - offsetIndex;
+                    var maxRowIndex = sizeOfNeighbourhood;
+                    var maxColIndex = sizeOfNeighbourhood;
+                    if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex + offset] != null) && (matrix[anchorPoint.X + offsetIndex, anchorPoint.Y - offsetIndex + offset].RidgeOrientation == (int)Direction.NorthEast))
+                        if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
+                            // here I minus one because I want to keep the index of array is in the range of array length.
                             positiveDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
                         }
                     }
@@ -387,6 +398,108 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<FeatureVector> ImprovedQueryFeatureVector(List<FeatureVector> query)
+        {
+            var result = new List<FeatureVector>();
+
+            if (query != null)
+            {
+                var numberOfHorizontalBit = query[0].HorizontalVector.Count();
+                var numberOfDiagonalBit = query[0].PositiveDiagonalVector.Count();
+                var listCount = query.Count();
+                for (int listIndex = 0; listIndex < listCount; listIndex++)
+                {
+                    for (int i = 0; i < numberOfHorizontalBit; i++)
+                    {
+                        if (query[listIndex].HorizontalVector[i] > 1)
+                        {
+                            var temp = query[listIndex].HorizontalVector[i];
+                            if ((i - 1) >= 0 && (i + 1) < numberOfHorizontalBit && query[listIndex].HorizontalVector[i - 1] == 0 && query[listIndex].HorizontalVector[i + 1] == 0)
+                            {
+                                if (temp % 2 == 0)
+                                {
+                                    query[listIndex].HorizontalVector[i] = temp / 2;
+                                    query[listIndex].HorizontalVector[i - 1] = temp - query[listIndex].HorizontalVector[i];
+                                    query[listIndex].HorizontalVector[i + 1] = query[listIndex].HorizontalVector[i - 1];
+                                }
+                                else
+                                {
+                                    query[listIndex].HorizontalVector[i] = temp / 2 + 1;
+                                    query[listIndex].HorizontalVector[i - 1] = temp - query[listIndex].HorizontalVector[i];
+                                    query[listIndex].HorizontalVector[i + 1] = query[listIndex].HorizontalVector[i - 1];
+                                }
+                            }
+                        }
+                        if (query[listIndex].VerticalVector[i] > 1)
+                        {
+                            var temp = query[listIndex].VerticalVector[i];
+                            if ((i - 1) >= 0 && (i + 1) < numberOfHorizontalBit && query[listIndex].HorizontalVector[i - 1] == 0 && query[listIndex].HorizontalVector[i + 1] == 0)
+                            {
+                                if (temp % 2 == 0)
+                                {
+                                    query[listIndex].VerticalVector[i] = temp / 2;
+                                    query[listIndex].VerticalVector[i - 1] = temp - query[listIndex].VerticalVector[i];
+                                    query[listIndex].VerticalVector[i + 1] = query[listIndex].VerticalVector[i - 1];
+                                }
+                                else
+                                {
+                                    query[listIndex].VerticalVector[i] = temp / 2 + 1;
+                                    query[listIndex].VerticalVector[i - 1] = temp - query[listIndex].VerticalVector[i];
+                                    query[listIndex].VerticalVector[i + 1] = query[listIndex].VerticalVector[i - 1];
+                                } // end else
+                            }// end if
+                        } // end if
+                    } // end for
+
+                    for (int i = 0; i < numberOfDiagonalBit; i++)
+                    {
+                        if (query[listIndex].PositiveDiagonalVector[i] > 1)
+                        {
+                            var temp = query[listIndex].PositiveDiagonalVector[i];
+                            if ((i - 1) >= 0 && (i + 1) < numberOfDiagonalBit && query[listIndex].PositiveDiagonalVector[i - 1] == 0 && query[listIndex].PositiveDiagonalVector[i + 1] == 0)
+                            {
+                                if (temp % 2 == 0)
+                                {
+                                    query[listIndex].PositiveDiagonalVector[i] = temp / 2;
+                                    query[listIndex].PositiveDiagonalVector[i - 1] = temp - query[listIndex].PositiveDiagonalVector[i];
+                                    query[listIndex].PositiveDiagonalVector[i + 1] = query[listIndex].PositiveDiagonalVector[i - 1];
+                                }
+                                else
+                                {
+                                    query[listIndex].PositiveDiagonalVector[i] = temp / 2 + 1;
+                                    query[listIndex].PositiveDiagonalVector[i - 1] = temp - query[listIndex].PositiveDiagonalVector[i];
+                                    query[listIndex].PositiveDiagonalVector[i + 1] = query[listIndex].PositiveDiagonalVector[i - 1];
+                                }
+                            }
+                        }
+                        if (query[listIndex].NegativeDiagonalVector[i] > 1)
+                        {
+                            var temp = query[listIndex].NegativeDiagonalVector[i];
+                            if ((i - 1) >= 0 && (i + 1) < numberOfDiagonalBit && query[listIndex].NegativeDiagonalVector[i - 1] == 0 && query[listIndex].NegativeDiagonalVector[i + 1] == 0)
+                            {
+                                if (temp % 2 == 0)
+                                {
+                                    query[listIndex].NegativeDiagonalVector[i] = temp / 2;
+                                    query[listIndex].NegativeDiagonalVector[i - 1] = temp - query[listIndex].VerticalVector[i];
+                                    query[listIndex].NegativeDiagonalVector[i + 1] = query[listIndex].VerticalVector[i - 1];
+                                }
+                                else
+                                {
+                                    query[listIndex].NegativeDiagonalVector[i] = temp / 2 + 1;
+                                    query[listIndex].NegativeDiagonalVector[i - 1] = temp - query[listIndex].NegativeDiagonalVector[i];
+                                    query[listIndex].NegativeDiagonalVector[i + 1] = query[listIndex].NegativeDiagonalVector[i - 1];
+                                } // end else
+                            }// end if
+                        } // end if
+                    } // end for
+
+                } // end for
+
+
+            }// end if
+            result = query;
+            return result;
+        }
         #endregion
 
     }
