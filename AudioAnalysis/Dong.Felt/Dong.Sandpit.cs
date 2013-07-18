@@ -301,7 +301,7 @@
                 //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
                 var searchStep = 1;
                 var frequencyOffset = 0;
-                var featureVectorList = RectangularRepresentation.RepresentationForIndexing(filterPoiList, maxFrequency, minFrequency, duration, neighbourhoodSize,
+                var featureVectorList = RectangularRepresentation.RepresentationForIndexing1(filterPoiList, maxFrequency, minFrequency, duration, neighbourhoodSize,
                 herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols,
                 searchStep, frequencyOffset);
 

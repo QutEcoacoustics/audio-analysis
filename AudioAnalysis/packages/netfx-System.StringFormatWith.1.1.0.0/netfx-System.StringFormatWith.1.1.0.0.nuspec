@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>netfx-System.StringFormatWith</id>
+    <version>1.1.0.0</version>
+    <title>NETFx String.FormatWith Extension Method</title>
+    <authors>Henri Wiechers,  Daniel Cazzulino,  kzu,  Clarius</authors>
+    <owners>Henri Wiechers,  Daniel Cazzulino,  kzu,  Clarius</owners>
+    <licenseUrl>http://netfx.codeplex.com/license</licenseUrl>
+    <projectUrl>http://netfx.codeplex.com/</projectUrl>
+    <iconUrl>http://download.codeplex.com/Project/Download/FileDownload.aspx?ProjectName=netfx&amp;DownloadId=199201</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Readable formatting strings using named parameters and a custom or anonymous object as the context, like "Hello {FirstName} {LastName}".FormatWith(customer).</description>
+    <summary>Readable formatting strings using named parameters and a custom or anonymous object as the context, like "Hello {FirstName} {LastName}".FormatWith(customer).</summary>
+    <releaseNotes />
+    <copyright />
+    <language />
+    <tags>netfx format</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Web" targetFramework=".NETFramework4.0" />
+    </frameworkAssemblies>
+    <references />
+  </metadata>
+</package>
