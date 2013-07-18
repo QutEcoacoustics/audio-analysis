@@ -8,7 +8,7 @@ using System.Text;
 
 namespace TowseyLib
 {
-    using ServiceStack.Text;
+    
 
     public class Spectrum
     {

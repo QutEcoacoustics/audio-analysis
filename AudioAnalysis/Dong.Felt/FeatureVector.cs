@@ -14,6 +14,7 @@
     public class FeatureVector
     {
         #region Public Properties
+        public Tuple<int, int> Slope { get; set; }
         /// <summary>
         /// Gets or sets the HorizontalByteVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>

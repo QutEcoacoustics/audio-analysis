@@ -23,8 +23,6 @@ namespace AnalysisPrograms
 
     using QutSensors.AudioAnalysis.AED;
 
-    using ServiceStack.Text;
-
     using TowseyLib;
 
     /// <summary>
@@ -232,7 +230,8 @@ namespace AnalysisPrograms
                 destPath = destPathBase + "_{0:000}".FormatWith(inc);
             }
 
-            var csvEvents = CsvSerializer.SerializeToCsv(events);
+            var csvEvents = ServiceStack.Text.CsvSerializer.SerializeToCsv(events);
+            
             File.WriteAllText(destPath + ".csv", csvEvents);
 
             TowseyLib.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");

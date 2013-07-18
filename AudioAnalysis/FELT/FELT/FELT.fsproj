@@ -90,16 +90,11 @@
     <Reference Include="Accord.Statistics">
       <HintPath>..\packages\Accord.NET Framework-2.5.0\Release\Accord.Statistics.dll</HintPath>
     </Reference>
-    <Reference Include="AForge">
-      <HintPath>..\packages\AForge.2.2.4\lib\AForge.dll</HintPath>
+    <Reference Include="AForge, Version=2.2.4.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb">
       <Private>True</Private>
     </Reference>
     <Reference Include="AForge.Genetic">
       <HintPath>..\packages\AForge.Genetic.2.2.4\lib\AForge.Genetic.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="AForge.Math">
-      <HintPath>..\packages\AForge.Math.2.2.4\lib\AForge.Math.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AForge.Neuro">

@@ -152,7 +152,6 @@ namespace Dong.Felt
                             var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                             var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
                             var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-
                         //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
                         //    var centroid = GetCentroid(subMatrix1);
 
@@ -172,6 +171,76 @@ namespace Dong.Felt
 
             return result;
         }
+
+
+        public static List<List<FeatureVector>> RepresentationForIndexing1(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
+                                                               double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
+                                                               double nyquistFrequency, int rowsCount, int colsCount, int searchStep, int frequencyOffset)
+        {
+            var MaxRowIndex = (int)((nyquistFrequency - minFrequency) / herzScale);
+            var MinRowIndex = (int)((nyquistFrequency - maxFrequency) / herzScale);
+
+            var extendedFrequencyRange = 0;
+            if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedFrequencyRange = sizeofNeighbourhood - (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+            }
+            var numberOfFrames = duration / timeScale;
+            var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
+            var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
+            var numberOfColSlices = 0;
+            if (numberOfFrames % sizeofNeighbourhood != 0)
+            {
+                numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood + 1;
+            }
+            else
+            { numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood; }
+            var halfRowNeighbourhood = sizeofNeighbourhood / 2;
+            var halfColNeighbourhood = sizeofNeighbourhood / 2;
+            var result = new List<List<FeatureVector>>();
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
+            var listCount = 0;
+
+            //search along time position searchstep by searchstep. 
+            for (int col = 0; col < colsCount; col += searchStep)
+            {
+                // option one for the box that is not enough for a entire box, just ignore this part
+                // here, you need to check whether i
+                var boxMaxColIndex = col + numberOfColSlices * sizeofNeighbourhood;
+                if (!(boxMaxColIndex < colsCount))
+                {
+                    break;
+                }
+                result.Add(new List<FeatureVector>());
+                listCount++;
+                for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
+                {
+                    for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
+                    {
+                        var startRowIndexInSlice = startRowIndex + (sliceRowIndex * sizeofNeighbourhood);
+                        var endRowIndexInSlice = startRowIndex + ((sliceRowIndex + 1) * sizeofNeighbourhood);
+                        var startColIndexInSlice = col + (sliceColIndex * sizeofNeighbourhood);
+                        var endColIndexInSlice = col + ((sliceColIndex + 1) * sizeofNeighbourhood);
+                        if (StatisticalAnalysis.checkBoundary(endRowIndexInSlice, endColIndexInSlice, rowsCount, colsCount))
+                        {
+                            var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
+                            var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
+                            var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
+                            var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                            var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);                            
+
+                            result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
+                            {                               
+                                Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
+                                TimePosition = col,                              
+                            });
+                        }
+                    }
+                }
+            }
+            return result;
+        } 
 
         public static Point GetCentroid(PointOfInterest[,] subMatrix)
         {
@@ -202,6 +271,45 @@ namespace Dong.Felt
             return centroid;
         }
 
+        public static Tuple<int, int> SliceSlopeRepresentation(FeatureVector slice)
+        {
+            var horizontalCount = OrientationValueCount(slice.HorizontalVector);
+            var verticalCount = OrientationValueCount(slice.VerticalVector);
+            var positiveDiagonalCount = OrientationValueCount(slice.PositiveDiagonalVector);
+            var negativeDiagonalCount = OrientationValueCount(slice.NegativeDiagonalVector);
+            var array = new int[4];
+            array[0] = horizontalCount;
+            array[1] = positiveDiagonalCount;
+            array[2] = verticalCount;
+            array[3] = negativeDiagonalCount;
+            // maxValue ( slope Index, slope Count)
+            var result = new Tuple<int, int>(0, 0);
+            for (int i = 0; i < array.Length - 1; i++)
+            {
+                if (array[i] < array[i + 1])
+                {
+                    result = Tuple.Create(i + 1, array[i + 1]);
+                }
+                else
+                {
+                    result = Tuple.Create(i, array[i]);
+                }                   
+            }
+
+            return result; 
+        }
+
+        public static int OrientationValueCount(int[] orientationArray)
+        {
+            var arrayCount = orientationArray.Length;
+            var result = 0; 
+            for (int i = 0; i < arrayCount; i++)
+            {
+                result += orientationArray[i];
+            }
+
+            return result;
+        }
         /// <summary>
         /// This method is used for calculate each slice representation, each slice is derived from the origional rectangular. 
         /// </summary>
