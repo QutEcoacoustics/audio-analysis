@@ -45,10 +45,10 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\NW_NW273_20101013-051800-0519-0520-Scarlet Honeyeater1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Training data\Torresian Crow1\Training\SE_SE727_20101017-053600-0540-0541-Terrisan Crow1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Training data\Torresian Crow1\Training\Output result";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-051800-0519-0520-Scarlet Honeyeater1-edge threshold-6.0-top100.png";
+                string annotatedImageFileName = "SE_SE727_20101017-053600-0540-0541-Terrisan Crow1-edge threshold-6.0-top20-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -153,20 +153,20 @@
                 //var duration = endTime - startTime;  // second
                 //var neighbourhoodSize = 13;               
                 /// For Grey Shrike-thrush4
-                //var maxFrequency = 2000.0;//1507.0;
-                //var minFrequency = 1000.0;//258.0;
-                //var startTime = 26.5;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                //var endTime = 28.2;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
-                //var duration = endTime - startTime;  // second
-                //var neighbourhoodSize = 13;
-
-                /// For Scarlet honeyeater1
-                var maxFrequency = 8200.0;//1507.0;
-                var minFrequency = 5000.0;//258.0;
-                var startTime = 15.5;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                var endTime = 15.9;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                var maxFrequency = 2050.0;//1507.0;
+                var minFrequency = 900.0;//258.0;
+                var startTime = 23.6;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                var endTime = 23.9;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
                 var duration = endTime - startTime;  // second
                 var neighbourhoodSize = 13;
+
+                ///// For Scarlet honeyeater1
+                //var maxFrequency = 8200.0;//1507.0;
+                //var minFrequency = 5000.0;//258.0;
+                //var startTime = 11.5;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                //var endTime = 11.85;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var duration = endTime - startTime;  // second
+                //var neighbourhoodSize = 13;
 
                 ///// For Torresian Crow1
                 ////var maxFrequency = 7106.0;
@@ -191,7 +191,7 @@
                 ////var endTime = 96.348;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
                 ////var duration = endTime - startTime;  // second
                 ////var neighbourhoodSize = 13;
-                var queryFeatureVector = RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
+                var queryFeatureVector = RectangularRepresentation.MainSlopeRepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
                 //var queryFeatureVector = RectangularRepresentation.ImprovedQueryFeatureVector(queryFeatureVector1);
                 //var queryFeatureVector = TemplateTools.GreyShrike_thrush4(TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query horizontalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query verticalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query positiveDiagonalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query negativeDiagonalVector.csv"));
                 //var results = new List<string>();
@@ -299,11 +299,11 @@
 
                 //}
                 //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
-                var searchStep = 1;
-                var frequencyOffset = 0;
-                var featureVectorList = RectangularRepresentation.RepresentationForIndexing1(filterPoiList, maxFrequency, minFrequency, duration, neighbourhoodSize,
-                herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols,
-                searchStep, frequencyOffset);
+                var searchFrequencyOffset = 10; 
+                var searchFrameStep = 5;
+                var frequencySearchStep = 2;
+                var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector,neighbourhoodSize,
+                 rows, cols, searchFrameStep, searchFrequencyOffset, frequencySearchStep);
 
                 /////// For starting from tag data, 
                 ////// Grey Shrike-thrush4
@@ -357,7 +357,8 @@
 
                 var finalPoiList = new List<PointOfInterest>();
                 ////var listOfPositions = new List<int>();
-                var listOfPositions = new List<Tuple<double, int, List<FeatureVector>>>();
+                //var listOfPositions = new List<Tuple<double, int, List<FeatureVector>>>();
+                var listOfPositions = new List<Tuple<double, List<FeatureVector>>>();
                 //foreach (PointOfInterest poi in filterPoiList)
                 foreach (var fl in featureVectorList)
                 {
@@ -365,7 +366,8 @@
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
                     //var similarSliceCount = SimilarityMatching.SimilarSliceNumberOfFeatureVector(fl, queryFeatureVector);
                     //var similarityScore = SimilarityMatching.SimilarityScoreOfFeatureVector(queryFeatureVector, similarSliceCount);
-                    var distance = SimilarityMatching.SimilarityScoreOfDifferentWeights(fl, queryFeatureVector);
+                    //var distance = SimilarityMatching.SimilarityScoreOfDifferentWeights(fl, queryFeatureVector);
+                    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
                     // Exact match with query, the query is from our tag data.
                     //distanceThreshold = 0.0;
                     //if (distance == distanceThreshold)
@@ -373,24 +375,36 @@
                     //var distanceThreshold = 30.0;
                     //if (distance <= distanceThreshold)
                     //{
-                    listOfPositions.Add(new Tuple<double, int, List<FeatureVector>>(distance, fl[0].TimePosition, fl));
+                    //listOfPositions.Add(new Tuple<double, int, List<FeatureVector>>(distance, fl[0].TimePosition, fl));
                     //}
-                    //listOfPositions.Add(new Tuple<double, int, List<FeatureVector>>(similarityScore, fl[0].TimePosition, fl));
+                    listOfPositions.Add(new Tuple<double, List<FeatureVector>>(distance, fl));
                 }
 
-                listOfPositions.Sort();
-                var finalListOfPositions = listOfPositions.GetRange(0, 100);
+                var itemList = (from l in listOfPositions
+                               orderby l.Item1 ascending
+                               //where l.Item1 < 200
+                               select l);
+                //listOfPositions.Sort();
+                var rank = 20;
+                var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
+                for (int i = 0; i < rank; i++)
+                {
+                    finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
+                }
+                //var finalListOfPositions = itemList.ElementAt(0);
+                //var finalListOfPositions = listOfPositions.GetRange(0, 10);
                 ///// Put the result into csv file
-                var filePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result\Candidates-FeatureVector-improvedNeighbourhood.csv";
-                TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
+                //var filePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result\Candidates1-FeatureVector-improvedNeighbourhood.csv";
+                //TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
 
                 var acousticEvents = Clustering.ClusterEdges(filterPoiList, rows, cols);
                 var finalAcousticEvents = new List<AcousticEvent>();
                 foreach (var p in finalListOfPositions)
+                //foreach (var p in itemList)
                 //foreach (var p in listOfPositions)
                 {                  
-                    var startTimePosition = p.Item2 * secondsScale;
-                    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, minFrequency, maxFrequency));                  
+                    var startTimePosition = p.Item2[0].TimePosition * secondsScale;
+                    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));                  
                 }            
                 //var thresholdOfdistanceforClosePoi = 8;
                 //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
