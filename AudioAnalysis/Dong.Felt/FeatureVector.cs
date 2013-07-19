@@ -14,7 +14,24 @@
     public class FeatureVector
     {
         #region Public Properties
+
+        public int MinRowIndex { get; set; }
+
+        public int MaxRowIndex { get; set; }
+
+        public int MinColIndex { get; set; }
+
+        public int MaxColIndex { get; set; }
+
+        public double MinFrequency { get; set; }
+
+        public double MaxFrequency { get; set; }
+
+        public double duration { get; set; }
+
         public Tuple<int, int> Slope { get; set; }
+
+        public int SlopeScore { get; set; }
         /// <summary>
         /// Gets or sets the HorizontalByteVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>

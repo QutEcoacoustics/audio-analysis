@@ -306,6 +306,31 @@
             return similarityScore;
         }
 
+        public static double SimilarityScoreOfSlopeScore(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        {
+            var result = 0.0;
+            if (query != null && potentialEvent != null)
+            {
+                var numberOfSlices = query.Count();
+                for (int sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++)
+                {
+                    var startPointX = (double)query[sliceIndex].SlopeScore;
+                    var startPointY = 0.0;
+                    var endPointX = (double)potentialEvent[sliceIndex].SlopeScore;
+                    var endPointY = 0.0;
+                    if (query[sliceIndex].Slope.Item1 == potentialEvent[sliceIndex].Slope.Item1)
+                    {
+                        result += Distance.EuclideanDistanceForCordinates(startPointX, startPointY, endPointX, endPointY);
+                    }
+                    else
+                    {
+                        result += Distance.EuclideanDistanceForCordinates(startPointX, startPointY, endPointX, endPointY) * 2;
+                    }
+                }
+            }
+            return result; 
+        }
+
         public static double SimilarityScoreOfDifferentWeights(List<FeatureVector> potentialEvent, List<FeatureVector> query)
         {
             var result = 0.0;

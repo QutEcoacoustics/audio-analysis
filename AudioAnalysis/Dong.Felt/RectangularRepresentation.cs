@@ -151,9 +151,9 @@ namespace Dong.Felt
                             var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
                             var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                             var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                            var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-                        //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
-                        //    var centroid = GetCentroid(subMatrix1);
+                            var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                            //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
+                            //    var centroid = GetCentroid(subMatrix1);
 
                             result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                             {
@@ -173,74 +173,71 @@ namespace Dong.Felt
         }
 
 
-        public static List<List<FeatureVector>> RepresentationForIndexing1(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
-                                                               double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
-                                                               double nyquistFrequency, int rowsCount, int colsCount, int searchStep, int frequencyOffset)
+        public static List<List<FeatureVector>> MainSlopeRepresentationForIndexing(List<PointOfInterest> poiList, List<FeatureVector> query, int sizeofNeighbourhood, int rowsCount, int colsCount, int frameSearchStep, int frequencySearchStep, int frequencyOffset)
         {
-            var MaxRowIndex = (int)((nyquistFrequency - minFrequency) / herzScale);
-            var MinRowIndex = (int)((nyquistFrequency - maxFrequency) / herzScale);
-
-            var extendedFrequencyRange = 0;
-            if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
-            {
-                extendedFrequencyRange = sizeofNeighbourhood - (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
-            }
-            var numberOfFrames = duration / timeScale;
-            var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
-            var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
-            var numberOfColSlices = 0;
-            if (numberOfFrames % sizeofNeighbourhood != 0)
-            {
-                numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood + 1;
-            }
-            else
-            { numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood; }
-            var halfRowNeighbourhood = sizeofNeighbourhood / 2;
-            var halfColNeighbourhood = sizeofNeighbourhood / 2;
             var result = new List<List<FeatureVector>>();
-            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
-            var listCount = 0;
-
-            //search along time position searchstep by searchstep. 
-            for (int col = 0; col < colsCount; col += searchStep)
+            if (query != null)
             {
-                // option one for the box that is not enough for a entire box, just ignore this part
-                // here, you need to check whether i
-                var boxMaxColIndex = col + numberOfColSlices * sizeofNeighbourhood;
-                if (!(boxMaxColIndex < colsCount))
-                {
-                    break;
-                }
-                result.Add(new List<FeatureVector>());
-                listCount++;
-                for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
-                {
-                    for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
-                    {
-                        var startRowIndexInSlice = startRowIndex + (sliceRowIndex * sizeofNeighbourhood);
-                        var endRowIndexInSlice = startRowIndex + ((sliceRowIndex + 1) * sizeofNeighbourhood);
-                        var startColIndexInSlice = col + (sliceColIndex * sizeofNeighbourhood);
-                        var endColIndexInSlice = col + ((sliceColIndex + 1) * sizeofNeighbourhood);
-                        if (StatisticalAnalysis.checkBoundary(endRowIndexInSlice, endColIndexInSlice, rowsCount, colsCount))
-                        {
-                            var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
-                            var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
-                            var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                            var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-                            var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);                            
+                var maxRowIndex = query[0].MaxRowIndex;
+                var minRowIndex = query[0].MinRowIndex;
+                var numberOfRowSlices = (maxRowIndex - minRowIndex) / sizeofNeighbourhood;
+                var minColIndex = query[0].MinColIndex;
+                var maxColIndex = query[0].MaxColIndex;
+                var numberOfColSlices = (maxColIndex - minColIndex) / sizeofNeighbourhood;
 
-                            result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
-                            {                               
-                                Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
-                                TimePosition = col,                              
-                            });
+                var halfRowNeighbourhood = sizeofNeighbourhood / 2;
+                var halfColNeighbourhood = sizeofNeighbourhood / 2;
+
+                var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+                var listCount = 0;
+                //search along frequency band by frequencyOffset. 
+                for (int row = minRowIndex - frequencyOffset; row < minRowIndex + frequencyOffset; row += frequencySearchStep)
+                {
+                    // search along time position by searchStep
+                    for (int col = 0; col < colsCount; col += frameSearchStep)
+                    {
+                        // option one for the box that is not enough for a entire box, just ignore this part
+                        // here, you need to check whether i
+                        var boxMaxColIndex = col + numberOfColSlices * sizeofNeighbourhood;
+                        var boxMaxRowIndex = row + numberOfRowSlices * sizeofNeighbourhood;
+                        if (!(boxMaxColIndex < colsCount) || !(boxMaxRowIndex < rowsCount))
+                        {
+                            break;
+                        }
+                        result.Add(new List<FeatureVector>());
+                        listCount++;
+                        for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
+                        {
+                            for (int sliceColIndex = 0; sliceColIndex < numberOfColSlices; sliceColIndex++)
+                            {
+                                var startRowIndexInSlice = row + (sliceRowIndex * sizeofNeighbourhood);
+                                var endRowIndexInSlice = row + ((sliceRowIndex + 1) * sizeofNeighbourhood);
+                                var startColIndexInSlice = col + (sliceColIndex * sizeofNeighbourhood);
+                                var endColIndexInSlice = col + ((sliceColIndex + 1) * sizeofNeighbourhood);
+                                if (StatisticalAnalysis.checkBoundary(endRowIndexInSlice, endColIndexInSlice, rowsCount, colsCount))
+                                {
+                                    var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
+                                    var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
+                                    var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
+                                    var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                                    var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);
+
+                                    result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
+                                    {
+                                        Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
+                                        SlopeScore = slopeValue.Item1 * slopeValue.Item2,
+                                        MinFrequency = 11025 - (row + numberOfRowSlices * sizeofNeighbourhood) * 43,
+                                        MaxFrequency = 11025 - row * 43.0,
+                                        TimePosition = col,
+                                    });
+                                }
+                            }
                         }
                     }
-                }
+                }                  
             }
             return result;
-        } 
+        }
 
         public static Point GetCentroid(PointOfInterest[,] subMatrix)
         {
@@ -284,25 +281,35 @@ namespace Dong.Felt
             array[3] = negativeDiagonalCount;
             // maxValue ( slope Index, slope Count)
             var result = new Tuple<int, int>(0, 0);
+            var zero = 0;
+            var slopeIndexOffset = 1;
             for (int i = 0; i < array.Length - 1; i++)
             {
+
                 if (array[i] < array[i + 1])
                 {
-                    result = Tuple.Create(i + 1, array[i + 1]);
+                    result = Tuple.Create(i + 1 + slopeIndexOffset, array[i + 1]);
                 }
                 else
                 {
-                    result = Tuple.Create(i, array[i]);
-                }                   
+                    if (array[i] == 0 && array[i + 1] == 0)
+                    {
+                        result = Tuple.Create(zero, array[i]);
+                    }
+                    else
+                    {
+                        result = Tuple.Create(i + slopeIndexOffset, array[i]);
+                    }
+                }
             }
 
-            return result; 
+            return result;
         }
 
         public static int OrientationValueCount(int[] orientationArray)
         {
             var arrayCount = orientationArray.Length;
-            var result = 0; 
+            var result = 0;
             for (int i = 0; i < arrayCount; i++)
             {
                 result += orientationArray[i];
@@ -317,7 +324,7 @@ namespace Dong.Felt
         /// <param name="PointX">This value is the X coordinate of centroid of rectangular.</param>
         /// <param name="PointY">This value is the Y coordinate of centroid of rectangular.</param>
         /// <returns></returns>
-        public static FeatureVector SliceIntegerEdgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
+        public static FeatureVector SliceEdgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
         {
             var result = new FeatureVector(new Point(PointX, PointY));
             var sizeOfNeighbourhood = matrix.GetLength(0);
@@ -449,7 +456,7 @@ namespace Dong.Felt
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static List<FeatureVector> RepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
+        public static List<FeatureVector> SlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount)
         {
@@ -471,8 +478,7 @@ namespace Dong.Felt
             var halfExtendedTimeRange = extendedTimeRange / 2;
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
-            //var numberOfRowSlices = (int)Math.Ceiling((double)(MaxRowIndex - MinRowIndex) / sizeofNeighbourhood);
-            //var numberOfColSlices = (int)Math.Ceiling((double)(MaxColIndex - MinColIndex) / sizeofNeighbourhood);
+
             var result = new List<FeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
@@ -486,11 +492,9 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
-                        var partialFeatureVector = RectangularRepresentation.SliceIntegerEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
-                        //var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndex, startColIndex + numberOfRowSlices * sizeofNeighbourhood, startColIndex, startColIndex + numberOfRowSlices * sizeofNeighbourhood);
-                        //var centroid = GetCentroid(subMatrix1);
                         result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                         {
                             HorizontalVector = partialFeatureVector.HorizontalVector,
@@ -498,7 +502,7 @@ namespace Dong.Felt
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
                             TimePosition = MinColIndex,
-                            //Centroid = new Point(centroid.X, centroid.Y)
+                            
                         });
                     }
                 }
@@ -506,6 +510,79 @@ namespace Dong.Felt
             return result;
         }
 
+        /// <summary>
+        /// This representation for query is done by calculating the major slope property. which means, we can derive the main oriention in each slice.
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="maxFrequency"></param>
+        /// <param name="minFrequency"></param>
+        /// <param name="startTime"></param>
+        /// <param name="duration"></param>
+        /// <param name="sizeofNeighbourhood"></param>
+        /// <param name="herzScale"></param>
+        /// <param name="timeScale"></param>
+        /// <param name="nyquistFrequency"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <returns></returns>
+        public static List<FeatureVector> MainSlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
+                                                               double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
+                                                               double nyquistFrequency, int rowsCount, int colsCount)
+        {
+            var MaxRowIndex = (int)((nyquistFrequency - minFrequency) / herzScale);
+            var MinRowIndex = (int)((nyquistFrequency - maxFrequency) / herzScale);
+            var MinColIndex = (int)(startTime / timeScale);
+            var MaxColIndex = (int)((startTime + duration) / timeScale);
+            var extendedFrequencyRange = 0;
+            var extendedTimeRange = 0;
+            if ((MaxRowIndex - MinRowIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedFrequencyRange = sizeofNeighbourhood - (MaxRowIndex - MinRowIndex) % sizeofNeighbourhood;
+            }
+            if ((MaxColIndex - MinColIndex) % sizeofNeighbourhood != 0)
+            {
+                extendedTimeRange = sizeofNeighbourhood - (int)(MaxColIndex - MinColIndex) % sizeofNeighbourhood;
+            }
+            var halfExtendedFrequencyRange = extendedFrequencyRange / 2;
+            var halfExtendedTimeRange = extendedTimeRange / 2;
+            var halfRowNeighbourhood = sizeofNeighbourhood / 2;
+            var halfColNeighbourhood = sizeofNeighbourhood / 2;
+
+            var result = new List<FeatureVector>();
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            // search along the fixed frequency range.
+            for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)          
+            {
+                for (int col = MinColIndex - halfExtendedTimeRange; col < MaxColIndex + extendedTimeRange - halfExtendedTimeRange; col += sizeofNeighbourhood)
+                {
+                    if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
+                    {
+                        var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
+                        var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);
+                        var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
+                        var startColIndex = MinColIndex - halfExtendedTimeRange;
+                        result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+                        {
+                            Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
+                            SlopeScore = slopeValue.Item1 * slopeValue.Item2,
+                            TimePosition = MinColIndex,
+                            MinRowIndex = MinRowIndex - halfExtendedFrequencyRange,
+                            MaxRowIndex = MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange,
+                            MinColIndex = MinColIndex - halfExtendedTimeRange,
+                            MaxColIndex = MaxColIndex + extendedTimeRange - halfExtendedTimeRange,
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This improved rectangular representation is done by smoothing the slope values, e.g. 0 5 0  -> 1 3 1
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         public static List<FeatureVector> ImprovedQueryFeatureVector(List<FeatureVector> query)
         {
             var result = new List<FeatureVector>();
