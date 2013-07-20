@@ -45,10 +45,10 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Training data\Torresian Crow1\Training\SE_SE727_20101017-053600-0540-0541-Terrisan Crow1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Training data\Torresian Crow1\Training\Output result";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Training data\Grey Fantail1\Training\SE_SE727_20101017-054200-0546-0547-Grey Fantail1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Training data\Grey Fantail1\Training\Output result";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "SE_SE727_20101017-053600-0540-0541-Terrisan Crow1-edge threshold-6.0-top20-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
+                string annotatedImageFileName = "SE_SE727_20101017-054200-0546-0547-Grey Fantail1-edge threshold-6.0-top10-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -153,10 +153,10 @@
                 //var duration = endTime - startTime;  // second
                 //var neighbourhoodSize = 13;               
                 /// For Grey Shrike-thrush4
-                var maxFrequency = 2050.0;//1507.0;
-                var minFrequency = 900.0;//258.0;
-                var startTime = 23.6;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                var endTime = 23.9;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var maxFrequency = 7200.0;//1507.0;
+                //var minFrequency = 4700.0;//258.0;
+                var startTime = 52.8;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                var endTime = 54.0;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
                 var duration = endTime - startTime;  // second
                 var neighbourhoodSize = 13;
 
@@ -191,9 +191,9 @@
                 ////var endTime = 96.348;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
                 ////var duration = endTime - startTime;  // second
                 ////var neighbourhoodSize = 13;
-                var queryFeatureVector = RectangularRepresentation.MainSlopeRepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
+                //var queryFeatureVector = RectangularRepresentation.MainSlopeRepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
                 //var queryFeatureVector = RectangularRepresentation.ImprovedQueryFeatureVector(queryFeatureVector1);
-                //var queryFeatureVector = TemplateTools.GreyShrike_thrush4(TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query horizontalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query verticalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query positiveDiagonalVector.csv"), TemplateTools.ReadCSVFile2Matrix(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Query negativeDiagonalVector.csv"));
+                var queryFeatureVector = TemplateTools.Grey_Fantail1();
                 //var results = new List<string>();
                 //results.Add("SliceNumber, HorizontalVector");
                 //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
@@ -214,7 +214,7 @@
                 //    queryFeatureVector[sliceIndex].HorizontalVector[12], " "));
 
                 //}
-                
+
                 //results.Add("SliceNumber, VerticalVector");
                 //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
                 //{
@@ -234,7 +234,7 @@
                 //    queryFeatureVector[sliceIndex].VerticalVector[12], " "));
 
                 //}
-               
+
                 //results.Add("SliceNumber, PositiveDiagonalVector");
                 //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
                 //{
@@ -266,7 +266,7 @@
                 //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[24], " "));
 
                 //}
-               
+
                 //results.Add("SliceNumber, NegativeDiagonalVector");
                 //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
                 //{
@@ -299,10 +299,10 @@
 
                 //}
                 //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
-                var searchFrequencyOffset = 10; 
+                var searchFrequencyOffset = 10;
                 var searchFrameStep = 5;
                 var frequencySearchStep = 2;
-                var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector,neighbourhoodSize,
+                var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
                  rows, cols, searchFrameStep, searchFrequencyOffset, frequencySearchStep);
 
                 /////// For starting from tag data, 
@@ -353,7 +353,7 @@
                 //////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 343.662, duration, 13, herzScale, secondsScale,
                 //////     spectrogram.NyquistFrequency, rows, cols));
 
-               
+
 
                 var finalPoiList = new List<PointOfInterest>();
                 ////var listOfPositions = new List<int>();
@@ -381,11 +381,11 @@
                 }
 
                 var itemList = (from l in listOfPositions
-                               orderby l.Item1 ascending
-                               //where l.Item1 < 200
-                               select l);
+                                orderby l.Item1 ascending
+                                //where l.Item1 < 200
+                                select l);
                 //listOfPositions.Sort();
-                var rank = 20;
+                var rank = 10;
                 var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
                 for (int i = 0; i < rank; i++)
                 {
@@ -402,10 +402,10 @@
                 foreach (var p in finalListOfPositions)
                 //foreach (var p in itemList)
                 //foreach (var p in listOfPositions)
-                {                  
+                {
                     var startTimePosition = p.Item2[0].TimePosition * secondsScale;
-                    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));                  
-                }            
+                    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));
+                }
                 //var thresholdOfdistanceforClosePoi = 8;
                 //finalPoiList = LocalMaxima.RemoveClosePoints(finalPoiList, thresholdOfdistanceforClosePoi);
                 // output edge image
@@ -422,9 +422,6 @@
                 }
             }
 
-            //Log.WriteLine("# Finished!");
-            //Console.ReadLine();
-            //System.Environment.Exit(666);
         } // Dev()
 
         public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, List<PointOfInterest> poiList)
