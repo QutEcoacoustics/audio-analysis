@@ -52,6 +52,7 @@ namespace Dong.Felt
         #endregion
 
         #region Pulic Methods
+
         /// <summary>
         /// Constructor method.
         /// </summary>
