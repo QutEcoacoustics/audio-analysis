@@ -45,10 +45,10 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Training data\Grey Fantail1\Training\SE_SE727_20101017-054200-0546-0547-Grey Fantail1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Training data\Grey Fantail1\Training\Output result";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101015-052400-0526-0527-Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\Output result1";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "SE_SE727_20101017-054200-0546-0547-Grey Fantail1-edge threshold-6.0-top10-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
+                string annotatedImageFileName = "NW_NW273_20101015-052400-0526-0527-Brown Cuckoo-dove1-edge threshold-6.0-top10-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -155,10 +155,10 @@
                 /// For Grey Shrike-thrush4
                 //var maxFrequency = 7200.0;//1507.0;
                 //var minFrequency = 4700.0;//258.0;
-                var startTime = 52.8;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                var endTime = 54.0;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
-                var duration = endTime - startTime;  // second
-                var neighbourhoodSize = 13;
+                //var startTime = 52.8;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                //var endTime = 54.0;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var duration = endTime - startTime;  // second
+                //var neighbourhoodSize = 13;
 
                 ///// For Scarlet honeyeater1
                 //var maxFrequency = 8200.0;//1507.0;
@@ -184,16 +184,26 @@
                 ////var duration = endTime - startTime;  // second
                 ////var neighbourhoodSize = 13;
 
+                /// For Brown Cuckoo-dove1
+                //var maxFrequency = 970.0;
+                //var minFrequency = 500.0;
+                var startTime = 34.15; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                var endTime = 34.5;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                var duration = endTime - startTime;  // second
+                var neighbourhoodSize = 13;
+
                 ///// For Scarlet honeyeater2
-                ////var maxFrequency = 7020.0;
-                ////var minFrequency = 3575.0;
-                ////var startTime = 95.215; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                ////var endTime = 96.348;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
-                ////var duration = endTime - startTime;  // second
-                ////var neighbourhoodSize = 13;
+                //var maxFrequency = 7020.0;
+                //var minFrequency = 3575.0;
+                //var startTime = 95.215; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
+                //var endTime = 96.348;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var duration = endTime - startTime;  // second
+                //var neighbourhoodSize = 13;
                 //var queryFeatureVector = RectangularRepresentation.MainSlopeRepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
                 //var queryFeatureVector = RectangularRepresentation.ImprovedQueryFeatureVector(queryFeatureVector1);
-                var queryFeatureVector = TemplateTools.Grey_Fantail1();
+                //var queryFeatureVector = TemplateTools.Grey_Fantail1();
+                var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
+
                 //var results = new List<string>();
                 //results.Add("SliceNumber, HorizontalVector");
                 //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)

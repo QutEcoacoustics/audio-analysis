@@ -282,24 +282,22 @@ namespace Dong.Felt
             array[3] = negativeDiagonalCount;
             // maxValue ( slope Index, slope Count)
             var result = new Tuple<int, int>(0, 0);
+            var tempMaxCount = 0; 
             var zero = 0;
             var slopeIndexOffset = 1;
             for (int i = 0; i < array.Length - 1; i++)
             {
 
-                if (array[i] < array[i + 1])
+                if (tempMaxCount < array[i])
                 {
-                    result = Tuple.Create(i + 1 + slopeIndexOffset, array[i + 1]);
+                    tempMaxCount = array[i];
+                    result = Tuple.Create(i + slopeIndexOffset, array[i]);
                 }
                 else
                 {
-                    if (array[i] == 0 && array[i + 1] == 0)
+                    if (tempMaxCount == 0)
                     {
                         result = Tuple.Create(zero, array[i]);
-                    }
-                    else
-                    {
-                        result = Tuple.Create(i + slopeIndexOffset, array[i]);
                     }
                 }
             }
