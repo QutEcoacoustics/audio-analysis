@@ -45,14 +45,15 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\NW_NW273_20101016-051200-0516-0517-Grey Shrike-thrush4.wav";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\NW_NW273_20101014-051200-0514-0515-Grey Shrike-thrush42.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\Output result";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101016-051200-0516-0517-Grey Shrike-thrush4-edge threshold-6.0-distance-270-frameSearchStep-4-frequencySearchStep5-frequencyOffset-20.png";
+                string annotatedImageFileName = "NW_NW273_20101014-051200-0514-0515-Grey Shrike-thrush42.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
                 Plot scores = null;
                 double eventThreshold = 0.5; // dummy variable - not used
@@ -411,7 +412,7 @@
                 // output edge image
                 //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
                 // output events image
-                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
