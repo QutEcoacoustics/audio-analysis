@@ -60,9 +60,9 @@ namespace Dong.Felt
         public static List<FeatureVector> Grey_Fantail1()
         {
             var result = new List<FeatureVector>();
-            var slopeScore = new int[] { 0, 18, 0, 0, 0, 0, 0, 0, 0, 27, 9, 0, 9, 12, 0, 0, 0, 0, 0, 0, 3, 12, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0 };
-            var slopeItem1 = new int[] { 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 3, 3, 0, 0, 0, 0, 0, 0, 3, 4, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0 };
-            var slopeItem2 = new int[] { 0, 6, 0, 0, 0, 0, 0, 0, 0, 9, 3, 0, 3, 4, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 };
+            var slopeScore = new int[] { 0, 18, 0, 0, 0, 0, 0, 0, 0, 27, 9, 0, 3, 12, 0, 0, 0, 0, 0, 0, 3, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 3, 0, 1, 2, 7, 0, 0, 0 };
+            var slopeItem1 = new int[] { 0,  3, 0, 0, 0, 0, 0, 0, 0,  3, 3, 0, 1,  3, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1,  1, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 1, 0, 0, 0 };
+            var slopeItem2 = new int[] { 0,  6, 0, 0, 0, 0, 0, 0, 0,  9, 3, 0, 3,  4, 0, 0, 0, 0, 0, 0, 1, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 1, 0, 1, 2, 7, 0, 0, 0 };
             var maxColIndex = 4651;
             var minColIndex = 4547;
             var maxRowIndex = 150;
@@ -83,6 +83,31 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<FeatureVector> Grey_Shrikethrush4()
+        {
+            var result = new List<FeatureVector>();
+            var slopeScore = new int[] { 15, 15, 0, 15, 0, 33, 13, 12, 18, 18, 0, 15, 0, 6, 0, 0 };
+            var slopeItem1 = new int[] {  3,  3, 0,  3, 0,  3,  1,  1,  3,  3, 0, 3,  0, 3, 0, 0 };
+            var slopeItem2 = new int[] {  5,  5, 0,  5, 0, 11, 13, 12,  6,  6, 0, 5,  0, 2, 0, 0 };
+            var maxColIndex = 2386;
+            var minColIndex = 2282;
+            var maxRowIndex = 234;
+            var minRowIndex = 208;
+            for (int index = 0; index < slopeScore.Count(); index++)
+            {
+                result.Add(new FeatureVector(new Point(0, 0))
+                {
+                    Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
+                    SlopeScore = slopeScore[index],
+                    MaxColIndex = maxColIndex,
+                    MinColIndex = minColIndex,
+                    MaxRowIndex = maxRowIndex,
+                    MinRowIndex = minRowIndex,
+
+                });
+            }
+            return result;
+        }
         public static List<FeatureVector> Brown_Cuckoodove1()
         {
             var result = new List<FeatureVector>();
