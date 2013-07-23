@@ -45,10 +45,10 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\NW_NW273_20101014-051200-0514-0515-Grey Shrike-thrush4.wav";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\NW_NW273_20101016-051200-0516-0517-Grey Shrike-thrush4.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Grey Shrike-thrush4\Testing\Output result";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101014-051200-0514-0515-Grey Shrike-thrush4-edge threshold-5.0-distance-156-frameSearchStep-5-frequencySearchStep2-frequencyOffset-10-2.png";
+                string annotatedImageFileName = "NW_NW273_20101016-051200-0516-0517-Grey Shrike-thrush4-edge threshold-6.0-distance-270-frameSearchStep-4-frequencySearchStep5-frequencyOffset-20.png";
                 double magnitudeThreshold = 6.0; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -123,12 +123,6 @@
                 var filterNeighbourhoodSize = 7;
                 var numberOfEdge = 3;
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
-                ////var featureVector = FeatureVector.PercentageByteFeatureVectors(filterPoiList, rows, cols, 9);  
-                //var sizeOfSearchNeighbourhood = 13;
-                //var featureVector = FeatureVector.IntegarDirectionFeatureVectors(filterPoiList, rows, cols, sizeOfSearchNeighbourhood);
-                //featureVector = FeatureVector.DirectionBitFeatureVectors(featureVector);
-                //var herzPerSlice = 550; // 13 pixels
-                //var durationPerSlice = 0.15;  // 13 pixels
 
                 /// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //var maxFrequency = 5124.90;
@@ -137,7 +131,7 @@
                 //var endTime = 189.1;//4.1;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
                 //var duration = endTime - startTime;  // second
                 //var neighbourhoodSize = 13;
-                
+
                 /// For Rofous whistler 4
                 //var maxFrequency = 8355.0;
                 //var minFrequency = 4522.0;
@@ -156,10 +150,10 @@
                 var neighbourhoodSize = 13;
 
                 ///// For Scarlet honeyeater1
-                //var maxFrequency = 8200.0;//1507.0;
-                //var minFrequency = 5000.0;//258.0;
-                //var startTime = 11.5;//17.230; // for 5 seconds long recording   //188.0 is for 6 minute long recording;
-                //var endTime = 11.85;//18.008;  //  for 5 seconds long recording   //189.1 is for 6 minute long recording;
+                //var maxFrequency = 8200.0;
+                //var minFrequency = 4900.0;
+                //var startTime = 15.5;
+                //var endTime = 16.0;
                 //var duration = endTime - startTime;  // second
                 //var neighbourhoodSize = 13;
 
@@ -199,6 +193,7 @@
                 //var queryFeatureVector = TemplateTools.Grey_Fantail1();
                 //var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
                 var queryFeatureVector = TemplateTools.Grey_Shrikethrush4();
+                //var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
 
                 //var results = new List<string>();
                 //results.Add("SliceNumber, HorizontalVector");
@@ -307,9 +302,9 @@
                 //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
                 var searchFrequencyOffset = 10;
                 var searchFrameStep = 5;
-                var frequencySearchStep = 2;
+                var frequencySearchStep = 5;
                 var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
-                 rows, cols, searchFrameStep, searchFrequencyOffset, frequencySearchStep);
+                 rows, cols, searchFrameStep, frequencySearchStep, searchFrequencyOffset);
 
                 /////// For starting from tag data, 
                 ////// Grey Shrike-thrush4
@@ -383,7 +378,7 @@
                                 orderby l.Item1 ascending
                                 select l);
                 var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
-                //var rank = 10;                
+                //var rank = 10;
                 //for (int i = 0; i < rank; i++)
                 //{
                 //    finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));

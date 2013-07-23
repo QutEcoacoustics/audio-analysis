@@ -227,7 +227,7 @@ namespace Dong.Felt
                                     {
                                         Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
                                         SlopeScore = slopeValue.Item1 * slopeValue.Item2,
-                                        MinFrequency = 11025 - (row + numberOfRowSlices * sizeofNeighbourhood) * 43,
+                                        MinFrequency = 11025 - (row + numberOfRowSlices * sizeofNeighbourhood) * 43.0,
                                         MaxFrequency = 11025 - row * 43.0,
                                         TimePosition = col,
                                     });

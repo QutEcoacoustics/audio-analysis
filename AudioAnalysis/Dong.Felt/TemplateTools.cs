@@ -61,8 +61,8 @@ namespace Dong.Felt
         {
             var result = new List<FeatureVector>();
             var slopeScore = new int[] { 0, 18, 0, 0, 0, 0, 0, 0, 0, 27, 9, 0, 3, 12, 0, 0, 0, 0, 0, 0, 3, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 3, 0, 1, 2, 7, 0, 0, 0 };
-            var slopeItem1 = new int[] { 0,  3, 0, 0, 0, 0, 0, 0, 0,  3, 3, 0, 1,  3, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1,  1, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 1, 0, 0, 0 };
-            var slopeItem2 = new int[] { 0,  6, 0, 0, 0, 0, 0, 0, 0,  9, 3, 0, 3,  4, 0, 0, 0, 0, 0, 0, 1, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 1, 0, 1, 2, 7, 0, 0, 0 };
+            var slopeItem1 = new int[] { 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 1, 3, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 1, 0, 0, 0 };
+            var slopeItem2 = new int[] { 0, 6, 0, 0, 0, 0, 0, 0, 0, 9, 3, 0, 3, 4, 0, 0, 0, 0, 0, 0, 1, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 1, 0, 1, 2, 7, 0, 0, 0 };
             var maxColIndex = 4651;
             var minColIndex = 4547;
             var maxRowIndex = 150;
@@ -87,8 +87,8 @@ namespace Dong.Felt
         {
             var result = new List<FeatureVector>();
             var slopeScore = new int[] { 15, 15, 0, 15, 0, 33, 13, 12, 18, 18, 0, 15, 0, 6, 0, 0 };
-            var slopeItem1 = new int[] {  3,  3, 0,  3, 0,  3,  1,  1,  3,  3, 0, 3,  0, 3, 0, 0 };
-            var slopeItem2 = new int[] {  5,  5, 0,  5, 0, 11, 13, 12,  6,  6, 0, 5,  0, 2, 0, 0 };
+            var slopeItem1 = new int[] { 3, 3, 0, 3, 0, 3, 1, 1, 3, 3, 0, 3, 0, 3, 0, 0 };
+            var slopeItem2 = new int[] { 5, 5, 0, 5, 0, 11, 13, 12, 6, 6, 0, 5, 0, 2, 0, 0 };
             var maxColIndex = 2386;
             var minColIndex = 2282;
             var maxRowIndex = 234;
@@ -108,11 +108,38 @@ namespace Dong.Felt
             }
             return result;
         }
+
+        public static List<FeatureVector> Scarlet_Honeyeater1()
+        {
+            var result = new List<FeatureVector>();
+            var slopeScore = new int[] { 33, 0, 0, 0, 45, 9, 0, 0, 42, 0, 0, 9, 45, 2, 6, 0, 39, 39, 3, 0, 39, 13, 13, 3 };
+            var slopeItem1 = new int[] {  3, 0, 0, 0,  3, 3, 0, 0,  3, 0, 0, 3,  3, 1, 3, 0,  3,  3, 3, 0,  3,  1,  1, 1 };
+            var slopeItem2 = new int[] { 11, 0, 0, 0, 15, 3, 0, 0, 14, 0, 0, 3, 15, 2, 2, 0, 13, 13, 1, 0, 13, 13, 13, 3 };
+            var maxColIndex = 1383;
+            var minColIndex = 1331;
+            var maxRowIndex = 143;
+            var minRowIndex = 65;
+            for (int index = 0; index < slopeScore.Count(); index++)
+            {
+                result.Add(new FeatureVector(new Point(0, 0))
+                {
+                    Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
+                    SlopeScore = slopeScore[index],
+                    MaxColIndex = maxColIndex,
+                    MinColIndex = minColIndex,
+                    MaxRowIndex = maxRowIndex,
+                    MinRowIndex = minRowIndex,
+
+                });
+            }
+            return result;
+        }
+
         public static List<FeatureVector> Brown_Cuckoodove1()
         {
             var result = new List<FeatureVector>();
             var slopeScore = new int[] { 3, 13, 3 };
-            var slopeItem1 = new int[] { 1,  1, 1 };
+            var slopeItem1 = new int[] { 1, 1, 1 };
             var slopeItem2 = new int[] { 3, 13, 3 };
             var maxColIndex = 2976;
             var minColIndex = 2937;
