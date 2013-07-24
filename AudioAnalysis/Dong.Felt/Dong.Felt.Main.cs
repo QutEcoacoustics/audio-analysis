@@ -96,6 +96,7 @@ namespace Dong.Felt
             //    string wavFilePath = analysisSettings.SourceFile.FullName;
             //    // Read the .wav file
             //    AudioRecording audioRecording;
+            //    var path =  @"C:\XUEYAN\DICTA Conference data\Audio data\Edge detection\NW_NW273_20101013-051800-slice1.wav";
             //    var spectrogram = PoiAnalysis.AudioToSpectrogram(path, out audioRecording);
             //    Log.Info("AudioToSpectrogram");
 
@@ -105,25 +106,25 @@ namespace Dong.Felt
             //    //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
             //    Log.Info("NoiseReduction");
 
-            //    var differenceOfGaussian = StructureTensor.BasicDifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            //    Log.Info("differenceOfGaussian");
-            //    var partialDifference = StructureTensor.DifferenceOfGaussianPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
-            //    Log.Info("partialDifference");
-            //    var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            //    Log.Info("structureTensor");
-            //    var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            //    Log.Info("eigenValue");
-            //    var attention = StructureTensor.GetTheAttention(eigenValue);
-            //    Log.Info("attention");
-            //    var pointsOfInterest = StructureTensor.ExtractPointsOfInterest(attention);
-            //    Log.Info("pointsOfInterest");
-                
-            //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //    imageResult.AddPoints(pointsOfInterest);
+            //    //var differenceOfGaussian = StructureTensor.BasicDifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //    //Log.Info("differenceOfGaussian");
+            //    //var partialDifference = StructureTensor.DifferenceOfGaussianPartialDifference(noiseReduction, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
+            //    //Log.Info("partialDifference");
+            //    //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //    //Log.Info("structureTensor");
+            //    //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            //    //Log.Info("eigenValue");
+            //    //var attention = StructureTensor.GetTheAttention(eigenValue);
+            //    //Log.Info("attention");
+            //    //var pointsOfInterest = StructureTensor.ExtractPointsOfInterest(attention);
+            //    //Log.Info("pointsOfInterest");
+
+            //    var imageResult = new Image_MultiTrack(spectrogram.GetImage(true, true));
+            //    //imageResult.AddPoints(pointsOfInterest);
             //    imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //    imageResult.Save(path + ".png");
+            //    imageResult.Save(path + "1.png");
             //    Log.Info("Show the result of Final PointsOfInterest");
-            //}
+            ////}
          
             var result = new AnalysisResult();
             return result;
