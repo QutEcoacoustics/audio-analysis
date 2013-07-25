@@ -45,17 +45,19 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Edge detection\NW_NW273_20101013-051800-slice1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Edge detection";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Scarlet Honeyeater1\Training\NW_NW273_20101013-051800-0519-0520-Scarlet Honeyeater1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Scarlet Honeyeater1\Training\Output Result1";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-051800-slice1-poi.png";
+                string annotatedImageFileName = "NW_NW273_20101013-051800-0519-0520-Scarlet Honeyeater1-Add Track.png";
                 double magnitudeThreshold = 5.5; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-                Plot scores = null;
+                var scores = new List<Plot>();
+                // plot(title, data, threshold);
+                
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;
                 var poiList1 = new List<PointOfInterest>();
@@ -153,10 +155,10 @@
                 ///// For Scarlet honeyeater1
                 //var maxFrequency = 8200.0;
                 //var minFrequency = 4900.0;
-                //var startTime = 15.5;
-                //var endTime = 16.0;
-                //var duration = endTime - startTime;  // second
-                //var neighbourhoodSize = 13;
+                var startTime = 15.5;
+                var endTime = 16.0;
+                var duration = endTime - startTime;  // second
+                var neighbourhoodSize = 13;
 
                 ///// For Torresian Crow1
                 ////var maxFrequency = 7106.0;
@@ -194,7 +196,7 @@
                 //var queryFeatureVector = TemplateTools.Grey_Fantail1();
                 //var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
                 //var queryFeatureVector = TemplateTools.Grey_Shrikethrush4();
-                //var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
+                var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
 
                 //var results = new List<string>();
                 //results.Add("SliceNumber, HorizontalVector");
@@ -301,116 +303,70 @@
 
                 //}
                 //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
-                //var searchFrequencyOffset = 5;
-                //var searchFrameStep = 5;
-                //var frequencySearchStep = 5;
-                //var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
-                // rows, cols, searchFrameStep, frequencySearchStep, searchFrequencyOffset);
-
-                ///////// For starting from tag data, 
-                //////// Grey Shrike-thrush4
-                ////////var featureVectorList = new List<List<FeatureVector>>();
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 206.47, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 138.828, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 177.366, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 199.824, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-
-
-                //////// Brown Cuckoo-dove1
-                ////////var featureVectorList = new List<List<FeatureVector>>();
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 118.269, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 216.871, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 247.486, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 322.133, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-
-                //////// Torresian Crow1
-                ////////var featureVectorList = new List<List<FeatureVector>>();
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 165.135, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 184.348, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 247.388, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 303.760, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-
-                //////// Grey Fantail1
-                ////////var featureVectorList = new List<List<FeatureVector>>();
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 127.738, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 187.906, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 204.506, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 241.881, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-                ////////featureVectorList.Add(RectangularRepresentation.RepresentationForQuery(filterPoiList, maxFrequency, minFrequency, 343.662, duration, 13, herzScale, secondsScale,
-                ////////     spectrogram.NyquistFrequency, rows, cols));
-
-
-
-                //var finalPoiList = new List<PointOfInterest>();
+                var searchFrequencyOffset = neighbourhoodSize;
+                var searchFrameStep = neighbourhoodSize / 2;
+                var frequencySearchStep = neighbourhoodSize / 2;
+                var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
+                 rows, cols, searchFrameStep, frequencySearchStep, searchFrequencyOffset);
                 
-                //var listOfPositions = new List<Tuple<double, List<FeatureVector>>>();
-                foreach (PointOfInterest poi in filterPoiList)
-                //foreach (var fl in featureVectorList)
+                var finalPoiList = new List<PointOfInterest>();
+                var listOfPositions = new List<Tuple<double, List<FeatureVector>>>();               
+                foreach (var fl in featureVectorList)
+                //foreach (PointOfInterest poi in filterPoiList)
                 {
 
-                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                    //var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);                  
-                    // similarity search with a long recording.
-                    //var distanceThreshold = 30.0;
-                    //if (distance <= distanceThreshold)
-                    //{
-                    //listOfPositions.Add(new Tuple<double, int, List<FeatureVector>>(distance, fl[0].TimePosition, fl));
-                    //}
-                    //listOfPositions.Add(new Tuple<double, List<FeatureVector>>(distance, fl));
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);                  
+                    //// similarity search with a long recording.
+                    ////var distanceThreshold = 30.0;
+                    ////if (distance <= distanceThreshold)
+                    ////{
+                    ////    listOfPositions.Add(new Tuple<double, int, List<FeatureVector>>(distance, fl[0].TimePosition, fl));
+                    ////}
+                    listOfPositions.Add(new Tuple<double, List<FeatureVector>>(distance, fl));
                 }
-
-                //var itemList = (from l in listOfPositions
-                //                orderby l.Item1 ascending
-                //                select l);
-                //var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
                 //var rank = 10;
                 //for (int i = 0; i < rank; i++)
                 //{
                 //    finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
                 //}
-                //var distanceThreshold = 15;
-                //foreach (var i in itemList)
-                //{
-                //    if (i.Item1 < distanceThreshold)
-                //    {
-                //        finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(i.Item1, i.Item2));
-                //    }
-                //}
-                //var times = queryFeatureVector.Count();
-                //var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);
+                var itemList = (from l in listOfPositions
+                                orderby l.Item1 ascending
+                                select l);
+                var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
+                var distanceThreshold = 270;
+                foreach (var i in itemList)
+                {
+                    if (i.Item1 < distanceThreshold)
+                    {
+                        finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(i.Item1, i.Item2));
+                    }
+                }
+                var times = queryFeatureVector.Count();
+                var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);
                 //var finalListOfPositions = listOfPositions.GetRange(0, 10);
                 ///// Put the result into csv file
                 //var filePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result\Candidates1-FeatureVector-improvedNeighbourhood.csv";
                 //TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
 
-                //var finalAcousticEvents = new List<AcousticEvent>();
-                //foreach (var p in filterfinalListOfPositions)
+                var finalAcousticEvents = new List<AcousticEvent>();
+                foreach (var p in filterfinalListOfPositions)
                 ////foreach (var p in itemList)
                 ////foreach (var p in finalListOfPositions)
-                //{
-                //    var startTimePosition = p.Item2[0].TimePosition * secondsScale;
-                //    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));
-                //}
+                {
+                    var startTimePosition = p.Item2[0].TimePosition * secondsScale;
+                    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));                   
+                }
+                var scoreData = new double[filterfinalListOfPositions.Count()]; 
+                for (int i = 0; i < filterfinalListOfPositions.Count(); i++)
+                {
+                    scoreData[i] = filterfinalListOfPositions[i].Item1;
+                }
+                scores.Add(new Plot("Similarity Score", scoreData, 5.0));
                 // output edge image
                 //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
                 // output events image
-                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
+                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);
@@ -423,19 +379,24 @@
 
         } // Dev()
 
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, List<PointOfInterest> poiList)
+        public static Image DrawSonogram(BaseSonogram sonogram, List<Plot> scores, List<AcousticEvent> poi, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = true; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));            
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             //Add this line below
-            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+            if (scores != null)
+            {
+                //foreach (var p in scores)
+                //{
+                //    image.AddTrack(Image_Track.GetNamedScoreTrack(p.data, 0.0, 1.0, p.threshold, p.title));
+                //}
+            }
             if ((poi != null) && (poi.Count > 0))
+            {
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
             return image.GetImage();
         } //DrawSonogram()
 
