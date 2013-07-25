@@ -80,29 +80,29 @@
             return similarityScore;
         }
 
-        /// <summary>
-        /// One way to calculate Similarity Score for percentage byte vector representation.
-        /// </summary>
-        /// <param name="instance"> the instance's feature vector to be compared. </param>
-        /// <param name="template"> the template's feature vector to be compared. </param>
-        /// <returns> 
-        /// It will return a similarity score. 
-        /// </returns>
-        public static double SimilarityScoreOfPercentageByteVector(FeatureVector instance, FeatureVector template)
-        {
-            // Initialize
-            double similarityScore = 0.0;
-            var threshold = new double[] { 0.1, 0.1, 0.1, 0.3 };
-            if (Math.Abs(instance.PercentageByteVector[0] - template.PercentageByteVector[0]) < threshold[0]
-             && Math.Abs(instance.PercentageByteVector[1] - template.PercentageByteVector[1]) < threshold[1]
-             && Math.Abs(instance.PercentageByteVector[2] - template.PercentageByteVector[2]) < threshold[2]
-             && Math.Abs(instance.PercentageByteVector[3] - template.PercentageByteVector[3]) < threshold[3])
-            {
-                similarityScore = 0.9;
-            }
+        ///// <summary>
+        ///// One way to calculate Similarity Score for percentage byte vector representation.
+        ///// </summary>
+        ///// <param name="instance"> the instance's feature vector to be compared. </param>
+        ///// <param name="template"> the template's feature vector to be compared. </param>
+        ///// <returns> 
+        ///// It will return a similarity score. 
+        ///// </returns>
+        //public static double SimilarityScoreOfPercentageByteVector(FeatureVector instance, FeatureVector template)
+        //{
+        //    // Initialize
+        //    double similarityScore = 0.0;
+        //    var threshold = new double[] { 0.1, 0.1, 0.1, 0.3 };
+        //    if (Math.Abs(instance.PercentageByteVector[0] - template.PercentageByteVector[0]) < threshold[0]
+        //     && Math.Abs(instance.PercentageByteVector[1] - template.PercentageByteVector[1]) < threshold[1]
+        //     && Math.Abs(instance.PercentageByteVector[2] - template.PercentageByteVector[2]) < threshold[2]
+        //     && Math.Abs(instance.PercentageByteVector[3] - template.PercentageByteVector[3]) < threshold[3])
+        //    {
+        //        similarityScore = 0.9;
+        //    }
 
-            return similarityScore;
-        }
+        //    return similarityScore;
+        //}
 
         // To calculate the distance between query and potentialEvent. The return value is equal to the sum of every orientation subdistance. 
         public static int SimilarSliceNumberOfFeatureVector(List<FeatureVector> potentialEvent, List<FeatureVector> query)

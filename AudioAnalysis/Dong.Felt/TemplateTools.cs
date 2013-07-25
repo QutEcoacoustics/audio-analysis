@@ -384,7 +384,7 @@ namespace Dong.Felt
             percentageFeatureVector[1] = 0.4;// 0.4;
             percentageFeatureVector[2] = 0.0; //0.0;
             percentageFeatureVector[3] = 0.2;//0.1;
-            result.PercentageByteVector = percentageFeatureVector;
+            //result.PercentageByteVector = percentageFeatureVector;
             result.NeighbourhoodSize = neighbourhoodSize;
             return result;
         }

@@ -316,6 +316,44 @@ namespace Dong.Felt
 
             return result;
         }
+
+        // need to be done.
+        public static FeatureVector SliceSlopPercentageRepresentation(FeatureVector slice)
+        {
+            var horizontalCount = OrientationValueCount(slice.HorizontalVector);
+            var verticalCount = OrientationValueCount(slice.VerticalVector);
+            var positiveDiagonalCount = OrientationValueCount(slice.PositiveDiagonalVector);
+            var negativeDiagonalCount = OrientationValueCount(slice.NegativeDiagonalVector);
+            var array = new int[4];
+            array[0] = horizontalCount;
+            array[1] = positiveDiagonalCount;
+            array[2] = verticalCount;
+            array[3] = negativeDiagonalCount;
+            // maxValue ( slope Index, slope Count)
+            var result = new FeatureVector(new Point(0, 0));
+            var tempMaxCount = 0;
+            var zero = 0;
+            var slopeIndexOffset = 1;
+            //for (int i = 0; i < array.Length - 1; i++)
+            //{
+
+            //    if (tempMaxCount < array[i])
+            //    {
+            //        tempMaxCount = array[i];
+            //        result = Tuple.Create(i + slopeIndexOffset, array[i]);
+            //    }
+            //    else
+            //    {
+            //        if (tempMaxCount == 0)
+            //        {
+            //            result = Tuple.Create(zero, array[i]);
+            //        }
+            //    }
+            //}
+
+            return result;
+        }
+
         /// <summary>
         /// This method is used for calculate each slice representation, each slice is derived from the origional rectangular. 
         /// </summary>

@@ -101,7 +101,13 @@
         /// Gets or sets the percentageByteVector, another type of edge feature vector, representing the percentage of each direction of edge account for. 
         /// Especially, it [0], horizontal, [1], vertical, [2], positiveDiagonal, [3], negativeDiagonal.
         /// </summary>
-        public double[] PercentageByteVector { get; set; }
+        public double HorizontalPercentage { get; set; }
+
+        public double VerticalPercentage { get; set; }
+
+        public double PositiveDiagonalPercentage { get; set; }
+
+        public double NegativeDiagonalPercentage { get; set; }
 
         /// <summary>
         /// Gets or sets the similarityScore
@@ -128,15 +134,7 @@
         public int FrequencyBand { get; set; }
 
         #region constructor
-        /// <summary>
-        /// A constructor takes in percentageByteVector
-        /// </summary>
-        /// <param name="percentageVector"></param>
-        public FeatureVector(double[] percentageByteVector)
-        {
-            PercentageByteVector = percentageByteVector;
-        }
-
+       
         /// <summary>
         /// A constructor takes in point
         /// </summary>
@@ -662,7 +660,7 @@
         /// <returns> 
         /// It will return a list of featureVector objects whose PercentageByteFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> PercentageByteFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<FeatureVector> PercentageFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
             var result = new List<FeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
@@ -725,11 +723,10 @@
                         percentageOfpositiveDiagonal = numberOfpositiveDiagonalDirection / sum;
                         percentageOfnegativeDiagonal = numberOfnegativeDiagonalDirection / sum;
 
-                        percentageVector[0] = percentageOfHorizontal;
-                        percentageVector[1] = percentageOfVertical;
-                        percentageVector[2] = percentageOfpositiveDiagonal;
-                        percentageVector[3] = percentageOfnegativeDiagonal;
-                        result.Add(new FeatureVector(new Point(row, col)) { PercentageByteVector = percentageVector });
+                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalPercentage = percentageOfHorizontal,
+                                                                            VerticalPercentage = percentageOfVertical,
+                                                                            PositiveDiagonalPercentage = percentageOfpositiveDiagonal,
+                                                                            NegativeDiagonalPercentage = percentageOfnegativeDiagonal});
                     }
                 }
             }
