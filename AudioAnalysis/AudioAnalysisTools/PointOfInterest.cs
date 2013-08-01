@@ -330,7 +330,7 @@ namespace AudioAnalysisTools
                             }
                             else
                             {
-                                color = Color.Black;
+                                color = Color.Black;                               
                             }
                     }
                 }
