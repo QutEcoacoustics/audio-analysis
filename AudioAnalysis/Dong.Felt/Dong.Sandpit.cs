@@ -45,18 +45,17 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Edge detection\NW_NW273_20101013-051800-slice1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Edge detection";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Query truck image\query for Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Query truck image";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-051800-slice1-noise removal.png";
+                string annotatedImageFileName = "query for Brown Cuckoo-dove1-noise removal.png";
                 double magnitudeThreshold = 5.5; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-                var scores = new List<Plot>();
-                // plot(title, data, threshold);
+                var scores = new List<Plot>(); // plot(title, data, threshold);
                 
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;
@@ -115,9 +114,10 @@
                             poi.TimeScale = timeScale;
                             poi.HerzScale = herzScale;
                             poiList.Add(poi);
-                        }
+                        }                    
                     }
                 }
+ 
                 //var timeUnit = 1;  // 1 second
                 //var edgeStatistic = FeatureVector.EdgeStatistics(poiList, rows, cols, timeUnit, secondsScale);
                 /// filter out some redundant poi                
@@ -126,6 +126,29 @@
                 var filterNeighbourhoodSize = 7;
                 var numberOfEdge = 3;
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdge);
+
+                /// Change it into black and white image and just keep the poi. 
+                //foreach (var poi in filterPoiList)
+                //{
+                //    var xCoordinates = poi.Point.Y;
+                //    var yCoordinates = poi.Point.X;
+                //    spectrogram.Data[yCoordinates, cols - xCoordinates] = 20.0;
+                //}
+
+                //for (int r = 0; r < rows; r++)
+                //{
+                //    for (int c = 0; c < cols; c++)
+                //    {
+                //        if (spectrogram.Data[r, c] == 20.0)
+                //        {
+                //            spectrogram.Data[r, c] = 1.0;
+                //        }
+                //        else
+                //        {
+                //            spectrogram.Data[r, c] = 0.0;
+                //        }
+                //    }
+                //}
 
                 /// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //var maxFrequency = 5124.90;
@@ -349,7 +372,7 @@
                 ////var filePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result\Candidates1-FeatureVector-improvedNeighbourhood.csv";
                 ////TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
 
-                //var finalAcousticEvents = new List<AcousticEvent>();
+                var finalAcousticEvents = new List<AcousticEvent>();
                 //foreach (var p in filterfinalListOfPositions)
                 //////foreach (var p in itemList)
                 //////foreach (var p in finalListOfPositions)
@@ -364,7 +387,7 @@
                 //}
                 //scores.Add(new Plot("Similarity Score", scoreData, 5.0));
                 //// output edge image
-                ////image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
+                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
                 //// output events image
                 //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, finalPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
