@@ -60,7 +60,7 @@
         /// <exception cref="ArgumentException">wavUnpack</exception>
         public WavPackAudioUtility(FileInfo wavUnpack)
         {
-            this.CheckExe(wavUnpack, "wvunpack.exe");
+            this.CheckExe(wavUnpack, "wvunpack");
             this.ExecutableInfo = wavUnpack;
             this.ExecutableModify = wavUnpack;
         }

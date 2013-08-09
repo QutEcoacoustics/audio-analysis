@@ -107,6 +107,7 @@
                 this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
                 this.TrackCount = AppConfigHelper.GetInt("TrackCount");
                 this.TrackNormalisedDisplay = AppConfigHelper.GetBool("TrackNormalisedDisplay");
+                this.PlaygroundMode = AppConfigHelper.GetBool("PlaygroundMode");
             }
             catch (Exception ex)
             {
@@ -320,6 +321,7 @@
         public string SourceFileExt { get; private set; }
         public string AnalysisIdentifier { get; set; }
         public string[] AnalysisList { get; private set; }
+        public bool PlaygroundMode { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }
         public DirectoryInfo DefaultConfigDir { get; private set; }

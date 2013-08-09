@@ -25,18 +25,13 @@
     using LINQtoCSV;
     using log4net;
 
-
-
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //SCC file site 4  // sunshinecoast1 "Y:\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //SCC file site 4  // sunshinecoast1 "\\hpc-fs.qut.edu.au\staging\availae\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
 
-
-
     public partial class MainForm : Form
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MainForm));
         private readonly TextWriter consoleWriter;
         private readonly IAudioUtility audioUtilityForDurationColumn;
 
@@ -72,11 +67,8 @@
 
         private Pen pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
 
+        private AudioNavigator audioNavigator;
 
-
-        /// <summary>
-        /// 
-        /// </summary>
         public MainForm()
         {
             // must be here, must be first
@@ -117,14 +109,7 @@
             //finds valid analysis files that implement the IAnalysis interface
             this.pluginHelper = new PluginHelper();
             this.pluginHelper.FindIAnalysisPlugins();
-            //create list of analysers for display to user
-            var analyserDict = new Dictionary<string, string>();
-            foreach (var plugin in this.pluginHelper.AnalysisPlugins)
-            {
-                analyserDict.Add(plugin.Identifier, plugin.DisplayName);
-            }
-            var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
-            analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
+            var analyserList = this.pluginHelper.GetAnalysisPluginsList();
 
             //create comboBox display for Audio File Analysis Tab
             this.comboAnalysisType.DataSource = analyserList.ToList();
@@ -147,6 +132,19 @@
             this.browserSettings = new AudioBrowserSettings();
             this.browserSettings.LoadBrowserSettings();
 
+            // check for playground mode
+            if (!this.browserSettings.PlaygroundMode)
+            {
+                // hide all but audio navigator and console tabs
+                this.tabControlMain.TabPages.Remove(this.tabAnalyseFile);
+                this.tabControlMain.TabPages.Remove(this.tabPageSourceFiles);
+                this.tabControlMain.TabPages.Remove(this.tabPageDisplay);
+                this.tabControlMain.TabPages.Remove(this.tabPageSearchCsv);
+                this.tabControlMain.TabPages.Remove(this.tabMisc);
+
+                this.tabControlMain.TabPages.Remove(this.tabPageConsole);
+                this.tabControlMain.TabPages.Add(this.tabPageConsole);
+            }
 
             // if input and output dirs exist, populate datagrids
             if (browserSettings.diSourceDir != null)
@@ -179,6 +177,14 @@
 
             this.browserSettings.WriteSettings2Console();
 
+            // hard code defaults for local testing
+            this.audioNavigator = new AudioNavigator(this.browserSettings.diConfigDir, this.pluginHelper)
+            {
+                AudioFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Site1\DM420031.MP3"),
+                CsvFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Results\Site1\DM420031.MP3\Towsey.Acoustic\DM420031_Towsey.Acoustic.Indices.csv"),
+                OutputDirectory = new DirectoryInfo(@"C:\Work\Output"),
+                AnalysisName = analyserList.Skip(1).First().Key
+            };
 
         } //MainForm()
 
@@ -479,40 +485,40 @@
                 int status = this.LoadIndicesCSVFile(fiCSVFile.FullName);
                 // ##################################################################################################################
 
-                    if (status >= 3)
+                if (status >= 3)
+                {
+                    //this.tabControlMain.SelectTab("tabPageConsole");
+                    //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
+                    //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
+                    //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
+                    //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiCSVFile.FullName);
+                    this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+                    this.pictureBoxBarTrack.Image = this.selectionTrackImage;
+
+                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                    this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
+                    //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
+                    this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+                    this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
+                    this.pictureBoxSonogram.Location = new Point(3, 0);
+
+                    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
+                    if (status == 0)
                     {
-                        //this.tabControlMain.SelectTab("tabPageConsole");
-                        //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                        //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
-                        //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                        //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
+                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
+                        this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
                     }
                     else
                     {
-                        LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiCSVFile.FullName);
-                        this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-                        this.pictureBoxBarTrack.Image = this.selectionTrackImage;
-
-                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
-                        //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
-                        this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
-                        this.pictureBoxSonogram.Location = new Point(3, 0);
-
-                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
-                        if (status == 0)
-                        {
-                            this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
-                            this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-                        }
-                        else
-                        {
-                            this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));
-                            this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
-                        }
-                        this.tabControlMain.SelectTab("tabPageDisplay");
-                    } // (status)
+                        this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));
+                        this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
+                    }
+                    this.tabControlMain.SelectTab("tabPageDisplay");
+                } // (status)
             } // if (DialogResult.OK)
 
         }
@@ -537,7 +543,7 @@
             // PARSE the file name
             string fileName = Path.GetFileNameWithoutExtension(csvPath);
             string[] array = fileName.Split('_');
-            array = array[array.Length -1].Split('.');
+            array = array[array.Length - 1].Split('.');
             string analysisName = "Towsey.Default";
             if (array.Length >= 2) analysisName = array[0] + "." + array[1];
 
@@ -798,7 +804,7 @@
                 return;
             }
             FileInfo audacity = new FileInfo(browserSettings.AudacityExe.FullName);
-            if (! audacity.Exists)
+            if (!audacity.Exists)
             {
                 LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
                 LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
@@ -1541,7 +1547,7 @@
 
         private void comboAnalysisType_SelectedValueChanged(object sender, EventArgs e)
         {
-            if(browserSettings == null) return; // in case not initialised yet.
+            if (browserSettings == null) return; // in case not initialised yet.
 
             string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
             string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
@@ -1565,7 +1571,7 @@
             string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
             string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
             var fiConfig = new FileInfo(configPath);
-            if (! fiConfig.Exists)
+            if (!fiConfig.Exists)
             {
                 this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
                 MessageBox.Show("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
@@ -1580,7 +1586,7 @@
 
             //string editorPath = @"C:\Program Files (x86)\Windows NT\Accessories\wordpad.exe";
             // check Wordpad is available
-            if ((browserSettings.WordPadExe == null) || (! browserSettings.WordPadExe.Exists))
+            if ((browserSettings.WordPadExe == null) || (!browserSettings.WordPadExe.Exists))
             {
                 MessageBox.Show("WARNING: Cannot find Wordpad editor.");
                 MessageBox.Show("         Enter correct Wordpad path in the Browser's app.config file and try again.");
@@ -1622,7 +1628,7 @@
             textBoxAnalysisGo.BackColor = Color.Ivory;
 
             //SET UP the command line
-            if (! this.browserSettings.AnalysisProgramsExeExists())
+            if (!this.browserSettings.AnalysisProgramsExeExists())
             {
                 textBoxAnalysisGo.BackColor = Color.Ivory;
                 textBoxAnalysisGo.ForeColor = Color.Red;
@@ -1758,7 +1764,8 @@
                 if (status > 0)
                 {
                     LoggedConsole.WriteLine("ERROR: Error converting csv file to ARFF and SEE5 formats");
-                } else
+                }
+                else
                 {
                     LoggedConsole.WriteLine("Successfully converted CSV file to ARFF and SEE5 formats.");
                 } // (status)
@@ -1768,6 +1775,236 @@
 
         } // btnCSV2ARFF_Click()
 
+        // ##################################################################################################################
+        // audio navigator
+        // ##################################################################################################################
+
+        private void WriteConsoleSpacer()
+        {
+            LoggedConsole.WriteLine();
+            LoggedConsole.WriteLine("###########################");
+            LoggedConsole.WriteLine("New operation started at " + DateTime.Now);
+            LoggedConsole.WriteLine("###########################");
+            LoggedConsole.WriteLine();
+        }
+
+        private void UpdateSonogram()
+        {
+            // collect data for sonogram generation
+            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(15) : TimeSpan.Zero;
+            var annotated = this.chkAudioNavAnnotateSonogram.Checked;
+            var noiseReduced = this.chkAudioNavNoiseReduce.Checked;
+            var backgroundNoiseThreshold = this.browserSettings.SonogramBackgroundThreshold;
+
+            WriteConsoleSpacer();
+            this.tabControlMain.SelectTab(tabPageConsole);
+
+            // segment audio and generate sonogram
+            this.audioNavigator.RefreshSonogram(
+                noiseReduced,
+                backgroundNoiseThreshold,
+                annotated,
+                segmentbuffer);
+
+            if (this.pictureBoxAudioNavSonogram.Image != null)
+            {
+                this.pictureBoxAudioNavSonogram.Image.Dispose();
+            }
+
+            if (this.audioNavigator.CurrentAudioSegmentFile == null ||
+                !File.Exists(this.audioNavigator.CurrentAudioSegmentFile.FullName) ||
+                this.audioNavigator.CurrentImageFile == null ||
+                !File.Exists(this.audioNavigator.CurrentImageFile.FullName))
+            {
+                this.lblAudioNavAudioSegmentFile.Text = string.Empty;
+                this.lblAudioNavSonogramImageFile.Text = string.Empty;
+                this.tabControlMain.SelectTab(this.tabPageConsole);
+            }
+            else
+            {
+                this.lblAudioNavAudioSegmentFile.Text = this.audioNavigator.CurrentAudioSegmentFile.Name;
+                this.lblAudioNavSonogramImageFile.Text = this.audioNavigator.CurrentAudioSegmentFile.Name;
+
+                // resize picture box to contain sonogram image
+                this.pictureBoxAudioNavSonogram.Size = new Size(
+                    this.audioNavigator.SonogramImage.Width,
+                    this.audioNavigator.SonogramImage.Height);
+
+                // set new sonogram image
+                this.pictureBoxAudioNavSonogram.Image = this.audioNavigator.SonogramImage;
+                this.tabControlMain.SelectTab(tabPageAudioNavigator);
+            }
+        }
+
+        private void btnAudioNavSelectFiles_Click(object sender, EventArgs e)
+        {
+            // open a window to collect information to create a new AudioNavigator object.
+            var selectFilesForm = new AudioNavigatorFileSelectForm
+            {
+                AudioFile = this.audioNavigator.AudioFile,
+                CsvFile = this.audioNavigator.CsvFile,
+                OutputDirectory = this.audioNavigator.OutputDirectory,
+                AnalysisName = this.audioNavigator.AnalysisName
+            };
+            selectFilesForm.FormClosing += selectFilesForm_FormClosing;
+            selectFilesForm.Show();
+        }
+
+        private void selectFilesForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            var selectFilesForm = sender as AudioNavigatorFileSelectForm;
+
+            // update settings
+            this.audioNavigator.AudioFile = selectFilesForm.AudioFile;
+            this.audioNavigator.CsvFile = selectFilesForm.CsvFile;
+            this.audioNavigator.OutputDirectory = selectFilesForm.OutputDirectory;
+            this.audioNavigator.AnalysisName = selectFilesForm.AnalysisName;
+
+            // reset UI
+            if (this.pictureBoxAudioNavIndicies.Image != null)
+            {
+                this.pictureBoxAudioNavIndicies.Image.Dispose();
+                this.pictureBoxAudioNavIndicies.Image = new Bitmap(1000, 350);
+            }
+
+            if (this.pictureBoxAudioNavSonogram.Image != null)
+            {
+                this.pictureBoxAudioNavSonogram.Image.Dispose();
+                this.pictureBoxAudioNavSonogram.Image = new Bitmap(1000, 350);
+            }
+
+            this.listBoxDisplayedTracks.Items.Clear();
+
+            this.txtAudioNavClickLocation.Text = string.Empty;
+            this.txtAudioNavClickValue.Text = string.Empty;
+            this.txtAudioNavCursorLocation.Text = string.Empty;
+            this.txtAudioNavCursorValue.Text = string.Empty;
+
+            // write spacer to console.
+            WriteConsoleSpacer();
+            this.tabControlMain.SelectTab(tabPageConsole);
+
+            // refresh indices info and image
+            this.audioNavigator.RefreshIndices(this.browserSettings.TrackNormalisedDisplay);
+
+            // show indices information
+            this.txtAudioNavAnalysisType.Text = this.audioNavigator.AnalysisName;
+            this.txtAudioNavDuration.Text = this.audioNavigator.AudioDuration.TotalMinutes.ToString();
+            this.listBoxAudioNavCSVHeaders.Items.AddRange(this.audioNavigator.CsvHeaderList.ToArray());
+            this.lblAudioNavCSVHeaders.Text = this.audioNavigator.CsvHeaderInfo;
+
+            // resize picture box to contain indices image
+            this.pictureBoxAudioNavIndicies.Size = new Size(
+                this.audioNavigator.IndicesImage.Width,
+                this.audioNavigator.IndicesImage.Height);
+
+            // set new indices image
+            this.pictureBoxAudioNavIndicies.Image = this.audioNavigator.IndicesImage;
+            this.tabControlMain.SelectTab(tabPageAudioNavigator);
+        }
+
+        private void btnAudioNavRunAudacity_Click(object sender, EventArgs e)
+        {
+            // check Audacity is available
+            if (browserSettings.AudacityExe == null)
+            {
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at default locations.");
+                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
+                this.tabControlMain.SelectTab(tabPageConsole);
+                return;
+            }
+            FileInfo audacity = new FileInfo(browserSettings.AudacityExe.FullName);
+            if (!audacity.Exists)
+            {
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
+                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
+                this.tabControlMain.SelectTab(tabPageConsole);
+                return;
+            }
+
+            int status = 0;
+            if ((this.audioNavigator.CurrentAudioSegmentFile == null) || (!this.audioNavigator.CurrentAudioSegmentFile.Exists))
+            {
+                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + this.audioNavigator.CurrentAudioSegmentFile + ">");
+                LoggedConsole.WriteLine("The audio file does not exist!");
+                this.tabControlMain.SelectTab(tabPageConsole);
+                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", this.audioNavigator.OutputDirectory.FullName);
+            }
+            else
+            {
+                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, this.audioNavigator.CurrentAudioSegmentFile.FullName, this.audioNavigator.OutputDirectory.FullName);
+            }
+        }
+
+        private void pictureBoxAudioNavIndicies_MouseHover(object sender, EventArgs e)
+        {
+            this.pictureBoxAudioNavIndicies.Cursor = Cursors.HSplit;
+        }
+
+        private void pictureBoxAudioNavIndicies_MouseMove(object sender, MouseEventArgs e)
+        {
+            float[] dashValues = { 2, 2, 2, 2 };
+
+            var currentCursorX = e.X; // pixel position = minutes
+            var durationMin = Math.Ceiling(this.audioNavigator.AudioDuration.TotalMinutes);
+
+            if (currentCursorX > durationMin)
+            {
+                return;
+            }
+
+            var currentTrackValues = this.audioNavigator.TrackValues;
+
+            // set text for current cursor location
+
+            this.txtAudioNavCursorLocation.Text = this.audioNavigator.GetLocationString(currentCursorX);
+
+            // draw dashed lines either side of the cursor
+            if (this.pictureBoxAudioNavIndicies.Image != null)
+            {
+                Graphics g = this.pictureBoxAudioNavIndicies.CreateGraphics();
+                g.DrawImage(this.pictureBoxAudioNavIndicies.Image, 0, 0);
+
+                this.pictureBoxPen.DashPattern = dashValues;
+                Point pt1 = new Point(currentCursorX - 1, 2);
+                Point pt2 = new Point(currentCursorX - 1, this.pictureBoxAudioNavIndicies.Height);
+                g.DrawLine(this.pictureBoxPen, pt1, pt2);
+
+                pt1 = new Point(currentCursorX + 1, 2);
+                pt2 = new Point(currentCursorX + 1, this.pictureBoxAudioNavIndicies.Height);
+                g.DrawLine(this.pictureBoxPen, pt1, pt2);
+
+                this.txtAudioNavCursorValue.Text = this.audioNavigator.GetValueString(currentCursorX, currentTrackValues);
+            }
+        }
+
+        private void pictureBoxAudioNavIndicies_MouseClick(object sender, MouseEventArgs e)
+        {
+            // gather information from click
+            var currentCursorX = e.X;
+            var currentCursorY = e.Y;
+
+            var currentTrackValues = this.audioNavigator.TrackValues;
+
+            // segment start and end
+            var segmentDuration = TimeSpan.FromMinutes(this.browserSettings.DefaultSegmentDuration);
+            var segmentOffsetStart = TimeSpan.FromMinutes(currentCursorX);
+            var segmentOffsetEnd = segmentOffsetStart + segmentDuration;
+
+            this.audioNavigator.CurrentOffsetStart = segmentOffsetStart;
+            this.audioNavigator.CurrentOffsetEnd = segmentOffsetEnd;
+
+            // set location and value at click
+            this.txtAudioNavClickLocation.Text = this.audioNavigator.GetLocationString(currentCursorX);
+            this.txtAudioNavClickValue.Text = this.audioNavigator.GetValueString(currentCursorX, currentTrackValues);
+
+            UpdateSonogram();
+        }
+
+        private void btnAudioNavRefreshSonogram_Click(object sender, EventArgs e)
+        {
+            UpdateSonogram();
+        }
 
     } //class MainForm : Form
 }

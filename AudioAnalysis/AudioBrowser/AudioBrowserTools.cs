@@ -46,26 +46,15 @@ namespace AudioBrowser
             return pluginHelper.AnalysisPlugins;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="analysisIdentifier"></param>
-        /// <param name="analysers"></param>
-        /// <returns></returns>
         public static IAnalyser GetAcousticAnalyser(string analysisIdentifier, IEnumerable<IAnalyser> analysers)
         {
             return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-        } //GetAcousticAnalyser()
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="analysisIdentifier"></param>
-        /// <returns></returns>
+        }
+
         public static IAnalyser GetAcousticAnalyser(string analysisIdentifier)
         {
-            var analysers = GetListOfAvailableAnalysers();
-            return analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-        } //GetAcousticAnalyser()
+            return GetAcousticAnalyser(analysisIdentifier, GetListOfAvailableAnalysers());
+        }
 
 
 
