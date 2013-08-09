@@ -36,7 +36,7 @@
         /// </param>
         public SoxSpectrogramUtility(IAudioUtility audioUtility, FileInfo soxExe)
         {
-            this.CheckExe(soxExe, "sox.exe");
+            this.CheckExe(soxExe, "sox");
             this.audioUtility = audioUtility;
             this.soxExe = soxExe;
         }

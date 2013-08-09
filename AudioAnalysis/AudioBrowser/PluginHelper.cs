@@ -95,6 +95,18 @@
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
         }
 
+        public IEnumerable<KeyValuePair<string, string>> GetAnalysisPluginsList()
+        {
+            var analyserDict = new Dictionary<string, string>();
+            foreach (var plugin in this.AnalysisPlugins)
+            {
+                analyserDict.Add(plugin.Identifier, plugin.DisplayName);
+            }
+            var analyserList = analyserDict.OrderBy(a => a.Value).ToList();
+            analyserList.Insert(0, new KeyValuePair<string, string>("none", "No Analysis"));
+            return analyserList;
+        }
+
         private IEnumerable<IAnalyser> GetPluginsSimple(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             // AnalysisPrograms.exe
@@ -154,5 +166,7 @@
             var container = new CompositionContainer(aggregateCatalog);
             container.ComposeParts(this);
         }
+
+
     }
 }
