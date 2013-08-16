@@ -174,7 +174,7 @@ namespace Dong.Felt
         }
 
 
-        public static List<List<FeatureVector>> MainSlopeRepresentationForIndexing(List<PointOfInterest> poiList, List<FeatureVector> query, int sizeofNeighbourhood, int rowsCount, int colsCount, int frameSearchStep, int frequencySearchStep, int frequencyOffset)
+        public static List<List<FeatureVector>> MainSlopeRepresentationForIndexing(List<PointOfInterest> poiList, List<FeatureVector> query, int sizeofNeighbourhood, int rowsCount, int colsCount, int frameSearchStep, int frequencyOffset)
         {
             var result = new List<List<FeatureVector>>();
             if (query != null)
@@ -192,7 +192,8 @@ namespace Dong.Felt
                 var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
                 var listCount = 0;
                 //search along frequency band by frequencyOffset. 
-                for (int row = minRowIndex - frequencyOffset; row < minRowIndex + frequencyOffset; row += frequencySearchStep)
+
+                for (int row = minRowIndex - frequencyOffset; row <= minRowIndex + frequencyOffset; row++)
                 {
                     // search along time position by searchStep
                     for (int col = 0; col < colsCount; col += frameSearchStep)
