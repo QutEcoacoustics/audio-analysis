@@ -45,10 +45,10 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Scarlet Honeyeater1\Testing\NW_NW273_20101013-054200-0542-0543-Scarlet Honeyeater1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Scarlet Honeyeater\Spectrogram results";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-054200-0542-0543-Scarlet Honeyeater1.png";
+                string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.png";
                 double magnitudeThreshold = 5.5; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -217,9 +217,9 @@
                 //var queryFeatureVector = RectangularRepresentation.MainSlopeRepresentationForQuery(filterPoiList, maxFrequency, minFrequency, startTime, duration, neighbourhoodSize, herzScale, secondsScale, spectrogram.NyquistFrequency, rows, cols);
                 //var queryFeatureVector = RectangularRepresentation.ImprovedQueryFeatureVector(queryFeatureVector1);
                 //var queryFeatureVector = TemplateTools.Grey_Fantail1();
-                //var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
+                var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
                 //var queryFeatureVector = TemplateTools.Grey_Shrikethrush4();
-                var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
+                //var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
 
                 //var results = new List<string>();
                 //results.Add("SliceNumber, HorizontalVector");
@@ -333,39 +333,30 @@
                 var finalPoiList = new List<PointOfInterest>();
                 var listOfPositions = new List<Tuple<double, List<FeatureVector>>>();
                 foreach (var fl in featureVectorList)
-                //foreach (PointOfInterest poi in filterPoiList)
+                ////foreach (PointOfInterest poi in filterPoiList)
                 {
                     //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);                   
+                    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
                     //// similarity search with a long recording.
-                    var distanceThreshold = 270.0;
-                    if (distance <= distanceThreshold)
-                    {
+                    //var distanceThreshold = 15.0;
+                    //if (distance <= distanceThreshold)
+                    //{
                         listOfPositions.Add(new Tuple<double, List<FeatureVector>>(distance, fl));
-                    }
+                    //}
                 }
-                ////var rank = 10;
-                ////for (int i = 0; i < rank; i++)
-                ////{
-                ////    finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
-                ////}
-                //var itemList = (from l in listOfPositions
-                //                orderby l.Item1 ascending
-                //                select l);
-                //var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
-                //var distanceThreshold = 270;
-                //foreach (var i in itemList)
-                //{
-                //    if (i.Item1 < distanceThreshold)
-                //    {
-                //        finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(i.Item1, i.Item2));
-                //    }
-                //}
-                ////var finalListOfPositions = listOfPositions.GetRange(0, 10);
+                var rank = 10;
+                var itemList = (from l in listOfPositions
+                                orderby l.Item1 ascending
+                                select l);
+                var finalListOfPositions = new List<Tuple<double, List<FeatureVector>>>();
+                for (int i = 0; i < rank; i++)
+                {
+                    finalListOfPositions.Add(new Tuple<double, List<FeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
+                }
+                //var finalListOfPositions = listOfPositions.GetRange(0, 10);
                 var times = queryFeatureVector.Count();
-                //var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);
-                var filterfinalListOfPositions = FilterOutOverlappedEvents(listOfPositions, searchFrameStep, times);
-                
+                var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);
+                //var filterfinalListOfPositions = FilterOutOverlappedEvents(listOfPositions, searchFrameStep, times);             
 
                 /// Put the result into csv file
                 ////var filePath = @"C:\XUEYAN\DICTA Conference data\Training data\Scarlet Honeyeater1\Training\Output result\Candidates1-FeatureVector-improvedNeighbourhood.csv";
