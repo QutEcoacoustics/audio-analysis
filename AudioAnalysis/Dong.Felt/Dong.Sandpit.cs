@@ -91,33 +91,9 @@
 
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
-                for (int r = halfLength; r < rows - halfLength; r++)
-                {
-                    for (int c = halfLength; c < cols - halfLength; c++)
-                    {
-                        var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                        double magnitude;
-                        double direction;
-                        bool isRidge = false;
-                        ImageAnalysisTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                        if (magnitude > magnitudeThreshold)
-                        {
-                            Point point = new Point(c, r);
-                            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                            double herz = (freqBinCount - r - 1) * herzScale;
-                            var poi = new PointOfInterest(time, herz);
-                            poi.Point = point;
-                            poi.RidgeOrientation = direction;
-                            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                            poi.RidgeMagnitude = magnitude;
-                            poi.Intensity = matrix[r, c];
-                            poi.TimeScale = timeScale;
-                            poi.HerzScale = herzScale;
-                            poiList.Add(poi);
-                        }                    
-                    }
-                }
- 
+                var pointsOfInterest = new POISelection();
+                pointsOfInterest.SelectPointOfInterest(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                
                 //var timeUnit = 1;  // 1 second
                 //var edgeStatistic = FeatureVector.EdgeStatistics(poiList, rows, cols, timeUnit, secondsScale);
                 /// filter out some redundant poi                

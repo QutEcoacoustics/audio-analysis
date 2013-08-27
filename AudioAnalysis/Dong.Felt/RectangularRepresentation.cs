@@ -152,7 +152,7 @@ namespace Dong.Felt
                             var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
                             var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                             var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                            var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                            var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
                             //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
                             //    var centroid = GetCentroid(subMatrix1);
 
@@ -221,8 +221,8 @@ namespace Dong.Felt
                                     var subMatrix = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startColIndexInSlice, endRowIndexInSlice, endColIndexInSlice);
                                     var centroidRowIndexInSlice = startRowIndexInSlice + halfRowNeighbourhood;
                                     var centroidColIndexInSlice = startColIndexInSlice + halfColNeighbourhood;
-                                    var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
-                                    var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);
+                                    var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
+                                    var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
 
                                     result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                                     {
@@ -270,7 +270,23 @@ namespace Dong.Felt
             return centroid;
         }
 
-        public static Tuple<int, int> SliceSlopeRepresentation(FeatureVector slice)
+        public static int[] SliceGeneralSlopeRepresentation(FeatureVector slice)
+        {
+            var horizontalCount = OrientationValueCount(slice.HorizontalVector);
+            var verticalCount = OrientationValueCount(slice.VerticalVector);
+            var positiveDiagonalCount = OrientationValueCount(slice.PositiveDiagonalVector);
+            var negativeDiagonalCount = OrientationValueCount(slice.NegativeDiagonalVector);
+
+            var orientationCount = new int[4];
+            orientationCount[0] = horizontalCount;
+            orientationCount[1] = verticalCount;
+            orientationCount[2] = positiveDiagonalCount;
+            orientationCount[3] = negativeDiagonalCount;
+
+            return orientationCount;
+        }
+
+        public static Tuple<int, int> SliceMainSlopeRepresentation(FeatureVector slice)
         {
             var horizontalCount = OrientationValueCount(slice.HorizontalVector);
             var verticalCount = OrientationValueCount(slice.VerticalVector);
@@ -311,8 +327,8 @@ namespace Dong.Felt
             var arrayCount = orientationArray.Length;
             var result = 0;
             for (int i = 0; i < arrayCount; i++)
-            {
-                result += orientationArray[i];
+            {             
+                 result += orientationArray[i];    
             }
 
             return result;
@@ -362,7 +378,7 @@ namespace Dong.Felt
         /// <param name="PointX">This value is the X coordinate of centroid of rectangular.</param>
         /// <param name="PointY">This value is the Y coordinate of centroid of rectangular.</param>
         /// <returns></returns>
-        public static FeatureVector SliceEdgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
+        public static FeatureVector SliceRidgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
         {
             var result = new FeatureVector(new Point(PointX, PointY));
             var sizeOfNeighbourhood = matrix.GetLength(0);
@@ -530,7 +546,7 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
-                        var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
                         result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
@@ -539,8 +555,7 @@ namespace Dong.Felt
                             VerticalVector = partialFeatureVector.VerticalVector,
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                            TimePosition = MinColIndex,
-                            
+                            TimePosition = MinColIndex,                           
                         });
                     }
                 }
@@ -596,8 +611,8 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(row + sizeofNeighbourhood, col + sizeofNeighbourhood, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(Matrix, row, col, row + sizeofNeighbourhood, col + sizeofNeighbourhood);
-                        var partialFeatureVector = RectangularRepresentation.SliceEdgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
-                        var slopeValue = RectangularRepresentation.SliceSlopeRepresentation(partialFeatureVector);
+                        var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
+                        var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
                         result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))

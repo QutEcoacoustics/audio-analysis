@@ -77,7 +77,6 @@ namespace Dong.Felt
                     MinColIndex = minColIndex,
                     MaxRowIndex = maxRowIndex,
                     MinRowIndex = minRowIndex,
-
                 });
             }
             return result;
@@ -103,7 +102,6 @@ namespace Dong.Felt
                     MinColIndex = minColIndex,
                     MaxRowIndex = maxRowIndex,
                     MinRowIndex = minRowIndex,
-
                 });
             }
             return result;
@@ -129,7 +127,6 @@ namespace Dong.Felt
                     MinColIndex = minColIndex,
                     MaxRowIndex = maxRowIndex,
                     MinRowIndex = minRowIndex,
-
                 });
             }
             return result;
@@ -155,7 +152,6 @@ namespace Dong.Felt
                     MinColIndex = minColIndex,
                     MaxRowIndex = maxRowIndex,
                     MinRowIndex = minRowIndex,
-
                 });
             }
             return result;
