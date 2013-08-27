@@ -13,6 +13,8 @@
     <FileAlignment>512</FileAlignment>
     <Name>Test</Name>
     <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,13 +56,33 @@
     <WarningLevel>3</WarningLevel>
     <OutputPath>bin\Core\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">10</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets'))" />
+  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <Compile Include="FsCheckXunit.fs" />
+    <Compile Include="FsCheckArbs.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="UtilTest.fs" />
+    <Compile Include="MatlabTest.fs" />
+    <Compile Include="AcousticEventDetectionTest.fs" />
+    <Compile Include="GetAcousticEventsTest.fs" />
+    <Compile Include="EventPatternRecogTest.fs" />
+    <Compile Include="SpectralPeakTrackTest.fs" />
+    <None Include="packages.config" />
+    <None Include="app.config" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="FsCheck">
       <HintPath>..\..\..\Extra Assemblies\FSharp\FsCheck.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FSharp.PowerPack">
-      <HintPath>..\..\..\Extra Assemblies\FSharp\FSharpPowerPack\FSharp.PowerPack.dll</HintPath>
+      <HintPath>..\..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
@@ -73,31 +95,17 @@
       <HintPath>..\..\..\Extra Assemblies\xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="FsCheckXunit.fs" />
-    <Compile Include="FsCheckArbs.fs" />
-    <Compile Include="Common.fs" />
-    <Compile Include="UtilTest.fs" />
-    <Compile Include="MatlabTest.fs" />
-    <Compile Include="AcousticEventDetectionTest.fs" />
-    <Compile Include="GetAcousticEventsTest.fs" />
-    <Compile Include="EventPatternRecogTest.fs" />
-    <Compile Include="SpectralPeakTrackTest.fs" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\FELT\Shared\MQUTeR.FSharp.Shared.fsproj">
+      <Name>MQUTeR.FSharp.Shared</Name>
+      <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\AED\AED.fsproj">
       <Name>AED</Name>
       <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup>
-    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">10</MinimumVisualStudioVersion>
-  </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets'))" />
-  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

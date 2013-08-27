@@ -138,7 +138,7 @@
             type xPoint = double
             type yPoint = double
 
-            let RocScore measurements predictions (numberOfIncrements:int) =
+            let RocScore (measurements:double[]) (predictions:double[]) (numberOfIncrements:int) =
                 if Array.length measurements  <> Array.length predictions then
                     raise (new System.ArgumentOutOfRangeException())
 

@@ -137,6 +137,7 @@
             this.lblAudioNavCSVHeaders = new System.Windows.Forms.Label();
             this.listBoxAudioNavCSVHeaders = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lblAudioNavAudioSegmentFile = new System.Windows.Forms.Label();
             this.lblAudioNavSonogramImageFile = new System.Windows.Forms.Label();
             this.chkSonogramBuffer = new System.Windows.Forms.CheckBox();
             this.chkAudioNavNoiseReduce = new System.Windows.Forms.CheckBox();
@@ -152,7 +153,8 @@
             this.mediaTypeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.lblAudioNavAudioSegmentFile = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.tabControlMain.SuspendLayout();
             this.tabAnalyseFile.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
@@ -660,7 +662,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 28);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1284, 395);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(1267, 395);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndices
@@ -694,7 +696,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 463);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1284, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(1267, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -1275,6 +1277,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.lblAudioNavAudioSegmentFile);
             this.groupBox1.Controls.Add(this.lblAudioNavSonogramImageFile);
             this.groupBox1.Controls.Add(this.chkSonogramBuffer);
@@ -1289,19 +1293,28 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sonogram";
             // 
+            // lblAudioNavAudioSegmentFile
+            // 
+            this.lblAudioNavAudioSegmentFile.AutoSize = true;
+            this.lblAudioNavAudioSegmentFile.Location = new System.Drawing.Point(6, 33);
+            this.lblAudioNavAudioSegmentFile.Name = "lblAudioNavAudioSegmentFile";
+            this.lblAudioNavAudioSegmentFile.Size = new System.Drawing.Size(54, 13);
+            this.lblAudioNavAudioSegmentFile.TabIndex = 35;
+            this.lblAudioNavAudioSegmentFile.Text = "File Name";
+            // 
             // lblAudioNavSonogramImageFile
             // 
             this.lblAudioNavSonogramImageFile.AutoSize = true;
-            this.lblAudioNavSonogramImageFile.Location = new System.Drawing.Point(6, 34);
+            this.lblAudioNavSonogramImageFile.Location = new System.Drawing.Point(6, 64);
             this.lblAudioNavSonogramImageFile.Name = "lblAudioNavSonogramImageFile";
-            this.lblAudioNavSonogramImageFile.Size = new System.Drawing.Size(74, 13);
+            this.lblAudioNavSonogramImageFile.Size = new System.Drawing.Size(54, 13);
             this.lblAudioNavSonogramImageFile.TabIndex = 35;
-            this.lblAudioNavSonogramImageFile.Text = "Sonogram File";
+            this.lblAudioNavSonogramImageFile.Text = "File Name";
             // 
             // chkSonogramBuffer
             // 
             this.chkSonogramBuffer.AutoSize = true;
-            this.chkSonogramBuffer.Location = new System.Drawing.Point(6, 99);
+            this.chkSonogramBuffer.Location = new System.Drawing.Point(6, 126);
             this.chkSonogramBuffer.Name = "chkSonogramBuffer";
             this.chkSonogramBuffer.Size = new System.Drawing.Size(161, 17);
             this.chkSonogramBuffer.TabIndex = 10;
@@ -1311,7 +1324,7 @@
             // chkAudioNavNoiseReduce
             // 
             this.chkAudioNavNoiseReduce.AutoSize = true;
-            this.chkAudioNavNoiseReduce.Location = new System.Drawing.Point(6, 53);
+            this.chkAudioNavNoiseReduce.Location = new System.Drawing.Point(6, 80);
             this.chkAudioNavNoiseReduce.Name = "chkAudioNavNoiseReduce";
             this.chkAudioNavNoiseReduce.Size = new System.Drawing.Size(138, 17);
             this.chkAudioNavNoiseReduce.TabIndex = 8;
@@ -1321,7 +1334,7 @@
             // chkAudioNavAnnotateSonogram
             // 
             this.chkAudioNavAnnotateSonogram.AutoSize = true;
-            this.chkAudioNavAnnotateSonogram.Location = new System.Drawing.Point(6, 76);
+            this.chkAudioNavAnnotateSonogram.Location = new System.Drawing.Point(6, 103);
             this.chkAudioNavAnnotateSonogram.Name = "chkAudioNavAnnotateSonogram";
             this.chkAudioNavAnnotateSonogram.Size = new System.Drawing.Size(118, 17);
             this.chkAudioNavAnnotateSonogram.TabIndex = 9;
@@ -1330,7 +1343,7 @@
             // 
             // btnAudioNavRunAudacity
             // 
-            this.btnAudioNavRunAudacity.Location = new System.Drawing.Point(6, 156);
+            this.btnAudioNavRunAudacity.Location = new System.Drawing.Point(6, 183);
             this.btnAudioNavRunAudacity.Name = "btnAudioNavRunAudacity";
             this.btnAudioNavRunAudacity.Size = new System.Drawing.Size(120, 28);
             this.btnAudioNavRunAudacity.TabIndex = 6;
@@ -1340,7 +1353,7 @@
             // 
             // btnAudioNavRefreshSonogram
             // 
-            this.btnAudioNavRefreshSonogram.Location = new System.Drawing.Point(6, 122);
+            this.btnAudioNavRefreshSonogram.Location = new System.Drawing.Point(6, 149);
             this.btnAudioNavRefreshSonogram.Name = "btnAudioNavRefreshSonogram";
             this.btnAudioNavRefreshSonogram.Size = new System.Drawing.Size(120, 28);
             this.btnAudioNavRefreshSonogram.TabIndex = 7;
@@ -1399,14 +1412,23 @@
             // 
             this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
             // 
-            // lblAudioNavAudioSegmentFile
+            // label5
             // 
-            this.lblAudioNavAudioSegmentFile.AutoSize = true;
-            this.lblAudioNavAudioSegmentFile.Location = new System.Drawing.Point(6, 16);
-            this.lblAudioNavAudioSegmentFile.Name = "lblAudioNavAudioSegmentFile";
-            this.lblAudioNavAudioSegmentFile.Size = new System.Drawing.Size(98, 13);
-            this.lblAudioNavAudioSegmentFile.TabIndex = 35;
-            this.lblAudioNavAudioSegmentFile.Text = "Audio Segment File";
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 16);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(98, 13);
+            this.label5.TabIndex = 36;
+            this.label5.Text = "Audio Segment File";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 48);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(74, 13);
+            this.label9.TabIndex = 37;
+            this.label9.Text = "Sonogram File";
             // 
             // MainForm
             // 
@@ -1585,6 +1607,8 @@
         private CheckBox chkSonogramBuffer;
         private Label lblAudioNavSonogramImageFile;
         private Label lblAudioNavAudioSegmentFile;
+        private Label label9;
+        private Label label5;
 
 
     }
