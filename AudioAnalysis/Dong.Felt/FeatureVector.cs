@@ -29,7 +29,11 @@
 
         public double duration { get; set; }
 
+        // the first value means the orentation type, and the second values means the count of poi with this orentation type. 
         public Tuple<int, int> Slope { get; set; }
+
+        // Gets or sets the orientation type 
+        public int OrientationType { get; set; }
 
         public int SlopeScore { get; set; }
         /// <summary>

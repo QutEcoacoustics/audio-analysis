@@ -9,7 +9,6 @@
 
     using Acoustics.Shared;
     using Acoustics.Tools.Wav;
-
     using MathNet.Numerics.Transformations;
 
     /// <summary>
