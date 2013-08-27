@@ -462,6 +462,8 @@
 
             var window = new double[windowSize];
 
+
+
             var rft = new RealFourierTransformation(TransformationConvention.Matlab);
 
             // foreach frame or time step (all frames)

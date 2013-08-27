@@ -85,13 +85,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ImpromptuInterface">
-      <HintPath>..\..\AudioAnalysis\FELT\packages\ImpromptuInterface.6.0.6\lib\net40\ImpromptuInterface.dll</HintPath>
-    </Reference>
-    <Reference Include="ImpromptuInterface.FSharp">
-      <HintPath>..\..\AudioAnalysis\FELT\packages\ImpromptuInterface.FSharp.1.2.6\lib\net40\ImpromptuInterface.FSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net">
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -156,9 +151,6 @@
     <Compile Include="Validation.cs" />
     <Compile Include="ValidationExtensions.cs" />
     <Compile Include="XmlSerialiseTool.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -228,6 +220,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
