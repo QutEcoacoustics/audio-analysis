@@ -9,14 +9,14 @@ using System.Text;
 namespace Minimod.PrettyTypeSignatures
 {
     /// <summary>
-    /// Minimod.PrettyTypeSignatures, Version 0.9.1
+    /// Minimod.PrettyTypeSignatures, Version 1.1.0
     /// <para>A minimod with reflection extensions, printing nice type and type member names.</para>
     /// </summary>
     /// <remarks>
     /// Licensed under the Apache License, Version 2.0; you may not use this file except in compliance with the License.
     /// http://www.apache.org/licenses/LICENSE-2.0
     /// </remarks>
-    public static class PrettyTypeSignaturesMinimod
+    internal static class PrettyTypeSignaturesMinimod
     {
 
         public static string GetPrettyName(this Type type)

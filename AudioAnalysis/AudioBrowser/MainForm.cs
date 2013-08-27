@@ -178,13 +178,15 @@
             this.browserSettings.WriteSettings2Console();
 
             // hard code defaults for local testing
-            this.audioNavigator = new AudioNavigator(this.browserSettings.diConfigDir, this.pluginHelper)
+            this.audioNavigator = new AudioNavigator(this.browserSettings.diConfigDir, this.pluginHelper);
+            /*
             {
                 AudioFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Site1\DM420031.MP3"),
                 CsvFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Results\Site1\DM420031.MP3\Towsey.Acoustic\DM420031_Towsey.Acoustic.Indices.csv"),
                 OutputDirectory = new DirectoryInfo(@"C:\Work\Output"),
                 AnalysisName = analyserList.Skip(1).First().Key
             };
+            */
 
         } //MainForm()
 
@@ -1823,7 +1825,7 @@
             else
             {
                 this.lblAudioNavAudioSegmentFile.Text = this.audioNavigator.CurrentAudioSegmentFile.Name;
-                this.lblAudioNavSonogramImageFile.Text = this.audioNavigator.CurrentAudioSegmentFile.Name;
+                this.lblAudioNavSonogramImageFile.Text = this.audioNavigator.CurrentImageFile.Name;
 
                 // resize picture box to contain sonogram image
                 this.pictureBoxAudioNavSonogram.Size = new Size(
@@ -1860,6 +1862,14 @@
             this.audioNavigator.OutputDirectory = selectFilesForm.OutputDirectory;
             this.audioNavigator.AnalysisName = selectFilesForm.AnalysisName;
 
+            if (selectFilesForm.AudioFile == null ||
+                selectFilesForm.CsvFile == null ||
+                selectFilesForm.OutputDirectory == null ||
+                string.IsNullOrWhiteSpace(selectFilesForm.AnalysisName))
+            {
+                return;
+            }
+
             // reset UI
             if (this.pictureBoxAudioNavIndicies.Image != null)
             {
@@ -1879,6 +1889,9 @@
             this.txtAudioNavClickValue.Text = string.Empty;
             this.txtAudioNavCursorLocation.Text = string.Empty;
             this.txtAudioNavCursorValue.Text = string.Empty;
+
+            this.lblAudioNavAudioSegmentFile.Text = "File Name";
+            this.lblAudioNavSonogramImageFile.Text = "File Name";
 
             // write spacer to console.
             WriteConsoleSpacer();
@@ -1905,34 +1918,38 @@
 
         private void btnAudioNavRunAudacity_Click(object sender, EventArgs e)
         {
+            var audacityExe = this.browserSettings.AudacityExe;
+            var audioSegmentFile = this.audioNavigator.CurrentAudioSegmentFile;
+            var outputDir = this.audioNavigator.OutputDirectory;
+
             // check Audacity is available
-            if (browserSettings.AudacityExe == null)
+            if (audacityExe == null)
             {
                 LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at default locations.");
                 LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
                 this.tabControlMain.SelectTab(tabPageConsole);
                 return;
             }
-            FileInfo audacity = new FileInfo(browserSettings.AudacityExe.FullName);
-            if (!audacity.Exists)
+
+            if (!File.Exists(audacityExe.FullName))
             {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
+                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", audacityExe.FullName);
                 LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
                 this.tabControlMain.SelectTab(tabPageConsole);
                 return;
             }
 
             int status = 0;
-            if ((this.audioNavigator.CurrentAudioSegmentFile == null) || (!this.audioNavigator.CurrentAudioSegmentFile.Exists))
+            if ((audioSegmentFile == null) || !File.Exists(audioSegmentFile.FullName))
             {
-                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + this.audioNavigator.CurrentAudioSegmentFile + ">");
+                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + audioSegmentFile + ">");
                 LoggedConsole.WriteLine("The audio file does not exist!");
                 this.tabControlMain.SelectTab(tabPageConsole);
-                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", this.audioNavigator.OutputDirectory.FullName);
+                status = AudioBrowserTools.RunAudacity(audacityExe.FullName, " ", outputDir.FullName);
             }
             else
             {
-                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, this.audioNavigator.CurrentAudioSegmentFile.FullName, this.audioNavigator.OutputDirectory.FullName);
+                status = AudioBrowserTools.RunAudacity(audacityExe.FullName, audioSegmentFile.FullName, outputDir.FullName);
             }
         }
 

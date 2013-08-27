@@ -52,18 +52,18 @@
     <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
+    <Compile Include="SI.fs" />
     <Compile Include="Reflection.fs" />
     <Compile Include="Utilities.fs" />
     <Compile Include="NumericLiteralG.fs" />
-      <Compile Include="Equality.fs" />
-      <Compile Include="Interval.fs" />
-      <Compile Include="System.fs" />
+    <Compile Include="Equality.fs" />
+    <Compile Include="Interval.fs" />
+    <Compile Include="System.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Seq.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Set.fs" />
-    
     <Compile Include="Microsoft.FSharp.Numerics.ModuloInteger.fs" />
     <Compile Include="IO.fs" />
     <Compile Include="Math.fs" />
@@ -76,92 +76,55 @@
     <Compile Include="suncalc.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="CacheFormat.fs" />
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Accord.Statistics">
-      <HintPath>..\packages\Accord.NET Framework-2.5.0\Release\Accord.Statistics.dll</HintPath>
-    </Reference>
-    <Reference Include="AForge">
-      <HintPath>..\packages\AForge.2.2.4\lib\AForge.dll</HintPath>
+    <Reference Include="Accord">
+      <HintPath>..\..\packages\Accord.2.8.1.0\lib\Accord.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="AForge.Genetic">
-      <HintPath>..\packages\AForge.Genetic.2.2.4\lib\AForge.Genetic.dll</HintPath>
+    <Reference Include="Accord.Math">
+      <HintPath>..\..\packages\Accord.Math.2.8.1.0\lib\Accord.Math.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Statistics">
+      <HintPath>..\..\packages\Accord.Statistics.2.8.1.0\lib\Accord.Statistics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge">
+      <HintPath>..\..\packages\AForge.2.2.5\lib\AForge.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AForge.Math">
-      <HintPath>..\packages\AForge.Math.2.2.4\lib\AForge.Math.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="AForge.Neuro">
-      <HintPath>..\packages\AForge.Neuro.2.2.4\lib\AForge.Neuro.dll</HintPath>
+      <HintPath>..\..\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack">
-      <HintPath>..\..\..\EcoSounds\packages\FSPowerPack.Community.2.1.3.1\Lib\Net40\FSharp.PowerPack.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="FSharp.PowerPack.Linq">
-      <HintPath>..\..\..\EcoSounds\packages\FSPowerPack.Community.2.1.3.1\Lib\Net40\FSharp.PowerPack.Linq.dll</HintPath>
+      <HintPath>..\..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack.Metadata">
-      <HintPath>..\..\..\EcoSounds\packages\FSPowerPack.Community.2.1.3.1\Lib\Net40\FSharp.PowerPack.Metadata.dll</HintPath>
+      <HintPath>..\..\packages\FSPowerPack.Metadata.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Metadata.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack.Parallel.Seq">
-      <HintPath>..\..\..\EcoSounds\packages\FSPowerPack.Community.2.1.3.1\Lib\Net40\FSharp.PowerPack.Parallel.Seq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ImpromptuInterface">
-      <HintPath>..\packages\ImpromptuInterface.6.0.6\lib\net40\ImpromptuInterface.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ImpromptuInterface.FSharp">
-      <HintPath>..\packages\ImpromptuInterface.FSharp.1.2.6\lib\net40\ImpromptuInterface.FSharp.dll</HintPath>
+      <HintPath>..\..\packages\FSPowerPack.Parallel.Seq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Parallel.Seq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MathNet.Numerics">
-      <HintPath>..\packages\MathNet.Numerics.2.1.2\lib\Net40\MathNet.Numerics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MathNet.Numerics.FSharp">
-      <HintPath>..\packages\MathNet.Numerics.FSharp.2.1.2\lib\Net40\MathNet.Numerics.FSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
-    <Reference Include="QuickGraph">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Data">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Graphviz">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Serialization">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
-    <Reference Include="zlib.net">
-      <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

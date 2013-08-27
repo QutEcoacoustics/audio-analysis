@@ -15,14 +15,14 @@ using Minimod.PrettyTypeSignatures;
 namespace Minimod.PrettyPrint
 {
     /// <summary>
-    /// <h1>Minimod.PrettyPrint, Version 0.8.8, Copyright © Lars Corneliussen 2011</h1>
+    /// <h1>Minimod.PrettyPrint, Version 1.0.0, Copyright © Lars Corneliussen 2011</h1>
     /// <para>Creates nice textual representations of any objects. Mostly meant for debug/informational output.</para>
     /// </summary>
     /// <remarks>
     /// Licensed under the Apache License, Version 2.0; you may not use this file except in compliance with the License.
     /// http://www.apache.org/licenses/LICENSE-2.0
     /// </remarks>
-    public static class PrettyPrintMinimod
+    internal static class PrettyPrintMinimod
     {
         #region Settings
 
@@ -44,6 +44,9 @@ namespace Minimod.PrettyPrint
 
             settings.RegisterFormatterFor<Guid>(formatter);
 
+            // decimal is not a simple type?
+            settings.RegisterFormatterFor<decimal>(d => d + "m");
+
             GenericFormatter.Register(settings);
             FileSystemInfoFormatter.Register(settings);
 
@@ -63,11 +66,11 @@ namespace Minimod.PrettyPrint
             return new Settings(DefaultSettings);
         }
 
-        public delegate string CustomMemberFormatter(object memberValue, string memberName, object memberOwner);
-        public delegate string CustomMemberFormatter<TOwner, TProp>(TProp memberValue, string memberName, TOwner memberOwner);
+        public delegate string CustomMemberFormatter(object memberValue, string memberName, object memberOwner, Settings settings);
+        public delegate string CustomMemberFormatter<TOwner, TProp>(TProp memberValue, string memberName, TOwner memberOwner, Settings settings);
 
-        public delegate string CustomMemberErrorFormatter(Exception memberError, string memberName, object memberOwner);
-        public delegate string CustomMemberErrorFormatter<TOwner>(Exception memberError, string memberName, TOwner memberOwner);
+        public delegate string CustomMemberErrorFormatter(Exception memberError, string memberName, object memberOwner, Settings settings);
+        public delegate string CustomMemberErrorFormatter<TOwner>(Exception memberError, string memberName, TOwner memberOwner, Settings settings);
 
         public class Settings
         {
@@ -149,26 +152,26 @@ namespace Minimod.PrettyPrint
 
             public Settings IgnoreMember(Type type, string memberName)
             {
-                return RegisterMemberFormatterFor(type, memberName, (memberValue, memberName2, memberOwner) => null);
+                return RegisterMemberFormatterFor(type, memberName, (memberValue, memberName2, memberOwner, settings) => null);
             }
 
             public Settings RegisterMemberFormatterFor<T, Prop>(Expression<Func<T, Prop>> member,
                                                                 Func<Prop, string> formatter)
             {
                 return RegisterMemberFormatterFor(typeof(T), getMemberName(member),
-                                                  (memberValue, memberName, memberOwner) => formatter((Prop)memberValue));
+                                                  (memberValue, memberName, memberOwner, settings) => formatter((Prop)memberValue));
             }
 
             public Settings RegisterMemberFormatterFor<TOwner, TProp>(Expression<Func<TOwner, TProp>> member,
                                                                   CustomMemberFormatter<TOwner, TProp> formatter)
             {
                 return RegisterMemberFormatterFor(typeof(TOwner), getMemberName(member),
-                    (memberValue, memberName, memberOwner) => formatter((TProp)memberValue, memberName, (TOwner)memberOwner));
+                    (memberValue, memberName, memberOwner, settings) => formatter((TProp)memberValue, memberName, (TOwner)memberOwner, settings));
             }
 
             public Settings RegisterMemberFormatterFor(Type type, string memberName, Func<object, string> formatter)
             {
-                return RegisterMemberFormatterFor(type, memberName, (memberValue, memberName2, memberOwner) => formatter(memberValue));
+                return RegisterMemberFormatterFor(type, memberName, (memberValue, memberName2, memberOwner, settings) => formatter(memberValue));
             }
 
             public Settings RegisterMemberFormatterFor(Type type, string memberName, CustomMemberFormatter formatter)
@@ -248,33 +251,33 @@ namespace Minimod.PrettyPrint
             #endregion
 
             #region Custom MemberError Formatting
-            public Settings IgnoreMemberError<T, Prop>(Expression<Func<T, Prop>> member)
+            public Settings IgnoreMemberError<TOwner, TMember>(Expression<Func<TOwner, TMember>> member)
             {
-                return IgnoreMemberError(typeof(T), getMemberName(member));
+                return IgnoreMemberError(typeof(TOwner), getMemberName(member));
             }
 
             public Settings IgnoreMemberError(Type type, string memberName)
             {
-                return RegisterMemberErrorFormatterFor(type, memberName, (memberAccessError, memberName2, memberOwner) => null);
+                return RegisterMemberErrorFormatterFor(type, memberName, (memberAccessError, memberName2, memberOwner, settings) => null);
             }
 
             public Settings RegisterMemberErrorFormatterFor<TOwner, TMember>(Expression<Func<TOwner, TMember>> member,
                                                                 Func<Exception, string> formatter)
             {
                 return RegisterMemberErrorFormatterFor(typeof(TOwner), getMemberName(member),
-                                                  (memberAccessError, memberName, memberOwner) => formatter(memberAccessError));
+                                                  (memberAccessError, memberName, memberOwner, settings) => formatter(memberAccessError));
             }
 
             public Settings RegisterMemberErrorFormatterFor<TOwner, TMember>(Expression<Func<TOwner, TMember>> member,
                                                                   CustomMemberErrorFormatter<TOwner> formatter)
             {
                 return RegisterMemberErrorFormatterFor(typeof(TOwner), getMemberName(member),
-                    (memberError, memberName, memberOwner) => formatter(memberError, memberName, (TOwner)memberOwner));
+                    (memberError, memberName, memberOwner, settings) => formatter(memberError, memberName, (TOwner)memberOwner, settings));
             }
 
             public Settings RegisterMemberErrorFormatterFor(Type type, string memberName, Func<object, string> formatter)
             {
-                return RegisterMemberErrorFormatterFor(type, memberName, (memberAccessError, memberName2, memberOwner) => formatter(memberAccessError));
+                return RegisterMemberErrorFormatterFor(type, memberName, (memberAccessError, memberName2, memberOwner, settings) => formatter(memberAccessError));
             }
 
             public Settings RegisterMemberErrorFormatterFor(Type type, string memberName, CustomMemberErrorFormatter formatter)
@@ -571,13 +574,13 @@ namespace Minimod.PrettyPrint
                     if (m.error == null)
                     {
                         pretty = hasCustomFormatter
-                                     ? propFormatter(m.value, m.name, anyObject)
+                                     ? propFormatter(m.value, m.name, anyObject, settings)
                                      : m.value.PrettyPrint(m.type, settings);
                     }
                     else
                     {
                         pretty = hasCustomErrorFormatter
-                            ? propErrorFormatter(m.error, m.name, anyObject)
+                            ? propErrorFormatter(m.error, m.name, anyObject, settings)
                             : new { Name = "threw ", Exception = m.error }.PrettyPrint(settings);
                     }
 
@@ -704,10 +707,10 @@ namespace Minimod.PrettyPrint
                 settings.IgnoreMember((FileSystemInfo fs) => fs.Attributes);
             }
 
-            private static string ignoreIfFileOrDirDoesNotExist<TMember, TFsType>(TMember memberValue, string memberName, TFsType memberOwner)
+            private static string ignoreIfFileOrDirDoesNotExist<TMember, TFsType>(TMember memberValue, string memberName, TFsType memberOwner, Settings settings)
                 where TFsType : FileSystemInfo
             {
-                return memberOwner.Exists ? memberValue.PrettyPrint() : null;
+                return memberOwner.Exists ? memberValue.PrettyPrint(settings) : null;
             }
         }
     }

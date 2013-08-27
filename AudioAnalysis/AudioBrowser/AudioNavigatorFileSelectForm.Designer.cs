@@ -40,6 +40,7 @@
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.btnOk = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtCsvFile
@@ -154,11 +155,22 @@
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(797, 158);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(64, 37);
+            this.btnCancel.TabIndex = 42;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
             // AudioNavigatorFileSelectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(943, 203);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.txtOutputDirectory);
             this.Controls.Add(this.btnSelectOutputDirectory);
@@ -193,6 +205,7 @@
         private System.Windows.Forms.Button btnSelectOutputDirectory;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnCancel;
 
     }
 }

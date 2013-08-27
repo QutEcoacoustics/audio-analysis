@@ -43,14 +43,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\2.0\Runtime\v4.0\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.PowerPack">
-      <HintPath>..\..\Extra Assemblies\FSharp\FSharpPowerPack\FSharp.PowerPack.dll</HintPath>
-    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\packages\ServiceStack.Text.3.9.3\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -69,15 +63,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="YamlDotNet.Converters">
-      <HintPath>..\packages\YamlDotNet.Converters.1.1.17\lib\YamlDotNet.Converters.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlDotNet.Core">
-      <HintPath>..\packages\YamlDotNet.Core.1.1.17\lib\YamlDotNet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlDotNet.RepresentationModel">
-      <HintPath>..\packages\YamlDotNet.RepresentationModel.1.1.17\lib\YamlDotNet.RepresentationModel.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper.cs" />

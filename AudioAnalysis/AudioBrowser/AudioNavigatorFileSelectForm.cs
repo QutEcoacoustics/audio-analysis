@@ -16,11 +16,18 @@ namespace AudioBrowser
         {
             get
             {
-                return new FileInfo(this.txtAudioFile.Text);
+                if (!string.IsNullOrWhiteSpace(this.txtAudioFile.Text))
+                {
+                    return new FileInfo(this.txtAudioFile.Text);
+                }
+                return null;
             }
             set
             {
-                this.txtAudioFile.Text = value.FullName;
+                if (value != null)
+                {
+                    this.txtAudioFile.Text = value.FullName;
+                }
             }
         }
 
@@ -28,11 +35,18 @@ namespace AudioBrowser
         {
             get
             {
-                return new FileInfo(this.txtCsvFile.Text);
+                if (!string.IsNullOrWhiteSpace(this.txtCsvFile.Text))
+                {
+                    return new FileInfo(this.txtCsvFile.Text);
+                } 
+                return null;
             }
             set
             {
-                this.txtCsvFile.Text = value.FullName;
+                if (value != null)
+                {
+                    this.txtCsvFile.Text = value.FullName;
+                }
             }
         }
 
@@ -40,11 +54,18 @@ namespace AudioBrowser
         {
             get
             {
-                return new DirectoryInfo(this.txtOutputDirectory.Text);
+                if (!string.IsNullOrWhiteSpace(this.txtOutputDirectory.Text))
+                {
+                    return new DirectoryInfo(this.txtOutputDirectory.Text);
+                }
+                return null;
             }
             set
             {
-                this.txtOutputDirectory.Text = value.FullName;
+                if (value != null)
+                {
+                    this.txtOutputDirectory.Text = value.FullName;
+                }
             }
         }
 
@@ -57,7 +78,10 @@ namespace AudioBrowser
             }
             set
             {
-                this.comboAnalysisType.SelectedValue = value;
+                if (value != null)
+                {
+                    this.comboAnalysisType.SelectedValue = value;
+                }
             }
         }
 
@@ -124,14 +148,32 @@ namespace AudioBrowser
                 File.Exists(this.txtCsvFile.Text) &&
                 Directory.Exists(this.txtOutputDirectory.Text))
             {
+                // if all information is available and valid, close the form
                 this.Close();
             }
             else
             {
                 MessageBox.Show("Audio file, csv file, output dir are all required, and the paths must exist.");
             }
+        }
 
-            // if all information is available and valid, close the form
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(this.txtAudioFile.Text) || !File.Exists(this.txtAudioFile.Text)){
+                this.txtAudioFile.Text = string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.txtCsvFile.Text) || !File.Exists(this.txtCsvFile.Text))
+            {
+                this.txtCsvFile.Text = string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.txtOutputDirectory.Text) || !Directory.Exists(this.txtOutputDirectory.Text))
+            {
+                this.txtOutputDirectory.Text = string.Empty;
+            }
+
+            this.Close();
         }
 
         private FileInfo PromptUserToSelectFile(string title, string filter, string initialDirectory)

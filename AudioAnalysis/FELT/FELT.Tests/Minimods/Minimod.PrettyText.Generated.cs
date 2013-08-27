@@ -6,14 +6,14 @@ using System.Text.RegularExpressions;
 namespace Minimod.PrettyText
 {
     /// <summary>
-    /// <h1>Minimod.PrettyText, Version 1.0.0, Copyright © Lars Corneliussen 2011</h1>
+    /// <h1>Minimod.PrettyText, Version 2.0.0, Copyright © Lars Corneliussen 2011</h1>
     /// <para>A minimod with string extensions, helping whereever you have to shape text to fit into a box.</para>
     /// </summary>
     /// <remarks>
     /// Licensed under the Apache License, Version 2.0; you may not use this file except in compliance with the License.
     /// http://www.apache.org/licenses/LICENSE-2.0
     /// </remarks>
-    public static class PrettyTextMinimod
+    internal static class PrettyTextMinimod
     {
         /// <summary>
         /// Fits the text into <paramref name="length"/>, appending <value>...</value> if it is too long.

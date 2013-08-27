@@ -7,7 +7,7 @@
 namespace System
 
     open System
-    open Microsoft.FSharp.Math.SI 
+    open Microsoft.FSharp.Math.SI
 
 
     
