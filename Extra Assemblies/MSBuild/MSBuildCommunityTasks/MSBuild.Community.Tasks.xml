@@ -1333,6 +1333,11 @@
             <param name="assemblyName">Name of the assembly.</param>
             <returns>An <see cref="T:System.Reflection.AssemblyName"/> instance.</returns>
         </member>
+        <member name="T:MSBuild.Community.Tasks.Git.GitBranch">
+            <summary>
+            A task to get the name of the branch or tag of git repository
+            </summary>
+        </member>
         <member name="T:MSBuild.Community.Tasks.Git.GitClient">
             <summary>
             A task for Git commands.
@@ -1410,6 +1415,13 @@
             <value></value>
             <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
         </member>
+        <member name="P:MSBuild.Community.Tasks.Git.GitClient.StandardErrorLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
+        </member>
         <member name="P:MSBuild.Community.Tasks.Git.GitClient.ToolName">
             <summary>
             Gets the name of the executable file to run.
@@ -1417,6 +1429,43 @@
             <returns>
             The name of the executable file to run.
             </returns>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.Git.GitBranch.#ctor">
+            <summary>
+            Default constructor
+            </summary>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.Git.GitBranch.LogEventsFromTextOutput(System.String,Microsoft.Build.Framework.MessageImportance)">
+            <summary>
+            Parse the output of the console and gets the Branch or Tag.
+            </summary>
+            <param name="singleLine">the line being parsed</param>
+            <param name="messageImportance">message importance</param>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.Git.GitBranch.IsBranchStatusLine(System.String)">
+            <summary>
+            Check if a stdout Git line shows the current branch
+            </summary>
+            <param name="singleLine">the stdout line</param>
+            <returns>true if is branch line</returns>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.Git.GitBranch.ParseStatusLineOutput(System.String)">
+            <summary>
+            Parses a branch status line and returns the branch or tag
+            </summary>
+            <param name="singleLine">the stdout line of git command line tool</param>
+            <returns>the branch or tag</returns>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.Git.GitBranch.GenerateArguments(Microsoft.Build.Utilities.CommandLineBuilder)">
+            <summary>
+            Generates the arguments.
+            </summary>
+            <param name="builder">The builder.</param>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Git.GitBranch.Branch">
+            <summary>
+            Return the branch or tag.
+            </summary>
         </member>
         <member name="T:MSBuild.Community.Tasks.Git.GitVersion">
             <summary>
@@ -1851,9 +1900,28 @@
             <value></value>
             <returns>The name of the executable file to run.</returns>
         </member>
+        <member name="P:MSBuild.Community.Tasks.NuGet.NuGetBase.StandardOutputLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log output.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log output.</returns>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.NuGet.NuGetBase.StandardErrorLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
+        </member>
         <member name="T:MSBuild.Community.Tasks.NuGet.NuGetPack">
             <summary>
             Creates a NuGet package based on the specified nuspec or project file.
+            </summary>
+        </member>
+        <member name="F:MSBuild.Community.Tasks.NuGet.NuGetPack._outputFilePathParse">
+            <summary>
+            The Regex used to get the full path to the NuGet Package created by the NuGetPack Task
             </summary>
         </member>
         <member name="M:MSBuild.Community.Tasks.NuGet.NuGetPack.GenerateCommandLineCommands">
@@ -1863,6 +1931,13 @@
             <returns>
             A string value containing the command line arguments to pass directly to the executable file.
             </returns>
+        </member>
+        <member name="M:MSBuild.Community.Tasks.NuGet.NuGetPack.LogEventsFromTextOutput(System.String,Microsoft.Build.Framework.MessageImportance)">
+            <summary>
+            Logs the events from text output.
+            </summary>
+            <param name="singleLine">The single line.</param>
+            <param name="messageImportance">The message importance.</param>
         </member>
         <member name="P:MSBuild.Community.Tasks.NuGet.NuGetPack.File">
             <summary>
@@ -1889,6 +1964,15 @@
             Shows verbose output for package building.
             </summary>
             <value><c>true</c> if verbose; otherwise, <c>false</c>.</value>
+            <remarks>
+            Depricated in NuGet 2.0.  Use <see cref="P:MSBuild.Community.Tasks.NuGet.NuGetPack.Verbosity"/> instead.
+            </remarks>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.NuGet.NuGetPack.Verbosity">
+            <summary>
+            Display this amount of details in the output.
+            </summary>
+            <value><c>normal</c>; <c>quiet</c>; ; <c>detailed</c></value>
         </member>
         <member name="P:MSBuild.Community.Tasks.NuGet.NuGetPack.Symbols">
             <summary>
@@ -1898,6 +1982,16 @@
             <value>
               <c>true</c> if symbols; otherwise, <c>false</c>.
             </value>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.NuGet.NuGetPack.Properties">
+            <summary>
+            Provides the ability to specify a semicolon ";" delimited list of properties when creating a package.
+            </summary>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.NuGet.NuGetPack.OutputFilePath">
+            <summary>
+            The full file path of the NuGet package created by the NuGetPack task
+            </summary>
         </member>
         <member name="T:MSBuild.Community.Tasks.NuGet.NuGetPush">
             <summary>
@@ -2214,6 +2308,13 @@
             <value><c>true</c> if no warning messages; otherwise, <c>false</c>.</value>
         </member>
         <member name="P:MSBuild.Community.Tasks.Sandcastle.SandcastleToolBase.StandardOutputLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Sandcastle.SandcastleToolBase.StandardErrorLoggingImportance">
             <summary>
             Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
             </summary>
@@ -4046,6 +4147,12 @@
             </summary>
             <value>The password.</value>
         </member>
+        <member name="P:MSBuild.Community.Tasks.Subversion.SvnClient.SanitizePassword">
+            <summary>
+            Allows to sanitize password string from svn command log output.
+            </summary>
+            <value>The sanitize.</value>
+        </member>
         <member name="P:MSBuild.Community.Tasks.Subversion.SvnClient.Verbose">
             <summary>
             Gets or sets the verbose.
@@ -4143,6 +4250,13 @@
             </summary>
         </member>
         <member name="P:MSBuild.Community.Tasks.Subversion.SvnClient.StandardOutputLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Subversion.SvnClient.StandardErrorLoggingImportance">
             <summary>
             Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
             </summary>
@@ -4717,6 +4831,13 @@
             </summary>
         </member>
         <member name="P:MSBuild.Community.Tasks.Tfs.TfsClient.StandardOutputLoggingImportance">
+            <summary>
+            Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
+            </summary>
+            <value></value>
+            <returns>The <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.</returns>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Tfs.TfsClient.StandardErrorLoggingImportance">
             <summary>
             Gets the <see cref="T:Microsoft.Build.Framework.MessageImportance"></see> with which to log errors.
             </summary>
@@ -6995,6 +7116,13 @@
             For example: <code>RootAttributes="foo=bar;date=$(buildDate)"</code>
             </summary>
         </member>
+        <member name="P:MSBuild.Community.Tasks.Xslt.UseTrusted">
+            <summary>
+            Enables a Trusted XSLT processor. Sepcifically enables scripts 
+            in the xsl transformation file
+            For example: <code>UseTrusted="true"</code>
+            </summary>
+        </member>
         <member name="P:MSBuild.Community.Tasks.Xslt.Xsl">
             <summary>
             Gets or sets the path of the
@@ -7079,6 +7207,12 @@
             Gets or sets the maximum number of times the replacement can occur.
             </summary>
             <value>The replacement count.</value>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.FileUpdate.ReplacementTextEmpty">
+            <summary>
+            Gets or sets if replacement text is empty.
+            </summary>
+            <value><c>true</c> if [ignore case]; otherwise, <c>false</c>.</value>
         </member>
         <member name="P:MSBuild.Community.Tasks.FileUpdate.ReplacementText">
             <summary>
@@ -10013,6 +10147,12 @@
             </summary>
             <value><c>true</c> to overwrite any existing files on extraction; otherwise, <c>false</c>.</value>
         </member>
+        <member name="P:MSBuild.Community.Tasks.Unzip.Quiet">
+            <summary>
+            Gets or sets a value indicating whether to output less information. Defaults to <c>false</c>.
+            </summary>
+            <value><c>false</c> to output a message for every file extracted; otherwise, <c>true</c>.</value>
+        </member>
         <member name="P:MSBuild.Community.Tasks.Unzip.ExtractedFiles">
             <summary>
             Gets the files extracted from the zip.
@@ -10470,6 +10610,27 @@
             <remarks>
             Possible values are None, PkzipWeak, WinZipAes128 and WinZipAes256
             </remarks>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Zip.ParallelCompression">
+            <summary>
+            Gets or sets whether parallel compression is used
+            </summary>
+            <value>Whether or not the files will be compressed in parallel.</value>
+            <remarks>
+            This is true by default
+            </remarks>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Zip.MinimalLogging">
+            <summary>
+            'Add' statement won't be logged with MinimalLogging enabled.
+            The default value for MinimalLogging is false.
+            </summary>
+        </member>
+        <member name="P:MSBuild.Community.Tasks.Zip.Quiet">
+            <summary>
+            Gets or sets a value indicating whether to output less information. Defaults to <c>false</c>.
+            </summary>
+            <value><c>false</c> to output a message for every file added to a zip; otherwise, <c>true</c>.</value>
         </member>
     </members>
 </doc>
