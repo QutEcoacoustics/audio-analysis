@@ -205,7 +205,7 @@
         //    return histogram; 
         //}
 
-        public static int NumberOfpoiInSlice(List<FeatureVector> fv)
+        public static int NumberOfpoiInSlice(List<RidgeNeighbourhoodFeatureVector> fv)
         {
             int result = 0;
             foreach (var f in fv)
@@ -218,7 +218,7 @@
             return result; 
         }
 
-        public static int NumberOfpoiInSlice(FeatureVector fv)
+        public static int NumberOfpoiInSlice(RidgeNeighbourhoodFeatureVector fv)
         {
             int result = 0;
             var horizontalIndex = fv.HorizontalVector.GetLength(0);

@@ -9,9 +9,9 @@
     using TowseyLib;
 
     /// <summary>
-    /// A class for generating featureVector for decribing the acoustic events(bird calls).
+    /// A class for generating RidgeNeighbourhoodFeatureVector for decribing the acoustic events(bird calls).
     /// </summary>   
-    public class FeatureVector
+    public class RidgeNeighbourhoodFeatureVector
     {
         #region Public Properties
 
@@ -29,55 +29,64 @@
 
         public double duration { get; set; }
 
+        public int frequencyRange { get; set; }
+
+        public int neighbourhoodLength { get; set; }
+
+        public int neighbourhoodWidth { get; set; }
+
         // the first value means the orentation type, and the second values means the count of poi with this orentation type. 
         public Tuple<int, int> Slope { get; set; }
 
         // Gets or sets the orientation type 
         public int OrientationType { get; set; }
 
+        public int poiatParticularOrientationCount { get; set; }
+
         public int SlopeScore { get; set; }
+
         /// <summary>
-        /// Gets or sets the HorizontalByteVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalByteVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>
         public int[] HorizontalVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the HorizontalBitVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>
         public int[] HorizontalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the HorizontalBitVector, part of a composite  edge featurevector, representing the horizontal direction of edge(one kind of feature). 
+        /// Gets or sets the HorizontalBitVector, part of a composite  edge RidgeNeighbourhoodFeatureVector, representing the horizontal direction of edge(one kind of feature). 
         /// </summary>
         public double[] HorizontalFractionVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the VerticalBitVector, part of composite edge featurevector, representing the vertital direction of edge(one kind of feature).
+        /// Gets or sets the VerticalBitVector, part of composite RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature).
         /// </summary>
         public int[] VerticalVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the VerticalBitVector, part of a composite  edge featurevector, representing the vertital direction of edge(one kind of feature). 
+        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature). 
         /// </summary>
         public int[] VerticalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the VerticalBitVector, part of a composite  edge featurevector, representing the vertital direction of edge(one kind of feature). 
+        /// Gets or sets the VerticalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the vertital direction of edge(one kind of feature). 
         /// </summary>
         public double[] VerticalFractionVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the PositiveDiagonalByteVector, part of composite edge featurevector, representing the NorthEast direction of edge(one kind of feature).
+        /// Gets or sets the PositiveDiagonalByteVector, part of composite RidgeNeighbourhoodFeatureVector, representing the NorthEast direction of edge(one kind of feature).
         /// </summary>
         public int[] PositiveDiagonalVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the PositiveDiagonalByteVector, part of composite edge featurevector, representing the NorthEast direction of edge(one kind of feature).
+        /// Gets or sets the PositiveDiagonalByteVector, part of composite RidgeNeighbourhoodFeatureVector, representing the NorthEast direction of edge(one kind of feature).
         /// </summary>
         public int[] PositiveDiagonalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the PositiveDiagonalBitVector, part of a composite  edge featurevector, representing the NorthEast direction of edge(one kind of feature). 
+        /// Gets or sets the PositiveDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthEast direction of edge(one kind of feature). 
         /// </summary>
         public double[] PositiveDiagonalFractionVector { get; set; }
 
@@ -92,7 +101,7 @@
         public int[] NegativeDiagonalBitVector { get; set; }
 
         /// <summary>
-        /// Gets or sets the NegativeDiagonalBitVector, part of a composite  edge featurevector, representing the NorthWest direction of edge(one kind of feature). 
+        /// Gets or sets the NegativeDiagonalBitVector, part of a composite  RidgeNeighbourhoodFeatureVector, representing the NorthWest direction of edge(one kind of feature). 
         /// </summary>
         public double[] NegativeDiagonalFractionVector { get; set; }
 
@@ -116,26 +125,23 @@
         /// <summary>
         /// Gets or sets the similarityScore
         /// </summary>
-        public double SmilarityScore { get; set; }
+        //public double SmilarityScore { get; set; }
 
-        /// <summary>
-        /// Gets or sets the NeighbourhoodSize, it can determine the search area for generating feature vectors.
-        /// </summary>
-        public int NeighbourhoodSize { get; set; }
-
-        public double Intensity { get; set; }
+        //public double Intensity { get; set; }
 
         public Point Centroid { get; set; }
+
+        public int TimePositionPix { get; set; }
 
         /// <summary>
         /// to keep the time position in the long audio file for calculating the representation for this position. 
         /// </summary>
-        public int TimePosition { get; set; }
+        public double TimePosition_TopLeft { get; set; }
 
         /// <summary>
         /// to keep the frequencyband for calculating the representation for this position. 
         /// </summary>
-        public int FrequencyBand { get; set; }
+        public double FrequencyBand_TopLeft { get; set; }
 
         #region constructor
        
@@ -143,13 +149,15 @@
         /// A constructor takes in point
         /// </summary>
         /// <param name="pointofInterest"></param>
-        public FeatureVector(Point point)
+        public RidgeNeighbourhoodFeatureVector(Point point)
         {
             Point = point;
         }
+        
         #endregion constructor
 
-        #endregion public property
+        #endregion public properties
+
 
         #region Public Method
 
@@ -162,9 +170,9 @@
         /// <param name="colsCount"></param>
         /// <param name="sizeOfNeighbourhood"></param>
         /// <returns></returns>
-        public static List<FeatureVector> IntegerEdgeOrientationFeatureVectors2(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<RidgeNeighbourhoodFeatureVector> IntegerEdgeOrientationRidgeNeighbourhoodFeatureVectors2(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
             var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
@@ -180,7 +188,7 @@
                     }
                     else
                     {
-                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
+                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get RidgeNeighbourhoodFeatureVector
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
@@ -258,6 +266,7 @@
                                 }
                             }
                         }
+
                         for (int offset = 1; offset < sizeOfNeighbourhood; offset++)
                         {
                             for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
@@ -272,7 +281,7 @@
                             }
                         }
                         
-                        result.Add(new FeatureVector(new Point(row, col))
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col))
                         {
                             HorizontalVector = horizontalDirection,
                             VerticalVector = verticalDirection,
@@ -286,20 +295,20 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteFeatureVectors can be used to generate integer directionFeatureVectors, it include 13 * 13 values for a 
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate integer directionRidgeNeighbourhoodFeatureVectors, it include 13 * 13 values for a 
         /// 13 * 13 neighbourhoodsize.
         /// </summary>
-        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
+        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
         /// <param name="rowsCount"> the column count of original spectrogram. </param> 
         /// <param name="colsCount"> the row count of original spectrogram. </param>
         /// <param name="sizeOfNeighbourhood"> 
         /// the size of Neighbourhood will determine the size of search area.</param>
         /// <returns>
-        /// It will return a list of featureVector objects whose DirectionByteFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> IntegerEdgeOrientationFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<RidgeNeighbourhoodFeatureVector> IntegerEdgeOrientationRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
             var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
@@ -315,7 +324,7 @@
                     }
                     else
                     {
-                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
+                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get RidgeNeighbourhoodFeatureVector
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
@@ -381,7 +390,7 @@
                             }
                         }
 
-                        result.Add(new FeatureVector(new Point(row, col))
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col))
                         {
                             HorizontalVector = horizontalDirection,
                             VerticalVector = verticalDirection,
@@ -401,7 +410,7 @@
         /// <returns>
         /// return a double array which is made up with decimals between 0 and 1.  
         /// </returns>
-        public static double[] NormalizedFeatureVector(int[] array)
+        public static double[] NormalizedRidgeNeighbourhoodFeatureVector(int[] array)
         {
             var histogramCount = array.Count();
             var result = new double[histogramCount];
@@ -417,21 +426,21 @@
         /// In order to make the comparison of feature vectors much more easier, we can set up a threshold to generate a bit fecture vector which is composed of     
         /// and 1. 
         /// </summary>
-        /// <param name="featureVectorList"></param>
-        /// <returns> returns a list featureVector which contains the direction bit Feature vector
+        /// <param name="RidgeNeighbourhoodFeatureVectorList"></param>
+        /// <returns> returns a list RidgeNeighbourhoodFeatureVector which contains the direction bit Feature vector
         /// </returns>
-        public static List<FeatureVector> DirectionBitFeatureVectors(List<FeatureVector> featureVectorList)
+        public static List<RidgeNeighbourhoodFeatureVector> DirectionBitRidgeNeighbourhoodFeatureVectors(List<RidgeNeighbourhoodFeatureVector> RidgeNeighbourhoodFeatureVectorList)
         {
-            var horizontalBitVectorCount = featureVectorList[0].HorizontalBitVector.Count();
-            var verticalBitVectorCount = featureVectorList[0].VerticalBitVector.Count();
+            var horizontalBitVectorCount = RidgeNeighbourhoodFeatureVectorList[0].HorizontalBitVector.Count();
+            var verticalBitVectorCount = RidgeNeighbourhoodFeatureVectorList[0].VerticalBitVector.Count();
 
             var thresholdForBitVector = 0.2;
-            foreach (var fv in featureVectorList)
+            foreach (var fv in RidgeNeighbourhoodFeatureVectorList)
             {
-                var normalizedHorizontalBitVector = NormalizedFeatureVector(fv.HorizontalVector);
-                var normalizedVerticalBitVector = NormalizedFeatureVector(fv.VerticalVector);
-                var normalizedPositiveDiagonalVector = NormalizedFeatureVector(fv.PositiveDiagonalVector);
-                var normalizedNegativeDiagonalVector = NormalizedFeatureVector(fv.NegativeDiagonalVector);
+                var normalizedHorizontalBitVector = NormalizedRidgeNeighbourhoodFeatureVector(fv.HorizontalVector);
+                var normalizedVerticalBitVector = NormalizedRidgeNeighbourhoodFeatureVector(fv.VerticalVector);
+                var normalizedPositiveDiagonalVector = NormalizedRidgeNeighbourhoodFeatureVector(fv.PositiveDiagonalVector);
+                var normalizedNegativeDiagonalVector = NormalizedRidgeNeighbourhoodFeatureVector(fv.NegativeDiagonalVector);
                 for (int index = 0; index < horizontalBitVectorCount; index++)
                 {
                     if (normalizedHorizontalBitVector[index] > thresholdForBitVector)
@@ -472,21 +481,21 @@
                 }
             }
 
-            return featureVectorList;
+            return RidgeNeighbourhoodFeatureVectorList;
         }
 
         /// <summary>
-        /// The method of DirectionByteFeatureVectors can be used to generate directionFractionFeatureVectors, which means it includes sub-feature vector 
-        /// for each direction. And the size of each sub-featureVector is determined by sizeOfNeighbourhood. Especially, each value in the feature vector is a fraction.
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionFractionRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector 
+        /// for each direction. And the size of each sub-RidgeNeighbourhoodFeatureVector is determined by sizeOfNeighbourhood. Especially, each value in the feature vector is a fraction.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <param name="sizeOfNeighbourhood"></param>
         /// <returns></returns>
-        public static List<FeatureVector> FractionDirectionFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<RidgeNeighbourhoodFeatureVector> FractionDirectionRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
@@ -502,7 +511,7 @@
                     }
                     else
                     {
-                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get featureVector
+                        // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get RidgeNeighbourhoodFeatureVector
                         var verticalDirection = new int[sizeOfNeighbourhood];
                         var horizontalDirection = new int[sizeOfNeighbourhood];
                         var positiveDiagonalDirection = new int[sizeOfNeighbourhood];
@@ -568,12 +577,12 @@
                             }
                         }
 
-                        result.Add(new FeatureVector(new Point(row, col))
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col))
                         {
-                            HorizontalFractionVector = NormalizedFeatureVector(horizontalDirection),
-                            VerticalFractionVector = NormalizedFeatureVector(verticalDirection),
-                            PositiveDiagonalFractionVector = NormalizedFeatureVector(positiveDiagonalDirection),
-                            NegativeDiagonalFractionVector = NormalizedFeatureVector(negativeDiagonalDirection)
+                            HorizontalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(horizontalDirection),
+                            VerticalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(verticalDirection),
+                            PositiveDiagonalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(positiveDiagonalDirection),
+                            NegativeDiagonalFractionVector = NormalizedRidgeNeighbourhoodFeatureVector(negativeDiagonalDirection)
                         });
                     }
                 }
@@ -582,20 +591,20 @@
         }
 
         /// <summary>
-        /// The method of DirectionByteFeatureVectors can be used to generate directionByteFeatureVectors, which means it includes sub-feature vector 
-        /// for each direction. And the size of each sub-featureVector is determined by sizeOfNeighbourhood.
+        /// The method of DirectionByteRidgeNeighbourhoodFeatureVectors can be used to generate directionByteRidgeNeighbourhoodFeatureVectors, which means it includes sub-feature vector 
+        /// for each direction. And the size of each sub-RidgeNeighbourhoodFeatureVector is determined by sizeOfNeighbourhood.
         /// </summary>
-        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
+        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
         /// <param name="rowsCount"> the column count of original spectrogram. </param> 
         /// <param name="colsCount"> the row count of original spectrogram. </param>
         /// <param name="sizeOfNeighbourhood"> 
         /// the size of Neighbourhood will determine the size of search area.</param>
         /// <returns>
-        /// It will return a list of featureVector objects whose DirectionByteFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose DirectionByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> DirectionByteFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<RidgeNeighbourhoodFeatureVector> DirectionByteRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
@@ -646,7 +655,8 @@
                             }
                         }
 
-                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalVector = horizontalDirection, VerticalVector = verticalDirection, Intensity = Matrix[row, col].Intensity });
+                        //result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col)) { HorizontalVector = horizontalDirection, VerticalVector = verticalDirection, Intensity = Matrix[row, col].Intensity });
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col)) { HorizontalVector = horizontalDirection, VerticalVector = verticalDirection});
                     }
                 }
             }
@@ -654,19 +664,19 @@
         }
 
         /// <summary>
-        /// This method is to generate percentageByteFeatureVectors in where each of byte represents hte percentage of each direction accounts for.
+        /// This method is to generate percentageByteRidgeNeighbourhoodFeatureVectors in where each of byte represents hte percentage of each direction accounts for.
         /// it will be done in a fixed neighbourhood. 
         /// </summary>
-        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteFeatureVector.</param>
+        /// <param name="poiList"> pointsOfInterest to be used to calculate the DirectionByteRidgeNeighbourhoodFeatureVector.</param>
         /// <param name="rowsCount"> the column count of original spectrogram.</param>
         /// <param name="colsCount"> the row count of original spectrogram.</param>
         /// <param name="sizeOfNeighbourhood"> the size of Neighbourhood will determine the size of search area.</param>
         /// <returns> 
-        /// It will return a list of featureVector objects whose PercentageByteFeatureVectors have been assigned, this can be used for similarity matching. 
+        /// It will return a list of RidgeNeighbourhoodFeatureVector objects whose PercentageByteRidgeNeighbourhoodFeatureVectors have been assigned, this can be used for similarity matching. 
         /// </returns>
-        public static List<FeatureVector> PercentageFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        public static List<RidgeNeighbourhoodFeatureVector> PercentageRidgeNeighbourhoodFeatureVectors(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
 
             for (int row = 0; row < rowsCount; row++)
@@ -727,7 +737,7 @@
                         percentageOfpositiveDiagonal = numberOfpositiveDiagonalDirection / sum;
                         percentageOfnegativeDiagonal = numberOfnegativeDiagonalDirection / sum;
 
-                        result.Add(new FeatureVector(new Point(row, col)) { HorizontalPercentage = percentageOfHorizontal,
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row, col)) { HorizontalPercentage = percentageOfHorizontal,
                                                                             VerticalPercentage = percentageOfVertical,
                                                                             PositiveDiagonalPercentage = percentageOfpositiveDiagonal,
                                                                             NegativeDiagonalPercentage = percentageOfnegativeDiagonal});
