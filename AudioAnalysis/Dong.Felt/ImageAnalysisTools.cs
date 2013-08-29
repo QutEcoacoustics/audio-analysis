@@ -7,7 +7,7 @@ namespace Dong.Felt
     using System.IO;
     using System.Text;
     using TowseyLib;
-    using System.Data;   
+    using System.Data;
     using System.Drawing;
     using AudioAnalysisTools;
 
@@ -114,17 +114,17 @@ namespace Dong.Felt
         /// it involves five steps here, first, it needs to do the Gaussian convolution, 
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
 
-        
+        #region Public Methods
         // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
-            
+
             var kernel = new double[sizeOfKernel, sizeOfKernel];
             double coeffients1 = 2 * Pi * sigma * sigma;
             double coeffients2 = 2 * sigma * sigma;
 
-            int kernelRadius = sizeOfKernel / 2; 
- 
+            int kernelRadius = sizeOfKernel / 2;
+
             double sum = 0.0;
             for (int i = -kernelRadius; i <= kernelRadius; i++)
             {
@@ -151,13 +151,13 @@ namespace Dong.Felt
         {
             int MaximumXindex = m.GetLength(0);
             int MaximumYindex = m.GetLength(1);
-            var result = new double [MaximumXindex, MaximumYindex];
+            var result = new double[MaximumXindex, MaximumYindex];
 
             int gaussianKernelRadius = gaussianKernel.GetLength(0) / 2;
 
             for (int row = gaussianKernelRadius; row < (MaximumXindex - gaussianKernelRadius); row++)
             {
-                for (int col = gaussianKernelRadius; col <(MaximumYindex  - gaussianKernelRadius); col++)
+                for (int col = gaussianKernelRadius; col < (MaximumYindex - gaussianKernelRadius); col++)
                 {
                     double sum = 0;
                     for (int i = -gaussianKernelRadius; i <= gaussianKernelRadius; i++)
@@ -234,8 +234,8 @@ namespace Dong.Felt
                     {
                         for (int j = -edgeMaskRadius; j <= edgeMaskRadius; j++)
                         {
-                            sumX = sumX + (m[row + i, col + j] - m[row - i, col + j]) /2.0;
-                            sumY = sumY + (m[row + j, col - i] - m[row + j, col + i]) /2.0;
+                            sumX = sumX + (m[row + i, col + j] - m[row - i, col + j]) / 2.0;
+                            sumY = sumY + (m[row + j, col - i] - m[row + j, col + i]) / 2.0;
                         }
                     }
                     result.Item1[row, col] = sumX;
@@ -255,7 +255,7 @@ namespace Dong.Felt
             int MaximumYindex = gradientX.GetLength(1);
 
             double[,] result = new double[MaximumXindex, MaximumYindex];
-           
+
             for (int row = 0; row < MaximumXindex; row++)
             {
                 for (int col = 0; col < MaximumYindex; col++)
@@ -286,64 +286,64 @@ namespace Dong.Felt
                 {
                     // here it's kind of tricky thing 
                     if (gradientX[row, col] == 0)
-                     {
-                          if (gradientY[row, col] == 0)
-                          {
-                              newAngle[row, col] = 0;
-                          }
-                          else
-                          {
-                              newAngle[row, col] = 90;
-                          }                          
-                     }
-                     else
-                     {
-                            //newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Pi;
-                            newAngle[row, col] = Math.Atan(gradientY[row, col] / gradientX[row, col]);
-                                       
-                            const double MinNegativeZero = -7 * Pi / 8;
-                            const double MaxNegativeZero = -Pi / 8;
-                            const double MinPositiveZero= Pi / 8;
-                            const double MaxPositiveZero = 7 * Pi / 8;
+                    {
+                        if (gradientY[row, col] == 0)
+                        {
+                            newAngle[row, col] = 0;
+                        }
+                        else
+                        {
+                            newAngle[row, col] = 90;
+                        }
+                    }
+                    else
+                    {
+                        //newAngle[row, col] = (Math.Atan(gradientY[row, col] / gradientX[row, col])) * 180 / Pi;
+                        newAngle[row, col] = Math.Atan(gradientY[row, col] / gradientX[row, col]);
 
-                            // the degree of direction is around 45/-135 degree neighbourhood
-                            const double MinNegative45= -7 * Pi / 8;
-                            const double MinPositive45 = Pi / 8; 
-                            const double MaxNegative45= -5 * Pi / 8;
-                            const double MaxPositive45 = 3 * Pi / 8; 
+                        const double MinNegativeZero = -7 * Pi / 8;
+                        const double MaxNegativeZero = -Pi / 8;
+                        const double MinPositiveZero = Pi / 8;
+                        const double MaxPositiveZero = 7 * Pi / 8;
 
-                            // the degree of direction is around 90/-90 degree neighbourhood
-                            const double MaxNegative90= -3 * Pi / 8;
-                            const double MinPositive90 = 3 * Pi / 8; 
-                            const double MinNegative90= -5 * Pi / 8;
-                            const double MaxPositive90 = 5 * Pi / 8;
- 
-                            // the degree of direction is around -45/135 degree neighbourhood
-                            const double MinNegative135= -3 * Pi / 8;
-                            const double MinPositive135 = 5 * Pi / 8; 
-                            const double MaxNegative135= -Pi / 8;
-                            const double MaxPositive135 = 7 * Pi / 8;
+                        // the degree of direction is around 45/-135 degree neighbourhood
+                        const double MinNegative45 = -7 * Pi / 8;
+                        const double MinPositive45 = Pi / 8;
+                        const double MaxNegative45 = -5 * Pi / 8;
+                        const double MaxPositive45 = 3 * Pi / 8;
 
-                            if ((MaxNegativeZero < newAngle[row, col] && newAngle[row, col] <= MinPositiveZero) || (MaxPositiveZero < newAngle[row, col]) || (newAngle[row, col] <= MinNegativeZero))
-                            {
-                                newAngle[row, col] = 0;
-                            }
+                        // the degree of direction is around 90/-90 degree neighbourhood
+                        const double MaxNegative90 = -3 * Pi / 8;
+                        const double MinPositive90 = 3 * Pi / 8;
+                        const double MinNegative90 = -5 * Pi / 8;
+                        const double MaxPositive90 = 5 * Pi / 8;
 
-                            if ((MinPositive45 < newAngle[row, col] && newAngle[row, col] <= MaxPositive45) || (MinNegative45 < newAngle[row, col] && newAngle[row, col] <= MaxNegative45))
-                            {
-                                newAngle[row, col] = 45;
-                            }
+                        // the degree of direction is around -45/135 degree neighbourhood
+                        const double MinNegative135 = -3 * Pi / 8;
+                        const double MinPositive135 = 5 * Pi / 8;
+                        const double MaxNegative135 = -Pi / 8;
+                        const double MaxPositive135 = 7 * Pi / 8;
 
-                            if ((MinPositive90 < newAngle[row, col] && newAngle[row, col] <= MaxPositive90) || (MinNegative90 < newAngle[row, col] && newAngle[row, col] <= MaxNegative90))
-                            {
-                                newAngle[row, col] = 90;
-                            }
+                        if ((MaxNegativeZero < newAngle[row, col] && newAngle[row, col] <= MinPositiveZero) || (MaxPositiveZero < newAngle[row, col]) || (newAngle[row, col] <= MinNegativeZero))
+                        {
+                            newAngle[row, col] = 0;
+                        }
 
-                            if ((MinPositive135 < newAngle[row, col] && newAngle[row, col] <= MaxPositive135) || (MinNegative135 < newAngle[row, col] && newAngle[row, col] <= MaxNegative135))
-                            {
-                                newAngle[row, col] = -45;
-                            }
-                       }
+                        if ((MinPositive45 < newAngle[row, col] && newAngle[row, col] <= MaxPositive45) || (MinNegative45 < newAngle[row, col] && newAngle[row, col] <= MaxNegative45))
+                        {
+                            newAngle[row, col] = 45;
+                        }
+
+                        if ((MinPositive90 < newAngle[row, col] && newAngle[row, col] <= MaxPositive90) || (MinNegative90 < newAngle[row, col] && newAngle[row, col] <= MaxNegative90))
+                        {
+                            newAngle[row, col] = 90;
+                        }
+
+                        if ((MinPositive135 < newAngle[row, col] && newAngle[row, col] <= MaxPositive135) || (MinNegative135 < newAngle[row, col] && newAngle[row, col] <= MaxNegative135))
+                        {
+                            newAngle[row, col] = -45;
+                        }
+                    }
                 }
             }
             return newAngle;
@@ -355,14 +355,14 @@ namespace Dong.Felt
         {
             int MaximumXindex = gradientMagnitude.GetLength(0);
             int MaximumYindex = gradientMagnitude.GetLength(1);
-            int kernelRadius = neighborhoodSize / 2; 
+            int kernelRadius = neighborhoodSize / 2;
 
             // check the direction 
             for (int i = kernelRadius; i < MaximumXindex - kernelRadius; i++)
             {
                 for (int j = kernelRadius; j < MaximumYindex - kernelRadius; j++)
-                {                
-                     // Horizontal direction
+                {
+                    // Horizontal direction
                     if (direction[i, j] == 0)
                     {
                         if ((gradientMagnitude[i, j] < gradientMagnitude[i, j + 1]) || (gradientMagnitude[i, j] < gradientMagnitude[i, j - 1]))
@@ -402,20 +402,20 @@ namespace Dong.Felt
 
             return gradientMagnitude;
         }
-  
-      //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
-      // the high threshold are marked as strong; edge pixels weaker than the low threshold are marked as weak are suppressed and edge poxels between the two
-      // thresholds are marked as weak.   The vaule is 2.0, 4.0, 6.0, 8.0
+
+        //4.Double thresholding: Potential edges are determined by thresholding.  Canny detection algorithm uses double thresholding. Edge pixels stronger than 
+        // the high threshold are marked as strong; edge pixels weaker than the low threshold are marked as weak are suppressed and edge poxels between the two
+        // thresholds are marked as weak.   The vaule is 2.0, 4.0, 6.0, 8.0
         public static double[,] DoubleThreshold(double[,] nonMaxima, double highThreshold, double lowThreshold)
-        {         
+        {
             int MaximumXindex = nonMaxima.GetLength(0);
             int MaximumYindex = nonMaxima.GetLength(1);
-              
+
             for (int row = 0; row < MaximumXindex; row++)
             {
                 for (int col = 0; col < MaximumYindex; col++)
                 {
-                   
+
                     if (nonMaxima[row, col] > highThreshold)
                     {
                         nonMaxima[row, col] = 1.0;
@@ -433,7 +433,7 @@ namespace Dong.Felt
                     }
                 }
             }
-            return nonMaxima;            
+            return nonMaxima;
         }
 
         // this linking work still can do something
@@ -442,7 +442,7 @@ namespace Dong.Felt
         {
             //travel in a 3 * 3 neighbourhood
             int MaximumXindex = nonMaximaEdges.GetLength(0);
-            int MaximumYindex = nonMaximaEdges.GetLength(1); 
+            int MaximumYindex = nonMaximaEdges.GetLength(1);
             int kernelRadius = kernelSize / 2;
 
             // only check the weak edge, here its intensity should be 0.5
@@ -459,11 +459,11 @@ namespace Dong.Felt
                         if (nonMaximaEdges[i + 1, j] > 0.0)
                         {
                             if (direction[i + 1, j] == direction[i, j])
-                            {                               
-                                sum++; 
+                            {
+                                sum++;
                                 nonMaximaEdges[i, j] = 0.0;
                                 continue;
-                            }                           
+                            }
                         }
                         // 2
                         if (nonMaximaEdges[i + 1, j - 1] > 0.0)
@@ -471,7 +471,7 @@ namespace Dong.Felt
                             if (direction[i + 1, j - 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                    
+                            }
                         }
                         // 3
                         if (nonMaximaEdges[i, j - 1] > 0.0)
@@ -479,7 +479,7 @@ namespace Dong.Felt
                             if (direction[i, j - 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                   
+                            }
                         }
                         // 4
                         if (nonMaximaEdges[i - 1, j - 1] > 0.0)
@@ -487,7 +487,7 @@ namespace Dong.Felt
                             if (direction[i - 1, j - 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                                       
+                            }
                         }
                         // 5
                         if (nonMaximaEdges[i - 1, j] > 0.0)
@@ -495,7 +495,7 @@ namespace Dong.Felt
                             if (direction[i - 1, j] == direction[i, j])
                             {
                                 sum++;
-                            }                                                
+                            }
                         }
                         // 6
                         if (nonMaximaEdges[i - 1, j + 1] > 0.0)
@@ -503,7 +503,7 @@ namespace Dong.Felt
                             if (direction[i - 1, j + 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                                
+                            }
                         }
                         // 7
                         if (nonMaximaEdges[i, j + 1] > 0.0)
@@ -511,15 +511,15 @@ namespace Dong.Felt
                             if (direction[i, j + 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                                      
+                            }
                         }
                         // 8
-                        if (nonMaximaEdges[i + 1, j + 1] > 0.0 )
+                        if (nonMaximaEdges[i + 1, j + 1] > 0.0)
                         {
                             if (direction[i + 1, j + 1] == direction[i, j])
                             {
                                 sum++;
-                            }                                                     
+                            }
                         }
                         if (sum >= 3)
                         {
@@ -598,7 +598,7 @@ namespace Dong.Felt
                 }
             }
             //result = magnitude; 
-            return result; 
+            return result;
         }
 
         // Remove the poi which are too close in a 3 * 3 neighbourhood 
@@ -624,17 +624,17 @@ namespace Dong.Felt
                             {
                                 if (magnitude[row + i, col + j] > 0 && visitedFlag[row + i, col + j] == false)
                                 {
-                                    magnitude[row, col]  = 0.0;
-                                    visitedFlag[row + i, col + j] = true;  
+                                    magnitude[row, col] = 0.0;
+                                    visitedFlag[row + i, col + j] = true;
                                 }
                             }
-                        }       
+                        }
                     }
                 }
             }
 
             result = magnitude;
-            return result; 
+            return result;
         }
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
@@ -731,7 +731,7 @@ namespace Dong.Felt
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
-            
+
             double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
@@ -755,7 +755,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
-                                      };         
+                                      };
             double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4, 0.4, 0.4,-0.1},
@@ -782,6 +782,7 @@ namespace Dong.Felt
             magnitude = diffMax / 2;
             direction = indexMax * Math.PI / (double)8;
         }
+        
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
@@ -841,7 +842,7 @@ namespace Dong.Felt
                 }
 
             }
-            return newMatrix;       
+            return newMatrix;
         }
 
         public static Tuple<double[,], double[,]> CannyEdgeDetector(double[,] matrix)
@@ -882,12 +883,12 @@ namespace Dong.Felt
             //var gaussianFilter = ImageAnalysisTools.GaussianFilter(matrix, ImageAnalysisTools.GenerateGaussianKernel(kernelSizeOfGaussianBlur, SigmaOfGaussianBlur));
             //var gradient = ImageAnalysisTools.GradientWithEqualWeightsMask(matrix, 5);
             //var gradient = ImageAnalysisTools.Gradient(matrix, SobelX, SobelY);
-            
+
             //var gradient = ImageAnalysisTools.Gradient(matrix, SobelRidge5X, SobelRidge5Y);
             ////var gradientMagnitude = ImageAnalysisTools.GradientMagnitude(gradient.Item1, gradient.Item2);
             //////var gradientMagnitude = ImageAnalysisTools.SobelEdgeDetectorImproved(matrix, 0.2);
             ////var gradientDirection = ImageAnalysisTools.GradientDirection(gradient.Item1, gradient.Item2, gradientMagnitude);
-            
+
             //var nonMaxima = ImageAnalysisTools.NonMaximumSuppression(gradientMagnitude, gradientDirection, 3);
             ////var sobelEdge = ImageTools.SobelEdgeDetection(matrix);
             //var doubleThreshold = ImageAnalysisTools.DoubleThreshold(nonMaxima, 0.15, 0.15);
@@ -897,11 +898,10 @@ namespace Dong.Felt
             ////var hysterisis = ImageAnalysisTools.HysterisisThresholding(doubleThreshold, gradientDirection, 3);
             //magnitude = removeClose; 
             //direction = gradientDirection;
-            
-            result = Tuple.Create(result1, result2);
-            return result;   
-        }
 
+            result = Tuple.Create(result1, result2);
+            return result;
+        }
 
         // cut off the overlapped lines in the same direction
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
@@ -925,7 +925,7 @@ namespace Dong.Felt
                     }
                     else if (M[r, c].OrientationCategory == 4) // vertical line
                     {
-                        if ((M[r , c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
+                        if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
                         {
                             if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
                         }
@@ -935,7 +935,7 @@ namespace Dong.Felt
                         }
                     } // if (OrientationCategory)
                     else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
-                    {                        
+                    {
                         if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
                         {
                             /// above and below
@@ -971,7 +971,7 @@ namespace Dong.Felt
                         }
                     }
                     else if (M[r, c].OrientationCategory == 6)  // negative diagonal line
-                    {                       
+                    {
                         if ((M[r + 1, c + 1] != null) && (M[r + 1, c + 1].OrientationCategory == 6))
                         {
                             /// above and below
@@ -1005,14 +1005,14 @@ namespace Dong.Felt
                                 }
                             }
                         }
-                    }        
+                    }
                 } // c
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
         // cut off the overlapped lines in the different direction in a 3 * 3 neighbourhood
-        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList,  int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
+        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1021,9 +1021,9 @@ namespace Dong.Felt
                 for (int c = 0; c < cols; c++)
                 {
                     if (M[r, c] == null) continue;
-                    else                   
+                    else
                     {
-                        var numberOfpoi = 0; 
+                        var numberOfpoi = 0;
                         // search in a neighbourhood
                         for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
                         {
@@ -1033,7 +1033,7 @@ namespace Dong.Felt
                                 {
                                     if (M[r + i, c + j] != null)
                                     {
-                                        numberOfpoi++; 
+                                        numberOfpoi++;
                                     }
                                 }
                             }
@@ -1042,12 +1042,38 @@ namespace Dong.Felt
                         {
                             M[r, c] = null;
                         }
-                    }                   
+                    }
                 }
             }
             return PointOfInterest.TransferPOIMatrix2List(M);
         }
 
+        /// Change poi spectrogram into black and white image and just show the poi on the spectrogram. 
+        public static double[,] ShowPOIOnSpectrogram(SpectralSonogram spectrogram, List<PointOfInterest> poiList, int rows, int cols)
+        {          
+            foreach (var poi in poiList)
+            {
+                var xCoordinate = poi.Point.Y;
+                var yCoordinate = poi.Point.X;
+                spectrogram.Data[yCoordinate, cols - xCoordinate] = 20.0;
+            }
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (spectrogram.Data[r, c] == 20.0)
+                    {
+                        spectrogram.Data[r, c] = 1.0;
+                    }
+                    else
+                    {
+                        spectrogram.Data[r, c] = 0.0;
+                    }
+                }
+            }
+            return spectrogram.Data;
+        }
 
+        #endregion
     }
 }

@@ -98,7 +98,7 @@ namespace Dong.Felt
         /// </param>
         /// <param name="sampleRate"></param>
         /// <returns></returns>
-        public static List<List<FeatureVector>> RepresentationForIndexing(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
+        public static List<List<RidgeNeighbourhoodFeatureVector>> RepresentationForIndexing(List<PointOfInterest> poiList, double maxFrequency, double minFrequency,
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount, int searchStep, int frequencyOffset)
         {
@@ -122,7 +122,7 @@ namespace Dong.Felt
             { numberOfColSlices = (int)numberOfFrames / sizeofNeighbourhood; }
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
-            var result = new List<List<FeatureVector>>();
+            var result = new List<List<RidgeNeighbourhoodFeatureVector>>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
             var listCount = 0;
@@ -137,7 +137,7 @@ namespace Dong.Felt
                 {
                     break;
                 }
-                result.Add(new List<FeatureVector>());
+                result.Add(new List<RidgeNeighbourhoodFeatureVector>());
                 listCount++;
                 for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
                 {
@@ -156,13 +156,13 @@ namespace Dong.Felt
                             //    var subMatrix1 = StatisticalAnalysis.Submatrix(Matrix, startRowIndexInSlice, startRowIndexInSlice + numberOfRowSlices * sizeofNeighbourhood, startColIndexInSlice, startColIndexInSlice + numberOfRowSlices * sizeofNeighbourhood);
                             //    var centroid = GetCentroid(subMatrix1);
 
-                            result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
+                            result[listCount - 1].Add(new RidgeNeighbourhoodFeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                             {
                                 HorizontalVector = partialFeatureVector.HorizontalVector,
                                 VerticalVector = partialFeatureVector.VerticalVector,
                                 PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                                 NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                                TimePosition = col,
+                                TimePositionPix = col,
                                 //Centroid = new Point(centroid.X, centroid.Y)
                             });
                         }
@@ -173,10 +173,9 @@ namespace Dong.Felt
             return result;
         }
 
-
-        public static List<List<FeatureVector>> MainSlopeRepresentationForIndexing(List<PointOfInterest> poiList, List<FeatureVector> query, int sizeofNeighbourhood, int rowsCount, int colsCount, int frameSearchStep, int frequencyOffset)
+        public static List<List<RidgeNeighbourhoodFeatureVector>> MainSlopeRepresentationForIndexing(List<PointOfInterest> poiList, List<RidgeNeighbourhoodFeatureVector> query, int sizeofNeighbourhood, int rowsCount, int colsCount, int frameSearchStep, int frequencyOffset)
         {
-            var result = new List<List<FeatureVector>>();
+            var result = new List<List<RidgeNeighbourhoodFeatureVector>>();
             if (query != null)
             {
                 var maxRowIndex = query[0].MaxRowIndex;
@@ -206,7 +205,7 @@ namespace Dong.Felt
                         {
                             break;
                         }
-                        result.Add(new List<FeatureVector>());
+                        result.Add(new List<RidgeNeighbourhoodFeatureVector>());
                         listCount++;
                         for (int sliceRowIndex = 0; sliceRowIndex < numberOfRowSlices; sliceRowIndex++)
                         {
@@ -224,13 +223,13 @@ namespace Dong.Felt
                                     var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, centroidRowIndexInSlice, centroidColIndexInSlice);
                                     var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
 
-                                    result[listCount - 1].Add(new FeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
+                                    result[listCount - 1].Add(new RidgeNeighbourhoodFeatureVector(new Point(centroidRowIndexInSlice, centroidColIndexInSlice))
                                     {
                                         Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
                                         SlopeScore = slopeValue.Item1 * slopeValue.Item2,
                                         MinFrequency = 11025 - (row + numberOfRowSlices * sizeofNeighbourhood) * 43.0,
                                         MaxFrequency = 11025 - row * 43.0,
-                                        TimePosition = col,
+                                        TimePositionPix = col,
                                     });
                                 }
                             }
@@ -270,7 +269,7 @@ namespace Dong.Felt
             return centroid;
         }
 
-        public static int[] SliceGeneralSlopeRepresentation(FeatureVector slice)
+        public static int[] SliceGeneralSlopeRepresentation(RidgeNeighbourhoodFeatureVector slice)
         {
             var horizontalCount = OrientationValueCount(slice.HorizontalVector);
             var verticalCount = OrientationValueCount(slice.VerticalVector);
@@ -286,7 +285,7 @@ namespace Dong.Felt
             return orientationCount;
         }
 
-        public static Tuple<int, int> SliceMainSlopeRepresentation(FeatureVector slice)
+        public static Tuple<int, int> SliceMainSlopeRepresentation(RidgeNeighbourhoodFeatureVector slice)
         {
             var horizontalCount = OrientationValueCount(slice.HorizontalVector);
             var verticalCount = OrientationValueCount(slice.VerticalVector);
@@ -335,7 +334,7 @@ namespace Dong.Felt
         }
 
         // need to be done.
-        public static FeatureVector SliceSlopPercentageRepresentation(FeatureVector slice)
+        public static RidgeNeighbourhoodFeatureVector SliceSlopPercentageRepresentation(RidgeNeighbourhoodFeatureVector slice)
         {
             var horizontalCount = OrientationValueCount(slice.HorizontalVector);
             var verticalCount = OrientationValueCount(slice.VerticalVector);
@@ -347,7 +346,7 @@ namespace Dong.Felt
             array[2] = verticalCount;
             array[3] = negativeDiagonalCount;
             // maxValue ( slope Index, slope Count)
-            var result = new FeatureVector(new Point(0, 0));
+            var result = new RidgeNeighbourhoodFeatureVector(new Point(0, 0));
             var tempMaxCount = 0;
             var zero = 0;
             var slopeIndexOffset = 1;
@@ -378,17 +377,18 @@ namespace Dong.Felt
         /// <param name="PointX">This value is the X coordinate of centroid of rectangular.</param>
         /// <param name="PointY">This value is the Y coordinate of centroid of rectangular.</param>
         /// <returns></returns>
-        public static FeatureVector SliceRidgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
+        public static RidgeNeighbourhoodFeatureVector SliceRidgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
         {
-            var result = new FeatureVector(new Point(PointX, PointY));
-            var sizeOfNeighbourhood = matrix.GetLength(0);
+            var result = new RidgeNeighbourhoodFeatureVector(new Point(PointX, PointY));
+            var neighbourhoodWidth = matrix.GetLength(0);
+            var neighbourhoodLength = matrix.GetLength(1);
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
-            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            var radiusOfNeighbourhood = neighbourhoodWidth / 2;
 
-            var verticalDirection = new int[sizeOfNeighbourhood];
-            var horizontalDirection = new int[sizeOfNeighbourhood];
-            var positiveDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
-            var negativeDiagonalDirection = new int[2 * sizeOfNeighbourhood - 1];
+            var verticalDirection = new int[neighbourhoodWidth];
+            var horizontalDirection = new int[neighbourhoodWidth];
+            var positiveDiagonalDirection = new int[2 * neighbourhoodWidth - 1];
+            var negativeDiagonalDirection = new int[2 * neighbourhoodWidth - 1];
             var anchorPoint = new Point(radiusOfNeighbourhood, radiusOfNeighbourhood);
             // For the calculation of horizontal direction byte, we need to check each row 
             for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
@@ -396,7 +396,7 @@ namespace Dong.Felt
                 for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                 {
                     // check boundary of index 
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex] != null) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
                         {
@@ -411,7 +411,7 @@ namespace Dong.Felt
             {
                 for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex] != null) && matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
                         {
@@ -422,72 +422,73 @@ namespace Dong.Felt
             }
 
             // For the calculation of negativeDiagonal direction, we need to check each diagonal line.
-            for (int offset = 0; offset < sizeOfNeighbourhood; offset++)
+            for (int offset = 0; offset < neighbourhoodWidth; offset++)
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
-                            negativeDiagonalDirection[sizeOfNeighbourhood - offset - 1]++;
+                            negativeDiagonalDirection[neighbourhoodWidth - offset - 1]++;
                         }
                     }
                 }
             }
-            for (int offset = 1; offset < sizeOfNeighbourhood; offset++)
+            for (int offset = 1; offset < neighbourhoodWidth; offset++)
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
-                            negativeDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
+                            negativeDiagonalDirection[neighbourhoodWidth + offset - 1]++;
                         }
                     }
                 }
             }
 
             // For the calculation of positiveDiagonal direction, we need to check each diagonal line.
-            for (int offset = 0; offset < sizeOfNeighbourhood; offset++)
+            for (int offset = 0; offset < neighbourhoodWidth; offset++)
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
                     var startPointRowIndex = anchorPoint.X + offsetIndex + offset;
                     var startPointColIndex = anchorPoint.Y - offsetIndex;
-                    var maxRowIndex = sizeOfNeighbourhood;
-                    var maxColIndex = sizeOfNeighbourhood;
+                    var maxRowIndex = neighbourhoodWidth;
+                    var maxColIndex = neighbourhoodWidth;
                     if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, maxRowIndex, maxColIndex))
                     {
                         // 
                         if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
-                            var index = sizeOfNeighbourhood - offset - 1;
+                            var index = neighbourhoodWidth - offset - 1;
                             positiveDiagonalDirection[index]++;
                         }
                     }
                 }
             }
-            for (int offset = 1; offset < sizeOfNeighbourhood; offset++)
+            for (int offset = 1; offset < neighbourhoodWidth; offset++)
             {
                 for (int offsetIndex = -radiusOfNeighbourhood; offsetIndex <= radiusOfNeighbourhood; offsetIndex++)
                 {
                     var startPointRowIndex = anchorPoint.X + offsetIndex - offset;
                     var startPointColIndex = anchorPoint.Y - offsetIndex;
-                    var maxRowIndex = sizeOfNeighbourhood;
-                    var maxColIndex = sizeOfNeighbourhood;
-                    if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, sizeOfNeighbourhood, sizeOfNeighbourhood))
+                    var maxRowIndex = neighbourhoodWidth;
+                    var maxColIndex = neighbourhoodWidth;
+                    if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
                         if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
                             // here I minus one because I want to keep the index of array is in the range of array length.
-                            positiveDiagonalDirection[sizeOfNeighbourhood + offset - 1]++;
+                            positiveDiagonalDirection[neighbourhoodWidth + offset - 1]++;
                         }
                     }
                 }
             }
-
+            result.neighbourhoodWidth = neighbourhoodWidth;
+            result.neighbourhoodLength = neighbourhoodLength;
             result.HorizontalVector = horizontalDirection;
             result.VerticalVector = verticalDirection;
             result.PositiveDiagonalVector = positiveDiagonalDirection;
@@ -510,7 +511,7 @@ namespace Dong.Felt
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static List<FeatureVector> SlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
+        public static List<RidgeNeighbourhoodFeatureVector> SlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount)
         {
@@ -533,7 +534,7 @@ namespace Dong.Felt
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
 
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
             for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)
@@ -549,13 +550,13 @@ namespace Dong.Felt
                         var partialFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(subMatrix, row + halfRowNeighbourhood, col + halfColNeighbourhood);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
-                        result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                         {
                             HorizontalVector = partialFeatureVector.HorizontalVector,
                             VerticalVector = partialFeatureVector.VerticalVector,
                             PositiveDiagonalVector = partialFeatureVector.PositiveDiagonalVector,
                             NegativeDiagonalVector = partialFeatureVector.NegativeDiagonalVector,
-                            TimePosition = MinColIndex,                           
+                            TimePositionPix = MinColIndex,                           
                         });
                     }
                 }
@@ -578,7 +579,7 @@ namespace Dong.Felt
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static List<FeatureVector> MainSlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
+        public static List<RidgeNeighbourhoodFeatureVector> MainSlopeRepresentationForQuery(List<PointOfInterest> poiList, double maxFrequency, double minFrequency, double startTime,
                                                                double duration, int sizeofNeighbourhood, double herzScale, double timeScale,
                                                                double nyquistFrequency, int rowsCount, int colsCount)
         {
@@ -601,7 +602,7 @@ namespace Dong.Felt
             var halfRowNeighbourhood = sizeofNeighbourhood / 2;
             var halfColNeighbourhood = sizeofNeighbourhood / 2;
 
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             // search along the fixed frequency range.
             for (int row = MinRowIndex - halfExtendedFrequencyRange; row < MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange; row += sizeofNeighbourhood)          
@@ -615,11 +616,11 @@ namespace Dong.Felt
                         var slopeValue = RectangularRepresentation.SliceMainSlopeRepresentation(partialFeatureVector);
                         var startRowIndex = MinRowIndex - halfExtendedFrequencyRange;
                         var startColIndex = MinColIndex - halfExtendedTimeRange;
-                        result.Add(new FeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
+                        result.Add(new RidgeNeighbourhoodFeatureVector(new Point(row + halfRowNeighbourhood, col + halfColNeighbourhood))
                         {
                             Slope = new Tuple<int, int>(slopeValue.Item1, slopeValue.Item2),
                             SlopeScore = slopeValue.Item1 * slopeValue.Item2,
-                            TimePosition = MinColIndex,
+                            TimePositionPix = MinColIndex,
                             MinRowIndex = MinRowIndex - halfExtendedFrequencyRange,
                             MaxRowIndex = MaxRowIndex + extendedFrequencyRange - halfExtendedFrequencyRange,
                             MinColIndex = MinColIndex - halfExtendedTimeRange,
@@ -636,9 +637,9 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public static List<FeatureVector> ImprovedQueryFeatureVector(List<FeatureVector> query)
+        public static List<RidgeNeighbourhoodFeatureVector> ImprovedQueryFeatureVector(List<RidgeNeighbourhoodFeatureVector> query)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             if (query != null)
             {

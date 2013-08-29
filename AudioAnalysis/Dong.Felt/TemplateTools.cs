@@ -57,9 +57,9 @@ namespace Dong.Felt
         //    }
         //}
 
-        public static List<FeatureVector> Grey_Fantail1()
+        public static List<RidgeNeighbourhoodFeatureVector> Grey_Fantail1()
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var slopeScore = new int[] { 0, 18, 0, 0, 0, 0, 0, 0, 0, 27, 9, 0, 3, 12, 0, 0, 0, 0, 0, 0, 3, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 3, 0, 1, 2, 7, 0, 0, 0 };
             var slopeItem1 = new int[] { 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 1, 3, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 1, 0, 0, 0 };
             var slopeItem2 = new int[] { 0, 6, 0, 0, 0, 0, 0, 0, 0, 9, 3, 0, 3, 4, 0, 0, 0, 0, 0, 0, 1, 5, 9, 7, 7, 12, 0, 0, 0, 0, 0, 0, 1, 0, 1, 2, 7, 0, 0, 0 };
@@ -69,7 +69,7 @@ namespace Dong.Felt
             var minRowIndex = 85;
             for (int index = 0; index < slopeScore.Count(); index++)
             {
-                result.Add(new FeatureVector(new Point(0, 0))
+                result.Add(new RidgeNeighbourhoodFeatureVector(new Point(0, 0))
                 {
                     Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
                     SlopeScore = slopeScore[index],
@@ -82,9 +82,9 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<FeatureVector> Grey_Shrikethrush4()
+        public static List<RidgeNeighbourhoodFeatureVector> Grey_Shrikethrush4()
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var slopeScore = new int[] { 15, 15, 0, 15, 0, 33, 13, 12, 18, 18, 0, 15, 0, 6, 0, 0 };
             var slopeItem1 = new int[] { 3, 3, 0, 3, 0, 3, 1, 1, 3, 3, 0, 3, 0, 3, 0, 0 };
             var slopeItem2 = new int[] { 5, 5, 0, 5, 0, 11, 13, 12, 6, 6, 0, 5, 0, 2, 0, 0 };
@@ -94,7 +94,7 @@ namespace Dong.Felt
             var minRowIndex = 208;
             for (int index = 0; index < slopeScore.Count(); index++)
             {
-                result.Add(new FeatureVector(new Point(0, 0))
+                result.Add(new RidgeNeighbourhoodFeatureVector(new Point(0, 0))
                 {
                     Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
                     SlopeScore = slopeScore[index],
@@ -107,9 +107,9 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<FeatureVector> Scarlet_Honeyeater1()
+        public static List<RidgeNeighbourhoodFeatureVector> Scarlet_Honeyeater1()
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var slopeScore = new int[] { 33, 0, 0, 0, 45, 9, 0, 0, 42, 0, 0, 9, 45, 2, 6, 0, 39, 39, 3, 0, 39, 13, 13, 3 };
             var slopeItem1 = new int[] {  3, 0, 0, 0,  3, 3, 0, 0,  3, 0, 0, 3,  3, 1, 3, 0,  3,  3, 3, 0,  3,  1,  1, 1 };
             var slopeItem2 = new int[] { 11, 0, 0, 0, 15, 3, 0, 0, 14, 0, 0, 3, 15, 2, 2, 0, 13, 13, 1, 0, 13, 13, 13, 3 };
@@ -119,7 +119,7 @@ namespace Dong.Felt
             var minRowIndex = 65;
             for (int index = 0; index < slopeScore.Count(); index++)
             {
-                result.Add(new FeatureVector(new Point(0, 0))
+                result.Add(new RidgeNeighbourhoodFeatureVector(new Point(0, 0))
                 {
                     Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
                     SlopeScore = slopeScore[index],
@@ -132,9 +132,9 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<FeatureVector> Brown_Cuckoodove1()
+        public static List<RidgeNeighbourhoodFeatureVector> Brown_Cuckoodove1()
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var slopeScore = new int[] { 3, 13, 3 };
             var slopeItem1 = new int[] { 1, 1, 1 };
             var slopeItem2 = new int[] { 3, 13, 3 };
@@ -144,7 +144,7 @@ namespace Dong.Felt
             var minRowIndex = 232;
             for (int index = 0; index < slopeScore.Count(); index++)
             {
-                result.Add(new FeatureVector(new Point(0, 0))
+                result.Add(new RidgeNeighbourhoodFeatureVector(new Point(0, 0))
                 {
                     Slope = new Tuple<int, int>(slopeItem1[index], slopeItem2[index]),
                     SlopeScore = slopeScore[index],
@@ -175,7 +175,7 @@ namespace Dong.Felt
             return matrix;
         }
 
-        public static void featureVectorToCSV(List<Tuple<double, int, List<FeatureVector>>> listOfPositions, string filePath)
+        public static void featureVectorToCSV(List<Tuple<double, int, List<RidgeNeighbourhoodFeatureVector>>> listOfPositions, string filePath)
         {
             var results = new List<string>();
             var timeScale = 0.0116;
@@ -185,19 +185,19 @@ namespace Dong.Felt
                 var listOfFeatureVector = lp.Item3;
                 for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
                 {
-                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "HorizontalVector", listOfFeatureVector[sliceIndex].HorizontalVector));
+                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePositionPix * timeScale, lp.Item1, sliceIndex, "HorizontalVector", listOfFeatureVector[sliceIndex].HorizontalVector));
                 }
                 for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
                 {
-                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "VerticalVector", listOfFeatureVector[sliceIndex].VerticalVector));
+                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePositionPix * timeScale, lp.Item1, sliceIndex, "VerticalVector", listOfFeatureVector[sliceIndex].VerticalVector));
                 }
                 for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
                 {
-                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "PositiveDiagonalVector", listOfFeatureVector[sliceIndex].PositiveDiagonalVector));
+                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePositionPix * timeScale, lp.Item1, sliceIndex, "PositiveDiagonalVector", listOfFeatureVector[sliceIndex].PositiveDiagonalVector));
                 }
                 for (var sliceIndex = 0; sliceIndex < listOfFeatureVector.Count(); sliceIndex++)
                 {
-                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePosition * timeScale, lp.Item1, sliceIndex, "NegativeDiagonalVector", listOfFeatureVector[sliceIndex].NegativeDiagonalVector));
+                    results.Add(FeatureVectorItemToString(listOfFeatureVector[sliceIndex].TimePositionPix * timeScale, lp.Item1, sliceIndex, "NegativeDiagonalVector", listOfFeatureVector[sliceIndex].NegativeDiagonalVector));
                 }
             }
             File.WriteAllLines(filePath, results.ToArray());
@@ -215,9 +215,9 @@ namespace Dong.Felt
             return sb.ToString();
         }
 
-        public static List<FeatureVector> GreyShrike_thrush4(double[,] matrix, double[,] matrix1, double[,] matrix2, double[,] matrix3)
+        public static List<RidgeNeighbourhoodFeatureVector> GreyShrike_thrush4(double[,] matrix, double[,] matrix1, double[,] matrix2, double[,] matrix3)
         {
-            var result = new List<FeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
             var colsCount1 = matrix2.GetLength(1);
@@ -237,7 +237,7 @@ namespace Dong.Felt
                     positiveDiagonalVector[j] = (int)matrix2[i, j];
                     negativeDiagonalVector[j] = (int)matrix3[i, j];
                 }
-                result.Add(new FeatureVector(new Point(0, 0))
+                result.Add(new RidgeNeighbourhoodFeatureVector(new Point(0, 0))
                 {
                     HorizontalVector = horizontalVector,
                     VerticalVector = verticalVector,
@@ -372,25 +372,25 @@ namespace Dong.Felt
         /// <param name="neighbourhoodSize">
         /// it will determine the size of search area to get the feature vector.
         /// </param>
-        public static FeatureVector HoneyeaterPercentageTemplate(int neighbourhoodSize)
+        public static RidgeNeighbourhoodFeatureVector HoneyeaterPercentageTemplate(int neighbourhoodSize)
         {
-            var result = new FeatureVector(new Point(0, 0));
+            var result = new RidgeNeighbourhoodFeatureVector(new Point(0, 0));
             var percentageFeatureVector = new double[4];
             percentageFeatureVector[0] = 0.4;// 0.5;
             percentageFeatureVector[1] = 0.4;// 0.4;
             percentageFeatureVector[2] = 0.0; //0.0;
             percentageFeatureVector[3] = 0.2;//0.1;
             //result.PercentageByteVector = percentageFeatureVector;
-            result.NeighbourhoodSize = neighbourhoodSize;
+            //result.NeighbourhoodSize = neighbourhoodSize;
             return result;
         }
 
         ///<summary>
         ///A template of honey eater is represented with direction byte vector.
         /// </summary>
-        public static FeatureVector HoneyeaterDirectionByteTemplate()
+        public static RidgeNeighbourhoodFeatureVector HoneyeaterDirectionByteTemplate()
         {
-            var result = new FeatureVector(new Point(0, 0));
+            var result = new RidgeNeighbourhoodFeatureVector(new Point(0, 0));
             // fuzzy presentation
             //var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             //var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
@@ -398,7 +398,7 @@ namespace Dong.Felt
             var horizontaBitlByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 };
             result.VerticalBitVector = verticalBitByte;
             result.HorizontalBitVector = horizontaBitlByte;
-            result.NeighbourhoodSize = verticalBitByte.Count();
+            //result.NeighbourhoodSize = verticalBitByte.Count();
             return result;
         }
 

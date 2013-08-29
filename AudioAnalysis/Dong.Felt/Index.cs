@@ -7,7 +7,7 @@
     class Index
     {
 
-        public List<Tuple<int, int>> InvertedList(List<List<FeatureVector>> audioFileFeature, List<FeatureVector> queryFeature, int colsCountOfAudio, int numberOfSlice)
+        public List<Tuple<int, int>> InvertedList(List<List<RidgeNeighbourhoodFeatureVector>> audioFileFeature, List<RidgeNeighbourhoodFeatureVector> queryFeature, int colsCountOfAudio, int numberOfSlice)
         {
             var result = new List<Tuple<int, int>>();
             var numberOfFeatureVectorValue = queryFeature[0].HorizontalVector.Count();
@@ -35,7 +35,7 @@
                         {
                            sameCount++;
                         }
-                        frequencyBand = af[i].FrequencyBand;
+                        frequencyBand = (int)af[i].FrequencyBand_TopLeft;
                     }
                 }
                 result.Add(new Tuple<int, int>(sameCount, frequencyBand));

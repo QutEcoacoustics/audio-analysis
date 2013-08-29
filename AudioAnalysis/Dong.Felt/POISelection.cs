@@ -11,15 +11,18 @@ namespace Dong.Felt
 
     class POISelection
     {
-        private List<PointOfInterest> poiList {get; set;}
+        public List<PointOfInterest> poiList {get; set;}
 
-        #region
+        #region Public Methods
+
+        public POISelection(List<PointOfInterest> list)
+        {
+            poiList = list;
+        }
 
         public void SelectPointOfInterest(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
-        {           
-            int halfLength = ridgeLength / 2;
-            
-
+        {                       
+            int halfLength = ridgeLength / 2;           
             for (int r = halfLength; r < rows - halfLength; r++)
             {
                 for (int c = halfLength; c < cols - halfLength; c++)
@@ -46,9 +49,8 @@ namespace Dong.Felt
                     }
                 }
             }
-
-
         }
+
         #endregion
 
     }

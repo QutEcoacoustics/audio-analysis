@@ -34,7 +34,7 @@
         NorthWest = 6,
     }
 
-    public class Distance
+    public static class Distance
     {
 
         /// <summary>

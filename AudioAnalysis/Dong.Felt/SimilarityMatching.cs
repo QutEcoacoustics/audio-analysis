@@ -37,7 +37,7 @@
         /// <returns>
         /// return the avgDistance.
         /// </returns>
-        public static double AvgDistance(FeatureVector instance, FeatureVector template)
+        public static double AvgDistance(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
             var avgdistance = 0.0;
             var numberOfScaleCount = instance.VerticalBitVector.Count();
@@ -55,7 +55,7 @@
             return avgdistance;
         }
 
-        public static int distanceForBitFeatureVector(FeatureVector instance, FeatureVector template)
+        public static int distanceForBitFeatureVector(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
             var distance = 0;
             var numberOfBitCount = instance.VerticalBitVector.Count();
@@ -105,7 +105,7 @@
         //}
 
         // To calculate the distance between query and potentialEvent. The return value is equal to the sum of every orientation subdistance. 
-        public static int SimilarSliceNumberOfFeatureVector(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        public static int SimilarSliceNumberOfFeatureVector(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0;
             var distanceThreshold = 15;
@@ -169,7 +169,7 @@
             return result;
         }
 
-        public static double SimilarityScoreOfFeatureVector(List<FeatureVector> query, int similarSliceCount)
+        public static double SimilarityScoreOfFeatureVector(List<RidgeNeighbourhoodFeatureVector> query, int similarSliceCount)
         {
             var totalNumberOfSlice = query.Count();
             var score = similarSliceCount / totalNumberOfSlice;
@@ -184,7 +184,7 @@
         /// <returns>
         /// /// It will return a similarity score. 
         /// </returns>
-        public static double SimilarityScoreOfDirectionByteVector(FeatureVector instance, FeatureVector template)
+        public static double SimilarityScoreOfDirectionByteVector(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
             var bitCount = instance.HorizontalBitVector.Count();
 
@@ -248,7 +248,7 @@
             return similarityScore;
         }
 
-        public static double SimilarityScoreOfFuzzyDirectionVector(FeatureVector instance)
+        public static double SimilarityScoreOfFuzzyDirectionVector(RidgeNeighbourhoodFeatureVector instance)
         {
             double similarityScore = 0.0;
             var horizontalByteCount = instance.HorizontalBitVector.Count();
@@ -306,7 +306,7 @@
             return similarityScore;
         }
 
-        public static double SimilarityScoreOfSlopeScore(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        public static double SimilarityScoreOfSlopeScore(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0.0;
             if (query != null && potentialEvent != null)
@@ -331,7 +331,7 @@
             return result; 
         }
 
-        public static double SimilarityScoreOfDifferentWeights(List<FeatureVector> potentialEvent, List<FeatureVector> query)
+        public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0.0;
             if (query != null && potentialEvent != null)
@@ -398,7 +398,7 @@
             return result;
         }
 
-        public static bool checkNullFeatureVector(FeatureVector featureVector)
+        public static bool checkNullFeatureVector(RidgeNeighbourhoodFeatureVector featureVector)
         {
             var result = 0;
             var numberOfHorizontalFeatureVectorBit = featureVector.HorizontalVector.Count();
@@ -439,7 +439,7 @@
 
         }
 
-        public static bool checkNullFeatureVectorList(List<FeatureVector> featureVectorList)
+        public static bool checkNullFeatureVectorList(List<RidgeNeighbourhoodFeatureVector> featureVectorList)
         {
             var result = 0;
             var numberOfSlices = featureVectorList.Count();
