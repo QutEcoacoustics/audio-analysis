@@ -27,21 +27,31 @@
 
         public double MaxFrequency { get; set; }
 
-        public double duration { get; set; }
+        /// <summary>
+        /// to keep the time position in the long audio file for calculating the representation for this position. 
+        /// </summary>
+        public double TimePosition_TopLeft { get; set; }
 
-        public int frequencyRange { get; set; }
+        /// <summary>
+        /// to keep the frequencyband for calculating the representation for this position. 
+        /// </summary>
+        public double FrequencyBand_TopLeft { get; set; }
 
-        public int neighbourhoodLength { get; set; }
+        public TimeSpan duration { get; set; }
+
+        public double frequencyRange { get; set; }
+
+        public int neighbourhoodHeight { get; set; }
 
         public int neighbourhoodWidth { get; set; }
-
-        // the first value means the orentation type, and the second values means the count of poi with this orentation type. 
-        public Tuple<int, int> Slope { get; set; }
 
         // Gets or sets the orientation type 
         public int OrientationType { get; set; }
 
         public int poiatParticularOrientationCount { get; set; }
+
+        // the first value means the orentation type, and the second values means the count of poi with this orentation type. 
+        public Tuple<int, int> Slope { get; set; }
 
         public int SlopeScore { get; set; }
 
@@ -133,15 +143,7 @@
 
         public int TimePositionPix { get; set; }
 
-        /// <summary>
-        /// to keep the time position in the long audio file for calculating the representation for this position. 
-        /// </summary>
-        public double TimePosition_TopLeft { get; set; }
-
-        /// <summary>
-        /// to keep the frequencyband for calculating the representation for this position. 
-        /// </summary>
-        public double FrequencyBand_TopLeft { get; set; }
+        
 
         #region constructor
        

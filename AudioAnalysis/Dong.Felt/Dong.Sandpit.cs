@@ -286,14 +286,18 @@
                 //var filterfinalListOfPositions = FilterOutOverlappedEvents(listOfPositions, searchFrameStep, times);             
 
                 /// Put the result into csv file
-                //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\EventLocationCSVResults.csv";
-                var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\NeighbourhoodRepresentationCSVResults1.csv";
+                //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\NeighbourhoodRepresentatoinCSVResults2.csv";
+                var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults1.csv";
                 //TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
                // CSVResults.EventLocationToCSV(filterfinalListOfPositions, filePath);
-                var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-                var subMatrix = StatisticalAnalysis.Submatrix(Matrix, 0, 0, neighbourhoodSize, neighbourhoodSize);
-                CSVResults.NeighbourhoodRepresentationToCSV(subMatrix, filePath);
-
+                //var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+                //var subMatrix = StatisticalAnalysis.Submatrix(Matrix, 0, 0, neighbourhoodSize, neighbourhoodSize);
+                //CSVResults.NeighbourhoodRepresentationToCSV(subMatrix, 0, 0, filePath);
+                //var audioFileName = wavFilePath;
+                //CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodSize, audioFileName, outputFilePath);               
+                var csvFile = new FileInfo(outputFilePath);
+                //var nhFromCsvFile = CSVResults.CSVToNeighbourhoodRepresentation(csvFile);
+                var nhFromCsvFile = CSVResults.CSVToRegionRepresentation(csvFile);
                 var finalAcousticEvents = new List<AcousticEvent>();
                 //foreach (var p in filterfinalListOfPositions)
                 ////////foreach (var p in itemList)
