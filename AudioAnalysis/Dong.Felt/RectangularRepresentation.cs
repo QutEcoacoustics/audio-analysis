@@ -488,7 +488,7 @@ namespace Dong.Felt
                 }
             }
             result.neighbourhoodWidth = neighbourhoodWidth;
-            result.neighbourhoodLength = neighbourhoodLength;
+            result.neighbourhoodHeight = neighbourhoodLength;
             result.HorizontalVector = horizontalDirection;
             result.VerticalVector = verticalDirection;
             result.PositiveDiagonalVector = positiveDiagonalDirection;
