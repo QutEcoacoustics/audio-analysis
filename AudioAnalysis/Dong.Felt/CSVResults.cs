@@ -9,9 +9,10 @@
     using AudioAnalysisTools;
     using System.Drawing;
 
-    class CSVResults
+    public class CSVResults
     {
-        #region
+        
+        #region  Public Methods
 
         public static void EventLocationToCSV(List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>> listOfPositions, string filePath)
         {
@@ -45,46 +46,6 @@
             results.Add(new List<string>() { nh.RowIndex.ToString(), nh.ColIndex.ToString(), 
                 nh.WidthPx.ToString(), nh.HeightPx.ToString(), nh.Duration.ToString(), 
                 nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
-            //for (int index = 0; index < featureVectorList.Count; index++)
-            //{
-            //    var lp = listOfPositions[index];
-            //    var neighbourhoodCount = lp.Item2.Count;
-            //    var rowCount = (query[0].MaxRowIndex - query[0].MinRowIndex) / neighbourhoodLength;
-            //    var colCount = (query[0].MaxColIndex - query[0].MinColIndex) / neighbourhoodLength;
-            //    for (int nhRowIndex = 0; nhRowIndex < rowCount; nhRowIndex++)
-            //    {
-            //        for (int nhColIndex = 0; nhColIndex < colCount; nhColIndex++)
-            //        {
-            //            var currentNumber = index + 1;
-            //            var currentFeatureVector = lp.Item2[nhRowIndex + nhColIndex];
-            //            var nh = new RidgeDescriptionNeighbourhoodRepresentation()
-            //            {
-            //                RowIndex = nhRowIndex,
-            //                ColIndex = nhColIndex,
-            //                WidthPx = neighbourhoodLength,
-            //                HeightPx = neighbourhoodLength,
-            //                Duration = TimeSpan.FromMilliseconds(currentFeatureVector.duration),
-            //                // Need to fix the frequencyRange. 
-            //                FrequencyRange = 550.0,//currentFeatureVector.MaxFrequency - currentFeatureVector.MinFrequency,
-            //            };
-
-            //            nh.dominantOrientationType = currentFeatureVector.Slope.Item1;
-            //            nh.dominantPOICount = currentFeatureVector.Slope.Item2;
-
-            //            results.Add(new List<string>() { 
-            //                currentNumber.ToString(), 
-            //                nh.RowIndex.ToString(), 
-            //                nh.ColIndex.ToString(), 
-            //                nh.WidthPx.ToString(),
-            //                nh.HeightPx.ToString(),
-            //                nh.Duration.TotalMilliseconds.ToString(),
-            //                nh.FrequencyRange.ToString(),
-            //                nh.dominantOrientationType.ToString(), 
-            //                nh.dominantPOICount.ToString() 
-            //            });
-            //        }
-            //    }
-            //}
             File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         }
 
@@ -121,19 +82,19 @@
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
                         neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col);
-                        var RowIndex = row  *  frequencyScale;
-                        var ColIndex = col * timeScale;                        
+                        var RowIndex = col * timeScale;
+                        var ColIndex = 11025 - row * frequencyScale;                        
                         var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
                         var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
 
                         if (row == 0 && col == 0)
                         {
-                            results.Add(new List<string>() { audioFileName, ColIndex.ToString(), RowIndex.ToString(),
+                            results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
                             dominantOrientation.ToString(), dominantPoiCount.ToString() });
                         }
                         else
                         {
-                            results.Add(new List<string>() { " ",  ColIndex.ToString(), RowIndex.ToString(), 
+                            results.Add(new List<string>() { " ",  RowIndex.ToString(), ColIndex.ToString(), 
                             dominantOrientation.ToString(), dominantPoiCount.ToString() });
                         }
                     }
@@ -154,6 +115,24 @@
                 results.Add(nh);
             }
             return results;
+        }
+
+        public static void BatchProcess(string fileDirectoryPath)
+        {
+            string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
+            
+            var fileCount = fileEntries.Count();
+            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+            {
+                var poi = new List<PointOfInterest>();
+                var poiList = new POISelection(poi);
+                var ridgeLength = 5;
+                var magnitudeThreshold = 5.5;
+                poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
+                var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);
+                var neighbourhoodLength = 13;
+                CSVResults.RegionToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv");
+            }
         }
 
         #endregion

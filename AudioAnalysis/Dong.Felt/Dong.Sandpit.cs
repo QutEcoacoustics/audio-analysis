@@ -45,10 +45,13 @@
                 // read one specific recording
                 //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
                 //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
+               //var fileDirectory = @"C:\Test recordings\input";
+               //CSVResults.BatchProcess(fileDirectory);
+
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
                 string imageFileName = "test.png";
-                string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.png";
+                string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-1.png";
                 double magnitudeThreshold = 5.5; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
@@ -56,7 +59,7 @@
                 //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
                 var scores = new List<Plot>(); // plot(title, data, threshold);
-                
+
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> acousticEventlist = null;
                 var poiList1 = new List<PointOfInterest>();
@@ -92,8 +95,8 @@
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
                 var pointsOfInterest = new POISelection(poiList1);
-                pointsOfInterest.SelectPointOfInterest(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                
+                pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+
                 //var timeUnit = 1;  // 1 second
                 //var edgeStatistic = FeatureVector.EdgeStatistics(poiList, rows, cols, timeUnit, secondsScale);
                 /// filter out some redundant poi                
@@ -123,7 +126,7 @@
                 //var duration = endTime - startTime;  // second
 
                 /// For Scarlet honeyeater1
-                var scarletHoneyeater1 = new Query(8200.0, 4900.0, 15.5, 16.0);               
+                var scarletHoneyeater1 = new Query(8200.0, 4900.0, 15.5, 16.0);
                 //var duration = endTime - startTime;  // second
 
                 /// For Torresian Crow1
@@ -133,7 +136,7 @@
                 /// For Grey Fantail1
                 var greyFantail1 = new Query(7200.0, 4700.0, 52.8, 54.0);
                 //var duration = greyFantail1.duration;
- 
+
                 /// For Brown Cuckoo-dove1
                 var brownCuckoodove1 = new Query(970.0, 500.0, 15.0, 16.0);
                 var duration = brownCuckoodove1.duration;  // second
@@ -147,130 +150,26 @@
                 var queryFeatureVector = TemplateTools.Brown_Cuckoodove1();
                 //var queryFeatureVector = TemplateTools.Grey_Shrikethrush4();
                 //var queryFeatureVector = TemplateTools.Scarlet_Honeyeater1();
-
-                //var results = new List<string>();
-                //results.Add("SliceNumber, HorizontalVector");
-                //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
-                //{
-                //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
-                //    sliceIndex, queryFeatureVector[sliceIndex].HorizontalVector[0],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[1],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[2],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[3],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[4],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[5],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[6],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[7],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[8],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[9],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[10],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[11],
-                //    queryFeatureVector[sliceIndex].HorizontalVector[12], " "));
-                //}
-
-                //results.Add("SliceNumber, VerticalVector");
-                //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
-                //{
-                //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
-                //    sliceIndex, queryFeatureVector[sliceIndex].VerticalVector[0],
-                //    queryFeatureVector[sliceIndex].VerticalVector[1],
-                //    queryFeatureVector[sliceIndex].VerticalVector[2],
-                //    queryFeatureVector[sliceIndex].VerticalVector[3],
-                //    queryFeatureVector[sliceIndex].VerticalVector[4],
-                //    queryFeatureVector[sliceIndex].VerticalVector[5],
-                //    queryFeatureVector[sliceIndex].VerticalVector[6],
-                //    queryFeatureVector[sliceIndex].VerticalVector[7],
-                //    queryFeatureVector[sliceIndex].VerticalVector[8],
-                //    queryFeatureVector[sliceIndex].VerticalVector[9],
-                //    queryFeatureVector[sliceIndex].VerticalVector[10],
-                //    queryFeatureVector[sliceIndex].VerticalVector[11],
-                //    queryFeatureVector[sliceIndex].VerticalVector[12], " "));
-
-                //}
-
-                //results.Add("SliceNumber, PositiveDiagonalVector");
-                //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
-                //{
-                //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},                       {21}, {22}, {23}, {24}, {25}, {26}",
-                //    sliceIndex, queryFeatureVector[sliceIndex].PositiveDiagonalVector[0],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[1],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[2],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[3],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[4],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[5],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[6],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[7],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[8],
-                //                queryFeatureVector[sliceIndex].PositiveDiagonalVector[9],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[10],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[11],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[12],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[13],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[14],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[15],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[16],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[17],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[18],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[19],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[20],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[21],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[22],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[23],
-                //    queryFeatureVector[sliceIndex].PositiveDiagonalVector[24], " "));
-
-                //}
-
-                //results.Add("SliceNumber, NegativeDiagonalVector");
-                //for (var sliceIndex = 0; sliceIndex < queryFeatureVector.Count(); sliceIndex++)
-                //{
-                //    results.Add(string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},                       {21}, {22}, {23}, {24}, {25}, {26}",
-                //    sliceIndex, queryFeatureVector[sliceIndex].NegativeDiagonalVector[0],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[1],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[2],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[3],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[4],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[5],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[6],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[7],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[8],
-                //                queryFeatureVector[sliceIndex].NegativeDiagonalVector[9],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[10],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[11],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[12],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[13],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[14],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[15],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[16],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[17],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[18],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[19],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[20],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[21],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[22],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[23],
-                //    queryFeatureVector[sliceIndex].NegativeDiagonalVector[24], " "));
-
-                //}
-                //File.WriteAllLines(@"C:\XUEYAN\DICTA Conference data\Training data\Grey Shrike-thrush4\Training\Output result\queryNegativeDiagonalFeatureVector.csv", results.ToArray());
-                var searchFrequencyOffset = 0;
-                var neighbourhoodSize = 13;
-                var searchFrameStep = neighbourhoodSize / 2;              
-                var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
-                 rows, cols, searchFrameStep, searchFrequencyOffset);
+                
+                //var searchFrequencyOffset = 0;
+                //var neighbourhoodSize = 13;
+                //var searchFrameStep = neighbourhoodSize / 2;
+                //var featureVectorList = RectangularRepresentation.MainSlopeRepresentationForIndexing(filterPoiList, queryFeatureVector, neighbourhoodSize,
+                // rows, cols, searchFrameStep, searchFrequencyOffset);
 
                 var listOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
                 //foreach (var fl in featureVectorList)
-                //////foreach (PointOfInterest poi in filterPoiList)
-                //{
-                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                //    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
-                //    //// similarity search with a long recording.
-                //    //var distanceThreshold = 15.0;
-                //    //if (distance <= distanceThreshold)
-                //    //{
-                //    listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
-                //    //}
-                //}
+                foreach (PointOfInterest poi in filterPoiList)
+                {
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    //var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
+                    // similarity search with a long recording.
+                    //var distanceThreshold = 15.0;
+                    //if (distance <= distanceThreshold)
+                    //{
+                    //    listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
+                    //}
+                }
                 //var rank = 10;
                 //var itemList = (from l in listOfPositions
                 //                orderby l.Item1 ascending
@@ -287,17 +186,13 @@
 
                 /// Put the result into csv file
                 //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\NeighbourhoodRepresentatoinCSVResults2.csv";
-                var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults1.csv";
-                //TemplateTools.featureVectorToCSV(finalListOfPositions, filePath);
-               // CSVResults.EventLocationToCSV(filterfinalListOfPositions, filePath);
+                //var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults1.csv";
+               
+               
                 //var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
                 //var subMatrix = StatisticalAnalysis.Submatrix(Matrix, 0, 0, neighbourhoodSize, neighbourhoodSize);
                 //CSVResults.NeighbourhoodRepresentationToCSV(subMatrix, 0, 0, filePath);
-                //var audioFileName = wavFilePath;
-                //CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodSize, audioFileName, outputFilePath);               
-                var csvFile = new FileInfo(outputFilePath);
-                //var nhFromCsvFile = CSVResults.CSVToNeighbourhoodRepresentation(csvFile);
-                var nhFromCsvFile = CSVResults.CSVToRegionRepresentation(csvFile);
+                
                 var finalAcousticEvents = new List<AcousticEvent>();
                 //foreach (var p in filterfinalListOfPositions)
                 ////////foreach (var p in itemList)
@@ -313,9 +208,9 @@
                 //}
                 //scores.Add(new Plot("Similarity Score", scoreData, 5.0));
                 //// output edge image
-                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
+                image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
                 //// output events image
-                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
+                ////image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 image.Save(imagePath, ImageFormat.Png);
                 FileInfo fileImage = new FileInfo(imagePath);

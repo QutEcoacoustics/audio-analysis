@@ -81,7 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticEvents.cs" />
-    <Compile Include="BatchProcess.cs" />
     <Compile Include="Clustering.cs" />
     <Compile Include="CSVResults.cs" />
     <Compile Include="Distance.Tools.cs" />

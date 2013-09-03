@@ -13,6 +13,10 @@ namespace Dong.Felt
     {
         public List<PointOfInterest> poiList {get; set;}
 
+        public int RowsCount {get; set;}
+
+        public int ColsCount {get; set; }
+
         #region Public Methods
 
         public POISelection(List<PointOfInterest> list)
@@ -20,7 +24,7 @@ namespace Dong.Felt
             poiList = list;
         }
 
-        public void SelectPointOfInterest(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
+        public void SelectPointOfInterestFromMatrix(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
         {                       
             int halfLength = ridgeLength / 2;           
             for (int r = halfLength; r < rows - halfLength; r++)
@@ -50,6 +54,54 @@ namespace Dong.Felt
                 }
             }
         }
+
+        public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)
+        {
+            //var spectrogram = SpectrogramGeneration(wavFilePath);
+            var recording = new AudioRecording(wavFilePath);
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
+            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            double herzScale = spectrogram.FBinWidth;
+            double freqBinCount = spectrogram.Configuration.FreqBinCount;
+            var matrix = SpectrogramIntensityToArray(spectrogram);
+            var rowsCount = matrix.GetLength(0);
+            var colsCount = matrix.GetLength(1);
+
+            var result = new List<PointOfInterest>();
+            var pointsOfInterest = new POISelection(result);
+            pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rowsCount, colsCount, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+            
+            poiList = pointsOfInterest.poiList;
+            RowsCount = rowsCount;
+            ColsCount = colsCount;
+        }
+
+        public static List<PointOfInterest> FilterPointsOfInterest(List<PointOfInterest> poiList, int rowsCount, int colsCount)
+        {
+            var pruneAdjacentPoi = ImageAnalysisTools.PruneAdjacentTracks(poiList, rowsCount, colsCount);
+            var filterNeighbourhoodSize = 7;
+            var numberOfEdge = 3;
+            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
+            return filterPoiList;
+        }
+
+        public SpectralSonogram SpectrogramGeneration(string wavFilePath)
+        {
+            var recording = new AudioRecording(wavFilePath);
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+
+            return spectrogram;
+        }
+
+        public double[,] SpectrogramIntensityToArray(SpectralSonogram spectrogram)
+        {           
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            return matrix;
+        }
+
 
         #endregion
 
