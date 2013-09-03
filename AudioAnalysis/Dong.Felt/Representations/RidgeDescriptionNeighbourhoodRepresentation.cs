@@ -99,20 +99,18 @@ namespace Dong.Felt.Representations
         /// <param name="PointY">This value is the Y coordinate of centroid of neighbourhood.</param>
         public void SetDominantNeighbourhoodRepresentation(PointOfInterest[,] neighbourhood, int pointX, int pointY)
         {
-            // Here needs to cut down the long statement, maybe combine the functions. 
-            // get the ridgeNeighbourhoodFeatureVector
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz           
 
             var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(neighbourhood, pointX, pointY);
             var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);
-
             dominantOrientationType = ridgeDominantOrientationRepresentation.Item1;
             dominantPOICount = ridgeDominantOrientationRepresentation.Item2;
-            int maximumRowIndex = neighbourhood.GetLength(1);
-            int maximumColIndex = neighbourhood.GetLength(0);
+            
+            int maximumRowIndex = neighbourhood.GetLength(0);
+            int maximumColIndex = neighbourhood.GetLength(1);
 
-            for (int rowIndex = 0; rowIndex < maximumColIndex; rowIndex++)
+            for (int rowIndex = 0; rowIndex < maximumRowIndex; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < maximumColIndex; colIndex++)
                 {
@@ -122,8 +120,10 @@ namespace Dong.Felt.Representations
                     }
                 }
             }
-            RowIndex = pointX;
-            ColIndex = pointY;
+            
+            // baseclass properties
+            RowIndex = (int)(pointY * timeScale);
+            ColIndex = (int)(pointX * frequencyScale);
             WidthPx = ridgeNeighbourhoodFeatureVector.neighbourhoodWidth;
             HeightPx = ridgeNeighbourhoodFeatureVector.neighbourhoodHeight;
             Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);

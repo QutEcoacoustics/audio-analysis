@@ -191,7 +191,6 @@ namespace Dong.Felt
                 var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
                 var listCount = 0;
                 //search along frequency band by frequencyOffset. 
-
                 for (int row = minRowIndex - frequencyOffset; row <= minRowIndex + frequencyOffset; row++)
                 {
                     // search along time position by searchStep
@@ -296,14 +295,13 @@ namespace Dong.Felt
             array[1] = positiveDiagonalCount;
             array[2] = verticalCount;
             array[3] = negativeDiagonalCount;
-            // maxValue ( slope Index, slope Count)
+           
             var result = new Tuple<int, int>(0, 0);
             var tempMaxCount = 0; 
-            var zero = 0;
+            var none = 0;
             var slopeIndexOffset = 1;
             for (int i = 0; i < array.Length - 1; i++)
             {
-
                 if (tempMaxCount < array[i])
                 {
                     tempMaxCount = array[i];
@@ -311,9 +309,9 @@ namespace Dong.Felt
                 }
                 else
                 {
-                    if (tempMaxCount == 0)
+                    if (tempMaxCount == none)
                     {
-                        result = Tuple.Create(zero, array[i]);
+                        result = Tuple.Create(none, array[i]);
                     }
                 }
             }
@@ -380,9 +378,8 @@ namespace Dong.Felt
         public static RidgeNeighbourhoodFeatureVector SliceRidgeRepresentation(PointOfInterest[,] matrix, int PointX, int PointY)
         {
             var result = new RidgeNeighbourhoodFeatureVector(new Point(PointX, PointY));
-            var neighbourhoodWidth = matrix.GetLength(0);
-            var neighbourhoodLength = matrix.GetLength(1);
-            // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
+            var neighbourhoodWidth = matrix.GetLength(1);
+            var neighbourhoodHeight = matrix.GetLength(0);
             var radiusOfNeighbourhood = neighbourhoodWidth / 2;
 
             var verticalDirection = new int[neighbourhoodWidth];
@@ -488,7 +485,7 @@ namespace Dong.Felt
                 }
             }
             result.neighbourhoodWidth = neighbourhoodWidth;
-            result.neighbourhoodHeight = neighbourhoodLength;
+            result.neighbourhoodHeight = neighbourhoodHeight;
             result.HorizontalVector = horizontalDirection;
             result.VerticalVector = verticalDirection;
             result.PositiveDiagonalVector = positiveDiagonalDirection;
