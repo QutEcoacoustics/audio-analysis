@@ -135,6 +135,17 @@
             }
         }
 
+        public static void SpetrogramReconstructionFromCSVRepresentation(FileInfo filePath)
+        {
+            // rowIndex, colIndex, 
+            var nhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            nhRepresentationList = CSVToRegionRepresentation(filePath);
+
+            foreach (var nh in nhRepresentationList)
+            {
+            }
+
+        }
         #endregion
     }
 }

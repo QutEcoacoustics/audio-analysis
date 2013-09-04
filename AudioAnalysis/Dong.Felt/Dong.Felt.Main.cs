@@ -183,8 +183,8 @@ namespace Dong.Felt
         /// </param>
         public static void Dev(string[] arguments)
         {
-            
-            const string TempDirectory = @"C:\Test recordings\Test1";
+
+            const string TempDirectory = @"C:\Test recordings\Test\first test wav file and results";
             
             arguments = new string[2];
             arguments[0] = "-input";

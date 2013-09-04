@@ -177,24 +177,6 @@ namespace Dong.Felt.Representations
         public static RidgeNeighbourhoodFeatureVector ToFeatureVector(IEnumerable<string[]> lines)
         {
             return null;
-            /*
-            var featureVector = new RidgeNeighbourhoodFeatureVector(new Point(0, 0));
-            
-            for ()
-            {
-            for()
-            }
-            featureVector.TimePosition_TopLeft = lines[1].ElementAt(0);
-            featureVector.FrequencyBand_TopLeft = lines.ElementAt(1);
-            featureVector.neighbourhoodWidth = lines[1].ElementAt(2);
-            featureVector.neighbourhoodHeight = lines[1].ElementAt(3);
-            featureVector.duration = TimeSpan.FromMilliseconds(lines[1].ElementAt(4));
-            featureVector.frequencyRange = lines[1].ElementAt(5);
-            featureVector.OrientationType = lines[1].ElementAt(6);
-            featureVector.poiatParticularOrientationCount = lines[1].ElementAt(7);
-
-            return featureVector;
-            */
         }
 
         public static RidgeDescriptionNeighbourhoodRepresentation FromNeighbourhoodCsv(IEnumerable<string> lines)
