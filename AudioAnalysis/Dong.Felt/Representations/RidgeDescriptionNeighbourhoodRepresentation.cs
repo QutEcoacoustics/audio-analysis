@@ -213,6 +213,138 @@ namespace Dong.Felt.Representations
             return nh;
         }
 
+        //show ridge neighbourhood representation on image
+        public static void RidgeNeighbourhoodRepresentationToImage(Graphics graphics, RidgeDescriptionNeighbourhoodRepresentation nhRepresentation)
+        {
+            int neighbourhoodLength = 13;
+            int nhRadius = neighbourhoodLength / 2;
+            int maxFrequencyBand = 256;
+            int x = StatisticalAnalysis.MilliSecondsToFrameIndex(nhRepresentation.ColIndex);
+            int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFruencyBandIndex(nhRepresentation.RowIndex);
+            int dominantOrientationCategory = nhRepresentation.dominantOrientationType;
+            int dominantPOICount = nhRepresentation.dominantPOICount;
+            //int score = dominantOrientationCategory * dominantPOICount;
+            var brush = new SolidBrush(Color.Black);
+            if (dominantOrientationCategory == 1)
+            {
+                if (dominantPOICount <= neighbourhoodLength)
+                {
+                    //var brush = new SolidBrush(Color.Red);
+                    graphics.FillRectangle(brush, x + nhRadius - dominantPOICount / 2, y - nhRadius, dominantPOICount, 1);
+                }
+                else
+                {
+                    if (dominantPOICount <= 2 * neighbourhoodLength)
+                    {
+                        //var brush = new SolidBrush(Color.Red);
+                        graphics.FillRectangle(brush, x, y - nhRadius, neighbourhoodLength, 1);
+                        graphics.FillRectangle(brush, x + nhRadius - (dominantPOICount - neighbourhoodLength) / 2, y - nhRadius + 1, dominantPOICount - neighbourhoodLength, 1);
+                    }
+                    else
+                    {
+                        if (dominantPOICount <= 3 * neighbourhoodLength)
+                        {
+                            //var brush = new SolidBrush(Color.Red);
+                            graphics.FillRectangle(brush, x, y - nhRadius, 13, 1);
+                            graphics.FillRectangle(brush, x, y - nhRadius + 1, 13, 1);
+                            graphics.FillRectangle(brush, x + nhRadius - (dominantPOICount - 2 * neighbourhoodLength) / 2, y - nhRadius - 1, dominantPOICount - 2 * neighbourhoodLength, 1);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (dominantOrientationCategory == 2)
+                {
+                    if (dominantPOICount <= neighbourhoodLength)
+                    {
+                        //var brush = new SolidBrush(Color.Green);
+                        graphics.FillRectangle(brush, x, y - 7, 1, dominantPOICount);
+                    }
+                    else
+                    {
+                        if (dominantPOICount <= 2 * neighbourhoodLength)
+                        {
+                            //var brush = new SolidBrush(Color.Green);
+                            graphics.FillRectangle(brush, x, y - 7, 1, 13);
+                            graphics.FillRectangle(brush, x - 1, y - 7, 1, dominantPOICount - 13);
+                        }
+                        else
+                        {
+                            if (dominantPOICount <= 3 * neighbourhoodLength)
+                            {
+                                //var brush = new SolidBrush(Color.Green);
+                                graphics.FillRectangle(brush, x, y - 7, 1, 13);
+                                graphics.FillRectangle(brush, x - 1, y - 7, 1, 13);
+                                graphics.FillRectangle(brush, x + 1, y - 7, 1, dominantPOICount - 26);
+                            }
+                            
+                        }
+                    }
+                }
+                else
+                {
+                    if (dominantOrientationCategory == 3)
+                    {
+                        if (dominantPOICount <= neighbourhoodLength)
+                        {
+                            //var brush = new SolidBrush(Color.Blue);
+                            graphics.FillRectangle(brush, x + nhRadius, y - nhRadius, 1, dominantPOICount);
+                        }
+                        else
+                        {
+                            if (dominantPOICount <= 2 * neighbourhoodLength)
+                            {
+                                //var brush = new SolidBrush(Color.Blue);
+                                graphics.FillRectangle(brush, x + nhRadius, y - nhRadius, 1, neighbourhoodLength);
+                                graphics.FillRectangle(brush, x + nhRadius - 1, y - nhRadius, 1, dominantPOICount - neighbourhoodLength);
+                            }
+                            else
+                            {
+                                if (dominantPOICount <= 3 * neighbourhoodLength)
+                                {
+                                    //var brush = new SolidBrush(Color.Blue);
+                                    graphics.FillRectangle(brush, x + nhRadius, y - nhRadius, 1, neighbourhoodLength);
+                                    graphics.FillRectangle(brush, x + nhRadius - 1, y - nhRadius, 1, dominantPOICount - neighbourhoodLength);
+                                    graphics.FillRectangle(brush, x + nhRadius + 1, y - nhRadius, 1, dominantPOICount - 2 * neighbourhoodLength);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (dominantOrientationCategory == 4)
+                        {
+                            if (dominantPOICount <= 13)
+                            {
+                                //var brush = new SolidBrush(Color.Purple);
+                                graphics.FillRectangle(brush, x, y - 7, 1, dominantPOICount);
+                            }
+                            else
+                            {
+                                if (dominantPOICount <= 26)
+                                {
+                                    //var brush = new SolidBrush(Color.Purple);
+                                    graphics.FillRectangle(brush, x, y - 7, 1, 13);
+                                    graphics.FillRectangle(brush, x - 1, y - 7, 1, dominantPOICount - 13);
+                                }
+                                else
+                                {
+                                    if (dominantPOICount <= 39)
+                                    {
+                                       // var brush = new SolidBrush(Color.Purple);
+                                        graphics.FillRectangle(brush, x, y - 7, 1, 13);
+                                        graphics.FillRectangle(brush, x - 1, y - 7, 1, 13);
+                                        graphics.FillRectangle(brush, x + 1, y - 7, 1, dominantPOICount - 26);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
     }
 }

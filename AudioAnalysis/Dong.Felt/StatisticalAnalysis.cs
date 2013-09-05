@@ -11,13 +11,25 @@
 
     class StatisticalAnalysis
     {
+        // Transpose matrix by transform the top row to the bottom row, the column doesn't change. 
+        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+
+            foreach (PointOfInterest poi in list)
+            {
+                m[rows - poi.Point.Y, poi.Point.X] = poi;
+            }
+            return m;
+        }
+         
         // 2D matrix to 1D matrix
         /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[] MatrixTransform(double[,] matrix)
+        public static double[] TwoDMatrixTo1D(double[,] matrix)
         {
             var row = matrix.GetLength(0);
             var col = matrix.GetLength(1);
@@ -262,6 +274,22 @@
                     writer.WriteLine(string.Join(", ", props.Select(p => p.GetValue(item, null))));
                 }
             }
+        }
+
+        public static int MilliSecondsToFrameIndex(double milliSeconds)
+        {
+           // int maxFrequencyBand = 256;
+            //double frequencyScale = 43.0;
+            double framePerSecond = 86.0;  // ms
+            int timeTransfromUnit = 1000; // from ms to s 
+            return (int)(milliSeconds / timeTransfromUnit * framePerSecond);
+        }
+
+        public static int FrequencyToFruencyBandIndex(int frequency)
+        {
+            
+            double frequencyScale = 43.0;
+            return (int)(frequency / frequencyScale);
         }
 
     }

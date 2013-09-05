@@ -69,10 +69,12 @@
             var results = new List<List<string>>();
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
                 "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount" });
-            var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            //var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var rowOffset = neighbourhoodLength;
             var colOffset = neighbourhoodLength;
             // rowsCount = 257, colsCount = 5167
+            //Todo:  add neighbourhood search step here, which means I need to improve the rowOffset and colOffset.
             for (int row = 0; row < rowsCount; row += rowOffset)  
             {
                 for (int col = 0; col < colsCount; col += colOffset)
@@ -83,11 +85,11 @@
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
                         neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col);
                         var RowIndex = col * timeScale;
-                        var ColIndex = 11025 - row * frequencyScale;                        
+                        var ColIndex = row * frequencyScale;                        
                         var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
                         var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
 
-                        if (row == 0 && col == 0)
+                        if (row == rowsCount - 1 && col == 0)
                         {
                             results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
                             dominantOrientation.ToString(), dominantPoiCount.ToString() });
@@ -135,17 +137,6 @@
             }
         }
 
-        public static void SpetrogramReconstructionFromCSVRepresentation(FileInfo filePath)
-        {
-            // rowIndex, colIndex, 
-            var nhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            nhRepresentationList = CSVToRegionRepresentation(filePath);
-
-            foreach (var nh in nhRepresentationList)
-            {
-            }
-
-        }
         #endregion
     }
 }

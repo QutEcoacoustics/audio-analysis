@@ -11,6 +11,7 @@
     using System.Drawing.Imaging;
     using log4net;
     using AnalysisBase;
+    using Representations;
 
     class Dong
     {
@@ -32,69 +33,50 @@
                 /// Read one specific file name/path 
                 // with human beings
                 //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png")); 
-
-                // just simple shapes
-                //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage3\TestImage3.png")); 
-
                 // real spectrogram
                 //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));               
                 //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
                 //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result";
                 //string imageFileName = "CannyEdgeDetector1.png";
 
-                // read one specific recording
-                //string wavFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM4420036_min430Crows-1minute.wav";
-                //string wavFilePath = @"C:\Test recordings\Scarlet honey eater\NW_NW273_20101013-051800.wav";
-               //var fileDirectory = @"C:\Test recordings\input";
-               //CSVResults.BatchProcess(fileDirectory);
-                //string imageFileName = "test.png";
-                //string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                //string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";     
-                //string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-1.png";
-                //double magnitudeThreshold = 5.5; // of ridge height above neighbours
-                ////double intensityThreshold = 5.0; // dB
-                //var recording = new AudioRecording(wavFilePath);
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                ////var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
-                //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-                ///// set the parameters for DrawSonogram. 
-                //var scores = new List<Plot>(); // plot(title, data, threshold);                
-                //List<AcousticEvent> acousticEventlist = null;
-                //double eventThreshold = 0.5; // dummy variable - not used                               
-                //Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                //string imagePath = Path.Combine(outputDirectory, imageFileName);
-                //// addd this line to check the result after noise removal.
-                //image.Save(imagePath, ImageFormat.Png);
+                //var fileDirectory = @"C:\Test recordings\input";
+                //CSVResults.BatchProcess(fileDirectory);
 
-                //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);              
-                ///* just an example
-                //var convert = poiList
-                //    .OrderBy(poi => poi.Point.X)
-                //    .ThenBy(poi => poi.Point.Y)
-                //    .Aggregate<PointOfInterest, double[,]>(
-                //        new double[poiList.Max(poi => poi.Point.X), poiList.Max(poi => poi.Point.Y)], 
-                //        (double[,] aggregation, PointOfInterest current) =>
-                //        {
-                //            aggregation[current.Point.X, current.Point.Y] = current.Intensity;
-                //            return aggregation;
-                //        }
-                //);
-                //*/
-                //int rows = matrix.GetLength(0);
-                //int cols = matrix.GetLength(1);
-                //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
-                //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                //double herzScale = spectrogram.FBinWidth;
-                //double freqBinCount = spectrogram.Configuration.FreqBinCount;
-                //int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
-                //var poiList1 = new List<PointOfInterest>();
-                //var pointsOfInterest = new POISelection(poiList1);
-                //pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                ///// filter out some redundant poi                
-                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(pointsOfInterest.poiList, rows, cols);
-                //var filterNeighbourhoodSize = 7;
-                //var numberOfEdgePoints = 3;
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdgePoints);
+                string imageFileName = "improved index - test3.png";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
+                string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-1.png";
+                double magnitudeThreshold = 5.5; // of ridge height above neighbours
+                //double intensityThreshold = 5.0; // dB
+                var recording = new AudioRecording(wavFilePath);
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
+                var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+                /// set the parameters for DrawSonogram. 
+                var scores = new List<Plot>(); // plot(title, data, threshold);                
+                List<AcousticEvent> acousticEventlist = null;
+                double eventThreshold = 0.5; // dummy variable - not used                               
+                Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                string imagePath = Path.Combine(outputDirectory, imageFileName);
+                // addd this line to check the result after noise removal.
+                image.Save(imagePath, ImageFormat.Png);
+
+                double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+                int rows = matrix.GetLength(0);
+                int cols = matrix.GetLength(1);
+                double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
+                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                double herzScale = spectrogram.FBinWidth;
+                double freqBinCount = spectrogram.Configuration.FreqBinCount;
+                int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
+                var poiList1 = new List<PointOfInterest>();
+                var pointsOfInterest = new POISelection(poiList1);
+                pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                /// filter out some redundant poi                
+                var poiList = ImageAnalysisTools.PruneAdjacentTracks(pointsOfInterest.poiList, rows, cols);
+                var filterNeighbourhoodSize = 7;
+                var numberOfEdgePoints = 3;
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdgePoints);
                 ///// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 ////var maxFrequency = 5124.90;
                 ////var minFrequency = 3359.18;
@@ -146,62 +128,72 @@
                 //// rows, cols, searchFrameStep, searchFrequencyOffset);
 
                 ////var listOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
-                //Bitmap bmp = (Bitmap)image;
+                ///This bmp image is used for showing pointsOfInterest 
+                Bitmap bmp = (Bitmap)image;
                 ////foreach (var fl in featureVectorList)
                 //foreach (PointOfInterest poi in filterPoiList)
                 //{
                 //    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                //    //var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
-                //    // similarity search with a long recording.
-                //    //var distanceThreshold = 15.0;
-                //    //if (distance <= distanceThreshold)
-                //    //{
-                //    //    listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
-                //    //}
+                //    //    var distance = SimilarityMatching.SimilarityScoreOfSlopeScore(fl, queryFeatureVector);
+                //    //     similarity search with a long recording.
+                //    //    var distanceThreshold = 15.0;
+                //    //    if (distance <= distanceThreshold)
+                //    //    {
+                //    //        listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
+                //    //    }
                 //}
-                ////var rank = 10;
-                ////var itemList = (from l in listOfPositions
-                ////                orderby l.Item1 ascending
-                ////                select l);
-                ////var finalListOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
-                ////for (int i = 0; i < rank; i++)
-                ////{
-                ////    finalListOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
-                ////}
-                ////var finalListOfPositions = listOfPositions.GetRange(0, rank);
-                ////var times = queryFeatureVector.Count();
-                ////var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times); 
+                var csvFileName = @"C:\Test recordings\input\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wavfileIndex.csv";
+                var csvFilePath = new FileInfo(csvFileName);
+                var nhRepresentationList = CSVResults.CSVToRegionRepresentation(csvFilePath);
+                var gr = Graphics.FromImage(bmp);
+                foreach (var nh in nhRepresentationList)
+                {
+                    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
+                }
+                //////var rank = 10;
+                //////var itemList = (from l in listOfPositions
+                //////                orderby l.Item1 ascending
+                //////                select l);
+                //////var finalListOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
+                //////for (int i = 0; i < rank; i++)
+                //////{
+                //////    finalListOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
+                //////}
+                //////var finalListOfPositions = listOfPositions.GetRange(0, rank);
+                //////var times = queryFeatureVector.Count();
+                //////var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times); 
 
-                ///// Put the result into csv file
-                ////var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\NeighbourhoodRepresentatoinCSVResults2.csv";
-                ////var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults1.csv";
+                /////// Put the result into csv file
+                //////var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\NeighbourhoodRepresentatoinCSVResults2.csv";
+                //////var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults1.csv";
                             
-                ////var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-                ////var subMatrix = StatisticalAnalysis.Submatrix(Matrix, 0, 0, neighbourhoodSize, neighbourhoodSize);
-                ////CSVResults.NeighbourhoodRepresentationToCSV(subMatrix, 0, 0, filePath);
+                //////var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+                //////var subMatrix = StatisticalAnalysis.Submatrix(Matrix, 0, 0, neighbourhoodSize, neighbourhoodSize);
+                //////CSVResults.NeighbourhoodRepresentationToCSV(subMatrix, 0, 0, filePath);
                 
-                ////var finalAcousticEvents = new List<AcousticEvent>();
-                ////foreach (var p in filterfinalListOfPositions)
-                //////////foreach (var p in itemList)
-                //////////foreach (var p in finalListOfPositions)
-                ////{
-                ////    var startTimePosition = p.Item2[0].TimePosition * secondsScale;
-                ////    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));
-                ////}
-                ////var scoreData = new double[filterfinalListOfPositions.Count()]; 
-                ////for (int i = 0; i < filterfinalListOfPositions.Count(); i++)
-                ////{
-                ////    scoreData[i] = filterfinalListOfPositions[i].Item1;
-                ////}
-                ////scores.Add(new Plot("Similarity Score", scoreData, 5.0));
-                
+                //////var finalAcousticEvents = new List<AcousticEvent>();
+                //////foreach (var p in filterfinalListOfPositions)
+                ////////////foreach (var p in itemList)
+                ////////////foreach (var p in finalListOfPositions)
+                //////{
+                //////    var startTimePosition = p.Item2[0].TimePosition * secondsScale;
+                //////    finalAcousticEvents.Add(new AcousticEvent(startTimePosition, duration, p.Item2[0].MinFrequency, p.Item2[0].MaxFrequency));
+                //////}
+                //////var scoreData = new double[filterfinalListOfPositions.Count()]; 
+                //////for (int i = 0; i < filterfinalListOfPositions.Count(); i++)
+                //////{
+                //////    scoreData[i] = filterfinalListOfPositions[i].Item1;
+                //////}
+                //////scores.Add(new Plot("Similarity Score", scoreData, 5.0));
+                image = (Image)bmp;
+                bmp.Save(imagePath);
                 ////// output ridge image
                 //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
                 ////// output events image
                 //////image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
-                ////imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
-                ////image.Save(imagePath, ImageFormat.Png);
-                //// show the ridge detection result on the bmp image 
+                //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                //image.Save(imagePath, ImageFormat.Png);
+                // show the ridge detection result on the bmp image 
                 //image = (Image)bmp;
                 //bmp.Save(imagePath);
                 //FileInfo fileImage = new FileInfo(imagePath);
@@ -234,17 +226,35 @@
             return image.GetImage();
         } //DrawSonogram()
 
-        //public static Image DrawSonogram(BaseSonogram sonogram, List<Dong.Felt.Representations.RidgeDescriptionNeighbourhoodRepresentation> poiList)
-        //{
-        //    bool doHighlightSubband = false; bool add1kHzLines = true;
-        //    Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-        //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-        //    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-        //    //var image = (Bitmap)sonogram;
+        public static Image DrawSonogram(BaseSonogram sonogram)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //Add this line below
+            return image.GetImage();
+        } //DrawSonogram()
 
-        //    //Add this line below
-        //    return image.GetImage();
-        //} //DrawSonogram()
+        //List<Dong.Felt.Representations.RidgeDescriptionNeighbourhoodRepresentation> poiList
+        public static Image DrawNullSonogram(BaseSonogram sonogram)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            var intensityData = sonogram.Data;
+            var rowsCount = intensityData.GetLength(0);
+            var colsCount = intensityData.GetLength(1);
+            for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < colsCount; colIndex++)
+                {
+                    sonogram.Data[rowIndex, colIndex] = 0.0;
+                }
+            }
+            return image.GetImage();
+        } //DrawSonogram()
 
         // This function still needs to be considered. 
         public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
