@@ -83,7 +83,7 @@ namespace Dong.Felt
             var pruneAdjacentPoi = ImageAnalysisTools.PruneAdjacentTracks(poiList, rowsCount, colsCount);
             var filterNeighbourhoodSize = 7;
             var numberOfEdge = 3;
-            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
+            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
             return filterPoiList;
         }
 
