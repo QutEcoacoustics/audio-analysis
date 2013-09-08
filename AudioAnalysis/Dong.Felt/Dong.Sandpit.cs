@@ -42,7 +42,7 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
 
-                string imageFileName = "improved index - test3.png";
+                string imageFileName = "improved index - test7.png";
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
                 string annotatedImageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-1.png";
@@ -187,13 +187,12 @@
                 //////scores.Add(new Plot("Similarity Score", scoreData, 5.0));
                 image = (Image)bmp;
                 bmp.Save(imagePath);
-                ////// output ridge image
-                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
-                ////// output events image
-                //////image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
+
+                /// output events image
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, filterPoiList);
                 //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 //image.Save(imagePath, ImageFormat.Png);
-                // show the ridge detection result on the bmp image 
+                /// show the ridge detection result on the bmp image 
                 //image = (Image)bmp;
                 //bmp.Save(imagePath);
                 //FileInfo fileImage = new FileInfo(imagePath);
