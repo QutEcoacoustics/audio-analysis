@@ -85,20 +85,22 @@ namespace AudioAnalysisTools
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-            Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-
-            int offset = 0;
-            gr.DrawImage(titleBmp, 0, offset); //draw in the top title
-            offset += trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            offset += trackHeight;
-            for (int i = 0; i < bitmaps.Count; i++)
+            using (Graphics gr = Graphics.FromImage(compositeBmp))
             {
-                gr.DrawImage(bitmaps[i], 0, offset);
+                gr.Clear(Color.Black);
+
+                int offset = 0;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top title
                 offset += trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset += trackHeight;
+                for (int i = 0; i < bitmaps.Count; i++)
+                {
+                    gr.DrawImage(bitmaps[i], 0, offset);
+                    offset += trackHeight;
+                }
+                gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
             }
-            gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
             return compositeBmp;
         }
 

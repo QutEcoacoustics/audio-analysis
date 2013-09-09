@@ -127,15 +127,21 @@
         }
 
         static int instanceCounter = 0;
-        int myInstanceId;
+        int instanceId;
 
         public AnalysisSettings()
         {
             instanceCounter++;
-            myInstanceId = instanceCounter;
+            instanceId = instanceCounter;
         }
 
-        public int MyInstanceId { get { return myInstanceId; } }
+        public int InstanceId { get { return instanceId; } }
+
+        public override string ToString()
+        {
+            return string.Format("Settings for {0} with instance id {1} and config file {2}.",
+                this.AudioFile.Name, this.InstanceId, this.ConfigFile.Name);
+        }
 
         /// <summary>
         /// Gets or sets the directory that is the base of the folder structure that analyses can use.
@@ -210,6 +216,8 @@
         /// This should be set to an initial value by an analysis.
         /// </summary>
         public TimeSpan? SegmentMaxDuration { get; set; }
+
+        public TimeSpan? StartOfSegment { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
@@ -334,7 +342,5 @@
 
             return newSettings;
         }
-
-        public TimeSpan? StartOfSegment { get; set; }
     }
 }

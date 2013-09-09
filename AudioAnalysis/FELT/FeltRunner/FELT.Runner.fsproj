@@ -92,7 +92,6 @@
       <Link>log4net.config</Link>
     </None>
     <None Include="App.config" />
-    <None Include="packages.config" />
     <None Include="..\..\AnalysisConfigFiles\Truskinger.Felt.Search.config">
       <Link>Truskinger.Felt.Search.config</Link>
     </None>
@@ -111,6 +110,7 @@
       <Link>ExcelResultsComputationTemplate.xlsx</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
@@ -135,6 +135,18 @@
     </ProjectReference>
     <Reference Include="EPPlus">
       <HintPath>..\..\..\Extra Assemblies\EPPlus 3.0\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack">
+      <HintPath>..\..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Linq">
+      <HintPath>..\..\packages\FSPowerPack.Linq.Community.3.0.0.0\lib\Net40\FSharp.PowerPack.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="mscorlib" />

@@ -134,8 +134,6 @@ namespace AnalysisRunner
             }
         }
 
-
-
         /// <summary>
         /// Get the source files based on analysis <paramref name="analysisSettings"/>.
         /// </summary>

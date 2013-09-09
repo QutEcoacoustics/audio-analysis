@@ -75,6 +75,38 @@
         }
 
         /// <summary>
+        /// Gets a temporary file location. 
+        /// File will be 8.3 (eg. abcdefgh.[given ext]).
+        /// File will not exist.
+        /// </summary>
+        /// <param name="ext">File extension (without dot).</param>
+        /// <returns>File with extension.</returns>
+        public static FileInfo NewTempFileWithExt(DirectoryInfo tempDir, string ext)
+        {
+            // ensure extension is valid (or not present).
+            if (string.IsNullOrEmpty(ext))
+            {
+                // no extension
+                ext = string.Empty;
+            }
+            else if (!ext.StartsWith("."))
+            {
+                ext = "." + ext;
+            }
+
+            // get a new temp file name, and remove the extension and dot.
+            var currentTempFile = new FileInfo(Path.Combine(tempDir.FullName, Path.GetRandomFileName()));
+            var tempFile = currentTempFile.FullName;
+            var toremove = currentTempFile.Extension.Length + 1; // also remove dot.
+            var tokeep = tempFile.Length - toremove;
+
+            tempFile = tempFile.Substring(0, tokeep);
+            tempFile = tempFile + ext;// add ext
+
+            return new FileInfo(Path.Combine(TempDir.FullName, tempFile));
+        }
+
+        /// <summary>
         /// Copy from <paramref name="source"/> Stream to Working File.
         /// </summary>
         /// <param name="source">
