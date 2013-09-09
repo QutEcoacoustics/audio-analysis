@@ -183,7 +183,6 @@ namespace Dong.Felt.Representations
         {
             // assume csv file is laid out as we expect it to be.
             var listLines = lines.ToList();
-
             var nh = new RidgeDescriptionNeighbourhoodRepresentation()
             {
                 ColIndex = int.Parse(listLines[0]),
@@ -212,8 +211,12 @@ namespace Dong.Felt.Representations
             };
             return nh;
         }
-
-        //show ridge neighbourhood representation on image
+ 
+        /// <summary>
+        /// This method is used for reconstruct the spectrogram with ridge neighbourhood representation, it can be done by show ridge neighbourhood representation on image. 
+        /// </summary>
+        /// <param name="graphics"></param>
+        /// <param name="nhRepresentation"></param>
         public static void RidgeNeighbourhoodRepresentationToImage(Graphics graphics, RidgeDescriptionNeighbourhoodRepresentation nhRepresentation)
         {
             int neighbourhoodLength = 13;
@@ -230,6 +233,18 @@ namespace Dong.Felt.Representations
             FillNeighbourhood(graphics, brush, pen, dominantOrientationCategory, times, score, x, y, neighbourhoodLength);          
         }
 
+        /// <summary>
+        /// This method is used to fill the neighbourhood by drawing lines. The lines can be horizontal, vertical, diagonal. 
+        /// </summary>
+        /// <param name="graphics"></param>
+        /// <param name="brush"></param>
+        /// <param name="pen"></param>
+        /// <param name="orientationType"></param>
+        /// <param name="times"></param>
+        /// <param name="scores"></param>
+        /// <param name="startPointX"></param>
+        /// <param name="startPointY"></param>
+        /// <param name="neighbourhoodLength"></param>
         public static void FillNeighbourhood(Graphics graphics, SolidBrush brush, Pen pen, int orientationType, int times, int scores, int startPointX, int startPointY, int neighbourhoodLength)
         {
             var nhRadius = neighbourhoodLength / 2;
