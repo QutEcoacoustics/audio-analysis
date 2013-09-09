@@ -193,7 +193,7 @@ namespace AnalysisPrograms
             if (tsDuration.TotalSeconds == 0) // Process entire file
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE });
-            }                                                                                               
+            }
             else
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) });
@@ -224,7 +224,7 @@ namespace AnalysisPrograms
             //DataTableTools.WriteTable2Console(dt);
 
             // WRITE SUMMARY SPECTRA TO FILE HERE
-            int ID = result.SegmentStartOffset.Minutes; 
+            int ID = result.SegmentStartOffset.Minutes;
             string path = analysisSettings.IndicesFile.FullName;
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
@@ -248,7 +248,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
+            analysisResults.SegmentStartOffset = analysisSettings.StartOfSegment.HasValue ? analysisSettings.StartOfSegment.Value : TimeSpan.Zero;
             analysisResults.Data = null;
 
             // ######################################################################
@@ -274,9 +274,9 @@ namespace AnalysisPrograms
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_TemporalEntropy, indices.HtSpectrum);
 
             var sonogram = results.Item3;
-            var hits     = results.Item4;
-            var plots    = results.Item5;
-            var tracks   = results.Item6;
+            var hits = results.Item4;
+            var plots = results.Item5;
+            var tracks = results.Item6;
 
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
@@ -312,7 +312,7 @@ namespace AnalysisPrograms
                     image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
             if (tracks != null) image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
-            if (hits != null) image.OverlayRainbowTransparency(hits); 
+            if (hits != null) image.OverlayRainbowTransparency(hits);
             return image.GetImage();
         } //DrawSonogram()
 
@@ -522,7 +522,7 @@ namespace AnalysisPrograms
                 else if (headers[i].Equals(AcousticFeatures.header_NumClusters))
                 {
                     min = 0.0; //
-                    max = 20.0; 
+                    max = 20.0;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0..20)";
                 }

@@ -26,7 +26,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
-            DataTable datatable = null;
+            DataTable datatable = new DataTable();
             int count = 0;
             foreach (var result in analyserResults)
             {
@@ -124,6 +124,10 @@ namespace AudioAnalysisTools
                 {
                     masterDataTable = segmentDataTable.Clone();
                 }
+
+
+                masterDataTable.Merge(segmentDataTable);
+                /*
                 var headers = new List<string>();
 
                 foreach (DataColumn col in segmentDataTable.Columns)
@@ -145,6 +149,7 @@ namespace AudioAnalysisTools
                     if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
                     masterDataTable.ImportRow(row);
                 }
+                */
             } //if (dt != null)
 
             return masterDataTable;

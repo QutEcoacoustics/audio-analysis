@@ -461,5 +461,22 @@
 
             return dirs;
         }
+
+        public static IEnumerable<DirectoryInfo> GetDirs(string key, bool checkAnyExist, params string[] separators)
+        {
+            var value = GetString(key);
+
+            var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+            var dirs =
+                values.Where(v => !string.IsNullOrEmpty(v)).Select( v => new DirectoryInfo(v)).ToList();
+
+            if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
+            {
+                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
+            }
+
+            return dirs;
+        }
     }
 }

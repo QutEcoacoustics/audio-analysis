@@ -365,7 +365,7 @@
             Log "start roc Data"
 
             //setv rocData "RocPlaces" rocBinaryClassifierPlaceLimit
-            setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.Error;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
+            setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.StandardError;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
             // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
             setv rocData "ModifiedAUC" modifiedAUC
             //let sortedRocPoints = (rocCurve.Points |> Seq.zip modifiedCutoffs |> Seq.sortBy (fun x -> (snd x).Cutoff) )

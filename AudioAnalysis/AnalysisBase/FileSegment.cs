@@ -38,15 +38,9 @@
 
         /// <summary>
         /// Gets or sets the original audio file Sample rate.
-        /// May be required when oding analysis
+        /// May be required when doing analysis.
         /// </summary>
         public int? OriginalFileSampleRate { get; set; }
-
-        /// <summary>
-        /// This member may be way of dealing with the extraction history of segments.
-        /// However I have not used it.
-        /// </summary>
-        public FileSegment veryOriginalAudioFile { get; set; }
 
         /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.
@@ -74,6 +68,17 @@
             }
 
             return true;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({3}{4}) {1} - {2}",
+                this.OriginalFile.Name,
+                this.SegmentStartOffset.HasValue ? this.SegmentStartOffset.Value.ToString() : "start",
+                this.SegmentEndOffset.HasValue ? this.SegmentEndOffset.Value.ToString() : "end",
+                this.OriginalFileDuration,
+                this.OriginalFileSampleRate.HasValue ? ", "+this.OriginalFileSampleRate.Value+"hz" : string.Empty
+                );
         }
     }
 }

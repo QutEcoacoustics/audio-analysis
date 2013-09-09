@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Data;
-    using System.Diagnostics; //for the StopWatch only
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -24,6 +24,8 @@
 
     using LINQtoCSV;
     using log4net;
+    using AudioBrowser.Tab;
+    using log4net.Appender;
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -32,1660 +34,116 @@
 
     public partial class MainForm : Form
     {
-        private readonly TextWriter consoleWriter;
-        private readonly IAudioUtility audioUtilityForDurationColumn;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MainForm));
 
-        //identifers for the TAB panels/pages
-        private string tabPageOutputFilesLabel = "tabPageOutputFiles";
-        private string tabPageSourceFilesLabel = "tabPageSourceFiles";
-        private string tabPageDisplayLabel = "tabPageDisplay";
-        private string tabPageConsoleLabel = "tabPageConsole";
 
-        //int totalCheckBoxesCSVFileList = 0;
-        //int totalCheckedCheckBoxesCSVFileList = 0;
-        //CheckBox headerCheckBoxCSVFileList = null;
-        //bool isHeaderCheckBoxClickedCSVFileList = false;
+        // START hard code area (comment this before commiting!)
 
-        int totalCheckBoxesSourceFileList = 0;
-        int totalCheckedCheckBoxesSourceFileList = 0;
-        CheckBox headerCheckBoxSourceFileList = null;
-        bool isHeaderCheckBoxClickedSourceFileList = false;
+        private FileInfo csvFile = new FileInfo(@"F:\Projects\test-audio\Towsey.Crow\2012-01-20-megaherzzz-no-music_Towsey.Crow.Indices.csv");//this.tabBrowseAudio.CsvFile,
+        //private FileInfo  ImgFile = this.tabBrowseAudio.IndicesImageFile,
+        //private FileInfo  AnalysisId = this.tabBrowseAudio.AnalysisId,
+        private FileInfo analysisConfigFile = new FileInfo(@"F:\Projects\QUT\qut-svn-trunk\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg");// this.tabBrowseAudio.ConfigFile,
+        private DirectoryInfo outputDir = new DirectoryInfo(@"F:\Projects\test-audio\");// this.tabBrowseAudio.OutputDirectory,
+        private FileInfo audioFile = new FileInfo(@"F:\Projects\test-audio\2012-01-20-megaherzzz-no-music.mp3");
+        //this.tabBrowseAudio.AudioFile,
 
-        private AudioBrowserSettings browserSettings;
-        private Dictionary<string, string> analysisParams;
 
-        // for calculating a visual index image
-        private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = minutes duration of source recording.
-        private double[] trackValues;
-        private Bitmap selectionTrackImage;
+        // END hard code area (comment this before commiting!)
 
-        private string CurrentSourceFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key; } }
-        //private string CurrentCSVFileAnalysisType { get { return ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key; } }
 
-        //private AnalysisCoordinator analysisCoordinator;
-        private PluginHelper pluginHelper;
+        private Helper helper { get; set; }
 
-        private Pen pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
-
-        private AudioNavigator audioNavigator;
+        private TabAnalyseAudio tabAnalyseAudio;
+        private TabBrowseAudio tabBrowseAudio;
 
         public MainForm()
         {
             // must be here, must be first
             InitializeComponent();
 
-            //Add the CheckBox into the source file list datagridview);
-            this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
-            this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
-            this.headerCheckBoxSourceFileList.KeyUp += this.HeaderCheckBoxSourceFileList_KeyUp;
-            this.headerCheckBoxSourceFileList.MouseClick += this.HeaderCheckBoxSourceFileList_MouseClick;
+            // add richtextbox to logger
+            RichTextBoxAppender.SetRichTextBox(this.richTextBoxConsole, "RichTextBoxAppender");
 
-            // Redirect the out Console stream
-            this.consoleWriter = new TextBoxStreamWriter(this.textBoxConsole);
-            Console.SetOut(this.consoleWriter);
+            // available logging levels:
+            //Log.Fatal("Fatal", exception); //Log.FatalFormat("{0}", "Fatal"); 
+            //Log.Error("Error", exception); //Log.FatalFormat("{0}", "Error");
+            //Log.Warn("Warn", exception); //Log.FatalFormat("{0}", "Warn");
+            //Log.Info("Info", exception); //Log.FatalFormat("{0}", "Info");
+            //Log.Debug("Debug", exception); //Log.FatalFormat("{0}", "Debug");
 
-            //use to display file size in file open window
-            this.audioUtilityForDurationColumn = new MasterAudioUtility();
+            this.helper = new Helper();
 
-            this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
-            this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
+            Log.Info("Starting up " + this.helper.ImageTitle + this.helper.Copyright);
+            Log.Info(DateTime.Now);
 
-            this.fileDateDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
-            this.fileDateDataGridViewTextBoxColumn.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
-
-            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new TimeSpanFormatter();
-            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.Format = TimeSpanFormatter.FormatString;
-
-            // background workers setup
-            this.backgroundWorkerUpdateSourceFileList.DoWork += this.BackgroundWorkerUpdateSourceFileListDoWork;
-            this.backgroundWorkerUpdateSourceFileList.RunWorkerCompleted +=
-                (sender, e) =>
-                this.BeginInvoke(
-                    new Action<object, RunWorkerCompletedEventArgs>(
-                    this.BackgroundWorkerUpdateSourceFileListRunWorkerCompleted),
-                    sender,
-                    e);
-
-            //finds valid analysis files that implement the IAnalysis interface
-            this.pluginHelper = new PluginHelper();
-            this.pluginHelper.FindIAnalysisPlugins();
-            var analyserList = this.pluginHelper.GetAnalysisPluginsList();
-
-            //create comboBox display for Audio File Analysis Tab
-            this.comboAnalysisType.DataSource = analyserList.ToList();
-            this.comboAnalysisType.DisplayMember = "Key";
-            this.comboAnalysisType.DisplayMember = "Value";
-
-            //create comboBox display for Source File Tab
-            this.comboBoxSourceFileAnalysisType.DataSource = analyserList.ToList();
-            this.comboBoxSourceFileAnalysisType.DisplayMember = "Key";
-            this.comboBoxSourceFileAnalysisType.DisplayMember = "Value";
-
-            LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT + AudioBrowserTools.COPYRIGHT);
-            LoggedConsole.WriteLine(DateTime.Now);
-            this.tabControlMain.SelectTab(tabPageConsoleLabel);
-            //return;
+            this.tabAnalyseAudio = new TabAnalyseAudio(this.helper);
 
 
-            //REMAINDER OF METHOD LOADS BROWSER SETTINGS
-            //initialize instance of AudioBrowserSettings class
-            this.browserSettings = new AudioBrowserSettings();
-            this.browserSettings.LoadBrowserSettings();
+            this.tabBrowseAudio = new TabBrowseAudio(this.helper, this.helper.DefaultAnalysisIdentifier, this.helper.DefaultOutputDir,
+                this.helper.DefaultConfigDir, this.helper.DefaultConfigFileExt, this.helper.DefaultAudioFileExt,
+                this.helper.DefaultResultImageFileExt, this.helper.DefaultResultTextFileExt);
 
-            // check for playground mode
-            if (!this.browserSettings.PlaygroundMode)
-            {
-                // hide all but audio navigator and console tabs
-                this.tabControlMain.TabPages.Remove(this.tabAnalyseFile);
-                this.tabControlMain.TabPages.Remove(this.tabPageSourceFiles);
-                this.tabControlMain.TabPages.Remove(this.tabPageDisplay);
-                this.tabControlMain.TabPages.Remove(this.tabPageSearchCsv);
-                this.tabControlMain.TabPages.Remove(this.tabMisc);
 
-                this.tabControlMain.TabPages.Remove(this.tabPageConsole);
-                this.tabControlMain.TabPages.Add(this.tabPageConsole);
-            }
+            // init tabs
+            InitAnalyseTab();
 
-            // if input and output dirs exist, populate datagrids
-            if (browserSettings.diSourceDir != null)
-            {
-                this.tfSourceDirectory.Text = browserSettings.diSourceDir.FullName;
-
-                if (Directory.Exists(browserSettings.diSourceDir.FullName))
-                {
-                    this.UpdateSourceFileList();
-                }
-            }
-
-            //set default analyser
-            var defaultAnalyserExists = analyserList.Any(a => a.Key == browserSettings.AnalysisIdentifier);
-            if (defaultAnalyserExists)
-            {
-                var defaultAnalyser = analyserList.First(a => a.Key == browserSettings.AnalysisIdentifier);
-                this.comboBoxSourceFileAnalysisType.SelectedItem = defaultAnalyser;
-                this.comboAnalysisType.SelectedItem = defaultAnalyser;
-            }
-
-            //string analysisName = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
-            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
-            //this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName;
-            this.browserSettings.AnalysisIdentifier = analysisName;
-
-            var op = LoadAnalysisConfigFile(analysisName);
-            this.browserSettings.fiAnalysisConfig = op.Item1;
-            this.analysisParams = op.Item2;
-
-            this.browserSettings.WriteSettings2Console();
-
-            // hard code defaults for local testing
-            this.audioNavigator = new AudioNavigator(this.browserSettings.diConfigDir, this.pluginHelper);
-            /*
-            {
-                AudioFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Site1\DM420031.MP3"),
-                CsvFile = new FileInfo(@"\\testing-sensor\g$\EXPORT_DATA\Meriem_FullFilesForRainExperiment\Results\Site1\DM420031.MP3\Towsey.Acoustic\DM420031_Towsey.Acoustic.Indices.csv"),
-                OutputDirectory = new DirectoryInfo(@"C:\Work\Output"),
-                AnalysisName = analyserList.Skip(1).First().Key
-            };
-            */
 
         } //MainForm()
 
+        // for calculating a visual index image
+        private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = minutes duration of source recording.
+        private double[] trackValues;
+        private Bitmap selectionTrackImage;
+        private Pen pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
 
-        /// <summary>
-        /// THIS METHOD ASSUMES THAT CONFIG FILE IS IN CONFIG DIR AND HAS DEFAULT NAME
-        /// </summary>
-        private Tuple<FileInfo, Dictionary<string, string>> LoadAnalysisConfigFile(string analysisName)
+        private void btnClearConsole_Click(object sender, EventArgs e)
         {
-            FileInfo fi = null;
-            Dictionary<string, string> dict = null;
-            if ((analysisName == "None") || (analysisName == "none"))
-            {
-                LoggedConsole.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
-                LoggedConsole.WriteLine("\t There is no CONFIG file for the \"none\" ANALYSIS! ");
-                return Tuple.Create(fi, dict);
-            }
-
-            string configDir = this.browserSettings.diConfigDir.FullName;
-            string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            var fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("#######  WARNING: The CONFIG file does not exist: <" + configPath + ">");
-                return Tuple.Create(fi, dict);
-            }
-
-            return Tuple.Create(fiConfig, ConfigDictionary.ReadPropertiesFile(configPath));
-        }
-
-        private static void WriteAnalysisParameters2Console(Dictionary<string, string> dict, string analysisName)
-        {
-            LoggedConsole.WriteLine("# Parameters for Analysis: " + analysisName);
-            foreach (KeyValuePair<string, string> kvp in dict)
-            {
-                LoggedConsole.WriteLine("\t{0} = {1}", kvp.Key, kvp.Value);
-            }
-            LoggedConsole.WriteLine("####################################################################################");
-        }
-
-        private static bool CheckForConsistencyOfAnalysisTypes(string currentAnalysisName, Dictionary<string, string> dict)
-        {
-            string analysisName = dict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
-            if (!currentAnalysisName.Equals(analysisName))
-            {
-                LoggedConsole.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", currentAnalysisName, analysisName);
-                return false;
-            }
-            LoggedConsole.WriteLine("Analysis type: " + currentAnalysisName);
-            return true;
+            this.richTextBoxConsole.Clear();
         }
 
         private void btnAnalyseSelectedAudioFiles_Click(object sender, EventArgs e)
         {
+            /*
+            //string analysisName = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
+            //this.Helper.AnalysisIdentifier = analysisName;
+            //string configPath = Path.Combine(Helper.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
+            //var fiConfig = new FileInfo(configPath);
+            // this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
 
-            string analysisName = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
-            this.browserSettings.AnalysisIdentifier = analysisName;
-            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            var fiConfig = new FileInfo(configPath);
-            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
-
-            this.browserSettings.fiAnalysisConfig = fiConfig;
-            WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
-            CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
+            //this.Helper.fiAnalysisConfig = fiConfig;
+            // WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
+            //CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
 
 
             //this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab(tabPageConsoleLabel);
+            this.tabControlMain.SelectTab(tabPageConsole);
 
-            int count = 0;
-            foreach (DataGridViewRow row in this.dataGridViewFileList.Rows)
-            {
-                var checkBoxCol = row.Cells["selectedDataGridViewCheckBoxColumn"] as DataGridViewCheckBoxCell;
-                var item = row.DataBoundItem as MediaFileItem;
 
-                if (checkBoxCol == null || item == null || checkBoxCol.Value == null) continue;
 
-                var isChecked = (bool)checkBoxCol.Value;
 
-                if (isChecked)
-                {
-                    count++;
 
-                    var audioFileName = item.FileName;
-                    var fiSourceRecording = item.FullName;
-                    browserSettings.fiSourceRecording = fiSourceRecording;
-                    LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
-                    LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-                    LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
-
-                    Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
-                    stopwatch.Start();
-
-                    var currentlySelectedIdentifier = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
-                    var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
-
-                    var settings = analyser.DefaultSettings;
-                    var configuration = new ConfigDictionary(fiConfig.FullName);
-                    settings.SetUserConfiguration(this.browserSettings.DefaultTempFilesDir, fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
-                                                  AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
-
-                    //################# PROCESS THE RECORDING #####################################################################################
-                    var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
-                    //NEXT LINE was my old code
-                    // var op1 = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.browserSettings.diOutputDir, fiConfig);
-
-                    if (analyserResults == null)
-                    {
-                        LoggedConsole.WriteLine("###################################################");
-                        LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                        LoggedConsole.WriteLine("FATAL ERROR! NULL RETURN FROM analysisCoordinator.Run()");
-                        return;
-                    }
-
-                    DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-
-                    //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
-                    var audioUtility = new MasterAudioUtility();
-                    var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-                    var sourceInfo = audioUtility.Info(fiSourceRecording);
-
-                    var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
-                    var eventsDatatable = op1.Item1;
-                    var indicesDatatable = op1.Item2;
-                    int eventsCount = 0;
-                    if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
-                    int indicesCount = 0;
-                    if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
-                    var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
-                    var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-
-                    //#############################################################################################################################
-                    stopwatch.Stop();
-
-                    var fiEventsCSV = op2.Item1;
-                    var fiIndicesCSV = op2.Item2;
-
-                    //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
-                    TimeSpan ts = stopwatch.Elapsed;
-                    LoggedConsole.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
-                    int outputCount = eventsCount;
-                    if (eventsCount == 0) outputCount = indicesCount;
-                    LoggedConsole.WriteLine("Number of units of output: {0}", outputCount);
-                    if (outputCount == 0) outputCount = 1;
-                    LoggedConsole.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
-
-                    LoggedConsole.WriteLine("###################################################");
-                    LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-                    //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
-                    if (fiEventsCSV != null)
-                    {
-                        LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
-                        LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
-                    }
-                    if (fiIndicesCSV != null)
-                    {
-                        LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
-                        LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
-                    }
-                    LoggedConsole.WriteLine("###################################################\n");
-
-                }// if checked
-            } //foreach
-
-            if (this.dataGridViewFileList.RowCount < 1 || count < 1)
-            {
-                MessageBox.Show("No file is selected.");
-            }
-        }
-
-
-        private void btnViewColourSpectrogram_Click(object sender, EventArgs e)
-        {
-
-            //OPEN A FILE DIALOGUE TO FIND IMAGE FILE
-            OpenFileDialog fdlg = new OpenFileDialog();
-            fdlg.Title = "Open Image Dialogue";
-            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
-            fdlg.Filter = "PNG files (*.png)|*.png";
-            fdlg.FilterIndex = 2;
-            fdlg.RestoreDirectory = false;
-            if (fdlg.ShowDialog() == DialogResult.OK)
-            {
-                var fiImageFile = new FileInfo(fdlg.FileName);
-                this.browserSettings.fiCSVFile = fiImageFile; // store in settings so can be accessed later.
-
-                this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiImageFile.FullName)); // change to selected directory
-                this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
-                this.labelSonogramFileName.Text = "Spectrogram file name";
-
-                // clear console window
-                this.textBoxConsole.Clear();
-                LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(date);
-
-                // ## LOAD A PNG IMAGE ##############################################################################################
-                int status = this.LoadColourSpectrogramFile(fiImageFile.FullName);
-                // ##################################################################################################################
-                if (status >= 3)
-                {
-                    //this.tabControlMain.SelectTab("tabPageConsole");
-                    //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                    //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
-                    //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                    //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("# Display of false colour spectrogram: " + fiImageFile.FullName);
-                    this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-                    this.pictureBoxBarTrack.Image = this.selectionTrackImage;
-
-                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                    this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
-                    //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-                    this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
-                    this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
-                    this.pictureBoxSonogram.Location = new Point(3, 0);
-                    this.pictureBoxPen = new Pen(Color.Black, 1.0F); // used to draw vertical hairs
-
-
-                    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiImageFile.FullName);
-                    if (status == 0)
-                    {
-                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiImageFile.FullName);
-                        this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-                    }
-                    else
-                    {
-                        this.labelSourceFileName.Text = String.Format("WARNING: ERROR loading image file <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiImageFile.FullName));
-                        this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
-                    }
-                    this.tabControlMain.SelectTab("tabPageDisplay");
-                } // (status)
-            } // if (DialogResult.OK)
-
-        }
-        /// <summary>
-        /// loads an image file. Assume it is a false colour spectrogram derived from three acoustic indices
-        /// returns a status integer. 0= no error
-        /// </summary>
-        /// <param name="imagePath"></param>
-        /// <returns></returns>
-        private int LoadColourSpectrogramFile(string imagePath)
-        {
-            int error = 0;
-            string analysisName = "Towsey.Indices"; // assume the analysis type if Towsey.Acoustic
-
-            //var op = LoadAnalysisConfigFile(analysisName);
-            //this.browserSettings.fiAnalysisConfig = op.Item1;
-            //this.analysisParams = op.Item2;
-
-            // label to show selected analysis type for viewing CSV file.
-            this.labelDisplayInfo.Text = "Analysis type = " + analysisName + ". ";
-            //display column headers in the list box of displayed tracks
-            string labelText = "Indices used to create image";
-            this.labelCSVHeaders.Text = labelText;
-            this.listBoxDisplayedTracks.Items.Clear(); //remove previous entries in list box.
-            this.listBoxDisplayedTracks.Items.Add("Temporal Entropy");
-            this.listBoxDisplayedTracks.Items.Add("Acoustic Complexity Index");
-            this.listBoxDisplayedTracks.Items.Add("Average Power");
-
-            // read the image
-            var fiImage = new FileInfo(imagePath);
-            this.pictureBoxVisualIndices.Image = new Bitmap(fiImage.FullName);
-            this.sourceRecording_MinutesDuration = this.pictureBoxVisualIndices.Image.Width; //CAUTION: assume one value per minute - sets global variable !!!!
-            return error;
-        }
-
-
-        private void btnViewFileOfIndices_Click(object sender, EventArgs e)
-        {
-            //OPEN A FILE DIALOGUE TO FIND CSV FILE
-            OpenFileDialog fdlg = new OpenFileDialog();
-            fdlg.Title = "Open File Dialogue";
-            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
-            fdlg.Filter = "CSV files (*.csv)|*.csv";
-            fdlg.FilterIndex = 2;
-            fdlg.RestoreDirectory = false;
-            if (fdlg.ShowDialog() == DialogResult.OK)
-            {
-                var fiCSVFile = new FileInfo(fdlg.FileName);
-                this.browserSettings.fiCSVFile = fiCSVFile; // store in settings so can be accessed later.
-
-                this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
-                this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
-                this.labelSonogramFileName.Text = "Sonogram file name";
-
-                // clear console window
-                this.textBoxConsole.Clear();
-                LoggedConsole.WriteLine(AudioBrowserTools.BROWSER_TITLE_TEXT);
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(date);
-
-                // ##################################################################################################################
-                int status = this.LoadIndicesCSVFile(fiCSVFile.FullName);
-                // ##################################################################################################################
-
-                if (status >= 3)
-                {
-                    //this.tabControlMain.SelectTab("tabPageConsole");
-                    //LoggedConsole.WriteLine("FATAL ERROR: Error opening csv file");
-                    //LoggedConsole.WriteLine("\t\tfile name:" + fiCSVFile.FullName);
-                    //if (status == 1) LoggedConsole.WriteLine("\t\tfile exists but could not extract values.");
-                    //if (status == 2) LoggedConsole.WriteLine("\t\tfile exists but contains no values.");
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("# Display of the acoustic indices in csv file: " + fiCSVFile.FullName);
-                    this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-                    this.pictureBoxBarTrack.Image = this.selectionTrackImage;
-
-                    //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                    this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndices.Height + 1);
-                    //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
-                    this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndices.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
-                    this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
-                    this.pictureBoxSonogram.Location = new Point(3, 0);
-
-                    this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
-                    if (status == 0)
-                    {
-                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(fiCSVFile.FullName);
-                        this.labelDisplayInfo.Text += "   Image scale = 1 minute/pixel.     File duration = " + this.sourceRecording_MinutesDuration + " minutes";
-                    }
-                    else
-                    {
-                        this.labelSourceFileName.Text = String.Format("WARNING: ERROR parsing file name <{0}>.    READ CONSOLE MESSAGE!", Path.GetFileNameWithoutExtension(fiCSVFile.FullName));
-                        this.labelDisplayInfo.Text += "         READ CONSOLE MESSAGE!";
-                    }
-                    this.tabControlMain.SelectTab("tabPageDisplay");
-                } // (status)
-            } // if (DialogResult.OK)
-
-        }
-
-
-
-        /// <summary>
-        /// loads a csv file of indices
-        /// returns a status integer. 0= no error
-        /// </summary>
-        /// <param name="csvPath"></param>
-        /// <returns></returns>
-        private int LoadIndicesCSVFile(string csvPath)
-        {
-            int error = 0;
-
-            // get analysis config settings from the comboBox
-            // string analysisName = ((KeyValuePair<string, string>)this.comboBoxCSVFileAnalysisType.SelectedItem).Key;
-            // NO!! Instead determine the analysis name from the CSV file name.
-            // IMPORTANT: ASSUME that file name can be parsed to get the analysis type.
-
-            // PARSE the file name
-            string fileName = Path.GetFileNameWithoutExtension(csvPath);
-            string[] array = fileName.Split('_');
-            array = array[array.Length - 1].Split('.');
-            string analysisName = "Towsey.Default";
-            if (array.Length >= 2) analysisName = array[0] + "." + array[1];
-
-            bool isIndicesFile = false;
-            if (array.Length >= 3)
-                isIndicesFile = (array[2] == "Indices");
-
-            if (!isIndicesFile)
-            {
-                LoggedConsole.WriteLine("\nWARNING: The file name did not parse correctly. This may not be a file of indices: " + fileName);
-                error = 1;
-            }
-            var op = LoadAnalysisConfigFile(analysisName);
-            this.browserSettings.fiAnalysisConfig = op.Item1;
-            this.analysisParams = op.Item2;
-
-            // Get the analyser
-            IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
-            if (analyser == null)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisName);
-                error = 2;
-            }
-
-            if ((!isIndicesFile) || (analyser == null))
-            {
-                LoggedConsole.WriteLine("           File name format should be: <AudioID_PersonID.AnalysisID.Indices.csv>");
-                LoggedConsole.WriteLine("                          For example: <DM36000_Towsey.MultiAnalyser.Indices.csv>");
-                LoggedConsole.WriteLine("           The file name should end with <.Indices.csv>");
-                LoggedConsole.WriteLine("           The full analysis name will be: <PersonID.AnalysisID>, e.g. Towsey.MultiAnalyser");
-                LoggedConsole.WriteLine("           The CSV file will be displayed using the default analysis module <Towsey.Default>.");
-                analyser = new AnalysisTemplate();
-            }
-            // label to show selected analysis type for viewing CSV file.
-            this.labelDisplayInfo.Text = "Analysis type = " + analysisName + ".   ";
-
-            // finally process the CSV file
-            var output = analyser.ProcessCsvFile(new FileInfo(csvPath), this.browserSettings.fiAnalysisConfig);
-            DataTable dtRaw = output.Item1;
-            DataTable dt2Display = output.Item2;
-            this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
-            analyser = null;
-
-            string[] originalHeaders = DataTableTools.GetColumnNames(dtRaw);
-            string[] displayHeaders = DataTableTools.GetColumnNames(dt2Display);
-
-            //make values of bottom track available
-            string header = displayHeaders[displayHeaders.Length - 1];
-            this.trackValues = DataTableTools.Column2ArrayOfDouble(dt2Display, header);
-
-            //display column headers in the list box of displayed tracks
-            List<string> displayList = displayHeaders.ToList();
-            List<string> abbrevList = new List<string>();
-            this.listBoxDisplayedTracks.Items.Clear(); //remove previous entries in list box.
-
-            foreach (string str in displayList)
-            {
-                string text = str;  // the headers have been tampered with!! but assume not first 5 chars
-                if (text.Length > 6) text = str.Substring(0, 5);
-                abbrevList.Add(text);
-            }
-            for (int i = 0; i < originalHeaders.Length; i++)
-            {
-                string text = originalHeaders[i];
-                if (text.Length > 6) text = originalHeaders[i].Substring(0, 5);
-                if (abbrevList.Contains(text))
-                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}  (displayed)", (i + 1), originalHeaders[i]));
-                else
-                    this.listBoxDisplayedTracks.Items.Add(String.Format("{0:d2}: {1}", (i + 1), originalHeaders[i]));
-            }
-            string labelText = originalHeaders.Length + " headers in CSV file - " + displayHeaders.Length + " displayed.";
-            this.labelCSVHeaders.Text = labelText;
-
-            string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
-            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, AudioBrowserTools.IMAGE_TITLE_TEXT, browserSettings.TrackNormalisedDisplay, imagePath);
-            this.pictureBoxVisualIndices.Image = tracksImage;
-            return error;
-        }
-
-        private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
-        {
-            this.pictureBoxVisualIndices.Cursor = Cursors.HSplit;
-        }
-
-        private void pictureBoxVisualIndex_MouseMove(object sender, MouseEventArgs e)
-        {
-            int myX = e.X; //other mouse calls:       Form.MousePosition.X  and  Mouse.GetPosition(this.pictureBoxVisualIndex); and   Cursor.Position;
-            if (myX > this.sourceRecording_MinutesDuration - 1) return; //minuteDuration was set during load
-
-            string text = (myX / 60) + "hr:" + (myX % 60) + "min (" + myX + ")"; //assumes scale= 1 pixel / minute
-            this.textBoxCursorLocation.Text = text; // pixel position = minutes
-
-            //mark the time scale
-            Graphics g = this.pictureBoxVisualIndices.CreateGraphics();
-            g.DrawImage(this.pictureBoxVisualIndices.Image, 0, 0);
-            float[] dashValues = { 2, 2, 2, 2 };
-            this.pictureBoxPen.DashPattern = dashValues;
-            Point pt1 = new Point(myX - 1, 2);
-            Point pt2 = new Point(myX - 1, this.pictureBoxVisualIndices.Height);
-            g.DrawLine(this.pictureBoxPen, pt1, pt2);
-            pt1 = new Point(myX + 1, 2);
-            pt2 = new Point(myX + 1, this.pictureBoxVisualIndices.Height);
-            g.DrawLine(this.pictureBoxPen, pt1, pt2);
-
-            if ((trackValues == null) || (trackValues.Length < 2)) return;
-            if (myX >= this.trackValues.Length - 1)
-                this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.trackValues[myX - 1], this.trackValues[myX], "END");
-            else
-                if (myX <= 0)
-                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", "START", this.trackValues[myX], this.trackValues[myX + 1]);
-                else
-                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.trackValues[myX - 1], this.trackValues[myX], this.trackValues[myX + 1]);
-        }
-
-        private void pictureBoxVisualIndex_MouseClick(object sender, MouseEventArgs e)
-        {
-            this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab("tabPageConsole");
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-
-            if ((this.browserSettings.fiSourceRecording != null) && (this.browserSettings.fiSourceRecording.Exists))
-            {
-                LoggedConsole.WriteLine("Source Directory: {0}\\", this.browserSettings.diSourceDir);
-                LoggedConsole.WriteLine("Source File Name: {0}", this.browserSettings.fiSourceRecording);
-            }
-            else // Infer source file name from CSV file name
-            {
-                FileInfo inferredSourceFile = AudioBrowserTools.InferSourceFileFromCSVFileName(browserSettings.fiCSVFile, this.browserSettings.diSourceDir);
-                if (inferredSourceFile == null)
-                {
-                    browserSettings.fiSourceRecording = null;
-                    LoggedConsole.WriteLine("# \tWARNING: Cannot find source mp3/wav for this file: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
-                    LoggedConsole.WriteLine("    Cannot display spectrogram of requested segment.");
-                    LoggedConsole.WriteLine("#   Try entering SOURCE FILE by clicking on the [[Analyse Audio File]] tab.");
-                    return;
-                }
-                else
-                {
-                    browserSettings.fiSourceRecording = inferredSourceFile;
-                    LoggedConsole.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
-                    LoggedConsole.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
-                    LoggedConsole.WriteLine("# \t\tIF NOT, enter correct SOURCE FILE by clicking on the [[Analyse Audio File]] tab.");
-                } // Infer source file name from CSV file name
-            }
-
-            // GET MOUSE LOCATION
-            int myX = e.X;
-            int myY = e.Y;
-
-            //DRAW RED LINE ON BAR TRACK
-            for (int y = 0; y < selectionTrackImage.Height; y++)
-                selectionTrackImage.SetPixel(this.pictureBoxVisualIndices.Left + myX, y, Color.Red);
-            this.pictureBoxBarTrack.Image = selectionTrackImage;
-
-            double segmentDuration = this.browserSettings.DefaultSegmentDuration;
-            int resampleRate = this.browserSettings.DefaultResampleRate;
-            if (analysisParams != null) //###################################### THIS MAy NEED CHECKING BECAUSE DO NOT SET RESAMPLE RATE BY DEFAULT
-            {
-                //if (analysisParams.ContainsKey(AudioBrowserSettings.key_SEGMENT_DURATION)) 
-                //    segmentDuration = ConfigDictionary.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
-                //if (analysisParams.ContainsKey(AudioBrowserSettings.key_RESAMPLE_RATE)) 
-                //    resampleRate    = ConfigDictionary.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
-            }
-
-
-            //EXTRACT RECORDING SEGMENT
-            TimeSpan startMinute = new TimeSpan(0, myX, 0);
-            TimeSpan endMinute = new TimeSpan(0, myX + 1, 0);
-            //if (segmentDuration == 3)
-            //{
-            //    startMinute = new TimeSpan(0, myX - 1, 0);
-            //    endMinute   = new TimeSpan(0, myX + 2, 0);
-            //}
-            TimeSpan buffer = new TimeSpan(0, 0, 15);
-
-
-            //get segment from source recording
-            DateTime time1 = DateTime.Now;
-            var fiSource = browserSettings.fiSourceRecording;
-            string sourceFName = Path.GetFileNameWithoutExtension(fiSource.FullName);
-            string segmentFName = sourceFName + "_min" + (int)startMinute.TotalMinutes + ".wav"; //want a wav file
-            string outputSegmentPath = Path.Combine(browserSettings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
-            LoggedConsole.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
-            LoggedConsole.WriteLine("\n\tWriting audio segment to dir: " + browserSettings.diOutputDir.FullName);
-            LoggedConsole.WriteLine("\n\t\t\tFile Name: " + segmentFName);
-            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
-            //if (!fiOutputSegment.Exists) //extract the segment
-            //{
-            AudioRecording.ExtractSegment(fiSource, startMinute, endMinute, buffer, analysisParams, fiOutputSegment);
-            //}
-
-            fiOutputSegment.Refresh();
-            if (!fiOutputSegment.Exists) //still has not been extracted
-            {
-                LoggedConsole.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
-                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
-                return;
-            }
-
-            DateTime time2 = DateTime.Now;
-            TimeSpan timeSpan = time2 - time1;
-            LoggedConsole.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
-
-            //store info
-            this.labelSonogramFileName.Text = Path.GetFileName(outputSegmentPath);
-            this.browserSettings.fiSegmentRecording = fiOutputSegment;
-            Image image = GetSonogram(fiOutputSegment);
-
-            if (image == null)
-            {
-                LoggedConsole.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + fiOutputSegment.FullName);
-                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-            }
-            else
-            {
-                if (this.pictureBoxSonogram.Image != null)
-                {
-                    this.pictureBoxSonogram.Image.Dispose();
-                }
-
-                this.pictureBoxSonogram.Image = image;
-                //this.panelDisplaySpectrogram.Height = image.Height;
-                LoggedConsole.WriteLine("\n\tSaved sonogram to image file: " + fiOutputSegment.FullName);
-                this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-                string title = fiOutputSegment.Name;
-                if (title.Length > 23)
-                {
-                    int remainder = title.Length - 22;
-                    title = title.Substring(0, 21) + "\n   " + title.Substring(22, remainder);
-                }
-
-                this.labelSonogramFileName.Text = title;
-
-                //attempt to deal with variable height of spectrogram
-                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
-                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
-                //Point location = this.panelDisplaySpectrogram.Location;
-                //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
-                //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
-                //this.pictureBoxSonogram.Location = new Point(3, 0);
-                //this.vScrollBarSonogram.Minimum = 0;
-            }
-
-        } //pictureBoxVisualIndex_MouseClick()
-
-
-        private void btnRunAudacity_Click(object sender, EventArgs e)
-        {
-            // check Audacity is available
-            if (browserSettings.AudacityExe == null)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at default locations.");
-                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-            FileInfo audacity = new FileInfo(browserSettings.AudacityExe.FullName);
-            if (!audacity.Exists)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", browserSettings.AudacityExe.FullName);
-                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-
-            int status = 0;
-            if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists))
-            {
-                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
-                LoggedConsole.WriteLine("The audio file does not exist!");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
-            }
-            else
-                status = AudioBrowserTools.RunAudacity(browserSettings.AudacityExe.FullName, browserSettings.fiSegmentRecording.FullName, browserSettings.diOutputDir.FullName);
-        }
-
-        // here be dragons!
-        #region background workers for grid view lists
-
-        private void BackgroundWorkerUpdateSourceFileListRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            var items = e.Result as List<MediaFileItem>;
-            if (!e.Cancelled && e.Error == null && items != null)
-            {
-                foreach (var item in items)
-                {
-                    mediaFileItemBindingSource.Add(item);
-                }
-            }
-
-            this.dataGridViewFileList.Refresh();
-
-            this.totalCheckBoxesSourceFileList = this.dataGridViewFileList.RowCount;
-            this.totalCheckedCheckBoxesSourceFileList = 0;
-
-            // replace existing settings
-            browserSettings.diSourceDir = new DirectoryInfo(this.tfSourceDirectory.Text);
-        }
-
-        private void BackgroundWorkerUpdateSourceFileListDoWork(object sender, DoWorkEventArgs e)
-        {
-            var dir = new DirectoryInfo(this.tfSourceDirectory.Text);
-            var files =
-                dir.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).Where(
-                    f =>
-                    new[] { ".wav", ".mp3", ".wv", ".ogg", ".wma" }.Contains(f.Extension.ToLowerInvariant()))
-                    .OrderBy(f => f.Name).Select(
-                        f =>
-                        {
-                            var item = new MediaFileItem(f);
-                            item.Duration = this.audioUtilityForDurationColumn.Info(f).Duration.Value;
-                            return item;
-                        });
-            e.Result = files.ToList();
-        }
-
-        #endregion
-
-
-        #region main form
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            browserSettings = new AudioBrowserSettings();
-            try
-            {
-                browserSettings.LoadBrowserSettings();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-        }
-
-        private void btnUpdateSourceFiles_Click(object sender, EventArgs e)
-        {
-            this.Validate();
-
-            this.tabControlMain.SelectTab("tabPageSourceFiles");
-
-            UpdateSourceFileList();
-        }
-
-        private void UpdateSourceFileList()
-        {
-            if (string.IsNullOrWhiteSpace(this.tfSourceDirectory.Text))
-            {
-                MessageBox.Show("Source directory path was not given.", "Error", MessageBoxButtons.OK);
-                return;
-            }
-
-            if (!Directory.Exists(this.tfSourceDirectory.Text))
-            {
-                MessageBox.Show("The given source directory does not exist.", "Error", MessageBoxButtons.OK);
-                return;
-            }
-
-            this.mediaFileItemBindingSource.Clear();
-
-            if (!this.backgroundWorkerUpdateSourceFileList.IsBusy)
-            {
-                this.backgroundWorkerUpdateSourceFileList.RunWorkerAsync();
-            }
-            else
-            {
-                MessageBox.Show("Already updating the file list. Please wait until the current update is complete.");
-            }
-        }
-
-        private void btnSelectSourceDirectory_Click(object sender, EventArgs e)
-        {
-            this.Validate();
-
-            if (Helpers.ValidDirectory(this.tfSourceDirectory.Text))
-            {
-                this.folderBrowserDialogChooseDir.SelectedPath = this.tfSourceDirectory.Text;
-            }
-
-            if (this.folderBrowserDialogChooseDir.ShowDialog() == DialogResult.OK)
-            {
-                this.tfSourceDirectory.Text = this.folderBrowserDialogChooseDir.SelectedPath;
-                browserSettings.diSourceDir = new DirectoryInfo(this.tfSourceDirectory.Text);
-            }
-
-            this.tabControlMain.SelectTab("tabPageSourceFiles");
-        }
-
-
-        private bool IsANonHeaderTextBoxCell(DataGridViewCellEventArgs cellEvent)
-        {
-            return this.dataGridViewFileList.Columns[cellEvent.ColumnIndex] is DataGridViewTextBoxColumn &&
-                   cellEvent.RowIndex != -1;
-        }
-
-        private bool IsANonHeaderButtonCell(DataGridViewCellEventArgs cellEvent)
-        {
-            return this.dataGridViewFileList.Columns[cellEvent.ColumnIndex] is DataGridViewButtonColumn &&
-                   cellEvent.RowIndex != -1;
-        }
-
-        private bool IsANonHeaderCheckBoxCell(DataGridViewCellEventArgs cellEvent)
-        {
-            return this.dataGridViewFileList.Columns[cellEvent.ColumnIndex] is DataGridViewCheckBoxColumn &&
-                   cellEvent.RowIndex != -1;
-        }
-
-        #endregion
-
-        #region dataGridViewSouceFileList source
-
-        private void dataGridViewFileListSourceFileList_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex < 0 || e.RowIndex < 0)
-            {
-                return;
-            }
-
-            var column = this.dataGridViewFileList.Columns[e.ColumnIndex];
-
-            if (IsANonHeaderButtonCell(e))
-            {
-
-            }
-            else if (this.IsANonHeaderCheckBoxCell(e))
-            {
-                var cell = this.dataGridViewFileList[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
-                if (cell != null)
-                {
-                    if (cell.Value == null)
-                    {
-                        cell.Value = true;
-                    }
-                    else
-                    {
-                        cell.Value = !((bool)cell.Value);
-                    }
-
-                    //MessageBox.Show(cell.Value.ToString());
-                }
-            }
-            else if (this.IsANonHeaderTextBoxCell(e))
-            {
-                //MessageBox.Show("text clicked");
-            }
-        }
-
-        private void dataGridViewFileListSourceFileList_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.ColumnIndex <= -1 || e.RowIndex <= -1)
-            {
-                return;
-            }
-
-            var cell = this.dataGridViewFileList[e.ColumnIndex, e.RowIndex] as DataGridViewCheckBoxCell;
-
-            if (cell != null)
-            {
-                this.dataGridViewFileList.Rows[e.RowIndex].DefaultCellStyle.BackColor = (bool)cell.Value
-                                                                                       ? Color.Yellow
-                                                                                       : Color.White;
-
-                this.dataGridViewFileList.CommitEdit(DataGridViewDataErrorContexts.Commit);
-                this.dataGridViewFileList.EndEdit(DataGridViewDataErrorContexts.LeaveControl);
-            }
-
-
-            if (cell != null && !this.isHeaderCheckBoxClickedSourceFileList)
-            {
-                this.RowCheckBoxClickSourceFileList(cell);
-            }
-        }
-
-        private void dataGridViewFileListSourceFileList_CurrentCellDirtyStateChanged(object sender, EventArgs e)
-        {
-            if (dataGridViewFileList.CurrentCell is DataGridViewCheckBoxCell)
-                dataGridViewFileList.CommitEdit(DataGridViewDataErrorContexts.Commit);
-        }
-
-        private void dataGridViewFileListSourceFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex == -1 && e.ColumnIndex == 0)
-                ResetHeaderCheckBoxLocationSourceFileList(e.ColumnIndex, e.RowIndex);
-        }
-
-        private void dataGridViewFileListSourceFileList_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        #endregion
-
-        #region datagridviewoutputfilelist
-        private void dataGridViewFileListCSVFileList_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-        #endregion
-
-        #region checkboxheader source
-
-        private void HeaderCheckBoxSourceFileList_MouseClick(object sender, MouseEventArgs e)
-        {
-            HeaderCheckBoxClickSourceFileList((CheckBox)sender);
-        }
-
-        private void HeaderCheckBoxSourceFileList_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == System.Windows.Forms.Keys.Space)
-                HeaderCheckBoxClickSourceFileList((CheckBox)sender);
-        }
-
-        private void ResetHeaderCheckBoxLocationSourceFileList(int ColumnIndex, int RowIndex)
-        {
-            //Get the column header cell bounds
-            Rectangle oRectangle = this.dataGridViewFileList.GetCellDisplayRectangle(ColumnIndex, RowIndex, true);
-
-            Point oPoint = new Point
-                {
-                    X = oRectangle.Location.X + (oRectangle.Width - this.headerCheckBoxSourceFileList.Width) / 2 + 1,
-                    Y = oRectangle.Location.Y + (oRectangle.Height - this.headerCheckBoxSourceFileList.Height) / 2 + 1
-                };
-
-            //Change the location of the CheckBox to make it stay on the header
-            this.headerCheckBoxSourceFileList.Location = oPoint;
-        }
-
-        private void HeaderCheckBoxClickSourceFileList(CheckBox hCheckBox)
-        {
-            this.isHeaderCheckBoxClickedSourceFileList = true;
-
-            if (hCheckBox.CheckState == CheckState.Indeterminate)
-            {
-                hCheckBox.CheckState = CheckState.Unchecked;
-            }
-
-            foreach (DataGridViewRow row in dataGridViewFileList.Rows)
-            {
-                row.Cells["selectedDataGridViewCheckBoxColumn"].Value = hCheckBox.CheckState == CheckState.Checked;
-            }
-
-            dataGridViewFileList.RefreshEdit();
-
-            this.totalCheckedCheckBoxesSourceFileList = hCheckBox.Checked ? this.totalCheckBoxesSourceFileList : 0;
-
-            this.isHeaderCheckBoxClickedSourceFileList = false;
-        }
-
-        private void RowCheckBoxClickSourceFileList(DataGridViewCheckBoxCell rCheckBox)
-        {
-            if (rCheckBox != null)
-            {
-                var state = (bool)rCheckBox.Value;
-
-                //Modifiy Counter;            
-                if (state && this.totalCheckedCheckBoxesSourceFileList < this.totalCheckBoxesSourceFileList)
-                    this.totalCheckedCheckBoxesSourceFileList++;
-                else if (this.totalCheckedCheckBoxesSourceFileList > 0)
-                    this.totalCheckedCheckBoxesSourceFileList--;
-
-                //Change state of the header CheckBox.
-                if (this.totalCheckedCheckBoxesSourceFileList == 0)
-                {
-                    this.headerCheckBoxSourceFileList.CheckState = CheckState.Unchecked;
-                }
-                else if (this.totalCheckedCheckBoxesSourceFileList < this.totalCheckBoxesSourceFileList)
-                {
-                    this.headerCheckBoxSourceFileList.CheckState = CheckState.Indeterminate;
-                }
-                else if (this.totalCheckedCheckBoxesSourceFileList == this.totalCheckBoxesSourceFileList)
-                {
-                    this.headerCheckBoxSourceFileList.CheckState = CheckState.Checked;
-                }
-            }
-        }
-
-        #endregion
-
-        #region check boxes output file list
-
-        //private void HeaderCheckBoxCSVFileList_MouseClick(object sender, MouseEventArgs e)
-        //{
-        //    HeaderCheckBoxClickCSVFileList((CheckBox)sender);
-        //}
-
-        //private void HeaderCheckBoxCSVFileList_KeyUp(object sender, KeyEventArgs e)
-        //{
-        //    if (e.KeyCode == System.Windows.Forms.Keys.Space)
-        //        HeaderCheckBoxClickCSVFileList((CheckBox)sender);
-        //}
-
-        //private void ResetHeaderCheckBoxLocationCSVFileList(int ColumnIndex, int RowIndex)
-        //{
-        //    //Get the column header cell bounds
-        //    Rectangle oRectangle = this.dataGridCSVfiles.GetCellDisplayRectangle(ColumnIndex, RowIndex, true);
-
-        //    Point oPoint = new Point
-        //    {
-        //        X = oRectangle.Location.X + (oRectangle.Width - this.headerCheckBoxCSVFileList.Width) / 2 + 1,
-        //        Y = oRectangle.Location.Y + (oRectangle.Height - this.headerCheckBoxCSVFileList.Height) / 2 + 1
-        //    };
-
-        //    //Change the location of the CheckBox to make it stay on the header
-        //    this.headerCheckBoxCSVFileList.Location = oPoint;
-        //}
-
-
-        //private void RowCheckBoxClickCSVFileList(DataGridViewCheckBoxCell rCheckBox)
-        //{
-        //    if (rCheckBox != null)
-        //    {
-        //        var state = (bool)rCheckBox.Value;
-
-        //        //Modifiy Counter;            
-        //        if (state && this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
-        //            this.totalCheckedCheckBoxesCSVFileList++;
-        //        else if (this.totalCheckedCheckBoxesCSVFileList > 0)
-        //            this.totalCheckedCheckBoxesCSVFileList--;
-
-        //        //Change state of the header CheckBox.
-        //        if (this.totalCheckedCheckBoxesCSVFileList == 0)
-        //        {
-        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Unchecked;
-        //        }
-        //        else if (this.totalCheckedCheckBoxesCSVFileList < this.totalCheckBoxesCSVFileList)
-        //        {
-        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Indeterminate;
-        //        }
-        //        else if (this.totalCheckedCheckBoxesCSVFileList == this.totalCheckBoxesCSVFileList)
-        //        {
-        //            this.headerCheckBoxCSVFileList.CheckState = CheckState.Checked;
-        //        }
-        //    }
-        //}
-
-        #endregion
-
-        private void hScrollBarSonogram_ValueChanged(object sender, EventArgs e)
-        {
-            //this.pictureBoxSonogram.Left = -this.hScrollBarSonogram.Value;
-        }
-
-        /// <summary>
-        /// handle event when refreshSonogram button is clicked
-        /// redisplay the sonogram but with new Settings
-        /// </summary>
-        private void buttonRefreshSonogram_Click(object sender, EventArgs e)
-        {
-            if (browserSettings.fiSegmentRecording == null)
-            {
-                LoggedConsole.WriteLine("YOU MUST SELECT A SEGMENT OF AUDIO BY CLICKING ON THE 'TRACKS' IMAGE.");
-                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-            Image image = GetSonogram(browserSettings.fiSegmentRecording);
-            if (image == null)
-            {
-                LoggedConsole.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + browserSettings.fiSegmentRecording.FullName);
-                this.checkBoxSonogramAnnotate.Checked = false; //if it was checked then uncheck because annotation failed
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-            else
-            {
-                if (this.pictureBoxSonogram.Image != null)
-                {
-                    this.pictureBoxSonogram.Image.Dispose();
-                }
-
-                this.pictureBoxSonogram.Image = image;
-                LoggedConsole.WriteLine("\n\tSaved sonogram to image file: " + browserSettings.fiSegmentRecording.FullName);
-                //this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
-                //this.labelSonogramFileName.Text = browserSettings.fiSegmentRecording.Name;
-                //attempt to deal with variable height of spectrogram
-                //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
-                if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
-            }
-        } //buttonRefreshSonogram_Click()
-
-        private Image GetSonogram(FileInfo fiAudio)
-        {
-            //check recording segment exists
-            if ((fiAudio == null) || (!fiAudio.Exists))
-            {
-                if (fiAudio == null) LoggedConsole.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
-                else
-                    LoggedConsole.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + fiAudio.FullName);
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return null;
-            }
-
-            string analysisName = this.CurrentSourceFileAnalysisType;
-            if ((this.checkBoxSonogramAnnotate.Checked) && (analysisName == "none"))
-            {
-                LoggedConsole.WriteLine("#######  CANNOT ANNOTATE SONOGRAM because SOURCE ANALYSIS TYPE = \"none\".");
-                this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return null;
-            }
-
-            //reload indices for source analysis type
-            string opDir = browserSettings.diOutputDir.FullName;
-            string configDir = this.browserSettings.diConfigDir.FullName;
-            string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
-
-            if (!(new FileInfo(configPath)).Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exists: {0}", configPath);
-                return null;
-            }
-
-            this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
-            var config = ConfigDictionary.ReadPropertiesFile(configPath);
-            SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, this.checkBoxSonogramAnnotate.Checked.ToString());
-            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
-            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
-            SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, "1024"); // do not want long spectrogram
-
-            //config.Add(AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
-            config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisName;
-            var fiTempConfig = new FileInfo(Path.Combine(opDir, "temp.cfg"));
-            ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
-
-            LoggedConsole.WriteLine("\n\tPreparing sonogram of audio segment");
-            FileInfo fiImage = new FileInfo(Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiAudio.FullName) + ".png"));
-            IAnalyser analyser = AudioBrowserTools.GetAcousticAnalyser(analysisName, this.pluginHelper.AnalysisPlugins);
-            Image image = SonogramTools.GetImageFromAudioSegment(fiAudio, fiTempConfig, fiImage, analyser);
-            return image;
-        } //GetSonogram()
-
-        private void SetConfigValue(Dictionary<string, string> config, string key, string value)
-        {
-            if (!config.ContainsKey(key)) config.Add(key, value);
-            else config[key] = value;
-        }
-
-        private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            var formatter = e.CellStyle.FormatProvider as ICustomFormatter;
-            if (formatter != null)
-            {
-                e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
-                e.FormattingApplied = true;
-            }
-
-        }
-
-        private void dataGridCSVfiles_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            var formatter = e.CellStyle.FormatProvider as ICustomFormatter;
-            if (formatter != null)
-            {
-                e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
-                e.FormattingApplied = true;
-            }
-
-        }
-
-        private const int FilterLineNumControls = 7;
-        private const int FilterLineOffsetTop = 29;
-
-        private void btnAddSearchEntry_Click(object sender, EventArgs e)
-        {
-            // there are 7 controls to copy, and one just gets moved down
-
-
-            var controlCount = this.panelSearchEntries.Controls.Count;
-            var currentCount = controlCount / FilterLineNumControls;
-            var amountToAddToTop = currentCount * FilterLineOffsetTop;
-
-            // copy the search field line and set the location and event handlers
-            TextBox tfSearchFieldMaxNew = new TextBox();
-            this.panelSearchEntries.Controls.Add(tfSearchFieldMaxNew);
-
-            TextBox tfSearchFieldMinNew = new TextBox();
-            this.panelSearchEntries.Controls.Add(tfSearchFieldMinNew);
-
-            Label lblSearchFieldMaxNew = new Label();
-            this.panelSearchEntries.Controls.Add(lblSearchFieldMaxNew);
-
-            Label lblSearchFieldNameNew = new Label();
-            this.panelSearchEntries.Controls.Add(lblSearchFieldNameNew);
-
-            Label lblSearchFieldMinNew = new Label();
-            this.panelSearchEntries.Controls.Add(lblSearchFieldMinNew);
-
-            TextBox tfSearchFieldNameNew = new TextBox();
-            this.panelSearchEntries.Controls.Add(tfSearchFieldNameNew);
-
-            Button btnSearchRemoveFilterLineNew = new Button();
-            this.panelSearchEntries.Controls.Add(btnSearchRemoveFilterLineNew);
-
-
-            // 
-            // tfSearchFieldName
-            // 
-            tfSearchFieldNameNew.Location = new System.Drawing.Point(75, 12 + amountToAddToTop);
-            tfSearchFieldNameNew.Name = "tfSearchFieldName" + amountToAddToTop;
-            tfSearchFieldNameNew.Size = new System.Drawing.Size(212, 20);
-            tfSearchFieldNameNew.TabIndex = 16;
-            // 
-            // lblSearchFieldMin
-            // 
-            lblSearchFieldMinNew.AutoSize = true;
-            lblSearchFieldMinNew.Location = new System.Drawing.Point(293, 15 + amountToAddToTop);
-            lblSearchFieldMinNew.Name = "lblSearchFieldMin" + amountToAddToTop;
-            lblSearchFieldMinNew.Size = new System.Drawing.Size(51, 13);
-            lblSearchFieldMinNew.TabIndex = 17;
-            lblSearchFieldMinNew.Text = "Minimum:";
-            // 
-            // lblSearchFieldName
-            // 
-            lblSearchFieldNameNew.AutoSize = true;
-            lblSearchFieldNameNew.Location = new System.Drawing.Point(6, 14 + amountToAddToTop);
-            lblSearchFieldNameNew.Name = "lblSearchFieldName" + amountToAddToTop;
-            lblSearchFieldNameNew.Size = new System.Drawing.Size(63, 13);
-            lblSearchFieldNameNew.TabIndex = 18;
-            lblSearchFieldNameNew.Text = "Field Name:";
-            // 
-            // lblSearchFieldMax
-            // 
-            lblSearchFieldMaxNew.AutoSize = true;
-            lblSearchFieldMaxNew.Location = new System.Drawing.Point(444, 15 + amountToAddToTop);
-            lblSearchFieldMaxNew.Name = "lblSearchFieldMax" + amountToAddToTop;
-            lblSearchFieldMaxNew.Size = new System.Drawing.Size(54, 13);
-            lblSearchFieldMaxNew.TabIndex = 19;
-            lblSearchFieldMaxNew.Text = "Maximum:";
-            // 
-            // tfSearchFieldMin
-            // 
-            tfSearchFieldMinNew.Location = new System.Drawing.Point(350, 11 + amountToAddToTop);
-            tfSearchFieldMinNew.MaxLength = 10;
-            tfSearchFieldMinNew.Name = "tfSearchFieldMin" + amountToAddToTop;
-            tfSearchFieldMinNew.Size = new System.Drawing.Size(88, 20);
-            tfSearchFieldMinNew.TabIndex = 20;
-            // 
-            // tfSearchFieldMax
-            // 
-            tfSearchFieldMaxNew.Location = new System.Drawing.Point(504, 11 + amountToAddToTop);
-            tfSearchFieldMaxNew.MaxLength = 10;
-            tfSearchFieldMaxNew.Name = "tfSearchFieldMax" + amountToAddToTop;
-            tfSearchFieldMaxNew.Size = new System.Drawing.Size(88, 20);
-            tfSearchFieldMaxNew.TabIndex = 21;
-            // 
-            // btnSearchRemoveFilterLine
-            // 
-            btnSearchRemoveFilterLineNew.Location = new System.Drawing.Point(598, 10 + amountToAddToTop);
-            btnSearchRemoveFilterLineNew.Name = "btnSearchRemoveFilterLine" + amountToAddToTop;
-            btnSearchRemoveFilterLineNew.Size = new System.Drawing.Size(118, 23);
-            btnSearchRemoveFilterLineNew.TabIndex = 22;
-            btnSearchRemoveFilterLineNew.Text = "Remove This Filter";
-            btnSearchRemoveFilterLineNew.UseVisualStyleBackColor = true;
-            btnSearchRemoveFilterLineNew.Click += this.btnSearchRemoveFilterLine_Click;
-
-            // move the add button down
-            // add 29 top top, left stays the same
-
-        }
-
-        private void btnSearchRemoveFilterLine_Click(object sender, EventArgs e)
-        {
-            var btn = sender as Button;
-
-            if (btn != null)
-            {
-                var controlNameList = new List<string>
-                    {
-                        "btnSearchRemoveFilterLine",
-                        "tfSearchFieldName",
-                        "lblSearchFieldMin",
-                        "lblSearchFieldName",
-                        "lblSearchFieldMax",
-                        "tfSearchFieldMin",
-                        "tfSearchFieldMax"
-                    };
-
-
-                var suffix = int.Parse(btn.Name.Replace("btnSearchRemoveFilterLine", string.Empty));
-
-                FindAndRemoveControlFromTabPageSearchCsv(controlNameList, suffix);
-            }
-        }
-
-        private void FindAndRemoveControlFromTabPageSearchCsv(IEnumerable<string> controlNameList, int suffix)
-        {
-            foreach (var item in controlNameList)
-            {
-                // remove the control
-                var controls = this.panelSearchEntries.Controls.Find(item + suffix, false);
-                if (controls.Count() == 1)
-                {
-                    this.panelSearchEntries.Controls.Remove(controls.First());
-                }
-
-                // move all other controls of the same name (and high postfix) up by one place
-                var changingPostfix = suffix;
-                while ((controls = this.panelSearchEntries.Controls.Find(item + (changingPostfix + FilterLineOffsetTop), false)).Any())
-                {
-                    changingPostfix += FilterLineOffsetTop;
-                    controls[0].Location = new Point(controls[0].Location.X, controls[0].Location.Y - FilterLineOffsetTop);
-                }
-            }
-        }
-
-        private void btnFindInCSV_Click(object sender, EventArgs e)
-        {
-            var filter = new CsvFileFilter();
-
-            var topDir = new DirectoryInfo(textBoxCSVSourceFolderPath.Text);
-
-            var allControls = this.panelSearchEntries.Controls.Cast<Control>();
-            var textBoxes = allControls.Select(i => i as TextBox).Where(i => i != null);
-            var suffixes =
-                textBoxes.Select(
-                    i =>
-                    i.Name.Replace("tfSearchFieldName", string.Empty)
-                     .Replace("tfSearchFieldMin", string.Empty)
-                     .Replace("tfSearchFieldMax", string.Empty)).Distinct();
-
-            var filters =
-                suffixes.Select(
-                    i =>
-                    new CsvFileFilter.CsvFilter
-                        {
-                            FieldName = textBoxes.First(tf => tf.Name == "tfSearchFieldName" + i).Text,
-                            Minimum = double.Parse(textBoxes.First(tf => tf.Name == "tfSearchFieldMin" + i).Text),
-                            Maximum = double.Parse(textBoxes.First(tf => tf.Name == "tfSearchFieldMax" + i).Text)
-                        })
-                        .Where(i => !string.IsNullOrWhiteSpace(i.FieldName));
-
-
-            var results = filter.Run(topDir, filters);
-
-            foreach (var result in results)
-            {
-                LoggedConsole.WriteLine("Processed " + result.ProcessedFile.FullName);
-                LoggedConsole.WriteLine("Headers: " + string.Join(", ", result.Headers));
-                LoggedConsole.WriteLine("Using filters: " + string.Join(", ", result.Filters.Select(f => f.FieldName + " " + f.Minimum + "-" + f.Maximum)));
-                //LoggedConsole.WriteLine("File Stats: " + string.Join(", ", result.ColumnStats.Select(i => i.Key + ": " + i.Value.ToString())));
-                LoggedConsole.WriteLine(result.Rows.Count + " Rows Matched Filter");
-
-                //filter.WriteCSV(new FileInfo(result.ProcessedFile.FullName + ".matched.csv"), result.Headers, result.Rows);
-            }
-
-        }
-
-
-
-
-
-        // ********************************************************************************************************************************************
-        // METHODS BELOW ARE FOR CONTROLS ON THE TABBED PANEL LABELLED 'ANALYSE AUDIO FILE'.
-
-        private void btnAnalysisFile_Click(object sender, EventArgs e)
-        {
-            //OPEN A FILE DIALOGUE TO FIND MP3 FILE
-            OpenFileDialog fdlg = new OpenFileDialog();
-            fdlg.Title = "Open Audio File Dialogue";
-            fdlg.InitialDirectory = this.browserSettings.diSourceDir.FullName;
-            fdlg.Filter = "Audio Files|*.mp3;*.wav|All files|*.*"; // ,mp4,mov,wmv,mpg    ;*.mp4;*.mov;*.wmv;*.mpg
-            fdlg.FilterIndex = 1;
-            fdlg.RestoreDirectory = false;
-            if (fdlg.ShowDialog() == DialogResult.OK)
-            {
-                var fiAudioFile = new FileInfo(fdlg.FileName);
-                this.browserSettings.fiSourceRecording = fiAudioFile; // store in settings so can be accessed later.
-                this.txtBoxAnalysisFile.Text = fiAudioFile.Name;
-                this.browserSettings.diSourceDir = new DirectoryInfo(Path.GetDirectoryName(fiAudioFile.FullName)); // change to selected directory
-                txtBoxAnalysisOutputDir.Text = this.browserSettings.diOutputDir.FullName;
-                LoggedConsole.WriteLine("Source Directory: {0}\\", this.browserSettings.diSourceDir);
-                LoggedConsole.WriteLine("Audio File Name : {0}", fiAudioFile);
-            } // if (DialogResult.OK)
-        }
-
-
-        private void btnAnalysisOutputDir_Click(object sender, EventArgs e)
-        {
-            FolderBrowserDialog fdlg = new FolderBrowserDialog();
-
-            // Set the help text description for the FolderBrowserDialog. 
-            fdlg.Description = "Select the directory that you want to use for output files.";
-
-            // Do not allow the user to create new files via the FolderBrowserDialog. 
-            fdlg.ShowNewFolderButton = true;
-
-            // Default to the current output dir in Browser settings
-            fdlg.SelectedPath = this.browserSettings.diOutputDir.FullName;
-            //fdlg.RootFolder = Environment.SpecialFolder.Personal;
-
-            if (fdlg.ShowDialog() == DialogResult.OK)
-            {
-                var diOutput = new DirectoryInfo(fdlg.SelectedPath);
-                this.browserSettings.diOutputDir = diOutput; // store in settings so can be accessed later.
-                this.txtBoxAnalysisOutputDir.Text = diOutput.FullName;
-            }
-        } //btnAnalysisOutputDir_Click()
-
-
-        private void comboAnalysisType_SelectedValueChanged(object sender, EventArgs e)
-        {
-            if (browserSettings == null) return; // in case not initialised yet.
-
-            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
-            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            var fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
-                MessageBox.Show("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
-                MessageBox.Show("         Write an appropriate config file with following path: <{0}>.", configPath);
-
-                //LoggedConsole.WriteLine("\n\nWARNING: A config file does not exist for the analysis type: {0}.", analysisName);
-                //LoggedConsole.WriteLine("       Write an appropriate config file with following path: <{0}>.", configPath);
-                //this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-            this.browserSettings.AnalysisIdentifier = analysisName;
-        }
-
-        private void btnAnalysisEditConfig_Click(object sender, EventArgs e)
-        {
-            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
-            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            var fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                this.txtBoxAnalysisEditConfig.Text = String.Format("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
-                MessageBox.Show("WARNING: A config file does not exist for this analysis type: {0}.", analysisName);
-                MessageBox.Show("         Write an appropriate config file with following path: <{0}>.", configPath);
-                return;
-            }
-            this.browserSettings.AnalysisIdentifier = analysisName;
-
-            string text = fiConfig.Name + "   in directory   " + Path.GetDirectoryName(configPath);
-            this.txtBoxAnalysisEditConfig.Text = text;
-            //this.txtBoxAnalysisEditConfig.TextAlign = HorizontalAlignment.Right;
-
-            //string editorPath = @"C:\Program Files (x86)\Windows NT\Accessories\wordpad.exe";
-            // check Wordpad is available
-            if ((browserSettings.WordPadExe == null) || (!browserSettings.WordPadExe.Exists))
-            {
-                MessageBox.Show("WARNING: Cannot find Wordpad editor.");
-                MessageBox.Show("         Enter correct Wordpad path in the Browser's app.config file and try again.");
-                //LoggedConsole.WriteLine("\nWARNING: Cannot find Wordpad editor.");
-                //LoggedConsole.WriteLine("   Enter correct Wordpad path in the Browser's app.config file and try again.");
-                //this.tabControlMain.SelectTab(tabPageConsoleLabel);
-                return;
-            }
-            int status = AudioBrowserTools.RunWordPad(browserSettings.WordPadExe.FullName, configPath, browserSettings.diOutputDir.FullName);
-        }
-
-        //private void btnAnalysisStart_Click(object sender, EventArgs e)
-        //{
-        //    if (this.browserSettings.ConsoleExists())
-        //    {
-        //        FileInfo fiConsole = AppConfigHelper.GetFile("ConsoleExe", false);
-        //        LoggedConsole.WriteLine("\nRunning analysis console: " + fiConsole.FullName);
-        //        //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(fiConsole.FullName);
-        //        //TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Users\Owner\Desktop\powershell.bat");
-        //        TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(@"C:\Windows\system32\cmd.exe");
-        //        process.Run("", this.browserSettings.diOutputDir.FullName, false);
-        //    }
-        //}
-
-        private void btnAnalysisStart_Click(object sender, EventArgs e)
-        {
-            string analysisName = ((KeyValuePair<string, string>)this.comboAnalysisType.SelectedItem).Key;
-            this.browserSettings.AnalysisIdentifier = analysisName;
-            string configPath = Path.Combine(browserSettings.diConfigDir.FullName, analysisName + AudioBrowserSettings.DefaultConfigExt);
-            var fiConfig = new FileInfo(configPath);
-
-
-            this.analysisParams = ConfigDictionary.ReadPropertiesFile(configPath);
-
-            this.browserSettings.fiAnalysisConfig = fiConfig;
-            WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
-            CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
-            textBoxAnalysisGo.ForeColor = Color.Black;
-            textBoxAnalysisGo.BackColor = Color.Ivory;
-
-            //SET UP the command line
-            if (!this.browserSettings.AnalysisProgramsExeExists())
-            {
-                textBoxAnalysisGo.BackColor = Color.Ivory;
-                textBoxAnalysisGo.ForeColor = Color.Red;
-                //LoggedConsole.WriteLine("\nWARNING: Cannot find AudioAnalysisPrograms.exe.");
-                //LoggedConsole.WriteLine("   Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
-                textBoxAnalysisGo.Text = "WARNING: Cannot find AudioAnalysisPrograms.exe. Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.";
-                MessageBox.Show("WARNING: Cannot find AudioAnalysisPrograms.exe.");
-                MessageBox.Show("         Enter correct path to AudioAnalysisPrograms.exe in the Browser's app.config file and try again.");
-                return;
-            }
-
-            var fiSourceRecording = this.browserSettings.fiSourceRecording;
-            if (fiSourceRecording == null)
-            {
-                textBoxAnalysisGo.BackColor = Color.Ivory;
-                textBoxAnalysisGo.ForeColor = Color.Red;
-                string msg = "WARNING: You must complete Step 1. Enter an audio file to analyse.";
-                MessageBox.Show(msg);
-                textBoxAnalysisGo.Text = msg;
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.Append(browserSettings.AnalysisProgramsExe.FullName + "   audio2csv");
-            sb.Append("    " + fiSourceRecording.FullName);
-            sb.Append("    " + this.browserSettings.fiAnalysisConfig.FullName);
-            sb.Append("    " + this.browserSettings.diOutputDir);
-            textBoxAnalysisGo.Text = sb.ToString();
-
+            var audioFileName = item.FileName;
+            var fiSourceRecording = item.FullName;
+            Helper.fiSourceRecording = fiSourceRecording;
             LoggedConsole.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
             LoggedConsole.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-            //LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
-            return;
-
-
-
-
-
-            //this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab(tabPageConsoleLabel);
+            LoggedConsole.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
 
             Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
             stopwatch.Start();
 
             var currentlySelectedIdentifier = ((KeyValuePair<string, string>)this.comboBoxSourceFileAnalysisType.SelectedItem).Key;
-            var analyser = this.pluginHelper.AnalysisPlugins.FirstOrDefault(a => a.Identifier == currentlySelectedIdentifier);
+            var analyser = this.Helper.GetAnalyser(currentlySelectedIdentifier);
 
             var settings = analyser.DefaultSettings;
             var configuration = new ConfigDictionary(fiConfig.FullName);
-            settings.SetUserConfiguration(this.browserSettings.DefaultTempFilesDir, fiConfig, configuration.GetTable(), this.browserSettings.diOutputDir,
-                                            AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
-            //return;
+            settings.SetUserConfiguration(this.Helper.DefaultTempFilesDir, fiConfig, configuration.GetTable(), this.Helper.diOutputDir,
+                                          AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
 
             //################# PROCESS THE RECORDING #####################################################################################
-            var analyserResults = AudioBrowserTools.ProcessRecording(fiSourceRecording, analyser, settings);
+            var analyserResults = this.Helper.ProcessRecording(fiSourceRecording, analyser, settings);
+            //NEXT LINE was my old code
+            // var op1 = AudioBrowserTools.ProcessRecording(fiSourceRecording, this.Helper.diOutputDir, fiConfig);
 
             if (analyserResults == null)
             {
@@ -1715,6 +173,7 @@
 
             //#############################################################################################################################
             stopwatch.Stop();
+
             var fiEventsCSV = op2.Item1;
             var fiIndicesCSV = op2.Item2;
 
@@ -1741,215 +200,267 @@
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
             }
             LoggedConsole.WriteLine("###################################################\n");
+
+            */
         }
 
-        private void btnCSV2ARFF_Click(object sender, EventArgs e)
+        // ********************************************************************************************
+        // Browse Tab
+        // ********************************************************************************************
+
+        private bool IsCreatingSonogramImage = false;
+
+        private void ChangeSonogramImage()
         {
-            //OPEN A FILE DIALOGUE TO FIND CSV FILE
-            OpenFileDialog fdlg = new OpenFileDialog();
-            fdlg.Title = "Open File Dialogue";
-            fdlg.InitialDirectory = this.browserSettings.diOutputDir.FullName;
-            fdlg.Filter = "CSV files (*.csv)|*.csv";
-            fdlg.FilterIndex = 2;
-            fdlg.RestoreDirectory = false;
-            if (fdlg.ShowDialog() == DialogResult.OK)
-            {
-                var fiCSVFile = new FileInfo(fdlg.FileName);
-                //this.browserSettings.fiCSVFile = fiCSVFile; // store in settings so can be accessed later.
-                //this.browserSettings.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
-
-                // ##################################################################################################################
-                int status = AudioBrowserTools.CSV2ARFF(fiCSVFile);
-                // ##################################################################################################################
-                this.tabControlMain.SelectTab("tabPageConsole");
-
-                if (status > 0)
-                {
-                    LoggedConsole.WriteLine("ERROR: Error converting csv file to ARFF and SEE5 formats");
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("Successfully converted CSV file to ARFF and SEE5 formats.");
-                } // (status)
-
-            } // if (DialogResult.OK)
-
-
-        } // btnCSV2ARFF_Click()
-
-        // ##################################################################################################################
-        // audio navigator
-        // ##################################################################################################################
-
-        private void WriteConsoleSpacer()
-        {
-            LoggedConsole.WriteLine();
-            LoggedConsole.WriteLine("###########################");
-            LoggedConsole.WriteLine("New operation started at " + DateTime.Now);
-            LoggedConsole.WriteLine("###########################");
-            LoggedConsole.WriteLine();
-        }
-
-        private void UpdateSonogram()
-        {
-            // collect data for sonogram generation
-            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(15) : TimeSpan.Zero;
-            var annotated = this.chkAudioNavAnnotateSonogram.Checked;
-            var noiseReduced = this.chkAudioNavNoiseReduce.Checked;
-            var backgroundNoiseThreshold = this.browserSettings.SonogramBackgroundThreshold;
-
-            WriteConsoleSpacer();
-            this.tabControlMain.SelectTab(tabPageConsole);
-
-            // segment audio and generate sonogram
-            this.audioNavigator.RefreshSonogram(
-                noiseReduced,
-                backgroundNoiseThreshold,
-                annotated,
-                segmentbuffer);
-
-            if (this.pictureBoxAudioNavSonogram.Image != null)
-            {
-                this.pictureBoxAudioNavSonogram.Image.Dispose();
-            }
-
-            if (this.audioNavigator.CurrentAudioSegmentFile == null ||
-                !File.Exists(this.audioNavigator.CurrentAudioSegmentFile.FullName) ||
-                this.audioNavigator.CurrentImageFile == null ||
-                !File.Exists(this.audioNavigator.CurrentImageFile.FullName))
-            {
-                this.lblAudioNavAudioSegmentFile.Text = string.Empty;
-                this.lblAudioNavSonogramImageFile.Text = string.Empty;
-                this.tabControlMain.SelectTab(this.tabPageConsole);
-            }
-            else
-            {
-                this.lblAudioNavAudioSegmentFile.Text = this.audioNavigator.CurrentAudioSegmentFile.Name;
-                this.lblAudioNavSonogramImageFile.Text = this.audioNavigator.CurrentImageFile.Name;
-
-                // resize picture box to contain sonogram image
-                this.pictureBoxAudioNavSonogram.Size = new Size(
-                    this.audioNavigator.SonogramImage.Width,
-                    this.audioNavigator.SonogramImage.Height);
-
-                // set new sonogram image
-                this.pictureBoxAudioNavSonogram.Image = this.audioNavigator.SonogramImage;
-                this.tabControlMain.SelectTab(tabPageAudioNavigator);
-            }
-        }
-
-        private void btnAudioNavSelectFiles_Click(object sender, EventArgs e)
-        {
-            // open a window to collect information to create a new AudioNavigator object.
-            var selectFilesForm = new AudioNavigatorFileSelectForm
-            {
-                AudioFile = this.audioNavigator.AudioFile,
-                CsvFile = this.audioNavigator.CsvFile,
-                OutputDirectory = this.audioNavigator.OutputDirectory,
-                AnalysisName = this.audioNavigator.AnalysisName
-            };
-            selectFilesForm.FormClosing += selectFilesForm_FormClosing;
-            selectFilesForm.Show();
-        }
-
-        private void selectFilesForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            var selectFilesForm = sender as AudioNavigatorFileSelectForm;
-
-            // update settings
-            this.audioNavigator.AudioFile = selectFilesForm.AudioFile;
-            this.audioNavigator.CsvFile = selectFilesForm.CsvFile;
-            this.audioNavigator.OutputDirectory = selectFilesForm.OutputDirectory;
-            this.audioNavigator.AnalysisName = selectFilesForm.AnalysisName;
-
-            if (selectFilesForm.AudioFile == null ||
-                selectFilesForm.CsvFile == null ||
-                selectFilesForm.OutputDirectory == null ||
-                string.IsNullOrWhiteSpace(selectFilesForm.AnalysisName))
+            if (this.IsCreatingSonogramImage)
             {
                 return;
             }
 
-            // reset UI
+            this.IsCreatingSonogramImage = true;
+
+            // collect data for sonogram generation
+            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(15) : TimeSpan.Zero;
+            var annotated = this.chkAudioNavAnnotateSonogram.Checked;
+            var noiseReduced = this.chkAudioNavNoiseReduce.Checked;
+            var backgroundNoiseThreshold = this.helper.SonogramBackgroundThreshold;
+
+            this.ClearSonogramImage();
+
+            var bgWorker = new BackgroundWorker();
+
+            bgWorker.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
+            {
+                // segment audio and generate sonogram
+                this.tabBrowseAudio.UpdateSonogram(
+                    noiseReduced,
+                    backgroundNoiseThreshold,
+                    annotated,
+                    segmentbuffer);
+            };
+
+            bgWorker.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
+            {
+                Action done = () =>
+                {
+                    this.IsCreatingSonogramImage = false;
+                    this.UpdateSonogramImage();
+                };
+
+                if (this.tabControlMain.InvokeRequired)
+                {
+                    this.tabControlMain.BeginInvoke(done);
+                }
+                else
+                {
+                    done();
+                }
+            };
+
+            bgWorker.RunWorkerAsync();
+        }
+
+        private void ClearSonogramImage()
+        {
+            if (this.pictureBoxAudioNavSonogram.Image != null)
+            {
+                this.pictureBoxAudioNavSonogram.Image.Dispose();
+                this.pictureBoxAudioNavSonogram.Image = new Bitmap(1200, 350);
+                this.pictureBoxAudioNavSonogram.Size = new Size(1200, 350);
+            }
+
+            this.textBoxBrowseAudioSegmentFile.Text = string.Empty;
+            this.textBoxBrowseSonogramImageFile.Text = string.Empty;
+
+            this.txtAudioNavClickLocation.Text = string.Empty;
+            this.txtAudioNavClickValue.Text = string.Empty;
+        }
+
+        private void UpdateSonogramImage()
+        {
+            this.textBoxBrowseAudioSegmentFile.Text = this.tabBrowseAudio.AudioSegmentFile.Name;
+            this.textBoxBrowseSonogramImageFile.Text = this.tabBrowseAudio.SonogramImageFile.Name;
+
+            // resize picture box to contain sonogram image
+            this.pictureBoxAudioNavSonogram.Size = new Size(
+                this.tabBrowseAudio.SonogramImage.Width,
+                this.tabBrowseAudio.SonogramImage.Height);
+
+            // set new sonogram image
+            this.pictureBoxAudioNavSonogram.Image = this.tabBrowseAudio.SonogramImage;
+            //this.tabControlMain.SelectTab(tabPageBrowseAudioFile);
+
+            // set location and value at click
+            this.txtAudioNavClickLocation.Text = this.tabBrowseAudio.GetLocationString(this.tabBrowseAudio.ClickLocation.X);
+            this.txtAudioNavClickValue.Text = this.tabBrowseAudio.GetValueString(this.tabBrowseAudio.ClickLocation.X, this.tabBrowseAudio.TrackValues);
+
+            var value = this.tabBrowseAudio.TrackValues[this.tabBrowseAudio.ClickLocation.X];
+            this.lblCurrentSegment.Text = this.txtAudioNavClickLocation.Text + " (" + value.ToString("f2") + ")";
+        }
+
+        private void ClearIndicesImage()
+        {
             if (this.pictureBoxAudioNavIndicies.Image != null)
             {
                 this.pictureBoxAudioNavIndicies.Image.Dispose();
-                this.pictureBoxAudioNavIndicies.Image = new Bitmap(1000, 350);
+                this.pictureBoxAudioNavIndicies.Image = new Bitmap(1200, 350);
+                this.pictureBoxAudioNavIndicies.Size = new Size(1200, 350);
             }
 
             if (this.pictureBoxAudioNavSonogram.Image != null)
             {
                 this.pictureBoxAudioNavSonogram.Image.Dispose();
-                this.pictureBoxAudioNavSonogram.Image = new Bitmap(1000, 350);
+                this.pictureBoxAudioNavSonogram.Image = new Bitmap(1200, 350);
+                this.pictureBoxAudioNavSonogram.Size = new Size(1200, 350);
             }
 
-            this.listBoxDisplayedTracks.Items.Clear();
+            if (this.pictureBoxAudioNavClickTrack.Image != null)
+            {
+                this.pictureBoxAudioNavClickTrack.Image.Dispose();
+                this.pictureBoxAudioNavClickTrack.Image = new Bitmap(1200, 20);
+                this.pictureBoxAudioNavClickTrack.Size = new Size(1200, 20);
+            }
+
+            this.listBoxAudioNavCSVHeaders.Items.Clear();
 
             this.txtAudioNavClickLocation.Text = string.Empty;
             this.txtAudioNavClickValue.Text = string.Empty;
             this.txtAudioNavCursorLocation.Text = string.Empty;
             this.txtAudioNavCursorValue.Text = string.Empty;
 
-            this.lblAudioNavAudioSegmentFile.Text = "File Name";
-            this.lblAudioNavSonogramImageFile.Text = "File Name";
+            this.textBoxBrowseAudioSegmentFile.Text = string.Empty;
+            this.textBoxBrowseSonogramImageFile.Text = string.Empty;
+        }
 
-            // write spacer to console.
-            WriteConsoleSpacer();
-            this.tabControlMain.SelectTab(tabPageConsole);
-
-            // refresh indices info and image
-            this.audioNavigator.RefreshIndices(this.browserSettings.TrackNormalisedDisplay);
-
+        private void UpdateIndicesImage()
+        {
             // show indices information
-            this.txtAudioNavAnalysisType.Text = this.audioNavigator.AnalysisName;
-            this.txtAudioNavDuration.Text = this.audioNavigator.AudioDuration.TotalMinutes.ToString();
-            this.listBoxAudioNavCSVHeaders.Items.AddRange(this.audioNavigator.CsvHeaderList.ToArray());
-            this.lblAudioNavCSVHeaders.Text = this.audioNavigator.CsvHeaderInfo;
+            this.txtAudioNavAnalysisType.Text = this.tabBrowseAudio.AnalysisId;
+            this.txtAudioNavDuration.Text = this.tabBrowseAudio.AudioDuration.TotalMinutes.ToString();
+            this.listBoxAudioNavCSVHeaders.Items.AddRange(this.tabBrowseAudio.CsvHeaderList.ToArray());
+            this.lblAudioNavCSVHeaders.Text = this.tabBrowseAudio.CsvHeaderInfo;
 
             // resize picture box to contain indices image
             this.pictureBoxAudioNavIndicies.Size = new Size(
-                this.audioNavigator.IndicesImage.Width,
-                this.audioNavigator.IndicesImage.Height);
+                this.tabBrowseAudio.IndicesImage.Width,
+                this.tabBrowseAudio.IndicesImage.Height);
+
+            this.pictureBoxAudioNavClickTrack.Width = this.tabBrowseAudio.IndicesImage.Width;
 
             // set new indices image
-            this.pictureBoxAudioNavIndicies.Image = this.audioNavigator.IndicesImage;
-            this.tabControlMain.SelectTab(tabPageAudioNavigator);
+            this.pictureBoxAudioNavIndicies.Image = this.tabBrowseAudio.IndicesImage;
+            //this.tabControlMain.SelectTab(tabPageBrowseAudioFile);
+        }
+
+        private void btnAudioNavSelectFiles_Click(object sender, EventArgs e)
+        {
+            // open a window to collect information to create a new AudioNavigator object.
+            var selectFilesForm = new AudioNavigatorFileSelectForm(this.helper)
+            {
+                CsvFile = csvFile,//this.tabBrowseAudio.CsvFile,
+                ImgFile = this.tabBrowseAudio.IndicesImageFile,
+                AnalysisId = this.tabBrowseAudio.AnalysisId,
+                AnalysisConfigFile = analysisConfigFile,// this.tabBrowseAudio.ConfigFile,
+                OutputDir = outputDir,// this.tabBrowseAudio.OutputDirectory,
+                AudioFile = audioFile,
+                //this.tabBrowseAudio.AudioFile,
+            };
+
+            /*
+
+            var selectFilesForm = new AudioNavigatorFileSelectForm(this.helper)
+            {
+                CsvFile = this.tabBrowseAudio.CsvFile,
+                ImgFile = this.tabBrowseAudio.IndicesImageFile,
+                AnalysisId = this.tabBrowseAudio.AnalysisId,
+                AnalysisConfigFile = this.tabBrowseAudio.ConfigFile,
+                OutputDir = this.tabBrowseAudio.OutputDirectory,
+                AudioFile = this.tabBrowseAudio.AudioFile,
+            };
+            */
+
+            using (selectFilesForm)
+            {
+                var dialogResult = selectFilesForm.ShowDialog();
+                if (dialogResult == System.Windows.Forms.DialogResult.OK)
+                {
+                    // form checks that values are valid, don't need to check again
+
+                    this.btnAudioNavSelectFiles.Enabled = false;
+
+                    // refresh indices info and image
+                    this.tabBrowseAudio.SetNewFiles(
+                        selectFilesForm.CsvFile,
+                        selectFilesForm.ImgFile,
+                        selectFilesForm.AudioFile,
+                        selectFilesForm.AnalysisId,
+                        selectFilesForm.AnalysisConfigFile,
+                        selectFilesForm.OutputDir,
+                        this.helper.TrackNormalisedDisplay);
+
+
+                    ClearIndicesImage();
+
+                    var bgWorker = new BackgroundWorker();
+
+                    bgWorker.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
+                    {
+                        if (this.tabBrowseAudio.CsvFile != null && File.Exists(this.tabBrowseAudio.CsvFile.FullName))
+                        {
+                            this.tabBrowseAudio.UpdateIndicesFromCsvFile();
+                        }
+                        else if (this.tabBrowseAudio.IndicesImageFile != null && File.Exists(this.tabBrowseAudio.IndicesImageFile.FullName))
+                        {
+                            this.tabBrowseAudio.UpdateIndicesFromImageFile();
+                        }
+                        else
+                        {
+                            // error
+                            throw new ArgumentException();
+                        }
+                    };
+
+                    bgWorker.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
+                    {
+                        Action done = () =>
+                        {
+                            //this.tabControlMain.SelectTab(this.tabPageAnalyseAudioFile);
+                            this.btnAudioNavSelectFiles.Enabled = true;
+                            this.UpdateIndicesImage();
+                        };
+
+                        if (this.tabControlMain.InvokeRequired)
+                        {
+                            this.tabControlMain.BeginInvoke(done);
+                        }
+                        else
+                        {
+                            done();
+                        }
+                    };
+
+                    bgWorker.RunWorkerAsync();
+                }
+            }
         }
 
         private void btnAudioNavRunAudacity_Click(object sender, EventArgs e)
         {
-            var audacityExe = this.browserSettings.AudacityExe;
-            var audioSegmentFile = this.audioNavigator.CurrentAudioSegmentFile;
-            var outputDir = this.audioNavigator.OutputDirectory;
-
-            // check Audacity is available
-            if (audacityExe == null)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at default locations.");
-                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
-                this.tabControlMain.SelectTab(tabPageConsole);
-                return;
-            }
+            var audacityExe = this.helper.AudacityExe;
+            var audioSegmentFile = this.tabBrowseAudio.AudioSegmentFile;
 
             if (!File.Exists(audacityExe.FullName))
             {
-                LoggedConsole.WriteLine("\nWARNING: Cannot find Audacity at <{0}>", audacityExe.FullName);
-                LoggedConsole.WriteLine("   Enter correct Audacity path in the Browser's app.config file.");
-                this.tabControlMain.SelectTab(tabPageConsole);
-                return;
+                MessageBox.Show("Could not find Audacity. Is it installed?");
             }
-
-            int status = 0;
-            if ((audioSegmentFile == null) || !File.Exists(audioSegmentFile.FullName))
+            else if (!File.Exists(audioSegmentFile.FullName))
             {
-                LoggedConsole.WriteLine("Audacity cannot open audio segment file: <" + audioSegmentFile + ">");
-                LoggedConsole.WriteLine("The audio file does not exist!");
-                this.tabControlMain.SelectTab(tabPageConsole);
-                status = AudioBrowserTools.RunAudacity(audacityExe.FullName, " ", outputDir.FullName);
+                MessageBox.Show("Could not find audio segment file.");
             }
             else
             {
-                status = AudioBrowserTools.RunAudacity(audacityExe.FullName, audioSegmentFile.FullName, outputDir.FullName);
+                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.AudacityExe.FullName);
+                process.Run(audioSegmentFile.FullName, this.helper.DefaultOutputDir.FullName, false);
             }
         }
 
@@ -1963,18 +474,18 @@
             float[] dashValues = { 2, 2, 2, 2 };
 
             var currentCursorX = e.X; // pixel position = minutes
-            var durationMin = Math.Ceiling(this.audioNavigator.AudioDuration.TotalMinutes);
+            var durationMin = Math.Ceiling(this.tabBrowseAudio.AudioDuration.TotalMinutes);
 
             if (currentCursorX > durationMin)
             {
                 return;
             }
 
-            var currentTrackValues = this.audioNavigator.TrackValues;
+            var currentTrackValues = this.tabBrowseAudio.TrackValues;
 
             // set text for current cursor location
 
-            this.txtAudioNavCursorLocation.Text = this.audioNavigator.GetLocationString(currentCursorX);
+            this.txtAudioNavCursorLocation.Text = this.tabBrowseAudio.GetLocationString(currentCursorX);
 
             // draw dashed lines either side of the cursor
             if (this.pictureBoxAudioNavIndicies.Image != null)
@@ -1991,7 +502,7 @@
                 pt2 = new Point(currentCursorX + 1, this.pictureBoxAudioNavIndicies.Height);
                 g.DrawLine(this.pictureBoxPen, pt1, pt2);
 
-                this.txtAudioNavCursorValue.Text = this.audioNavigator.GetValueString(currentCursorX, currentTrackValues);
+                this.txtAudioNavCursorValue.Text = this.tabBrowseAudio.GetValueString(currentCursorX, currentTrackValues);
             }
         }
 
@@ -1999,29 +510,291 @@
         {
             // gather information from click
             var currentCursorX = e.X;
-            var currentCursorY = e.Y;
+            //var currentCursorY = e.Y;
 
-            var currentTrackValues = this.audioNavigator.TrackValues;
+            //var currentTrackValues = this.tabBrowseAudio.TrackValues;
 
             // segment start and end
-            var segmentDuration = TimeSpan.FromMinutes(this.browserSettings.DefaultSegmentDuration);
+            var segmentDuration = TimeSpan.FromMinutes(this.helper.DefaultSegmentDuration);
             var segmentOffsetStart = TimeSpan.FromMinutes(currentCursorX);
             var segmentOffsetEnd = segmentOffsetStart + segmentDuration;
 
-            this.audioNavigator.CurrentOffsetStart = segmentOffsetStart;
-            this.audioNavigator.CurrentOffsetEnd = segmentOffsetEnd;
+            // update stored values
+            this.tabBrowseAudio.UpdateOffsets(segmentOffsetStart, segmentOffsetEnd, new Point(e.X, e.Y));
 
-            // set location and value at click
-            this.txtAudioNavClickLocation.Text = this.audioNavigator.GetLocationString(currentCursorX);
-            this.txtAudioNavClickValue.Text = this.audioNavigator.GetValueString(currentCursorX, currentTrackValues);
-
-            UpdateSonogram();
+            ChangeSonogramImage();
         }
 
         private void btnAudioNavRefreshSonogram_Click(object sender, EventArgs e)
         {
-            UpdateSonogram();
+            ChangeSonogramImage();
         }
+
+        private void btnDisplaySimilarSegments_Click(object sender, EventArgs e)
+        {
+            if (this.tabBrowseAudio.ClickLocation != null)
+            {
+                var selectedValue = this.tabBrowseAudio.TrackValues[this.tabBrowseAudio.ClickLocation.X];
+
+                // value, index
+                var allItems = new List<Tuple<double, int>>();
+
+                for (var index = 0; index < this.tabBrowseAudio.TrackValues.Length; index++)
+                {
+                    var value = this.tabBrowseAudio.TrackValues[index];
+                    allItems.Add(new Tuple<double, int>(value, index));
+                }
+
+                var sorted = allItems.OrderBy(i => Math.Abs(i.Item1 - selectedValue)).ToList();
+
+                this.listBoxSimilarSegments.Items.Clear();
+
+                // skip the first one - that's the one that was selected.
+                this.listBoxSimilarSegments.Items.AddRange(sorted.Skip(1).Take(8).Select(i => string.Format("{0}: {1}", i.Item2, i.Item1.ToString("f2"))).ToArray());
+
+                //Accord.Math.Distance.Euclidean(
+            }
+            // 
+        }
+
+        // ********************************************************************************************
+        // Analyse Tab
+        // ********************************************************************************************
+
+        private string AnalyserAnalysisSelected
+        {
+            get
+            {
+                var selectedAnalysisType = ((KeyValuePair<string, string>)this.comboboxAnalyseAnalyser.SelectedItem).Key;
+                return selectedAnalysisType;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    this.comboboxAnalyseAnalyser.SelectedValue = value;
+                }
+            }
+        }
+
+        private FileInfo AnalyserAudioFile
+        {
+            get { try { return new FileInfo(this.textboxAnalyseAudioFilePath.Text); } catch { return null; } }
+            set { if (value != null) { this.textboxAnalyseAudioFilePath.Text = value.FullName; } }
+        }
+
+        private FileInfo AnalyserConfigFile
+        {
+            get { try { return new FileInfo(this.textboxAnalyseConfigFilePath.Text); } catch { return null; } }
+            set { if (value != null) { this.textboxAnalyseConfigFilePath.Text = value.FullName; } }
+        }
+
+        private DirectoryInfo AnalyserOutputDir
+        {
+            get { try { return new DirectoryInfo(this.textBoxAnalyseOutputDir.Text); } catch { return null; } }
+            set { if (value != null) { this.textBoxAnalyseOutputDir.Text = value.FullName; } }
+        }
+
+        private void InitAnalyseTab()
+        {
+            //create comboBox display for anaylser
+            this.comboboxAnalyseAnalyser.DataSource = this.helper.AnalysersAvailable.ToList();
+            this.comboboxAnalyseAnalyser.ValueMember = "Key";
+            this.comboboxAnalyseAnalyser.DisplayMember = "Value";
+
+            // set defaults 
+            this.AnalyserOutputDir = this.helper.DefaultOutputDir;
+            this.AnalyserAnalysisSelected = this.helper.DefaultAnalysisIdentifier;
+
+            this.AnalyserAudioFile = audioFile;
+            this.AnalyserConfigFile = analysisConfigFile;
+            this.AnalyserOutputDir = outputDir;
+        }
+
+        private void btnAnalyseAudioFileBrowse_Click(object sender, EventArgs e)
+        {
+            var currentDir = string.Empty;
+            if (this.AnalyserAudioFile != null && Directory.Exists(this.AnalyserAudioFile.DirectoryName))
+            {
+                currentDir = this.AnalyserAudioFile.DirectoryName;
+            }
+
+            var file = Helper.PromptUserToSelectFile("Select Audio File", this.helper.SelectAudioFilter, currentDir);
+            if (file != null)
+            {
+                this.AnalyserAudioFile = file;
+            }
+        }
+
+        private void btnAnalyseConfigFileBrowse_Click(object sender, EventArgs e)
+        {
+            var currentDir = string.Empty;
+            if (this.AnalyserConfigFile != null && Directory.Exists(this.AnalyserConfigFile.DirectoryName))
+            {
+                currentDir = this.AnalyserConfigFile.DirectoryName;
+            }
+
+            var file = Helper.PromptUserToSelectFile("Select configuration file for analyser", this.helper.SelectConfigFilter, currentDir);
+            if (file != null)
+            {
+                this.AnalyserConfigFile = file;
+            }
+        }
+
+        private void btnAnalyseConfigFileEdit_Click(object sender, EventArgs e)
+        {
+            if (this.AnalyserConfigFile == null || !File.Exists(this.AnalyserConfigFile.FullName))
+            {
+                MessageBox.Show("Please specify a config file.");
+            }
+            else if (this.helper.TextEditorExe == null || !File.Exists(this.helper.TextEditorExe.FullName))
+            {
+                MessageBox.Show("Could not find a program to edit text files.");
+            }
+            else
+            {
+                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.TextEditorExe.FullName);
+                process.Run(this.AnalyserConfigFile.FullName, this.helper.DefaultOutputDir.FullName, false);
+            }
+        }
+
+        private void comboboxAnalyseAnalyser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.labelAnalyseSelectedAnalyserKey.Text = "Selected analyser id: " + this.AnalyserAnalysisSelected;
+        }
+
+        private void btnAnalyseOutputDirBrowse_Click(object sender, EventArgs e)
+        {
+            var selectedDir = Helper.PromptUserToSelectDirectory("Select output directory for analysis");
+
+            if (selectedDir != null && Directory.Exists(selectedDir.FullName))
+            {
+                this.AnalyserOutputDir = selectedDir;
+            }
+        }
+
+        private void btnAanlyseRun_Click(object sender, EventArgs e)
+        {
+            if (this.AnalyserAudioFile == null || !File.Exists(this.AnalyserAudioFile.FullName))
+            {
+                MessageBox.Show("Could not find audio file. Please check the path.");
+                return;
+            }
+
+            if (this.AnalyserConfigFile == null || !File.Exists(this.AnalyserConfigFile.FullName))
+            {
+                MessageBox.Show("Could not find configuration file. Please check the path.");
+                return;
+            }
+
+
+            if (this.AnalyserOutputDir == null || !Directory.Exists(this.AnalyserOutputDir.FullName))
+            {
+                MessageBox.Show("Could not find the output directory. Please check the path.");
+                return;
+            }
+
+            // disable analyse button so it cannot be clicked again while analysis is already running.
+            this.btnAanlyseRun.Enabled = false;
+
+            // analysis information
+            var analyserId = AnalyserAnalysisSelected;
+            var analyser = this.helper.GetAnalyser(analyserId);
+            var settings = analyser.DefaultSettings;
+
+            var config = new ConfigDictionary(this.AnalyserConfigFile.FullName);
+            var analysisParams = config.GetDictionary();
+
+            settings.SetUserConfiguration(this.helper.DefaultTempFilesDir, this.AnalyserConfigFile, config.GetTable(), this.AnalyserOutputDir,
+                                            AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
+
+            // record run information
+            Log.Debug("Parameters for selected analysis: " + analyserId);
+            foreach (KeyValuePair<string, string> kvp in analysisParams)
+            {
+                Log.DebugFormat("\t{0} = {1}", kvp.Key, kvp.Value);
+            }
+
+            string analysisName = analysisParams[AudioAnalysisTools.Keys.ANALYSIS_NAME];
+            if (analyserId != analysisName)
+            {
+                Log.WarnFormat("Analysis type selected in browser ({0}) not same as that in config file ({1})", analyserId, analysisName);
+            }
+
+            Log.Info("Analysis type: " + analyserId);
+
+            // switch to the console.
+            //this.tabControlMain.SelectTab(this.tabPageConsole);
+
+            var bgWorker = new BackgroundWorker();
+
+            bgWorker.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
+            {
+                this.tabAnalyseAudio.RunAnalysis(this.AnalyserAudioFile, this.AnalyserConfigFile, analyser, settings);
+            };
+
+            bgWorker.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
+            {
+                Action done = () =>
+                {
+                    //this.tabControlMain.SelectTab(this.tabPageAnalyseAudioFile);
+                    this.btnAanlyseRun.Enabled = true;
+                };
+
+                if (this.tabControlMain.InvokeRequired)
+                {
+                    this.tabControlMain.BeginInvoke(done);
+                }
+                else
+                {
+                    done();
+                }
+            };
+
+            bgWorker.RunWorkerAsync();
+        }
+
+        // ********************************************************************************************
+        // Under Development Tab
+        // ********************************************************************************************
+
+        private void btnCSV2ARFF_Click(object sender, EventArgs e)
+        {
+            //OPEN A FILE DIALOGUE TO FIND CSV FILE
+            OpenFileDialog fdlg = new OpenFileDialog();
+            fdlg.Title = "Open File Dialogue";
+            fdlg.InitialDirectory = this.helper.DefaultOutputDir.FullName;
+            fdlg.Filter = "CSV files (*.csv)|*.csv";
+            fdlg.FilterIndex = 2;
+            fdlg.RestoreDirectory = false;
+            if (fdlg.ShowDialog() == DialogResult.OK)
+            {
+                var fiCSVFile = new FileInfo(fdlg.FileName);
+                //this.Helper.fiCSVFile = fiCSVFile; // store in settings so can be accessed later.
+                //this.Helper.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiCSVFile.FullName)); // change to selected directory
+
+                // ##################################################################################################################
+                int status = this.helper.CSV2ARFF(fiCSVFile);
+                // ##################################################################################################################
+                //this.tabControlMain.SelectTab("tabPageConsole");
+
+                if (status > 0)
+                {
+                    Log.Warn("ERROR: Error converting csv file to ARFF and SEE5 formats");
+                }
+                else
+                {
+                    Log.Info("Successfully converted CSV file to ARFF and SEE5 formats.");
+                } // (status)
+
+            } // if (DialogResult.OK)
+
+
+        }
+
+
+
+
 
     } //class MainForm : Form
 }
