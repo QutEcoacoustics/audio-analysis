@@ -8,9 +8,11 @@
     using System.Drawing;
     using System.IO;
     using System.Reflection;
+    using Representations;
 
     class StatisticalAnalysis
     {
+        
         // Transpose matrix by transform the top row to the bottom row, the column doesn't change. 
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
@@ -292,5 +294,21 @@
             return (int)(frequency / frequencyScale);
         }
 
+        public static double SecondsToMillionSeconds(double seconds)
+        {
+            var unit = 1000.0;
+            return seconds * unit;
+        }
+
+        public static RidgeDescriptionNeighbourhoodRepresentation[,] RidgeNhListToArray(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhList, int NhCountInRow, int NhCountInColumn)
+        {
+            var result = new RidgeDescriptionNeighbourhoodRepresentation[NhCountInRow, NhCountInColumn];
+            var listCount = ridgeNhList.Count;
+            for (int i = 0; i < listCount; i++)
+            {
+                result[i / NhCountInColumn, i % NhCountInColumn] = ridgeNhList[i];
+            }
+            return result;
+        }
     }
 }
