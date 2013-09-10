@@ -10,21 +10,51 @@
     {
         #region Public Properties
 
-        // To get and set the maxFrequency, the above boundary of the region.
+        /// <summary>
+        /// gets or sets the maxFrequency, the above boundary of the region.
+        /// </summary>
         public double maxFrequency { get; set; }
 
-        // To get and set the minFrequency, the bottom boundary of the region.
+        /// <summary>
+        /// gets or sets the minFrequency, the bottom boundary of the region.
+        /// </summary>
         public double minFrequency { get; set; }
-
-        // To get and set the startTime, the left boundary of the region.
-        // The unit is second.
+       
+        /// <summary>
+        /// gets or sets the startTime, the left boundary of the region.
+        /// The unit is second.
+        /// </summary>
         public double startTime { get; set; }
 
-        // To get and set the endTime, the right boundary of the region.
+        /// <summary>
+        /// gets or sets the endTime, the right boundary of the region.
+        /// </summary>
         public double endTime { get; set; }
 
-        // To get and set the duration by endTime substracting startTime. 
+        /// <summary>
+        /// gets or sets the duration by endTime substracting startTime. 
+        /// </summary>
         public double duration { get; set; }
+
+        /// <summary>
+        /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region. 
+        /// </summary>
+        public int nhCountInRow { get; set; }
+
+        /// <summary>
+        /// gets or sets the nhCountInColumn in a region, which indicates the columnscount of neighbourhoods in the region. 
+        /// </summary>
+        public int nhCountInColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the neighbourhood start row index, it lies in the bottom left corner of the region.
+        /// </summary>
+        public int nhStartRowIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the neighbourhood start column index, it lies in the bottom left corner of the region.
+        /// </summary>
+        public int nhStartColIndex { get; set; }
 
         #endregion
 
@@ -48,15 +78,38 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, double starttime, double endtime)
+        public Query(double maximumFrequency, double minimumFrequency, double starttime, double endtime, int neighbourhoodLength)
         {
             maxFrequency = maximumFrequency;
             minFrequency = minimumFrequency;
             startTime = starttime;
             endTime = endtime;
-            duration = endTime - startTime; 
+            duration = endTime - startTime;
         }
-        
+
+        // to get the nhCountInRow, nhCountInColumn, nhStartRowIndex, nhStartColIndex.
+        public void GetNhProperties(int neighbourhoodLength)
+        {
+            var frequencyRange = this.maxFrequency - this.minFrequency;
+            var frequencyScale = 43.0;
+            var timeScale = 11.6; // millisecond
+            var nhRowsCount = (int)(frequencyRange / (neighbourhoodLength * frequencyScale)) + 1;
+            if (this.maxFrequency > nhRowsCount * neighbourhoodLength * frequencyScale)
+            {
+                nhRowsCount++;
+            }
+            var nhColsCount = (int)(this.duration / (neighbourhoodLength * timeScale)) + 1;
+            this.nhStartColIndex = (int)(this.startTime / (neighbourhoodLength * timeScale));
+            this.nhStartRowIndex = (int)(this.minFrequency / (neighbourhoodLength * frequencyScale));
+            var nhendTime = (this.nhStartColIndex + nhColsCount) * neighbourhoodLength * timeScale;
+            if (nhendTime < this.endTime)
+            {
+                nhColsCount++;
+            }
+            this.nhCountInRow = nhRowsCount;
+            this.nhCountInColumn = nhColsCount;
+            
+        }
         #endregion
 
     }

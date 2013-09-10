@@ -86,7 +86,8 @@
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="Indexing.cs" />
-    <Compile Include="Representations\RidgeDescriptionRegion.cs" />
+    <Compile Include="Representations\RegionRrepresentation.cs" />
+    <Compile Include="Representations\RidgeDescriptionRegionRepresentation.cs" />
     <Compile Include="RidgeNeighbourhoodFeatureVector.cs" />
     <Compile Include="ImageAnalysisTools.cs" />
     <Compile Include="Index.cs" />

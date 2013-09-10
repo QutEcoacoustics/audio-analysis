@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text;
     using System.ComponentModel;
+    using Representations;
 
     public enum MatchIndex
     {
@@ -329,6 +330,27 @@
                 }
             }
             return result; 
+        }
+
+        public static double SimilarityScoreRidgeDiscription(RidgeDescriptionNeighbourhoodRepresentation[,] potentialEvent, RidgeDescriptionNeighbourhoodRepresentation[,] query)
+        {
+            var result = 0.0;
+            var rowsCount = potentialEvent[0,0].nhCountInRow;
+            var colsCount = potentialEvent[0,0].nhCountInColumn;
+            if (query != null && potentialEvent != null)
+            {
+
+                for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < colsCount; colIndex++)
+                    {
+                        var candidateScore = potentialEvent[rowIndex, colIndex].dominantOrientationType * potentialEvent[rowIndex, colIndex].dominantPOICount;
+                        var queryScore = query[rowIndex, colIndex].dominantOrientationType * query[rowIndex, colIndex].dominantPOICount;
+                        result += Distance.EuclideanDistanceForCordinates(candidateScore, 0, queryScore, 0);
+                    }                  
+                }
+            }
+            return result;
         }
 
         public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
