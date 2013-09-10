@@ -114,14 +114,13 @@
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <Content Include="..\AnalysisPrograms\log4net.config">
-      <Link>log4net.config</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="log4net.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\DataSources\CsvFileItem.datasource" />
     <None Include="Properties\Settings.settings">
