@@ -45,38 +45,37 @@
                 string imageFileName = "test.png";
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Testing\NW_NW273_20101013-051800-0518-0519-Brown Cuckoo-dove1.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
-                string annotatedImageFileName = "NW_NW273_20101013-051800-0518-0519-Brown Cuckoo-dove1.png";
-                double magnitudeThreshold = 5.5; // of ridge height above neighbours
-                //double intensityThreshold = 5.0; // dB
+                //string annotatedImageFileName = "NW_NW273_20101013-051800-0518-0519-Brown Cuckoo-dove1.png";
+                //double magnitudeThreshold = 5.5; // of ridge height above neighbours
+                ////double intensityThreshold = 5.0; // dB
                 var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };             
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-                /// set the parameters for DrawSonogram. 
+                ///// set the parameters for DrawSonogram. 
                 var scores = new List<Plot>(); // plot(title, data, threshold);                
                 List<AcousticEvent> acousticEventlist = null;
                 double eventThreshold = 0.5; // dummy variable - not used                               
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                // addd this line to check the result after noise removal.
-                image.Save(imagePath, ImageFormat.Png);
+                //// addd this line to check the result after noise removal.
+                //image.Save(imagePath, ImageFormat.Png);
 
-                double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-                int rows = matrix.GetLength(0);
-                int cols = matrix.GetLength(1);
+                //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+                //int rows = matrix.GetLength(0);
+                //int cols = matrix.GetLength(1);
                 double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
-                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
                 double herzScale = spectrogram.FBinWidth;
-                double freqBinCount = spectrogram.Configuration.FreqBinCount;
-                int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
-                var poiList1 = new List<PointOfInterest>();
-                var pointsOfInterest = new POISelection(poiList1);
-                pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                /// filter out some redundant poi                
-                var poiList = ImageAnalysisTools.PruneAdjacentTracks(pointsOfInterest.poiList, rows, cols);
-                var filterNeighbourhoodSize = 7;
-                var numberOfEdgePoints = 3;
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdgePoints);
+                //double freqBinCount = spectrogram.Configuration.FreqBinCount;
+                //int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
+                //var poiList1 = new List<PointOfInterest>();
+                //var pointsOfInterest = new POISelection(poiList1);
+                //pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                ///// filter out some redundant poi                
+                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(pointsOfInterest.poiList, rows, cols);
+                //var filterNeighbourhoodSize = 7;
+                //var numberOfEdgePoints = 3;
+                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, filterNeighbourhoodSize, numberOfEdgePoints);
                 ///// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 ////var maxFrequency = 5124.90;
                 ////var minFrequency = 3359.18;
@@ -109,7 +108,8 @@
                 ////var duration = greyFantail1.duration;
 
                 /// For Brown Cuckoo-dove1
-                var brownCuckoodove1 = new Query(970.0, 500.0, 34.1, 34.5);
+                var neighbourhoodLength = 13;
+                var brownCuckoodove1 = new Query(970.0, 500.0, 34.1, 34.5, neighbourhoodLength);
                 var duration = brownCuckoodove1.duration;  // second
 
                 /////// For Scarlet honeyeater2
@@ -129,8 +129,7 @@
 
                 ////var listOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
                 ///This bmp image is used for showing pointsOfInterest 
-                Bitmap bmp = (Bitmap)image;
-                var neighbourhoodLength = 13;
+                Bitmap bmp = (Bitmap)image;               
                 var nhFrequencyRange = neighbourhoodLength * herzScale;
                 var nhDuration = StatisticalAnalysis.SecondsToMillionSeconds(neighbourhoodLength * secondsScale);
                               
@@ -159,6 +158,7 @@
                 var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
                 var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
                 var queryNhRepresentation = Indexing.ExtractQueryFromFile(brownCuckoodove1, ridgeArray, neighbourhoodLength);
+                var similarityDistance = Indexing.CandidatesIndexFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray);
                 ////var gr = Graphics.FromImage(bmp);
                 ////foreach (var nh in nhRepresentationList)
                 ////{

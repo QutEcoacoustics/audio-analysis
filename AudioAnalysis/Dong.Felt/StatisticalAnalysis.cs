@@ -25,7 +25,6 @@
             return m;
         }
          
-        // 2D matrix to 1D matrix
         /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
@@ -79,6 +78,35 @@
                         subMatrix[row, col].OrientationCategory = 20;
                     }
 
+                }
+            }
+            return subMatrix;
+        }
+
+        /// <summary>
+        /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="row1"></param>
+        /// <param name="col1"></param>
+        /// <param name="row2"></param>
+        /// <param name="col2"></param>
+        /// <returns></returns>
+        public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
+        {
+            int subRowCount = row2 - row1;
+            int subColCount = col2 - col1;
+
+            var subMatrix = new RidgeDescriptionNeighbourhoodRepresentation[subRowCount, subColCount];
+            for (int row = 0; row < subRowCount; row++)
+            {
+                for (int col = 0; col < subColCount; col++)
+                {
+                    subMatrix[row, col] = new RidgeDescriptionNeighbourhoodRepresentation();
+                    if (matrix[row1 + row, col1 + col] != null)
+                    {
+                        subMatrix[row, col] = matrix[row1 + row, col1 + col];
+                    }
                 }
             }
             return subMatrix;

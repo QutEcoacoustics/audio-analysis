@@ -2,7 +2,7 @@
 {
     using System;
 
-    public class NeighbourhoodRepresentation
+    public abstract class NeighbourhoodRepresentation
     {
         // all neighbourhoods for one representation must be the same dimensions
         // the row starts from start of file (left, 0ms)

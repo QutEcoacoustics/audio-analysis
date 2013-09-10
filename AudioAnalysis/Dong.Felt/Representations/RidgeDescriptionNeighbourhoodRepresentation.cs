@@ -86,6 +86,16 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double orentationType4MagnitudeSum { get; set; }
 
+        // Need to delete these two below properties later. 
+        /// <summary>
+        /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region. 
+        /// </summary>
+        public int nhCountInRow { get; set; }
+
+        /// <summary>
+        /// gets or sets the nhCountInColumn in a region, which indicates the columnscount of neighbourhoods in the region. 
+        /// </summary>
+        public int nhCountInColumn { get; set; }
         #endregion
 
         #region public method
