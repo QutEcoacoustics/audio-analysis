@@ -339,7 +339,6 @@
             var colsCount = potentialEvent[0,0].nhCountInColumn;
             if (query != null && potentialEvent != null)
             {
-
                 for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
                 {
                     for (int colIndex = 0; colIndex < colsCount; colIndex++)

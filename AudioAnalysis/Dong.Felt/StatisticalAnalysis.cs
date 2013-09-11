@@ -12,7 +12,7 @@
 
     class StatisticalAnalysis
     {
-        
+
         // Transpose matrix by transform the top row to the bottom row, the column doesn't change. 
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
@@ -24,7 +24,7 @@
             }
             return m;
         }
-         
+
         /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
@@ -35,18 +35,18 @@
             var row = matrix.GetLength(0);
             var col = matrix.GetLength(1);
 
-            int lengthOfMatrix = row * col; 
+            int lengthOfMatrix = row * col;
             var result = new double[lengthOfMatrix];
 
             for (int i = 0; i < row; i++)
             {
                 for (int j = 0; j < col; j++)
                 {
-                    result[i * row + j] = matrix[i, j]; 
+                    result[i * row + j] = matrix[i, j];
                 }
             }
 
-            return result; 
+            return result;
         }
 
         /// <summary>
@@ -94,6 +94,8 @@
         /// <returns></returns>
         public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
         {
+            var maxRowIndex = matrix.GetLength(0);
+            var maxColIndex = matrix.GetLength(1);
             int subRowCount = row2 - row1;
             int subColCount = col2 - col1;
 
@@ -103,9 +105,13 @@
                 for (int col = 0; col < subColCount; col++)
                 {
                     subMatrix[row, col] = new RidgeDescriptionNeighbourhoodRepresentation();
-                    if (matrix[row1 + row, col1 + col] != null)
+
+                    if (checkBoundary(row1 + row, col1 + col, maxRowIndex, maxColIndex))
                     {
-                        subMatrix[row, col] = matrix[row1 + row, col1 + col];
+                        if (matrix[row1 + row, col1 + col] != null)
+                        {
+                            subMatrix[row, col] = matrix[row1 + row, col1 + col];
+                        }
                     }
                 }
             }
@@ -257,7 +263,7 @@
                     result++;
                 }
             }
-            return result; 
+            return result;
         }
 
         public static int NumberOfpoiInSlice(RidgeNeighbourhoodFeatureVector fv)
@@ -289,7 +295,7 @@
                     result++;
                 }
             }
-                return result;
+            return result;
         }
 
         public static void WriteCSV<T>(IEnumerable<T> items, string path)
@@ -308,7 +314,7 @@
 
         public static int MilliSecondsToFrameIndex(double milliSeconds)
         {
-           // int maxFrequencyBand = 256;
+            // int maxFrequencyBand = 256;
             //double frequencyScale = 43.0;
             double framePerSecond = 86.0;  // ms
             int timeTransfromUnit = 1000; // from ms to s 
@@ -317,7 +323,7 @@
 
         public static int FrequencyToFruencyBandIndex(int frequency)
         {
-            
+
             double frequencyScale = 43.0;
             return (int)(frequency / frequencyScale);
         }

@@ -88,16 +88,16 @@
                         var ColIndex = row * frequencyScale;                        
                         var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
                         var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
-
+                        var dominantMagnitudeSum = neighbourhoodRepresentation.dominantMagnitudeSum;
                         if (row == rowsCount - 1 && col == 0)
                         {
                             results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
-                            dominantOrientation.ToString(), dominantPoiCount.ToString() });
+                            dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString() });
                         }
                         else
                         {
                             results.Add(new List<string>() { " ",  RowIndex.ToString(), ColIndex.ToString(), 
-                            dominantOrientation.ToString(), dominantPoiCount.ToString() });
+                            dominantOrientation.ToString(), dominantPoiCount.ToString(),  dominantMagnitudeSum.ToString()});
                         }
                     }
                 }
