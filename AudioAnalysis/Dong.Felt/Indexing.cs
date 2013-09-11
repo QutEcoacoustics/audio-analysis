@@ -24,6 +24,8 @@ namespace Dong.Felt
                 {
                     ridgeNeighbourhood[rowIndex, colIndex].nhCountInRow = nhRowsCount;
                     ridgeNeighbourhood[rowIndex, colIndex].nhCountInColumn = nhColsCount;
+                    ridgeNeighbourhood[rowIndex, colIndex].RowIndex = rowIndex;
+                    ridgeNeighbourhood[rowIndex, colIndex].ColIndex = colIndex;
                     result.Add(ridgeNeighbourhood[rowIndex, colIndex]);
                 }
             }

@@ -82,9 +82,10 @@
         {
             maxFrequency = maximumFrequency;
             minFrequency = minimumFrequency;
-            startTime = starttime;
-            endTime = endtime;
-            duration = endTime - startTime;
+            startTime = starttime * 1000; // millisecond
+            endTime = endtime * 1000; // millisecond
+            duration = endTime - startTime;   // millisecond
+            GetNhProperties(neighbourhoodLength);
         }
 
         // to get the nhCountInRow, nhCountInColumn, nhStartRowIndex, nhStartColIndex.
