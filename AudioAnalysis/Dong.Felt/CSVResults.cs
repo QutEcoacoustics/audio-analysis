@@ -11,7 +11,7 @@
 
     public class CSVResults
     {
-        
+
         #region  Public Methods
 
         public static void EventLocationToCSV(List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>> listOfPositions, string filePath)
@@ -37,12 +37,12 @@
         //}
 
         public static void NeighbourhoodRepresentationToCSV(PointOfInterest[,] neighbourhoodMatrix, int rowIndex, int colIndex, string filePath)
-        {            
+        {
             var results = new List<List<string>>();
             results.Add(new List<string>() {"RowIndex","ColIndex",
                 "NeighbourhoodWidthPix", "NeighbourhoodHeightPix", "NeighbourhoodDuration","NeighbourhoodFrequencyRange",
                 "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount" });
-            var nh = RidgeDescriptionNeighbourhoodRepresentation.FromFeatureVector(neighbourhoodMatrix, rowIndex, colIndex);
+            var nh = RidgeDescriptionNeighbourhoodRepresentation.FromFeatureVector(neighbourhoodMatrix, rowIndex, colIndex, 13);
             results.Add(new List<string>() { nh.RowIndex.ToString(), nh.ColIndex.ToString(), 
                 nh.WidthPx.ToString(), nh.HeightPx.ToString(), nh.Duration.ToString(), 
                 nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
@@ -51,13 +51,13 @@
 
         public static RidgeDescriptionNeighbourhoodRepresentation CSVToNeighbourhoodRepresentation(FileInfo file)
         {
-            var lines = File.ReadAllLines(file.FullName).Select(i=>i.Split(','));
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
             lines = lines.Skip(1);
             var nh = new RidgeDescriptionNeighbourhoodRepresentation();
             foreach (var csvRow in lines)
             {
-                nh = RidgeDescriptionNeighbourhoodRepresentation.FromNeighbourhoodCsv(csvRow);                          
+                nh = RidgeDescriptionNeighbourhoodRepresentation.FromNeighbourhoodCsv(csvRow);
             }
             return nh;
         }
@@ -68,14 +68,14 @@
             var frequencyScale = 43.0; // hz
             var results = new List<List<string>>();
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
-                "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount" });
+                "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount","NeighbourhooddominantMagnitudeSum","NormalisedScore" });
             //var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var rowOffset = neighbourhoodLength;
             var colOffset = neighbourhoodLength;
             // rowsCount = 257, colsCount = 5167
             //Todo:  add neighbourhood search step here, which means I need to improve the rowOffset and colOffset.
-            for (int row = 0; row < rowsCount; row += rowOffset)  
+            for (int row = 0; row < rowsCount; row += rowOffset)
             {
                 for (int col = 0; col < colsCount; col += colOffset)
                 {
@@ -83,26 +83,21 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col);
+                        neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col, neighbourhoodLength);
                         var RowIndex = col * timeScale;
-                        var ColIndex = row * frequencyScale;                        
+                        var ColIndex = row * frequencyScale;
                         var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
                         var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
                         var dominantMagnitudeSum = neighbourhoodRepresentation.dominantMagnitudeSum;
-                        if (row == rowsCount - 1 && col == 0)
-                        {
-                            results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
-                            dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString() });
-                        }
-                        else
-                        {
-                            results.Add(new List<string>() { " ",  RowIndex.ToString(), ColIndex.ToString(), 
-                            dominantOrientation.ToString(), dominantPoiCount.ToString(),  dominantMagnitudeSum.ToString()});
-                        }
+                        var score = neighbourhoodRepresentation.score;
+
+                        results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
+                            dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString(), score.ToString() });
                     }
                 }
             }
-            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
+            // No space in csv file.
+            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToRegionRepresentation(FileInfo file)
@@ -113,7 +108,7 @@
             var results = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             foreach (var csvRow in lines1)
             {
-                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromRegionCsv(csvRow);             
+                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromRegionCsv(csvRow);
                 results.Add(nh);
             }
             return results;
@@ -122,7 +117,7 @@
         public static void BatchProcess(string fileDirectoryPath)
         {
             string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
-            
+
             var fileCount = fileEntries.Count();
             for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
             {
