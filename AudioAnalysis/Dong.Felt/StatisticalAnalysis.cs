@@ -72,6 +72,7 @@
                     if (matrix[row1 + row, col1 + col] != null)
                     {
                         subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
+                        subMatrix[row, col].RidgeMagnitude = matrix[row1 + row, col1 + col].RidgeMagnitude;
                     }
                     else
                     {
@@ -344,5 +345,44 @@
             }
             return result;
         }
+
+        public static int NormaliseNeighbourhoodScore(PointOfInterest[,] nh, int nhlength)
+        {
+            var nhSize = nhlength * nhlength;
+            var point = new Point(0, 0);
+            var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(nh, point.X, point.Y);
+            var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);
+            var dominantOrientationType = ridgeDominantOrientationRepresentation.Item1;
+            var dominantPOICount = ridgeDominantOrientationRepresentation.Item2;
+            var dominantMagnitude = new double[dominantPOICount];
+            var i = 0;
+            var dominantMagnitudeSum = 0.0;
+            for (int rowIndex = 0; rowIndex < nh.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < nh.GetLength(1); colIndex++)
+                {
+                    if (nh[rowIndex, colIndex].OrientationCategory == dominantOrientationType)
+                    {
+                        dominantMagnitude[i] = nh[rowIndex, colIndex].RidgeMagnitude;
+                        dominantMagnitudeSum += nh[rowIndex, colIndex].RidgeMagnitude;
+                        i++;
+                    }
+                }
+            }
+            var maxMagnitude = 0.0;
+            double magnitudeRelativeFraction = 0.0;
+            if (dominantPOICount != 0)
+            {
+                maxMagnitude = dominantMagnitude.Max();
+                magnitudeRelativeFraction = dominantMagnitudeSum / (dominantPOICount * maxMagnitude);
+            }            
+            var dominantPoiFraction = dominantPOICount / (double)nhSize;
+            var fraction = magnitudeRelativeFraction * dominantPoiFraction;
+            var normaliseScore = (int)(nhSize * fraction);
+
+            return normaliseScore;
+        }
+
+  
     }
 }

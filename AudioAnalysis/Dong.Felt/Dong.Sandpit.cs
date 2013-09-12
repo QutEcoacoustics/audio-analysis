@@ -42,9 +42,9 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
 
-                string imageFileName = "test.png";
+                string imageFileName = "test3.png";
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results1";
+                string outputDirectory = @"C:\Test recordings\Output\Spectrogram results";
                 //string annotatedImageFileName = "NW_NW273_20101013-051800-0518-0519-Brown Cuckoo-dove1.png";
                 double magnitudeThreshold = 5.5; // of ridge height above neighbours
                 //double intensityThreshold = 5.0; // dB
@@ -129,10 +129,10 @@
 
                 ////var listOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
                 ///This bmp image is used for showing pointsOfInterest 
-                Bitmap bmp = (Bitmap)image;               
+                Bitmap bmp = (Bitmap)image;
                 var nhFrequencyRange = neighbourhoodLength * herzScale;
                 var nhDuration = StatisticalAnalysis.SecondsToMillionSeconds(neighbourhoodLength * secondsScale);
-                              
+
                 ////foreach (var fl in featureVectorList)
                 //foreach (PointOfInterest poi in filterPoiList)
                 //{
@@ -146,11 +146,12 @@
                 //    //    }
                 //}
                 /// write the representation into csv file. 
-                var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                var outputFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\AudioFileRepresentationCSVResults3.csv";
-                CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);
-                
-                var csvFileName = @"C:\Test recordings\input\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wavfileIndex.csv";
+                //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                //var outputFilePath = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                //CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);
+
+                /// read the csv file into reprsentation. 
+                var csvFileName = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
                 var csvFilePath = new FileInfo(csvFileName);
                 var nhRepresentationList = CSVResults.CSVToRegionRepresentation(csvFilePath);
                 ///In order to convert the list of ridgeNhrepresentation to array. 
@@ -159,6 +160,8 @@
                 //var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
                 //var queryNhRepresentation = Indexing.ExtractQueryFromFile(brownCuckoodove1, ridgeArray, neighbourhoodLength);
                 //var similarityDistance = Indexing.CandidatesIndexFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray);
+
+                /// reconstruct the spectrogram.
                 var gr = Graphics.FromImage(bmp);
                 foreach (var nh in nhRepresentationList)
                 {

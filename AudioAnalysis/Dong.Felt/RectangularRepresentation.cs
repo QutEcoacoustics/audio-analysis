@@ -299,13 +299,13 @@ namespace Dong.Felt
             var result = new Tuple<int, int>(0, 0);
             var tempMaxCount = 0; 
             var none = 0;
-            var slopeIndexOffset = 1;
-            for (int i = 0; i < array.Length - 1; i++)
+            var slopeIndexOffset = 2;
+            for (int i = 0; i < array.Length; i++)
             {
                 if (tempMaxCount < array[i])
                 {
                     tempMaxCount = array[i];
-                    result = Tuple.Create(i + slopeIndexOffset, array[i]);
+                    result = Tuple.Create(i * slopeIndexOffset, array[i]);
                 }
                 else
                 {

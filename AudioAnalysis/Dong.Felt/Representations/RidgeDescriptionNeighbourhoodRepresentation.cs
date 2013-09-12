@@ -11,6 +11,9 @@ namespace Dong.Felt.Representations
     {
         #region Properties
 
+        // The score is needed to be normalized into (0 - 13 * 13 * poiThreshold)
+        public int score { get; set; }
+   
         /// <summary>
         /// Gets or sets the dominant orientation type of the neighbourhood.
         /// </summary>
@@ -107,7 +110,7 @@ namespace Dong.Felt.Representations
         /// <param name="neighbourhood">This is a fix neighbourhood which contains a list of points of interest.</param>
         /// <param name="PointX">This value is the X coordinate of centroid of neighbourhood.</param>
         /// <param name="PointY">This value is the Y coordinate of centroid of neighbourhood.</param>
-        public void SetDominantNeighbourhoodRepresentation(PointOfInterest[,] neighbourhood, int pointX, int pointY)
+        public void SetDominantNeighbourhoodRepresentation(PointOfInterest[,] neighbourhood, int pointX, int pointY, int neighbourhoodLength)
         {
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz           
@@ -130,7 +133,7 @@ namespace Dong.Felt.Representations
                     }
                 }
             }
-
+            score = StatisticalAnalysis.NormaliseNeighbourhoodScore(neighbourhood, neighbourhoodLength);
             // baseclass properties
             RowIndex = (int)(pointY * timeScale);
             ColIndex = (int)(pointX * frequencyScale);
@@ -177,10 +180,10 @@ namespace Dong.Felt.Representations
             }
         }
 
-        public static RidgeDescriptionNeighbourhoodRepresentation FromFeatureVector(PointOfInterest[,] matrix, int rowIndex, int colIndex)
+        public static RidgeDescriptionNeighbourhoodRepresentation FromFeatureVector(PointOfInterest[,] matrix, int rowIndex, int colIndex,int neighbourhoodLength)
         {
             var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-            ridgeNeighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(matrix, rowIndex, colIndex);
+            ridgeNeighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(matrix, rowIndex, colIndex, neighbourhoodLength);
             return ridgeNeighbourhoodRepresentation;
         }
 
@@ -218,6 +221,9 @@ namespace Dong.Felt.Representations
                 RowIndex = int.Parse(listLines[2]),
                 dominantOrientationType = int.Parse(listLines[3]),
                 dominantPOICount = int.Parse(listLines[4]),
+                dominantMagnitudeSum = double.Parse(listLines[5]),
+                score = int.Parse(listLines[6]),
+
             };
             return nh;
         }
@@ -236,7 +242,7 @@ namespace Dong.Felt.Representations
             int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFruencyBandIndex(nhRepresentation.RowIndex);
             int dominantOrientationCategory = nhRepresentation.dominantOrientationType;
             int dominantPOICount = nhRepresentation.dominantPOICount;
-            int score = dominantOrientationCategory * dominantPOICount;
+            int score = nhRepresentation.score;
             int times = score / neighbourhoodLength;
             var brush = new SolidBrush(Color.Black);
             var pen = new Pen(Color.Black, 1);
@@ -255,76 +261,107 @@ namespace Dong.Felt.Representations
         /// <param name="startPointX"></param>
         /// <param name="startPointY"></param>
         /// <param name="neighbourhoodLength"></param>
-        public static void FillNeighbourhood(Graphics graphics, SolidBrush brush, Pen pen, int orientationType, int times, int scores, int startPointX, int startPointY, int neighbourhoodLength)
+        public static void FillNeighbourhood(Graphics graphics, SolidBrush greyBrush, Pen pen, int orientationType, int times, int scores, int startPointX, int startPointY, int neighbourhoodLength)
         {
             var nhRadius = neighbourhoodLength / 2;
             var modValue = scores % neighbourhoodLength;
             var maxIntegerIndex = times;
+            var modOffset = (maxIntegerIndex + 1) / 2;
+            var modeOffsetValue = (maxIntegerIndex + 1) % 2;
+            var colorBrush = new SolidBrush(Color.Red);
+            var colorBrush1 = new SolidBrush(Color.Blue);
+            var colorBrush2 = new SolidBrush(Color.Purple);
+            var colorPen = new Pen(Color.Green);
+            var colorPen1 = new Pen(Color.Purple);
             if (times > 0)
             {                
-                if (orientationType == 1)  // fill the neighbourhood with horizontal lines. 
+                if (orientationType == 0)  // fill the neighbourhood with horizontal lines. 
                 {
+                    
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
                         var offset = index / 2;
                         if (index % 2 == 0)
                         {
                             //fill in the line above the centroid of nh.
-                            graphics.FillRectangle(brush, startPointX, startPointY - nhRadius - offset, neighbourhoodLength, 1);
+
+                            graphics.FillRectangle(colorBrush, startPointX, startPointY - nhRadius - offset, neighbourhoodLength, 1);
+                            //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius - offset, neighbourhoodLength, 1);
                         }
                         else
                         {
                             //fill in the line below the centroid line of nh.
-                            graphics.FillRectangle(brush, startPointX, startPointY - nhRadius + offset, neighbourhoodLength, 1);
+                            graphics.FillRectangle(colorBrush, startPointX, startPointY - nhRadius + offset, neighbourhoodLength, 1);
+                            //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius + offset, neighbourhoodLength, 1);
                         }
                     } // end for
-                    graphics.FillRectangle(brush, startPointX, startPointY - nhRadius, modValue, 1);
+                    if (modeOffsetValue == 0)
+                    {
+                        graphics.FillRectangle(colorBrush, startPointX, startPointY - nhRadius - modOffset, modValue, 1);
+                        //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius - modOffset, modValue, 1);
+                    }
+                    else
+                    {
+                        graphics.FillRectangle(colorBrush, startPointX, startPointY - nhRadius + modOffset, modValue, 1);
+                        //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius + modOffset, modValue, 1);
+                    }
                 }//end if orientation  
-                if (orientationType == 2)  // fill the neighbourhood with horizontal lines. 
+                // need to think more about it. 
+                if (orientationType == 2)  //fill in the line above the diagonal centroid of nh.
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
                         var offset = index / 2;
                         if (index % 2 == 0)
-                        {
-                            //fill in the line above the diagonal centroid of nh.
+                        {                         
                             var startPoint = new Point(startPointX, startPointY);
                             var endPoint = new Point(startPointX + neighbourhoodLength - offset - 1, startPointY - neighbourhoodLength + 1);
-                            graphics.DrawLine(pen, startPoint, endPoint);
+                            graphics.DrawLine(colorPen, startPoint, endPoint);
                         }
                         else
                         {
                             //fill in the line below the diagonal centroid line of nh.
                             var startPoint = new Point(startPointX + offset, startPointY);
                             var endPoint = new Point(startPointX + neighbourhoodLength - 1, startPointY - neighbourhoodLength + offset + 1);
-                            graphics.DrawLine(pen, startPoint, endPoint);
+                            graphics.DrawLine(colorPen, startPoint, endPoint);
                         }
                     } // end for
                     var offset1 = maxIntegerIndex;
                     var lastStartPoint1 = new Point(startPointX, startPointY - offset1);
                     var lastEndPoint1 = new Point(startPointX + modValue, startPointY + modValue);
-                    graphics.DrawLine(pen, lastStartPoint1, lastEndPoint1);
-                }//end if orientation  
-                else if (orientationType == 3) // fill the neighbourhood with vertical lines. 
+                    graphics.DrawLine(colorPen, lastStartPoint1, lastEndPoint1);
+                }//end if orientation.  
+                else if (orientationType == 4) // fill the neighbourhood with vertical lines. 
                 {
+                   
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
                         var offset = index / 2;
                         if (index % 2 == 0)
                         {
                             //fill in the line on the left of the centroid of nh.
-                            graphics.FillRectangle(brush, startPointX + nhRadius - offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
+                            graphics.FillRectangle(colorBrush1, startPointX + nhRadius - offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
+                            //graphics.FillRectangle(greyBrush, startPointX + nhRadius - offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
                         }
                         else
                         {
                             //fill in the line on the right of the centroid line of nh.
-                            graphics.FillRectangle(brush, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
+                            graphics.FillRectangle(colorBrush1, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
+                            //graphics.FillRectangle(greyBrush, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);                         
                         }
                     } // end for
-                    graphics.FillRectangle(brush, startPointX + nhRadius + maxIntegerIndex, startPointY - neighbourhoodLength, 1, modValue);
-                }
-                
-                if (orientationType == 4)  // fill the neighbourhood with horizontal lines. 
+                    if (modeOffsetValue == 0)
+                    {
+                        graphics.FillRectangle(colorBrush1, startPointX + nhRadius - modOffset, startPointY - neighbourhoodLength, 1, modValue);
+                        //graphics.FillRectangle(greyBrush, startPointX + nhRadius - modOffset, startPointY - neighbourhoodLength, 1, modValue);
+                    }
+                    else
+                    {
+                        graphics.FillRectangle(colorBrush1, startPointX + nhRadius + modOffset, startPointY - neighbourhoodLength, 1, modValue);
+                        //graphics.FillRectangle(greyBrush, startPointX + nhRadius + modOffset, startPointY - neighbourhoodLength, 1, modValue);
+                    }
+                } // end if orientation.               
+                if (orientationType == 6)  // fill the neighbourhood with horizontal lines. 
                 {
                     for (int index = 1; index <= maxIntegerIndex; index++)
                     {
@@ -332,45 +369,71 @@ namespace Dong.Felt.Representations
                         if (index % 2 == 0)
                         {
                             //fill in the line above the diagonal centroid of nh.
-                            var startPoint = new Point(startPointX + offset, startPointY - neighbourhoodLength);
-                            var endPoint = new Point(startPointX + neighbourhoodLength + offset, startPointY - offset);
-                            graphics.DrawLine(pen, startPoint, endPoint);
+                            var startPoint = new Point(startPointX + offset, startPointY - neighbourhoodLength + 1);
+                            var endPoint = new Point(startPointX + neighbourhoodLength - 1, startPointY - offset + 1);
+                            graphics.DrawLine(colorPen1, startPoint, endPoint);
                         }
                         else
                         {
                             //fill in the line below the diagonal centroid line of nh.
-                            var startPoint = new Point(startPointX, startPointY - offset);
-                            var endPoint = new Point(startPointX + neighbourhoodLength - offset, startPointY);
-                            graphics.DrawLine(pen, startPoint, endPoint);
+                            var startPoint = new Point(startPointX, startPointY - neighbourhoodLength + offset + 1);
+                            var endPoint = new Point(startPointX + neighbourhoodLength - offset - 1, startPointY + 1);
+                            graphics.DrawLine(colorPen1, startPoint, endPoint);
                         }
                     } // end for
-                    var offset1 = maxIntegerIndex;
-                    var lastStartPoint1 = new Point(startPointX, startPointY - offset1);
-                    var lastEndPoint1 = new Point(startPointX + neighbourhoodLength + modValue, startPointY - modValue);
-                    graphics.DrawLine(pen, lastStartPoint1, lastEndPoint1);
+                    if (modeOffsetValue == 0)
+                    {
+                        var lastStartPoint1 = new Point(startPointX, startPointY - modOffset);
+                        var lastEndPoint1 = new Point(startPointX + neighbourhoodLength + modValue - 1, startPointY - modValue + 1);
+                        graphics.DrawLine(colorPen1, lastStartPoint1, lastEndPoint1);
+                    }
+                    else
+                    {
+                        var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength + modOffset);
+                        var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue + 1);
+                        graphics.DrawLine(colorPen1, lastStartPoint1, lastEndPoint1);
+                    }
+                    
+                    
                 }//end if orientation  
             }// end if times > 0
             else
             {
-                if (orientationType == 1)  // fill the neighbourhood with horizontal lines. 
+                if (orientationType == 0)  // fill the neighbourhood with horizontal lines. 
                 {
-                    graphics.FillRectangle(brush, startPointX, startPointY - nhRadius, modValue, 1);
+                    graphics.FillRectangle(colorBrush, startPointX, startPointY - nhRadius, modValue, 1);
+                    //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius, modValue, 1);
                 }
                 else if (orientationType == 2)
                 {
                     var lastStartPoint1 = new Point(startPointX, startPointY);
                     var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - modValue + 1);
-                    graphics.DrawLine(pen, lastStartPoint1, lastEndPoint1);
+                    graphics.DrawLine(colorPen, lastStartPoint1, lastEndPoint1);
                 }
-                else if (orientationType == 3)
-                {
-                    graphics.FillRectangle(brush, startPointX + nhRadius, startPointY - neighbourhoodLength, 1, modValue);
-                }             
                 else if (orientationType == 4)
                 {
-                    var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength);
-                    var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - modValue + 1);
-                    graphics.DrawLine(pen, lastStartPoint1, lastEndPoint1);
+                    graphics.FillRectangle(colorBrush1, startPointX + nhRadius, startPointY - neighbourhoodLength, 1, modValue);
+                    //graphics.FillRectangle(greyBrush, startPointX + nhRadius, startPointY - neighbourhoodLength, 1, modValue);
+                }             
+                else if (orientationType == 6)
+                {
+                    if (modValue > 1)
+                    {
+                        var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength + 1);
+                        var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue);
+                        graphics.DrawLine(colorPen1, lastStartPoint1, lastEndPoint1);
+                    }
+                    else
+                    {
+                        if (modValue == 1)
+                        {
+                            var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength + 1);
+                            var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue);
+                            // drawLine function cann't draw one point, so here we use fill Rectangle. 
+                            graphics.FillRectangle(colorBrush2, lastStartPoint1.X, lastStartPoint1.Y, 1, 1);
+                            
+                        }
+                    }
                 }
             }
         }
