@@ -8,11 +8,8 @@
     using System.Text;
 
     /// <summary>
-    /// Represents a file and a segment within the file.
-    /// 
-    /// TODO!! THERE IS A REAL PROBLEM HERE BECAUSE THE ONE CLASS MUST REPRESENT INFO ABOUT CURRENT FILE SEGMENT 
-    /// AND THE ORIGINAL FILE FROM WHICH THE SEGMENT WAS EXTRACTED. PERHAPS A SOLUTIOn IS TO HAVE 
-    /// a FileSegment member in the FileSegment class. SEE BELOW
+    /// Represents a segment file. Also stores the orginal file. 
+    /// Be aware that the original file may also be a segment file.
     /// </summary>
     public class FileSegment
     {

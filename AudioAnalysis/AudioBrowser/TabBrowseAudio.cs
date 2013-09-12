@@ -84,7 +84,8 @@ namespace AudioBrowser
 
         public Point ClickLocation { get; private set; }
 
-        public TabBrowseAudio(Helper helper, string defaultAnalysisId, DirectoryInfo defaultOutputDir, DirectoryInfo defaultconfigDir,
+        public TabBrowseAudio(Helper helper, string defaultAnalysisId, 
+            DirectoryInfo defaultOutputDir, DirectoryInfo defaultconfigDir,
             string defaultConfigFileExt, string defaultAudioFileExt, string defaultResultImageFileExt, string defaultResultTextFileExt)
         {
             this.helper = helper;
@@ -464,7 +465,7 @@ namespace AudioBrowser
             var csvFile = this.CsvFile;
             var configFile = this.ConfigFile;
             var imageExt = this.helper.DefaultResultImageFileExt;
-            var imageTitle = this.helper.ImageTitle;
+            var imageTitle = Helper.ImageTitle;
             var doNormalisation = this.DoNormalisation;
 
             this.IndicesImageFile = new FileInfo(Path.Combine(this.OutputDirectory.FullName, (Path.GetFileNameWithoutExtension(csvFile.FullName) + imageExt)));

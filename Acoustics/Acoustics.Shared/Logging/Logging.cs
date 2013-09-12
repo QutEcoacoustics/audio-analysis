@@ -22,7 +22,7 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        private static readonly ILog Log = LogManager.GetLogger("Console");
+        private static readonly ILog Log = LogManager.GetLogger("LoggedConsole");
 
         private static readonly string NewLine = Environment.NewLine;
 

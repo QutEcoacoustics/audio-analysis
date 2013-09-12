@@ -24,20 +24,22 @@
     using System.Reflection;
     using System.Windows.Forms;
     using AudioBase;
+    using System.Diagnostics;
+    using Acoustics.Tools.Audio;
 
     public class Helper
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Helper));
 
         // translatable values
-        public string ProgramTitle { get { return "AUDIO-BROWSER: To explore long bio-acoustic recordings.  "; } }
-        public string Copyright { get { return "\u00a9 Queensland University of Technology (QUT)"; } }
-        public string ImageTitle { get { return "Image produced by AUDIO-BROWSER, (QUT)."; } }
+        public static string ProgramTitle { get { return "AUDIO-BROWSER: To explore long bio-acoustic recordings"; } }
+        public static string Copyright { get { return "\u00a9 Queensland University of Technology (QUT)"; } }
+        public static string ImageTitle { get { return "Image produced by AUDIO-BROWSER, (QUT)."; } }
 
-        public string SelectAudioFilter { get { return  "Audio Files|*.mp3;*.wav;*.ogg;*.wma;*.webm;*.wv;*.aac|All files|*.*"; }}
-        public string SelectConfigFilter { get { return  "Text Files|*.txt;*.cfg;*.ini|All files|*.*"; }}
-        public string SelectCsvFilter { get { return  "Csv Files|*.csv;*.txt|All files|*.*"; }}
-        public string SelectImageFilter { get { return "Image Files|*.png;*.jpg;*.jpeg|All files|*.*"; } }
+        public static string SelectAudioFilter { get { return "Audio Files|*.mp3;*.wav;*.ogg;*.wma;*.webm;*.wv;*.aac|All files|*.*"; } }
+        public static string SelectConfigFilter { get { return "Text Files|*.txt;*.cfg;*.ini|All files|*.*"; } }
+        public static string SelectCsvFilter { get { return "Csv Files|*.csv;*.txt|All files|*.*"; } }
+        public static string SelectImageFilter { get { return "Image Files|*.png;*.jpg;*.jpeg|All files|*.*"; } }
 
         // fields
         private PluginHelper pluginHelper = null;
@@ -108,6 +110,8 @@
             }
         }
 
+        private AnalysisCoordinator analysisCoordinator;
+
         public Helper()
         {
             this.LoadSettings();
@@ -128,7 +132,7 @@
         /// <param name="analyser"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, IAnalyser analyser, AnalysisSettings settings)
+        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser analyser, AnalysisSettings settings, EventHandler<AnalysisCoordinator.ReportAnalysisProgressEventArgs> onProgress)
         {
             //var analyserResults = analysisCoordinator.Run(fileSegments, analyser, settings).OrderBy(a => a.SegmentStartOffset);
             Contract.Requires(settings != null, "Settings must not be null.");
@@ -144,16 +148,79 @@
                 doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.PARALLEL_PROCESSING, settings.ConfigDict);
 
             //initilise classes that will do the analysis
-            AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
 
+            if (onProgress != null)
+            {
+                analysisCoordinator.ReportProgress += onProgress;
+            }
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            //################# PROCESS THE RECORDING #####################################################################################
             var results = analysisCoordinator.Run(audioFile, analyser, settings);
+
+            if (results == null)
+            {
+                Log.FatalFormat("No information from analysis {0} for audio file {1} and config file {2}.", analyser.Identifier, audioFile, configFile);
+                return null;
+            }
+
+            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
+
+            //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
+            var audioUtility = new MasterAudioUtility();
+            var mimeType = MediaTypes.GetMediaType(audioFile.Extension);
+            var sourceInfo = audioUtility.Info(audioFile);
+
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
+            var eventsDatatable = op1.Item1;
+            var indicesDatatable = op1.Item2;
+            int eventsCount = 0;
+            if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
+            int indicesCount = 0;
+            if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
+            var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+            string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
+            var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+
+            //#############################################################################################################################
+            stopwatch.Stop();
+            var fiEventsCSV = op2.Item1;
+            var fiIndicesCSV = op2.Item2;
+
+            //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
+            TimeSpan ts = stopwatch.Elapsed;
+            Log.InfoFormat("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+
+            int outputCount = eventsCount;
+            if (eventsCount == 0) outputCount = indicesCount;
+            Log.InfoFormat("Number of units of output: {0}", outputCount);
+
+            if (outputCount == 0) outputCount = 1;
+            Log.InfoFormat("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
+            Log.InfoFormat("Finished processing analysis {0} for audio file {1} and config file {2}.", analyser.Identifier, audioFile, configFile);
+
+            //LoggedConsole.WriteLine("Output  to  directory: " + this.tfOutputDirectory.Text);
+            if (fiEventsCSV != null)
+            {
+                Log.Info("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                Log.Info("\tNumber of events = " + eventsCount);
+            }
+            if (fiIndicesCSV != null)
+            {
+                Log.Info("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                Log.Info("\tNumber of indices = " + indicesCount);
+            }
+
             return results;
-            
+
         } //ProcessRecording()
 
         private static int GetThreadsInUse()
@@ -301,42 +368,133 @@
 
         private void LoadSettings()
         {
-            const char Tick = '\u2714';
-            const char Cross = '\u2718';
+            const char tick = '\u2714';
+            const char cross = '\u2718';
+
+            LoggedConsole.WriteLine("BROWSER SETTINGS:");
+            LoggedConsole.WriteLine("(Any problems can be corrected by fixing the app.config file.)");
+
             var SystemTemp = new List<DirectoryInfo>() { this.DefaultTempFilesDir };
+            var ExeDir = new List<DirectoryInfo>() { this.GetExeDir };
+            var ExpectedConfigDir = new List<DirectoryInfo>() { new DirectoryInfo(Path.Combine(this.GetExeDir.FullName, "ConfigFiles")) };
 
-            this.AudioUtilityFfmpegExe = AppConfigHelper.GetFiles("AudioUtilityFfmpegExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
-            this.AudioUtilityFfprobeExe = AppConfigHelper.GetFiles("AudioUtilityFfprobeExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
-            this.AudioUtilityWvunpackExe = AppConfigHelper.GetFiles("AudioUtilityWvunpackExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
-            this.AudioUtilityMp3SpltExe = AppConfigHelper.GetFiles("AudioUtilityMp3SpltExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
-            this.AudioUtilitySoxExe = AppConfigHelper.GetFiles("AudioUtilitySoxExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
-            this.AudioUtilityShntoolExe = AppConfigHelper.GetFiles("AudioUtilityShntoolExe", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
+            // check for audio utilities
+            try
+            {
+                this.AudioUtilityFfmpegExe = AppConfigHelper.GetFiles("AudioUtilityFfmpegExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
+                this.AudioUtilityFfprobeExe = AppConfigHelper.GetFiles("AudioUtilityFfprobeExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
+                this.AudioUtilityWvunpackExe = AppConfigHelper.GetFiles("AudioUtilityWvunpackExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
+                this.AudioUtilityMp3SpltExe = AppConfigHelper.GetFiles("AudioUtilityMp3SpltExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
+                this.AudioUtilitySoxExe = AppConfigHelper.GetFiles("AudioUtilitySoxExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
+                this.AudioUtilityShntoolExe = AppConfigHelper.GetFiles("AudioUtilityShntoolExe", true, ",").FirstOrDefault(f => File.Exists(f.FullName));
 
+                LoggedConsole.WriteLine("{0} All audio utilities located.", tick);
+            }
+            catch (Exception ex)
+            {
+                LoadSettingsProblem("{0} WARNING! Could not find one or more of the audio utilities. " +
+                    "You will not be able to work with the original source file. Fix the error: {1}", cross, ex);
+            }
+
+            // external programs
             this.AudacityExe = AppConfigHelper.GetFiles("AudacityExeList", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
             this.TextEditorExe = AppConfigHelper.GetFiles("TextEditorExeList", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
             this.ConsoleExe = AppConfigHelper.GetFiles("ConsoleExeList", false, ",").FirstOrDefault(f => File.Exists(f.FullName));
 
+            if (this.AudacityExe != null && File.Exists(this.AudacityExe.FullName))
+            {
+                LoggedConsole.WriteLine("{0} Audacity located at {1}.", tick, this.AudacityExe);
+            }
+            else
+            {
+                LoadSettingsProblem("{0} WARNING! Could not find Audacity at default locations.", cross);
+
+            }
+
+            if (this.TextEditorExe != null && File.Exists(this.TextEditorExe.FullName))
+            {
+                LoggedConsole.WriteLine("{0} Text editor located at {1}.", tick, this.TextEditorExe);
+            }
+            else
+            {
+                LoadSettingsProblem("{0} WARNING! Could not find a text editor. You will not be able to edit config files.", cross);
+            }
+
+            // directories
             this.AnalysisWorkingDir = AppConfigHelper.GetDirs("AnalysisWorkingDir", false, ",").Concat(SystemTemp).FirstOrDefault(f => Directory.Exists(f.FullName));
+            this.DefaultConfigDir = AppConfigHelper.GetDirs("DefaultConfigDir", false, ",").Concat(ExpectedConfigDir).Concat(SystemTemp).FirstOrDefault(f => Directory.Exists(f.FullName));
+            this.DefaultSourceDir = AppConfigHelper.GetDirs("DefaultSourceDir", false, ",").Concat(ExeDir).FirstOrDefault(f => Directory.Exists(f.FullName));
+            this.DefaultOutputDir = AppConfigHelper.GetDirs("DefaultOutputDir", false, ",").Concat(ExeDir).FirstOrDefault(f => Directory.Exists(f.FullName));
 
-            this.DefaultConfigDir = AppConfigHelper.GetDirs("DefaultConfigDir", false, ",").Concat(SystemTemp).FirstOrDefault(f => Directory.Exists(f.FullName));
-            this.DefaultSourceDir = AppConfigHelper.GetDirs("DefaultSourceDir", false, ",").Concat(SystemTemp).FirstOrDefault(f => Directory.Exists(f.FullName));
-            this.DefaultOutputDir = AppConfigHelper.GetDirs("DefaultOutputDir", false, ",").Concat(SystemTemp).FirstOrDefault(f => Directory.Exists(f.FullName));
+            // DefaultConfigDir
+            if (this.DefaultConfigDir != null && Directory.Exists(this.DefaultConfigDir.FullName))
+            {
+                LoggedConsole.WriteLine("{0} Found the config directory at {1}.", tick, this.DefaultConfigDir);
+            }
+            else
+            {
+                LoadSettingsProblem("{0} WARNING! The configuration file directory was not found: {1}.", cross, this.DefaultConfigDir);
+            }
 
-            this.DefaultAudioFileExt = AppConfigHelper.GetString("DefaultAudioFileExt");
-            this.DefaultConfigFileExt = AppConfigHelper.GetString("DefaultConfigFileExt");
+            // DefaultSourceDir
+            if (this.DefaultSourceDir != null && Directory.Exists(this.DefaultSourceDir.FullName))
+            {
+                LoggedConsole.WriteLine("{0} Found the source audio directory at {1}.", tick, this.DefaultSourceDir);
+            }
+            else
+            {
+                LoadSettingsProblem("{0} WARNING! The source audio directory was not found: {1}.", cross, this.DefaultSourceDir);
+            }
 
-            this.DefaultResultTextFileExt = AppConfigHelper.GetString("DefaultResultTextFileExt");
-            this.DefaultResultImageFileExt = AppConfigHelper.GetString("DefaultResultImageFileExt");
+            // DefaultOutputDir
+            if (this.DefaultOutputDir != null && Directory.Exists(this.DefaultOutputDir.FullName))
+            {
+                LoggedConsole.WriteLine("{0} Found the output directory at {1}.", tick, this.DefaultOutputDir);
+            }
+            else
+            {
+                LoadSettingsProblem("{0} WARNING! The output directory was not found: {1}. ", cross, this.DefaultOutputDir);
+            }
 
-            this.DefaultAnalysisIdentifier = AppConfigHelper.GetString("DefaultAnalysisName");
+            // check remaining values
+            try
+            {
+                this.DefaultAudioFileExt = AppConfigHelper.GetString("DefaultAudioFileExt");
+                this.DefaultConfigFileExt = AppConfigHelper.GetString("DefaultConfigFileExt");
 
-            this.DefaultSegmentDuration = AppConfigHelper.GetDouble("DefaultSegmentDuration");
-            this.DefaultResampleRate = AppConfigHelper.GetInt("DefaultResampleRate");
+                this.DefaultResultTextFileExt = AppConfigHelper.GetString("DefaultResultTextFileExt");
+                this.DefaultResultImageFileExt = AppConfigHelper.GetString("DefaultResultImageFileExt");
 
-            this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
-            this.TrackCount = AppConfigHelper.GetInt("TrackCount");
-            this.TrackNormalisedDisplay = AppConfigHelper.GetBool("TrackNormalisedDisplay");
-            this.SonogramBackgroundThreshold = AppConfigHelper.GetDouble("SonogramBackgroundThreshold");
+                this.DefaultAnalysisIdentifier = AppConfigHelper.GetString("DefaultAnalysisName");
+
+                this.DefaultSegmentDuration = AppConfigHelper.GetDouble("DefaultSegmentDuration");
+                this.DefaultResampleRate = AppConfigHelper.GetInt("DefaultResampleRate");
+
+                this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
+                this.TrackCount = AppConfigHelper.GetInt("TrackCount");
+                this.TrackNormalisedDisplay = AppConfigHelper.GetBool("TrackNormalisedDisplay");
+                this.SonogramBackgroundThreshold = AppConfigHelper.GetDouble("SonogramBackgroundThreshold");
+
+                LoggedConsole.WriteLine("{0} Other settings loaded successfully.", tick);
+
+            }
+            catch (Exception ex)
+            {
+                LoadSettingsProblem("{0} WARNING: There was a problem loading settings. Fix the error: {1}.", cross, ex);
+
+            } //catch
         }
+
+        private void LoadSettingsProblem(string formatString, params object[] args)
+        {
+            LoggedConsole.WriteLine(formatString, args);
+
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+        }
+
+
     }
 }
