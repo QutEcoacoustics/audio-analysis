@@ -31,7 +31,6 @@
             this.txtCsvFile = new System.Windows.Forms.TextBox();
             this.comboAnalysisType = new System.Windows.Forms.ComboBox();
             this.btnCsvFileBrowse = new System.Windows.Forms.Button();
-            this.lblAnalysisOutputDir = new System.Windows.Forms.Label();
             this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -47,15 +46,16 @@
             this.label5 = new System.Windows.Forms.Label();
             this.txtImageFile = new System.Windows.Forms.TextBox();
             this.btnImageFileBrowse = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
             this.btnAudioFileBrowse = new System.Windows.Forms.Button();
             this.lblAnalysisFile = new System.Windows.Forms.Label();
             this.txtAudioFile = new System.Windows.Forms.TextBox();
+            this.radioButtonCsvFile = new System.Windows.Forms.RadioButton();
+            this.radioButtonImageFile = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
             // txtCsvFile
             // 
-            this.txtCsvFile.BackColor = System.Drawing.SystemColors.Control;
+            this.txtCsvFile.BackColor = System.Drawing.SystemColors.Window;
             this.txtCsvFile.Location = new System.Drawing.Point(292, 53);
             this.txtCsvFile.Name = "txtCsvFile";
             this.txtCsvFile.Size = new System.Drawing.Size(457, 20);
@@ -80,16 +80,6 @@
             this.btnCsvFileBrowse.Text = "Browse...";
             this.btnCsvFileBrowse.UseVisualStyleBackColor = true;
             this.btnCsvFileBrowse.Click += new System.EventHandler(this.btnSelecttxtCsvOFileFile_Click);
-            // 
-            // lblAnalysisOutputDir
-            // 
-            this.lblAnalysisOutputDir.AutoSize = true;
-            this.lblAnalysisOutputDir.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAnalysisOutputDir.Location = new System.Drawing.Point(151, 54);
-            this.lblAnalysisOutputDir.Name = "lblAnalysisOutputDir";
-            this.lblAnalysisOutputDir.Size = new System.Drawing.Size(49, 15);
-            this.lblAnalysisOutputDir.TabIndex = 31;
-            this.lblAnalysisOutputDir.Text = "CSV file";
             // 
             // btnOk
             // 
@@ -134,7 +124,7 @@
             // 
             // txtOutputDir
             // 
-            this.txtOutputDir.BackColor = System.Drawing.SystemColors.Control;
+            this.txtOutputDir.BackColor = System.Drawing.SystemColors.Window;
             this.txtOutputDir.Location = new System.Drawing.Point(292, 243);
             this.txtOutputDir.Name = "txtOutputDir";
             this.txtOutputDir.Size = new System.Drawing.Size(457, 20);
@@ -182,7 +172,7 @@
             // 
             // txtConfigFile
             // 
-            this.txtConfigFile.BackColor = System.Drawing.SystemColors.Control;
+            this.txtConfigFile.BackColor = System.Drawing.SystemColors.Window;
             this.txtConfigFile.Location = new System.Drawing.Point(292, 195);
             this.txtConfigFile.Name = "txtConfigFile";
             this.txtConfigFile.Size = new System.Drawing.Size(331, 20);
@@ -220,7 +210,7 @@
             // 
             // txtImageFile
             // 
-            this.txtImageFile.BackColor = System.Drawing.SystemColors.Control;
+            this.txtImageFile.BackColor = System.Drawing.SystemColors.Window;
             this.txtImageFile.Location = new System.Drawing.Point(292, 91);
             this.txtImageFile.Name = "txtImageFile";
             this.txtImageFile.Size = new System.Drawing.Size(457, 20);
@@ -235,16 +225,6 @@
             this.btnImageFileBrowse.Text = "Browse...";
             this.btnImageFileBrowse.UseVisualStyleBackColor = true;
             this.btnImageFileBrowse.Click += new System.EventHandler(this.btnImageFileBrowse_Click);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(139, 92);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(61, 15);
-            this.label6.TabIndex = 58;
-            this.label6.Text = "Image file";
             // 
             // btnAudioFileBrowse
             // 
@@ -268,11 +248,34 @@
             // 
             // txtAudioFile
             // 
-            this.txtAudioFile.BackColor = System.Drawing.SystemColors.Control;
+            this.txtAudioFile.BackColor = System.Drawing.SystemColors.Window;
             this.txtAudioFile.Location = new System.Drawing.Point(292, 284);
             this.txtAudioFile.Name = "txtAudioFile";
             this.txtAudioFile.Size = new System.Drawing.Size(457, 20);
             this.txtAudioFile.TabIndex = 35;
+            // 
+            // radioButtonCsvFile
+            // 
+            this.radioButtonCsvFile.AutoSize = true;
+            this.radioButtonCsvFile.Checked = true;
+            this.radioButtonCsvFile.Location = new System.Drawing.Point(121, 54);
+            this.radioButtonCsvFile.Name = "radioButtonCsvFile";
+            this.radioButtonCsvFile.Size = new System.Drawing.Size(62, 17);
+            this.radioButtonCsvFile.TabIndex = 61;
+            this.radioButtonCsvFile.TabStop = true;
+            this.radioButtonCsvFile.Text = "CSV file";
+            this.radioButtonCsvFile.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonImageFile
+            // 
+            this.radioButtonImageFile.AutoSize = true;
+            this.radioButtonImageFile.Location = new System.Drawing.Point(121, 92);
+            this.radioButtonImageFile.Name = "radioButtonImageFile";
+            this.radioButtonImageFile.Size = new System.Drawing.Size(70, 17);
+            this.radioButtonImageFile.TabIndex = 62;
+            this.radioButtonImageFile.TabStop = true;
+            this.radioButtonImageFile.Text = "Image file";
+            this.radioButtonImageFile.UseVisualStyleBackColor = true;
             // 
             // AudioNavigatorFileSelectForm
             // 
@@ -280,10 +283,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(761, 358);
+            this.ClientSize = new System.Drawing.Size(761, 363);
+            this.Controls.Add(this.radioButtonImageFile);
+            this.Controls.Add(this.radioButtonCsvFile);
             this.Controls.Add(this.txtImageFile);
             this.Controls.Add(this.btnImageFileBrowse);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.txtOutputDir);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.btnOutputDirBrowse);
@@ -301,7 +305,6 @@
             this.Controls.Add(this.txtAudioFile);
             this.Controls.Add(this.comboAnalysisType);
             this.Controls.Add(this.btnCsvFileBrowse);
-            this.Controls.Add(this.lblAnalysisOutputDir);
             this.Controls.Add(this.lblAnalysisFile);
             this.Controls.Add(this.btnAudioFileBrowse);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -321,7 +324,6 @@
         private System.Windows.Forms.TextBox txtCsvFile;
         private System.Windows.Forms.ComboBox comboAnalysisType;
         private System.Windows.Forms.Button btnCsvFileBrowse;
-        private System.Windows.Forms.Label lblAnalysisOutputDir;
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Label label1;
@@ -337,10 +339,11 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtImageFile;
         private System.Windows.Forms.Button btnImageFileBrowse;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btnAudioFileBrowse;
         private System.Windows.Forms.Label lblAnalysisFile;
         private System.Windows.Forms.TextBox txtAudioFile;
+        private System.Windows.Forms.RadioButton radioButtonCsvFile;
+        private System.Windows.Forms.RadioButton radioButtonImageFile;
 
     }
 }

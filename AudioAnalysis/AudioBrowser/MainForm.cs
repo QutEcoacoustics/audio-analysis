@@ -39,6 +39,7 @@
 
         // START hard code area (comment this before commiting!)
 
+        /*
         private FileInfo csvFile = new FileInfo(@"F:\Projects\test-audio\Towsey.Crow\2012-01-20-megaherzzz-no-music_Towsey.Crow.Indices.csv");//this.tabBrowseAudio.CsvFile,
         //private FileInfo  ImgFile = this.tabBrowseAudio.IndicesImageFile,
         //private FileInfo  AnalysisId = this.tabBrowseAudio.AnalysisId,
@@ -46,14 +47,13 @@
         private DirectoryInfo outputDir = new DirectoryInfo(@"F:\Projects\test-audio\");// this.tabBrowseAudio.OutputDirectory,
         private FileInfo audioFile = new FileInfo(@"F:\Projects\test-audio\2012-01-20-megaherzzz-no-music.mp3");
         //this.tabBrowseAudio.AudioFile,
-
+        */
 
         // END hard code area (comment this before commiting!)
 
 
         private Helper helper { get; set; }
 
-        private TabAnalyseAudio tabAnalyseAudio;
         private TabBrowseAudio tabBrowseAudio;
 
         public MainForm()
@@ -71,16 +71,13 @@
             //Log.Info("Info", exception); //Log.FatalFormat("{0}", "Info");
             //Log.Debug("Debug", exception); //Log.FatalFormat("{0}", "Debug");
 
+            LoggedConsole.WriteLine("Starting up at {0}. {1} {2}.", DateTime.Now, Helper.ImageTitle, Helper.Copyright);
+
             this.helper = new Helper();
 
-            Log.Info("Starting up " + this.helper.ImageTitle + this.helper.Copyright);
-            Log.Info(DateTime.Now);
-
-            this.tabAnalyseAudio = new TabAnalyseAudio(this.helper);
-
-
-            this.tabBrowseAudio = new TabBrowseAudio(this.helper, this.helper.DefaultAnalysisIdentifier, this.helper.DefaultOutputDir,
-                this.helper.DefaultConfigDir, this.helper.DefaultConfigFileExt, this.helper.DefaultAudioFileExt,
+            this.tabBrowseAudio = new TabBrowseAudio(this.helper, this.helper.DefaultAnalysisIdentifier,
+                this.helper.DefaultOutputDir, this.helper.DefaultConfigDir,
+                this.helper.DefaultConfigFileExt, this.helper.DefaultAudioFileExt,
                 this.helper.DefaultResultImageFileExt, this.helper.DefaultResultTextFileExt);
 
 
@@ -208,6 +205,47 @@
         // Browse Tab
         // ********************************************************************************************
 
+        private int SonogramBuffer
+        {
+            get
+            {
+                var bufferAmountString = this.textBoxSonogramBuffer.Text;
+                int bufferAmount = 15;
+                if (int.TryParse(bufferAmountString, out bufferAmount))
+                {
+
+                }
+
+                if (bufferAmount < 0)
+                {
+                    bufferAmount = 0;
+                }
+                else if (bufferAmount > 60)
+                {
+                    bufferAmount = 60;
+                }
+
+                // update textbox to match determined value
+                this.textBoxSonogramBuffer.Text = bufferAmount.ToString();
+                return bufferAmount;
+            }
+            set
+            {
+                int bufferAmount = 15;
+                if (value < 0)
+                {
+                    bufferAmount = 0;
+                }
+                else if (value > 60)
+                {
+                    bufferAmount = 60;
+                }
+
+                this.textBoxSonogramBuffer.Text = bufferAmount.ToString();
+            }
+        }
+
+
         private bool IsCreatingSonogramImage = false;
 
         private void ChangeSonogramImage()
@@ -220,7 +258,7 @@
             this.IsCreatingSonogramImage = true;
 
             // collect data for sonogram generation
-            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(15) : TimeSpan.Zero;
+            var segmentbuffer = chkSonogramBuffer.Checked ? TimeSpan.FromSeconds(this.SonogramBuffer) : TimeSpan.Zero;
             var annotated = this.chkAudioNavAnnotateSonogram.Checked;
             var noiseReduced = this.chkAudioNavNoiseReduce.Checked;
             var backgroundNoiseThreshold = this.helper.SonogramBackgroundThreshold;
@@ -355,6 +393,7 @@
         private void btnAudioNavSelectFiles_Click(object sender, EventArgs e)
         {
             // open a window to collect information to create a new AudioNavigator object.
+            /*
             var selectFilesForm = new AudioNavigatorFileSelectForm(this.helper)
             {
                 CsvFile = csvFile,//this.tabBrowseAudio.CsvFile,
@@ -365,8 +404,8 @@
                 AudioFile = audioFile,
                 //this.tabBrowseAudio.AudioFile,
             };
+            */
 
-            /*
 
             var selectFilesForm = new AudioNavigatorFileSelectForm(this.helper)
             {
@@ -377,7 +416,7 @@
                 OutputDir = this.tabBrowseAudio.OutputDirectory,
                 AudioFile = this.tabBrowseAudio.AudioFile,
             };
-            */
+
 
             using (selectFilesForm)
             {
@@ -606,20 +645,20 @@
             this.AnalyserOutputDir = this.helper.DefaultOutputDir;
             this.AnalyserAnalysisSelected = this.helper.DefaultAnalysisIdentifier;
 
-            this.AnalyserAudioFile = audioFile;
-            this.AnalyserConfigFile = analysisConfigFile;
-            this.AnalyserOutputDir = outputDir;
+            //this.AnalyserAudioFile = audioFile;
+            //this.AnalyserConfigFile = analysisConfigFile;
+            //this.AnalyserOutputDir = outputDir;
         }
 
         private void btnAnalyseAudioFileBrowse_Click(object sender, EventArgs e)
         {
-            var currentDir = string.Empty;
+            var currentDir = this.helper.DefaultSourceDir != null ? this.helper.DefaultSourceDir.FullName : string.Empty;
             if (this.AnalyserAudioFile != null && Directory.Exists(this.AnalyserAudioFile.DirectoryName))
             {
                 currentDir = this.AnalyserAudioFile.DirectoryName;
             }
 
-            var file = Helper.PromptUserToSelectFile("Select Audio File", this.helper.SelectAudioFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select Audio File", Helper.SelectAudioFilter, currentDir);
             if (file != null)
             {
                 this.AnalyserAudioFile = file;
@@ -633,8 +672,16 @@
             {
                 currentDir = this.AnalyserConfigFile.DirectoryName;
             }
+            else if (this.helper.DefaultConfigDir != null && Directory.Exists(this.helper.DefaultConfigDir.FullName))
+            {
+                currentDir = this.helper.DefaultConfigDir.FullName;
+            }
+            else
+            {
+                currentDir = this.helper.GetExeDir.FullName;
+            }
 
-            var file = Helper.PromptUserToSelectFile("Select configuration file for analyser", this.helper.SelectConfigFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select configuration file for analyser", Helper.SelectConfigFilter, currentDir);
             if (file != null)
             {
                 this.AnalyserConfigFile = file;
@@ -726,14 +773,23 @@
             // switch to the console.
             //this.tabControlMain.SelectTab(this.tabPageConsole);
 
-            var bgWorker = new BackgroundWorker();
+            this.backgroundWorkerAnalyser.WorkerReportsProgress = true;
+            this.backgroundWorkerAnalyser.WorkerSupportsCancellation = true;
 
-            bgWorker.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
+            this.backgroundWorkerAnalyser.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
             {
-                this.tabAnalyseAudio.RunAnalysis(this.AnalyserAudioFile, this.AnalyserConfigFile, analyser, settings);
+                EventHandler<AnalysisCoordinator.ReportAnalysisProgressEventArgs> reportProgress = (bgwSender, bgwEvent) =>
+                {
+                    if (bgwEvent.TotalItems > 0 && bgwEvent.FinishedItems >= 0)
+                    {
+                        var percent = bgwEvent.FinishedItems / bgwEvent.TotalItems;
+                        this.backgroundWorkerAnalyser.ReportProgress(percent);
+                    }
+                };
+                this.helper.ProcessRecording(this.AnalyserAudioFile, this.AnalyserConfigFile, analyser, settings, reportProgress);
             };
 
-            bgWorker.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
+            this.backgroundWorkerAnalyser.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
             {
                 Action done = () =>
                 {
@@ -751,7 +807,20 @@
                 }
             };
 
-            bgWorker.RunWorkerAsync();
+            this.backgroundWorkerAnalyser.ProgressChanged += (bgWorkerSender, bgWorkerProgressChanged) =>
+            {
+                Log.InfoFormat("Analysis progress {0}%.", bgWorkerProgressChanged.ProgressPercentage);
+            };
+
+            this.backgroundWorkerAnalyser.RunWorkerAsync();
+        }
+
+        private void btnAnalyseStop_Click(object sender, EventArgs e)
+        {
+            if (this.backgroundWorkerAnalyser != null)
+            {
+                this.backgroundWorkerAnalyser.CancelAsync();
+            }
         }
 
         // ********************************************************************************************
@@ -791,8 +860,6 @@
 
 
         }
-
-
 
 
 

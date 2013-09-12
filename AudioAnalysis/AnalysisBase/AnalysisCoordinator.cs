@@ -36,14 +36,16 @@
         private string keySaveSonogramFiles = "SAVE_SONOGRAM_FILES";
         private string keySaveIntermediateCsvFiles = "SAVE_INTERMEDIATE_CSV_FILES";
 
+        private static string startingItem = "Starting item {0}: {1}.";
+        private static string cancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class.
         /// </summary>
         /// <param name="sourcePreparer">
         /// The source Preparer. The prepared files can be stored anywhere, they just need to be readable.
         /// </param>
-        public AnalysisCoordinator(
-            ISourcePreparer sourcePreparer)
+        public AnalysisCoordinator(ISourcePreparer sourcePreparer)
         {
             Contract.Requires(sourcePreparer != null);
 
@@ -51,6 +53,8 @@
             this.DeleteFinished = false;
             this.SubFoldersUnique = true;
             this.IsParallel = false;
+            this.CancellationPending = false;
+            this.IsBusy = false;
         }
 
         /// <summary>
@@ -74,6 +78,16 @@
         /// Gets or sets a value indicating whether to run in parallel.
         /// </summary>
         public bool IsParallel { get; set; }
+
+        /// <summary>
+        /// Cancellation has been requested if this is true.
+        /// </summary>
+        public bool CancellationPending { get; set; }
+
+        /// <summary>
+        /// Gets a value that indicates whether this analysis coordinator is currently running.
+        /// </summary>
+        public bool IsBusy { get; set; }
 
         /// <summary>
         /// Analyse one file using the analysis and settings.
@@ -201,30 +215,24 @@
                     // instead create a copy of the settings, and use that
                     var settingsForThisItem = settings.ShallowClone();
 
-                    Log.DebugFormat("Instance {0} item {1}: {2}.", settingsForThisItem.InstanceId, index1 + 1, item1);
+                    // finished items
+                    var finishedItems = results.Count(i => i != null);
 
-                    try
+                    // process item
+                    var result = ProcessItem(analysisSegmentsCount, finishedItems, item1, analysis, settingsForThisItem);
+                    if (result != null)
                     {
-                        var result = this.PrepareFileAndRunAnalysis(item1, analysis, settingsForThisItem);
                         results[index1] = result;
                     }
-                    catch (Exception ex)
+
+                    // check for cancellation
+                    if (this.CancellationPending)
                     {
-
-                        //// try to get all the results up to the exception
-                        //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
-                        //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
-                        //var eventsDatatable = op1.Item1;
-                        //var indicesDatatable = op1.Item2;
-                        //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                        //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
-                        //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-
-                        Log.Error(
-                            string.Format("Instance {0} item {1}: Error processing {2}. Error: {3}.",
-                                settingsForThisItem.InstanceId, index1 + 1, item1, ex.Message),
-                            ex);
+                        Log.InfoFormat(cancelledItem, "parallel", analysis.Identifier, settingsForThisItem.InstanceId, item1);
+                        state.Break();
                     }
+
+
                 });
 
             return results;
@@ -250,34 +258,25 @@
 
             var results = new List<AnalysisResult>();
             var analysisSegmentsList = analysisSegments.ToList();
+            var totalItems = analysisSegmentsList.Count;
 
             for (var index = 0; index < analysisSegmentsList.Count; index++)
             {
                 var item = analysisSegmentsList[index];
-                Log.DebugFormat("Instance {0} item {1}: {2}.", settings.InstanceId, index + 1, item);
 
-                try
+                // process item
+                // this can use settings, as it is modified each iteration, but this is run synchronously.
+                var result = ProcessItem(totalItems, results.Count, item, analysis, settings);
+                if (result != null)
                 {
-                    // this can use settings, as it is modified each iteration, but this is run synchronously.
-                    var result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
                     results.Add(result);
                 }
-                catch (Exception ex)
+
+                // check for cancellation
+                if (this.CancellationPending)
                 {
-
-                    //// try to get all the results up to the exception
-                    //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
-                    //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
-                    //var eventsDatatable = op1.Item1;
-                    //var indicesDatatable = op1.Item2;
-                    //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                    //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
-                    //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-
-                    Log.Error(
-                            string.Format("Instance {0} item {1}: Error processing {2}. Error: {3}.",
-                                settings.InstanceId, index + 1, item, ex.Message),
-                            ex);
+                    Log.WarnFormat(cancelledItem, "sequential", analysis.Identifier, settings.InstanceId, item);
+                    break;
                 }
             }
 
@@ -364,7 +363,7 @@
 
             //System.Threading.Thread.Sleep(2000);
 
-            Log.DebugFormat("Instance {0} started analysing file {1}.", settings.InstanceId, settings.AudioFile.Name);
+            Log.DebugFormat("Item {0} started analysing file {1}.", settings.InstanceId, settings.AudioFile.Name);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -373,7 +372,7 @@
             //#######################################################################################
 
             stopwatch.Stop();
-            Log.DebugFormat("Instance {0} finished analysing {1}, took {2}.", settings.InstanceId, settings.AudioFile.Name, stopwatch.Elapsed);
+            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", settings.InstanceId, settings.AudioFile.Name, stopwatch.Elapsed);
 
             // add information to the results
             result.AnalysisIdentifier = analyser.Identifier;
@@ -388,12 +387,13 @@
                 try
                 {
                     Directory.Delete(settings.AnalysisRunDirectory.FullName, true);
-                    Log.DebugFormat("Instance {0} deleted directory {1}.", settings.InstanceId, settings.AnalysisRunDirectory.FullName);
+                    Log.DebugFormat("Item {0} deleted directory {1}.", settings.InstanceId, settings.AnalysisRunDirectory.FullName);
                 }
                 catch (Exception ex)
                 {
                     // this error is not fatal, but it does mean we'll be leaving a folder behind.
-                    Log.Warn("Instance " + settings.InstanceId + " could not delete directory " + settings.AnalysisRunDirectory.FullName + ".", ex);
+                    Log.Warn(string.Format("Item {0} could not delete directory {1}.",
+                        settings.InstanceId, settings.AnalysisRunDirectory.FullName), ex);
                 }
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
@@ -402,13 +402,14 @@
                 try
                 {
                     File.Delete(settings.AudioFile.FullName);
-                    Log.DebugFormat("Instance {0} deleted file {1}.", settings.InstanceId, settings.AudioFile.FullName);
+                    Log.DebugFormat("Item {0} deleted file {1}.", settings.InstanceId, settings.AudioFile.FullName);
                 }
                 catch (Exception ex)
                 {
                     // this error is not fatal, but it does mean we'll be leaving an audio file behind.
 
-                    Log.Warn("Instance " + settings.InstanceId + " could not delete audio file " + settings.AudioFile.FullName + ".", ex);
+                    Log.Warn(string.Format("Item {0} could not delete audio file {1}.",
+                        settings.InstanceId, settings.AudioFile.FullName), ex);
                 }
             }
 
@@ -527,6 +528,59 @@
                 .Select(t => Activator.CreateInstance(t) as IAnalyser);
 
             return analysers;
+        }
+
+        private AnalysisResult ProcessItem(int totalItems, int finishedItems, FileSegment item, IAnalyser analysis, AnalysisSettings settings)
+        {
+            Log.DebugFormat(startingItem, settings.InstanceId, item);
+
+            AnalysisResult result = null;
+
+            try
+            {
+                result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
+
+                var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
+                OnReportProgress(new ReportAnalysisProgressEventArgs(totalItems, finishedItems, progressString));
+            }
+            catch (Exception ex)
+            {
+
+                //// try to get all the results up to the exception
+                //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
+                //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
+                //var eventsDatatable = op1.Item1;
+                //var indicesDatatable = op1.Item2;
+                //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+                //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
+                //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+
+                Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
+            }
+
+            return result;
+        }
+
+        public event EventHandler<ReportAnalysisProgressEventArgs> ReportProgress;
+
+        public void OnReportProgress(ReportAnalysisProgressEventArgs e)
+        {
+            var handler = ReportProgress;
+            if (null != handler) handler(this, e);
+        }
+
+        public class ReportAnalysisProgressEventArgs : EventArgs
+        {
+            public int TotalItems { get; private set; }
+            public int FinishedItems { get; private set; }
+            public string CurrentItemDescription { get; private set; }
+
+            public ReportAnalysisProgressEventArgs(int totalItems, int finishedItems, string currentItemDescription)
+            {
+                this.TotalItems = totalItems;
+                this.FinishedItems = finishedItems;
+                this.CurrentItemDescription = currentItemDescription;
+            }
         }
     }
 }

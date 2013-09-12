@@ -20,12 +20,12 @@ namespace AudioBrowser
         }
         public FileInfo CsvFile
         {
-            get { try { return new FileInfo(this.txtCsvFile.Text); } catch { return null; } }
+            get { try { return this.radioButtonCsvFile.Checked ? new FileInfo(this.txtCsvFile.Text) : null; } catch { return null; } }
             set { if (value != null) { this.txtCsvFile.Text = value.FullName; } }
         }
         public FileInfo ImgFile
         {
-            get { try { return new FileInfo(this.txtImageFile.Text); } catch { return null; } }
+            get { try { return this.radioButtonImageFile.Checked ? new FileInfo(this.txtImageFile.Text) : null; } catch { return null; } }
             set { if (value != null) { this.txtImageFile.Text = value.FullName; } }
         }
         public string AnalysisId
@@ -78,7 +78,7 @@ namespace AudioBrowser
                 currentDir = this.CsvFile.DirectoryName;
             }
 
-            var file = Helper.PromptUserToSelectFile("Select Csv File", this.helper.SelectCsvFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select Csv File", Helper.SelectCsvFilter, currentDir);
             if (file != null)
             {
                 this.CsvFile = file;
@@ -93,7 +93,7 @@ namespace AudioBrowser
                 currentDir = this.ImgFile.DirectoryName;
             }
 
-            var file = Helper.PromptUserToSelectFile("Select Image File", this.helper.SelectImageFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select Image File", Helper.SelectImageFilter, currentDir);
             if (file != null)
             {
                 this.ImgFile = file;
@@ -107,8 +107,12 @@ namespace AudioBrowser
             {
                 currentDir = this.AnalysisConfigFile.DirectoryName;
             }
+            else
+            {
+                currentDir = this.helper.GetExeDir.FullName;
+            }
 
-            var file = Helper.PromptUserToSelectFile("Select configuration file for analyser", this.helper.SelectConfigFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select configuration file for analyser", Helper.SelectConfigFilter, currentDir);
             if (file != null)
             {
                 this.AnalysisConfigFile = file;
@@ -145,13 +149,13 @@ namespace AudioBrowser
 
         private void btnSelectAudioFile_Click(object sender, EventArgs e)
         {
-            var currentDir = string.Empty;
+            var currentDir = this.helper.DefaultSourceDir != null ? this.helper.DefaultSourceDir.FullName : string.Empty;
             if (this.AudioFile != null && Directory.Exists(this.AudioFile.DirectoryName))
             {
                 currentDir = this.AudioFile.DirectoryName;
             }
 
-            var file = Helper.PromptUserToSelectFile("Select Audio File", this.helper.SelectAudioFilter, currentDir);
+            var file = Helper.PromptUserToSelectFile("Select Audio File", Helper.SelectAudioFilter, currentDir);
             if (file != null)
             {
                 this.AudioFile = file;
@@ -164,13 +168,17 @@ namespace AudioBrowser
 
             // image or csv file, analyser, config file, output
             var csvExists = this.CsvFile != null && File.Exists(this.CsvFile.FullName);
+            var csvSelected = this.radioButtonCsvFile.Checked;
+
             var imgExists = this.ImgFile != null && File.Exists(this.ImgFile.FullName);
+            var imgSelected = this.radioButtonImageFile.Checked;
+
             var configExists = this.AnalysisConfigFile != null && File.Exists(this.AnalysisConfigFile.FullName);
             var outputExists = this.OutputDir != null && Directory.Exists(this.OutputDir.FullName);
             var analysisSelected = !string.IsNullOrWhiteSpace(this.AnalysisId);
             var audioExistsIfPathEntered = this.AudioFile == null ? true : File.Exists(this.AudioFile.FullName);
 
-            if ((csvExists || imgExists) && configExists && outputExists && analysisSelected && audioExistsIfPathEntered)
+            if ((csvExists || imgExists) && (csvSelected || imgSelected) && configExists && outputExists && analysisSelected && audioExistsIfPathEntered)
             {
                 this.DialogResult = DialogResult.OK;
             }
