@@ -132,7 +132,7 @@
         /// <param name="analyser"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser analyser, AnalysisSettings settings, EventHandler<AnalysisCoordinator.ReportAnalysisProgressEventArgs> onProgress)
+        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser analyser, AnalysisSettings settings)
         {
             //var analyserResults = analysisCoordinator.Run(fileSegments, analyser, settings).OrderBy(a => a.SegmentStartOffset);
             Contract.Requires(settings != null, "Settings must not be null.");
@@ -154,11 +154,6 @@
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
                 SubFoldersUnique = false
             };
-
-            if (onProgress != null)
-            {
-                analysisCoordinator.ReportProgress += onProgress;
-            }
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -256,7 +251,7 @@
             }
         }
 
-        public static DirectoryInfo PromptUserToSelectDirectory(string descr)
+        public static DirectoryInfo PromptUserToSelectDirectory(string descr, string initialDirectory)
         {
             FolderBrowserDialog fdlg = new FolderBrowserDialog();
 
@@ -265,6 +260,11 @@
 
             // Do not allow the user to create new files via the FolderBrowserDialog. 
             fdlg.ShowNewFolderButton = false;
+
+            if (!string.IsNullOrWhiteSpace(initialDirectory) && Directory.Exists(initialDirectory))
+            {
+                fdlg.SelectedPath = initialDirectory;
+            }
 
             if (fdlg.ShowDialog() == DialogResult.OK)
             {
@@ -403,17 +403,17 @@
 
             if (this.AudacityExe != null && File.Exists(this.AudacityExe.FullName))
             {
-                LoggedConsole.WriteLine("{0} Audacity located at {1}.", tick, this.AudacityExe);
+                LoggedConsole.WriteLine("{0} Audacity located at {1}.", tick, this.AudacityExe.FullName);
             }
             else
             {
-                LoadSettingsProblem("{0} WARNING! Could not find Audacity at default locations.", cross);
+                LoadSettingsProblem("{0} WARNING! Could not find Audacity.", cross);
 
             }
 
             if (this.TextEditorExe != null && File.Exists(this.TextEditorExe.FullName))
             {
-                LoggedConsole.WriteLine("{0} Text editor located at {1}.", tick, this.TextEditorExe);
+                LoggedConsole.WriteLine("{0} Text editor located at {1}.", tick, this.TextEditorExe.FullName);
             }
             else
             {
@@ -429,7 +429,7 @@
             // DefaultConfigDir
             if (this.DefaultConfigDir != null && Directory.Exists(this.DefaultConfigDir.FullName))
             {
-                LoggedConsole.WriteLine("{0} Found the config directory at {1}.", tick, this.DefaultConfigDir);
+                LoggedConsole.WriteLine("{0} Found the config directory at {1}.", tick, this.DefaultConfigDir.FullName);
             }
             else
             {
@@ -439,7 +439,7 @@
             // DefaultSourceDir
             if (this.DefaultSourceDir != null && Directory.Exists(this.DefaultSourceDir.FullName))
             {
-                LoggedConsole.WriteLine("{0} Found the source audio directory at {1}.", tick, this.DefaultSourceDir);
+                LoggedConsole.WriteLine("{0} Found the source audio directory at {1}.", tick, this.DefaultSourceDir.FullName);
             }
             else
             {
@@ -449,7 +449,7 @@
             // DefaultOutputDir
             if (this.DefaultOutputDir != null && Directory.Exists(this.DefaultOutputDir.FullName))
             {
-                LoggedConsole.WriteLine("{0} Found the output directory at {1}.", tick, this.DefaultOutputDir);
+                LoggedConsole.WriteLine("{0} Found the output directory at {1}.", tick, this.DefaultOutputDir.FullName);
             }
             else
             {

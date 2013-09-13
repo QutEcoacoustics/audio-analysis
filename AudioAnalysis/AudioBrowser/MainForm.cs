@@ -24,8 +24,9 @@
 
     using LINQtoCSV;
     using log4net;
-    using AudioBrowser.Tab;
     using log4net.Appender;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -71,7 +72,7 @@
             //Log.Info("Info", exception); //Log.FatalFormat("{0}", "Info");
             //Log.Debug("Debug", exception); //Log.FatalFormat("{0}", "Debug");
 
-            LoggedConsole.WriteLine("Starting up at {0}. {1} {2}.", DateTime.Now, Helper.ImageTitle, Helper.Copyright);
+            LoggedConsole.WriteLine("Starting up Audio Browser at {0}. {1}.", DateTime.Now, Helper.Copyright);
 
             this.helper = new Helper();
 
@@ -84,14 +85,10 @@
             // init tabs
             InitAnalyseTab();
 
+            this.tabControlMain.SelectTab(this.tabPageConsole);
+
 
         } //MainForm()
-
-        // for calculating a visual index image
-        private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = minutes duration of source recording.
-        private double[] trackValues;
-        private Bitmap selectionTrackImage;
-        private Pen pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
 
         private void btnClearConsole_Click(object sender, EventArgs e)
         {
@@ -245,13 +242,21 @@
             }
         }
 
-
         private bool IsCreatingSonogramImage = false;
 
         private void ChangeSonogramImage()
         {
             if (this.IsCreatingSonogramImage)
             {
+                return;
+            }
+
+            if (this.tabBrowseAudio.AudioFile == null || !File.Exists(this.tabBrowseAudio.AudioFile.FullName))
+            {
+                LoggedConsole.WriteLine("#############################################");
+                LoggedConsole.WriteLine("Could not find audio file to create sonogram.");
+                LoggedConsole.WriteLine("#############################################");
+                this.tabControlMain.SelectTab(tabPageConsole);
                 return;
             }
 
@@ -383,11 +388,34 @@
                 this.tabBrowseAudio.IndicesImage.Width,
                 this.tabBrowseAudio.IndicesImage.Height);
 
+            // resize click track width
             this.pictureBoxAudioNavClickTrack.Width = this.tabBrowseAudio.IndicesImage.Width;
+
+            // set new image to click track
+            this.pictureBoxAudioNavClickTrack.Image = new Bitmap(this.pictureBoxAudioNavClickTrack.Width, this.pictureBoxAudioNavClickTrack.Height);
 
             // set new indices image
             this.pictureBoxAudioNavIndicies.Image = this.tabBrowseAudio.IndicesImage;
             //this.tabControlMain.SelectTab(tabPageBrowseAudioFile);
+
+            // resize split box
+            var offset = 20;
+            var height = this.tabBrowseAudio.IndicesImage.Height + this.pictureBoxAudioNavClickTrack.Height + offset;
+            this.splitContainerImages.SplitterDistance = height;
+        }
+
+        private void UpdateClickTrackImage()
+        {
+            var clickX = this.tabBrowseAudio.ClickLocation.X;
+            var height = this.pictureBoxAudioNavClickTrack.Image.Height;
+
+            var image = this.pictureBoxAudioNavClickTrack.Image;
+            using (Graphics g = Graphics.FromImage(image))
+            {
+                // draw red line on click track
+                g.DrawLine(Pens.Red, clickX, 0, clickX, height);
+                this.pictureBoxAudioNavClickTrack.Image = image;
+            }
         }
 
         private void btnAudioNavSelectFiles_Click(object sender, EventArgs e)
@@ -510,8 +538,6 @@
 
         private void pictureBoxAudioNavIndicies_MouseMove(object sender, MouseEventArgs e)
         {
-            float[] dashValues = { 2, 2, 2, 2 };
-
             var currentCursorX = e.X; // pixel position = minutes
             var durationMin = Math.Ceiling(this.tabBrowseAudio.AudioDuration.TotalMinutes);
 
@@ -529,17 +555,22 @@
             // draw dashed lines either side of the cursor
             if (this.pictureBoxAudioNavIndicies.Image != null)
             {
-                Graphics g = this.pictureBoxAudioNavIndicies.CreateGraphics();
-                g.DrawImage(this.pictureBoxAudioNavIndicies.Image, 0, 0);
+                float[] dashValues = { 2, 2, 2, 2 };
+                var pictureBoxPen = new Pen(Color.Red, 1.0F); // double hair line used to show time position
+                pictureBoxPen.DashPattern = dashValues;
 
-                this.pictureBoxPen.DashPattern = dashValues;
-                Point pt1 = new Point(currentCursorX - 1, 2);
-                Point pt2 = new Point(currentCursorX - 1, this.pictureBoxAudioNavIndicies.Height);
-                g.DrawLine(this.pictureBoxPen, pt1, pt2);
+                using (Graphics g = this.pictureBoxAudioNavIndicies.CreateGraphics())
+                {
+                    g.DrawImage(this.pictureBoxAudioNavIndicies.Image, 0, 0);
 
-                pt1 = new Point(currentCursorX + 1, 2);
-                pt2 = new Point(currentCursorX + 1, this.pictureBoxAudioNavIndicies.Height);
-                g.DrawLine(this.pictureBoxPen, pt1, pt2);
+                    Point pt1 = new Point(currentCursorX - 1, 2);
+                    Point pt2 = new Point(currentCursorX - 1, this.pictureBoxAudioNavIndicies.Height);
+                    g.DrawLine(pictureBoxPen, pt1, pt2);
+
+                    pt1 = new Point(currentCursorX + 1, 2);
+                    pt2 = new Point(currentCursorX + 1, this.pictureBoxAudioNavIndicies.Height);
+                    g.DrawLine(pictureBoxPen, pt1, pt2);
+                }
 
                 this.txtAudioNavCursorValue.Text = this.tabBrowseAudio.GetValueString(currentCursorX, currentTrackValues);
             }
@@ -560,6 +591,8 @@
 
             // update stored values
             this.tabBrowseAudio.UpdateOffsets(segmentOffsetStart, segmentOffsetEnd, new Point(e.X, e.Y));
+
+            UpdateClickTrackImage();
 
             ChangeSonogramImage();
         }
@@ -599,6 +632,8 @@
         // ********************************************************************************************
         // Analyse Tab
         // ********************************************************************************************
+
+        private CancellationTokenSource cancellationTokenSource;
 
         private string AnalyserAnalysisSelected
         {
@@ -712,7 +747,17 @@
 
         private void btnAnalyseOutputDirBrowse_Click(object sender, EventArgs e)
         {
-            var selectedDir = Helper.PromptUserToSelectDirectory("Select output directory for analysis");
+            var currentDir = string.Empty;
+            if (this.AnalyserOutputDir != null && Directory.Exists(this.AnalyserOutputDir.FullName))
+            {
+                currentDir = this.AnalyserOutputDir.FullName;
+            }
+            else
+            {
+                currentDir = this.helper.GetExeDir.FullName;
+            }
+
+            var selectedDir = Helper.PromptUserToSelectDirectory("Select output directory for analysis", currentDir);
 
             if (selectedDir != null && Directory.Exists(selectedDir.FullName))
             {
@@ -773,27 +818,19 @@
             // switch to the console.
             //this.tabControlMain.SelectTab(this.tabPageConsole);
 
-            this.backgroundWorkerAnalyser.WorkerReportsProgress = true;
-            this.backgroundWorkerAnalyser.WorkerSupportsCancellation = true;
+            var backgroundWorkerAnalyser = new BackgroundWorker();
+            backgroundWorkerAnalyser.WorkerReportsProgress = false;
+            backgroundWorkerAnalyser.WorkerSupportsCancellation = false;
 
-            this.backgroundWorkerAnalyser.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
+            backgroundWorkerAnalyser.DoWork += (bgWorkerSender, bgWorkerDoWorkEvent) =>
             {
-                EventHandler<AnalysisCoordinator.ReportAnalysisProgressEventArgs> reportProgress = (bgwSender, bgwEvent) =>
-                {
-                    if (bgwEvent.TotalItems > 0 && bgwEvent.FinishedItems >= 0)
-                    {
-                        var percent = bgwEvent.FinishedItems / bgwEvent.TotalItems;
-                        this.backgroundWorkerAnalyser.ReportProgress(percent);
-                    }
-                };
-                this.helper.ProcessRecording(this.AnalyserAudioFile, this.AnalyserConfigFile, analyser, settings, reportProgress);
+                this.helper.ProcessRecording(this.AnalyserAudioFile, this.AnalyserConfigFile, analyser, settings);
             };
 
-            this.backgroundWorkerAnalyser.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
+            backgroundWorkerAnalyser.RunWorkerCompleted += (bgWorkerSender, bgWorkerCompletedEvent) =>
             {
                 Action done = () =>
                 {
-                    //this.tabControlMain.SelectTab(this.tabPageAnalyseAudioFile);
                     this.btnAanlyseRun.Enabled = true;
                 };
 
@@ -807,20 +844,7 @@
                 }
             };
 
-            this.backgroundWorkerAnalyser.ProgressChanged += (bgWorkerSender, bgWorkerProgressChanged) =>
-            {
-                Log.InfoFormat("Analysis progress {0}%.", bgWorkerProgressChanged.ProgressPercentage);
-            };
-
-            this.backgroundWorkerAnalyser.RunWorkerAsync();
-        }
-
-        private void btnAnalyseStop_Click(object sender, EventArgs e)
-        {
-            if (this.backgroundWorkerAnalyser != null)
-            {
-                this.backgroundWorkerAnalyser.CancelAsync();
-            }
+            backgroundWorkerAnalyser.RunWorkerAsync();
         }
 
         // ********************************************************************************************

@@ -231,9 +231,7 @@ namespace AudioBrowser
                 File.Delete(audioSegmentFile.FullName);
             }
 
-            Log.InfoFormat("Extracting audio segment from source audio: {0} to {1}.", adjustedStart, adjustedEnd);
-            Log.InfoFormat("Writing audio segment to dir: {0}", outputDir);
-            Log.InfoFormat("File Name: {0}", audioSegmentFile);
+            Log.DebugFormat("Extracting audio segment at offset {0} to {1} to new file {2}.",  adjustedStart, adjustedEnd, audioSegmentFile);
 
             st.Start();
 
@@ -247,7 +245,7 @@ namespace AudioBrowser
 
             st.Stop();
 
-            Log.InfoFormat("Time taken to extract segment: {0}", st.Elapsed);
+            Log.DebugFormat("Time taken to extract audio segment: {0}", st.Elapsed);
 
 
             //check recording segment exists
@@ -279,9 +277,7 @@ namespace AudioBrowser
             FileInfo fiImage = new FileInfo(Path.Combine(outputDir.FullName, Path.GetFileNameWithoutExtension(audioSegmentFile.FullName) + imageFileExt));
             this.SonogramImageFile = fiImage;
 
-            Log.InfoFormat("Generating sonogram from audio segment: {0} to {1}.", adjustedStart, adjustedEnd);
-            Log.InfoFormat("Writing sonogram to dir: {0}", outputDir);
-            Log.InfoFormat("File Name: {0}", this.SonogramImageFile);
+            Log.DebugFormat("Generating sonogram from audio segment {0} to image {1}.", audioSegmentFile.Name, this.SonogramImageFile);
 
             var config = ConfigDictionary.ReadPropertiesFile(configFile.FullName);
             SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, annotated.ToString().ToLowerInvariant());
@@ -297,8 +293,8 @@ namespace AudioBrowser
             st.Start();
             Image image = SonogramTools.GetImageFromAudioSegment(audioSegmentFile, fiTempConfig, fiImage, analyser);
             st.Stop();
-            Log.InfoFormat("Time taken to generate sonogram: {0}", st.Elapsed);
 
+            Log.DebugFormat("Time taken to generate sonogram: {0}", st.Elapsed);
 
             this.SonogramImage = image;
         }
