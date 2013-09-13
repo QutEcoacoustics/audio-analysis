@@ -335,17 +335,15 @@
         public static double SimilarityScoreRidgeDiscription(RidgeDescriptionNeighbourhoodRepresentation[,] potentialEvent, RidgeDescriptionNeighbourhoodRepresentation[,] query)
         {
             var result = 0.0;
-            var rowsCount = potentialEvent[0,0].nhCountInRow;
-            var colsCount = potentialEvent[0,0].nhCountInColumn;
+            var rowsCount = potentialEvent.GetLength(0);
+            var colsCount = potentialEvent.GetLength(1);
             if (query != null && potentialEvent != null)
             {
                 for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
                 {
                     for (int colIndex = 0; colIndex < colsCount; colIndex++)
                     {
-                        var candidateScore = potentialEvent[rowIndex, colIndex].dominantOrientationType * potentialEvent[rowIndex, colIndex].dominantPOICount;
-                        var queryScore = query[rowIndex, colIndex].dominantOrientationType * query[rowIndex, colIndex].dominantPOICount;
-                        result += Distance.EuclideanDistanceForCordinates(candidateScore, 0, queryScore, 0);
+                        result += Distance.EuclideanDistanceForCordinates(potentialEvent[rowIndex, colIndex].score, 0, query[rowIndex, colIndex].score, 0);
                     }                  
                 }
             }

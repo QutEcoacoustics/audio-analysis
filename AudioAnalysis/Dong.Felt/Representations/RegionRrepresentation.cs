@@ -14,13 +14,20 @@ namespace Dong.Felt.Representations
         /// Index (0-based) for this region's lowest frequency in the source audio file.
         /// </summary>
         //public int AudioFrequencyIndex { get; private set; }
-        public int AudioFrequencyIndex { get; set; }
+        public double AudioFrequencyIndex { get; set; }
 
         /// <summary>
         /// Index (0-based) for the time where this region starts located in the source audio file.
         /// </summary>
         //public int AudioTimeIndex { get; private set; }
-        public int AudioTimeIndex { get; set; }
+        public double AudioTimeIndex { get; set; }
+
+        public List<double> score { get; set; }
+
+        public int regionCountInRow { get; set; }
+
+        public int regionCountInCol { get; set; }
+
 
         // frequency range, total duration
         public double maxFrequency { get; private set; }
@@ -51,6 +58,12 @@ namespace Dong.Felt.Representations
         }
 
         public ICollection<RidgeDescriptionNeighbourhoodRepresentation> RidgeNeighbourhoods { get; set; }
+
+        public RegionRerepresentation(int audioFrequencyIndex, int audioTimeIndex)
+        {
+            this.AudioFrequencyIndex = audioFrequencyIndex;
+            this.AudioTimeIndex = audioTimeIndex;
+        }
 
         public RegionRerepresentation(int audioFrequencyIndex, int audioTimeIndex,
             FileInfo sourceAudioFile, FileInfo sourceTextFile)
