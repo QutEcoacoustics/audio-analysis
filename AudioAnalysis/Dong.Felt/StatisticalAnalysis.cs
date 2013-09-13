@@ -322,7 +322,7 @@
             return (int)(milliSeconds / timeTransfromUnit * framePerSecond);
         }
 
-        public static int FrequencyToFruencyBandIndex(int frequency)
+        public static int FrequencyToFruencyBandIndex(double frequency)
         {
 
             double frequencyScale = 43.0;
@@ -346,6 +346,12 @@
             return result;
         }
 
+        /// <summary>
+        /// This method depends on  dominant poi count and dominant magnitude sum, max magnitude in the nh. 
+        /// </summary>
+        /// <param name="nh"></param>
+        /// <param name="nhlength"></param>
+        /// <returns></returns>
         public static int NormaliseNeighbourhoodScore(PointOfInterest[,] nh, int nhlength)
         {
             var nhSize = nhlength * nhlength;
@@ -383,6 +389,15 @@
             return normaliseScore;
         }
 
-  
+        public static RegionRerepresentation[,] RegionRepresentationListToArray(List<RegionRerepresentation> candidatesList, int rowsCount, int colsCount)
+        {
+            var result = new RegionRerepresentation[rowsCount, colsCount];
+            var listCount = candidatesList.Count;
+            for (int i = 0; i < listCount; i++)
+            {
+                result[i / colsCount, i % colsCount] = candidatesList[i];              
+            }
+            return result;
+        }
     }
 }

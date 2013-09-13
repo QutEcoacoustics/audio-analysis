@@ -9,10 +9,10 @@
         // the column starts from bottom of spectrogram (0 hz)
 
         // gets or sets the rowIndex of a neighbourhood, which indicates the frequency value. 
-        public int RowIndex { get; set; }
+        public double RowIndex { get; set; }
 
         // gets or sets the colIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
-        public int ColIndex { get; set; }
+        public double ColIndex { get; set; }
 
         // gets or sets the widthPx of a neighbourhood in pixels. 
         public int WidthPx { get; set; }

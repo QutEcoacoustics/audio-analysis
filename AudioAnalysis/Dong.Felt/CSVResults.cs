@@ -114,6 +114,22 @@
             return results;
         }
 
+        public static List<Tuple<double, double, double>> CSVToSimilarityDistanceSocre(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var results = new List<Tuple<double, double, double>>();
+            foreach (var csvRow in lines1)
+            {             
+                var distance = double.Parse(csvRow[0]);
+                var regionTimePostion = double.Parse(csvRow[1]);
+                var regionFrequencyPostion = double.Parse(csvRow[2]);
+                results.Add(Tuple.Create(distance, regionTimePostion, regionFrequencyPostion));
+            }
+            return results;
+        }
+
         public static void BatchProcess(string fileDirectoryPath)
         {
             string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
@@ -130,6 +146,22 @@
                 var neighbourhoodLength = 13;
                 CSVResults.RegionToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv");
             }
+        }
+
+        public static void ReadSimilarityDistanceToCSV(List<Tuple<double, double, double>> scoreList, string outputFilePath)
+        {
+            var results = new List<List<string>>();
+            results.Add(new List<string>() { "DistanceScore", "RegionTimePostion-ms", "RegionFrequencyPosition-hz" });
+            var ItemCount = scoreList.Count();
+            for (int i = 0; i < ItemCount; i++)
+            {
+                var similarityDistanceScore = scoreList[i].Item1;
+                var regionTimePostion = scoreList[i].Item2;
+                var regionFrequencyPosition = scoreList[i].Item3;
+                results.Add(new List<string>() { similarityDistanceScore.ToString(), regionFrequencyPosition.ToString(), 
+                            regionTimePostion.ToString() });
+            }
+            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
         #endregion

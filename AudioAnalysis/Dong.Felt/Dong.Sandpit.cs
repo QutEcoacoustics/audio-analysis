@@ -146,29 +146,35 @@
                 //    //    }
                 //}
                 /// write the representation into csv file. 
-                //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                //var outputFilePath = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                var outputFilePath = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
                 //CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);
 
                 /// read the csv file into reprsentation. 
-                var csvFileName = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                var csvFileName = @"C:\Test recordings\input\AudioFileRepresentationCSVResults-normalised score.csv";
                 var csvFilePath = new FileInfo(csvFileName);
                 var nhRepresentationList = CSVResults.CSVToRegionRepresentation(csvFilePath);
                 ///In order to convert the list of ridgeNhrepresentation to array. 
-                //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
-                //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
-                //var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
-                //var queryNhRepresentation = Indexing.ExtractQueryFromFile(brownCuckoodove1, ridgeArray, neighbourhoodLength);
-                //var similarityDistance = Indexing.CandidatesIndexFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray);
+                var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
+                var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
+                var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
+                var queryNhRepresentation = Indexing.ExtractQueryFromFile(brownCuckoodove1, ridgeArray, neighbourhoodLength);
+                var audioFileInfo = new FileInfo(filePath);
+                var textFileInfo = new FileInfo(outputFilePath);
+                var candidatesRepresentation = Indexing.CandidatesRepresentationFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray, audioFileInfo, textFileInfo);
+                /// write the similarity score into csv file. 
+                var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                //CSVResults.ReadSimilarityDistanceToCSV(similarityDistance, outputFilePath1);
 
+                //var finalOutputRegion = CSVResults.
                 /// reconstruct the spectrogram.
-                var gr = Graphics.FromImage(bmp);
-                foreach (var nh in nhRepresentationList)
-                {
-                    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
-                }
-                image = (Image)bmp;
-                bmp.Save(imagePath);
+                //var gr = Graphics.FromImage(bmp);
+                //foreach (var nh in nhRepresentationList)
+                //{
+                //    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
+                //}
+                //image = (Image)bmp;
+                //bmp.Save(imagePath);
                 //////var rank = 10;
                 //////var itemList = (from l in listOfPositions
                 //////                orderby l.Item1 ascending
