@@ -122,8 +122,17 @@ namespace AudioBrowser
 
         private void btnOutputDirBrowse_Click(object sender, EventArgs e)
         {
-            var selectedDir = Helper.PromptUserToSelectDirectory("Select output directory for analysis");
+            var currentDir = string.Empty;
+            if (this.OutputDir != null && Directory.Exists(this.OutputDir.FullName))
+            {
+                currentDir = this.OutputDir.FullName;
+            }
+            else
+            {
+                currentDir = this.helper.GetExeDir.FullName;
+            }
 
+            var selectedDir = Helper.PromptUserToSelectDirectory("Select output directory for analysis", currentDir);
             if (selectedDir != null && Directory.Exists(selectedDir.FullName))
             {
                 this.OutputDir = selectedDir;

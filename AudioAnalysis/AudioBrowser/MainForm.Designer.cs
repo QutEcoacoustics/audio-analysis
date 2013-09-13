@@ -33,7 +33,6 @@
         {
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPageAnalyseAudioFile = new System.Windows.Forms.TabPage();
-            this.btnAnalyseStop = new System.Windows.Forms.Button();
             this.textBoxAnalyseOutputDir = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnAnalyseOutputDirBrowse = new System.Windows.Forms.Button();
@@ -50,14 +49,15 @@
             this.lblAnalysisFile = new System.Windows.Forms.Label();
             this.btnAnalyseAudioFileBrowse = new System.Windows.Forms.Button();
             this.tabPageBrowseAudioFile = new System.Windows.Forms.TabPage();
+            this.splitContainerImages = new System.Windows.Forms.SplitContainer();
+            this.pictureBoxAudioNavIndicies = new System.Windows.Forms.PictureBox();
+            this.pictureBoxAudioNavClickTrack = new System.Windows.Forms.PictureBox();
             this.pictureBoxAudioNavSonogram = new System.Windows.Forms.PictureBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtAudioNavCursorValue = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txtAudioNavCursorLocation = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.pictureBoxAudioNavClickTrack = new System.Windows.Forms.PictureBox();
-            this.pictureBoxAudioNavIndicies = new System.Windows.Forms.PictureBox();
             this.tabControlBrowse = new System.Windows.Forms.TabControl();
             this.tabPageBrowseActions = new System.Windows.Forms.TabPage();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
@@ -66,6 +66,7 @@
             this.listBoxSimilarSegments = new System.Windows.Forms.ListBox();
             this.btnAudioNavSelectFiles = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.textBoxSonogramBuffer = new System.Windows.Forms.TextBox();
             this.chkSonogramBuffer = new System.Windows.Forms.CheckBox();
             this.chkAudioNavNoiseReduce = new System.Windows.Forms.CheckBox();
             this.chkAudioNavAnnotateSonogram = new System.Windows.Forms.CheckBox();
@@ -102,16 +103,17 @@
             this.durationDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaTypeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.backgroundWorkerAnalyser = new System.ComponentModel.BackgroundWorker();
-            this.splitContainerImages = new System.Windows.Forms.SplitContainer();
-            this.textBoxSonogramBuffer = new System.Windows.Forms.TextBox();
             this.tabControlMain.SuspendLayout();
             this.tabPageAnalyseAudioFile.SuspendLayout();
             this.tabPageBrowseAudioFile.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerImages)).BeginInit();
+            this.splitContainerImages.Panel1.SuspendLayout();
+            this.splitContainerImages.Panel2.SuspendLayout();
+            this.splitContainerImages.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavIndicies)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavClickTrack)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavSonogram)).BeginInit();
             this.groupBox3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavClickTrack)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavIndicies)).BeginInit();
             this.tabControlBrowse.SuspendLayout();
             this.tabPageBrowseActions.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -122,10 +124,6 @@
             this.groupBox2.SuspendLayout();
             this.tabPageConsole.SuspendLayout();
             this.tabUnderDevelopment.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainerImages)).BeginInit();
-            this.splitContainerImages.Panel1.SuspendLayout();
-            this.splitContainerImages.Panel2.SuspendLayout();
-            this.splitContainerImages.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControlMain
@@ -146,7 +144,6 @@
             // tabPageAnalyseAudioFile
             // 
             this.tabPageAnalyseAudioFile.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.tabPageAnalyseAudioFile.Controls.Add(this.btnAnalyseStop);
             this.tabPageAnalyseAudioFile.Controls.Add(this.textBoxAnalyseOutputDir);
             this.tabPageAnalyseAudioFile.Controls.Add(this.label1);
             this.tabPageAnalyseAudioFile.Controls.Add(this.btnAnalyseOutputDirBrowse);
@@ -169,16 +166,6 @@
             this.tabPageAnalyseAudioFile.TabIndex = 5;
             this.tabPageAnalyseAudioFile.Text = "Analyse Audio File";
             this.tabPageAnalyseAudioFile.UseVisualStyleBackColor = true;
-            // 
-            // btnAnalyseStop
-            // 
-            this.btnAnalyseStop.Location = new System.Drawing.Point(298, 232);
-            this.btnAnalyseStop.Name = "btnAnalyseStop";
-            this.btnAnalyseStop.Size = new System.Drawing.Size(101, 23);
-            this.btnAnalyseStop.TabIndex = 36;
-            this.btnAnalyseStop.Text = "Cancel Analysis";
-            this.btnAnalyseStop.UseVisualStyleBackColor = true;
-            this.btnAnalyseStop.Click += new System.EventHandler(this.btnAnalyseStop_Click);
             // 
             // textBoxAnalyseOutputDir
             // 
@@ -336,6 +323,52 @@
             this.tabPageBrowseAudioFile.Text = "Browse Audio File";
             this.tabPageBrowseAudioFile.UseVisualStyleBackColor = true;
             // 
+            // splitContainerImages
+            // 
+            this.splitContainerImages.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainerImages.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.splitContainerImages.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainerImages.Location = new System.Drawing.Point(194, 3);
+            this.splitContainerImages.Name = "splitContainerImages";
+            this.splitContainerImages.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainerImages.Panel1
+            // 
+            this.splitContainerImages.Panel1.AutoScroll = true;
+            this.splitContainerImages.Panel1.Controls.Add(this.pictureBoxAudioNavIndicies);
+            this.splitContainerImages.Panel1.Controls.Add(this.pictureBoxAudioNavClickTrack);
+            // 
+            // splitContainerImages.Panel2
+            // 
+            this.splitContainerImages.Panel2.AutoScroll = true;
+            this.splitContainerImages.Panel2.Controls.Add(this.pictureBoxAudioNavSonogram);
+            this.splitContainerImages.Size = new System.Drawing.Size(1303, 753);
+            this.splitContainerImages.SplitterDistance = 404;
+            this.splitContainerImages.TabIndex = 2;
+            // 
+            // pictureBoxAudioNavIndicies
+            // 
+            this.pictureBoxAudioNavIndicies.BackColor = System.Drawing.Color.Black;
+            this.pictureBoxAudioNavIndicies.Location = new System.Drawing.Point(4, 25);
+            this.pictureBoxAudioNavIndicies.Name = "pictureBoxAudioNavIndicies";
+            this.pictureBoxAudioNavIndicies.Size = new System.Drawing.Size(1200, 350);
+            this.pictureBoxAudioNavIndicies.TabIndex = 0;
+            this.pictureBoxAudioNavIndicies.TabStop = false;
+            this.pictureBoxAudioNavIndicies.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxAudioNavIndicies_MouseClick);
+            this.pictureBoxAudioNavIndicies.MouseHover += new System.EventHandler(this.pictureBoxAudioNavIndicies_MouseHover);
+            this.pictureBoxAudioNavIndicies.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxAudioNavIndicies_MouseMove);
+            // 
+            // pictureBoxAudioNavClickTrack
+            // 
+            this.pictureBoxAudioNavClickTrack.BackColor = System.Drawing.Color.DarkGray;
+            this.pictureBoxAudioNavClickTrack.Location = new System.Drawing.Point(3, 3);
+            this.pictureBoxAudioNavClickTrack.Name = "pictureBoxAudioNavClickTrack";
+            this.pictureBoxAudioNavClickTrack.Size = new System.Drawing.Size(1200, 20);
+            this.pictureBoxAudioNavClickTrack.TabIndex = 1;
+            this.pictureBoxAudioNavClickTrack.TabStop = false;
+            // 
             // pictureBoxAudioNavSonogram
             // 
             this.pictureBoxAudioNavSonogram.BackColor = System.Drawing.Color.DarkGray;
@@ -391,27 +424,6 @@
             this.label8.Size = new System.Drawing.Size(48, 13);
             this.label8.TabIndex = 16;
             this.label8.Text = "Location";
-            // 
-            // pictureBoxAudioNavClickTrack
-            // 
-            this.pictureBoxAudioNavClickTrack.BackColor = System.Drawing.Color.DarkGray;
-            this.pictureBoxAudioNavClickTrack.Location = new System.Drawing.Point(3, 3);
-            this.pictureBoxAudioNavClickTrack.Name = "pictureBoxAudioNavClickTrack";
-            this.pictureBoxAudioNavClickTrack.Size = new System.Drawing.Size(1200, 20);
-            this.pictureBoxAudioNavClickTrack.TabIndex = 1;
-            this.pictureBoxAudioNavClickTrack.TabStop = false;
-            // 
-            // pictureBoxAudioNavIndicies
-            // 
-            this.pictureBoxAudioNavIndicies.BackColor = System.Drawing.Color.Black;
-            this.pictureBoxAudioNavIndicies.Location = new System.Drawing.Point(4, 25);
-            this.pictureBoxAudioNavIndicies.Name = "pictureBoxAudioNavIndicies";
-            this.pictureBoxAudioNavIndicies.Size = new System.Drawing.Size(1200, 350);
-            this.pictureBoxAudioNavIndicies.TabIndex = 0;
-            this.pictureBoxAudioNavIndicies.TabStop = false;
-            this.pictureBoxAudioNavIndicies.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxAudioNavIndicies_MouseClick);
-            this.pictureBoxAudioNavIndicies.MouseHover += new System.EventHandler(this.pictureBoxAudioNavIndicies_MouseHover);
-            this.pictureBoxAudioNavIndicies.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxAudioNavIndicies_MouseMove);
             // 
             // tabControlBrowse
             // 
@@ -499,6 +511,14 @@
             this.groupBox1.TabIndex = 10;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sonogram";
+            // 
+            // textBoxSonogramBuffer
+            // 
+            this.textBoxSonogramBuffer.Location = new System.Drawing.Point(45, 63);
+            this.textBoxSonogramBuffer.Name = "textBoxSonogramBuffer";
+            this.textBoxSonogramBuffer.Size = new System.Drawing.Size(21, 20);
+            this.textBoxSonogramBuffer.TabIndex = 11;
+            this.textBoxSonogramBuffer.Text = "15";
             // 
             // chkSonogramBuffer
             // 
@@ -845,32 +865,6 @@
             this.fileLengthDataGridViewTextBoxColumn1.Name = "fileLengthDataGridViewTextBoxColumn1";
             this.fileLengthDataGridViewTextBoxColumn1.Width = 81;
             // 
-            // splitContainerImages
-            // 
-            this.splitContainerImages.Location = new System.Drawing.Point(194, 3);
-            this.splitContainerImages.Name = "splitContainerImages";
-            this.splitContainerImages.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainerImages.Panel1
-            // 
-            this.splitContainerImages.Panel1.Controls.Add(this.pictureBoxAudioNavIndicies);
-            this.splitContainerImages.Panel1.Controls.Add(this.pictureBoxAudioNavClickTrack);
-            // 
-            // splitContainerImages.Panel2
-            // 
-            this.splitContainerImages.Panel2.Controls.Add(this.pictureBoxAudioNavSonogram);
-            this.splitContainerImages.Size = new System.Drawing.Size(1303, 753);
-            this.splitContainerImages.SplitterDistance = 404;
-            this.splitContainerImages.TabIndex = 2;
-            // 
-            // textBoxSonogramBuffer
-            // 
-            this.textBoxSonogramBuffer.Location = new System.Drawing.Point(45, 63);
-            this.textBoxSonogramBuffer.Name = "textBoxSonogramBuffer";
-            this.textBoxSonogramBuffer.Size = new System.Drawing.Size(21, 20);
-            this.textBoxSonogramBuffer.TabIndex = 11;
-            this.textBoxSonogramBuffer.Text = "15";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -885,11 +879,15 @@
             this.tabPageAnalyseAudioFile.ResumeLayout(false);
             this.tabPageAnalyseAudioFile.PerformLayout();
             this.tabPageBrowseAudioFile.ResumeLayout(false);
+            this.splitContainerImages.Panel1.ResumeLayout(false);
+            this.splitContainerImages.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerImages)).EndInit();
+            this.splitContainerImages.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavIndicies)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavClickTrack)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavSonogram)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavClickTrack)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAudioNavIndicies)).EndInit();
             this.tabControlBrowse.ResumeLayout(false);
             this.tabPageBrowseActions.ResumeLayout(false);
             this.groupBox6.ResumeLayout(false);
@@ -905,10 +903,6 @@
             this.groupBox2.PerformLayout();
             this.tabPageConsole.ResumeLayout(false);
             this.tabUnderDevelopment.ResumeLayout(false);
-            this.splitContainerImages.Panel1.ResumeLayout(false);
-            this.splitContainerImages.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainerImages)).EndInit();
-            this.splitContainerImages.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -985,8 +979,6 @@
         private Button btnDisplaySimilarSegments;
         private ListBox listBoxSimilarSegments;
         private Label lblCurrentSegment;
-        private Button btnAnalyseStop;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerAnalyser;
         private SplitContainer splitContainerImages;
         private TextBox textBoxSonogramBuffer;
 

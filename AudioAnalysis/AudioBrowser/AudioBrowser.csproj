@@ -95,7 +95,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="TabAnalyseAudio.cs" />
     <Compile Include="TextboxAppender.cs" />
     <Compile Include="TextBoxStreamWriter.cs" />
     <EmbeddedResource Include="AudioNavigatorFileSelectForm.resx">

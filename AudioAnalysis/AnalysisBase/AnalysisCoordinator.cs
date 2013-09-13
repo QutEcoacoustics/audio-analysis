@@ -12,6 +12,7 @@
 
     using log4net;
     using System.Diagnostics;
+    using System.Threading;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
@@ -50,11 +51,10 @@
             Contract.Requires(sourcePreparer != null);
 
             this.SourcePreparer = sourcePreparer;
+
             this.DeleteFinished = false;
             this.SubFoldersUnique = true;
             this.IsParallel = false;
-            this.CancellationPending = false;
-            this.IsBusy = false;
         }
 
         /// <summary>
@@ -80,19 +80,9 @@
         public bool IsParallel { get; set; }
 
         /// <summary>
-        /// Cancellation has been requested if this is true.
-        /// </summary>
-        public bool CancellationPending { get; set; }
-
-        /// <summary>
-        /// Gets a value that indicates whether this analysis coordinator is currently running.
-        /// </summary>
-        public bool IsBusy { get; set; }
-
-        /// <summary>
         /// Analyse one file using the analysis and settings.
         /// </summary>
-        /// <param name="fileSegment">
+        /// <param name="file">
         /// The file.
         /// </param>
         /// <param name="analysis">
@@ -219,18 +209,18 @@
                     var finishedItems = results.Count(i => i != null);
 
                     // process item
-                    var result = ProcessItem(analysisSegmentsCount, finishedItems, item1, analysis, settingsForThisItem);
+                    var result = ProcessItem(item1, analysis, settingsForThisItem);
                     if (result != null)
                     {
                         results[index1] = result;
                     }
 
                     // check for cancellation
-                    if (this.CancellationPending)
-                    {
-                        Log.InfoFormat(cancelledItem, "parallel", analysis.Identifier, settingsForThisItem.InstanceId, item1);
-                        state.Break();
-                    }
+                    //if (this.CancellationPending)
+                    //{
+                    //    Log.InfoFormat(cancelledItem, "parallel", analysis.Identifier, settingsForThisItem.InstanceId, item1);
+                    //    state.Break();
+                    //}
 
 
                 });
@@ -266,18 +256,18 @@
 
                 // process item
                 // this can use settings, as it is modified each iteration, but this is run synchronously.
-                var result = ProcessItem(totalItems, results.Count, item, analysis, settings);
+                var result = ProcessItem(item, analysis, settings);
                 if (result != null)
                 {
                     results.Add(result);
                 }
 
                 // check for cancellation
-                if (this.CancellationPending)
-                {
-                    Log.WarnFormat(cancelledItem, "sequential", analysis.Identifier, settings.InstanceId, item);
-                    break;
-                }
+                //if (this.CancellationPending)
+                //{
+                //    Log.WarnFormat(cancelledItem, "sequential", analysis.Identifier, settings.InstanceId, item);
+                //    break;
+                //}
             }
 
             return results;
@@ -530,7 +520,7 @@
             return analysers;
         }
 
-        private AnalysisResult ProcessItem(int totalItems, int finishedItems, FileSegment item, IAnalyser analysis, AnalysisSettings settings)
+        private AnalysisResult ProcessItem(FileSegment item, IAnalyser analysis, AnalysisSettings settings)
         {
             Log.DebugFormat(startingItem, settings.InstanceId, item);
 
@@ -541,7 +531,6 @@
                 result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
 
                 var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
-                OnReportProgress(new ReportAnalysisProgressEventArgs(totalItems, finishedItems, progressString));
             }
             catch (Exception ex)
             {
@@ -559,28 +548,6 @@
             }
 
             return result;
-        }
-
-        public event EventHandler<ReportAnalysisProgressEventArgs> ReportProgress;
-
-        public void OnReportProgress(ReportAnalysisProgressEventArgs e)
-        {
-            var handler = ReportProgress;
-            if (null != handler) handler(this, e);
-        }
-
-        public class ReportAnalysisProgressEventArgs : EventArgs
-        {
-            public int TotalItems { get; private set; }
-            public int FinishedItems { get; private set; }
-            public string CurrentItemDescription { get; private set; }
-
-            public ReportAnalysisProgressEventArgs(int totalItems, int finishedItems, string currentItemDescription)
-            {
-                this.TotalItems = totalItems;
-                this.FinishedItems = finishedItems;
-                this.CurrentItemDescription = currentItemDescription;
-            }
         }
     }
 }
