@@ -162,8 +162,10 @@
                 var audioFileInfo = new FileInfo(filePath);
                 var textFileInfo = new FileInfo(outputFilePath);
                 var candidatesRepresentation = Indexing.CandidatesRepresentationFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray, audioFileInfo, textFileInfo);
+                var scoreVectorList = Indexing.IndexingInRegionRepresentationList(candidatesRepresentation);
+
                 /// write the similarity score into csv file. 
-                var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                //var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
                 //CSVResults.ReadSimilarityDistanceToCSV(similarityDistance, outputFilePath1);
 
                 //var finalOutputRegion = CSVResults.
