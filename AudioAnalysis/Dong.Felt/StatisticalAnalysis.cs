@@ -399,5 +399,26 @@
             }
             return result;
         }
+
+
+        public static double ScoreVectorStatisticalAnalysis(List<List<RegionRerepresentation>> scoreVectorList)
+        {
+            var frequencyBandCount = scoreVectorList.Count;
+            var frameCount = 0;
+            if (scoreVectorList != null)
+            {
+                frameCount = scoreVectorList[0].Count;
+            }
+            
+            for (int rowIndex = 0; rowIndex < frequencyBandCount; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < frameCount; colIndex++)
+                {
+                    //var scoreSum += scoreVectorList[rowIndex].ElementAt(colIndex).score;
+
+                }
+            }
+                return 0.0;
+        }
     }
 }

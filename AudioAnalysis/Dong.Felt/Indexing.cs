@@ -75,18 +75,28 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRerepresentation> IndexingInRegionRepresentationList(List<RegionRerepresentation> candidatesList)
+        /// <summary>
+        /// This method takes the candidatesList and output a list of list of region representation.  Especially, the sub-list of region representation
+        /// stores the region reprentation for each frequency bin(row).
+        /// </summary>
+        /// <param name="candidatesList"></param>
+        /// <returns></returns>
+        public static List<List<RegionRerepresentation>> IndexingInRegionRepresentationList(List<RegionRerepresentation> candidatesList)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<List<RegionRerepresentation>>();
             var listCount = candidatesList.Count;
-            var rowsCount = (int)(candidatesList[listCount - 1].AudioFrequencyIndex / 559) + 1;
-            var colsCount = (int)(candidatesList[listCount - 1].AudioTimeIndex / 150.8) + 1;
-            var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);          
+            var nhHeightInFrequency = 559;
+            var nhWidthInMillisecond = 150.8;
+            var rowsCount = (int)(candidatesList[listCount - 1].AudioFrequencyIndex / nhHeightInFrequency) + 1;
+            var colsCount = (int)(candidatesList[listCount - 1].AudioTimeIndex / nhWidthInMillisecond) + 1;
+            var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
+            
             for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < colsCount; colIndex++)
                 {
-                    //To do 
+                    //To do: create a vector of distance score for each frequency band. 
+                    result[rowIndex].Add(candidatesArray[rowIndex, colIndex]);
                 }
             }
             return result;

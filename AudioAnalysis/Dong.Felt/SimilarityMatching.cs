@@ -350,6 +350,12 @@
             return result;
         }
 
+        public static List<RegionRerepresentation> SimilarityMatchingFromScoreVectorList(List<List<RegionRerepresentation>> scoreVectorList)
+        {
+
+            return null;
+        }
+
         public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0.0;
