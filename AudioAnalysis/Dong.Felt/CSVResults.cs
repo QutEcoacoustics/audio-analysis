@@ -36,7 +36,7 @@
         //    return string.Join(", ", i); 
         //}
 
-        public static void NeighbourhoodRepresentationToCSV(PointOfInterest[,] neighbourhoodMatrix, int rowIndex, int colIndex, string filePath)
+        public static void NeighbourhoodRepresentationsToCSV(PointOfInterest[,] neighbourhoodMatrix, int rowIndex, int colIndex, string filePath)
         {
             var results = new List<List<string>>();
             results.Add(new List<string>() {"RowIndex","ColIndex",
@@ -62,7 +62,35 @@
             return nh;
         }
 
-        public static void RegionToCSV(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, string audioFileName, string outputFilePath)
+        public static void RegionRepresentationListToCSV(List<RegionRerepresentation> region, string outputFilePath)
+        {
+            var results = new List<List<string>>();
+            // each region should have same nhCount, here we just get it from the first region item. 
+            var nhCount = region[0].ridgeNeighbourhoods.Count;
+
+            results.Add(new List<string>() { "FileName", "RegionTimePosition-ms", "RegionFrequencyPosition-hz", "Sub-RegionScore" });
+            foreach (var r in region)
+            {
+                var scoreMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(r);
+                var rowsCount = scoreMatrix.GetLength(0);
+                var colsCount = scoreMatrix.GetLength(1);
+                var nhList = r.ridgeNeighbourhoods;
+                var nh = new int[nhCount];
+                for (int i = 0; i < nhCount; i++)
+                {
+                    nh[i] = r.ridgeNeighbourhoods[i].score;
+                }
+                var audioFilePath = r.SourceAudioFile.ToString();
+                results.Add(new List<string>() { audioFilePath, r.FrequencyIndex.ToString(), r.TimeIndex.ToString(),
+                        nh[0].ToString(), nh[1].ToString(), nh[2].ToString(),
+                        nh[3].ToString(), nh[4].ToString(), nh[5].ToString()
+                        });
+
+            }
+            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+        }
+
+        public static void NeighbourhoodRepresentationToCSV(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, string audioFileName, string outputFilePath)
         {
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz
@@ -100,7 +128,7 @@
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
-        public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToRegionRepresentation(FileInfo file)
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToRidgeNhRepresentation(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
@@ -108,7 +136,7 @@
             var results = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             foreach (var csvRow in lines1)
             {
-                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromRegionCsv(csvRow);
+                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromRidgeNhReprsentationCsv(csvRow);
                 results.Add(nh);
             }
             return results;
@@ -121,7 +149,7 @@
             var lines1 = lines.Skip(1);
             var results = new List<Tuple<double, double, double>>();
             foreach (var csvRow in lines1)
-            {             
+            {
                 var distance = double.Parse(csvRow[0]);
                 var regionTimePostion = double.Parse(csvRow[1]);
                 var regionFrequencyPostion = double.Parse(csvRow[2]);
@@ -144,7 +172,7 @@
                 poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
                 var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);
                 var neighbourhoodLength = 13;
-                CSVResults.RegionToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv");
+                CSVResults.NeighbourhoodRepresentationToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv");
             }
         }
 

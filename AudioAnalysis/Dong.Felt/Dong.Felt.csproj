@@ -92,7 +92,6 @@
     <Compile Include="ImageAnalysisTools.cs" />
     <Compile Include="Index.cs" />
     <Compile Include="LocalMaxima.cs" />
-    <Compile Include="Representations\NeighbourhoodRepresentation.cs" />
     <Compile Include="PoiAnalysis.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="POISelection.cs" />

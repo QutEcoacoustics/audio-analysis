@@ -7,14 +7,38 @@ using System.Text;
 
 namespace Dong.Felt.Representations
 {
-    public class RidgeDescriptionNeighbourhoodRepresentation : NeighbourhoodRepresentation
+    public class RidgeDescriptionNeighbourhoodRepresentation 
     {
         #region Properties
 
-        // The score is needed to be normalized into (0 - 13 * 13 * poiThreshold)
-        public int score { get; set; }
-   
-        /// <summary>
+        // all neighbourhoods for one representation must be the same dimensions
+        // the row starts from start of file (left, 0ms)
+        // the column starts from bottom of spectrogram (0 hz)
+
+        // gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
+        public double RowIndex { get; set; }
+
+        // gets or sets the colIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
+        public double ColIndex { get; set; }
+
+        // gets or sets the widthPx of a neighbourhood in pixels. 
+        public int WidthPx { get; set; }
+
+        // gets or sets the HeightPx of a neighbourhood in pixels.
+        public int HeightPx { get; set; }
+
+        // gets or sets the Duration of a neighbourhood in millisecond, notice here the unit is millisecond. 
+        public TimeSpan Duration { get; set; }
+
+        // gets or sets the FrequencyRange of a neighbourhood in hZ.
+        public double FrequencyRange { get; set; }
+
+        public bool IsSquare { get { return this.WidthPx == this.HeightPx; } }
+
+        //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.ColIndex * this.Duration.TotalMilliseconds); } }
+
+        //public double FrequencyOffsetFromBottom { get { return this.RowIndex * this.FrequencyRange; } }
+
         /// Gets or sets the dominant orientation type of the neighbourhood.
         /// </summary>
         public int dominantOrientationType { get; set; }
@@ -29,6 +53,12 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double dominantMagnitudeSum { get; set; }
 
+        /// <summary>
+        /// The score is dependant on dominantOrientation and dominantMagnitudeSum, and needs to be normalized into (0 - 13 * 13 * poiThreshold).
+        /// </summary>
+        public int score { get; set; }
+
+        /// <summary>
         /// <summary>
         /// Gets or sets the orientation type 1 of the neighbourhood.
         /// </summary>
@@ -89,16 +119,6 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double orentationType4MagnitudeSum { get; set; }
 
-        // Need to delete these two below properties later. 
-        /// <summary>
-        /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region. 
-        /// </summary>
-        public int nhCountInRow { get; set; }
-
-        /// <summary>
-        /// gets or sets the nhCountInColumn in a region, which indicates the columnscount of neighbourhoods in the region. 
-        /// </summary>
-        public int nhCountInColumn { get; set; }
         #endregion
 
         #region public method
@@ -210,20 +230,19 @@ namespace Dong.Felt.Representations
             return nh;
         }
 
-        public static RidgeDescriptionNeighbourhoodRepresentation FromRegionCsv(IEnumerable<string> lines)
+        public static RidgeDescriptionNeighbourhoodRepresentation FromRidgeNhReprsentationCsv(IEnumerable<string> lines)
         {
             // assume csv file is laid out as we expect it to be.
             var listLines = lines.ToList();
 
             var nh = new RidgeDescriptionNeighbourhoodRepresentation()
             {
-                ColIndex = (int)double.Parse(listLines[1]),
-                RowIndex = int.Parse(listLines[2]),
+                ColIndex = double.Parse(listLines[1]),
+                RowIndex = double.Parse(listLines[2]),
                 dominantOrientationType = int.Parse(listLines[3]),
                 dominantPOICount = int.Parse(listLines[4]),
                 dominantMagnitudeSum = double.Parse(listLines[5]),
                 score = int.Parse(listLines[6]),
-
             };
             return nh;
         }
