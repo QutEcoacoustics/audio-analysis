@@ -122,7 +122,6 @@
     <Compile Include="ISourcePreparer.cs" />
     <Compile Include="IUsage.cs" />
     <Compile Include="PluginHelper.cs" />
-    <Compile Include="ProgressReporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

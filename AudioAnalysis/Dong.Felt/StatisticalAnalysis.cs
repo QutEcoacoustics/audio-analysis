@@ -400,7 +400,6 @@
             return result;
         }
 
-
         public static double ScoreVectorStatisticalAnalysis(List<List<RegionRerepresentation>> scoreVectorList)
         {
             var frequencyBandCount = scoreVectorList.Count;
@@ -420,5 +419,21 @@
             }
                 return 0.0;
         }
+
+        public static RidgeDescriptionNeighbourhoodRepresentation[,] RegionRepresentationToNHArray(RegionRerepresentation region)
+        {           
+            var rowsCount = region.NhCountInRow;
+            var colsCount = region.NhCountInCol;
+            var result = new RidgeDescriptionNeighbourhoodRepresentation[rowsCount, colsCount];
+            var neighbourhoodList = region.ridgeNeighbourhoods;
+            var listLength = neighbourhoodList.Count;
+            for (int i = 0; i < listLength; i++)
+            {
+                result[i / colsCount, i % colsCount] = neighbourhoodList[i];
+            }
+            return result;
+        }
+
+
     }
 }

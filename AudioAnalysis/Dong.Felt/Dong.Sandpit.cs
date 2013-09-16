@@ -145,24 +145,25 @@
                 //    //        listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
                 //    //    }
                 //}
+          
                 /// write the representation into csv file. 
                 var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                var outputFilePath = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
-                //CSVResults.RegionToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);
-
+                var outputFilePath = @"C:\Test recordings\input\AudioFileRegionRepresentationCSVResults.csv";
+                //CSVResults.NeighbourhoodRepresentationToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);               
                 /// read the csv file into reprsentation. 
-                var csvFileName = @"C:\Test recordings\input\AudioFileRepresentationCSVResults-normalised score.csv";
+                var csvFileName = @"C:\Test recordings\input\AudioFileRidgeNhRepresentationCSVResults-normalised score.csv";
                 var csvFilePath = new FileInfo(csvFileName);
-                var nhRepresentationList = CSVResults.CSVToRegionRepresentation(csvFilePath);
+                var nhRepresentationList = CSVResults.CSVToRidgeNhRepresentation(csvFilePath);
                 ///In order to convert the list of ridgeNhrepresentation to array. 
                 var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
                 var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
                 var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
-                var queryNhRepresentation = Indexing.ExtractQueryFromFile(brownCuckoodove1, ridgeArray, neighbourhoodLength);
-                var audioFileInfo = new FileInfo(filePath);
-                var textFileInfo = new FileInfo(outputFilePath);
-                var candidatesRepresentation = Indexing.CandidatesRepresentationFromFile(brownCuckoodove1, queryNhRepresentation, ridgeArray, audioFileInfo, textFileInfo);
-                var scoreVectorList = Indexing.IndexingInRegionRepresentationList(candidatesRepresentation);
+                var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(brownCuckoodove1, ridgeArray, filePath);
+                var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation, ridgeArray, filePath);
+                var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation);
+                CSVResults.RegionRepresentationListToCSV(candidatesRepresentation, outputFilePath);
+               
+                //var scoreVectorList = Indexing.IndexingInRegionRepresentationList(candidatesRepresentation);
 
                 /// write the similarity score into csv file. 
                 //var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
