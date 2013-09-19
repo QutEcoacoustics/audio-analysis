@@ -73,6 +73,7 @@
                     {
                         subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
                         subMatrix[row, col].RidgeMagnitude = matrix[row1 + row, col1 + col].RidgeMagnitude;
+                        subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
                     }
                     else
                     {
