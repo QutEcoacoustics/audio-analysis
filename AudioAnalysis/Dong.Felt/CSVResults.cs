@@ -95,8 +95,10 @@
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz
             var results = new List<List<string>>();
+            //results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
+            //    "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount","NeighbourhooddominantMagnitudeSum","NormalisedScore" });
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
-                "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount","NeighbourhooddominantMagnitudeSum","NormalisedScore" });
+                "NeighbourhoodMagnitude", "NeighbourhooddominantOrientation" });
             //var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var rowOffset = neighbourhoodLength;
@@ -111,16 +113,20 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col, neighbourhoodLength);
+                        //neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col, neighbourhoodLength);
+                        neighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength);
                         var RowIndex = col * timeScale;
                         var ColIndex = row * frequencyScale;
-                        var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
-                        var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
-                        var dominantMagnitudeSum = neighbourhoodRepresentation.dominantMagnitudeSum;
-                        var score = neighbourhoodRepresentation.score;
-
+                        var Magnitude = neighbourhoodRepresentation.magnitude;
+                        var Orientation = neighbourhoodRepresentation.orientation;
+                        //var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
+                        //var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
+                        //var dominantMagnitudeSum = neighbourhoodRepresentation.dominantMagnitudeSum;
+                        //var score = neighbourhoodRepresentation.score;
+                        //results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
+                        //    dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString(), score.ToString() });
                         results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
-                            dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString(), score.ToString() });
+                            Magnitude.ToString(), Orientation.ToString() });
                     }
                 }
             }
