@@ -148,6 +148,7 @@
             return results;
         }
 
+
         public static List<Tuple<double, double, double>> CSVToSimilarityDistanceSocre(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));

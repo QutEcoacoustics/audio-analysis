@@ -71,7 +71,7 @@
                 //var poiList1 = new List<PointOfInterest>();
                 //var pointsOfInterest = new POISelection(poiList1);
                 //pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rows, cols, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                ///// filter out some redundant poi                
+                /////// filter out some redundant poi                
                 //var poiList = ImageAnalysisTools.PruneAdjacentTracks(pointsOfInterest.poiList, rows, cols);
                 //var filterNeighbourhoodSize = 7;
                 //var numberOfEdgePoints = 3;
@@ -145,15 +145,16 @@
                 //    //        listOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(distance, fl));
                 //    //    }
                 //}
-          
+                var neighbourhoodLength = 13;
                 /// write the representation into csv file. 
                 //var filePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                //var outputFilePath = @"C:\Test recordings\input\AudioFileNeighbourhoodVectorRepresentationCSVResults.csv";
+                //var outputFilePath = @"C:\Test recordings\input\AudioFileNeighbourhoodVectorRepresentationCSVResults2.csv";
                 //CSVResults.NeighbourhoodRepresentationToCSV(filterPoiList, rows, cols, neighbourhoodLength, filePath, outputFilePath);               
                 /// read the csv file into reprsentation. 
-                var csvFileName = @"C:\Test recordings\input\AudioFileNeighbourhoodVectorRepresentationCSVResults.csv";
+                var csvFileName = @"C:\Test recordings\input\AudioFileNeighbourhoodVectorRepresentationCSVResults2.csv";
                 var csvFilePath = new FileInfo(csvFileName);
-                var nhRepresentationList = CSVResults.CSVToRidgeNhRepresentation(csvFilePath);
+                var nhRepresentationList = CSVResults.CSVToRidgeNhRepresentation(csvFilePath);               
+                var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
                 /////In order to convert the list of ridgeNhrepresentation to array. 
                 //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
                 //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
@@ -172,7 +173,8 @@
                 //var finalOutputRegion = CSVResults.
                 /// reconstruct the spectrogram.
                 var gr = Graphics.FromImage(bmp);
-                foreach (var nh in nhRepresentationList)
+                //foreach (var nh in nhRepresentationList)
+                foreach (var nh in normalisedNhRepresentationList)
                 {
                     RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
                 }
