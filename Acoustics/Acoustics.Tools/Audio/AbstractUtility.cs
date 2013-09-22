@@ -471,5 +471,16 @@
             }
         }
 
+        protected int ParseIntStringWithException(string text, string propertyName)
+        {
+            int parsed = 0;
+            if (!int.TryParse(text, out parsed))
+            {
+                throw new FormatException(string.Format("Failed parsing '{0}' to get {1}.", text, propertyName));
+            }
+
+            return parsed;
+        }
+
     }
 }

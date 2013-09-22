@@ -63,6 +63,28 @@
             this.CheckExe(wavUnpack, "wvunpack");
             this.ExecutableInfo = wavUnpack;
             this.ExecutableModify = wavUnpack;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class. 
+        /// </summary>
+        /// <param name="wavUnpack">
+        /// The wav Unpack.
+        /// </param>
+        /// <exception cref="FileNotFoundException">
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// </exception>
+        /// <exception cref="ArgumentException">wavUnpack</exception>
+        public WavPackAudioUtility(FileInfo wavUnpack, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(wavUnpack, "wvunpack");
+            this.ExecutableInfo = wavUnpack;
+            this.ExecutableModify = wavUnpack;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         #region Implementation of IAudioUtility
@@ -270,17 +292,17 @@
 
             if (result.RawData.ContainsKey(KeySampleRate))
             {
-                result.SampleRate = int.Parse(result.RawData[KeySampleRate]);
+                result.SampleRate = ParseIntStringWithException(result.RawData[KeySampleRate], "wavPack.SampleRate");
             }
 
             if (result.RawData.ContainsKey(KeyChannels))
             {
-                result.ChannelCount = int.Parse(result.RawData[KeyChannels].Replace("(mono)", string.Empty).Trim());
+                result.ChannelCount = ParseIntStringWithException(result.RawData[KeyChannels].Replace("(mono)", string.Empty).Trim(), "wavPack.Channels");
             }
 
             if (result.RawData.ContainsKey(KeyPrecision))
             {
-                result.BitsPerSample = int.Parse(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim());
+                result.BitsPerSample = ParseIntStringWithException(result.RawData[KeyPrecision].Replace("-bit", string.Empty).Trim(), "wavPack.Precision");
             }
 
             result.MediaType = MediaTypes.MediaTypeWavpack;

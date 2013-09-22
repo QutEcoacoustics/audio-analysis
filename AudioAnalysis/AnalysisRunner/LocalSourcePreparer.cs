@@ -46,9 +46,9 @@ namespace AnalysisRunner
         public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
             var request      = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz };
-            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request);
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request, TempFileHelper.TempDir());
 
-            var audioUtility = this.GetNewAudioUtility();
+            var audioUtility = new MasterAudioUtility();
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
             return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = request.OriginalSampleRate };
@@ -68,7 +68,7 @@ namespace AnalysisRunner
         /// </returns>
         public IEnumerable<FileSegment> CalculateSegments(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings)
         {
-            var audioUtility = this.GetNewAudioUtility();
+            var audioUtility = new MasterAudioUtility();
 
             var defaultAnalysisSegmentMinDuration = TimeSpan.FromSeconds(10);
 
@@ -234,10 +234,41 @@ namespace AnalysisRunner
             }
         }
 
-        private IAudioUtility GetNewAudioUtility()
+        /// <summary>
+        /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
+        /// </summary>
+        /// <param name="outputDirectory">
+        /// The analysis Base Directory.
+        /// </param>
+        /// <param name="source">
+        /// The source audio file.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output Media Type.
+        /// </param>
+        /// <param name="startOffset">
+        /// The start Offset from start of entire original file.
+        /// </param>
+        /// <param name="endOffset">
+        /// The end Offset from start of entire original file.
+        /// </param>
+        /// <param name="targetSampleRateHz">
+        /// The target Sample Rate Hz.
+        /// </param>
+        /// <returns>
+        /// The prepared file. The returned FileSegment will have the OriginalFile and OriginalFileDuration set - 
+        /// these are the path to the segmented file and the duration of the segmented file.
+        /// The start and end offsets will not be set.
+        /// </returns>
+        public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory)
         {
-            var audioUtility = new MasterAudioUtility();
-            return audioUtility;
+            var request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz };
+            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request, temporaryFilesDirectory);
+
+            var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
+            var preparedFileInfo = audioUtility.Info(preparedFile);
+
+            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = request.OriginalSampleRate };
         }
     }
 }

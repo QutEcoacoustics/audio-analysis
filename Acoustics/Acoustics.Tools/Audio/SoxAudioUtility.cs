@@ -40,6 +40,30 @@
             this.ExecutableModify = soxExe;
             this.ExecutableInfo = soxExe;
             this.ResampleQuality = SoxResampleQuality.VeryHigh;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SoxAudioUtility"/> class.
+        /// </summary>
+        /// <param name="soxExe">
+        /// The exe file.
+        /// </param>
+        /// <exception cref="FileNotFoundException">
+        /// Could not find exe.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="soxExe"/> is <c>null</c>.
+        /// </exception>
+        public SoxAudioUtility(FileInfo soxExe, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(soxExe, "sox");
+            this.ExecutableModify = soxExe;
+            this.ExecutableInfo = soxExe;
+            this.ResampleQuality = SoxResampleQuality.VeryHigh;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         /// <summary>
@@ -365,17 +389,17 @@
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
-                result.SampleRate = int.Parse(result.RawData[keySampleRate]);
+                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
             }
 
             if (result.RawData.ContainsKey(keyChannels))
             {
-                result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "sox.channels");
             }
 
             if (result.RawData.ContainsKey(keyPrecision))
             {
-                result.BitsPerSample = int.Parse(result.RawData[keyPrecision].Replace("-bit", string.Empty).Trim());
+                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyPrecision].Replace("-bit", string.Empty).Trim(), "sox.precision");
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;

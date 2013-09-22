@@ -31,9 +31,9 @@
         /// The prepared file.
         /// </returns>
         /// 
-        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request)
+        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
         {
-            var audioUtility = GetNewAudioUtility();
+            var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
             var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
             var outputFileName = Path.GetFileNameWithoutExtension(fiSource.Name);
 
@@ -69,7 +69,6 @@
             return fiOutput;
         }
 
-        
         /// <summary>
         /// The prepare file.
         /// </summary>
@@ -82,9 +81,9 @@
         /// <param name="request">
         ///   The request.
         /// </param>
-        public static AudioUtilityModifiedInfo PrepareFile(FileInfo fiSource, FileInfo fiOutput, AudioUtilityRequest request)
+        public static AudioUtilityModifiedInfo PrepareFile(FileInfo fiSource, FileInfo fiOutput, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
         {
-            var audioUtility = GetNewAudioUtility();
+            var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
             var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
             var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
             string outputDirectory = Path.GetDirectoryName(fiOutput.FullName);
@@ -158,12 +157,6 @@
             }
 
             yield return amountLeft;
-        }
-
-        private static IAudioUtility GetNewAudioUtility()
-        {
-            var audioUtility = new MasterAudioUtility();
-            return audioUtility;
         }
     }
 }

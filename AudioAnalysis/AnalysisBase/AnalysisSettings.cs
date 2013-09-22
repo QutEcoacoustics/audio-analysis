@@ -1,5 +1,6 @@
 ﻿namespace AnalysisBase
 {
+    using Acoustics.Shared;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -149,6 +150,19 @@
         /// Analysis implementations must not set this.
         /// </summary>
         public DirectoryInfo AnalysisTempBaseDirectory { get; set; }
+
+        public DirectoryInfo AnalysisTempBaseDirectoryChecked
+        {
+            get
+            {
+                if (this.AnalysisTempBaseDirectory != null || Directory.Exists(this.AnalysisTempBaseDirectory.FullName))
+                {
+                    return this.AnalysisTempBaseDirectory;
+                }
+
+                return TempFileHelper.TempDir();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the directory for a single analysis run.

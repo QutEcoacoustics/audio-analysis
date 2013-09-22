@@ -286,7 +286,7 @@ namespace AudioBrowser
             SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, FrameLength.ToString().ToLowerInvariant());
 
             config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisId;
-            var fiTempConfig = TempFileHelper.NewTempFileWithExt(outputDir, configFileExt);
+            var fiTempConfig = TempFileHelper.NewTempFile(outputDir, configFileExt);
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
             st.Reset();
