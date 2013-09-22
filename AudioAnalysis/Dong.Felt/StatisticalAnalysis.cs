@@ -435,6 +435,30 @@
             return result;
         }
 
+        public static double ConvertOrientationFrom0PiToNegativePi2(double radians)
+        {
+            var result = 0.0;
+            if (radians > Math.PI / 2 && radians <= Math.PI)
+            {
+                result = radians - Math.PI;
+            }
+            else
+            {
+                result = radians;
+            }
+            return result;
+        }
 
+        public static double ConvertRadiusToDegree(double radians)
+        {
+            var result = radians / Math.PI * 180;
+            return result;
+        }
+
+        public static double ConvertDegreeToRadians(double degree)
+        {
+            var result = degree / 180 * Math.PI;
+            return result;
+        }
     }
 }

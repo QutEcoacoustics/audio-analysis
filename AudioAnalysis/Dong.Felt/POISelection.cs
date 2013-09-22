@@ -43,7 +43,9 @@ namespace Dong.Felt
                         double herz = (freqBinCount - r - 1) * herzScale;
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
-                        poi.RidgeOrientation = direction;
+                        //poi.RidgeOrientation = direction;
+                        // convert the orientation into - pi/2 to pi / 2 from 0 ~ pi
+                        poi.RidgeOrientation = StatisticalAnalysis.ConvertOrientationFrom0PiToNegativePi2(direction);
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
