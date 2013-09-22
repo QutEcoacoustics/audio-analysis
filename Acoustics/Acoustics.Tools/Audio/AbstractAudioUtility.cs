@@ -21,6 +21,11 @@
         protected FileInfo ExecutableInfo;
 
         /// <summary>
+        /// Directory for temporary files.
+        /// </summary>
+        protected DirectoryInfo TemporaryFilesDirectory;
+
+        /// <summary>
         /// Gets the valid source media types.
         /// </summary>
         protected abstract IEnumerable<string> ValidSourceMediaTypes { get; }
@@ -185,6 +190,5 @@
             FileInfo output,
             string outputMediaType,
             AudioUtilityRequest request);
-
     }
 }

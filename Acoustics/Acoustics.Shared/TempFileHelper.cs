@@ -2,6 +2,7 @@
 {
     using System.Configuration;
     using System.IO;
+    using System.Linq;
 
     public static class TempFileHelper
     {
@@ -9,24 +10,29 @@
         /// Gets a valid temp directory.
         /// Directory will exist.
         /// </summary>
-        public static DirectoryInfo TempDir
+        public static DirectoryInfo TempDir()
         {
-            get
+            var tempDirString = "TempDir";
+            var tempDirSet = ConfigurationManager.AppSettings.AllKeys.Any(i => i == tempDirString);
+
+            var tempDir = string.Empty;
+
+            if (tempDirSet)
             {
-                var tempDir = ConfigurationManager.AppSettings["TempDir"];
-
-                if (string.IsNullOrEmpty(tempDir))
-                {
-                    tempDir = Path.GetTempPath();
-                }
-
-                if (!Directory.Exists(tempDir))
-                {
-                    Directory.CreateDirectory(tempDir);
-                }
-
-                return new DirectoryInfo(tempDir);
+                tempDir = ConfigurationManager.AppSettings["TempDir"];
             }
+
+            if (string.IsNullOrEmpty(tempDir))
+            {
+                tempDir = Path.GetTempPath();
+            }
+
+            if (!Directory.Exists(tempDir))
+            {
+                Directory.CreateDirectory(tempDir);
+            }
+
+            return new DirectoryInfo(tempDir);
         }
 
         /// <summary>
@@ -34,12 +40,21 @@
         /// File will be 8.3 (eg. abcdefgh.ijk).
         /// File will not exist.
         /// </summary>
-        public static FileInfo NewTempFile
+        public static FileInfo NewTempFile()
         {
-            get
-            {
-                return new FileInfo(Path.Combine(TempDir.FullName, Path.GetRandomFileName()));
-            }
+            return new FileInfo(Path.Combine(TempDir().FullName, Path.GetRandomFileName()));
+        }
+
+        /// <summary>
+        /// Gets a temporary file location. 
+        /// File will be 8.3 (eg. abcdefgh.ijk).
+        /// File will not exist.
+        /// </summary>
+        /// <param name="tempDir">Temporary directory.</param>
+        /// <returns>Temp file that does not exist.</returns>
+        public static FileInfo NewTempFile(DirectoryInfo tempDir)
+        {
+            return new FileInfo(Path.Combine(tempDir.FullName, Path.GetRandomFileName()));
         }
 
         /// <summary>
@@ -47,31 +62,11 @@
         /// File will be 8.3 (eg. abcdefgh.[given ext]).
         /// File will not exist.
         /// </summary>
-        /// <param name="ext">File extension (without dot).</param>
+        /// <param name="extension">File extension (without dot).</param>
         /// <returns>File with extension.</returns>
-        public static FileInfo NewTempFileWithExt(string ext)
+        public static FileInfo NewTempFile(string extension)
         {
-            // ensure extension is valid (or not present).
-            if (string.IsNullOrEmpty(ext))
-            {
-                // no extension
-                ext =  string.Empty;
-            }
-            else if (!ext.StartsWith("."))
-            {
-                ext = "." + ext;
-            }
-
-            // get a new temp file name, and remove the extension and dot.
-            var currentTempFile = NewTempFile;
-            var tempFile = currentTempFile.FullName;
-            var toremove = currentTempFile.Extension.Length + 1; // also remove dot.
-            var tokeep = tempFile.Length - toremove;
-
-            tempFile = tempFile.Substring(0, tokeep);
-            tempFile = tempFile + ext;// add ext
-
-            return new FileInfo(Path.Combine(TempDir.FullName, tempFile));
+            return NewTempFile(TempDir(), extension);
         }
 
         /// <summary>
@@ -79,31 +74,25 @@
         /// File will be 8.3 (eg. abcdefgh.[given ext]).
         /// File will not exist.
         /// </summary>
+        /// <param name="tempDir">Temporary directory.</param>
         /// <param name="ext">File extension (without dot).</param>
         /// <returns>File with extension.</returns>
-        public static FileInfo NewTempFileWithExt(DirectoryInfo tempDir, string ext)
+        public static FileInfo NewTempFile(DirectoryInfo tempDir, string extension)
         {
             // ensure extension is valid (or not present).
-            if (string.IsNullOrEmpty(ext))
+            if (string.IsNullOrEmpty(extension))
             {
                 // no extension
-                ext = string.Empty;
+                extension = string.Empty;
             }
-            else if (!ext.StartsWith("."))
+            else if (!extension.StartsWith("."))
             {
-                ext = "." + ext;
+                extension = "." + extension;
             }
 
-            // get a new temp file name, and remove the extension and dot.
-            var currentTempFile = new FileInfo(Path.Combine(tempDir.FullName, Path.GetRandomFileName()));
-            var tempFile = currentTempFile.FullName;
-            var toremove = currentTempFile.Extension.Length + 1; // also remove dot.
-            var tokeep = tempFile.Length - toremove;
-
-            tempFile = tempFile.Substring(0, tokeep);
-            tempFile = tempFile + ext;// add ext
-
-            return new FileInfo(Path.Combine(TempDir.FullName, tempFile));
+            var fileName = Path.GetRandomFileName();
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            return new FileInfo(Path.Combine(tempDir.FullName, fileNameWithoutExtension+extension));
         }
 
         /// <summary>

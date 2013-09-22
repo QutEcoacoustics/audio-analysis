@@ -311,7 +311,8 @@
                 settings.SegmentMediaType,
                 start,
                 end,
-                settings.SegmentTargetSampleRate);
+                settings.SegmentTargetSampleRate,
+                settings.AnalysisTempBaseDirectory);
 
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;

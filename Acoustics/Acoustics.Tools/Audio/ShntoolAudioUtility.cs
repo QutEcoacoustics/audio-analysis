@@ -31,6 +31,25 @@
             this.CheckExe(shntoolExe, "shntool");
             this.ExecutableModify = shntoolExe;
             this.ExecutableInfo = shntoolExe;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShntoolAudioUtility"/> class.
+        /// </summary>
+        /// <param name="shntoolExe">
+        /// The shntool exe.
+        /// </param>
+        /// <exception cref="FileNotFoundException">Could not find exe.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="shntoolExe" /> is <c>null</c>.</exception>
+        public ShntoolAudioUtility(FileInfo shntoolExe, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(shntoolExe, "shntool");
+            this.ExecutableModify = shntoolExe;
+            this.ExecutableInfo = shntoolExe;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         #region Implementation of IAudioUtility
@@ -151,17 +170,17 @@
 
                 if (line.StartsWith(Channels))
                 {
-                    result.ChannelCount = int.Parse(line.Replace(Channels, string.Empty).Trim());
+                    result.ChannelCount = ParseIntStringWithException(line.Replace(Channels, string.Empty).Trim(), "shntool.channels");
                 }
 
                 if (line.StartsWith(BitsPerSample))
                 {
-                    result.BitsPerSample = int.Parse(line.Replace(BitsPerSample, string.Empty).Trim());
+                    result.BitsPerSample = ParseIntStringWithException(line.Replace(BitsPerSample, string.Empty).Trim(), "shntool.bitspersample");
                 }
 
                 if (line.StartsWith(SamplePerSecond))
                 {
-                    result.SampleRate = int.Parse(line.Replace(SamplePerSecond, string.Empty).Trim());
+                    result.SampleRate = ParseIntStringWithException(line.Replace(SamplePerSecond, string.Empty).Trim(), "shntool.samplespersecond");
                 }
 
                 if (line.StartsWith(FileName))
@@ -169,10 +188,10 @@
                     result.SourceFile = new FileInfo(line.Replace(FileName, string.Empty).Trim());
                 }
 
-                 if (line.StartsWith(BitsPerSecond))
+                if (line.StartsWith(BitsPerSecond))
                 {
-                     // convert bytes to bits
-                    result.BitsPerSecond = int.Parse(line.Replace(BitsPerSecond, string.Empty).Trim()) * 8;
+                    // convert bytes to bits
+                    result.BitsPerSecond = ParseIntStringWithException(line.Replace(BitsPerSecond, string.Empty).Trim(), "shntool.BitsPerSecond") * 8;
                 }
 
                 result.MediaType = MediaTypes.MediaTypeWav;

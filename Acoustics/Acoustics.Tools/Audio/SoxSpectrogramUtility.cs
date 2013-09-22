@@ -39,6 +39,26 @@
             this.CheckExe(soxExe, "sox");
             this.audioUtility = audioUtility;
             this.soxExe = soxExe;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SoxSpectrogramUtility"/> class.
+        /// </summary>
+        /// <param name="audioUtility">
+        /// The audio utility.
+        /// </param>
+        /// <param name="soxExe">
+        /// The sox exe.
+        /// </param>
+        public SoxSpectrogramUtility(IAudioUtility audioUtility, FileInfo soxExe, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(soxExe, "sox");
+            this.audioUtility = audioUtility;
+            this.soxExe = soxExe;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         /// <summary>
@@ -67,8 +87,8 @@
             this.CanProcess(output, new[] { MediaTypes.MediaTypePng, MediaTypes.MediaTypeJpeg }, null);
 
             // to get a proper image from sox, need to remove DC value, plus 1px from top and left. 
-            var wavFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
-            var originalSoxFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtPng);
+            var wavFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtWav);
+            var originalSoxFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtPng);
 
             var audioUtilRequest = new AudioUtilityRequest { OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, TargetSampleRate = 22050 };
 

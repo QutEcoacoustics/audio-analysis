@@ -116,6 +116,8 @@ namespace AnalysisPrograms
             }
 
 
+            var tempFilesDirectory = new DirectoryInfo(tempFilesDir);
+
             // 1. set up the necessary files
             DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
             FileInfo fiSourceRecording = new FileInfo(recordingPath);
@@ -202,7 +204,7 @@ namespace AnalysisPrograms
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(new DirectoryInfo(tempFilesDir), fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SetUserConfiguration(tempFilesDirectory, fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
@@ -230,7 +232,7 @@ namespace AnalysisPrograms
             }
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
-            var audioUtility = new MasterAudioUtility();
+            var audioUtility = new MasterAudioUtility(tempFilesDirectory);
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
             

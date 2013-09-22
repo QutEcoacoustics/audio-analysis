@@ -43,6 +43,18 @@ namespace Acoustics.Tools.Audio
             this.mp3SpltUtility = InitMp3Splt(assemblyDir);
             this.ffmpegUtility = InitFfmpeg(assemblyDir);
             this.soxUtility = InitSox(assemblyDir);
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
+        /// </summary>
+        /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
+        public MasterAudioUtility(DirectoryInfo temporaryFilesDirectory) : this()
+        {
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         /// <summary>
@@ -64,6 +76,32 @@ namespace Acoustics.Tools.Audio
             this.mp3SpltUtility = mp3SpltUtility;
             this.ffmpegUtility = ffmpegUtility;
             this.soxUtility = soxUtility;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MasterAudioUtility"/> class. 
+        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
+        /// The given audio utility instances will be used.
+        /// </summary>
+        /// <param name="ffmpegUtility">ffmpeg utility.
+        /// </param>
+        /// <param name="mp3SpltUtility">mp3splt utility.
+        /// </param>
+        /// <param name="wvunpackUtility">wxunpack utility.
+        /// </param>
+        /// <param name="soxUtility">sox utility.
+        /// </param>
+        /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
+        public MasterAudioUtility(FfmpegAudioUtility ffmpegUtility, Mp3SpltAudioUtility mp3SpltUtility, WavPackAudioUtility wvunpackUtility, SoxAudioUtility soxUtility, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.wvunpackUtility = wvunpackUtility;
+            this.mp3SpltUtility = mp3SpltUtility;
+            this.ffmpegUtility = ffmpegUtility;
+            this.soxUtility = soxUtility;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         /// <summary>
@@ -387,7 +425,7 @@ namespace Acoustics.Tools.Audio
         private FileInfo SegmentWavpackToWav(FileInfo source, AudioUtilityRequest request)
         {
             // use a temp file for wvunpack.
-            var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+            var wavunpackTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
             if (this.Log.IsDebugEnabled)
             {
@@ -403,7 +441,7 @@ namespace Acoustics.Tools.Audio
         private FileInfo SegmentMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to segment.
-            var mp3SpltTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
+            var mp3SpltTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
 
             if (this.Log.IsDebugEnabled)
             {
@@ -419,7 +457,7 @@ namespace Acoustics.Tools.Audio
         private FileInfo ConvertNonWavOrMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to segment.
-            var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+            var ffmpegTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
             if (this.Log.IsDebugEnabled)
             {
@@ -435,7 +473,7 @@ namespace Acoustics.Tools.Audio
         private FileInfo ConvertAndSegmentUsingSox(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to run sox.
-            var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+            var soxtempfile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory,MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
             if (this.Log.IsDebugEnabled)
             {

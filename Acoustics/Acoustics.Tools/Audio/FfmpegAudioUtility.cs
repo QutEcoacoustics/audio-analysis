@@ -72,6 +72,30 @@
 
             this.CheckExe(ffmpegExe, "ffmpeg");
             this.ExecutableModify = ffmpegExe;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FfmpegAudioUtility"/> class. 
+        /// </summary>
+        /// <param name="ffmpegExe">
+        /// The ffmpeg exe.
+        /// </param>
+        /// <param name="ffprobeExe">The ffprobe exe.</param>
+        /// /// <param name="tempDir">Directory for temporary files.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public FfmpegAudioUtility(FileInfo ffmpegExe, FileInfo ffprobeExe, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(ffprobeExe, "ffprobe");
+            this.ExecutableInfo = ffprobeExe;
+
+            this.CheckExe(ffmpegExe, "ffmpeg");
+            this.ExecutableModify = ffmpegExe;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         #region Implementation of IAudioUtility
@@ -285,22 +309,22 @@
 
             if (result.RawData.ContainsKey(keyBitRate))
             {
-                result.BitsPerSecond = int.Parse(result.RawData[keyBitRate]);
+                result.BitsPerSecond = ParseIntStringWithException(result.RawData[keyBitRate], "ffmpeg.bitrate");
             }
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
-                result.SampleRate = int.Parse(result.RawData[keySampleRate]);
+                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "ffmpeg.samplerate");
             }
 
             if (result.RawData.ContainsKey(keyChannels))
             {
-                result.ChannelCount = int.Parse(result.RawData[keyChannels]);
+                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "ffmpeg.channels");
             }
 
             if (result.RawData.ContainsKey(keyBitsPerSample))
             {
-                result.BitsPerSample = int.Parse(result.RawData[keyBitsPerSample]);
+                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample");
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;

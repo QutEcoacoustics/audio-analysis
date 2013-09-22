@@ -36,6 +36,35 @@
         FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
 
         /// <summary>
+        /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
+        /// </summary>
+        /// <param name="outputDirectory">
+        /// The analysis Base Directory.
+        /// </param>
+        /// <param name="source">
+        /// The source audio file.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output Media Type.
+        /// </param>
+        /// <param name="startOffset">
+        /// The start Offset from start of entire original file.
+        /// </param>
+        /// <param name="endOffset">
+        /// The end Offset from start of entire original file.
+        /// </param>
+        /// <param name="targetSampleRateHz">
+        /// The target Sample Rate Hz.
+        /// </param>
+        /// <param name="temporaryFilesDirectory">
+        /// The directory for temporary files.
+        /// </param>
+        /// <returns>
+        /// The prepared file.
+        /// </returns>
+        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory);
+
+        /// <summary>
         /// Calculate the file segments for analysis.
         /// </summary>
         /// <param name="fileSegments">

@@ -14,7 +14,6 @@
     /// <summary>
     /// Mp3 split audio utility.
     /// </summary>
-
     public class Mp3SpltAudioUtility : AbstractAudioUtility, IAudioUtility
     {
         /// <summary>
@@ -30,7 +29,28 @@
             this.CheckExe(mp3SpltExe, "mp3splt");
             this.ExecutableModify = mp3SpltExe;
             this.ExecutableInfo = mp3SpltExe;
+
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Mp3SpltAudioUtility"/> class.
+        /// </summary>
+        /// <param name="mp3SpltExe">
+        /// The mp 3 splt exe.
+        /// </param>
+        /// <exception cref="FileNotFoundException">Could not find exe.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="mp3SpltExe" /> is <c>null</c>.</exception>
+        public Mp3SpltAudioUtility(FileInfo mp3SpltExe, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.CheckExe(mp3SpltExe, "mp3splt");
+            this.ExecutableModify = mp3SpltExe;
+            this.ExecutableInfo = mp3SpltExe;
+
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
+        }
+
+        
 
         #region Implementation of IAudioUtility
 
@@ -592,7 +612,7 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
                     !string.IsNullOrEmpty(pathToMp3Split) && File.Exists(pathToMp3Split) &&
                     !string.IsNullOrEmpty(conversionPath) && Directory.Exists(conversionPath))
                 {
-                    var tempFile = TempFileHelper.NewTempFileWithExt((MediaTypes.ExtMp3));
+                    var tempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtMp3);
 
                     var segmentedFile = SingleSegment(
                         tempFile.FullName, start.HasValue ? start.Value : 0, end.HasValue ? end.Value : long.MaxValue);

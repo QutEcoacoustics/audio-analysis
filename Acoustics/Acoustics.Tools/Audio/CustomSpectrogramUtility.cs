@@ -51,6 +51,19 @@
         public CustomSpectrogramUtility(IAudioUtility audioUtility)
         {
             this.audioUtility = audioUtility;
+            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomSpectrogramUtility"/> class.
+        /// </summary>
+        /// <param name="audioUtility">
+        /// The audio utility.
+        /// </param>
+        public CustomSpectrogramUtility(IAudioUtility audioUtility, DirectoryInfo temporaryFilesDirectory)
+        {
+            this.audioUtility = audioUtility;
+            this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
         /// <summary>
@@ -76,7 +89,7 @@
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
-            var tempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.ExtWav);
+            var tempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtWav);
 
             var audioUtilRequest = new AudioUtilityRequest
             {
