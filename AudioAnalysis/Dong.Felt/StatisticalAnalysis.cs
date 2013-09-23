@@ -460,5 +460,19 @@
             var result = degree / 180 * Math.PI;
             return result;
         }
+
+        public static List<double> ConvertDistanceToPercentageSimilarityScore(List<double> distanceValue)
+        {
+            var max = distanceValue.Max();
+            var result = new List<double>();
+            foreach (var d in distanceValue)
+            {
+                var similarityScore = 1 - d / max;
+                result.Add(similarityScore);
+            }
+            return result;
+        }
+
+       
     }
 }

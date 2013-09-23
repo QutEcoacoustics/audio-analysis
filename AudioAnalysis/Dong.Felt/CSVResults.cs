@@ -62,30 +62,32 @@
             return nh;
         }
 
-        public static void RegionRepresentationListToCSV(List<RegionRerepresentation> region, string outputFilePath)
+        public static void RegionRepresentationListToCSV(List<List<RegionRerepresentation>> region, string outputFilePath)
         {
             var results = new List<List<string>>();
-            // each region should have same nhCount, here we just get it from the first region item. 
-            var nhCount = region[0].ridgeNeighbourhoods.Count;
-
-            results.Add(new List<string>() { "FileName", "RegionTimePosition-ms", "RegionFrequencyPosition-hz", "Sub-RegionScore" });
+            // each region should have same nhCount, here we just get it from the first region item.          
+            results.Add(new List<string>() { "FileName", "RegionTimePosition-ms", "RegionFrequencyPosition-hz", 
+                "Sub-RegionRowIndex","Sub-RegionColIndex","Sub-RegionScore","Sub-RegionOrientationType" });
             foreach (var r in region)
             {
-                var scoreMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(r);
-                var rowsCount = scoreMatrix.GetLength(0);
-                var colsCount = scoreMatrix.GetLength(1);
-                var nhList = r.ridgeNeighbourhoods;
-                var nh = new int[nhCount];
-                for (int i = 0; i < nhCount; i++)
+                foreach (var sr in r)
                 {
-                    nh[i] = r.ridgeNeighbourhoods[i].score;
-                }
-                var audioFilePath = r.SourceAudioFile.ToString();
-                results.Add(new List<string>() { audioFilePath, r.FrequencyIndex.ToString(), r.TimeIndex.ToString(),
-                        nh[0].ToString(), nh[1].ToString(), nh[2].ToString(),
-                        nh[3].ToString(), nh[4].ToString(), nh[5].ToString()
+                    var regionMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(sr);
+                    var rowsCount = regionMatrix.GetLength(0);
+                    var colsCount = regionMatrix.GetLength(1);
+                    for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+                    {
+                        for (int colIndex = 0; colIndex < colsCount; colIndex++)
+                        {
+                            var score = regionMatrix[rowIndex, colIndex].score;
+                            var orientationType = regionMatrix[rowIndex, colIndex].orientationType;
+                            var audioFilePath = sr.SourceAudioFile.ToString();
+                            results.Add(new List<string>() { audioFilePath, sr.TimeIndex.ToString(), sr.FrequencyIndex.ToString(),
+                        rowIndex.ToString(), colIndex.ToString(), score.ToString(), orientationType.ToString(),
                         });
-
+                        }
+                    }
+                }
             }
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
@@ -134,6 +136,26 @@
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
+        public static void NormalisedNeighbourhoodRepresentationToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> nhList, string audioFileName, string outputFilePath)
+        {
+            var results = new List<List<string>>();
+            results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
+                "NormalisedNeighbourhoodScore", "NeighbourhooddominantOrientationType" });
+
+            foreach (var nh in nhList)
+            {
+                // Notice 
+                var RowIndex = nh.ColIndex;
+                var ColIndex = nh.RowIndex;
+                var Score = nh.score;
+                var Orientation = nh.orientationType;
+                results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
+                            Score.ToString(), Orientation.ToString() });
+            }
+            // No space in csv file.
+            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToRidgeNhRepresentation(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
@@ -148,6 +170,19 @@
             return results;
         }
 
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToNormalisedRidgeNhRepresentation(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var results = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            foreach (var csvRow in lines1)
+            {
+                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
+                results.Add(nh);
+            }
+            return results;
+        }
 
         public static List<Tuple<double, double, double>> CSVToSimilarityDistanceSocre(FileInfo file)
         {
