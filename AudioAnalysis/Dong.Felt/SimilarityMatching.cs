@@ -350,6 +350,23 @@
             return result;
         }
 
+        public static double DistanceScoreRegionRepresentation(RegionRerepresentation query, RegionRerepresentation candidate)
+        {
+            var result = 0.0;
+            var nhCount = query.ridgeNeighbourhoods.Count;
+            for (int index = 0; index < nhCount; index++)
+            {
+                var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
+                var queryScore = ridgeNeighbourhoods[index].score;
+                var queryOrientationType =  ridgeNeighbourhoods[index].orientationType;
+                var candidateScore = candidate.ridgeNeighbourhoods[index].score;
+                var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
+                result += Math.Abs(queryOrientationType - candidateOrientationType) * Math.Pow((queryScore - candidateScore),2.0);
+                //result += Distance.EuclideanDistanceForCordinates(queryScore, 0, candidateScore, 0);
+            }
+            return result; 
+        }
+
         public static List<RegionRerepresentation> SimilarityMatchingFromScoreVectorList(List<List<RegionRerepresentation>> scoreVectorList)
         {
 

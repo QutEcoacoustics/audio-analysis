@@ -6,7 +6,7 @@
 
     using TowseyLib;
 
-    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
+    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, similarityScoreList, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
 
 
     public sealed class Image_Track
@@ -53,6 +53,7 @@
         public double scoreMax = 10.0; //default max score displayed in score track of image
         public double ScoreMax { get { return scoreMax; } set { scoreMax = value; } }
         public double ScoreThreshold { set; get; }
+        public int sampleUnit { get; set; }
         public string Name { set; get; }
 
         public int topOffset { get; set; }    //set to track's TOP    pixel row in final image
@@ -148,6 +149,8 @@
                     return syllablesTrackHeight;
                 case TrackType.scoreArray:
                     return scoreTrackHeight;
+                case TrackType.similarityScoreList:
+                    return scoreTrackHeight;
                 case TrackType.scoreArrayNamed:
                     return scoreTrackHeight;
                 case TrackType.deciBels:
@@ -185,6 +188,9 @@
                     break;
                 case TrackType.scoreArray:
                     DrawScoreArrayTrack(bmp);  //add a score track
+                    break;
+                case TrackType.similarityScoreList:
+                    DrawSimilarityScoreTrack(bmp);  //add a score track
                     break;
                 case TrackType.scoreArrayNamed:
                     DrawNamedScoreArrayTrack(bmp);  //add a score track
@@ -333,6 +339,55 @@
             return bmp;
         }
 
+        /// <summary>
+        /// Displays a score track, normalised to min and max of the data. max=approx 8-16.
+        /// </summary>
+        public Bitmap DrawSimilarityScoreTrack(Bitmap bmp)
+        {
+            //LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
+            if (doubleData == null) return bmp;
+            int dataLength = this.doubleData.Length;
+            double range = this.scoreMax - this.scoreMin;
+
+            //next two lines are for subsampling if the score array is compressed to fit smaller image width.
+            double subSample = dataLength / (double)bmp.Width;
+            if (subSample < 1.0) subSample = 13;
+
+            Color gray = Color.FromArgb(235, 235, 235); // use as background
+            int baseLine = topOffset + this.height - 2;
+
+            //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
+            //for (int w = 0; w < length; w++)
+            // 13 = neighbourhoodLenght
+            for (int w = 0; w < bmp.Width; w+=13)
+            {               
+                var location = w;
+                double fraction = 0.0;
+                if (w / 13 < dataLength)
+                {
+                    fraction = (doubleData[w / 13] - this.scoreMin) / range;
+                }
+                else
+                {
+                    fraction = 1.0;
+                }
+                int id = this.Height - 1 - (int)(this.Height * fraction);
+                if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds
+
+                //paint white and leave a black vertical histogram bar
+                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, gray); // background
+                for (int z = id; z < this.height; z++) bmp.SetPixel(w, topOffset + z, Color.Black); // draw the score bar
+                bmp.SetPixel(w, baseLine, Color.Black); // draw base line
+            }
+
+            //add in horizontal threshold significance line
+            double f = (this.ScoreThreshold - this.scoreMin) / range;
+            int lineID = this.Height - 1 - (int)(this.Height * f);
+            if (lineID < 0) return bmp;
+            if (lineID > this.Height) return bmp;
+            for (int x = 0; x < bmp.Width; x++) bmp.SetPixel(x, topOffset + lineID, Color.White);
+            return bmp;
+        }
         /// <summary>
         /// This method assumes that the passed data array is of values, min=0.0, max = approx 8-16.
         /// </summary>
@@ -489,6 +544,7 @@
             return bmp;
         }
 
+       
         /// <summary>
         /// ASSUME that passed decibel array has been normalised
         /// </summary>
@@ -545,6 +601,15 @@
             track.ScoreThreshold = scoreThreshold ?? 0;
             track.ScoreMin = scoreMin ?? 0;
             track.ScoreMax = scoreMax ?? 0;
+            return track;
+        }
+        public static Image_Track GetSimilarityScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, int neighbourhoodLength)
+        {
+            var track = new Image_Track(TrackType.similarityScoreList, scores);
+            track.ScoreThreshold = scoreThreshold ?? 0;
+            track.ScoreMin = scoreMin ?? 0;
+            track.ScoreMax = scoreMax ?? 0;
+            track.sampleUnit = neighbourhoodLength;
             return track;
         }
         public static Image_Track GetNamedScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold, string name)

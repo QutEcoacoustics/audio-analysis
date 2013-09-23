@@ -62,6 +62,8 @@ namespace Dong.Felt.Representations
         /// </summary>
         public int score { get; set; }
 
+        public int orientationType { get; set; }
+
         /// <summary>
         /// <summary>
         /// Gets or sets the orientation type 1 of the neighbourhood.
@@ -302,6 +304,21 @@ namespace Dong.Felt.Representations
             return nh;
         }
 
+        public static RidgeDescriptionNeighbourhoodRepresentation FromNormalisedRidgeNhReprsentationCsv(IEnumerable<string> lines)
+        {
+            // assume csv file is laid out as we expect it to be.
+            var listLines = lines.ToList();
+
+            var nh = new RidgeDescriptionNeighbourhoodRepresentation()
+            {
+                ColIndex = double.Parse(listLines[1]),
+                RowIndex = double.Parse(listLines[2]),
+                score = int.Parse(listLines[3]),
+                orientationType = int.Parse(listLines[4]),              
+            };
+            return nh;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> NormaliseRidgeNeighbourhoodScore(List<RidgeDescriptionNeighbourhoodRepresentation> nhList, int neighbourhoodLength)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -324,12 +341,28 @@ namespace Dong.Felt.Representations
                 {
                     normalisedMagnitude = (int)tempMagnitude;
                 }
+                if (nh.orientation > -Math.PI / 8 && nh.orientation <= Math.PI / 8)
+                {
+                    nh.orientationType = 1;
+                }
+                if (nh.orientation > Math.PI / 8 && nh.orientation <= 3 * Math.PI / 8)
+                {
+                    nh.orientationType = 2;
+                }
+                if (nh.orientation > 3 * Math.PI / 8 && nh.orientation <= 1.6)
+                {
+                    nh.orientationType = 3;
+                }
+                if (nh.orientation > -3 * Math.PI / 8 && nh.orientation <= -Math.PI / 8)
+                {
+                    nh.orientationType = 2;
+                }
                 var nh1 = new RidgeDescriptionNeighbourhoodRepresentation()
                 {
                     ColIndex = nh.ColIndex,
                     RowIndex = nh.RowIndex,
                     score = normalisedMagnitude,
-                    orientation = nh.orientation,
+                    orientationType = nh.orientationType,
                 };
                 result.Add(nh1);
             }
@@ -423,7 +456,6 @@ namespace Dong.Felt.Representations
                         graphics.DrawLine(purplePen, startPoint, endPoint);
                     }
                 }
-
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace Dong.Felt.Representations
     using System.Linq;
     using System.Text;
 
-    public class RegionRerepresentation
+    public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
         /// <summary>
         /// Index (0-based) for this region's lowest frequency in the source audio file, its unit is .
@@ -48,18 +48,16 @@ namespace Dong.Felt.Representations
 
         public FileInfo SourceTextFile { get; private set; }
 
-        public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods;
+        public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods {get; set;}
 
-        public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
-        {
-            get
-            {
-                // create a new list , so that only this class can change the list of neighbourhoods.
-                return new List<RidgeDescriptionNeighbourhoodRepresentation>(this.ridgeNeighbourhoods);
-            }
-        }
-
-        public ICollection<RidgeDescriptionNeighbourhoodRepresentation> RidgeNeighbourhoods { get; set; }
+        //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
+        //{
+        //    get
+        //    {
+        //        // create a new list , so that only this class can change the list of neighbourhoods.
+        //        return new List<RidgeDescriptionNeighbourhoodRepresentation>(this.ridgeNeighbourhoods);
+        //    }
+        //}
 
         #region  public constructor
 
@@ -74,7 +72,6 @@ namespace Dong.Felt.Representations
             // left bottom corner - this is the anchor point
             this.FrequencyIndex = neighbourhoods[0].RowIndex;
             this.TimeIndex = neighbourhoods[0].ColIndex;
-
             this.NhCountInRow = nhCountInRow;
             this.NhCountInCol = nhCountInCol;
             this.SourceAudioFile = audioFile;

@@ -33,6 +33,26 @@ namespace Dong.Felt
            return result;
         }
 
+        public static List<double> SimilairtyScoreFromAudioRegionRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+        {
+            var result = new List<double>();
+            var vectorCount = candidates.Count;
+            // each sublist has the same count, so here we want to get its length from the first value. 
+            var regionCountINVector = candidates[0].Count;
+            foreach (var c in candidates)
+            {
+                var distanceListForOneVector = new List<double>();
+                for (int i = 0; i < regionCountINVector; i++)
+                {                    
+                    var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
+                    distanceListForOneVector.Add(distance);                    
+                }
+                var minDistance = distanceListForOneVector.Min();
+                result.Add(minDistance);
+            }
+            return result;
+        }
+
         /// <summary>
         /// Function to scan a list of representation in an audio file  within the same frequency band with the query.
         /// This name should be changed, because it is not doing indexing. It atually extracts the a list of region representation. 
@@ -89,12 +109,12 @@ namespace Dong.Felt
             var rowsCount = (int)(lastCandidate.FrequencyIndex / nhHeightInHerz) + 1;
             var colsCount = (int)(lastCandidate.TimeIndex / nhWidthInMillisecond) + 1;
             var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
-            
-            for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
-            {
-                var tempList = new List<RegionRerepresentation>();
-                for (int colIndex = 0; colIndex < colsCount; colIndex++)
-                {                    
+            var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
+            for (int colIndex = 0; colIndex < colsCount; colIndex++)
+            {         
+                var tempList = new List<RegionRerepresentation>();                
+                for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+                {                
                     tempList.Add(candidatesArray[rowIndex, colIndex]);
                 }
                 result.Add(tempList);
