@@ -369,7 +369,7 @@
                 }
                 else
                 {
-                    fraction = 1.0;
+                    fraction = 0.0;
                 }
                 int id = this.Height - 1 - (int)(this.Height * fraction);
                 if (id < 0) id = 0; else if (id > this.Height) id = this.Height; // impose bounds

@@ -33,22 +33,32 @@ namespace Dong.Felt
            return result;
         }
 
-        public static List<double> SimilairtyScoreFromAudioRegionRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+        public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
         {
-            var result = new List<double>();
+            // to get the distance and frequency band index
+            var result = new List<Tuple<double, double, double>>();
             var vectorCount = candidates.Count;
             // each sublist has the same count, so here we want to get its length from the first value. 
             var regionCountINVector = candidates[0].Count;
+            var regionIndicator = 0;
+            var j = 0; 
             foreach (var c in candidates)
             {
+                var miniDistance = 6000000.0;
                 var distanceListForOneVector = new List<double>();
                 for (int i = 0; i < regionCountINVector; i++)
-                {                    
+                {
                     var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
-                    distanceListForOneVector.Add(distance);                    
+                    distanceListForOneVector.Add(distance); 
+                    var minDistance = distanceListForOneVector.Min();
+                    if (minDistance < miniDistance)
+                    {
+                        regionIndicator = i;
+                        miniDistance = minDistance;
+                    }                   
                 }
-                var minDistance = distanceListForOneVector.Min();
-                result.Add(minDistance);
+                result.Add(Tuple.Create(miniDistance, j * 150.8, c[regionIndicator].FrequencyIndex));
+                j++;
             }
             return result;
         }
@@ -104,10 +114,11 @@ namespace Dong.Felt
             var result = new List<List<RegionRerepresentation>>();
             var listCount = candidatesList.Count;
             var nhHeightInHerz = 559;
-            var nhWidthInMillisecond = 150.8;
+            //var nhWidthInMillisecond = 150.8;
             var lastCandidate = candidatesList[listCount - 1];
             var rowsCount = (int)(lastCandidate.FrequencyIndex / nhHeightInHerz) + 1;
-            var colsCount = (int)(lastCandidate.TimeIndex / nhWidthInMillisecond) + 1;
+            //var colsCount = (int)(lastCandidate.TimeIndex / nhWidthInMillisecond) + 1;
+            var colsCount = listCount / rowsCount;
             var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
             var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
             for (int colIndex = 0; colIndex < colsCount; colIndex++)
