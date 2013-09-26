@@ -11,22 +11,20 @@ namespace Dong.Felt.Representations
 
     public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
+        #region public properties.
         /// <summary>
         /// Index (0-based) for this region's lowest frequency in the source audio file, its unit is .
         /// </summary>
-        //public int AudioFrequencyIndex { get; private set; }
         public double FrequencyIndex { get; set; }
 
         /// <summary>
         /// Index (0-based) for the time where this region starts located in the source audio file.
         /// </summary>
-        //public int AudioTimeIndex { get; private set; }
         public double TimeIndex { get; set; }
 
         public int NhCountInRow { get; set; }
 
         public int NhCountInCol { get; set; }
-
 
         //// frequency range, total duration
         //public double maxFrequency { get; private set; }
@@ -58,6 +56,7 @@ namespace Dong.Felt.Representations
         //        return new List<RidgeDescriptionNeighbourhoodRepresentation>(this.ridgeNeighbourhoods);
         //    }
         //}
+        #endregion
 
         #region  public constructor
 

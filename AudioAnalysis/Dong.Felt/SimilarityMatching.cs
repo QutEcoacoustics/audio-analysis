@@ -362,15 +362,8 @@
                 var candidateScore = candidate.ridgeNeighbourhoods[index].score;
                 var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
                 result += Math.Sqrt(Math.Abs(queryOrientationType - candidateOrientationType) * Math.Pow((queryScore - candidateScore),2.0));
-                //result += Distance.EuclideanDistanceForCordinates(queryScore, 0, candidateScore, 0);
             }
             return result; 
-        }
-
-        public static List<RegionRerepresentation> SimilarityMatchingFromScoreVectorList(List<List<RegionRerepresentation>> scoreVectorList)
-        {
-
-            return null;
         }
 
         public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)

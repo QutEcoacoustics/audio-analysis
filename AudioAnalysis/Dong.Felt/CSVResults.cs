@@ -14,40 +14,23 @@
 
         #region  Public Methods
 
-        public static void EventLocationToCSV(List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>> listOfPositions, string filePath)
-        {
-            var results = new List<List<string>>();
-            var timeScale = 0.0116; // 
-            results.Add(new List<string>() { "EventIndex", "TimePosition-left", "FrequencyBand-top" });
-
-            for (var index = 0; index < listOfPositions.Count; index++)
-            {
-                var lp = listOfPositions[index];
-                var timeOffset = lp.Item2[0].TimePositionPix * timeScale;
-                var frequencyOffset = lp.Item2[0].FrequencyBand_TopLeft;
-                results.Add(new List<string>() { (index + 1).ToString(), timeOffset.ToString(), frequencyOffset.ToString() });
-            }
-
-            File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
-        }
-
         //public static string Test(IEnumerable<string> i)
         //{ 
         //    return string.Join(", ", i); 
         //}
 
-        public static void NeighbourhoodRepresentationsToCSV(PointOfInterest[,] neighbourhoodMatrix, int rowIndex, int colIndex, string filePath)
-        {
-            var results = new List<List<string>>();
-            results.Add(new List<string>() {"RowIndex","ColIndex",
-                "NeighbourhoodWidthPix", "NeighbourhoodHeightPix", "NeighbourhoodDuration","NeighbourhoodFrequencyRange",
-                "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount" });
-            var nh = RidgeDescriptionNeighbourhoodRepresentation.FromFeatureVector(neighbourhoodMatrix, rowIndex, colIndex, 13);
-            results.Add(new List<string>() { nh.RowIndex.ToString(), nh.ColIndex.ToString(), 
-                nh.WidthPx.ToString(), nh.HeightPx.ToString(), nh.Duration.ToString(), 
-                nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
-            File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
-        }
+        //public static void NeighbourhoodRepresentationsToCSV(PointOfInterest[,] neighbourhoodMatrix, int rowIndex, int colIndex, string filePath)
+        //{
+        //    var results = new List<List<string>>();
+        //    results.Add(new List<string>() {"RowIndex","ColIndex",
+        //        "NeighbourhoodWidthPix", "NeighbourhoodHeightPix", "NeighbourhoodDuration","NeighbourhoodFrequencyRange",
+        //        "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount" });
+        //    var nh = RidgeDescriptionNeighbourhoodRepresentation.FromFeatureVector(neighbourhoodMatrix, rowIndex, colIndex, 13);
+        //    results.Add(new List<string>() { nh.RowIndex.ToString(), nh.ColIndex.ToString(), 
+        //        nh.WidthPx.ToString(), nh.HeightPx.ToString(), nh.Duration.ToString(), 
+        //        nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
+        //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
+        //}
 
         public static RidgeDescriptionNeighbourhoodRepresentation CSVToNeighbourhoodRepresentation(FileInfo file)
         {
@@ -97,11 +80,8 @@
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz
             var results = new List<List<string>>();
-            //results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
-            //    "NeighbourhoodDominantOrientation", "NeighbourhooddominantPoiCount","NeighbourhooddominantMagnitudeSum","NormalisedScore" });
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
                 "NeighbourhoodMagnitude", "NeighbourhooddominantOrientation" });
-            //var matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var rowOffset = neighbourhoodLength;
             var colOffset = neighbourhoodLength;
@@ -115,18 +95,11 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        //neighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(subMatrix, row, col, neighbourhoodLength);
                         neighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength);
                         var RowIndex = col * timeScale;
                         var ColIndex = row * frequencyScale;
                         var Magnitude = neighbourhoodRepresentation.magnitude;
                         var Orientation = neighbourhoodRepresentation.orientation;
-                        //var dominantOrientation = neighbourhoodRepresentation.dominantOrientationType;
-                        //var dominantPoiCount = neighbourhoodRepresentation.dominantPOICount;
-                        //var dominantMagnitudeSum = neighbourhoodRepresentation.dominantMagnitudeSum;
-                        //var score = neighbourhoodRepresentation.score;
-                        //results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
-                        //    dominantOrientation.ToString(), dominantPoiCount.ToString(), dominantMagnitudeSum.ToString(), score.ToString() });
                         results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
                             Magnitude.ToString(), Orientation.ToString() });
                     }

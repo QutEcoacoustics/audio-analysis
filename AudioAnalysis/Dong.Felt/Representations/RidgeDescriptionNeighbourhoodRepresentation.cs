@@ -172,7 +172,14 @@ namespace Dong.Felt.Representations
             FrequencyRange = neighbourhood.GetLength(0) * frequencyScale;
         }
 
-        public void SetNeighbourhoodVectorRepresentation(PointOfInterest[,] neighbourhood, int pointX, int pointY, int neighbourhoodLength)
+        /// <summary>
+        /// To set the neighbourhood representation using a vector which contains the maginitude and orientation. 
+        /// </summary>
+        /// <param name="neighbourhood"></param>
+        /// <param name="pointX"></param>
+        /// <param name="pointY"></param>
+        /// <param name="neighbourhoodLength"></param>
+        public void SetNeighbourhoodVectorRepresentation(PointOfInterest[,] neighbourhood, int row, int col, int neighbourhoodLength)
         {
             var timeScale = 11.6; // ms
             var frequencyScale = 43.0; // hz
@@ -211,9 +218,9 @@ namespace Dong.Felt.Representations
                     this.orientation = Math.Atan(neighbourhoodYdirectionMagnitudeSum / neighbourhoodXdirectionMagnitudeSum);
                 }
             }
-            
-            RowIndex = (int)(pointY * timeScale);
-            ColIndex = (int)(pointX * frequencyScale);
+
+            ColIndex = (int)(col * timeScale);
+            RowIndex = (int)(row * frequencyScale);
             Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);
             FrequencyRange = neighbourhood.GetLength(0) * frequencyScale;
         }
@@ -255,11 +262,24 @@ namespace Dong.Felt.Representations
             }
         }
 
-        public static RidgeDescriptionNeighbourhoodRepresentation FromFeatureVector(PointOfInterest[,] matrix, int rowIndex, int colIndex,int neighbourhoodLength)
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength)
         {
-            var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-            ridgeNeighbourhoodRepresentation.SetDominantNeighbourhoodRepresentation(matrix, rowIndex, colIndex, neighbourhoodLength);
-            return ridgeNeighbourhoodRepresentation;
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
+            for (int row = 0; row < rowsCount; row+=neighbourhoodLength)
+            {
+                for (int col = 0; col < colsCount; col+=neighbourhoodLength)
+                {
+                    if (StatisticalAnalysis.checkBoundary(row + neighbourhoodLength, col + neighbourhoodLength, rowsCount, colsCount))
+                    {
+                        var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
+                        var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
+                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength);
+                        result.Add(ridgeNeighbourhoodRepresentation);
+                    }
+                }
+            }            
+            return result;
         }
 
         public static RidgeNeighbourhoodFeatureVector ToFeatureVector(IEnumerable<string[]> lines)
