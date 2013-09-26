@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="AcousticEvents.cs" />
     <Compile Include="Clustering.cs" />
+    <Compile Include="Configuration\RidgeDetectionConfiguration.cs" />
     <Compile Include="CSVResults.cs" />
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />

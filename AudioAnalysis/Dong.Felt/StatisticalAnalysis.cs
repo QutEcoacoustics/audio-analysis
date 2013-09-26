@@ -120,7 +120,7 @@
             return subMatrix;
         }
 
-        // check wether it's an integer
+        // check wether it's an integer.
         public static bool checkIfInteger(int value)
         {
             var result = false;

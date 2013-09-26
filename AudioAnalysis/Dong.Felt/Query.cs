@@ -28,13 +28,19 @@
 
         /// <summary>
         /// gets or sets the endTime, the right boundary of the region.
+        /// The unit is second. 
         /// </summary>
         public double endTime { get; set; }
 
         /// <summary>
-        /// gets or sets the duration by endTime substracting startTime. 
+        /// gets or sets the duration by endTime substracting startTime, its unit is millisecond. 
         /// </summary>
         public double duration { get; set; }
+        
+        /// <summary>
+        /// gets or sets the frequencyRange by maxFrequency substracting minFrequency. 
+        /// </summary>
+        public double frequencyRange { get; set; }
 
         /// <summary>
         /// gets or sets the nhCountInRow in a region, which indicates the rowscount of neighbourhoods in the region. 
@@ -59,6 +65,7 @@
         #endregion
 
         #region Constructors
+
         /// <summary>
         /// default constructor.
         /// </summary>
@@ -80,11 +87,13 @@
         /// <param name="endtime"></param>
         public Query(double maximumFrequency, double minimumFrequency, double starttime, double endtime, int neighbourhoodLength)
         {
+            var secondToMillisecond = 1000;
             maxFrequency = maximumFrequency;
             minFrequency = minimumFrequency;
-            startTime = starttime * 1000; // millisecond
-            endTime = endtime * 1000; // millisecond
-            duration = endTime - startTime;   // millisecond
+            startTime = starttime * secondToMillisecond; // millisecond
+            endTime = endtime * secondToMillisecond; // millisecond
+            duration = endtime - starttime;   // millisecond
+            frequencyRange = maximumFrequency - minimumFrequency;
             GetNhProperties(neighbourhoodLength);
         }
 
@@ -111,6 +120,7 @@
             this.nhCountInColumn = nhColsCount;
             
         }
+        
         #endregion
 
     }

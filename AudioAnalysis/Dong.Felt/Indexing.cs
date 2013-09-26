@@ -33,7 +33,13 @@ namespace Dong.Felt
            return result;
         }
 
-        public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+        /// <summary>
+        /// This similarity tuple records the distance, timePosition, frequencyband. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
         {
             // to get the distance and frequency band index
             var result = new List<Tuple<double, double, double>>();
@@ -44,7 +50,7 @@ namespace Dong.Felt
             var j = 0; 
             foreach (var c in candidates)
             {
-                var miniDistance = 6000000.0;
+                var miniDistance = 60000000.0;
                 var distanceListForOneVector = new List<double>();
                 for (int i = 0; i < regionCountINVector; i++)
                 {
@@ -61,6 +67,23 @@ namespace Dong.Felt
                 j++;
             }
             return result;
+        }
+
+        public static List<Tuple<double, double, double>> DistanceListToSimilarityScoreList(List<Tuple<double, double, double>> distanceList)
+        {
+            var result = new List<Tuple<double, double, double>>();
+            var listLength = distanceList.Count;
+            var distance = new List<double>();
+            foreach (var d in distanceList)
+            {
+                distance.Add(d.Item1); 
+            }
+            var similarityScoreList = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(distance);
+            for (int i = 0; i < listLength; i++)
+            {
+                result.Add(Tuple.Create(similarityScoreList[i], distanceList[i].Item2, distanceList[i].Item3));
+            }
+            return result;            
         }
 
         /// <summary>

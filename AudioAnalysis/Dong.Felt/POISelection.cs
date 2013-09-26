@@ -19,12 +19,17 @@ namespace Dong.Felt
 
         #region Public Methods
 
+        public POISelection()
+        {
+
+        }
+
         public POISelection(List<PointOfInterest> list)
         {
             poiList = list;
         }
 
-        public void SelectPointOfInterestFromMatrix(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
+        public void SelectRidgesFromMatrix(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
         {                       
             int halfLength = ridgeLength / 2;           
             for (int r = halfLength; r < rows - halfLength; r++)
@@ -70,11 +75,9 @@ namespace Dong.Felt
             var matrix = SpectrogramIntensityToArray(spectrogram);
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
-
-            var result = new List<PointOfInterest>();
-            var pointsOfInterest = new POISelection(result);
-            pointsOfInterest.SelectPointOfInterestFromMatrix(matrix, rowsCount, colsCount, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-            
+          
+            var pointsOfInterest = new POISelection();
+            pointsOfInterest.SelectRidgesFromMatrix(matrix, rowsCount, colsCount, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);          
             poiList = pointsOfInterest.poiList;
             RowsCount = rowsCount;
             ColsCount = colsCount;
