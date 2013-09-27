@@ -69,6 +69,36 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+        {
+            // to get the distance and frequency band index
+            var result = new List<double>();
+            var vectorCount = candidates.Count;
+            // each sublist has the same count, so here we want to get its length from the first value. 
+            var regionCountINVector = candidates[0].Count;
+            var regionIndicator = 0;
+            var j = 0;
+            foreach (var c in candidates)
+            {
+                var miniDistance = 60000000.0;
+                var distanceListForOneVector = new List<double>();
+                for (int i = 0; i < regionCountINVector; i++)
+                {
+                    var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
+                    distanceListForOneVector.Add(distance);
+                    var minDistance = distanceListForOneVector.Min();
+                    if (minDistance < miniDistance)
+                    {
+                        regionIndicator = i;
+                        miniDistance = minDistance;
+                    }
+                }
+                result.Add(miniDistance);
+                j++;
+            }
+            return result;
+        }
+
         public static List<Tuple<double, double, double>> DistanceListToSimilarityScoreList(List<Tuple<double, double, double>> distanceList)
         {
             var result = new List<Tuple<double, double, double>>();

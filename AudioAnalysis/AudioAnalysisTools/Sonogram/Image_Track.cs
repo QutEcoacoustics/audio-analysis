@@ -351,6 +351,7 @@
 
             //next two lines are for subsampling if the score array is compressed to fit smaller image width.
             double subSample = dataLength / (double)bmp.Width;
+            // 13 = neighbourhoodLenght
             if (subSample < 1.0) subSample = 13;
 
             Color gray = Color.FromArgb(235, 235, 235); // use as background
@@ -358,7 +359,7 @@
 
             //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
             //for (int w = 0; w < length; w++)
-            // 13 = neighbourhoodLenght
+           
             for (int w = 0; w < bmp.Width; w+=13)
             {               
                 var location = w;

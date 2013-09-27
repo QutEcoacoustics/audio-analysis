@@ -42,10 +42,10 @@
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.                
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Training\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string outputDirectory = @"C:\Test recordings\Output\Spectrogram results";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results";
                 string imageFileName = "test4.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "hit events2.png";
+                string annotatedImageFileName = "1.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -178,9 +178,9 @@
                     var frequencyRange = unknownbirdcall1.frequencyRange;
                     var maxFrequency = p.Item3 + frequencyRange;
                     var millisecondToSecondTransUnit = 1000;
-                    finalAcousticEvents.Add(new AcousticEvent(p.Item2 / millisecondToSecondTransUnit, duration, p.Item3, maxFrequency));
+                    finalAcousticEvents.Add(new AcousticEvent(p.Item2 / millisecondToSecondTransUnit, duration / millisecondToSecondTransUnit, p.Item3, maxFrequency));
                 }
-                var similarityScore = SeperateSimilarityScoreFromTuple(distanceList);
+                var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation, candidatesVector));
                 /// output events image
                 image = DrawSonogram(spectrogram, similarityScore, finalAcousticEvents, eventThreshold, filterPoiList);
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
