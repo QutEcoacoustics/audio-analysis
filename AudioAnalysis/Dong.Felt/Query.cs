@@ -92,7 +92,7 @@
             minFrequency = minimumFrequency;
             startTime = starttime * secondToMillisecond; // millisecond
             endTime = endtime * secondToMillisecond; // millisecond
-            duration = endtime - starttime;   // millisecond
+            duration = endTime - startTime;   // millisecond
             frequencyRange = maximumFrequency - minimumFrequency;
             GetNhProperties(neighbourhoodLength);
         }
