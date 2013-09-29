@@ -473,6 +473,45 @@
             return result;
         }
 
-       
+        public static List<List<Tuple<double, double, double>>> SimilarityScoreListToVector(List<Tuple<double, double, double>> similarityScoreList)
+        {
+            var result = new List<List<Tuple<double, double, double>>>();
+            similarityScoreList.Sort();           
+            var scoreCount = similarityScoreList.Count;
+            var tempResult = new List<Tuple<double, double, double>>();
+            if (similarityScoreList != null)
+            {
+            tempResult.Add(similarityScoreList[0]);
+            }
+            for (int index = 1; index < scoreCount; index++)
+            {                
+                if ((similarityScoreList[index].Item1 == similarityScoreList[index - 1].Item1))
+                {
+                    tempResult.Add(similarityScoreList[index]);
+                    if (index == scoreCount - 1)
+                    {
+                        result.Add(tempResult);
+                    }
+                }
+                else
+                {
+                    if (index == scoreCount - 1)
+                    {
+                        result.Add(tempResult);
+                        var tempResult1 = new List<Tuple<double, double, double>>();
+                        tempResult1.Add(similarityScoreList[index]);
+                        result.Add(tempResult1);
+                    }
+                    else
+                    {
+                    result.Add(tempResult);
+                    var tempResult1 = new List<Tuple<double, double, double>>();
+                    tempResult = tempResult1;
+                    tempResult.Add(similarityScoreList[index]);
+                    }
+                }
+            }
+            return result;
+        }
     }
 }

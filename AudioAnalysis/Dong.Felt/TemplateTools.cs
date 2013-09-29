@@ -18,6 +18,7 @@ namespace Dong.Felt
     using System.IO;
     using CsvHelper;
     using System.Text;
+    using Representations;
 
     /// <summary>
     /// The template tools.
@@ -84,7 +85,7 @@ namespace Dong.Felt
 
         public static List<RidgeNeighbourhoodFeatureVector> Grey_Shrikethrush4()
         {
-            var result = new List<RidgeNeighbourhoodFeatureVector>();
+            var result = new List<RidgeNeighbourhoodFeatureVector>(); 
             var slopeScore = new int[] { 15, 15, 0, 15, 0, 33, 13, 12, 18, 18, 0, 15, 0, 6, 0, 0 };
             var slopeItem1 = new int[] { 3, 3, 0, 3, 0, 3, 1, 1, 3, 3, 0, 3, 0, 3, 0, 0 };
             var slopeItem2 = new int[] { 5, 5, 0, 5, 0, 11, 13, 12, 6, 6, 0, 5, 0, 2, 0, 0 };
