@@ -143,6 +143,23 @@
             return results;
         }
 
+        public static RegionRerepresentation CSVToNormalisedRegionRepresentation(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var ridgheNhRepresentation = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            foreach (var csvRow in lines1)
+            {
+                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
+                ridgheNhRepresentation.Add(nh);
+            }
+            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 6, 9, file);
+            regionRepresentation.NhCountInCol = 9;
+            regionRepresentation.NhCountInRow = 6;
+            return regionRepresentation;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToNormalisedRidgeNhRepresentation(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));

@@ -361,7 +361,9 @@
                 var queryOrientationType =  ridgeNeighbourhoods[index].orientationType;
                 var candidateScore = candidate.ridgeNeighbourhoods[index].score;
                 var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
-                result += Math.Sqrt(Math.Abs(queryOrientationType - candidateOrientationType) * Math.Pow((queryScore - candidateScore),2.0));
+                var orientationDifference = Math.Abs(queryOrientationType - candidateOrientationType);
+                var magnitudeDifference = Math.Sqrt(Math.Pow((queryScore - candidateScore), 2.0));
+                result += (orientationDifference + 1) * magnitudeDifference;
             }
             return result; 
         }

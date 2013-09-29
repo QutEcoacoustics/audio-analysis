@@ -35,6 +35,9 @@ namespace Dong.Felt.Representations
 
         public bool IsSquare { get { return this.WidthPx == this.HeightPx; } }
 
+        /// <summary>
+        /// The magnitude is the original score for a neighbourhood. 
+        /// </summary>
         public double magnitude { get; set; }
 
         public double orientation { get; set; }
@@ -58,7 +61,7 @@ namespace Dong.Felt.Representations
         public double dominantMagnitudeSum { get; set; }
 
         /// <summary>
-        /// The score is dependant on dominantOrientation and dominantMagnitudeSum, and needs to be normalized into (0 - 13 * 13 * poiThreshold).
+        /// The score is dependant on dominantMagnitudeSum, and it is usually normalised into (0 - 13) 13 is neighbourhoodLength.
         /// </summary>
         public int score { get; set; }
 
