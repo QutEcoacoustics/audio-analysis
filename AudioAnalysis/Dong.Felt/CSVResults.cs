@@ -154,9 +154,9 @@
                 var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
                 ridgheNhRepresentation.Add(nh);
             }
-            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 6, 9, file);
+            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 3, 9, file);
             regionRepresentation.NhCountInCol = 9;
-            regionRepresentation.NhCountInRow = 6;
+            regionRepresentation.NhCountInRow = 3;
             return regionRepresentation;
         }
 
