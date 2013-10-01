@@ -137,7 +137,7 @@ namespace Dong.Felt
             {
                 for (var colIndex = 0; colIndex < colsCount; colIndex++)
                 {
-                    if (StatisticalAnalysis.checkBoundary(rowIndex + nhCountInRow, colIndex + nhCountInColumn, rowsCount, colsCount))
+                    if (StatisticalAnalysis.checkBoundary(rowIndex + nhCountInRow - 1, colIndex + nhCountInColumn - 1, rowsCount, colsCount))
                     {
                         var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(ridgeNeighbourhood, rowIndex, colIndex, rowIndex + nhCountInRow, colIndex + nhCountInColumn);
                         var nhList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -162,16 +162,21 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="candidatesList"></param>
         /// <returns></returns>
-        public static List<List<RegionRerepresentation>> RegionRepresentationListToVectors(List<RegionRerepresentation> candidatesList)
+        public static List<List<RegionRerepresentation>> RegionRepresentationListToVectors(List<RegionRerepresentation> candidatesList, int rowsCount1, int colsCount1)
         {
             var result = new List<List<RegionRerepresentation>>();
             var listCount = candidatesList.Count;
-            var nhHeightInHerz = 559;
+
+            var nhCountInRow = candidatesList[0].NhCountInRow;
+            var nhCountInCol = candidatesList[0].NhCountInCol;
+            //var nhHeightInHerz = 559.0;
             //var nhWidthInMillisecond = 150.8;
-            var lastCandidate = candidatesList[listCount - 1];
-            var rowsCount = (int)(lastCandidate.FrequencyIndex / nhHeightInHerz) + 1;
+            //var lastCandidate = candidatesList[listCount - 1];
+            //var rowsCount = (int)(lastCandidate.FrequencyIndex / nhHeightInHerz) + 1;
             //var colsCount = (int)(lastCandidate.TimeIndex / nhWidthInMillisecond) + 1;
-            var colsCount = listCount / rowsCount;
+            var rowsCount = rowsCount1 - nhCountInRow + 1;
+            var colsCount = colsCount1 - nhCountInCol + 1; 
+            //var colsCount = listCount / rowsCount;
             var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
             var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
             for (int colIndex = 0; colIndex < colsCount; colIndex++)
