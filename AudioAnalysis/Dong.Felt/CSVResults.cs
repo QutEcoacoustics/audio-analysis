@@ -142,7 +142,7 @@
             }
             return results;
         }
-
+        // here need to be improved
         public static RegionRerepresentation CSVToNormalisedRegionRepresentation(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
@@ -154,9 +154,9 @@
                 var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
                 ridgheNhRepresentation.Add(nh);
             }
-            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 3, 9, file);
+            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 6, 9, file);
             regionRepresentation.NhCountInCol = 9;
-            regionRepresentation.NhCountInRow = 3;
+            regionRepresentation.NhCountInRow = 6;
             return regionRepresentation;
         }
 
