@@ -339,7 +339,7 @@
         }
 
         /// <summary>
-        /// Run an executable.
+        /// Run an executable. Will wait for up to 10 minutes, then kill the process. Will retry up to 3 times if the timeout is reached.
         /// </summary>
         /// <param name="processRunner">
         /// The process runner.
@@ -357,6 +357,12 @@
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
+                // set ProcessRunner to have a timeout and retry
+                processRunner.KillProcessOnWaitTimeout = true;
+                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(10).TotalMilliseconds);
+                processRunner.MaxRetries = 3;
+                processRunner.WaitForExit = true;
+
                 processRunner.Run(arguments, workingDirectory);
 
                 stopwatch.Stop();
@@ -367,6 +373,18 @@
                     workingDirectory,
                     stopwatch.Elapsed.Humanise(),
                     stopwatch.Elapsed.TotalMilliseconds);
+
+                if (this.Log.IsWarnEnabled)
+                {
+                    var failedRunOutput = processRunner.FailedRunOutput;
+                    if (failedRunOutput.Count() > 0)
+                    {
+                        foreach (var failure in failedRunOutput)
+                        {
+                            this.Log.Warn(failure);
+                        }
+                    }
+                }
 
                 this.Log.Debug(processRunner.BuildLogOutput());
             }
@@ -387,7 +405,7 @@
         protected void CheckFile(FileInfo file)
         {
             file.Refresh();
-            
+
             if (file == null)
             {
                 throw new ArgumentNullException("file");
