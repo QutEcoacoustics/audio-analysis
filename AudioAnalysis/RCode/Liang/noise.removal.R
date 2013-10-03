@@ -28,25 +28,26 @@ for(i in 1:nfreq){
     modal.intensity <- mids[max.index]
   }
 
-# calculate the standard deviation
-  loop <- 1
-  if(max.index < total.bin * 0.25){
-    while(sum(mov.avg[c((total.bin - loop):total.bin)]) <= mov.avg[max.index] * 0.68)
-      loop <- loop + 1
-    standard.deviation <- mids[total.bin - loop + 2]
-  }else{
-    while(sum(mov.avg[c(1 : loop)]) <= mov.avg[max.index] * 0.68)
-      loop <- loop + 1
-    standard.deviation <- mids[loop - 1] 
-  }
-  
-
-# calculate the threshold for each frequency bin
-  weight <- 0.05
-  noise.profile[i] <- modal.intensity + weight * standard.deviation
+# # calculate the standard deviation
+#   loop <- 1
+#   if(max.index < total.bin * 0.25){
+#     while(sum(mov.avg[c((total.bin - loop):total.bin)]) <= 
+#             mov.avg[max.index] * 0.68)
+#       loop <- loop + 1
+#     standard.deviation <- mids[total.bin - loop + 2]
+#   }else{
+#     while(sum(mov.avg[c(1 : loop)]) <= mov.avg[max.index] * 0.68)
+#       loop <- loop + 1
+#     standard.deviation <- mids[loop - 1] 
+#   }
+#   
+# 
+# # calculate the background noise for each frequency bin
+#   weight <- 0
+#   noise.profile[i] <- modal.intensity + weight * standard.deviation
+  noise.profile[i] <- modal.intensity
 }
 
-bgn.spectra <- log2(noise.profile^2)
 
 # smooth the noise profile (window=5)
   noise.profile.len <- length(noise.profile)
@@ -72,7 +73,7 @@ pixel.index <- list()
 row.n <- nrow(noise.removed) - f.bin
 col.n <- ncol(noise.removed) - frame
 
-# set up a matrix indices for faster computation
+# set up a matrix indices for accelarating computation
 for(i in seq(1, frame, 1)){
   for(j in seq(1, f.bin, 1)){
     f.bin.vector <- seq(j, row.n + j, 1)

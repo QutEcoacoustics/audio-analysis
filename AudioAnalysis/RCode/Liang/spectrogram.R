@@ -1,21 +1,24 @@
-
-
 library(tuneR)
-library(seewave)
 
 #read and shape the original signal
-#mono signal (left channel)
 TFRAME <- 512
 hamming <- 0.54-0.46*cos(2 * pi * c(1:TFRAME) / (TFRAME - 1))
 
-origin <- readMP3('1010130000.mp3')
+#mono signal (left channel)
+origin <- readWave('cabin_EarlyMorning4_CatBirds20091101-000000_0min.wav')
 left <- origin@left
 len <- length(left)
 sig <- left[c(1:(len - len %% TFRAME))]
+sig <- sig / (2 ^ 16 / 2)
 segment <- length(sig) / TFRAME
 dim(sig) <- c(TFRAME, segment)
 sig <- abs(mvfft(sig * hamming))
-amp <- sig[c(1:(TFRAME/2)), ]
+
+# smooth the data
+first.temp <- sig[1, ]
+sig <- filter(sig, rep(1 / 3, 3))
+sig[1, ] <- first.temp
+amp <- sig[c(1:(TFRAME / 2)), ]
 
 # clear the unnecessary variables
 rm(origin)
