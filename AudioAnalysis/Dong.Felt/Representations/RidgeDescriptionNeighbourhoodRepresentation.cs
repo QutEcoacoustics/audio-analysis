@@ -269,7 +269,7 @@ namespace Dong.Felt.Representations
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
-            for (int row = 0; row < rowsCount; row+=neighbourhoodLength)
+            for (int row = 0; row < rowsCount; row+= neighbourhoodLength)
             {
                 for (int col = 0; col < colsCount; col+=neighbourhoodLength)
                 {
