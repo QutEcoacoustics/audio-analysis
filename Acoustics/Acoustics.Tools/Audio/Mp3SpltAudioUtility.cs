@@ -115,7 +115,11 @@
         /// </returns>
         protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(" -q "); // quiet
+
+            // -q Quiet mode. Stays quiet :) i.e. do not prompt the user for anything and print less messages. 
+            // When you use quiet option, mp3splt will try to end program without asking anything to the user (useful for scripts). 
+            // In Wrap mode it will also skip CRC check, use if you are in such a hurry.
 
             // output dir
             // ARGH! ensure slashes are only trimmed at end, coz we ARE using unc paths
