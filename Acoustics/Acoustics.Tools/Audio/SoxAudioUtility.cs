@@ -251,7 +251,11 @@
             // example
             // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz
             // sox input.wav output.wav remix - rate -m -s 11025
-            return string.Format(" -V4 \"{0}\" \"{1}\" {2} {3} {4} {5}", source.FullName, output.FullName, trim, rate, remix, bandpass);
+
+            // −q, −−no−show−progress
+            // Run in quiet mode when SoX wouldn’t otherwise do so. This is the opposite of the −S option.
+
+            return string.Format(" -q -V4 \"{0}\" \"{1}\" {2} {3} {4} {5}", source.FullName, output.FullName, trim, rate, remix, bandpass);
         }
 
         /// <summary>

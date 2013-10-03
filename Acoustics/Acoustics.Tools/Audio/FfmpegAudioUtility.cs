@@ -19,9 +19,20 @@
         private const string Format = "hh\\:mm\\:ss\\.fff";
 
         // -y answer yes to overwriting "Overwrite output files without asking."
-        // -i input file.  extension used to determine filetype.
         // BUG:050211: added -y arg
-        private const string ArgsOverwriteSource = " -i \"{0}\" -y ";
+
+        // -i input file.  extension used to determine filetype.
+
+        // -nostdin ‘-stdin’
+        // Enable interaction on standard input. On by default unless standard input is used as an input. 
+        // To explicitly disable interaction you need to specify -nostdin.
+        // Disabling interaction on standard input is useful, for example, if ffmpeg is in the background 
+        // process group. Roughly the same result can be achieved with ffmpeg ... < /dev/null but it requires a shell.
+
+        // ‘-stats (global)’ Print encoding progress/statistics. 
+        // It is on by default, to explicitly disable it you need to specify -nostats.
+
+        private const string ArgsOverwriteSource = " -nostdin -y -i \"{0}\" ";
 
         // -ar Set the audio sampling frequency (default = 44100 Hz).
         // eg,  -ar 22050
