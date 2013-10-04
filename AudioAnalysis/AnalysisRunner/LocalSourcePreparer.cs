@@ -212,7 +212,7 @@ namespace AnalysisRunner
                         offset.Maximum.TotalMilliseconds,
                         MediaTypes.GetExtension(analysisSettings.SegmentMediaType));
 
-                    var path = new FileInfo(Path.Combine(analysisSettings.AnalysisBaseDirectory.FullName, "segmentedaudio", filename));
+                    var path = new FileInfo(Path.Combine(analysisSettings.AnalysisBaseOutputDirectory.FullName, "segmentedaudio", filename));
 
                     if (!File.Exists(path.FullName))
                     {

@@ -204,7 +204,7 @@ namespace AnalysisPrograms
             // INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.ConfigFile       = new FileInfo(configPath);
-            analysisSettings.AnalysisRunDirectory = new DirectoryInfo(outputDir); 
+            analysisSettings.AnalysisInstanceOutputDirectory = new DirectoryInfo(outputDir); 
             analysisSettings.AudioFile   = null;
             analysisSettings.EventsFile  = null;
             analysisSettings.IndicesFile = null;
@@ -263,12 +263,12 @@ namespace AnalysisPrograms
             if (tempF.Exists) tempF.Delete();
             if (tsDuration.TotalSeconds == 0)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisTempBaseDirectoryChecked);
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisTempBaseDirectoryChecked);
+                AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -294,7 +294,7 @@ namespace AnalysisPrograms
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
             var fiAudioF    = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisRunDirectory;
+            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
 
             var result = new AnalysisResult();
             result.AnalysisIdentifier = this.Identifier;

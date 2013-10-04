@@ -359,7 +359,7 @@
 
                 // set ProcessRunner to have a timeout and retry
                 processRunner.KillProcessOnWaitTimeout = true;
-                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(10).TotalMilliseconds);
+                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(2).TotalMilliseconds);
                 processRunner.MaxRetries = 3;
                 processRunner.WaitForExit = true;
 
@@ -374,23 +374,23 @@
                     stopwatch.Elapsed.Humanise(),
                     stopwatch.Elapsed.TotalMilliseconds);
 
-                if (this.Log.IsWarnEnabled)
-                {
-                    var failedRunOutput = processRunner.FailedRunOutput;
-                    if (failedRunOutput.Count() > 0)
-                    {
-                        foreach (var failure in failedRunOutput)
-                        {
-                            this.Log.Warn(failure);
-                        }
-                    }
-                }
-
                 this.Log.Debug(processRunner.BuildLogOutput());
             }
             else
             {
                 processRunner.Run(arguments, workingDirectory);
+            }
+
+            if (this.Log.IsWarnEnabled)
+            {
+                var failedRunOutput = processRunner.FailedRunOutput;
+                if (failedRunOutput.Count() > 0)
+                {
+                    foreach (var failure in failedRunOutput)
+                    {
+                        this.Log.Warn(failure);
+                    }
+                }
             }
         }
 

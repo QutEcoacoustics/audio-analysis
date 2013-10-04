@@ -67,7 +67,7 @@ namespace Ecosounds.Test.AnalysisPrograms
             var settings = matchingPlugin.DefaultSettings;
 
             var runsBaseDir = pluginHelper.GetRelativeOrAbsolute(keyValueStore.GetValueAsString("BaseAnalysisRunsDir"));
-            settings.AnalysisBaseDirectory = runsBaseDir;
+            settings.AnalysisBaseOutputDirectory = runsBaseDir;
 
             settings.ConfigFile = keyValueStore.GetValueAsFile("ConfigFile");
             //settings.AnalysisRunMode = AnalysisMode.Efficient;

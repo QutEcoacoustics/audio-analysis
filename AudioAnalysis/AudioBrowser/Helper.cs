@@ -181,7 +181,7 @@
             if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
             int indicesCount = 0;
             if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
-            var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+            var opdir = results.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
             string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 

@@ -161,11 +161,11 @@ namespace AnalysisPrograms
 
             if (tsDuration.TotalSeconds == 0) // Process entire file
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.RESAMPLE_RATE }, analysisSettings.AnalysisTempBaseDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisTempBaseDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AnalysisTemplate.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
@@ -192,7 +192,7 @@ namespace AnalysisPrograms
             //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
             //Dictionary<string, string> configDict = configuration.GetTable();
             var fiAudioF = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisRunDirectory;
+            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
 
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
@@ -581,7 +581,7 @@ namespace AnalysisPrograms
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.SourceFile  = new FileInfo(args[0]);
             analysisSettings.ConfigFile  = fiConfig;
-            analysisSettings.AnalysisRunDirectory = new DirectoryInfo(outputDir);
+            analysisSettings.AnalysisInstanceOutputDirectory = new DirectoryInfo(outputDir);
             analysisSettings.AudioFile   = null;
             analysisSettings.EventsFile  = null;
             analysisSettings.IndicesFile = null;

@@ -6,6 +6,7 @@
     using System.IO;
     using System.Text;
     using System.Linq;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Helper class for running processes.
@@ -123,16 +124,20 @@
         /// </param>
         public void Run(string arguments, string workingDirectory)
         {
+            // reset failed runs storage
+            this.failedRuns = new List<string>();
+
+            // run the process
+            //RunAsyncOutputs(arguments, workingDirectory, 0);
+            RunTaskReaders(arguments, workingDirectory, 0);
+        }
+
+        private void PrepareRun(string arguments, string workingDirectory)
+        {
             // reset 
             this.standardOutput.Length = 0;
             this.errorOutput.Length = 0;
-            this.failedRuns = new List<string>();
 
-            Run(arguments, workingDirectory, 0);
-        }
-
-        private void Run(string arguments, string workingDirectory, int retryCount)
-        {
             if (!Directory.Exists(workingDirectory))
             {
                 throw new DirectoryNotFoundException(workingDirectory);
@@ -140,6 +145,11 @@
 
             if (this.process != null)
             {
+                if (!this.process.HasExited)
+                {
+                    this.process.Kill();
+                }
+
                 this.process.Dispose();
             }
 
@@ -162,6 +172,12 @@
                 },
                 EnableRaisingEvents = true,
             };
+        }
+
+        private void RunAsyncOutputs(string arguments, string workingDirectory, int retryCount)
+        {
+            // prepare the Process
+            PrepareRun(arguments, workingDirectory);
 
             this.process.ErrorDataReceived += (sender, e) =>
             {
@@ -180,6 +196,11 @@
             };
 
             this.process.Start();
+
+            // WARNING: can sometimes miss output if the program runs too fast for 
+            // BeginOutputReadLine and BeginErrorReadLine to start receiving input
+            // http://alabaxblog.info/2013/06/redirectstandardoutput-beginoutputreadline-pattern-broken/
+
             this.process.BeginErrorReadLine();
             this.process.BeginOutputReadLine();
 
@@ -191,29 +212,93 @@
 
                     if (!processExited && this.KillProcessOnWaitTimeout)
                     {
-                        this.process.Kill();
-
-                        this.failedRuns.Add(string.Format(
-                            "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Stdout: {5}. Stderr: {6}.",
-                            DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture),
-                            this.ExecutableFile.Name,
-                            arguments,
-                            workingDirectory,
-                            TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds).ToString("c"),
-                            this.StandardOutput,
-                            this.ErrorOutput
-                            ));
-
-                        if (this.MaxRetries > 0 && retryCount < this.MaxRetries)
-                        {
-                            this.Run(arguments, workingDirectory, retryCount + 1);
-                        }
+                        ProcessTimeout(arguments, workingDirectory, retryCount, this.RunAsyncOutputs);
                     }
                 }
                 else
                 {
                     this.process.WaitForExit();
                 }
+            }
+        }
+
+        private void RunTaskReaders(string arguments, string workingDirectory, int retryCount)
+        {
+            PrepareRun(arguments, workingDirectory);
+
+            this.process.Start();
+
+            if (this.WaitForExit)
+            {
+                if (this.WaitForExitMilliseconds > 0)
+                {
+                    using (Task<bool> processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit(this.WaitForExitMilliseconds)))
+                    using (Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardOutput))
+                    using (Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardError))
+                    {
+                        var processExited = processWaiter.Result;
+
+                        if (!processExited && this.KillProcessOnWaitTimeout)
+                        {
+                            ProcessTimeout(arguments, workingDirectory, retryCount, this.RunTaskReaders);
+                        }
+                        else
+                        {
+                            Task.WaitAll(outputReader, errorReader);
+                            // if waitResult == true hope those already finished or will finish fast
+                            // otherwise wait for taks to complete to be able to dispose them
+
+                            //exitCode = process.ExitCode;
+
+                            standardOutput.Append(outputReader.Result);
+                            errorOutput.Append(errorReader.Result);
+                        }
+                    }
+                }
+                else
+                {
+                    using (Task processWaiter = Task.Factory.StartNew(() => process.WaitForExit()))
+                    using (Task<string> outputReader = Task.Factory.StartNew(() => process.StandardOutput.ReadToEnd()))
+                    using (Task<string> errorReader = Task.Factory.StartNew(() => process.StandardError.ReadToEnd()))
+                    {
+                        Task.WaitAll(processWaiter, outputReader, errorReader);
+
+                        standardOutput.Append(outputReader.Result);
+                        errorOutput.Append(errorReader.Result);
+                    }
+                }
+            }
+        }
+
+        private static string ReadStream(object streamReader)
+        {
+            string result = ((StreamReader)streamReader).ReadToEnd();
+
+            return result;
+        } // put breakpoint on this line
+
+        private void ProcessTimeout(string arguments, string workingDirectory, int retryCount, Action<string, string, int> retryMethod)
+        {
+            this.process.Kill();
+
+            this.failedRuns.Add(string.Format(
+                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Stdout: {5}. Stderr: {6}.",
+                DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture),
+                this.ExecutableFile.Name,
+                arguments,
+                workingDirectory,
+                TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds).ToString("c"),
+                this.StandardOutput,
+                this.ErrorOutput
+                ));
+
+            if (this.MaxRetries > 0 && retryCount < this.MaxRetries)
+            {
+                retryMethod(arguments, workingDirectory, retryCount + 1);
+            }
+            else if (retryCount >= this.MaxRetries)
+            {
+                throw new ProcessMaximumRetriesException(string.Join(Environment.NewLine + Environment.NewLine, this.failedRuns));
             }
         }
 
@@ -264,6 +349,15 @@
             }
 
             return sb.ToString();
+        }
+
+        public class ProcessMaximumRetriesException : Exception
+        {
+            public ProcessMaximumRetriesException(string message)
+                : base(message)
+            {
+
+            }
         }
     }
 }
