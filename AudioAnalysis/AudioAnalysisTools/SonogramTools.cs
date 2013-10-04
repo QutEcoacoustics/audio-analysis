@@ -51,7 +51,7 @@ namespace AudioAnalysisTools
                 settings.ConfigDict = config.GetDictionary();
                 settings.ConfigFile = fiConfig;
                 settings.ImageFile = fiImage;
-                settings.AnalysisRunDirectory = diOutputDir;
+                settings.AnalysisInstanceOutputDirectory = diOutputDir;
                 // want to psas SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[Keys.RESAMPLE_RATE]);
                 var results = analyser.Analyse(settings);

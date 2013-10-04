@@ -102,9 +102,10 @@ namespace AnalysisPrograms
                 args = args.Take(3).ToArray();
             }
 
+            // if a temp dir is not given, use output dir as temp dir
             if (tempFilesDir == null)
             {
-                tempFilesDir = new DirectoryInfo(Path.GetTempPath()).FullName;
+                tempFilesDir = new DirectoryInfo(outputDir).FullName;
             }
 
             if (verbose)
@@ -208,7 +209,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
-            var analyserResults = analysisCoordinator.Run(new[] { fileSegment }, analyser, analysisSettings);
+            var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
             //    ###########################################################################################
 
             // 8. PROCESS THE RESULTS
@@ -243,7 +244,7 @@ namespace AnalysisPrograms
             if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
             int indicesCount = 0;
             if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
-            var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+            var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
             string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 

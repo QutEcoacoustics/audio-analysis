@@ -36,6 +36,7 @@
 
         private string keySaveSonogramFiles = "SAVE_SONOGRAM_FILES";
         private string keySaveIntermediateCsvFiles = "SAVE_INTERMEDIATE_CSV_FILES";
+        private string keySaveIntermediateWavFiles = "SAVE_INTERMEDIATE_WAV_FILES";
 
         private static string startingItem = "Starting item {0}: {1}.";
         private static string cancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
@@ -170,6 +171,16 @@
             stopwatch.Stop();
 
             Log.DebugFormat("Analysis complete, took {0}.", stopwatch.Elapsed);
+
+            // delete temp directories - may not want to do this
+            // don't do this - leads to problems when running using powershell script
+            //DeleteDirectory(settings.InstanceId, settings.AnalysisBaseTempDirectoryChecked);
+
+            //if (settings.AnalysisBaseTempDirectory != null)
+            //{
+            //    DeleteDirectory(settings.InstanceId, settings.AnalysisBaseTempDirectory);
+            //}
+
             return results;
         }
 
@@ -298,21 +309,29 @@
             var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
             var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.OriginalFileDuration;
 
-            // create directory for analysis run
-            settings.AnalysisRunDirectory = this.PrepareWorkingDirectory(analyser, settings);
+            // set directories
+            this.PrepareDirectories(analyser, settings);
 
-            // create temp directory 
-            settings.AnalysisTempRunDirectory = this.PrepareWorkingDirectory(analyser, settings, false);
+            var tempDir = settings.AnalysisInstanceTempDirectoryChecked;
+
+            //if user requests, save the audio files
+            bool saveIntermediateWavFiles = false;
+            if (settings.ConfigDict.ContainsKey(keySaveIntermediateWavFiles))
+            {
+                string value = settings.ConfigDict[keySaveIntermediateWavFiles].ToString();
+                saveIntermediateWavFiles = Boolean.Parse(value);
+            }
 
             // create the file for the analysis
+            // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
             var preparedFile = this.SourcePreparer.PrepareFile(
-                settings.AnalysisRunDirectory,
+                GetInstanceDirTempElseOutput(settings),
                 fileSegment.OriginalFile,
                 settings.SegmentMediaType,
                 start,
                 end,
                 settings.SegmentTargetSampleRate,
-                settings.AnalysisTempBaseDirectory);
+                tempDir);
 
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;
@@ -335,11 +354,12 @@
                 saveSonograms = Boolean.Parse(value);
                 if (saveSonograms)
                 {
-                    settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, (fileName + ".png")));
+                    // save spectrogram to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
+                    settings.ImageFile = new FileInfo(Path.Combine(GetInstanceDirTempElseOutput(settings).FullName, (fileName + ".png")));
                 }
             }
 
-            //if user requests, save the intermediate files 
+            //if user requests, save the intermediate csv files 
             if (settings.ConfigDict.ContainsKey(keySaveIntermediateCsvFiles))
             {
                 string value = settings.ConfigDict[keySaveIntermediateCsvFiles].ToString();
@@ -347,8 +367,9 @@
                 saveIntermediateCsvFiles = Boolean.Parse(value);
                 if (saveIntermediateCsvFiles)
                 {
-                    settings.EventsFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, fileName + ".Events.csv"));
-                    settings.IndicesFile = new FileInfo(Path.Combine(settings.AnalysisRunDirectory.FullName, fileName + ".Indices.csv"));
+                    // always save csv to output dir
+                    settings.EventsFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".Events.csv"));
+                    settings.IndicesFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".Indices.csv"));
                 }
             }
 
@@ -375,21 +396,11 @@
             if (this.DeleteFinished && this.SubFoldersUnique)
             {
                 // delete the directory created for this run
-                try
-                {
-                    Directory.Delete(settings.AnalysisRunDirectory.FullName, true);
-                    Log.DebugFormat("Item {0} deleted directory {1}.", settings.InstanceId, settings.AnalysisRunDirectory.FullName);
-                }
-                catch (Exception ex)
-                {
-                    // this error is not fatal, but it does mean we'll be leaving a folder behind.
-                    Log.Warn(string.Format("Item {0} could not delete directory {1}.",
-                        settings.InstanceId, settings.AnalysisRunDirectory.FullName), ex);
-                }
+                DeleteDirectory(settings.InstanceId, settings.AnalysisInstanceOutputDirectory);
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
             {
-                // delete the prepared audio file segment
+                // delete the prepared audio file segment. Don't delete the directory - all instances use the same directory!
                 try
                 {
                     File.Delete(settings.AudioFile.FullName);
@@ -407,42 +418,35 @@
             return result;
         }
 
-        /// <summary>
-        /// Prepare the working directory.
-        /// </summary>
-        /// <param name="analysis">
-        /// The <paramref name="analysis"/>.
-        /// </param>
-        /// <param name="settings">
-        /// The analysisSettings.
-        /// </param>
-        /// <returns>
-        /// Updated analysisSettings with working directory and configuration file paths.
-        /// </returns>
-        private DirectoryInfo PrepareWorkingDirectory(IAnalyser analysis, AnalysisSettings settings, bool forResults = true)
+        private void PrepareDirectories(IAnalyser analysis, AnalysisSettings settings)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
-            Contract.Ensures(Contract.Result<DirectoryInfo>() != null, "Directory was null.");
-            Contract.Ensures(Directory.Exists(Contract.Result<DirectoryInfo>().FullName), "Directory did not exist.");
+            Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseDirectory was not set.");
+            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null && Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName), "AnalysisRunDirectory was not valid.");
 
-            DirectoryInfo thisAnalysisWorkingDirectory;
+            // create directory for analysis run
+            settings.AnalysisInstanceOutputDirectory = this.SubFoldersUnique
+                                                       ? this.CreateUniqueRunDirectory(settings.AnalysisBaseOutputDirectory, analysis.Identifier)
+                                                       : this.CreateNamedRunDirectory(settings.AnalysisBaseOutputDirectory, analysis.Identifier);
 
-            if (forResults)
+            if (!Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName))
             {
-
-                thisAnalysisWorkingDirectory = this.SubFoldersUnique
-                                                       ? this.CreateUniqueRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier)
-                                                       : this.CreateNamedRunDirectory(settings.AnalysisBaseDirectory, analysis.Identifier);
-            }
-            else
-            {
-                thisAnalysisWorkingDirectory = this.SubFoldersUnique
-                                                       ? this.CreateUniqueRunDirectory(settings.AnalysisTempBaseDirectory, analysis.Identifier)
-                                                       : this.CreateNamedRunDirectory(settings.AnalysisTempBaseDirectory, analysis.Identifier);
+                Directory.CreateDirectory(settings.AnalysisInstanceOutputDirectory.FullName);
             }
 
-            return thisAnalysisWorkingDirectory;
+            if (settings.AnalysisBaseTempDirectory != null)
+            {
+                // create temp directory  for analysis run
+                settings.AnalysisInstanceTempDirectory = this.SubFoldersUnique
+                                                           ? this.CreateUniqueRunDirectory(settings.AnalysisBaseTempDirectory, analysis.Identifier)
+                                                           : this.CreateNamedRunDirectory(settings.AnalysisBaseTempDirectory, analysis.Identifier);
+
+                if (!Directory.Exists(settings.AnalysisInstanceTempDirectory.FullName))
+                {
+                    Directory.CreateDirectory(settings.AnalysisInstanceTempDirectory.FullName);
+                }
+            }
         }
 
         /// <summary>
@@ -549,6 +553,34 @@
             }
 
             return result;
+        }
+
+        private DirectoryInfo GetInstanceDirTempElseOutput(AnalysisSettings settings)
+        {
+            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null)
+            {
+                return settings.AnalysisInstanceTempDirectory;
+            }
+            else
+            {
+                return settings.AnalysisInstanceOutputDirectory;
+            }
+        }
+
+        private void DeleteDirectory(int settingsInstanceId, DirectoryInfo dir)
+        {
+            try
+            {
+                Directory.Delete(dir.FullName, true);
+                Log.DebugFormat("Item {0} deleted directory {1}.", settingsInstanceId, dir.FullName);
+            }
+            catch (Exception ex)
+            {
+                // this error is not fatal, but it does mean we'll be leaving a dir behind.
+
+                Log.Warn(string.Format("Item {0} could not delete directory {1}.",
+                    settingsInstanceId, dir.FullName), ex);
+            }
         }
     }
 }

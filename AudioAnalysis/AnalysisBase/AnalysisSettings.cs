@@ -145,43 +145,84 @@
         }
 
         /// <summary>
-        /// Gets or sets the directory that is the base of the folder structure that analyses can use.
+        /// Gets or sets the temp directory that is the base of the folder structure that analyses can use.
         /// Anything put here will be deleted when the analysis is complete.
         /// Analysis implementations must not set this.
         /// </summary>
-        public DirectoryInfo AnalysisTempBaseDirectory { get; set; }
+        public DirectoryInfo AnalysisBaseTempDirectory { get; set; }
 
-        public DirectoryInfo AnalysisTempBaseDirectoryChecked
+        /// <summary>
+        /// Gets a base temp directory. The dir will exist.
+        /// </summary>
+        public DirectoryInfo AnalysisBaseTempDirectoryChecked
         {
             get
             {
-                if (this.AnalysisTempBaseDirectory != null || Directory.Exists(this.AnalysisTempBaseDirectory.FullName))
+                DirectoryInfo tempDir = null;
+
+                if (this.AnalysisBaseTempDirectory != null && Directory.Exists(this.AnalysisBaseTempDirectory.FullName))
                 {
-                    return this.AnalysisTempBaseDirectory;
+                    tempDir = this.AnalysisBaseTempDirectory;
+                }
+                else
+                {
+                    tempDir = TempFileHelper.TempDir();
                 }
 
-                return TempFileHelper.TempDir();
+                if (!Directory.Exists(tempDir.FullName))
+                {
+                    Directory.CreateDirectory(tempDir.FullName);
+                }
+
+                return tempDir;
             }
         }
 
         /// <summary>
-        /// Gets or sets the directory for a single analysis run.
+        /// Gets or sets the output directory that is the base of the folder structure that analyses can use.
+        /// Analysis implementations must not set this.
+        /// </summary>
+        public DirectoryInfo AnalysisBaseOutputDirectory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the temp directory for a single analysis run.
         /// Anything put here will be deleted when the analysis is complete.
         /// Analysis implementations must not set this.
         /// </summary>
-        public DirectoryInfo AnalysisTempRunDirectory { get; set; }
+        public DirectoryInfo AnalysisInstanceTempDirectory { get; set; }
 
         /// <summary>
-        /// Gets or sets the directory that is the base of the folder structure that analyses can use.
-        /// Analysis implementations must not set this.
+        /// Gets a temp directory for a single run. The dir will exist.
         /// </summary>
-        public DirectoryInfo AnalysisBaseDirectory { get; set; }
+        public DirectoryInfo AnalysisInstanceTempDirectoryChecked
+        {
+            get
+            {
+                DirectoryInfo tempDir = null;
+
+                if (this.AnalysisInstanceTempDirectory != null && Directory.Exists(this.AnalysisInstanceTempDirectory.FullName))
+                {
+                    tempDir = this.AnalysisInstanceTempDirectory;
+                }
+                else
+                {
+                    tempDir = new DirectoryInfo(Path.Combine(AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
+                }
+
+                if (!Directory.Exists(tempDir.FullName))
+                {
+                    Directory.CreateDirectory(tempDir.FullName);
+                }
+
+                return tempDir;
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the directory for a single analysis run.
+        /// Gets or sets the output directory for a single analysis run.
         /// Analysis implementations must not set this.
         /// </summary>
-        public DirectoryInfo AnalysisRunDirectory { get; set; }
+        public DirectoryInfo AnalysisInstanceOutputDirectory { get; set; }
 
         /// <summary>
         /// Gets or sets the original source file from which audio segments are extracted for analysis.
@@ -274,14 +315,12 @@
         {
             this.ConfigFile = fiConfig;
             this.ConfigDict = dict;
-            this.AnalysisBaseDirectory = diOutputDir;
-            if (tempFileDir == null)
+            this.AnalysisBaseOutputDirectory = diOutputDir;
+
+            // if temp dir is not given, use output dir as temp dir
+            if (tempFileDir != null)
             {
-                this.AnalysisTempBaseDirectory = new DirectoryInfo(Path.GetTempPath());
-            }
-            else
-            {
-                this.AnalysisTempBaseDirectory = tempFileDir;
+                this.AnalysisBaseTempDirectory = tempFileDir;
             }
 
             //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
@@ -329,11 +368,11 @@
             // TODO: If lots more properties are added, this needs to be changed.
             var newSettings = new AnalysisSettings();
 
-            newSettings.AnalysisBaseDirectory = this.AnalysisBaseDirectory != null ? new DirectoryInfo(this.AnalysisBaseDirectory.FullName) : null;
-            newSettings.AnalysisRunDirectory = this.AnalysisRunDirectory != null ? new DirectoryInfo(this.AnalysisRunDirectory.FullName) : null;
+            newSettings.AnalysisBaseOutputDirectory = this.AnalysisBaseOutputDirectory != null ? new DirectoryInfo(this.AnalysisBaseOutputDirectory.FullName) : null;
+            newSettings.AnalysisInstanceOutputDirectory = this.AnalysisInstanceOutputDirectory != null ? new DirectoryInfo(this.AnalysisInstanceOutputDirectory.FullName) : null;
 
-            newSettings.AnalysisTempBaseDirectory = this.AnalysisTempBaseDirectory != null ? new DirectoryInfo(this.AnalysisTempBaseDirectory.FullName) : null;
-            newSettings.AnalysisTempRunDirectory = this.AnalysisTempRunDirectory != null ? new DirectoryInfo(this.AnalysisTempRunDirectory.FullName) : null;
+            newSettings.AnalysisBaseTempDirectory = this.AnalysisBaseTempDirectory != null ? new DirectoryInfo(this.AnalysisBaseTempDirectory.FullName) : null;
+            newSettings.AnalysisInstanceTempDirectory = this.AnalysisInstanceTempDirectory != null ? new DirectoryInfo(this.AnalysisInstanceTempDirectory.FullName) : null;
 
             newSettings.SourceFile = this.SourceFile != null ? new FileInfo(this.SourceFile.FullName) : null;
             newSettings.AudioFile = this.AudioFile != null ? new FileInfo(this.AudioFile.FullName) : null;

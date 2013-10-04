@@ -35,7 +35,7 @@
         open System.Diagnostics
         open System.IO
         open System.Reflection
-        open Linq.QuotationEvaluation
+        //open Linq.QuotationEvaluation
         open System.Reflection
         open FELT.FindEventsLikeThis
         open FELT.Results
