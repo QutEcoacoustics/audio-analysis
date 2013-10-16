@@ -90,7 +90,7 @@ for(k in seq(1, frame * f.bin, 1)){
   neighbourhood.removed <- neighbourhood.removed + noise.removed[pixel.index[[k]]]
 }
 neighbourhood.removed <- neighbourhood.removed / (f.bin * frame)
-neighbourhood.removed[which(neighbourhood.removed < 0.015)] <- 0
+neighbourhood.removed[which(neighbourhood.removed < 3)] <- 0
 noise.removed[pixel.index[[ceiling(f.bin * frame / 2)]]] <- neighbourhood.removed
 ################################
 
@@ -103,8 +103,8 @@ rm(neighbourhood.removed)
 # draw the spectrogram	
 # duration <- 60
 # samp.freq <- 44.1
-# x=seq(0, duration, duration / (segment - 1))
-# y=seq(0, samp.freq / 2, samp.freq / 2 / 255)
-# filled.contour(x,y,log2(t(noise.removed)),col=gray(seq(1,0,-1/19)),levels=pretty(c(0,20),20))
+# x=seq(0, duration, duration / (nframe - 1))
+# y=seq(0, samp.freq / 2, samp.freq / 2 / 256)
+# filled.contour(x,y,log2(t(noise.removed)),col=gray(seq(1,0,-1/49)),levels=pretty(c(0,50),50))
 
 
