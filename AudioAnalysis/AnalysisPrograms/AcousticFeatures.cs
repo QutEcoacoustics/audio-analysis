@@ -426,12 +426,20 @@ namespace AnalysisPrograms
             {
                 SonogramConfig sonoConfig = new SonogramConfig(); //default values config
                 sonoConfig.SourceFName = recording.FileName;
-                sonoConfig.WindowSize = 1024;
-                sonoConfig.WindowOverlap = 0.0;
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
-                bool doNoiseReduction = false;
-                if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
-                if (doNoiseReduction) sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                sonoConfig.WindowSize = 1024; //the default
+                if (config.ContainsKey(Keys.FRAME_LENGTH)) 
+                    sonoConfig.WindowSize =  ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
+                sonoConfig.WindowOverlap = 0.0; // the default
+                if (config.ContainsKey(Keys.FRAME_OVERLAP))
+                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
+                sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                bool doNoiseReduction = false;  // the default
+                if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) 
+                    doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
+                if (doNoiseReduction) 
+                    sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+
+                //init sonogram
                 sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
                 scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), AcousticFeatures.DEFAULT_activityThreshold_dB));
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
