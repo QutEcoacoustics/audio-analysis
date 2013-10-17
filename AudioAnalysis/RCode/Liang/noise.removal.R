@@ -13,12 +13,13 @@ for(i in 1:nfreq){
   rm(histo)
 
 # smooth the histogram (window=5)
-  counts.len <- length(counts)
-  start.temp <- counts[c(1,2)]
-  end.temp <- counts[c(counts.len - 1, counts.len)]
-  mov.avg <- filter(counts,rep(1 / 5, 5))
-  mov.avg[c(1,2)] <- start.temp
-  mov.avg[c(counts.len - 1, counts.len)] <- end.temp
+#   counts.len <- length(counts)
+#   start.temp <- counts[c(1,2)]
+#   end.temp <- counts[c(counts.len - 1, counts.len)]
+#   mov.avg <- filter(counts,rep(1 / 5, 5))
+#   mov.avg[c(1,2)] <- start.temp
+#   mov.avg[c(counts.len - 1, counts.len)] <- end.temp
+  mov.avg<-counts
 
 # find the maximum count as modal intensity
   max.index <- which(mov.avg == max(mov.avg))
@@ -102,9 +103,8 @@ rm(neighbourhood.removed)
 ###################################
 # draw the spectrogram	
 # duration <- 60
-# samp.freq <- 44.1
 # x=seq(0, duration, duration / (nframe - 1))
-# y=seq(0, samp.freq / 2, samp.freq / 2 / 256)
-# filled.contour(x,y,log2(t(noise.removed)),col=gray(seq(1,0,-1/49)),levels=pretty(c(0,50),50))
+# y=seq(0, samp.rate / 2, samp.rate / 2 / 256)
+# filled.contour(x,y,t(noise.removed),col=gray(seq(1,0,-1/49)),levels=pretty(c(0,50),50))
 
 

@@ -7,7 +7,7 @@ min.freq <- 10 * log10(epsilon ^ 2 / window.power / samp.rate * 2)
 dc.row <- amp[1, ]
 dc.row[which(dc.row <  epsilon)] <- min.dc
 dc.row[which(dc.row >= epsilon)] <- 10 * log10(dc.row[which(dc.row >= epsilon)] ^ 
-                                                 2 / window.power / samp.rate)
+                                                 2 / window.power / samp.rate * 1000)
 amp[1, ] <- dc.row
 rm(dc.row)
 
@@ -15,7 +15,7 @@ rm(dc.row)
 ny.row <- amp[nrow(amp), ]
 ny.row[which(ny.row <  epsilon)] <- min.dc
 ny.row[which(ny.row >= epsilon)] <- 10 * log10(ny.row[which(ny.row >= epsilon)] ^ 
-                                                 2 / window.power / samp.rate)
+                                                 2 / window.power / samp.rate * 1000)
 amp[nrow(amp), ] <- ny.row
 rm(ny.row)
 
@@ -23,6 +23,6 @@ rm(ny.row)
 fq.row <- amp[c(2 : (nrow(amp) - 1)), ]
 fq.row[which(fq.row <  epsilon)] <- min.freq
 fq.row[which(fq.row >= epsilon)] <- 10 * log10(fq.row[which(fq.row >= epsilon)] ^ 
-                                                 2 / window.power / samp.rate)
+                                                 2 / window.power / samp.rate * 2 * 1000)
 amp[c(2 : (nrow(amp) - 1)), ] <- fq.row
 rm(fq.row)
