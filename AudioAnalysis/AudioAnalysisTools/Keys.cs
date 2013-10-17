@@ -37,9 +37,6 @@ namespace AudioAnalysisTools
         public static string MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
         public static string MIN_PERIODICITY = "MIN_PERIOD";
         public static string MAX_PERIODICITY = "MAX_PERIOD";
-        public static string NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-        public static string NOISE_DO_REDUCTION = "DO_NOISE_REDUCTION";
-        public static string NOISE_BG_REDUCTION = "BG_NOISE_REDUCTION";
         public static string OSCILLATION_RATE = "OSCILLATION_RATE";
         public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
@@ -48,7 +45,7 @@ namespace AudioAnalysisTools
         public static string SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
         public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
-        public static string THRESHOLD = "THRESHOLD";
+        public static string THRESHOLD        = "THRESHOLD";
 
         // KEYS to SONOGRAMS
         public static string SAVE_SONOGRAMS         = "SAVE_SONOGRAM_FILES";
@@ -63,6 +60,9 @@ namespace AudioAnalysisTools
         public static string SONOGRAM_COLOURED      = "SONOGRAM_COLOURED";
         public static string SONOGRAM_QUANTISATION  = "SONOGRAM_QUANTISATION";
         public static string SOX_PATH               = "SOX_PATH";
+        public static string NOISE_REDUCTION_TYPE   = "NOISE_REDUCTION_TYPE";
+        public static string NOISE_DO_REDUCTION     = "DO_NOISE_REDUCTION";
+        public static string NOISE_BG_THRESHOLD     = "BG_NOISE_THRESHOLD";
 
 
 
@@ -72,6 +72,7 @@ namespace AudioAnalysisTools
         public static string AV_AMPLITUDE     = "avAmp-dB";
         public static string START_MIN        = "start-min";
         public static string CALL_DENSITY     = "CallDensity";
+        public static string SNR_SCORE        = "SNRscore";
 
         //KEYS TO OUTPUT EVENT HEADERS
         public static string EVENT_COUNT     = "EventCount";
@@ -85,8 +86,5 @@ namespace AudioAnalysisTools
         public static string EVENT_START_MIN = "EvStartMin";
         public static string EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string EVENT_TOTAL     = "EventTotal";
-
-        public static string SNR_SCORE       = "SNRscore";
-
     }
 }

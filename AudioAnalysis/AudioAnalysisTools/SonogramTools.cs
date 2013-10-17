@@ -206,8 +206,8 @@ namespace AudioAnalysisTools
             {
                 //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
                 double bgThreshold = 3.0;
-                if (configDict.ContainsKey(Keys.NOISE_BG_REDUCTION))
-                    bgThreshold = ConfigDictionary.GetDouble(Keys.NOISE_BG_REDUCTION, configDict);
+                if (configDict.ContainsKey(Keys.NOISE_BG_THRESHOLD))
+                    bgThreshold = ConfigDictionary.GetDouble(Keys.NOISE_BG_THRESHOLD, configDict);
                 var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
                 sonogram.Data = tuple.Item1;   // store data matrix
             }

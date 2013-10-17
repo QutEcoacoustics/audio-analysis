@@ -195,7 +195,7 @@ namespace AudioBrowser
             this.ClickLocation = clickLocation;
         }
 
-        public void UpdateSonogram(bool noiseReduced, double backgroundNoiseThreshold, bool annotated, TimeSpan segmentBuffer)
+        public void UpdateSonogram(bool noiseReduced, double defaultBackgroundNoiseThreshold, bool annotated, TimeSpan segmentBuffer)
         {
             var audioFile = this.AudioFile;
             var outputDir = this.OutputDirectory;
@@ -214,7 +214,6 @@ namespace AudioBrowser
 
             var audioSegmentFile = this.AudioSegmentFile = GetAudioSegmentFile(audioFile, offsetStart, outputDir);
 
-            var FrameLength = 1024; // do not want long spectrogram
             var st = new Stopwatch();
 
             var adjustedStart = offsetStart;
@@ -279,11 +278,24 @@ namespace AudioBrowser
 
             Log.DebugFormat("Generating sonogram from audio segment {0} to image {1}.", audioSegmentFile.Name, this.SonogramImageFile);
 
+            //Read the config file for the current analysis type
             var config = ConfigDictionary.ReadPropertiesFile(configFile.FullName);
+
+            //Set following key/value pairs from radio buttons.
             SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, annotated.ToString().ToLowerInvariant());
             SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, noiseReduced.ToString().ToLowerInvariant());
-            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_REDUCTION, backgroundNoiseThreshold.ToString().ToLowerInvariant());
-            SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, FrameLength.ToString().ToLowerInvariant());
+
+            //If any of following config key/value pairs are missing, then add in the defaults.
+            if (!config.ContainsKey(AudioAnalysisTools.Keys.FRAME_LENGTH))
+            {
+                var defaultFrameLength = 1024; // do not want long spectrogram
+                SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, defaultFrameLength.ToString().ToLowerInvariant());
+            }
+
+            if (! config.ContainsKey(AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD))
+            {
+                SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
+            }
 
             config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisId;
             var fiTempConfig = TempFileHelper.NewTempFile(outputDir, configFileExt);
