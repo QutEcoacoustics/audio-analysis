@@ -41,14 +41,15 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Testing\NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.wav";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Testing\DM420008_262m_00s__264m_00s - Faint Toad.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results";
                 string imageFileName = "1.png";
                 //This file will show the annotated spectrogram result.  
                 string annotatedImageFileName = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.png";
 
                 var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
                 var scores = new List<double>();
@@ -73,8 +74,8 @@
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
                 var results = new List<List<string>>();
                 // each region should have same nhCount, here we just get it from the first region item. 
-                var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\1.csv";
-                var audioFilePath = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.wav";
+                var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
+                var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
                 results.Add(new List<string>() { "FileName", "rowIndex", "colIndex", "value"});
                 for (int i = 0; i < matrix.GetLength(0); i++)
                 {
@@ -129,74 +130,74 @@
                 //var query = new Query(7200.0, 4700.0, 52.8, 54.0, neighbourhoodLength);
                 //var duration = query.duration;
 
-                /// For Brown Cuckoo-dove1
-                var query = new Query(970.0, 500.0, 12.8, 13.2, neighbourhoodLength);
-                var duration = query.duration;  // second
+                ///// For Brown Cuckoo-dove1
+                //var query = new Query(970.0, 500.0, 12.8, 13.2, neighbourhoodLength);
+                //var duration = query.duration;  // second
 
-                ///////// For Scarlet honeyeater2
-                ////var scarletHoneyeater2 = new Query(7020.0, 3575.0, 95.215, 96.348);
-                //////var duration = scarletHoneyeater2.duration;       
-                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(filterPoiList, rows, cols, neighbourhoodLength);     
-                var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
-                //var outPutPath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
-                //CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                //CSVResults.NeighbourhoodRepresentationToCSV(filterPoiList, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
-                var nhFrequencyRange = neighbourhoodLength * herzScale;
-                var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
-                var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
-                var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(normalisedNhRepresentationList, nhCountInRow, nhCountInColumn);
-                var CSVResultDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\CSV Results";
-                var csvFileName1 = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-queryRepresentation1.csv";
-                string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
-                //var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, ridgeArray, wavFilePath);
-                //CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);
-                var file = new FileInfo(csvPath1);
-                var queryRegionRepresentation1 = CSVResults.CSVToNormalisedRegionRepresentation(file);
-                var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation1, ridgeArray, wavFilePath);
-                var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
+                /////////// For Scarlet honeyeater2
+                //////var scarletHoneyeater2 = new Query(7020.0, 3575.0, 95.215, 96.348);
+                ////////var duration = scarletHoneyeater2.duration;       
+                //var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(filterPoiList, rows, cols, neighbourhoodLength);     
+                //var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
+                ////var outPutPath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
+                ////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
+                ////CSVResults.NeighbourhoodRepresentationToCSV(filterPoiList, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
+                //var nhFrequencyRange = neighbourhoodLength * herzScale;
+                //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
+                //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
+                //var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(normalisedNhRepresentationList, nhCountInRow, nhCountInColumn);
+                //var CSVResultDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\CSV Results";
+                //var csvFileName1 = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-queryRepresentation1.csv";
+                //string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
+                ////var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, ridgeArray, wavFilePath);
+                ////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);
+                //var file = new FileInfo(csvPath1);
+                //var queryRegionRepresentation1 = CSVResults.CSVToNormalisedRegionRepresentation(file);
+                //var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation1, ridgeArray, wavFilePath);
+                //var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
                 
-                var csvFileName2 = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1-regionRepresentation1.csv";
-                string csvPath2 = Path.Combine(CSVResultDirectory, csvFileName2);                
-                CSVResults.RegionRepresentationListToCSV(candidatesVector, csvPath2);
-                var distanceList = Indexing.SimilairtyScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector);
-                var similarityScoreList = Indexing.DistanceListToSimilarityScoreList(distanceList);
-                /// write the similarity score into csv file. 
-                //var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
-                //CSVResults.ReadSimilarityDistanceToCSV(similarityDistance, outputFilePath1);            
-                /// reconstruct the spectrogram.
-                //var gr = Graphics.FromImage(bmp);
-                ////foreach (var nh in nhRepresentationList)
-                //foreach (var nh in normalisedNhRepresentationList)
+                //var csvFileName2 = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1-regionRepresentation1.csv";
+                //string csvPath2 = Path.Combine(CSVResultDirectory, csvFileName2);                
+                //CSVResults.RegionRepresentationListToCSV(candidatesVector, csvPath2);
+                //var distanceList = Indexing.SimilairtyScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector);
+                //var similarityScoreList = Indexing.DistanceListToSimilarityScoreList(distanceList);
+                ///// write the similarity score into csv file. 
+                ////var outputFilePath1 = @"C:\Test recordings\input\AudioFileRepresentationCSVResults5.csv";
+                ////CSVResults.ReadSimilarityDistanceToCSV(similarityDistance, outputFilePath1);            
+                ///// reconstruct the spectrogram.
+                ////var gr = Graphics.FromImage(bmp);
+                //////foreach (var nh in nhRepresentationList)
+                ////foreach (var nh in normalisedNhRepresentationList)
+                ////{
+                ////    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
+                ////}
+                ////image = (Image)bmp;
+                ////bmp.Save(imagePath);
+                ////////var rank = 10;
+                ////////var itemList = (from l in listOfPositions
+                ////////                orderby l.Item1 ascending
+                ////////                select l);
+                ////////var finalListOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
+                ////////for (int i = 0; i < rank; i++)
+                ////////{
+                ////////    finalListOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
+                ////////}
+                ////////var finalListOfPositions = listOfPositions.GetRange(0, rank);
+                ////////var times = queryFeatureVector.Count();
+                ////////var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);   
+                //var similarityScoreVector = StatisticalAnalysis.SimilarityScoreListToVector(similarityScoreList);
+                //var rank = 1;
+                //var topRankOutput = OutputTopRank(similarityScoreVector, rank);
+                //var finalAcousticEvents = new List<AcousticEvent>();
+                //foreach (var p in topRankOutput)
                 //{
-                //    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
+                //    var frequencyRange = query.nhCountInRow * 559.0;
+                //    var maxFrequency = p.Item3 + frequencyRange;
+                //    var millisecondToSecondTransUnit = 1000;
+                //    finalAcousticEvents.Add(new AcousticEvent(p.Item2 / millisecondToSecondTransUnit, duration / millisecondToSecondTransUnit, p.Item3, maxFrequency));
                 //}
-                //image = (Image)bmp;
-                //bmp.Save(imagePath);
-                //////var rank = 10;
-                //////var itemList = (from l in listOfPositions
-                //////                orderby l.Item1 ascending
-                //////                select l);
-                //////var finalListOfPositions = new List<Tuple<double, List<RidgeNeighbourhoodFeatureVector>>>();
-                //////for (int i = 0; i < rank; i++)
-                //////{
-                //////    finalListOfPositions.Add(new Tuple<double, List<RidgeNeighbourhoodFeatureVector>>(itemList.ElementAt(i).Item1, itemList.ElementAt(i).Item2));
-                //////}
-                //////var finalListOfPositions = listOfPositions.GetRange(0, rank);
-                //////var times = queryFeatureVector.Count();
-                //////var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);   
-                var similarityScoreVector = StatisticalAnalysis.SimilarityScoreListToVector(similarityScoreList);
-                var rank = 1;
-                var topRankOutput = OutputTopRank(similarityScoreVector, rank);
-                var finalAcousticEvents = new List<AcousticEvent>();
-                foreach (var p in topRankOutput)
-                {
-                    var frequencyRange = query.nhCountInRow * 559.0;
-                    var maxFrequency = p.Item3 + frequencyRange;
-                    var millisecondToSecondTransUnit = 1000;
-                    finalAcousticEvents.Add(new AcousticEvent(p.Item2 / millisecondToSecondTransUnit, duration / millisecondToSecondTransUnit, p.Item3, maxFrequency));
-                }
-                var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, 13, query.nhCountInColumn);
-                var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
+                //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, 13, query.nhCountInColumn);
+                //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
                 /// output events image
                 //image = DrawSonogram(spectrogram, similarityScore, filterOverlappedEvents, eventThreshold, filterPoiList);
                 //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
