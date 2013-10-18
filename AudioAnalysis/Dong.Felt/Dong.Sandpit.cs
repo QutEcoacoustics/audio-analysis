@@ -40,7 +40,7 @@
 
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
-                /// Read audio files into spectrogram.                
+                /// Read audio files into spectrogram.
                 string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Testing\NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.wav";
                 string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results";
                 string imageFileName = "1.png";
@@ -50,6 +50,7 @@
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+
                 var scores = new List<double>();
                 scores.Add(1.0);
                 List<AcousticEvent> acousticEventlist = null;
@@ -70,6 +71,19 @@
                 //double intensityThreshold = 5.0; // dB
 
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+                var results = new List<List<string>>();
+                // each region should have same nhCount, here we just get it from the first region item. 
+                var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\1.csv";
+                var audioFilePath = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.wav";
+                results.Add(new List<string>() { "FileName", "rowIndex", "colIndex", "value"});
+                for (int i = 0; i < matrix.GetLength(0); i++)
+                {
+                    for (int j = 0; j < matrix.GetLength(1); j++)
+                    {
+                        results.Add(new List<string>() { audioFilePath, i.ToString(), j.ToString(),matrix[i,j].ToString()});
+                    }           
+                }
+                File.WriteAllLines(dataOutputFile, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
                 int rows = matrix.GetLength(0);
                 int cols = matrix.GetLength(1);
                 double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
