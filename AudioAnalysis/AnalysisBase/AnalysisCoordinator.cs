@@ -354,8 +354,8 @@
                 saveSonograms = Boolean.Parse(value);
                 if (saveSonograms)
                 {
-                    // save spectrogram to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
-                    settings.ImageFile = new FileInfo(Path.Combine(GetInstanceDirTempElseOutput(settings).FullName, (fileName + ".png")));
+                    // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
+                    settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
                 }
             }
 

@@ -218,6 +218,7 @@
             var lines = process.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = new AudioUtilityInfo();
+            result.SourceFile = source;
 
             foreach (var line in lines)
             {

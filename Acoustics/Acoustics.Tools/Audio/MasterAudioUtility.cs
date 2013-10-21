@@ -52,7 +52,8 @@ namespace Acoustics.Tools.Audio
         /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
         /// </summary>
         /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
-        public MasterAudioUtility(DirectoryInfo temporaryFilesDirectory) : this()
+        public MasterAudioUtility(DirectoryInfo temporaryFilesDirectory)
+            : this()
         {
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
@@ -302,7 +303,7 @@ namespace Acoustics.Tools.Audio
 
             if (mediaType == MediaTypes.MediaTypeWavpack)
             {
-                info = this.wvunpackUtility.Info(source);
+                info = this.Combine(this.wvunpackUtility.Info(source), this.ffmpegUtility.Info(source));
             }
             else if (mediaType == MediaTypes.MediaTypeMp3 || mediaType == MediaTypes.MediaTypeWav)
             {
@@ -473,7 +474,7 @@ namespace Acoustics.Tools.Audio
         private FileInfo ConvertAndSegmentUsingSox(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
             // use a temp file to run sox.
-            var soxtempfile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory,MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+            var soxtempfile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
             if (this.Log.IsDebugEnabled)
             {
@@ -503,6 +504,20 @@ namespace Acoustics.Tools.Audio
             if (extra == null)
             {
                 return info;
+            }
+
+            // source file
+            if (info.SourceFile != null && extra.SourceFile != null && info.SourceFile != extra.SourceFile)
+            {
+                throw new InvalidOperationException(string.Format("Source files must be the same: {0} != {1}.", info.SourceFile, extra.SourceFile));
+            }
+            if (info.SourceFile != null)
+            {
+                result.SourceFile = info.SourceFile;
+            }
+            else if (extra.SourceFile != null)
+            {
+                result.SourceFile = extra.SourceFile;
             }
 
             // bits per sample
