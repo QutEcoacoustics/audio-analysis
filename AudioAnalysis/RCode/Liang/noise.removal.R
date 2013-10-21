@@ -13,13 +13,12 @@ for(i in 1:nfreq){
   rm(histo)
 
 # smooth the histogram (window=5)
-#   counts.len <- length(counts)
-#   start.temp <- counts[c(1,2)]
-#   end.temp <- counts[c(counts.len - 1, counts.len)]
-#   mov.avg <- filter(counts,rep(1 / 5, 5))
-#   mov.avg[c(1,2)] <- start.temp
-#   mov.avg[c(counts.len - 1, counts.len)] <- end.temp
-  mov.avg<-counts
+  counts.len <- length(counts)
+  start.temp <- counts[c(1,2)]
+  end.temp <- counts[c(counts.len - 1, counts.len)]
+  mov.avg <- filter(counts,rep(1 / 5, 5))
+  mov.avg[c(1,2)] <- start.temp
+  mov.avg[c(counts.len - 1, counts.len)] <- end.temp
 
 # find the maximum count as modal intensity
   max.index <- which(mov.avg == max(mov.avg))
