@@ -85,10 +85,22 @@ namespace Acoustics.Shared
         ////public const string MediaTypeL24 = "audio/L24"; //: 24bit Linear PCM audio at 8-48kHz, 1-N channels; Defined in RFC 3190
         #region Constants and Fields
 
+        public const string Ext3gp = "3gp";
+        public const string Ext3gp1 = "3gpp";
+
+        public const string Ext3g2 = "3g2";
+        public const string Ext3g21 = "3gp2";
+        public const string Ext3g22 = "3gpp2";
+
         /// <summary>
         /// The ext asf.
         /// </summary>
         public const string ExtAsf = "asf";
+
+        /// <summary>
+        /// The ext aac.
+        /// </summary>
+        public const string ExtAac = "aac";
 
         /// <summary>
         /// The ext cmd.
@@ -151,14 +163,34 @@ namespace Acoustics.Shared
         public const string ExtJson = "json";
 
         /// <summary>
+        /// The ext m4a.
+        /// </summary>
+        public const string ExtM4a = "m4a";
+
+        /// <summary>
+        /// The ext mj2.
+        /// </summary>
+        public const string ExtMj2 = "mj2";
+
+        /// <summary>
+        /// The ext mov.
+        /// </summary>
+        public const string ExtMov = "mov";
+
+        /// <summary>
         /// The ext mp 3.
         /// </summary>
         public const string ExtMp3 = "mp3";
 
         /// <summary>
-        /// The ext mp 4.
+        /// The ext mp4.
         /// </summary>
         public const string ExtMp4 = "mp4";
+
+        /// <summary>
+        /// The ext mp4a.
+        /// </summary>
+        public const string ExtMp4a = "mp4a";
 
         /// <summary>
         /// The ext mpg.
@@ -254,6 +286,19 @@ namespace Acoustics.Shared
         /// The ext xml.
         /// </summary>
         public const string ExtXml = "xml";
+
+        public const string MediaTypeAac = "audio/aac"; // http://en.wikipedia.org/wiki/Advanced_Audio_Coding
+        public const string MediaTypeAacp = "audio/aacp";
+        public const string MediaType3gppAudio = "audio/3gpp";
+        public const string MediaType3gpp2Audio = "audio/3gpp2";
+        
+        public const string MediaTypeMp4a = "audio/MP4A-LATM";
+        public const string MediaTypeMpeg4 = "audio/mpeg4-generic";
+
+        public const string MediaType3gppVideo = "video/3gpp";
+        public const string MediaType3gpp2Video = "video/3gpp2";
+
+        public const string MediaTypeMovVideo = "video/quicktime";
 
         /// <summary>
         /// The media type asf.

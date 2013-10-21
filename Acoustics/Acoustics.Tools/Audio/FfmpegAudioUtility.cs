@@ -18,6 +18,8 @@
     {
         private const string Format = "hh\\:mm\\:ss\\.fff";
 
+        private const string NotApplicable = "N/A";
+
         // -y answer yes to overwriting "Overwrite output files without asking."
         // BUG:050211: added -y arg
 
@@ -129,7 +131,7 @@
         {
             get
             {
-                return new[] { MediaTypes.MediaTypeWavpack };
+                return null;// new[] { MediaTypes.MediaTypeWavpack };
             }
         }
 
@@ -266,6 +268,7 @@
         protected override AudioUtilityInfo GetInfo(FileInfo source, ProcessRunner process)
         {
             var result = new AudioUtilityInfo();
+            result.SourceFile = source;
 
             // parse output
             ////var err = process.ErrorOutput;
@@ -320,29 +323,30 @@
 
             if (result.RawData.ContainsKey(keyBitRate))
             {
-                result.BitsPerSecond = ParseIntStringWithException(result.RawData[keyBitRate], "ffmpeg.bitrate");
+                result.BitsPerSecond = ParseIntStringWithException(result.RawData[keyBitRate], "ffmpeg.bitrate", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
-                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "ffmpeg.samplerate");
+                result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "ffmpeg.samplerate", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keyChannels))
             {
-                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "ffmpeg.channels");
+                result.ChannelCount = ParseIntStringWithException(result.RawData[keyChannels], "ffmpeg.channels", new string[] { NotApplicable });
             }
 
             if (result.RawData.ContainsKey(keyBitsPerSample))
             {
-                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample");
+                result.BitsPerSample = ParseIntStringWithException(result.RawData[keyBitsPerSample], "ffmpeg.bitspersample", new string[] { NotApplicable });
                 if (result.BitsPerSample < 1)
                 {
                     result.BitsPerSample = null;
                 }
             }
 
-            result.MediaType = FfmpegFormatToMediaType(result.RawData, source.Extension);
+            result.MediaType = GetMediaType(result.RawData, source.Extension);
+            //FfmpegFormatToMediaType(result.RawData, source.Extension);
 
             return result;
         }
@@ -370,7 +374,7 @@
             // check that if output is mp3, the bit rate and sample rate are set valid amounts.
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
             {
-               
+
                 if (request.TargetSampleRate.HasValue)
                 {
                     // sample rate is set - check it
@@ -494,6 +498,10 @@
                         return MediaTypes.MediaTypeWma;
                     case "0x0161":
                         return MediaTypes.MediaTypeWma;
+                    case "raw ADTS AAC (Advanced Audio Coding)":
+                        return MediaTypes.MediaTypeAac;
+                    case "aac":
+                        return MediaTypes.MediaTypeAac;
                     default:
                         return null;
                 }
@@ -554,6 +562,16 @@
                         return MediaTypes.MediaTypeWma;
                     case "0x0161":
                         return MediaTypes.MediaTypeWma;
+                    case "aac":
+                        return MediaTypes.MediaTypeAac;
+                    case "mp4a":
+                        return MediaTypes.MediaTypeMp4Audio;
+                    case "0x6134706d":
+                        return MediaTypes.MediaTypeAac;
+                    case "AAC (Advanced Audio Coding)":
+                        return MediaTypes.MediaTypeAac;
+                    case "QuickTime / MOV":
+                        return MediaTypes.MediaTypeMovVideo;
                     default:
                         return null;
                 }
@@ -596,6 +614,81 @@
             //}
 
             //return 0;
+        }
+
+        private string GetMediaType(Dictionary<string, string> rawData, string extension)
+        {
+            var ext = extension.Trim('.', ' ');
+
+            var codecName = rawData.ContainsKey("STREAM codec_name") ? rawData["STREAM codec_name"] : string.Empty;
+            var codecLongName = rawData.ContainsKey("STREAM codec_long_name") ? rawData["STREAM codec_long_name"] : string.Empty;
+            var codecType = rawData.ContainsKey("STREAM codec_type") ? rawData["STREAM codec_type"] : string.Empty;
+            var codecTagString = rawData.ContainsKey("STREAM codec_tag_string") ? rawData["STREAM codec_tag_string"] : string.Empty;
+            var codecTag = rawData.ContainsKey("STREAM codec_tag") ? rawData["STREAM codec_tag"] : string.Empty;
+            var sampleFmt = rawData.ContainsKey("STREAM sample_fmt") ? rawData["STREAM sample_fmt"] : string.Empty;
+
+            var formatName = rawData.ContainsKey("FORMAT format_name") ? rawData["FORMAT format_name"] : string.Empty;
+            var formatLongName = rawData.ContainsKey("FORMAT format_long_name") ? rawData["FORMAT format_long_name"] : string.Empty;
+
+            if (codecType == "audio")
+            {
+                if (codecName == "wmav2" && codecLongName == "Windows Media Audio 2" && codecTag == "0x0161" &&
+                    formatName == "asf" && formatLongName == "ASF (Advanced / Active Streaming Format)")
+                {
+                    if (ext == "wma")
+                    {
+                        return MediaTypes.MediaTypeWma;
+                    }
+                    else
+                    { // .asf
+                        return MediaTypes.MediaTypeAsf;
+                    }
+                }
+                else if (codecName == "mp3" && codecLongName == "MP3 (MPEG audio layer 3)" &&
+                    formatName == "mp3" && formatLongName == "MP2/3 (MPEG audio layer 2/3)")
+                {
+                    return MediaTypes.MediaTypeMp3;
+                }
+                else if (codecName == "pcm_s16le" && codecLongName == "PCM signed 16-bit little-endian" && codecTag == "0x0001" &&
+                  formatName == "wav" && formatLongName == "WAV / WAVE (Waveform Audio)")
+                {
+                    return MediaTypes.MediaTypeWav;
+                }
+                else if (codecName == "vorbis" && codecLongName == "Vorbis" &&
+                  formatName == "matroska,webm" && formatLongName == "Matroska / WebM" && ext == "webm")
+                {
+                    return MediaTypes.MediaTypeWebMAudio;
+                }
+                else if (codecName == "vorbis" && codecLongName == "Vorbis" &&
+                  formatName == "ogg" && formatLongName == "Ogg")
+                {
+                    return MediaTypes.MediaTypeOggAudio;
+                }
+                else if (codecName == "wavpack" && codecLongName == "WavPack" &&
+                  formatName == "wv" && formatLongName == "WavPack")
+                {
+                    return MediaTypes.MediaTypeWavpack;
+                }
+                else if (codecName == "aac" && codecLongName == "AAC (Advanced Audio Coding)" && codecTag == "0x6134706d" && codecTagString == "mp4a" &&
+                  formatName == "mov,mp4,m4a,3gp,3g2,mj2" && formatLongName == "QuickTime / MOV")
+                {
+                    return MediaTypes.MediaTypeMp4Audio;
+                }
+                else if (codecName == "aac" && codecLongName == "AAC (Advanced Audio Coding)" &&
+                  formatName == "aac" && formatLongName == "raw ADTS AAC (Advanced Audio Coding)")
+                {
+                    return MediaTypes.MediaTypeAac;
+                }
+            }
+
+            if (this.Log.IsWarnEnabled)
+            {
+                this.Log.WarnFormat("Unrecognised media. Extension: {0}, Codec Name: {1}, Codec Long Name: {2}, Codec Type: {3} " +
+                "Codec Tag String: {4}, Codec Tag: {5}, Sample Format: {6}, Format Name: {7}, Format Long Name: {8}.",
+                    ext, codecName, codecLongName, codecType, codecTagString, codecTag, sampleFmt, formatName, formatLongName);
+            }
+
+            return MediaTypes.MediaTypeBin;
         }
     }
 }
