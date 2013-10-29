@@ -17,18 +17,52 @@ namespace AnalysisPrograms
 
     using Microsoft.FSharp.Math;
 
+    using PowerArgs;
+
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLib;
 
     public class SPT
     {
-        public static void Dev(string[] args)
+
+        public class Arguments
+        {
+
+            [ArgDescription("The source audio file to operate on")]
+            [Production.ArgExistingFile()]
+            [ArgPosition(0)]
+            [ArgRequired]
+            public FileInfo Source{get;set;}
+
+            [ArgDescription("A directory to write output to")]
+            [Production.ArgExistingDirectory(createIfNotExists: true)]
+            [ArgPosition(1)]
+            [ArgRequired]
+            public DirectoryInfo Output{get;set;}
+
+            [ArgDescription("")]
+            [ArgPosition(2)]
+            [ArgRequired]
+            //[ArgRange(0,0)]
+            public double IntensityThreshold { get; set; }
+
+        }
+
+        public static Arguments Dev()
+        {
+            //spt C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3 C:\SensorNetworks\Output\SPT\ 2.0
+            throw new NotImplementedException();
+            return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
         {
             //spt C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3 C:\SensorNetworks\Output\SPT\ 2.0
 
             Log.Verbosity = 1;
 
+            /*ATA
             if (args.Length != 3)
             {
                 LoggedConsole.WriteLine(
@@ -38,22 +72,22 @@ namespace AnalysisPrograms
                 output dir:         where output files and images will be placed.
                 intensityThreshold: is mandatory");
                 throw new AnalysisOptionInvalidArgumentsException();
-            }
+            }*/
 
-            string wavFilePath = args[0];
-            string opDir = args[1];
-            double intensityThreshold = Convert.ToDouble(args[2]);
+            FileInfo wavFilePath = arguments.Source;
+            DirectoryInfo opDir = arguments.Output;
+            double intensityThreshold = arguments.IntensityThreshold;
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
             int smallLengthThreshold = 50;
             Log.WriteLine("smallLengthThreshold = " + smallLengthThreshold);
 
-            var sonogram = AED.FileToSonogram(wavFilePath);
+            var sonogram = AED.FileToSonogram(wavFilePath.FullName);
 
             var result = doSPT(sonogram, intensityThreshold, smallLengthThreshold);
             sonogram.Data = result.Item1;
 
             // SAVE IMAGE
-            string savePath = opDir + Path.GetFileNameWithoutExtension(wavFilePath);
+            string savePath = opDir + Path.GetFileNameWithoutExtension(wavFilePath.Name);
             string suffix = string.Empty;
             while (File.Exists(savePath + suffix + ".jpg"))
             {
@@ -66,8 +100,7 @@ namespace AnalysisPrograms
             im.Save(newPath);
 
             LoggedConsole.WriteLine("\nFINISHED!");
-            Console.ReadLine();
-        }//end Main
+        }
 
         /// <summary>
         /// Performs Spectral Peak Tracking on a recording
@@ -126,7 +159,5 @@ namespace AnalysisPrograms
             var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
             return Tuple.Create(r);
         }
-
     }
-
 }

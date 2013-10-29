@@ -6,13 +6,24 @@
     using System.Linq;
     using System.Text;
 
+    using Acoustics.Shared.Extensions;
+
     using AnalysisBase;
+
+    using PowerArgs;
 
     /// <summary>
     /// Production Analysis Runner.
     /// </summary>
     public class Runner
     {
+        public class Arguments
+        {
+            [ArgDescription("The path to the config file")]
+            [ArgRequired]
+            public string Config{get;set;}
+        }
+
         /// <summary>
         /// The run.
         /// </summary>
@@ -23,8 +34,14 @@
         /// Arguments array is <see langword="null"/>.
         /// </exception>
         /// <exception cref="ArgumentException">Arguments was not valid.</exception>
-        public static void Run(IEnumerable<string> args)
+        public static void Run(Arguments arguments)
         {
+            if (arguments == null)
+            {
+                throw new NoDeveloperMethodException();
+            }
+
+            /*ATA
             // args are stored in a file, the only argument should be the config file.
             if (args == null)
             {
@@ -44,17 +61,17 @@
             {
                 throw new ArgumentException("Config file was not valid:" + configFile, "args");
             }
-
-            var config = new FileInfo(configFile);
+ */
+           var config =  arguments.Config.ToFileInfo();
 
             if (!File.Exists(config.FullName))
             {
                 var location = new FileInfo(typeof(Runner).Assembly.Location);
-                config = new FileInfo(Path.Combine(location.DirectoryName, configFile));
+                config = new FileInfo(Path.Combine(location.DirectoryName, arguments.Config));
 
                 if (!File.Exists(config.FullName))
                 {
-                    throw new ArgumentException("Config file could not be found:" + config.FullName, "args");
+                    throw new ArgumentException("Config file could not be found:" + config.FullName, "arguments");
                 }
             }
 
@@ -63,5 +80,7 @@
 
             // production "..\..\Production\ProductionConfig.cfg"
         }
+
+
     }
 }

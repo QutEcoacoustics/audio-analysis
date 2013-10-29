@@ -3,6 +3,6 @@ namespace FELT.Runner
 
     module Main = 
         
-        val ProgramEntry: string[] -> int
+        val ProgramEntry: obj -> unit
 
         val CommandEntry: string[] -> int

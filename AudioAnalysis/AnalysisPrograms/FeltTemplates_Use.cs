@@ -10,7 +10,9 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Extensions;
 
+    using AnalysisPrograms.Production;
 
     /// <summary>
     /// This application scans a recording with a number of templates and returns the scores for each template
@@ -19,8 +21,11 @@ namespace AnalysisPrograms
     /// arg[1] = the path to a file containing the paths to template locations, one template per line 
     /// arg[2] = the output directory 
     /// </summary>
-    class FeltTemplates_Use
+    public class FeltTemplates_Use
     {
+        public class Arguments : SourceConfigOutputDirArguments
+        {
+        }
         // IMPORTANT NOTE: FOLLOWING FRAMING PARAMETERS ARE FIXED AS CONSTANTS FOR FELT
         //                 This is to speed COMPUTATION. OTHERWISE must COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.
         //                 This is a compromise because detection of koalas using oscilations works better at overlap=0.75.
@@ -63,31 +68,42 @@ namespace AnalysisPrograms
 
         // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-050000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput_5templates\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput_5templates
 
-
-        public static void Dev(string[] args)
+        public static Arguments Dev()
         {
+            throw new NotImplementedException();
+            //return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string title = "# FIND OTHER ACOUSTIC EVENTS LIKE THIS";
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
-            Log.WriteIfVerbose("# Recording     =" + args[0]);
-            Log.WriteIfVerbose("# Template list =" + args[1]);
-            Log.WriteIfVerbose("# Output folder =" + args[2]);
-
+            Log.WriteIfVerbose("# Recording     =" + arguments.Source);//the recording to be scanned
+            Log.WriteIfVerbose("# Template list =" + arguments.Config);//the path to a file containing the paths to template locations, one template per line
+            Log.WriteIfVerbose("# Output folder =" + arguments.Output);//name of output dir 
+            /*ATA
             Segment.CheckArguments(args);
 
-            string recordingPath = args[0];    //the recording to be scanned
-            string iniPath       = args[1];    //the path to a file containing the paths to template locations, one template per line
-            string outputDir     = args[2];    //name of output dir 
+            string recordingPath = args[0];    
+            string iniPath       = args[1];    
+            string outputDir     = args[2];    
+             * */
 
             var allEvents     = new List<AcousticEvent>();
             var scoresList    = new List<double[]>(); 
             var thresholdList = new List<double>();
 
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(recordingPath);
+            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
 
@@ -109,7 +125,7 @@ namespace AnalysisPrograms
 
 
             //iii: Get zip paths and the results Tuple
-            List<string> zipList = FileTools.ReadTextFile(iniPath);
+            List<string> zipList = FileTools.ReadTextFile(arguments.Config.FullName);
             System.Tuple<SpectralSonogram, List<AcousticEvent>, double[]> results = null; //set up the results Tuple
 
             foreach (string zipPath in zipList)
@@ -118,10 +134,10 @@ namespace AnalysisPrograms
                 if (zipPath.Length < 2)      continue;  // empty line
 
                 //i: get params file
-                FileTools.UnZip(outputDir, zipPath, true);
+                FileTools.UnZip(arguments.Output.FullName, zipPath, true);
                 string zipName    = Path.GetFileNameWithoutExtension(zipPath);
                 string[] parts    = zipName.Split('_');
-                string paramsPath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_Params.txt");
+                string paramsPath = Path.Combine(arguments.Output.FullName, parts[0] + "_" + parts[1] + "_Params.txt");
 
                 string id = parts[0] + "_" + parts[1];
                 Log.WriteIfVerbose("################################################### "+id+" ########################################################");
@@ -136,21 +152,21 @@ namespace AnalysisPrograms
 
                 if (zipName.EndsWith("binaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, id + "_binary.bmp");
+                    string templatePath = Path.Combine(arguments.Output.FullName, id + "_binary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2BinaryMatrixDouble(templatePath);
                     results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix);
                 }
                 else
                 if (zipName.EndsWith("trinaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, id + "_trinary.bmp");
+                    string templatePath = Path.Combine(arguments.Output.FullName, id + "_trinary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2TrinaryMatrix(templatePath);
                     results = FELTWithBinaryTemplate(sonogram, dict, templateMatrix);
                 }
                 else
                 if (zipName.EndsWith("syntacticTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, id + "_spr.txt");
+                    string templatePath = Path.Combine(arguments.Output.FullName, id + "_spr.txt");
                     char[,] templateMatrix = FindMatchingEvents.ReadTextFile2CharMatrix(templatePath);
                     results = FELTWithSprTemplate(sonogram, dict, templateMatrix);  
                 }
@@ -178,7 +194,7 @@ namespace AnalysisPrograms
 
                 //v: write events count to results info file. 
                 double sigDuration = sonogram.Duration.TotalSeconds;
-                string fname = Path.GetFileName(recordingPath);
+                string fname = arguments.Source.Name;
                 string str = String.Format("{0}\t{1}\t{2}", fname, sigDuration, matchingEvents.Count);
                 StringBuilder sb = AcousticEvent.WriteEvents(matchingEvents, str);
                 FileTools.WriteTextFile("opPath", sb.ToString());
@@ -207,7 +223,7 @@ namespace AnalysisPrograms
 
             //draw images of sonograms
             int DRAW_SONOGRAMS = 2;
-            string opImagePath = outputDir + "\\" + Path.GetFileNameWithoutExtension(recordingPath) + "_matchingEvents.png";
+            FileInfo opImagePath =  arguments.Output.CombineFile(Path.GetFileNameWithoutExtension(arguments.Source.Name) + "_matchingEvents.png");
             if (DRAW_SONOGRAMS == 2)
             {
                 DrawSonogram(sonogram, opImagePath, allEvents, thresholdList, scoresList);
@@ -218,9 +234,8 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, opImagePath, allEvents, thresholdList, scoresList);
             }
 
-            Log.WriteLine("# FINISHED passing all templates over recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+            Log.WriteLine("# FINISHED passing all templates over recording:- " + arguments.Source.Name);
+        }
 
 
 
@@ -421,7 +436,7 @@ namespace AnalysisPrograms
         }
 
 
-        public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, List<double> thresholdList, List<double[]> scoresList)
+        public static void DrawSonogram(BaseSonogram sonogram, FileInfo path, List<AcousticEvent> predictedEvents, List<double> thresholdList, List<double[]> scoresList)
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -469,7 +484,7 @@ namespace AnalysisPrograms
                 } //end adding in score tracks
 
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
-                image.Save(path);
+                image.Save(path.FullName);
             } // using
         } // DrawSonogram()
 
@@ -519,7 +534,5 @@ namespace AnalysisPrograms
                 NormalDist.writeScoreStatistics(array);
             }
         }
-
-
-    }//end class
+    }
 }

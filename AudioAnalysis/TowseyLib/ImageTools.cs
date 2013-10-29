@@ -181,15 +181,20 @@ namespace TowseyLib
 
         public static void DisplayImageWithPaint(string imagePath)
         {
+            DisplayImageWithPaint(imagePath);
+        }
+
+        public static void DisplayImageWithPaint(FileInfo imagePath)
+        {
             FileInfo exe = new FileInfo(paintPath);
             if (!exe.Exists)
             {
                 LoggedConsole.WriteLine("CANNOT DISPLAY IMAGE. PAINT.EXE DOES NOT EXIST: <" + imagePath + ">");
                 return;
             }
-            string outputDir = Path.GetDirectoryName(imagePath);
-            TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(paintPath);
-            process.Run(imagePath, outputDir);
+            string outputDir = imagePath.DirectoryName;
+            var process = new TowseyLib.ProcessRunner(paintPath);
+            process.Run(imagePath.FullName, outputDir);
         }
 
 

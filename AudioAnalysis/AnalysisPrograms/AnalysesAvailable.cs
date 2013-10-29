@@ -10,9 +10,20 @@ using TowseyLib;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Extensions;
 
-    class AnalysesAvailable
+    using AnalysisPrograms.Production;
+
+    using PowerArgs;
+
+    public class AnalysesAvailable
     {
+        public class Arguments 
+        {
+            [ArgDescription("The path to save the output to")]
+            [ArgRequired]
+            public FileInfo Output { get; set; }
+        }
 
         //use the following for the command line for the <analysesAvailable> task. 
         //AnalysisPrograms.exe analysesAvailable  C:\SensorNetworks\Output\temp\analysesAvailable.txt
@@ -21,19 +32,21 @@ namespace AnalysisPrograms
         /// returns a text file of the available analyses
         /// Also writes those analyses to Console.
         /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static int Main(string[] args)
+        public static void Main(Arguments arguments)
         {
-            bool debug = false;
-            int status = 0;
-            bool verbose = true;
+            if (arguments == null)
+            {
+                throw new NoDeveloperMethodException();
+            }
 
-            CheckArguments(args); //checks validity of the first 3 path arguments
+            bool verbose = MainEntry.InDEBUG;
 
+            //CheckArguments(args); //checks validity of the first 3 path arguments
+            //string outputPath = args[0];
 
-            string outputPath = args[0];
-
+            // ensure the parent directories have been created
+            arguments.Output.CreateParentDirectories();
+            var outputPath = arguments.Output;
 
             if (verbose)
             {
@@ -53,18 +66,17 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(analyser.Identifier);
                 list.Add(analyser.Identifier);
             }
-            FileTools.WriteTextFile(outputPath, list);
+            FileTools.WriteTextFile(outputPath.FullName, list);
             //#########################################################################################################
 
 
                 LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
 
-            return status;
         } //LoadIndicesCsvFileAndDisplayTracksImage()
 
 
 
-        public static void CheckArguments(string[] args)
+        /*public static void CheckArguments(string[] args)
         {
             if (args.Length != 1)
             {
@@ -78,9 +90,9 @@ namespace AnalysisPrograms
             }
 
             CheckPaths(args);
-        }
+        }*/
 
-        /// <summary>
+        /*/// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
         /// <param name="args"></param>
@@ -110,10 +122,10 @@ namespace AnalysisPrograms
                     throw new AnalysisOptionInvalidPathsException();
                 }
             }
-        }
+        }*/
 
 
-        public static void Usage()
+        /*public static void Usage()
         {
             LoggedConsole.WriteLine("USAGE:");
             LoggedConsole.WriteLine("AnalysisPrograms.exe  analysesAvailable  outputPath");
@@ -123,7 +135,9 @@ namespace AnalysisPrograms
             //            LoggedConsole.WriteLine("The following argument is OPTIONAL.");
             //            LoggedConsole.WriteLine("verbosity:   (boolean) true/false");
             LoggedConsole.WriteLine("");
-        } // Usage()
+        } // Usage()*/
 
     }
+
+
 }

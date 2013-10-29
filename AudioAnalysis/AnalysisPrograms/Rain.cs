@@ -20,6 +20,12 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using System.Diagnostics.Contracts;
+
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
     public class Rain : IAnalyser
     {
         public const string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
@@ -101,111 +107,128 @@ namespace AnalysisPrograms
             get { return identifier; }
         }
 
+        public class Arguments : AnalyserArguments
+        {
+        }
 
-        public static void Dev(string[] args)
+
+        public static void Dev(Arguments arguments)
         {
             Log.Verbosity = 1;
+            bool debug = MainEntry.InDEBUG;
 
-
-            bool debug = false;
-#if DEBUG
-            debug = true;
-#endif
-
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min944.wav";   //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1031.wav";  //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1036.wav";  //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1101.wav";  //rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\Jackaroo_20080715-103940.wav";   //koala
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";   //koala & mobile spikes
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   //walking on dry leaves
-            //string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1081.wav";   //cicada
-            string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1076.wav";
-            string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Rain.cfg";
-            string outputDir     = @"C:\SensorNetworks\Output\Rain\";
-            //string csvPath       = @"C:\SensorNetworks\Output\Rain\RainIndices.csv";
-
-
-            string title = "# FOR EXTRACTION OF RAIN Indices";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(title);
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("# FOR EXTRACTION OF RAIN Indices");
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            var diOutputDir = new DirectoryInfo(outputDir);
 
-            if (false)
+            var executeDev = arguments == null;
+            if (executeDev)
             {
-                string path = @"C:\SensorNetworks\Output\Rain\TrainingExamplesForRain_3class.csv";
-                //read csv ifle
-                var dt = CsvTools.ReadCSVToTable(path, true);
-                //write as SEE5 files.
-                string fileStem = "3Class9features_RainCicadaNone";
-                WriteSee5DataFiles(dt, diOutputDir, fileStem);
 
-                // TODO: MIKE! check to make sure the "return" here is a suitable replacement for "Exit(0)"
-                throw new NotImplementedException();
-                ////System.Environment.Exit(0);
-                return;
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min944.wav";   //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1031.wav";  //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1036.wav";  //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min1101.wav";  //rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\Jackaroo_20080715-103940.wav";   //koala
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";   //koala & mobile spikes
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   //walking on dry leaves
+                //string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1081.wav";   //cicada
+                string recordingPath = @"C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1\DM420036_min1076.wav";
+                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Rain.cfg";
+                string outputDir = @"C:\SensorNetworks\Output\Rain\";
+                //string csvPath       = @"C:\SensorNetworks\Output\Rain\RainIndices.csv";
+                var diOutputDir = new DirectoryInfo(outputDir);
+
+                if (false)
+                {
+                    string path = @"C:\SensorNetworks\Output\Rain\TrainingExamplesForRain_3class.csv";
+                    //read csv ifle
+                    var dt = CsvTools.ReadCSVToTable(path, true);
+                    //write as SEE5 files.
+                    string fileStem = "3Class9features_RainCicadaNone";
+                    WriteSee5DataFiles(dt, diOutputDir, fileStem);
+
+                    // TODO: MIKE! check to make sure the "return" here is a suitable replacement for "Exit(0)"
+                    throw new NotImplementedException();
+                    ////System.Environment.Exit(0);
+                    return;
+                }
+
+                int startMinute = 0;
+                int durationSeconds = 0; //set zero to get entire recording
+                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
+                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
+                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+
+                /*ATA
+                //construct the Command Line
+                var cmdLineArgs = new List<string>();
+                if (true)
+                {
+                    cmdLineArgs.Add(recordingPath);
+                    cmdLineArgs.Add(configPath);
+                    cmdLineArgs.Add(outputDir);
+                    cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                    cmdLineArgs.Add("-indices:" + indicesFname);
+                    //cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                    //cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+                }*/
+
+                arguments = new Arguments
+                            {
+                                Source = recordingPath.ToFileInfo(),
+                                Config = configPath.ToFileInfo(),
+                                Output = outputDir.ToDirectoryInfo(),
+                                TmpWav = segmentFName,
+                                //Events = eventsFname,
+                                Indices = indicesFname,
+                                Sgram = sonogramFname,
+                                Start = tsStart.TotalSeconds,
+                                Duration = tsDuration.TotalSeconds
+                            };
             }
 
-            int startMinute     = 0;
-            int durationSeconds = 0; //set zero to get entire recording
-            var tsStart         = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-            var tsDuration      = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-            var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName    = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-            var sonogramFname   = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var indicesFname    = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+            LoggedConsole.WriteLine("# Output folder:  " + arguments.Output);
+            LoggedConsole.WriteLine("# Recording file: " + arguments.Source.Name);
 
-            //construct the Command Line
-            var cmdLineArgs = new List<string>();
-            if (true)
+            Execute(arguments);
+
+            if (executeDev)
             {
-                cmdLineArgs.Add(recordingPath);
-                cmdLineArgs.Add(configPath);
-                cmdLineArgs.Add(outputDir);
-                cmdLineArgs.Add("-tmpwav:" + segmentFName);
-                cmdLineArgs.Add("-indices:" + indicesFname);
-                //cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-                //cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+                if (!csvIndicies.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+
+                LoggedConsole.WriteLine("\n\n# Finished analysis for RAIN:- " + arguments.Source.Name);
             }
-
-            //#############################################################################################################################################
-            Execute(cmdLineArgs.ToArray());
-
-            //#############################################################################################################################################
-
-            string indicesPath = Path.Combine(outputDir, indicesFname);
-            FileInfo fiCsvIndices = new FileInfo(indicesPath);
-            if (!fiCsvIndices.Exists)
-            {
-                Log.WriteLine("\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-
-            LoggedConsole.WriteLine("\n\n# Finished analysis for RAIN:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+        }
 
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
-        public static void Execute(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            Contract.Requires(arguments != null);
+            /*ATA
             if (args.Length < 4)
             {
                 LoggedConsole.WriteLine("Require at least 4 command line arguments.");
@@ -283,18 +306,23 @@ namespace AnalysisPrograms
                     }
                 } // if
             } // for
+             * */
+
+            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
             if (tempF.Exists) tempF.Delete();
-            if (tsDuration.TotalSeconds == 0)   //Process entire file
+            if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -322,8 +350,6 @@ namespace AnalysisPrograms
             }
 
         }
-
-
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
@@ -361,9 +387,7 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.IndicesFile.FullName);
             }
             return analysisResults;
-        } //Analyse()
-
-
+        }
 
         public static Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings)
         {
@@ -528,7 +552,6 @@ namespace AnalysisPrograms
             return dt;
         } //Analysis()
 
-
         /// <summary>
         /// returns some indices relevant to rain and cicadas from a short (10seconds) chunk of audio
         /// </summary>
@@ -614,7 +637,6 @@ namespace AnalysisPrograms
             return classification;
         }
 
-
         public static DataTable ConvertClassifcations2Datatable(string[] classifications)
         {
             string[] headers = { Keys.INDICES_COUNT, Keys.START_MIN, Keys.SEGMENT_TIMESPAN, header_rain,    header_cicada };
@@ -654,8 +676,6 @@ namespace AnalysisPrograms
         //    return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         //}
 
-
-
         static Image DrawSonogram(BaseSonogram sonogram, List<Plot> scores)
         {
             Dictionary<string, string> configDict = new Dictionary<string,string>();
@@ -664,8 +684,6 @@ namespace AnalysisPrograms
             Image image = SonogramTools.Sonogram2Image(sonogram, configDict, null, scores, predictedEvents, eventThreshold);
             return image;
         } //DrawSonogram()
-
-
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -746,7 +764,6 @@ namespace AnalysisPrograms
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
         /// </summary>
@@ -787,9 +804,6 @@ namespace AnalysisPrograms
 
             return processedtable;
         }
-
-
-
 
         /// <summary>
         ///// takes a data table of indices and converts column values to values in [0,1].
@@ -1081,6 +1095,5 @@ namespace AnalysisPrograms
                 };
             }
         }
-
-    } //end class Rain
+    }
 }

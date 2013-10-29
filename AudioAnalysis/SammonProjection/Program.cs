@@ -12,12 +12,17 @@ namespace SammonProjection
 
     public static class SammonProgram
     {
-        public static void Dev(string[] args)
+
+        public class Arguments
         {
-            Execute(args);
         }
 
-        public static void Execute(string[] args)
+        public static void Dev(Arguments arguments)
+        {
+            Execute(arguments);
+        }
+
+        public static void Execute(Arguments arguments)
         {
            
             RunAnalysis("dummy");

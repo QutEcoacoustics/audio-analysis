@@ -13,7 +13,7 @@
     using AnalysisBase;
     using Representations;
 
-    class Dong
+    public class Dong
     {
         public const int RESAMPLE_RATE = 17640;
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";  // why we need this?

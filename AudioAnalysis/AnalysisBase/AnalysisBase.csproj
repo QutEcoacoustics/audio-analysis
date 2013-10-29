@@ -120,7 +120,6 @@
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalyser.cs" />
     <Compile Include="ISourcePreparer.cs" />
-    <Compile Include="IUsage.cs" />
     <Compile Include="PluginHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

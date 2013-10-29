@@ -97,6 +97,7 @@
             Run(arguments, workingDirectory, true);
         }
 
+
         public void Run(string arguments, string workingDirectory, bool waitForExit)
         {
             // reset output strings

@@ -6,11 +6,13 @@ using AudioAnalysisTools;
 using TowseyLib;
 
 namespace AnalysisPrograms
-{   
+{
+    using AnalysisPrograms.Production;
+
     /// <summary>
     /// Implements a simple form of Syntactic Pattern Recognition to find defined bird calls in spectra.
     /// </summary>
-    class SPR  //Syntactic Pattern Recognition
+    public class SPR  //Syntactic Pattern Recognition
     {
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME       = "CALL_NAME";
@@ -29,8 +31,11 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
+        public class Arguments : SourceConfigOutputDirArguments
+        {
+        }
 
-        public static void Dev(string[] args)
+        public static Arguments Dev()
         {
             //WHIPBIRD
             //spr C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3  C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
@@ -40,6 +45,17 @@ namespace AnalysisPrograms
             //spr C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-210000.mp3  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
             //CURRAWONG
             //spr C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.wav  C:\SensorNetworks\Output\SPR_CURRAWONG\SPR_CURRAWONG_Params.txt events.txt  
+            throw new NotImplementedException();
+            return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             LoggedConsole.WriteLine("DATE AND TIME:" + DateTime.Now);
             LoggedConsole.WriteLine("Syntactic Pattern Recognition\n");
             //StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
@@ -47,6 +63,7 @@ namespace AnalysisPrograms
             
             Log.Verbosity = 1;
 
+            /*ATA
             if (args.Length != 3)
             {
                 LoggedConsole.WriteLine("INCORRECT NUMBER OF ARGUMENTS, i.e. " + args.Length);
@@ -57,12 +74,12 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("Output File:    where events will be written");
                 Console.ReadLine();
                 throw new AnalysisOptionInvalidArgumentsException();
-            }
+            }*/
 
-            string recordingPath = args[0];
-            string iniPath       = args[1];
-            string outputDir     = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
-            string opFName       = args[2];
+            FileInfo recordingPath = arguments.Source;
+            FileInfo iniPath       = arguments.Config;
+            DirectoryInfo outputDir = arguments.Output;
+            string opFName       = "SPR-output.txt";
             string opPath        = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -97,7 +114,7 @@ namespace AnalysisPrograms
 
             //LOAD RECORDING AND MAKE SONOGRAM
             BaseSonogram sonogram = null;
-            using (var recording = new AudioRecording(destinationAudioFile))
+            using (var recording = new AudioRecording(destinationAudioFile.FullName))
             {
                 if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // down sample if necessary
 
@@ -114,7 +131,7 @@ namespace AnalysisPrograms
             double[,] hits = null;
             double[] scores = null;
 
-            var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile);
+            var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile.FullName);
 
             if (callName.Equals("WHIPBIRD"))
             {
@@ -274,7 +291,7 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine("\nFINISHED RECORDING!");
             Console.ReadLine();
-        }//end Main
+        }
 
 
 
@@ -490,7 +507,8 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                 double maxScore = 50.0;
-                image.AddSuperimposedMatrix(hits, maxScore);
+                throw new NotImplementedException("AT:Don't know how to fix following line");
+                ////image.AddSuperimposedMatrix(hits, maxScore);
                 //if (intensity != null)
                 //{
                 //    double min, max;
@@ -502,9 +520,6 @@ namespace AnalysisPrograms
                 //image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
                 image.Save(path);
             }
-        }//drawSonogram()
-
-
-
-    }//class
+        }
+    }
 }

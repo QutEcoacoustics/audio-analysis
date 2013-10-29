@@ -95,12 +95,26 @@
     <Reference Include="alglibnet2">
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="FSharp.PowerPack, Version=4.0.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\2.0\Runtime\v4.0\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Linq">
+      <HintPath>..\packages\FSPowerPack.Linq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Metadata">
+      <HintPath>..\packages\FSPowerPack.Metadata.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Parallel.Seq, Version=4.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\FSPowerPack.Parallel.Seq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Parallel.Seq.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerArgs, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Extra Assemblies\PowerArgs\Debug\PowerArgs.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.59\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -131,8 +145,16 @@
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="Canetoad.cs" />
+    <Compile Include="Dong.Felt.Main.cs" />
+    <Compile Include="EPR.cs" />
     <Compile Include="Frogs.cs" />
-    <Compile Include="MainExceptions.cs" />
+    <Compile Include="GroundParrotRecogniser.cs" />
+    <Compile Include="Production\Actions.cs" />
+    <Compile Include="Production\CustomArgumentParsing.cs" />
+    <Compile Include="Production\CustomArgUsageHooks.cs" />
+    <Compile Include="Production\MainEntryArguments.cs" />
+    <Compile Include="Production\MainEntryUtilities.cs" />
+    <Compile Include="Production\Exceptions.cs" />
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="Human1.cs" />
@@ -164,6 +186,8 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SPR.cs" />
+    <Compile Include="Spt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">

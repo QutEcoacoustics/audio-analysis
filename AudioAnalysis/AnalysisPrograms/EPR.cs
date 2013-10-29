@@ -10,8 +10,12 @@ using System.Drawing;
 
 namespace AnalysisPrograms
 {
-    
-    
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
+    using PowerArgs;
+
     /// <summary>
     /// This program runs an alternative version of Event Pattern Recognition (EPR) 
     /// It can be used to detect Ground Parrots.
@@ -152,7 +156,7 @@ namespace AnalysisPrograms
     /// 
     /// ###############################################################################################################
     /// </summary>
-    class EPR
+    public class EPR
     {
 
         // GROUND PARROT
@@ -180,40 +184,59 @@ namespace AnalysisPrograms
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
 
 
-
-
-        public static void Dev(string[] args)
+        public class Arguments : SourceAndConfigArguments
         {
+            [ArgDescription("prefix of name of the created output files")]
+            [ArgValidFilename()]
+            [ArgRequired]
+            public string Target { get; set; }
+
+        }
+
+        public static Arguments Dev()
+        {
+
+            return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string title = "# EVENT PATTERN RECOGNITION.";
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
+            /*ATA
             Segment.CheckArguments(args);
 
             string recordingPath = args[0];
-            string iniPath       = args[1]; // path of the ini or params file
-            string targetName    = args[2]; // prefix of name of created files 
+            string iniPath       = args[1]; // path of the ini or params file*/
+            string targetName    = arguments.Target; // prefix of name of created files 
 
-            string recordingFileName = Path.GetFileName(recordingPath);
-            string recordingDirectory= Path.GetDirectoryName(recordingPath);
-            string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
-            string targetPath        = outputDir + targetName + "_target.txt";
-            string targetNoNoisePath = outputDir + targetName + "_targetNoNoise.txt";
-            string noisePath         = outputDir + targetName + "_noise.txt";
-            string targetImagePath   = outputDir + targetName + "_target.png";
-            string paramsPath        = outputDir + targetName + "_params.txt";
+            string recordingFileName   = arguments.Source.Name;
+            string recordingDirectory  = arguments.Source.DirectoryName;
+            DirectoryInfo outputDir    = arguments.Config.Directory;
+            FileInfo targetPath        = outputDir.CombineFile(targetName  + "_target.txt");
+            FileInfo targetNoNoisePath = outputDir.CombineFile(targetName  + "_targetNoNoise.txt");
+            FileInfo noisePath         = outputDir.CombineFile(targetName  + "_noise.txt");
+            FileInfo targetImagePath   = outputDir.CombineFile(targetName  + "_target.png");
+            FileInfo paramsPath        = outputDir.CombineFile(targetName  + "_params.txt");
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(recordingPath);
+            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
 
             //ii: READ PARAMETER VALUES FROM INI FILE
-            var config = new ConfigDictionary(iniPath);
+            var config = new ConfigDictionary(arguments.Config);
             Dictionary<string, string> dict = config.GetTable();
 
             // framing parameters
@@ -256,7 +279,8 @@ namespace AnalysisPrograms
             for (int i=0; i<sonogram.FrameCount; i++) dBArray[i] /= binCount; // get average dB energy
             double Q = 0.0;
             double SD = 0.0;
-            dBArray = SNR.NoiseSubtractMode(dBArray, out Q, out SD);
+            throw new NotImplementedException("Mike changed the API here, I don't know how to fix it.");
+            dBArray =  new []{0.0};// SNR.NoiseSubtractMode(dBArray, out Q, out SD);
             double maxDB = 6.0;
             double dBThreshold = (2 * SD) / maxDB;  //set dB threshold to 2xSD above background noise
             dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB);
@@ -297,12 +321,11 @@ namespace AnalysisPrograms
             //FileTools.WriteArray2File(noiseSubband, noisePath);
 
             // v: SAVE image of extracted event in the original sonogram 
-            string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
             DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
 
 
             Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
         } // Dev()
 
 
@@ -396,6 +419,7 @@ namespace AnalysisPrograms
                 image.Save(path);
             }
         } //end DrawSonogram
+
 
     } // end class
 }

@@ -22,6 +22,10 @@ using Acoustics.Tools.Audio;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
     public class GratingDetection
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
@@ -104,11 +108,15 @@ namespace AnalysisPrograms
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
 
-        public static void Dev(string[] args)
+        public class Arguments : SourceConfigOutputDirArguments
+        {
+        }
+
+        public static Arguments Dev()
         {
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min173Airplane.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min449Airplane.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min449Airpla   ne.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min700Airplane.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min302MorningChorus.wav";
@@ -117,31 +125,45 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
-    
+
             string configPath = @"C:\SensorNetworks\Output\Grids\Grids.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\Grids\";
+            string outputDir = @"C:\SensorNetworks\Output\Grids\";
+            return new Arguments()
+                   {
+                       Source = recordingPath.ToFileInfo(),
+                       Config = configPath.ToFileInfo(),
+                       Output = outputDir.ToDirectoryInfo()
+                   };
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
 
             string opFName       = ANALYSIS_NAME + ".txt";
-            string opPath        = outputDir + opFName;
-            string audioFileName = Path.GetFileName(recordingPath);
+            FileInfo opPath        = arguments.Output.CombineFile(opFName);
+            string audioFileName = arguments.Source.Name;
             Log.Verbosity = 1;
 
             string title = "# FOR DETECTION OF ACOUSTIC EVENTS HAVING A GRID OR GRATING STRUCTURE";
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
+            LoggedConsole.WriteLine("# Output folder:  " + arguments.Output);
+            LoggedConsole.WriteLine("# Recording file: " + arguments.Source.Name);
+            FileTools.WriteTextFile(opPath.FullName, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
-            var configuration = new ConfigDictionary(configPath);
+            var configuration = new ConfigDictionary(arguments.Config);
             Dictionary<string, string> configDict = configuration.GetTable();
             Dictionary<string, string>.KeyCollection keys = configDict.Keys;
 
             int startMinute = 5; //dummy value
-            var fiSegmentOfSourceFile = new FileInfo(recordingPath);
-            var diOutputDir = new DirectoryInfo(outputDir);
+            var fiSegmentOfSourceFile = arguments.Source;
+            var diOutputDir = arguments.Output;
 
             //#############################################################################################################################################
             DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
@@ -156,10 +178,8 @@ namespace AnalysisPrograms
                 DataTableTools.WriteTable2Console(dt);
             }
 
-            LoggedConsole.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
-
+            LoggedConsole.WriteLine("# Finished recording:- " + arguments.Source.FullName);
+        }
 
         public static DataTable AnalysisReturnsDataTable(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
@@ -215,9 +235,6 @@ namespace AnalysisPrograms
 
             return dataTable;
         }
-
-
-
 
         public static Image AnalysisReturnsSonogram(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
@@ -525,8 +542,5 @@ namespace AnalysisPrograms
         //    } //foreach
         //    return list;
         //} //ExtractPeriodicEvents()
-
-
-
-    } //end class GratingDetection
+    } 
 }

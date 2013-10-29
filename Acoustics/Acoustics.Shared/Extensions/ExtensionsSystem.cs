@@ -579,6 +579,11 @@ namespace System
             throw new ArgumentOutOfRangeException();
         }
 
+        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> items, T item)
+        {
+            return (new []{item}).Concat(items);
+        }
+
         public static void AddRange<T>(this IList<T> list, IEnumerable<T> values)
         {
             if (values != null)

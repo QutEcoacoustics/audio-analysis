@@ -43,14 +43,27 @@ namespace TowseyLib
         /// <exception cref="ArgumentNullException">
         /// Argument is null.
         /// </exception>
-        public ConfigDictionary(params string[] files)
+        public ConfigDictionary(params string[] files) : this(files.Select(x => new FileInfo(x)).ToArray())
+        {
+        }
+
+        /// <summary>
+        /// The configuration.
+        /// </summary>
+        /// <param name="files">
+        ///     The files.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Argument is null.
+        /// </exception>
+        public ConfigDictionary(params FileInfo[] files)
         {
             if (files == null || files.Length == 0)
             {
                 throw new ArgumentNullException("files", "files must be supplied and contain entries.");
             }
 
-            Source = files[files.Length - 1]; // Take last file as filename
+            Source = files[files.Length - 1].FullName; // Take last file as filename
             dictionary = new Dictionary<string, string>();
             foreach (var file in files)
             {
@@ -297,10 +310,16 @@ namespace TowseyLib
 
         public static Dictionary<string, string> ReadPropertiesFile(string fName)
         {
-            if (!(new FileInfo(fName)).Exists) return null;
+            return ReadPropertiesFile(new FileInfo(fName));
+        }
+
+        public static Dictionary<string, string> ReadPropertiesFile(FileInfo fileName)
+        {
+            var fileInfo = fileName;
+            if (!fileInfo.Exists) return null;
            
             var table = new Dictionary<string, string>();
-            using (TextReader reader = new StreamReader(fName))
+            using (TextReader reader = fileName.OpenText())
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)

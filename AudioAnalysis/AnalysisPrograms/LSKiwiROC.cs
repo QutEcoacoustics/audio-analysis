@@ -11,9 +11,26 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
+    using PowerArgs;
 
-    class LSKiwiROC
+    public class LSKiwiROC
     {
+       // LoggedConsole.WriteLine("EventsFilePath:-     ");
+         //   LoggedConsole.WriteLine("SelectionsFilePath:- ");
+
+        public class Arguments
+        {
+            [ArgDescription("Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
+            [Production.ArgExistingFile(Extension = ".csv")]
+            [ArgPosition(0)]
+            [ArgRequired]
+            public FileInfo Events { get; set;}
+
+            [ArgDescription("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
+            [Production.ArgExistingFile(Extension = ".csv")]
+            [ArgPosition(1)]
+            public FileInfo Selections {get; set;}
+        }
 
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
         //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\TUITCE_20091215_220004_ANDREWS_SELECTIONS.csv";
@@ -27,7 +44,7 @@ namespace AnalysisPrograms
         //kiwiROC "C:\SensorNetworks\Output\LSKiwi3\Tower\Towsey.LSKiwi3\TOWER_20100208_204500_Towsey.LSKiwi3.Events.csv" "C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv"
         //kiwiROC "C:\SensorNetworks\Output\LSKiwi3\Tower\Towsey.LSKiwi3\TOWER_20100208_204500_Towsey.LSKiwi3.Events.csv"  "C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv"
 
-        public static void Main(string[] args)
+        public static void Main(Arguments arguments)
         {
             bool verbose = true;
             if (verbose)
@@ -37,24 +54,24 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(title);
                 LoggedConsole.WriteLine(date);
             }
-
+            /*ATA
             CheckArguments(args);
 
 
             //GET COMMAND LINE ARGUMENTS
             string eventsCsvPath          = args[0];
-            string ANDREWS_SELECTION_PATH = args[1];
-            string outputDir = Path.GetDirectoryName(eventsCsvPath);
+            string ANDREWS_SELECTION_PATH = args[1];*/
+            string outputDir = arguments.Events.DirectoryName;
 
-            var fiKiwiCallPredictions = new FileInfo(eventsCsvPath);
-            var fiGroundTruth         = new FileInfo(ANDREWS_SELECTION_PATH);
+            var fiKiwiCallPredictions = arguments.Events;
+            var fiGroundTruth         = arguments.Selections;
 
             //InitOutputTableColumns();
             //############################################################################
             DataTable dt = CalculateRecallPrecision(fiKiwiCallPredictions, fiGroundTruth);
             //############################################################################
 
-            string opFileStem = Path.GetFileNameWithoutExtension(eventsCsvPath);
+            string opFileStem = Path.GetFileNameWithoutExtension(arguments.Events.Name);
             string fName = "LSKRoc_Report_" + opFileStem + ".csv";
             string reportROCPath = Path.Combine(outputDir, fName);
             CsvTools.DataTable2CSV(dt, reportROCPath);
@@ -75,12 +92,7 @@ namespace AnalysisPrograms
             }
 
             LoggedConsole.WriteLine("FINSIHED");
-            
-            return;
-        }  //Main()
-
-
-
+        }
 
         public static DataTable CalculateRecallPrecision(FileInfo fiPredictions, FileInfo fiGroundTruth)
         {
@@ -405,7 +417,7 @@ namespace AnalysisPrograms
             }
             FileTools.WriteTextFile(dataFilePath, dataContent);
         }
-
+        /*ATA
         public static void CheckArguments(string[] args)
         {
             int requiredArgumentCount = 2; //start with three command line arguments but at this point only have 2.
@@ -462,7 +474,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("Note: The first argument <kiwiROC> is obligatory.");
             LoggedConsole.WriteLine("");
         }
+        */
 
-
-    } //class LSKiwiROC
+    }
 }

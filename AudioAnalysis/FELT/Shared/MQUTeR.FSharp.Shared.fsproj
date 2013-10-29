@@ -106,6 +106,10 @@
       <HintPath>..\..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FSharp.PowerPack.Linq">
+      <HintPath>..\..\packages\FSPowerPack.Linq.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FSharp.PowerPack.Metadata">
       <HintPath>..\..\packages\FSPowerPack.Metadata.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.Metadata.dll</HintPath>
       <Private>True</Private>
@@ -120,6 +124,22 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="mscorlib" />
+    <Reference Include="QuickGraph">
+      <HintPath>..\..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QuickGraph.Data">
+      <HintPath>..\..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz">
+      <HintPath>..\..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization">
+      <HintPath>..\..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="QuickGraph">
       <HintPath>..\..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
       <Private>True</Private>

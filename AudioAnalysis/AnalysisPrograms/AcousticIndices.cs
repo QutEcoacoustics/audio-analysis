@@ -13,6 +13,7 @@ namespace AnalysisPrograms
     using System.Collections;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -20,122 +21,249 @@ namespace AnalysisPrograms
     using System.Text;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
 
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools;
+
+    using PowerArgs;
 
     using TowseyLib;
 
     public class Acoustic : IAnalyser
     {
+        [CustomDetailedDescription]
+        public class Arguments : IArgClassValidator
+        {
+            [ArgDescription("The task to execute, either `" + TaskAnalyse + "` or `" + TaskLoadCsv + "`")]
+            [ArgRequired]
+            [ArgPosition(0)]
+            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognised.")]
+            public string Task { get; set; }
+
+            [ArgIgnore]
+            public bool TaskIsAnalyse
+            {
+                get
+                {
+                    return string.Equals(this.Task, TaskAnalyse, StringComparison.InvariantCultureIgnoreCase);
+                }
+            }
+
+            [ArgIgnore]
+            public bool TaskIsLoadCsv
+            {
+                get
+                {
+                    return string.Equals(this.Task, TaskLoadCsv, StringComparison.InvariantCultureIgnoreCase);
+                }
+            }
+
+            [ArgDescription("The path to the config file")]
+            [Production.ArgExistingFile()]
+            [ArgRequired]
+            public FileInfo Config { get; set; }
+
+            [ArgDescription("The source csv file to operate on")]
+            [Production.ArgExistingFile(Extension = ".csv")]
+            public FileInfo InputCsv { get; set; }
+
+            [ArgDescription("The source audio file to operate on")]
+            [Production.ArgExistingFile()]
+            public FileInfo Source { get; set; }
+
+            [ArgDescription("A directory to write output to")]
+            [Production.ArgExistingDirectory(createIfNotExists: true)]
+            public DirectoryInfo Output { get; set; }
+
+            public string TmpWav { get; set; }
+
+            public string Indices { get; set; }
+
+            [ArgDescription("The start offset to start analysing from (in seconds)")]
+            [ArgRange(0, double.MaxValue)]
+            public int? Start { get; set; }
+
+            [ArgDescription("The duration of each segment to analyse (seconds) - a maximum of 10 minutes")]
+            [ArgRange(0, 10 * 60)]
+            public int? Duration { get; set; }
+
+            public void Validate()
+            {
+                if (this.TaskIsLoadCsv)
+                {
+                    if (this.InputCsv == null || this.Output != null || this.Source != null || this.TmpWav != null
+                        || this.Indices != null || this.Start != null || this.Duration != null)
+                    {
+                        throw new ValidationArgException(
+                            "For the " + TaskLoadCsv + "task, InputCsv must be specified and other fields not specified");
+                    }
+                }
+
+                if (this.TaskIsAnalyse)
+                {
+                    if (InputCsv != null)
+                    {
+                        throw new ValidationArgException(
+                            "InputCsv should be specifiec in the " + TaskAnalyse + " action");
+                    }
+
+                    if (Source == null)
+                    {
+                        throw new MissingArgException("Source is required for action:" + TaskAnalyse);
+                    }
+
+                    if (Output == null)
+                    {
+                        throw new MissingArgException("Output is required for action:" + TaskAnalyse);
+                    }
+                }
+            }
+
+            public static string AdditionalNotes()
+            {
+                return "NOTE: This class has two distinct options";
+            }
+        }
+
         // OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Acoustic";
+        public const string AnalysisName = "Acoustic";
 
         // TASK IDENTIFIERS
-        public const string task_ANALYSE = ANALYSIS_NAME;
-        public const string task_LOAD_CSV = "loadCsv";
+        public const string TaskAnalyse = AnalysisName;
+        public const string TaskLoadCsv = "loadCsv";
 
         public string DisplayName
         {
             get { return "Acoustic Indices"; }
         }
 
-        private static string identifier = "Towsey." + ANALYSIS_NAME;
+        private const string identifier = "Towsey." + AnalysisName;
+
         public string Identifier
         {
             get { return identifier; }
         }
 
 
-        public static void Dev(string[] args)
+        public static void Dev(Arguments arguments)
         {
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            //string configPath = @"C:\SensorNetworks\Output\AcousticIndices\Indices.cfg";
-            //string outputDir = @"C:\SensorNetworks\Output\AcousticIndices\";
-            //string csvPath = @"C:\SensorNetworks\Output\AcousticIndices\AcousticIndices.csv";
-
-            string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
-            string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
-            string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
-
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
-            //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
-            //string outputDir = @"C:\SensorNetworks\Output\Crow\";
-            //string csvPath = @"C:\SensorNetworks\Output\Crow\Towsey.Acoustic.Indices.csv";
-
-
-            string title = "# FOR EXTRACTION OF Acoustic Indices";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(title);
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            var diOutputDir = new DirectoryInfo(outputDir);
-
-            Log.Verbosity = 1;
-            int startMinute = 0;
-            int durationSeconds = 0; //set zero to get entire recording
-            var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-            var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-            var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
-            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
-
-            var cmdLineArgs = new List<string>();
-            if (true) // task_ANALYSE
+            bool executeDev = arguments == null;
+            if (executeDev)
             {
-                cmdLineArgs.Add(task_ANALYSE);
-                cmdLineArgs.Add(recordingPath);
-                cmdLineArgs.Add(configPath);
-                cmdLineArgs.Add(outputDir);
-                cmdLineArgs.Add("-tmpwav:" + segmentFName);
-                cmdLineArgs.Add("-indices:" + indicesFname);
-                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+                arguments = new Arguments();
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
+                //string configPath = @"C:\SensorNetworks\Output\AcousticIndices\Indices.cfg";
+                //string outputDir = @"C:\SensorNetworks\Output\AcousticIndices\";
+                //string csvPath = @"C:\SensorNetworks\Output\AcousticIndices\AcousticIndices.csv";
+
+                string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+                string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
+                string csvPath =
+                    @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
+
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
+                //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
+                //string outputDir = @"C:\SensorNetworks\Output\Crow\";
+                //string csvPath = @"C:\SensorNetworks\Output\Crow\Towsey.Acoustic.Indices.csv";
+
+
+                string title = "# FOR EXTRACTION OF Acoustic Indices";
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                var diOutputDir = new DirectoryInfo(outputDir);
+
+                Log.Verbosity = 1;
+                int startMinute = 0;
+                int durationSeconds = 0; //set zero to get entire recording
+                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
+                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
+                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+
+                if (true) // task_ANALYSE
+                {
+                    arguments.Task = TaskAnalyse;
+                    arguments.Source = recordingPath.ToFileInfo();
+                    arguments.Config = configPath.ToFileInfo();
+                    arguments.Output = outputDir.ToDirectoryInfo();
+                    arguments.TmpWav = segmentFName;
+                    arguments.Indices = indicesFname;
+                    arguments.Start = (int?)tsStart.TotalSeconds;
+                    arguments.Duration = (int?)tsDuration.TotalSeconds;
+                    /*ATA
+                    cmdLineArgs.Add(TaskAnalyse);
+                    cmdLineArgs.Add(recordingPath);
+                    cmdLineArgs.Add(configPath);
+                    cmdLineArgs.Add(outputDir);
+                    cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                    cmdLineArgs.Add("-indices:" + indicesFname);
+                    cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                    cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);*/
+                }
+                if (false) // task_LOAD_CSV
+                {
+                    //string indicesImagePath = "some path or another";
+                    arguments.Task = TaskLoadCsv;
+                    arguments.InputCsv = csvPath.ToFileInfo();
+                    arguments.Config = configPath.ToFileInfo();
+                    /*ATA 
+                     * cmdLineArgs.Add(TaskLoadCsv);
+                    cmdLineArgs.Add(csvPath);
+                    cmdLineArgs.Add(configPath);
+                     * */
+                    //cmdLineArgs.Add(indicesImagePath);
+                }
+
             }
-            if (false) // task_LOAD_CSV
+
+            Execute(arguments);
+
+            if (executeDev)
             {
-                //string indicesImagePath = "some path or another";
-                cmdLineArgs.Add(task_LOAD_CSV);
-                cmdLineArgs.Add(csvPath);
-                cmdLineArgs.Add(configPath);
-                //cmdLineArgs.Add(indicesImagePath);
+
+                string indicesPath = Path.Combine(arguments.Output.FullName, arguments.Indices);
+                FileInfo fiCsvIndices = new FileInfo(indicesPath);
+                if (!fiCsvIndices.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+
+                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
+
             }
-
-            // #############################################################################################################################################
-            Execute(cmdLineArgs.ToArray());
-
-            // #############################################################################################################################################
-
-            string indicesPath = Path.Combine(outputDir, indicesFname);
-            FileInfo fiCsvIndices = new FileInfo(indicesPath);
-            if (!fiCsvIndices.Exists)
-            {
-                Log.WriteLine("\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-
-            LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
+            return;
         } // Dev()
 
         /// <summary>
         /// Directs task to the appropriate method based on the first argument in the command line string.
         /// </summary>
-        /// <param name="args"></param>
         /// <returns></returns>
-        public static void Execute(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            Contract.Requires(arguments != null);
+            /*ATA
             if (args.Length < 2)
             {
                 LoggedConsole.WriteLine("ERROR: You have called the AnalysisPrograms.MainEntry() method without sufficient command line arguments.");
@@ -148,10 +276,10 @@ namespace AnalysisPrograms
                 string[] restOfArgs = args.Skip(1).ToArray();
                 switch (args[0])
                 {
-                    case task_ANALYSE:      // perform the analysis task
+                    case TaskAnalyse:      // perform the analysis task
                         ExecuteAnalysis(restOfArgs);
                         break;
-                    case task_LOAD_CSV:     // loads a csv file for visualisation
+                    case TaskLoadCsv:     // loads a csv file for visualisation
                         string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
                         var fiCsvFile = new FileInfo(restOfArgs[0]);
                         var fiConfigFile = new FileInfo(restOfArgs[1]);
@@ -164,7 +292,25 @@ namespace AnalysisPrograms
                         LoggedConsole.WriteLine("Task unrecognised>>>" + args[0]);
                         throw new AnalysisOptionInvalidArgumentsException();
                 } // switch
-            } // if-else
+            } // if-else*/
+
+            // loads a csv file for visulisation
+            if (arguments.TaskIsLoadCsv)
+            {
+                string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
+                var fiCsvFile = arguments.InputCsv;
+                var fiConfigFile = arguments.Config;
+                //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
+                IAnalyser analyser = new Acoustic();
+                var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
+                //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
+            }
+
+            // perform the analysis task
+            if (arguments.TaskIsAnalyse)
+            {
+                ExecuteAnalysis(arguments);
+            }
         } // Execute()
 
 
@@ -172,15 +318,12 @@ namespace AnalysisPrograms
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        public static void ExecuteAnalysis(string[] args)
+        public static void ExecuteAnalysis(Arguments args)
         {
             // Check arguments and that paths are valid
-            var tuple = GetAndCheckAllArguments(args);
-            AnalysisSettings analysisSettings = tuple.Item1;
-            TimeSpan tsStart = tuple.Item2;
-            TimeSpan tsDuration = tuple.Item3;
-            analysisSettings.StartOfSegment = tsStart;
-            analysisSettings.SegmentMaxDuration = tsDuration;
+            AnalysisSettings analysisSettings= GetAndCheckAllArguments(args);
+            analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
+            analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo fiSource = analysisSettings.SourceFile;
@@ -190,13 +333,21 @@ namespace AnalysisPrograms
             // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
             AudioUtilityModifiedInfo beforeAndAfterInfo;
 
-            if (tsDuration.TotalSeconds == 0) // Process entire file
+            if (analysisSettings.SegmentMaxDuration != null) // Process entire file
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = AcousticFeatures.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(
+                    fiSource,
+                    tempF,
+                    new AudioUtilityRequest
+                    {
+                        TargetSampleRate = AcousticFeatures.RESAMPLE_RATE,
+                        OffsetStart = analysisSettings.StartOfSegment,
+                        OffsetEnd = analysisSettings.StartOfSegment.Value.Add(analysisSettings.SegmentMaxDuration.Value)
+                    }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
@@ -212,7 +363,7 @@ namespace AnalysisPrograms
 
             // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             int iter = 0; // dummy - iteration number would ordinarily be available at this point.
-            int startMinute = (int)tsStart.TotalMinutes;
+            int startMinute = (int)(args.Start ?? 0);
             foreach (DataRow row in dt.Rows)
             {
                 row[AcousticFeatures.header_count] = iter;
@@ -658,8 +809,9 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static Tuple<AnalysisSettings, TimeSpan, TimeSpan> GetAndCheckAllArguments(string[] args)
+        public static AnalysisSettings GetAndCheckAllArguments(Arguments args)
         {
+            /*ATA
             // check numbre of command line arguments
             if (args.Length < 4)
             {
@@ -671,22 +823,23 @@ namespace AnalysisPrograms
             CheckPaths(args); // check paths of first three command line arguments
 
             FileInfo fiConfig = new FileInfo(args[1]);
-            string outputDir = args[2];
+            string outputDir = args[2];*/
 
             // INIT ANALYSIS SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.SourceFile = new FileInfo(args[0]);
-            analysisSettings.ConfigFile = fiConfig;
-            analysisSettings.AnalysisInstanceOutputDirectory = new DirectoryInfo(outputDir);
+            analysisSettings.SourceFile = args.Source;
+            analysisSettings.ConfigFile = args.Config;
+            analysisSettings.AnalysisInstanceOutputDirectory = args.Output;
             analysisSettings.AudioFile = null;
             analysisSettings.EventsFile = null;
             analysisSettings.IndicesFile = null;
             analysisSettings.ImageFile = null;
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
-            var configuration = new ConfigDictionary(fiConfig.FullName);
+            var configuration = new ConfigDictionary(args.Config);
             analysisSettings.ConfigDict = configuration.GetTable();
 
+            /*ATA
             // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
@@ -718,10 +871,25 @@ namespace AnalysisPrograms
                     }
                 }
             }
-            return System.Tuple.Create(analysisSettings, tsStart, tsDuration);
+            return System.Tuple.Create(analysisSettings, tsStart, tsDuration);*/
+
+            if (!string.IsNullOrWhiteSpace(args.TmpWav))
+            {
+                string indicesPath = Path.Combine(args.Output.FullName, args.TmpWav);
+                analysisSettings.IndicesFile = new FileInfo(indicesPath);
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(args.Indices))
+            {
+                string indicesPath = Path.Combine(args.Output.FullName, args.Indices);
+                analysisSettings.IndicesFile = new FileInfo(indicesPath);
+            }
+
+            return analysisSettings;
         } // CheckAllArguments()
 
-
+        /*ATA
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// Assumes that they are paths.
@@ -782,15 +950,15 @@ namespace AnalysisPrograms
                     throw new AnalysisOptionInvalidPathsException();
                 }
             }
-        } // CheckPaths()
-
+        } // CheckPaths()*/
+        /*
         /// <summary>
         /// NOTE: EDIT THE "Default" string to describethat indicates analysis type.
         /// </summary>
         public static void Usage()
         {
             LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("AnalysisPrograms.exe  " + ANALYSIS_NAME + "  audioPath  configPath  outputDirectory  startOffset  endOffset");
+            LoggedConsole.WriteLine("AnalysisPrograms.exe  " + AnalysisName + "  audioPath  configPath  outputDirectory  startOffset  endOffset");
             LoggedConsole.WriteLine(
             @"
             where:
@@ -804,7 +972,7 @@ namespace AnalysisPrograms
             duration:         (integer) The duration (in seconds) of that portion of the file to be analysed.
             IF LAST TWO ARGUMENTS ARE NOT INCLUDED, OR DURATION=0, THE ENTIRE FILE IS ANALYSED.
             ");
-        }
+        }*/
 
 
     } //end class Acoustic

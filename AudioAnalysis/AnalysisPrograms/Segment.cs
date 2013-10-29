@@ -9,21 +9,12 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    class Segment
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
+    public class Segment
     {
-        //Following lines are used for the debug command line.
-        //CANETOAD
-        //segment  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3"                               C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-        //GECKO
-        //segment "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3"                       C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-        //segment "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_38.mp3"                                C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-        //KOALA MALE EXHALE
-        //segment "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-        //segment "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"                 C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-
-
-
-
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         //public static string key_FILE_EXT    = "FILE_EXT";
         public static string key_MIN_HZ        = "MIN_HZ";
@@ -37,23 +28,48 @@ namespace AnalysisPrograms
 
         public static string eventsFile = "events.txt";
 
-
-        public static void Dev(string[] args)
+        public class Arguments : SourceConfigOutputDirArguments
         {
-            string title = "# SEGMENTING A RECORDING";
+        }
+
+        public static Arguments Dev()
+        {
+            //Following lines are used for the debug command line.
+            //CANETOAD
+            //segment  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3"                               C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+            //GECKO
+            //segment "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3"                       C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+            //segment "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_38.mp3"                                C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+            //KOALA MALE EXHALE
+            //segment "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+            //segment "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"                 C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+
+            throw new NotImplementedException();
+            //return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine(title);
+            Log.WriteLine("# SEGMENTING A RECORDING");
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
+
+            /*ATA
             OscillationRecogniser.CheckArguments(args);
+            */
 
-
-            string recordingPath = args[0];
-            string iniPath = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            string opFName = args[2];
-            string opPath = outputDir + opFName;
+            FileInfo recordingPath = arguments.Source;
+            FileInfo iniPath = arguments.Config;
+            DirectoryInfo outputDir = arguments.Output;
+            string opFName = "segment-output.txt";
+            FileInfo opPath = outputDir.CombineFile(opFName);
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
 
@@ -103,17 +119,17 @@ namespace AnalysisPrograms
 
             //write event count to results file. 
             double sigDuration = sonogram.Duration.TotalSeconds;
-            string fname = Path.GetFileName(recordingPath);
+            string fname = recordingPath.Name;
             int count = predictedEvents.Count;
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
             string str = String.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
             StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
-            FileTools.WriteTextFile(opPath, sb.ToString());
+            FileTools.WriteTextFile(opPath.FullName, sb.ToString());
 
             //draw images of sonograms
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath.Name) + ".png";
             double min, max;
             DataTools.MinMax(intensity, out min, out max);
             double threshold_norm = dBThreshold / max; //min = 0.0;
@@ -128,9 +144,8 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, imagePath, predictedEvents, threshold_norm, intensity);
             }
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+            Log.WriteLine("# Finished recording:- " + recordingPath.Name);
+        }
 
         /// <summary>
         /// 
@@ -143,11 +158,11 @@ namespace AnalysisPrograms
         /// <param name="minDuration">used for smoothing intensity as well as for removing short events</param>
         /// <param name="maxDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(string wavPath,
+        public static System.Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(FileInfo wavPath,
             int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(wavPath);
+            AudioRecording recording = new AudioRecording(wavPath.FullName);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
             //ii: MAKE SONOGRAM
@@ -185,7 +200,7 @@ namespace AnalysisPrograms
             }
         }
 
-
+        /*ATA
         public static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
@@ -221,7 +236,7 @@ namespace AnalysisPrograms
 
                 throw new AnalysisOptionInvalidPathsException();
             }
-        }
+        }*/
 
 
         public static void Usage()
@@ -237,8 +252,5 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("");
             LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
         }
-
-
-
     }
 }

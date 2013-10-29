@@ -312,7 +312,7 @@ namespace System
 
         public static string ToCommaSeparatedList<T>(this IEnumerable<T> items)
         {
-            if (items == null || items.Count() == 0)
+            if (items == null || !items.Any())
                 return string.Empty;
             return items.Select(a => a.ToString()).Aggregate((a, b) => a + "," + b);
         }
@@ -324,6 +324,16 @@ namespace System
         public static string Format2(this string format, params object[] args)
         {
             return string.Format(format, args);
+        }
+
+        public static bool NotEmpty(this string str)
+        {
+            return !string.IsNullOrEmpty(str);
+        }
+
+        public static bool NotWhitespace(this string str)
+        {
+            return !string.IsNullOrWhiteSpace(str);
         }
     }
 }

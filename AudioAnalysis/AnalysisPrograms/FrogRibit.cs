@@ -9,28 +9,42 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    class FrogRibit
-    {
+    using AnalysisPrograms.Production;
 
-        public static void Dev(string[] args)
+    public class FrogRibit
+    {
+        public class Arguments : SourceConfigOutputDirArguments
         {
+        }
+
+        public static Arguments Dev()
+        {
+            throw new NotImplementedException();
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\FrogPond_Samford_SE_555_SELECTION_2.03-2.43.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
+
+
+
+            return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string title = "# DETECT FROG RIBBIT.";
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
-            //SET VERBOSITY
+            // SET VERBOSITY
             Log.Verbosity = 1;
 
-            //string recordingPath   = args[0];
-            //string iniPath        = args[0];
-            //string targetName     = args[2];   //prefix of name of created files 
-
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\FrogPond_Samford_SE_555_SELECTION_2.03-2.43.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
-            
             //i: Set up the file names
             //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
 
@@ -58,24 +72,28 @@ namespace AnalysisPrograms
             //double windowDuration, windowOverlap, dctDuration, dctThreshold, 
             int midBandFreq; //, minOscilRate, maxOscilRate;
             //bool normaliseDCT = false;
-            System.Tuple<double[], AudioRecording, double[], double[]> results;
-
-
-
 
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(recordingPath);
+            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
 
             var scores = new List<double[]>();
 
-            Log.WriteLine("# Scan Audio Recording: " + recordingPath);
+            Log.WriteLine("# Scan Audio Recording: " + arguments.Source.FullName);
 
             //############### Buffo sp. - CANE TOAD #########################################################################
             frogName       = "Cane_toad";
             Log.WriteLine("# Do Recognizer:- "+ frogName);
             midBandFreq    = 640;    // middle of freq band of interest 
             //Default windowDuration = 5.0 milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
-            results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_1000", midBandFreq, windowDuration: 10.0, dctDuration: 0.5, minOscilRate: 11, maxOscilRate: 17, maxOscilScore: 30.0);
+            Tuple<double[], AudioRecording, double[], double[]> results = FrogRibbitRecognizer(
+                recording,
+                "Chebyshev_Lowpass_1000",
+                midBandFreq,
+                windowDuration: 10.0,
+                dctDuration: 0.5,
+                minOscilRate: 11,
+                maxOscilRate: 17,
+                maxOscilScore: 30.0);
             scores.Add(results.Item1);
 
             //############### Litoria rothii - Laughing tree Frog #########################################################################
@@ -125,14 +143,13 @@ namespace AnalysisPrograms
             filteredRecording.Dispose(); // DISPOSE FILTERED SIGNAL
 
             // ix: DRAW SONOGRAM AND SCORES
-            string imagePath = recordingPath + ".png";
+            string imagePath = arguments.Source.Name + ".png";
             var dBarray = results.Item3;
             var miscell = results.Item4;
             DrawSonogram(sonogram, imagePath, dBarray, miscell, scores);
 
-            Log.WriteLine("# Finished everything!");
-            Console.ReadLine();  
-        } //DEV()
+            Log.WriteLine("# Finished everything!"); 
+        }
 
 
         //#########################################################################################################################################################
@@ -270,8 +287,7 @@ namespace AnalysisPrograms
                 }
                 image.Save(path);
             } // using
-        } // DrawSonogram()
-
+        }
     }
 }
  

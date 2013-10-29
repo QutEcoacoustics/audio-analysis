@@ -11,6 +11,7 @@ namespace AnalysisPrograms
     using System.IO;
 
     //using AnalysisPrograms.Processing;
+    using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
 
@@ -21,8 +22,12 @@ namespace AnalysisPrograms
     /// <summary>
     /// The ground parrot recogniser.
     /// </summary>
-    internal class GroundParrotRecogniser
+    public class GroundParrotRecogniser
     {
+        public class Arguments : SourceAndConfigArguments
+        {
+        }
+
         // Keys to recognise identifiers in PARAMETERS - INI file. 
         #region Constants and Fields
 
@@ -88,7 +93,7 @@ namespace AnalysisPrograms
         /// Tuple containing base Sonogram and list of acoustic events.
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            string wavFilePath,
+            FileInfo wavFilePath,
             double intensityThreshold,
             double bandPassFilterMaximum,
             double bandPassFilterMinimum,
@@ -115,7 +120,7 @@ namespace AnalysisPrograms
         /// <returns>
         /// Sonogram and events.
         /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(Tuple<BaseSonogram, List<AcousticEvent>> aed, double eprNormalisedMinScore, string wavFilePath)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(Tuple<BaseSonogram, List<AcousticEvent>> aed, double eprNormalisedMinScore, FileInfo wavFilePath)
         {
             var events = new List<Util.Rectangle<double, double>>();
             foreach (AcousticEvent ae in aed.Item2)
@@ -138,7 +143,7 @@ namespace AnalysisPrograms
             foreach (var rectScore in eprRects)
             {
                 var ae = new AcousticEvent(
-                    rectScore.Item1.Left, rectScore.Item1.Width, rectScore.Item1.Bottom, rectScore.Item1.Top);
+                    rectScore.Item1.Left, rectScore.Item1.Right - rectScore.Item1.Left, rectScore.Item1.Bottom, rectScore.Item1.Top);
                 ae.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                 ae.SetScores(rectScore.Item2, 0, 1);
                 eprEvents.Add(ae);
@@ -153,8 +158,14 @@ namespace AnalysisPrograms
         /// <param name="args">
         /// The args passed into executable.
         /// </param>
-        public static void Dev(string[] args)
+        public static void Dev(Arguments arguments)
         {
+            if (arguments == null)
+            {
+                throw new NoDeveloperMethodException();
+            }
+
+            /*ATA
             if (args.Length == 0)
             {
                 LoggedConsole.WriteLine("Please supply a .wav recording as a command line argument.");
@@ -164,19 +175,18 @@ namespace AnalysisPrograms
                 throw new AnalysisOptionInvalidArgumentsException();
             }
             else
-            {
+            {*/
                 Log.Verbosity = 1;
-                string wavFilePath = args[0];
-                string iniPath = args[1];
+
 
                 // READ PARAMETER VALUES FROM INI FILE
                 double intensityThreshold;
                 double bandPassFilterMaximum;
                 double bandPassFilterMinimum;
                 int smallAreaThreshold;
-                AED.GetAedParametersFromConfigFileOrDefaults(iniPath, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
+                AED.GetAedParametersFromConfigFileOrDefaults(arguments.Config, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
 
-                Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(wavFilePath, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
+                Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
                 List<AcousticEvent> eprEvents = result.Item2;
 
                 eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
@@ -189,12 +199,12 @@ namespace AnalysisPrograms
 
                 LoggedConsole.WriteLine();
 
-                string outputFolder = Path.GetDirectoryName(iniPath) ?? @"C:\SensorNetworks\Output\";
-                AED.GenerateImage(wavFilePath, outputFolder, result.Item1, eprEvents);
+            string outputFolder = arguments.Config.DirectoryName;
+                AED.GenerateImage(arguments.Source.FullName, outputFolder, result.Item1, eprEvents);
                 //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
                 Log.WriteLine("Finished");
-            }
+
         }
 
 
@@ -270,5 +280,7 @@ namespace AnalysisPrograms
         }
 
         #endregion
+
+
     }
 }

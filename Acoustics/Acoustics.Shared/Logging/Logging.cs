@@ -15,6 +15,11 @@ namespace System
 
     using log4net;
 
+    public static class NoConsole
+    {
+        public static readonly ILog Log = LogManager.GetLogger("LogFileOnly");
+    }
+
     /// <summary>
     /// This class is designed to be an abstraction to the system console.
     /// Messages normally written to the System.Console Out and Error are additionally logged in this class.

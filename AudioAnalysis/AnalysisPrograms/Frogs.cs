@@ -20,8 +20,18 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using System.Diagnostics.Contracts;
+
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
     public class Frogs : IAnalyser
     {
+
+        public class Arguments : AnalyserArguments
+        {
+        }
         
         public static string key_FROG_DATA = "FROG_DATA_FILE";
 
@@ -45,122 +55,141 @@ namespace AnalysisPrograms
             get { return identifier; }
         }
 
-        public static void Dev(string[] args)
+        public static void Dev(Arguments arguments)
         {
             Log.Verbosity = 1;
-            bool debug = false;
-#if DEBUG
-            debug = true;
-#endif
+            bool debug = MainEntry.InDEBUG;
 
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   // NEGATIVE walking on dry leaves
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //NEGATIVE  rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";               // NEGATIVE  noise
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  // FROGs AT SAMFORD
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";                  // Crinia signifera
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_BridgeCreek_Night_Extract1-31-00.mp3";   // FROGs at Bridgecreek
+            bool executeDev = arguments == null;
+            if (executeDev)
+            {
+                arguments = new Arguments();
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   // NEGATIVE walking on dry leaves
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //NEGATIVE  rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";               // NEGATIVE  noise
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  // FROGs AT SAMFORD
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";                  // Crinia signifera
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_BridgeCreek_Night_Extract1-31-00.mp3";   // FROGs at Bridgecreek
 
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";                          // FROG COMPILATION
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Curramore\CurramoreSelection-mono16kHz.mp3";       // Curramore COMPILATION
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";                          // FROG COMPILATION
+                string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Curramore\CurramoreSelection-mono16kHz.mp3";
+                    // Curramore COMPILATION
 
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
+                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
 
-            string outputDir  = @"C:\SensorNetworks\Output\Frogs\";
-            //COMMAND LINE
-            //AnalysisPrograms.exe Rheobatrachus "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
+                string outputDir = @"C:\SensorNetworks\Output\Frogs\";
+                
+                // example
+                // "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
 
-            string title = "# FOR DETECTION OF 'FROG SPECIES' ";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(title);
+                const int StartMinute = 0;
+                //int startMinute = 1;
+                const int DurationSeconds = 60; //set zero to get entire recording
+                var tsStart = new TimeSpan(0, StartMinute, 0); //hours, minutes, seconds
+                var tsDuration = new TimeSpan(0, 0, DurationSeconds); //hours, minutes, seconds
+                var segmentFileStem = Path.GetFileNameWithoutExtension(arguments.Source.Name);
+                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, StartMinute);
+                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, StartMinute);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, StartMinute, identifier);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, StartMinute, identifier);
+
+                /*ATA
+                var cmdLineArgs = new List<string>();
+                cmdLineArgs.Add(recordingPath);
+                cmdLineArgs.Add(configPath);
+                cmdLineArgs.Add(outputDir);
+                cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                cmdLineArgs.Add("-events:" + eventsFname);
+                cmdLineArgs.Add("-indices:" + indicesFname);
+                cmdLineArgs.Add("-sgram:" + sonogramFname);
+                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);*/
+                arguments = new Arguments
+                {
+                    Source = recordingPath.ToFileInfo(),
+                    Config = configPath.ToFileInfo(),
+                    Output = outputDir.ToDirectoryInfo(),
+                    TmpWav = segmentFName,
+                    Events = eventsFname,
+                    Indices = indicesFname,
+                    Sgram = sonogramFname,
+                    Start = tsStart.TotalSeconds,
+                    Duration = tsDuration.TotalSeconds
+                };
+            }
+
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("# FOR DETECTION OF 'FROG SPECIES' ");
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            var diOutputDir = new DirectoryInfo(outputDir);
+            LoggedConsole.WriteLine("# Output folder:  " + arguments.Output);
+            LoggedConsole.WriteLine("# Recording file: " + arguments.Source.Name);
+            var diOutputDir = arguments.Output;
 
+            Execute(arguments);
 
-
-            int startMinute = 0;
-            //int startMinute = 1;
-            int durationSeconds = 60; //set zero to get entire recording
-            var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-            var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-            var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
-
-            var cmdLineArgs = new List<string>();
-            cmdLineArgs.Add(recordingPath);
-            cmdLineArgs.Add(configPath);
-            cmdLineArgs.Add(outputDir);
-            cmdLineArgs.Add("-tmpwav:"   + segmentFName);
-            cmdLineArgs.Add("-events:"   + eventsFname);
-            cmdLineArgs.Add("-indices:"  + indicesFname);
-            cmdLineArgs.Add("-sgram:"    + sonogramFname);
-            cmdLineArgs.Add("-start:"    + tsStart.TotalSeconds);
-            cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
-            
-            //#############################################################################################################################################
-            Execute(cmdLineArgs.ToArray());
-            //#############################################################################################################################################
-
-
-            string eventsPath = Path.Combine(outputDir, eventsFname);
-            FileInfo fiCsvEvents = new FileInfo(eventsPath);
-            if (! fiCsvEvents.Exists)
+            if (executeDev)
             {
-                Log.WriteLine("\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string indicesPath = Path.Combine(outputDir, indicesFname);
-            FileInfo fiCsvIndices = new FileInfo(indicesPath);
-            if (!fiCsvIndices.Exists)
-            {
-                Log.WriteLine("\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string imagePath = Path.Combine(outputDir, sonogramFname);
-            FileInfo fiImage = new FileInfo(imagePath);
-            if (fiImage.Exists)
-            {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
-                process.Run(imagePath, outputDir);
-            }
+                var csvEvents = arguments.Output.CombineFile(arguments.Events);
+                if (!csvEvents.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+                if (!csvIndicies.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var image = arguments.Output.CombineFile(arguments.Sgram);
+                if (image.Exists)
+                {
+                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                    process.Run(image.FullName, arguments.Output.FullName);
+                }
 
-            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-            return;
-        } //Dev()
-
-
+                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
+            }
+        }
 
         /// <summary>
         /// A WRAPPER AROUND THE Analysis() METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
-        public static void Execute(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            Contract.Requires(arguments != null);
+
+            /*ATA
             // Check arguments and that paths are valid
             var tuple = GetAndCheckAllArguments(args);
             AnalysisSettings analysisSettings = tuple.Item1;
             TimeSpan tsStart    = tuple.Item2;
-            TimeSpan tsDuration = tuple.Item3;
+            TimeSpan tsDuration = tuple.Item3;*/
+
+            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
+
             string outputDir    = analysisSettings.ConfigFile.Directory.FullName;
 
             //get the data file to identify frog calls. Check it exists and then store full path in dictionary. 
@@ -172,7 +201,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("INVALID PATH: " + fi_FrogData.FullName);
                 LoggedConsole.WriteLine("The config file must contain the name of a valid .csv file (containing frog call parameters) located in same directory as the .cfg file.");
                 LoggedConsole.WriteLine("For example, use Key/Value pair:  FROG_DATA_FILE=FrogDataAndCompilationFile.csv");
-                throw new AnalysisOptionInvalidPathsException();
+                throw new InvalidOperationException();
             }
             analysisSettings.ConfigDict[key_FROG_DATA] = fi_FrogData.FullName; // store full path in the dictionary.
 
@@ -185,7 +214,7 @@ namespace AnalysisPrograms
             // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
             AudioUtilityModifiedInfo beforeAndAfterInfo;
 
-            if (tsDuration.TotalSeconds == 0)  //Process entire file
+            if (tsDuration == TimeSpan.Zero)  // Process entire file
             {
                 beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = Frogs.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
@@ -209,9 +238,7 @@ namespace AnalysisPrograms
             AddContext2Table(dt, tsStart, result.AudioDuration);
             CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
             // DataTableTools.WriteTable(augmentedTable);
-
-        } // Execute()
-
+        }
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
@@ -914,7 +941,7 @@ namespace AnalysisPrograms
             }
         }
 
-
+        /*ATA
         /// <summary>
         /// Checks the command line arguments
         /// returns Analysis Settings
@@ -924,6 +951,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static Tuple<AnalysisSettings, TimeSpan, TimeSpan> GetAndCheckAllArguments(string[] args)
         {
+            /*ATA
             // check numbre of command line arguments
             if (args.Length < 4)
             {
@@ -994,9 +1022,9 @@ namespace AnalysisPrograms
                     }
             }
             return System.Tuple.Create(analysisSettings, tsStart, tsDuration);
-        } // CheckAllArguments()
+        }*/
 
-
+        /*ATA
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// Assumes that they are paths.
@@ -1057,9 +1085,9 @@ namespace AnalysisPrograms
                     throw new AnalysisOptionInvalidPathsException();
                 }
             }
-        } //CheckPaths()
+        } //CheckPaths()*/
 
-
+        /*ATA
 
         /// <summary>
         /// NOTE: EDIT THE "Default" string to indicate current analysis type.
@@ -1081,8 +1109,6 @@ namespace AnalysisPrograms
             endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
             IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
             ");
-        }
-
-
-    } //end class Frogs
+        }*/
+    }
 }
