@@ -11,14 +11,16 @@ using AudioAnalysisTools;
 //Here is link to wiki page containing info about how to write Analysis techniques
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
 
-//HERE ARE COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE
+// default options for dev
 //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt events.txt
 //
 
 
 namespace AnalysisPrograms
 {
-    class OscillationRecogniser
+    using AnalysisPrograms.Production;
+
+    public class OscillationRecogniser
     {
         //Following lines are used for the debug command line.
         //CANETOAD
@@ -53,24 +55,41 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
-        public static string eventsFile  = "events.txt"; 
+        public static string eventsFile  = "events.txt";
 
-
-        public static void Dev(string[] args)
+        public class Arguments : SourceConfigOutputDirArguments
         {
-            string title = "# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
+        }
+
+        public static Arguments Dev()
+        {
+            throw new NotImplementedException();
+
+            // michael, initiate dev arguments here
+
+            return new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string date  = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine(title);
+            Log.WriteLine("# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS");
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
+            /*ATA
             CheckArguments(args);
+            */
 
-
-            string recordingPath = args[0];
-            string iniPath   = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
-            string opFName   = args[2];
+            FileInfo recordingPath = arguments.Source;
+            FileInfo iniPath   = arguments.Config;
+            DirectoryInfo outputDir = arguments.Output; 
+            string opFName   = "OcillationReconiserResults.cav";
             string opPath    = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
                        
@@ -120,7 +139,7 @@ namespace AnalysisPrograms
 
             //write event count to results file. 
             double sigDuration = sonogram.Duration.TotalSeconds;
-            string fname = Path.GetFileName(recordingPath);
+            string fname = arguments.Source.Name;
             int count = predictedEvents.Count;
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             string str = String.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
@@ -129,7 +148,7 @@ namespace AnalysisPrograms
 
 
             //draw images of sonograms
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            string imagePath = outputDir + Path.GetFileNameWithoutExtension(arguments.Source.Name) + ".png";
             if (DRAW_SONOGRAMS == 2)
             {
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, intensity);
@@ -140,20 +159,19 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, intensity);
             }
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Console.ReadLine();
-        } //Dev()
+            Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
+        } 
 
 
 
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(string wavPath,
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,
             bool doSegmentation, int minHz, int maxHz, double frameOverlap, double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq, 
             double eventThreshold, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(wavPath);
+            AudioRecording recording = new AudioRecording(wavPath.FullName);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
 
@@ -220,7 +238,7 @@ namespace AnalysisPrograms
             }
         }
 
-
+        /*ATA
         public static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
@@ -233,8 +251,9 @@ namespace AnalysisPrograms
                 throw new AnalysisOptionInvalidArgumentsException();
             }
             CheckPaths(args);
-        }
+        }*/
 
+        /*ATA
         /// <summary>
         /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
         /// </summary>
@@ -256,9 +275,9 @@ namespace AnalysisPrograms
                 
                 throw new AnalysisOptionInvalidPathsException();
             }
-        }
+        }*/
 
-
+        /*ATA
         public static void Usage()
         {
             LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
@@ -272,7 +291,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("");
             LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
             Console.ReadLine();
-        }
-
-    } //end class
+        }*/
+    }
 }

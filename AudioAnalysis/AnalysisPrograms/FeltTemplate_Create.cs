@@ -10,8 +10,11 @@ using System.Drawing;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Extensions;
 
+    using AnalysisPrograms.Production;
 
+    using PowerArgs;
 
     /// <summary>
     /// This program extracts a template from a recording.
@@ -28,8 +31,30 @@ namespace AnalysisPrograms
     ///     
     /// The user can then edit the image file to produce a number of templates.
     /// </summary>
-    class FeltTemplate_Create
+    public class FeltTemplate_Create
     {
+        [CustomDetailedDescription]
+        public class Arguments : SourceAndConfigArguments
+        {
+            [ArgDescription("prefix of name of the created output files")]
+            [ArgValidFilename()]
+            [ArgRequired]
+            public string Target { get; set; }
+
+            public static string AdditionalNotes()
+            {
+
+                return @"The program produces four (4) output files:
+      string targetPath         = outputDir + targetName + '_target.txt';        //Intensity values (dB) of the marqueed portion of spectrum BEFORE noise reduction
+      string targetNoNoisePath  = outputDir + targetName + '_targetNoNoise.txt'; //Intensity values (dB) of the marqueed portion of spectrum AFTER  noise reduction
+      string noisePath          = outputDir + targetName + '_noise.txt';         //Intensity of noise (dB) in each frequency bin included in template
+      string targetImagePath    = outputDir + targetName + '_target.png';        //Image of noise reduced spectrum
+      
+  The user can then edit the image file to produce a number of templates.
+";
+            }
+        }
+
         // GECKO
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
         // CURRAWONG2
@@ -72,35 +97,47 @@ namespace AnalysisPrograms
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
 
 
-
-
-        public static void Dev(string[] args)
+        public static Arguments Dev()
         {
-            string title = "# EXTRACT AND SAVE ACOUSTIC EVENT.";
+            throw new NotImplementedException();
+            //return  new Arguments();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
+            const string Title = "# EXTRACT AND SAVE ACOUSTIC EVENT.";
             string date  = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine(title);
+            Log.WriteLine(Title);
             Log.WriteLine(date);
 
-            Log.Verbosity = 1;
-            Segment.CheckArguments(args);
+            /*ATA
+            Log.Verbosity = 1;     
+            Segment.CheckArguments(args);*/
+       
+            FileInfo recordingPath = arguments.Source;
+            FileInfo iniPath       = arguments.Config; // path of the ini or params file
+            string targetName    = arguments.Target; // prefix of name of created files 
 
-            string recordingPath = args[0];
-            string iniPath       = args[1]; // path of the ini or params file
-            string targetName    = args[2]; // prefix of name of created files 
-
+            /*ATA
             string recordingFileName = Path.GetFileName(recordingPath);
-            string recordingDirectory= Path.GetDirectoryName(recordingPath);
-            string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
-            string targetPath        = outputDir + targetName + "_target.txt";
-            string targetNoNoisePath = outputDir + targetName + "_targetNoNoise.txt";
-            string noisePath         = outputDir + targetName + "_noise.txt";
-            string targetImagePath   = outputDir + targetName + "_target.png";
-            string paramsPath        = outputDir + targetName + "_params.txt";
+            string recordingDirectory= Path.GetDirectoryName(recordingPath);*/
+            DirectoryInfo outputDir     = iniPath.Directory;
+            FileInfo targetPath         = outputDir.CombineFile(targetName + "_target.txt");
+            FileInfo targetNoNoisePath  = outputDir.CombineFile(targetName + "_targetNoNoise.txt");
+            FileInfo noisePath          = outputDir.CombineFile(targetName + "_noise.txt");
+            FileInfo targetImagePath    = outputDir.CombineFile(targetName + "_target.png");
+            FileInfo paramsPath         = outputDir.CombineFile(targetName + "_params.txt");
+            FileInfo sonogramImagePath = outputDir.CombineFile(Path.GetFileNameWithoutExtension(recordingPath.Name) + ".png");
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(recordingPath);
+            AudioRecording recording = new AudioRecording(recordingPath.FullName);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
 
@@ -130,13 +167,13 @@ namespace AnalysisPrograms
             // #############################################################################################################################################
 
             // iv: SAVE extracted event as matrix of dB intensity values
-            FileTools.WriteMatrix2File(template, targetPath);                  // write template values to file PRIOR to noise removal.
-            FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath); // write template values to file AFTER to noise removal.
-            FileTools.WriteArray2File(noiseSubband, noisePath);
+            FileTools.WriteMatrix2File(template, targetPath.FullName);                  // write template values to file PRIOR to noise removal.
+            FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath.FullName); // write template values to file AFTER to noise removal.
+            FileTools.WriteArray2File(noiseSubband, noisePath.FullName);
 
             // v: SAVE image of extracted event in the original sonogram 
-            string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-            DrawSonogram(sonogram, sonogramImagePath, extractedEvent);
+            
+            DrawSonogram(sonogram, sonogramImagePath.FullName, extractedEvent);
 
             // vi: SAVE extracted event as noise reduced image 
             // alter matrix dynamic range so user can determine correct dynamic range from image 
@@ -145,21 +182,17 @@ namespace AnalysisPrograms
             var targetImage = results1.Item1;
             var min = results1.Item2;
             var max = results1.Item3;
-            ImageTools.DrawMatrix(targetImage, 1, 1, targetImagePath);
+            ImageTools.DrawMatrix(targetImage, 1, 1, targetImagePath.FullName);
 
             // vii: SAVE parameters file
-            dict.Add(key_SOURCE_DIRECTORY, recordingDirectory);
-            dict.Add(key_SOURCE_RECORDING, recordingFileName);
+            dict.Add(key_SOURCE_DIRECTORY, arguments.Source.DirectoryName);
+            dict.Add(key_SOURCE_RECORDING, arguments.Source.Name);
             dict.Add(key_TEMPLATE_MIN_INTENSITY, min.ToString());
             dict.Add(key_TEMPLATE_MAX_INTENSITY, max.ToString());
-            WriteParamsFile(paramsPath, dict);
+            WriteParamsFile(paramsPath.FullName, dict);
 
             Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
-        } // Dev()
-
-
-
+        }
 
 
         public static System.Tuple<BaseSonogram, AcousticEvent, double[,], double[], double[,]> Execute_Extraction(AudioRecording recording,
@@ -269,7 +302,5 @@ namespace AnalysisPrograms
 
             FileTools.WriteTextFile(paramsPath, list);
         }
-
-
-    }//class
+    }
 }

@@ -16,8 +16,14 @@ namespace Dong.Felt
     using System.Reflection;
     using System.Text;
     using System.Drawing;
+
+    using Acoustics.Shared.Extensions;
+
     using AnalysisBase;
     using AudioAnalysisTools;
+
+    using PowerArgs;
+
     using TowseyLib;
     using log4net;
     using QutSensors.Shared;
@@ -25,8 +31,9 @@ namespace Dong.Felt
     /// <summary>
     /// The felt analysis.
     /// </summary>
-    public class FeltAnalysis : IAnalyser, IUsage
+    public class FeltAnalysis : IAnalyser
     {
+
         private const string StandardConfigFileName = "Dong.Felt.yml";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -174,6 +181,25 @@ namespace Dong.Felt
             throw new NotImplementedException();
         }
 
+        public class Arguments
+        {
+            [ArgDescription("The directory to operate on")]
+            [ArgExistingDirectory()]
+            [ArgPosition(0)]
+            [ArgRequired]
+            public DirectoryInfo TargetDirectory { get; set; }
+
+            [ArgDescription("The path to the config file")]
+            [ArgExistingFile()]
+            [ArgRequired]
+            public FileInfo Config { get; set; }
+
+            //[ArgDescription("A directory to write output to")]
+            //[ArgExistingDirectory()]
+            //[ArgRequired]
+            //public DirectoryInfo Output { get; set; }
+        }
+
         /// <summary>
         /// This is the (first)entry point, while I am doing developing / testing.
         /// This method should set up any artificial testing parameters, and then call the execute method. 
@@ -181,25 +207,23 @@ namespace Dong.Felt
         /// <param name="arguments">
         /// The arguments. 
         /// </param>
-        public static void Dev(string[] arguments)
+        public static void Dev(Arguments arguments)
         {
-
-            const string TempDirectory = @"C:\Test recordings\Test\first test wav file and results";
-            
-            arguments = new string[2];
-            arguments[0] = "-input";
-            arguments[1] = TempDirectory;
-
-            if (arguments.Length == 0)
+            if (arguments == null)
             {
+                arguments = new Arguments();
+                const string TempDirectory = @"C:\Test recordings\Test1";
+
                 var testDirectory = @"C:\XUEYAN\targetDirectory";
                 string testConfig = @"C:\XUEYAN\config.yml";
-                arguments = new[] { testConfig, testDirectory };
-            }
 
-            string date = "# Date and Time:" + DateTime.Now;
-            Log.Info("Read the wav. file path");
-            Log.Info(date);
+                arguments.TargetDirectory = TempDirectory.ToDirectoryInfo();
+                arguments.Config = testConfig.ToFileInfo();
+
+                string date = "# Date and Time:" + DateTime.Now;
+                Log.Info("Read the wav. file path");
+                Log.Info(date);
+            }
 
             Execute(arguments);
         }
@@ -211,35 +235,20 @@ namespace Dong.Felt
         /// <param name="arguments">
         /// The arguments.  
         /// </param>
-        public static void Execute(string[] arguments)
+        public static void Execute(Arguments arguments)
         {
-            if (arguments.Length % 2 != 0)
+            if (arguments == null)
             {
-                throw new Exception("odd number of arguments and values");
+                throw new InvalidOperationException();
             }
-      
+
             // create a new "analysis"
             var felt = new FeltAnalysis(); 
         
             // merge config settings with analysis settings
             var analysisSettings = felt.GetDefaultSettings;
 
-            // var configFile = arguments.Skip(arguments.IndexOf("-configFile");
-            // if (!File.Exists(ConfigFilePath))
-            // {
-            // throw new Exception("Can't find config file");
-            // }
-            // Log.Info("Using config file: " + ConfigFilePath);
-            // analysisSettings.ConfigFile = new FileInfo(ConfigFilePath);
-
-            // get the file path from arguments
-            string recordingPath = arguments[1];
-            if (!Directory.Exists(recordingPath))
-            {
-                throw new Exception("Can't find this recording file path: "  + recordingPath);
-            }
-
-            analysisSettings.SourceFile = new FileInfo(recordingPath);
+            //analysisSettings.SourceFile = new FileInfo(recordingPath);
             analysisSettings.ConfigDict = new Dictionary<string, string>();
             analysisSettings.ConfigDict["my_custom_setting"] = "hello xueyan";
 
@@ -248,21 +257,5 @@ namespace Dong.Felt
             Log.Info("Finished, yay!");
         }
 
-        /// <summary>
-        /// The usage.
-        /// </summary>
-        /// <param name="stringBuilder">
-        /// The string Builder.
-        /// </param>
-        /// <returns>
-        /// The <see cref="StringBuilder"/>.
-        /// </returns>
-        public StringBuilder Usage(StringBuilder stringBuilder)
-        {
-            stringBuilder.Append("Dong.FELT usage:");
-            stringBuilder.Append("... dong.felt configurationFile.yml testdirectory");
-
-            return stringBuilder;
-        }
     }
 }

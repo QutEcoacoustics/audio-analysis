@@ -24,55 +24,107 @@ namespace AnalysisPrograms
 {
     using System.Diagnostics;
 
-    class Audio2Sonogram
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
+    using PowerArgs;
+
+    public class Audio2Sonogram
     {
         //use the following paths for the command line for the <Audio2Sonogram> task. 
 
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
 
         //public const int DEFAULT_SAMPLE_RATE = 22050;
-        
-        public static void Main(string[] args)
-        {
-            int status = 0;
 
-            // checks validity of the first 3 path arguments
+        [CustomDetailedDescription]
+        [CustomDescription]
+        public class Arguments : SourceAndConfigArguments
+        {
+            [ArgDescription("A file path to write output to")]
+            [ArgNotExistingFile]
+            [ArgRequired]
+            public FileInfo Output { get; set; }
+
+            public bool Verbose { get; set; }
+
+            [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
+            [ArgRange(0, double.MaxValue)]
+            public double? StartOffset { get; set; }
+
+            [ArgDescription("The end offset (in minutes) of the source audio file to operate on")]
+            [ArgRange(0, double.MaxValue)]
+            public double? EndOffset { get; set; }
+
+
+            public static string Description()
+            {
+                return "Does cool stuff";
+            }
+
+            public static string AdditionalNotes()
+            {
+                return "StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.StartOffset and EndOffset are both required when either is included.";
+            }
+        }
+
+        private static Arguments Dev()
+        {
+            throw new NoDeveloperMethodException();
+        }
+
+        public static void Main(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
+            arguments.Output.CreateParentDirectories();
+
+            if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
+            {
+                throw new InvalidStartOrEndEception("If StartOffset or EndOffset is specifified, then both must be specified");
+            }
+            var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
+
+
+            /*// checks validity of the first 3 path arguments
             CheckArguments(args); 
 
             string recordingPath = args[0];
             string configPath    = args[1];
-            string outputPath    = args[2];
+            string outputPath    = args[2];*/
 
             TimeSpan startOffsetMins = TimeSpan.Zero;
             TimeSpan endOffsetMins   = TimeSpan.Zero;
 
-            if (args.Length >= 5)
+            if (offsetsProvided)
             {
-                startOffsetMins = TimeSpan.FromMinutes(double.Parse(args[3]));
-                endOffsetMins   = TimeSpan.FromMinutes(double.Parse(args[4]));
+                startOffsetMins = TimeSpan.FromMinutes(arguments.StartOffset.Value);
+                endOffsetMins   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
             }
 
-            bool verbose = false;
-            if (args.Length == 6)
+            bool verbose = arguments.Verbose;
+ 
+            if (verbose)
             {
-                verbose = bool.Parse(args[5]);
-                if (verbose)
-                {
-                    string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
-                    string date  = "# DATE AND TIME: " + DateTime.Now;
-                    LoggedConsole.WriteLine(title);
-                    LoggedConsole.WriteLine(date);
-                    LoggedConsole.WriteLine("# Input  audio file: " + Path.GetFileName(recordingPath));
-                    LoggedConsole.WriteLine("# Output image file: " + outputPath);
-                }
+                string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
+                string date  = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
+                LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
             }
+            
             
 
             //1. set up the necessary files
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            FileInfo fiSourceRecording = new FileInfo(recordingPath);
-            FileInfo fiConfig = new FileInfo(configPath);
-            FileInfo fiImage  = new FileInfo(outputPath);
+            DirectoryInfo diSource =  arguments.Source.Directory;
+            FileInfo fiSourceRecording = arguments.Source;
+            FileInfo fiConfig = arguments.Config;
+            FileInfo fiImage  = arguments.Output;
 
             //2. get the config dictionary
             var configuration = new ConfigDictionary(fiConfig.FullName);
@@ -92,14 +144,14 @@ namespace AnalysisPrograms
             if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
             {
                 TimeSpan buffer = new TimeSpan(0, 0, 0);
-                fiOutputSegment = new FileInfo(Path.Combine(Path.GetDirectoryName(outputPath), "tempWavFile.wav"));
+                fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
                 AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, configDict, fiOutputSegment);
             }
 
             //###### get sonogram image ##############################################################################################
             if ((configDict.ContainsKey(Keys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(Keys.MAKE_SOX_SONOGRAM, configDict)))
             {
-                status = SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+                SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
             }
             else
             {
@@ -116,11 +168,13 @@ namespace AnalysisPrograms
             if (verbose)
             {
                 LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-                Console.ReadLine();
             }
-        } // Main(string[] args)
+        }
 
 
+        // Main(string[] args)
+
+        /*ATA
 
         public static void CheckArguments(string[] args)
         {
@@ -212,7 +266,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("The following argument is OPTIONAL.");
             LoggedConsole.WriteLine("verbosity:   (boolean) true/false");
             LoggedConsole.WriteLine("");
-        }
+        }*/
 
     } //class Audio2Sonogram
 }

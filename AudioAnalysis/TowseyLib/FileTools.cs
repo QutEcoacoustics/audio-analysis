@@ -9,6 +9,10 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace TowseyLib
 {
+    using System.Diagnostics.Contracts;
+
+    using Acoustics.Shared.Extensions;
+
     public static class FileTools
     {
         private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
@@ -189,9 +193,19 @@ namespace TowseyLib
 
         public static void WriteTextFile(string path, IEnumerable<string> array, bool saveExistingFile = true)
         {
-            if (File.Exists(path) && saveExistingFile)
+            WriteTextFile(path.ToFileInfo(), array, saveExistingFile);
+        }
+
+        public static void WriteTextFile(FileInfo path, IEnumerable<string> array, bool saveExistingFile = true)
+        {
+            if (path == null)
             {
-                File.Copy(path, path + "OLD.txt", true); //overwrite
+                throw new ArgumentException();
+            }
+
+            if (path.Exists && saveExistingFile)
+            {
+                File.Copy(path.FullName, path + "OLD.txt", true); //overwrite
             }
 
 //            int count = array.Count;
@@ -199,8 +213,8 @@ namespace TowseyLib
 //                foreach (string line in array)
 //                    writer.WriteLine(line);
 
-            File.WriteAllLines(path, array);
-        }// end WriteTextFile()
+            File.WriteAllLines(path.FullName, array);
+        }
 
 
 
@@ -483,28 +497,32 @@ namespace TowseyLib
         /// Does NOT zip directories recursively.
         /// </summary>
         /// <param name="Dir2Compress"></param>
-        /// <param name="OutZipFile"></param>
+        /// <param name="outZipFile"></param>
         public static void ZipDirectory(string Dir2Compress, string outZipFile)
         {
             string[] filenames = Directory.GetFiles(Dir2Compress);
             ZipFiles(filenames, outZipFile);
         }
 
+        public static void ZipFiles(FileInfo[] filenames, string outZipFile)
+        {
+            ZipFiles(filenames.Select(fi => fi.FullName).ToArray(), outZipFile);
+        }
 
         /// <summary>
         /// zips all files in passed list of file names.
         /// Does NOT zip directories recursively
         /// </summary>
         /// <param name="filenames"></param>
-        /// <param name="OutZipFile"></param>
-        public static void ZipFiles(string[] filenames, string OutZipFile)
+        /// <param name="outZipFile"></param>
+        public static void ZipFiles(string[] filenames, string outZipFile)
         {
 
             try
             {
                 // 'using' statements gaurantee the stream is closed properly which is a big source
                 // of problems otherwise.  Its exception safe as well which is great.
-                using (ZipOutputStream s = new ZipOutputStream(File.Create(OutZipFile)))
+                using (ZipOutputStream s = new ZipOutputStream(File.Create(outZipFile)))
                 {
 
                     s.SetLevel(9); // 0 - store only to 9 - means best compression
@@ -549,9 +567,9 @@ namespace TowseyLib
                 }
 
                 //check the zip file was formed
-                if (File.Exists(OutZipFile))
+                if (File.Exists(outZipFile))
                 {
-                    FileInfo fi = new FileInfo(OutZipFile);
+                    FileInfo fi = new FileInfo(outZipFile);
                     LoggedConsole.WriteLine("Zipped file has been created at " + fi.FullName);
                 }
                 else LoggedConsole.WriteLine("Zipped File WAS NOT CREATED.");

@@ -13,18 +13,42 @@ namespace AnalysisPrograms
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Shared;
 
     using AnalysisBase;
+
+    using AnalysisPrograms.Production;
+
     using AnalysisRunner;
 
     using AudioAnalysisTools;
+
+    using PowerArgs;
+
     using TowseyLib;
 
-    class AnalyseLongRecording
+    public class AnalyseLongRecording
     {
+        public class Arguments : SourceConfigOutputDirArguments
+        {
+
+            [ArgDescription("A TEMP directory where cut files will be stored. Use this option for effciency (e.g. write to a RAM Disk).")]
+            [Production.ArgExistingDirectory]
+            public DirectoryInfo TempDir { get; set; }
+
+
+            [ArgDescription("The start offset to start analysing from (in seconds)")]
+            [ArgRange(0, double.MaxValue)]
+            public double? StartOffset { get; set; }
+
+            [ArgDescription("The end offset to stop analysing (in seconds)")]
+            [ArgRange(0, 10 * 60)]
+            public double? EndOffset { get; set; }
+        }
+
         //use the following paths for the command line.
 
         // COMMAND LINES FOR  ACOUSTIC INDICES
@@ -67,20 +91,44 @@ namespace AnalysisPrograms
 
         // SERF TAGGED RECORDINGS FROM OCT 2010
         // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010" 
+        private static Dictionary<string, Arguments> devArgs //
+            = new Dictionary<string, Arguments>()
+              {
+                  {
+                      "SerfTaggedRecordingsFromOct2010",
+                      new Arguments
+                      {
+                          Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
+                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                          Output = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010".ToDirectoryInfo()
+                      }
+                  }
+              };
 
+        const string ImagefileExt = ".png";
 
-        const string imagefileExt = ".png";
-
-
-        public static void Main(string[] args)
+        private static Arguments Dev()
         {
-            bool verbose = true;
-            bool debug   = false;
-#if DEBUG
-            debug = true;
-#endif
+            // choose an optional Dev object to return
 
-            if (verbose)
+            // e.g.
+            //return devArgs["SerfTaggedRecordingsFromOct2010"];
+
+            throw new NoDeveloperMethodException();
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
+            const bool Verbose = true;
+            bool debug   = MainEntry.InDEBUG;
+
+
+            if (Verbose)
             {
                 string title = "# PROCESS LONG RECORDING";
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -88,42 +136,45 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(date);
             }
 
-            CheckArguments(args); // checks validity of arguments 2, 3, and 4. First argument already removed.
+            /*ATA CheckArguments(args); // checks validity of arguments 2, 3, and 4. First argument already removed.
 
 
             string recordingPath = args[0];
             string configPath    = args[1];
             string outputDir     = args[2];
             string tempFilesDir  = null;
+             * */
 
-            if (args.Length == 4)
+            var recordingPath = arguments.Source;
+            var configPath = arguments.Config;
+            var outputDir = arguments.Output;
+            var tempFilesDirectory = arguments.TempDir;
+
+            if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
-                tempFilesDir = args[3];
-                args = args.Take(3).ToArray();
+                throw new InvalidStartOrEndEception("If StartOffset or EndOffset is specifified, then both must be specified");
             }
+            var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
             // if a temp dir is not given, use output dir as temp dir
-            if (tempFilesDir == null)
+            if (tempFilesDirectory == null)
             {
-                tempFilesDir = new DirectoryInfo(outputDir).FullName;
+                tempFilesDirectory = arguments.Output;
             }
 
-            if (verbose)
+            if (Verbose)
             {
-                LoggedConsole.WriteLine("# Recording file:     " + Path.GetFileName(recordingPath));
+                LoggedConsole.WriteLine("# Recording file:     " + recordingPath.Name);
                 LoggedConsole.WriteLine("# Configuration file: " + configPath);
                 LoggedConsole.WriteLine("# Output folder:      " + outputDir);
-                LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDir);
+                LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDirectory);
             }
 
-
-            var tempFilesDirectory = new DirectoryInfo(tempFilesDir);
-
             // 1. set up the necessary files
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            FileInfo fiSourceRecording = new FileInfo(recordingPath);
-            FileInfo fiConfig = new FileInfo(configPath);
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
+            DirectoryInfo diSource = recordingPath.Directory;
+            FileInfo fiSourceRecording = recordingPath;
+            FileInfo fiConfig = configPath;
+            DirectoryInfo diOP = outputDir;
 
             // 2. get the analysis config dictionary
             var configuration = new ConfigDictionary(fiConfig.FullName);
@@ -154,21 +205,13 @@ namespace AnalysisPrograms
             };
 
             // 4. get the segment of audio to be analysed
-            var fileSegment = new FileSegment { }; 
-            if(args.Length == 3)
+            var fileSegment = new FileSegment { OriginalFile = fiSourceRecording }; 
+
+            if (offsetsProvided)
             {
-                fileSegment = new FileSegment { OriginalFile = fiSourceRecording };
-            }
-            else if (args.Length == 5)
-            {
-                string startOffsetMins = args[3];
-                string endOffsetMins = args[4];
-                fileSegment = new FileSegment
-                { 
-                    OriginalFile = fiSourceRecording,
-                    SegmentStartOffset = TimeSpan.FromMinutes(double.Parse(startOffsetMins)),
-                    SegmentEndOffset   = TimeSpan.FromMinutes(double.Parse(endOffsetMins)),
-                };
+                fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
+                fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
+
             }
 
             // 5. initialise the analyser
@@ -275,11 +318,11 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
                 LoggedConsole.WriteLine("");
-                SaveImageOfIndices(fiIndicesCSV.FullName, configPath, displayCSVImage);
+                SaveImageOfIndices(fiIndicesCSV, configPath, displayCSVImage);
             }
 
             // if doing ACOUSTIC INDICES then write SPECTROGRAMS to CSV files and draw their images
-            if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.ANALYSIS_NAME))
+            if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))
             {
                 // ensure results are sorted in order
                 var results = analyserResults.ToArray();
@@ -365,29 +408,35 @@ namespace AnalysisPrograms
             } // if doing acoustic indices
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-        } // Main(string[] args)
+        }
 
 
-        public static void SaveImageOfIndices(string csvPath, string configPath, bool doDisplay)
+
+        // Main(string[] args)
+
+
+        public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
         {
-            string outputDir = Path.GetDirectoryName(csvPath);
-            string fName     = Path.GetFileNameWithoutExtension(csvPath);
-            var imagePath    = Path.Combine(outputDir, fName + imagefileExt);
-            var args = new string[3];
-            args[0] = csvPath;
-            args[1] = configPath;
-            args[2] = imagePath;
-            // create and write the indices image to file
-            IndicesCsv2Display.Main(args.ToArray());
+            string outputDir = csvPath.DirectoryName;
+            string fName     = Path.GetFileNameWithoutExtension(csvPath.Name);
+            var imagePath    = Path.Combine(outputDir, fName + ImagefileExt).ToFileInfo();
 
-            FileInfo fiImage = new FileInfo(imagePath);
-            if ((doDisplay) && (fiImage.Exists))
+            var args = new IndicesCsv2Display.Arguments()
+                       {
+                           InputCsv = csvPath,
+                           Config = configPath,
+                           Output = imagePath,
+                       };
+            // create and write the indices image to file
+            IndicesCsv2Display.Main(args);
+
+            if ((doDisplay) && (imagePath.Exists))
             {
                 ImageTools.DisplayImageWithPaint(imagePath);
             }
         }
 
-
+        /*ATA
         public static void CheckArguments(string[] args)
         {
             if (args.Length == 4)
@@ -414,12 +463,13 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("\nYOU REQUIRE 4 OR 6 COMMAND LINE ARGUMENTS\n");
                 Usage();
                 
-                throw new AnalysisOptionInvalidArgumentsException();
+                 throw new AnalysisOptionInvalidArgumentsException();
             }
 
             CheckPaths(args);
-        }
+        }*/
 
+        /*ATA
         /// <summary>
         /// this method checks validity of first three command line arguments.
         /// </summary>
@@ -476,9 +526,9 @@ namespace AnalysisPrograms
                     throw new AnalysisOptionInvalidPathsException();
                 }
             }
-        }
+        }*/
 
-
+        /* ATA
         public static void Usage()
         {
             LoggedConsole.WriteLine(
@@ -495,7 +545,7 @@ namespace AnalysisPrograms
             endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
             IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
             ");
-        }
+        }*/
 
 
     } //class AnalyseLongRecording

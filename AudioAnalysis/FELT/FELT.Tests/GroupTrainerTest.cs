@@ -11,7 +11,7 @@ namespace FELT.Tests
     using MQUTeR.FSharp.Shared;
 
     using Microsoft.FSharp.Collections;
-    //using Microsoft.FSharp.Collections.Tagged;
+
 
     [TestClass]
     public class GroupTrainerTest

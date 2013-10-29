@@ -17,7 +17,11 @@ namespace AnalysisPrograms
 
     using AnalysisBase;
 
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools;
+
+    using PowerArgs;
 
     using log4net;
 
@@ -30,6 +34,19 @@ namespace AnalysisPrograms
     /// </summary>
     public class AED : IAnalyser
     {
+        public class Arguments : SourceArguments
+        {
+            [ArgDescription("The path to the AED config file")]
+            [Production.ArgExistingFile()]
+            [ArgRequired]
+            public FileInfo Config { get; set; }
+
+            [ArgDescription("A file name to write output to. This file will be placed in the directory of the config file.")]
+            [ArgValidFilename]
+            [ArgRequired]
+            public string Output { get; set; }
+        }
+
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -82,13 +99,13 @@ namespace AnalysisPrograms
         /// Sonogram and Acoustic events.
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            string wavFilePath, 
+            FileInfo wavFilePath, 
             double intensityThreshold, 
             int smallAreaThreshold, 
             double bandPassMinimum, 
             double bandPassMaximum)
         {
-            BaseSonogram sonogram = FileToSonogram(wavFilePath);
+            BaseSonogram sonogram = FileToSonogram(wavFilePath.FullName);
             List<AcousticEvent> events = Detect(
                 sonogram, intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum);
             return Tuple.Create(sonogram, events);
@@ -172,32 +189,46 @@ namespace AnalysisPrograms
         /// <returns>
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            string wavFilePath, double intensityThreshold, int smallAreaThreshold)
+            FileInfo wavFilePath, double intensityThreshold, int smallAreaThreshold)
         {
             // TODO fix constants
             return Detect(wavFilePath, intensityThreshold, smallAreaThreshold, 0, 11025);
         }
 
-        /// <summary>
-        /// Detection method for development.
-        /// </summary>
-        /// <param name="args">
-        /// Arguments given to program.
-        /// </param>
-        public static void Dev(string[] args)
+        public static Arguments Dev(object obj)
         {
+            throw new NotImplementedException();
+        }
+
+        public static void Detect(AED.Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev(arguments);
+            }
+
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.Info("# Running acoustic event detection.");
             Log.Info(date);
             TowseyLib.Log.Verbosity = 1;
 
-            CheckArguments(args);
+            ////CheckArguments(args);
 
-            string recordingPath = args[0];
-            string iniPath = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            string opFName = args[2];
-            string opPath = outputDir + opFName;
+            ////string recordingPath = args[0];
+            var recordingPath = arguments.Source;
+
+            ////string iniPath = args[1];
+            var iniPath = arguments.Config;
+
+            
+            //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            var outputDir = iniPath.Directory;
+
+            //string opFName = args[2];
+            var outputFileName = arguments.Output;
+
+            //string opPath = outputDir + opFName;
+            var outputPath = Path.Combine(outputDir.FullName, outputFileName);
 
             ////Log.WriteIfVerbose("# Output folder =" + outputDir);
             ////Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
@@ -221,7 +252,7 @@ namespace AnalysisPrograms
                 recordingPath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
             List<AcousticEvent> events = result.Item2;
 
-            string destPathBase = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
+            string destPathBase = Path.Combine(outputDir.FullName, Path.GetFileNameWithoutExtension(recordingPath.Name));
             string destPath = destPathBase;
             var inc = 0;
             while (File.Exists(destPath + ".csv"))
@@ -334,7 +365,7 @@ namespace AnalysisPrograms
         /// The small area threshold.
         /// </param>
         internal static void GetAedParametersFromConfigFileOrDefaults(
-            string iniPath, 
+            FileInfo iniPath, 
             out double intensityThreshold, 
             out double bandPassFilterMaximum, 
             out double bandPassFilterMinimum, 
@@ -376,7 +407,7 @@ namespace AnalysisPrograms
             TowseyLib.Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
         }
 
-        private static void CheckArguments(string[] args)
+        /*private static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
             {
@@ -392,9 +423,9 @@ namespace AnalysisPrograms
             }
 
             CheckPaths(args);
-        }
+        }*/
 
-        /// <summary>
+       /* /// <summary>
         /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
         /// </summary>
         /// <param name="args">
@@ -423,8 +454,8 @@ namespace AnalysisPrograms
                 throw new AnalysisOptionInvalidPathsException();
             }
         }
-
-        private static void Usage()
+ */
+        /*private static void Usage()
         {
             LoggedConsole.WriteLine(
            @"INCORRECT COMMAND LINE.
@@ -447,9 +478,9 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("intensityThreshold: mandatory if smallAreaThreshold specified, otherwise default used");
             LoggedConsole.WriteLine("smallAreaThreshold: mandatory if intensityThreshold specified, otherwise default used");
 
-            */
-        }
-
+            *
+        }*/
+   
         #endregion
 
         /// <summary>
@@ -512,5 +543,9 @@ namespace AnalysisPrograms
         {
             throw new NotImplementedException();
         }
+
+
+
+
     }
 }

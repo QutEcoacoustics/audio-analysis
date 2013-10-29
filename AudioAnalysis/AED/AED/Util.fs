@@ -79,8 +79,9 @@ type Pixel = float<px>
     
 let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
-type Rectangle<'a , 'b> = 
+type Rectangle<'a, 'b> = 
     {Left:'a; Top:'b; Right:'a; Bottom:'b; }
+        
 
 type Rectangle2<'a> = Rectangle<'a, 'a>
 

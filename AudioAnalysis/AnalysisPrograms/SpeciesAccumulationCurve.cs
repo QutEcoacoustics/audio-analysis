@@ -9,6 +9,10 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared.Extensions;
+
+    using PowerArgs;
+
     public class SpeciesAccumulationStats
     {
         // Fixed number of samples an ecologist is prepared to process. 
@@ -122,20 +126,36 @@ namespace AnalysisPrograms
         }
     } // class SpeciesAccumulationStats
 
-
-
-    class SpeciesAccumulationCurve
+    public class SpeciesAccumulationCurve
     {
+        private const string Header = "sample,additional,total";
 
-        static string HEADER = "sample,additional,total";
+        public class Arguments
+        {
 
-        public static void Dev(string[] args)
+            [ArgDescription("Path of the input  file to be processed.")]
+            [Production.ArgExistingFile()]
+            [ArgPosition(0)]
+            [ArgRequired]
+            public FileInfo Source { get; set; }
+
+            [ArgDescription("Path of the output file to store results.")]
+            [ArgPosition(1)]
+            [ArgRequired]
+            public FileInfo Output { get; set; }
+        }
+
+
+        /// <summary>
+        /// Note to michael, consider returning true false to indicate program exit - never use Environment.Exit
+        /// </summary>
+        public static void Dev()
         {
 
             //SET VERBOSITY
             DateTime tStart = DateTime.Now;
             Log.Verbosity = 1;
-            Log.WriteLine("# Start Time = " + tStart.ToString());
+            Log.WriteLine("# Start Time = " + tStart);
 
 
             if(false)
@@ -154,8 +174,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < samples.Length; i++) Console.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
 
                 Log.WriteLine("# Finished everything!");
-                Console.ReadLine();
-                System.Environment.Exit(666);
+                return;
             }
             if (false)
             {
@@ -177,8 +196,7 @@ namespace AnalysisPrograms
                 DataTools.writeBarGraph(histogram);
 
                 Log.WriteLine("# Finished histogram!");
-                Console.ReadLine();
-                System.Environment.Exit(666);
+                return;
             }
 
 
@@ -263,7 +281,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("remaining species =" + totalSum);
 
 
-                throw new AnalysisOptionDevilException();
+                return;
 
             }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
@@ -440,42 +458,50 @@ namespace AnalysisPrograms
             TimeSpan timeSpan = tEnd - tStart;
             Log.WriteLine("# Elapsed Time = " + timeSpan.TotalSeconds + " seconds");
             Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
-        } //DEV()
+        }
 
         /// <summary>
-        /// EXECUTABLE - To CALL THIS METHOD MUST EDIT THE MainEntry.cs FILE
+        /// EXECUTABLE
         /// extracts acoustic richness indices from a single recording.
         /// </summary>
         /// <param name="args"></param>
-        public static void Executable(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            if (arguments == null)
+            {
+                throw new NoDeveloperMethodException();
+            }
+
+            throw new NotImplementedException("AT: I don't even know how to begin to fix this file... warning it may have been left in a broken state");
+
             DateTime tStart = DateTime.Now;
             //SET VERBOSITY
             Log.Verbosity = 0;
             bool doStoreImages = false;
-            CheckArguments(args);
 
-            string recordingPath = args[0];
-            string opPath = args[1];
+            FileInfo recordingPath = arguments.Source;
+            FileInfo opPath = arguments.Output;
+
+            opPath.CreateParentDirectories();
 
             //i: Set up the dir and file names
-            string recordingDir = Path.GetDirectoryName(recordingPath);
-            string outputDir = Path.GetDirectoryName(opPath);
-            string fileName = Path.GetFileName(recordingPath);
+            DirectoryInfo recordingDir = recordingPath.Directory;
+            DirectoryInfo outputDir = opPath.Directory;
+            string fileName = opPath.Name;
 
             //init counters
             double elapsedTime = 0.0;
             int fileCount = 1;
 
             //write header to results file
-            if (!File.Exists(opPath))
+            opPath.Refresh();
+            if (!opPath.Exists)
             {
-                FileTools.WriteTextFile(opPath, HEADER);
+                FileTools.WriteTextFile(opPath.FullName, Header);
             }
             else //calculate file number and total elapsed time so far
             {
-                List<string> text = FileTools.ReadTextFile(opPath);  //read results file
+                List<string> text = FileTools.ReadTextFile(opPath.FullName);  //read results file
                 string[] lastLine = text[text.Count - 1].Split(','); // read and split the last line
                 if (!lastLine[0].Equals("count")) Int32.TryParse(lastLine[0], out fileCount);
                 fileCount++;
@@ -489,7 +515,7 @@ namespace AnalysisPrograms
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
             Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################\n");
-        } //EXECUTABLE()
+        }
 
 
         //#########################################################################################################################################################
@@ -898,7 +924,7 @@ namespace AnalysisPrograms
             return Tuple.Create(totalSpeciesList, callingSpeciesList, callMatrix);
         }
 
-
+        /*ATA
         public static void CheckArguments(string[] args)
         {
             int argumentCount = 2;
@@ -910,8 +936,8 @@ namespace AnalysisPrograms
                 Usage();
             }
             CheckPaths(args);
-        }
-
+        }*/
+        /*
         /// <summary>
         /// this method checks for the existence of a file and directory expected as two arguments of the command line.
         /// </summary>
@@ -946,8 +972,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("");
             LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
             throw new AnalysisOptionInvalidArgumentsException();
-        }
-
+        }*/
 
 
     }

@@ -20,6 +20,12 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using System.Diagnostics.Contracts;
+
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
     /// This class is a combination of analysers
     /// When adding a new analyser to this class need to modify two methods:
     ///    1) ConvertEvents2Indices();  and
@@ -30,6 +36,10 @@ namespace AnalysisPrograms
 
     public class MultiAnalyser : IAnalyser
     {
+        public class Arguments : AnalyserArguments
+        {
+        }
+
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "MultiAnalyser";
         public const int RESAMPLE_RATE = 17640;
@@ -37,7 +47,7 @@ namespace AnalysisPrograms
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static string[] analysisTitles = { Human1.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
+        public static string[] analysisTitles = { Human1.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.AnalysisName, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
 
 
         public string DisplayName
@@ -45,121 +55,141 @@ namespace AnalysisPrograms
             get { return "Multiple analyses"; }
         }
 
-        private static string identifier = "Towsey." + ANALYSIS_NAME;
+        private const string identifier = "Towsey." + ANALYSIS_NAME;
+
         public string Identifier
         {
             get { return identifier; }
         }
 
-        public static void Dev(string[] args)
-        {
-            //HUMAN
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav"; //WARNING: RECORDING IS 44 MINUTES LONG. NEEDT TO SAMPLE
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            //MACHINES
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min173Airplane.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min449Airplane.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min700Airplane.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min757PLANE.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\KAPITI2-20100219-202900_Airplane.mp3";
-            //CROW
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Cassandra111216-001Mono5-7min.mp3";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min430Crows.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min646Crows.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
-
-            //KOALA MALE
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
-            //CANETOAD
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
-
-
-
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
-            string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
-
-            string title = "# RUNS MULTIPLE ANALYSES";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(title);
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            var diOutputDir = new DirectoryInfo(outputDir);
-
-            Log.Verbosity = 1;
-            int startMinute = 0;
-            int durationSeconds = 60; //set zero to get entire recording
-            var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-            var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-            var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
-            var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
-
-            var cmdLineArgs = new List<string>();
-            cmdLineArgs.Add(recordingPath);
-            cmdLineArgs.Add(configPath);
-            cmdLineArgs.Add(outputDir);
-            cmdLineArgs.Add("-tmpwav:" + segmentFName);
-            cmdLineArgs.Add("-events:" + eventsFname);
-            cmdLineArgs.Add("-indices:" + indicesFname);
-            cmdLineArgs.Add("-sgram:" + sonogramFname);
-            cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-            cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
-
-            //#############################################################################################################################################
-            Execute(cmdLineArgs.ToArray());
-
-            //#############################################################################################################################################
-
-            string eventsPath = Path.Combine(outputDir, eventsFname);
-            FileInfo fiCsvEvents = new FileInfo(eventsPath);
-            if (!fiCsvEvents.Exists)
+        public static void Dev(Arguments arguments)
+        {            var executeDev = arguments == null;
+            if (executeDev)
             {
-                Log.WriteLine("\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string indicesPath = Path.Combine(outputDir, indicesFname);
-            FileInfo fiCsvIndices = new FileInfo(indicesPath);
-            if (!fiCsvIndices.Exists)
-            {
-                Log.WriteLine("\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string imagePath = Path.Combine(outputDir, sonogramFname);
-            FileInfo fiImage = new FileInfo(imagePath);
-            if (fiImage.Exists)
-            {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
-                process.Run(imagePath, outputDir);
+                //HUMAN
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\PramukSpeech_20090615.wav"; //WARNING: RECORDING IS 44 MINUTES LONG. NEEDT TO SAMPLE
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";         
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
+                //MACHINES
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min173Airplane.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min449Airplane.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min700Airplane.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min757PLANE.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\KAPITI2-20100219-202900_Airplane.mp3";
+                //CROW
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Cassandra111216-001Mono5-7min.mp3";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min430Crows.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\DM420036_min646Crows.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
+
+                //KOALA MALE
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
+                //CANETOAD
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
+
+
+
+                string configPath =
+                    @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
+                string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
+
+                string title = "# RUNS MULTIPLE ANALYSES";
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                var diOutputDir = new DirectoryInfo(outputDir);
+
+                Log.Verbosity = 1;
+                int startMinute = 0;
+                int durationSeconds = 60; //set zero to get entire recording
+                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
+                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
+                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+                /*ATA
+                var cmdLineArgs = new List<string>();
+                cmdLineArgs.Add(recordingPath);
+                cmdLineArgs.Add(configPath);
+                cmdLineArgs.Add(outputDir);
+                cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                cmdLineArgs.Add("-events:" + eventsFname);
+                cmdLineArgs.Add("-indices:" + indicesFname);
+                cmdLineArgs.Add("-sgram:" + sonogramFname);
+                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
+                */
+                arguments = new Arguments
+                {
+                    Source = recordingPath.ToFileInfo(),
+                    Config = configPath.ToFileInfo(),
+                    Output = outputDir.ToDirectoryInfo(),
+                    TmpWav = segmentFName,
+                    Events = eventsFname,
+                    Indices = indicesFname,
+                    Sgram = sonogramFname,
+                    Start = tsStart.TotalSeconds,
+                    Duration = tsDuration.TotalSeconds
+                };
             }
 
-            LoggedConsole.WriteLine("\n\n# Finished analysis:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+            Execute(arguments);
+
+            if (executeDev)
+            {
+                var csvEvents = arguments.Output.CombineFile(arguments.Events);
+                if (!csvEvents.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+                if (!csvIndicies.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var image = arguments.Output.CombineFile(arguments.Sgram);
+                if (image.Exists)
+                {
+                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(LSKiwiHelper.imageViewer);
+                    process.Run(image.FullName, arguments.Output.FullName);
+                }
+
+                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
+            }
+        }
 
 
 
@@ -168,11 +198,10 @@ namespace AnalysisPrograms
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
-        public static void Execute(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            Contract.Requires(arguments != null);
+            /*ATA
             if (args.Length < 4)
             {
                 LoggedConsole.WriteLine("Require at least 4 command line arguments.");
@@ -270,18 +299,22 @@ namespace AnalysisPrograms
                         throw new AnalysisOptionInvalidDurationException();
                     }
                 }
-            }
+            }*/
+
+            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tsDuration.TotalSeconds == 0)   //Process entire file
+            if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -404,7 +437,7 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(8);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.ANALYSIS_NAME);
+            newDict.Add(Keys.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.AnalysisName);
             if (frameLength != null)
                 newDict.Add(Keys.FRAME_LENGTH, frameLength);
 
@@ -418,7 +451,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results3.Item4)
                     {
-                        ae.Name = PlanesTrainsAndAutomobiles.ANALYSIS_NAME;
+                        ae.Name = PlanesTrainsAndAutomobiles.AnalysisName;
                         events.Add(ae);
                     }
                 }
@@ -640,7 +673,7 @@ namespace AnalysisPrograms
                 {
                     if (eventScore != 0.0) crow__EventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == PlanesTrainsAndAutomobiles.ANALYSIS_NAME)
+                else if (eventName == PlanesTrainsAndAutomobiles.AnalysisName)
                 {
                     if (eventScore != 0.0) machinEventsPerUnitTime[timeUnit]++;
                 }
@@ -713,6 +746,5 @@ namespace AnalysisPrograms
                 };
             }
         }
-
-    } //end class MultiAnalyser
+    }
 }

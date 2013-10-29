@@ -8,12 +8,22 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    //COMMAND LINES FOR SnrAnalysis.exe
-    // snr  C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav                  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
-    // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
+    using Acoustics.Shared.Extensions;
 
-    class SnrAnalysis
+    using AnalysisPrograms.Production;
+
+    using PowerArgs;
+
+    public class SnrAnalysis
 	{
+        public class Arguments : SourceAndConfigArguments
+        {
+            [ArgDescription("A file name to write output to. This file will be placed in the directory of the config file.")]
+            [ArgValidFilename]
+            [ArgRequired]
+            public string Output { get; set; }
+        }
+
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_FRAME_SIZE="FRAME_SIZE";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
@@ -32,29 +42,41 @@ namespace AnalysisPrograms
         public static string key_AED_SMALL_AREA_THRESHOLD="AED_SMALL_AREA_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
+        private static Arguments Dev()
+        {
+            //COMMAND LINES FOR SnrAnalysis.exe
+            // snr  C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav                  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
+            // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
+            throw new NotImplementedException();
+        }
 
-		public static void Dev(string[] args)
+		public static void Execute(Arguments arguments)
 		{
-            string title = "# DETERMINING SIGNAL TO NOISE RATIO IN RECORDING";
+		    if (arguments == null)
+		    {
+		        arguments = Dev();
+		    }
+
+            const string Title = "# DETERMINING SIGNAL TO NOISE RATIO IN RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine(title);
+            Log.WriteLine(Title);
             Log.WriteLine(date);
             Log.Verbosity = 1;
 
+            /*ATA
             CheckArguments(args);
 
             string recordingPath = args[0];
-            string iniPath   = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            string opFName   = args[2];
-            string opPath    = outputDir + opFName;
+            string iniPath   = args[1];*/
+		    var outputDir = arguments.Config.DirectoryName;
+		    FileInfo outputPath    = Path.Combine(outputDir, arguments.Output).ToFileInfo();
 
-            Log.WriteIfVerbose("# Output folder =" + outputDir);
-            Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+            Log.WriteIfVerbose("# Output folder =" + outputPath.DirectoryName);
+            Log.WriteLine("# Recording file: " + arguments.Source.FullName);
+            FileTools.WriteTextFile(outputPath.FullName, date + "\n# Recording file: " + arguments.Source.Name);
 
             //READ PARAMETER VALUES FROM INI FILE
-            var config = new ConfigDictionary(iniPath);
+            var config = new ConfigDictionary(arguments.Config);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
@@ -85,7 +107,7 @@ namespace AnalysisPrograms
             //##########################################################################################################################
             //FUNCTIONAL CODE
             //##########################################################################################################################
-            var results1 = Execute_Sonogram(recordingPath, frameSize, frameOverlap, windowFunction, N_PointSmoothFFT, noiseReduceType,
+            var results1 = Execute_Sonogram(arguments.Source.FullName, frameSize, frameOverlap, windowFunction, N_PointSmoothFFT, noiseReduceType,
                                             minHz, maxHz, segK1, segK2, latency, vocalGap);
             var sonogram          = results1.Item1;
             var SNR_fullbandEvent = results1.Item2;
@@ -93,36 +115,36 @@ namespace AnalysisPrograms
             //var predictedEvents = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
             //##########################################################################################################################
 
-            Log.WriteLine("# Finished calculating SNR and detecting acoustic events.");
-            //Log.WriteLine("# Event Count = " + predictedEvents.Count());
+            LoggedConsole.WriteLine("# Finished calculating SNR and detecting acoustic events.");
+            //LoggedConsole.WriteLine("# Event Count = " + predictedEvents.Count());
 
-            Log.WriteLine("\nSIGNAL PARAMETERS");
-            Log.WriteLine("Signal Duration =" + sonogram.Duration);
-            Log.WriteLine("Sample Rate     =" + sonogram.SampleRate);
+            LoggedConsole.WriteLine("\nSIGNAL PARAMETERS");
+            LoggedConsole.WriteLine("Signal Duration =" + sonogram.Duration);
+            LoggedConsole.WriteLine("Sample Rate     =" + sonogram.SampleRate);
 
-            Log.WriteLine("\nFRAME PARAMETERS");
-            Log.WriteLine("Window Size     =" + sonogram.Configuration.WindowSize);
-            Log.WriteLine("Frame Count     =" + sonogram.FrameCount);
-            Log.WriteLine("Frame Duration  =" + (sonogram.FrameDuration * 1000).ToString("F1") + " ms");
-            Log.WriteLine("Frame Offset    =" + (sonogram.FrameOffset * 1000).ToString("F1") + " ms");
-            Log.WriteLine("Frames Per Sec  =" + sonogram.FramesPerSecond.ToString("F1"));
+            LoggedConsole.WriteLine("\nFRAME PARAMETERS");
+            LoggedConsole.WriteLine("Window Size     =" + sonogram.Configuration.WindowSize);
+            LoggedConsole.WriteLine("Frame Count     =" + sonogram.FrameCount);
+            LoggedConsole.WriteLine("Frame Duration  =" + (sonogram.FrameDuration * 1000).ToString("F1") + " ms");
+            LoggedConsole.WriteLine("Frame Offset    =" + (sonogram.FrameOffset * 1000).ToString("F1") + " ms");
+            LoggedConsole.WriteLine("Frames Per Sec  =" + sonogram.FramesPerSecond.ToString("F1"));
 
-            Log.WriteLine("\nFREQUENCY PARAMETERS");
-            Log.WriteLine("Nyquist Freq    =" + sonogram.NyquistFrequency + " Hz");
-            Log.WriteLine("Freq Bin Width  =" + sonogram.FBinWidth.ToString("F2") + " Hz");
+            LoggedConsole.WriteLine("\nFREQUENCY PARAMETERS");
+            LoggedConsole.WriteLine("Nyquist Freq    =" + sonogram.NyquistFrequency + " Hz");
+            LoggedConsole.WriteLine("Freq Bin Width  =" + sonogram.FBinWidth.ToString("F2") + " Hz");
 
-            Log.WriteLine("\nENERGY PARAMETERS");
-            Log.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
-            //Log.WriteLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
-            //Log.WriteLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
-            Log.WriteLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2") + "  (See Notes 2, 3)");
-            Log.WriteLine("Minimum dB / frame       =" + sonogram.SnrFullband.Min_dB.ToString("F2") + "  (See Notes 4)");
+            LoggedConsole.WriteLine("\nENERGY PARAMETERS");
+            LoggedConsole.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
+            //LoggedConsole.WriteLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
+            //LoggedConsole.WriteLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
+            LoggedConsole.WriteLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2") + "  (See Notes 2, 3)");
+            LoggedConsole.WriteLine("Minimum dB / frame       =" + sonogram.SnrFullband.Min_dB.ToString("F2") + "  (See Notes 4)");
 
-            Log.WriteLine("\ndB NOISE SUBTRACTION");
-            Log.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFullband.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
+            LoggedConsole.WriteLine("\ndB NOISE SUBTRACTION");
+            LoggedConsole.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFullband.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
             double noiseSpan = sonogram.SnrFullband.NoiseRange;
-            Log.WriteLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
-            Log.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFullband.Snr.ToString("F2") + " dB   (See Note 7)");
+            LoggedConsole.WriteLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
+            LoggedConsole.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFullband.Snr.ToString("F2") + " dB   (See Note 7)");
 
 
             Log.WriteLine("\nSEGMENTATION PARAMETERS");
@@ -151,11 +173,12 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n");
 
 
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(arguments.Source.FullName);
 
             if (DRAW_SONOGRAMS > 0)
             {
                 Log.WriteLine("# Start to draw image of sonogram.");
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                string imagePath = Path.Combine(outputDir, fileNameWithoutExtension + ".png");
                 //DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
             }
 
@@ -171,17 +194,15 @@ namespace AnalysisPrograms
 
             if (DRAW_SONOGRAMS > 0)
             {
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                string imagePath = Path.Combine(outputDir, fileNameWithoutExtension + ".png");
                 //DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
             }
 
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Log.ReadLine();
-        } //Dev()
+            Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
+        }
 
-
-        public static System.Tuple<BaseSonogram, AcousticEvent, AcousticEvent> Execute_Sonogram(string wavPath,
+        public static Tuple<BaseSonogram, AcousticEvent, AcousticEvent> Execute_Sonogram(string wavPath,
                             int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
                             int minHz, int maxHz, double segK1, double segK2, double latency, double vocalGap)
         {
@@ -304,7 +325,7 @@ namespace AnalysisPrograms
             image6.Save(path);
         }
 
-
+        /*ATA
         private static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
@@ -356,7 +377,8 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
 
             
-        } //end Usage();
+        } //end Usage();*/
+
 
 	} //end class
 }

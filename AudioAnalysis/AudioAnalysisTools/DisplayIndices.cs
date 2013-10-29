@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
         /// <param name="doNormalisation"></param>
         /// <param name="imagePath"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, bool doNormalisation, string imagePath)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, bool doNormalisation, FileInfo imagePath)
         {
             int timeScale = 60; //put a tik every 60 pixels = 1 hour
             //construct an order array - this assumes that the table is already properly ordered.
@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
             Bitmap tracksImage = ConstructVisualIndexImage(dt, title, timeScale, order, doNormalisation);
 
             //SAVE THE IMAGE
-            tracksImage.Save(imagePath);
+            tracksImage.Save(imagePath.FullName);
             return tracksImage;
         }
 

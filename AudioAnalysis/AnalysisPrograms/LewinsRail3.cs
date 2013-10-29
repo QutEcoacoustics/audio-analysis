@@ -20,8 +20,18 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using System.Diagnostics.Contracts;
+
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisPrograms.Production;
+
     public class LewinsRail3 : IAnalyser
     {
+        public class Arguments : AnalyserArguments
+        {
+        }
+
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
         public static string key_CALL_DURATION = "CALL_DURATION";
@@ -75,87 +85,105 @@ namespace AnalysisPrograms
             get { return identifier; }
         }
 
-        public static void Dev(string[] args)
+        public static void Dev(Arguments arguments)
         {
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-084607.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-            string configPath    = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail.cfg";
-            string outputDir     = @"C:\SensorNetworks\Output\LewinsRail\";
-
-            string title = "# FOR DETECTION OF LEWIN'S RAIL using CROSS-CORRELATION & FFT";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(title);
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-            LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            var diOutputDir = new DirectoryInfo(outputDir);
-
-            Log.Verbosity = 1;
-            int startMinute = 0;
-            int durationSeconds = 60; //set zero to get entire recording
-            var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-            var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-            var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-            var segmentFName  = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-            var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-            var eventsFname   = string.Format("{0}_{1}min.{2}.Events.csv",  segmentFileStem, startMinute, identifier);
-            var indicesFname  = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
-
-            var cmdLineArgs = new List<string>();
-            cmdLineArgs.Add(recordingPath);
-            cmdLineArgs.Add(configPath);
-            cmdLineArgs.Add(outputDir);
-            cmdLineArgs.Add("-tmpwav:"   + segmentFName);
-            cmdLineArgs.Add("-events:"   + eventsFname);
-            cmdLineArgs.Add("-indices:"  + indicesFname);
-            cmdLineArgs.Add("-sgram:"    + sonogramFname);
-            cmdLineArgs.Add("-start:"    + tsStart.TotalSeconds);
-            cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
-            
-            //#############################################################################################################################################
-            Execute(cmdLineArgs.ToArray());
-            //#############################################################################################################################################
-
-
-            string eventsPath = Path.Combine(outputDir, eventsFname);
-            FileInfo fiCsvEvents = new FileInfo(eventsPath);
-            if (! fiCsvEvents.Exists)
+            var executeDev = arguments == null;
+            if (executeDev)
             {
-                Log.WriteLine("\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(eventsPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string indicesPath = Path.Combine(outputDir, indicesFname);
-            FileInfo fiCsvIndices = new FileInfo(indicesPath);
-            if (!fiCsvIndices.Exists)
-            {
-                Log.WriteLine("\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", startMinute, recordingPath);
-            }
-            else
-            {
-                LoggedConsole.WriteLine("\n");
-                DataTable dt = CsvTools.ReadCSVToTable(indicesPath, true);
-                DataTableTools.WriteTable2Console(dt);
-            }
-            string imagePath = Path.Combine(outputDir, sonogramFname);
-            FileInfo fiImage = new FileInfo(imagePath);
-            if (fiImage.Exists)
-            {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
-                process.Run(imagePath, outputDir);
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-084607.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                string configPath = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail.cfg";
+                string outputDir = @"C:\SensorNetworks\Output\LewinsRail\";
+
+                string title = "# FOR DETECTION OF LEWIN'S RAIL using CROSS-CORRELATION & FFT";
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+                var diOutputDir = new DirectoryInfo(outputDir);
+
+                Log.Verbosity = 1;
+                int startMinute = 0;
+                int durationSeconds = 60; //set zero to get entire recording
+                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
+                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
+                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+
+                /*ATA
+                var cmdLineArgs = new List<string>();
+                cmdLineArgs.Add(recordingPath);
+                cmdLineArgs.Add(configPath);
+                cmdLineArgs.Add(outputDir);
+                cmdLineArgs.Add("-tmpwav:" + segmentFName);
+                cmdLineArgs.Add("-events:" + eventsFname);
+                cmdLineArgs.Add("-indices:" + indicesFname);
+                cmdLineArgs.Add("-sgram:" + sonogramFname);
+                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
+                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);*/
+                arguments = new Arguments
+                {
+                    Source = recordingPath.ToFileInfo(),
+                    Config = configPath.ToFileInfo(),
+                    Output = outputDir.ToDirectoryInfo(),
+                    TmpWav = segmentFName,
+                    Events = eventsFname,
+                    Indices = indicesFname,
+                    Sgram = sonogramFname,
+                    Start = tsStart.TotalSeconds,
+                    Duration = tsDuration.TotalSeconds
+                };
             }
 
+            Execute(arguments);
 
-            LoggedConsole.WriteLine("\n\n# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
-        } //Dev()
+            if (executeDev)
+            {
+                var csvEvents = arguments.Output.CombineFile(arguments.Events);
+                if (!csvEvents.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+                if (!csvIndicies.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+                var image = arguments.Output.CombineFile(arguments.Sgram);
+                if (image.Exists)
+                {
+                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                    process.Run(image.FullName, arguments.Output.FullName);
+                }
+
+                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
+            }
+        }
 
 
 
@@ -163,11 +191,11 @@ namespace AnalysisPrograms
         /// A WRAPPER AROUND THE Analysis() METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="configPath"></param>
-        /// <param name="outputPath"></param>
-        public static int Execute(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            Contract.Requires(arguments != null);
+
+            /*ATA
             int status = 0;
             if (args.Length < 4)
             {
@@ -178,19 +206,25 @@ namespace AnalysisPrograms
             //GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
             string recordingPath = args[0];
             string configPath = args[1];
-            string outputDir = args[2];
-           
+            string outputDir = args[2];*/
+           /*ATA
             //INIT SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
+<<<<<<< .mine
+            analysisSettings.ConfigFile       = arguments.Source;
+            analysisSettings.AnalysisRunDirectory = arguments.Output; 
+=======
             analysisSettings.ConfigFile       = new FileInfo(configPath);
             analysisSettings.AnalysisInstanceOutputDirectory = new DirectoryInfo(outputDir); 
+>>>>>>> .r3782
             analysisSettings.AudioFile   = null;
             analysisSettings.EventsFile  = null;
             analysisSettings.IndicesFile = null;
             analysisSettings.ImageFile   = null;
-            TimeSpan tsStart    = new TimeSpan(0,0,0);
-            TimeSpan tsDuration = new TimeSpan(0,0,0);
-
+            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
+            */
+            /*ATA
             //PROCESS REMAINDER OF COMMAND LINE ARGUMENTS
             for (int i = 3; i < args.Length; i++)
             {
@@ -232,12 +266,16 @@ namespace AnalysisPrograms
                         return status;
                     }
                 }
-            }
+            }*/
+
+            AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             //EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo sourceF = new FileInfo(recordingPath);
+            FileInfo sourceF = arguments.Source;
             FileInfo tempF   = analysisSettings.AudioFile;
-            if (tsDuration.TotalSeconds == 0)   //Process entire file
+            if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
                 AudioFilePreparer.PrepareFile(sourceF, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
@@ -259,9 +297,7 @@ namespace AnalysisPrograms
             AddContext2Table(dt, tsStart, tsDuration);
             CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
             //DataTableTools.WriteTable(dt);
-
-            return status;
-        } //Execute()
+        }
 
 
 
@@ -727,6 +763,7 @@ namespace AnalysisPrograms
                 };
             }
         }
+
 
     } //end class LewinsRail3
 }

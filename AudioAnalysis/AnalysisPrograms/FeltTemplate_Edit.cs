@@ -13,8 +13,20 @@ using System.Drawing;
 
 namespace AnalysisPrograms
 {
-    class FeltTemplate_Edit
+    using Acoustics.Shared.Extensions;
+
+    using PowerArgs;
+
+    public class FeltTemplate_Edit
     {
+        public class Arguments
+        {
+            [ArgDescription("The path to the config file")]
+            [Production.ArgExistingFile()]
+            [ArgRequired]
+            public FileInfo Config { get; set; }
+        }
+
         // CURRAWONG
         // edittemplate_felt C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong2_Params.txt
         // CURLEW
@@ -24,43 +36,46 @@ namespace AnalysisPrograms
         // LEWINS RAIL
         // edittemplate_felt C:\SensorNetworks\Output\FELT_LewinsRail1\FELT_LewinsRail1_params.txt
 
+        public static Arguments Dev()
+        {
+            throw new NotImplementedException();
+            //return new Arguments();
+        }
+
         /// <summary>
         /// Wraps up the resources into a template.ZIP file
         /// and then runs a test on the source recording.
         /// </summary>
-        /// <param name="args"></param>
-        public static void Dev(string[] args)
+        public static void Execute(Arguments arguments)
         {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
             string title = "# EDIT TEMPLATE.";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
             //ZIP THE OUTPUT FILES
-            bool zipOutput = true;
+            const bool ZipOutput = true;
 
-            //SET VERBOSITY
-            Log.Verbosity = 1;
+            FileInfo iniPath = arguments.Config;
 
-            //Segment.CheckArguments(args); //one argument only
-
-           // string recordingPath   = args[0];
-            string iniPath         = args[0];
-            //string targetName     = args[2];   //prefix of name of created files 
-
-            string[] nameComponents= (Path.GetFileNameWithoutExtension(iniPath)).Split('_');
+            string[] nameComponents= (Path.GetFileNameWithoutExtension(iniPath.Name)).Split('_');
             string targetName      =  nameComponents[0] +"_"+ nameComponents[1];
 
             //i: Set up the file names
-            string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
-            string targetImagePath   = outputDir + targetName + "_target.png";    // input image file
-            string binaryOpPath      = outputDir + targetName + "_binary.bmp";
-            string trinaryOpPath     = outputDir + targetName + "_trinary.bmp";
-            string sprOpPath         = outputDir + targetName + "_spr.txt";       // syntactic pattern recognition file
+            DirectoryInfo outputDir         = iniPath.Directory;
+            FileInfo targetImagePath   = outputDir.CombineFile(targetName + "_target.png");    // input image file
+            FileInfo binaryOpPath      = outputDir.CombineFile(targetName + "_binary.bmp");
+            FileInfo trinaryOpPath     = outputDir.CombineFile(targetName + "_trinary.bmp");
+            FileInfo sprOpPath         = outputDir.CombineFile(targetName + "_spr.txt");       // syntactic pattern recognition file
             //additional files to be zipped up with template
-            string targetPath = outputDir + targetName + "_target.txt";
-            string targetNoNoisePath = outputDir + targetName + "_targetNoNoise.txt";
-            string noisePath = outputDir + targetName + "_noise.txt";
+            FileInfo targetPath = outputDir.CombineFile(targetName + "_target.txt");
+            FileInfo targetNoNoisePath = outputDir.CombineFile(targetName + "_targetNoNoise.txt");
+            FileInfo noisePath = outputDir.CombineFile(targetName + "_noise.txt");
 
             //ii: READ PARAMETER VALUES FROM INI FILE
             var config = new ConfigDictionary(iniPath);
@@ -75,13 +90,13 @@ namespace AnalysisPrograms
             int bitmapThreshold         = (int)(255 - (templateThreshold * 255));
 
             Log.WriteLine("#################################### WRITE THE BINARY TEMPLATE ##################################");
-            Bitmap bitmap = ImageTools.ReadImage2Bitmap(targetImagePath);
+            Bitmap bitmap = ImageTools.ReadImage2Bitmap(targetImagePath.FullName);
             var binaryBmp = Image2BinaryBitmap(bitmap, bitmapThreshold);
-            binaryBmp.Save(binaryOpPath);
+            binaryBmp.Save(binaryOpPath.FullName);
 
             Log.WriteLine("#################################### WRITE THE TRINARY TEMPLATE ##################################");
             var trinaryBmp = Image2TrinaryBitmap(binaryBmp, neighbourhood);
-            trinaryBmp.Save(trinaryOpPath);
+            trinaryBmp.Save(trinaryOpPath.FullName);
 
             Log.WriteLine("#################################### WRITE THE SPR TEMPLATE ##################################");
             double[,] matrix = ImageTools.GreyScaleImage2Matrix(bitmap);
@@ -92,13 +107,13 @@ namespace AnalysisPrograms
             //matrix = tuple.Item1;
             //ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\FELT_LewinsRail1\SPR_output2.bmp");
             char[,] spr = SprTools.Target2SymbolicTracks(matrix, templateThreshold, lineLength);
-            FileTools.WriteMatrix2File(spr, sprOpPath);
+            FileTools.WriteMatrix2File(spr, sprOpPath.FullName);
             var tuple1 = FindMatchingEvents.Execute_One_Spr_Match(spr, matrix, templateThreshold);
             double sprScore = tuple1.Item1;
             double dBScore = sprScore * maxTemplateIntensity;
 
             Log.WriteLine("#################################### WRITE THE OSCILATION TEMPLATE ##################################");
-            double[,] target = FileTools.ReadDoubles2Matrix(targetPath);
+            double[,] target = FileTools.ReadDoubles2Matrix(targetPath.FullName);
             // oscillations in time
             double[,] rotatedtarget = DataTools.MatrixRotate90Clockwise(target);
             var colSums = DataTools.GetColumnsAverages(rotatedtarget);
@@ -119,35 +134,23 @@ namespace AnalysisPrograms
 
             // ZIP THE OUTPUT
             Log.WriteLine("#################################### ZIP THE TEMPLATES ##################################");
-            if (zipOutput == true)
+            if (ZipOutput == true)
             {
-                var filenames = new string[6];
-                filenames[0] = iniPath;
-                filenames[1] = targetImagePath;
-                filenames[2] = binaryOpPath;
-                filenames[3] = targetPath;
-                filenames[4] = targetNoNoisePath;
-                filenames[5] = noisePath;
+                var filenames = new[]
+                                { iniPath, targetImagePath, binaryOpPath, targetPath, targetNoNoisePath, noisePath };
                 string biOutZipFile = outputDir + targetName + "_binaryTemplate.zip";
                 FileTools.ZipFiles(filenames, biOutZipFile);
 
-                filenames = new string[6];
-                filenames[0] = iniPath;
-                filenames[1] = targetImagePath;
-                filenames[2] = trinaryOpPath;
-                filenames[3] = targetPath;
-                filenames[4] = targetNoNoisePath;
-                filenames[5] = noisePath;
+                filenames = new[]
+                                { iniPath, targetImagePath, trinaryOpPath, targetPath, targetNoNoisePath, noisePath };
+
                 string triOutZipFile = outputDir + targetName + "_trinaryTemplate.zip";
                 FileTools.ZipFiles(filenames, triOutZipFile);
 
-                filenames = new string[6];
-                filenames[0] = iniPath;
-                filenames[1] = targetImagePath;
-                filenames[2] = sprOpPath;
-                filenames[3] = targetPath;
-                filenames[4] = targetNoNoisePath;
-                filenames[5] = noisePath;
+                filenames = new[]
+                                { iniPath, targetImagePath, sprOpPath, targetPath, targetNoNoisePath, noisePath };
+
+
                 string sprOutZipFile = outputDir + targetName + "_syntacticTemplate.zip";
                 FileTools.ZipFiles(filenames, sprOutZipFile);
             }
@@ -169,17 +172,22 @@ namespace AnalysisPrograms
             FileTools.Append2TextFile(templateListPath, list);      //write the template.ZIP file
 
             //TEST THE TEMPLATE ON SOURCE FILE
-            string[] arguments = new string[3];
-            arguments[0] = sourceDir + "\\" + sourceFile;
+            //string[] arguments = new string[3];
+            /*
+            var args = new FeltTemplates_Use.Arguments()
+                       {
+                           Source = "",
+arguments[0] = sourceDir + "\\" + sourceFile;
             arguments[1] = templateListPath;
             arguments[2] = listOpDir;
+
+                       }*/
             //FeltTemplates_Use.Dev(arguments);
 
 
 
             Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
-        } //DEV()
+        } 
 
 
 
@@ -254,8 +262,5 @@ namespace AnalysisPrograms
                 }
             return matrix;
         }
-
-
-
-    } // class
+    }
 }

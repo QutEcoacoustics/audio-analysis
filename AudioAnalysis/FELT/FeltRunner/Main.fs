@@ -129,6 +129,7 @@
             let exportFrd = bool.Parse(config.["ExportFrd"])
             let allAnalyses = bool.Parse(config.["CrossAnalyseAllFeatures"])
             let allAnalysesLimit = System.Int32.Parse(config.["CrossAnalyseAllFeatures_Limit"])
+            let duplicates = System.Int32.Parse(config.["Duplicates"])
 
 
             // ANALYSIS RUN SETTINGS
@@ -204,14 +205,34 @@
                             [| keys |]
 
                     // map every subset to every analysis
-                    powerset |> Array.collect (fun s -> Array.map (fun (x,y) -> (x,y,s)) analyses), powerset.Length
+                    let results = powerset |> Array.collect (fun s -> Array.map (fun (x,y) -> (x,y,s)) analyses)
+
+                    // now set for running duplicate testing
+                    if duplicates > 0 then
+                        let s = seq { for i in 0..duplicates  -> results}
+
+                        Array.concat s, powerset.Length
+                    else
+                        results, powerset.Length
+                    
 
                 if allAnalyses then
-                    Warnf "All selected analyses will be run with EVERY combination of features! %i features, %i combinations, %i analyses, %i runs." trData.Instances.Count combinations analyses.Length analyses'.Length
+                    Warnf "All selected analyses will be run with EVERY combination of features! %i features, %i combinations, %i analyses, %i duplicates, %i runs." trData.Instances.Count combinations analyses.Length duplicates analyses'.Length
                 else
-                    Infof "All selected analyses will be run with all features! %i features, %i analyses, %i runs." trData.Instances.Count combinations analyses'.Length
+                    Infof "All selected analyses will be run with all features! %i features, %i analyses, %i duplicates, %i runs." trData.Instances.Count combinations duplicates analyses'.Length
                 
                 // run the analyses
+                let templateResolver name = 
+                    let fi = new FileInfo(name)
+                    if fi.Exists then
+                        fi
+                    else
+                        let dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                        let fi' = new FileInfo(Path.Combine(dir, name))
+                        if fi'.Exists then
+                            fi'
+                        else
+                            raise <| new FileNotFoundException(name)
 
                 let run (ano: string * (WorkflowItem list) Option * Set<ColumnHeader>) =
                     let analysis, ops, columnsToUse = ano
@@ -223,7 +244,7 @@
                             TestDataBytes = (new FileInfo(TestData)).Length;
                             TrainingDataBytes = (new FileInfo(TrainingData)).Length;
                             ReportDestination = dest;
-                            ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
+                            ReportTemplate = templateResolver "ExcelResultsComputationTemplate.xlsx";
                             TestOriginalCount = teData.Classes.Length;
                             TrainingOriginalCount = trData.Classes.Length;
                             ExportFrd = exportFrd;
@@ -253,7 +274,7 @@
                         Log "Creating summary report"
                         let dest = SummationReport.Write 
                                     (reportDateName batchRunDate "x" "Summary" |> snd)
-                                    (new FileInfo("ExcelResultsSummationTemplate.xlsx")) 
+                                    (templateResolver "ExcelResultsSummationTemplate.xlsx") 
                                     configs
                         Log "Finished summary report"    
                         Some(dest)
@@ -277,43 +298,43 @@
                     Process.Start(f.FullName) |> ignore
 
         let search analysisConfig () =
-            let startSearchDate = DateTime.Now
-
-            Info "Reading configurations settings"
-            let configFile, config = config analysisConfig
-            Debugf "Loaded: %s" configFile.FilePath
-
-            // "Truskinger.Felt.Search.config"
-            let wd = config.["WorkingDirectory"]
-            let rd = Path.Combine( wd, config.["ResultsDirectory"])
-            
-            let resultsDirectory, reportDateName, reportName = setupRun startSearchDate rd "json"
-            let runDate, reportNameFull = reportName "Search"
- 
-            let config = 
-                { 
-                    WorkingDirectory = wd; 
-                    ResultsDirectory = resultsDirectory ; 
-                    ResultsFile = reportNameFull
-
-                    TrainingData = new FileInfo(Path.Combine(wd, config.["TrainingData"]))
-
-                    TestAudio = new DirectoryInfo(config.["TestAudio"]);
-
-                    // audio caches
-                    TrainingAudio = new DirectoryInfo(config.["TrainingAudio"]);
-                    AudioSnippetCache = new DirectoryInfo(config.["AudioStoreDirectory"]);
-
-                    AedConfig = 
-                        {
-                            SmallAreaThreshold = config.["aed_smallAreaThreshold"] |> int |> LanguagePrimitives.Int32WithMeasure;
-                            IntensityThreshold = config.["aed_intensityThreshold"] |> tou2;
-                        }
-                }
-            // execute analysis
-            FELT.Search.main config
-            
-            Infof "Search Completed, time taken: %A" (DateTime.Now - startSearchDate)
+            //let startSearchDate = DateTime.Now
+            //
+            //Info "Reading configurations settings"
+            //let configFile, config = config analysisConfig
+            //Debugf "Loaded: %s" configFile.FilePath
+            //
+            //// "Truskinger.Felt.Search.config"
+            //let wd = config.["WorkingDirectory"]
+            //let rd = Path.Combine( wd, config.["ResultsDirectory"])
+            //
+            //let resultsDirectory, reportDateName, reportName = setupRun startSearchDate rd "json"
+            //let runDate, reportNameFull = reportName "Search"
+            //
+            //let config = 
+            //    { 
+            //        WorkingDirectory = wd; 
+            //        ResultsDirectory = resultsDirectory ; 
+            //        ResultsFile = reportNameFull
+            //
+            //        TrainingData = new FileInfo(Path.Combine(wd, config.["TrainingData"]))
+            //
+            //        TestAudio = new DirectoryInfo(config.["TestAudio"]);
+            //
+            //        // audio caches
+            //        TrainingAudio = new DirectoryInfo(config.["TrainingAudio"]);
+            //        AudioSnippetCache = new DirectoryInfo(config.["AudioStoreDirectory"]);
+            //
+            //        AedConfig = 
+            //            {
+            //                SmallAreaThreshold = config.["aed_smallAreaThreshold"] |> int |> LanguagePrimitives.Int32WithMeasure;
+            //                IntensityThreshold = config.["aed_intensityThreshold"] |> tou2;
+            //            }
+            //    }
+            //// execute analysis
+            //FELT.Search.main config
+            //
+            //Infof "Search Completed, time taken: %A" (DateTime.Now - startSearchDate)
             ()
 
         let usage error () =
@@ -379,8 +400,11 @@
             if not programEntry then Console.ReadKey(false) |> ignore
             0
 
-        let ProgramEntry args =
-            Entry true args
+        let ProgramEntry (args : Object) =
+            // raise <| new NotImplementedException()
+            Warn "Compiled for running suggestion tool only"
+            ignore <| Entry true [|"suggestion"|]
+            
 
 //        [<EntryPoint>]
         let CommandEntry args =

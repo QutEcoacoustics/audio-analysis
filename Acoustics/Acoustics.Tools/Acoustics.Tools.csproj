@@ -62,9 +62,6 @@
     <Reference Include="AForge.Math">
       <HintPath>..\..\AudioAnalysis\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.PowerPack">
-      <HintPath>..\..\AudioAnalysis\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
-    </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>

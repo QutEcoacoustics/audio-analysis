@@ -11,13 +11,19 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    class Sandpit
+    using PowerArgs;
+
+    public class Sandpit
     {
 
         public const int RESAMPLE_RATE = 17640;
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static void Dev(string[] args)
+        public class Arguments
+        {
+        }
+
+        public static void Dev(Arguments arguments)
         {
 
             //SET VERBOSITY
@@ -299,9 +305,7 @@ namespace AnalysisPrograms
             } // experiments with false colour images - categorising/discretising the colours
 
             Log.WriteLine("# Finished!");
-            Console.ReadLine();
-            System.Environment.Exit(666);
-        } // Dev()
+        }
 
 
         public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
@@ -330,7 +334,5 @@ namespace AnalysisPrograms
             image.OverlayDiscreteColorMatrix(overlay);
             return image.GetImage();
         } //DrawSonogram()
-
-    } // class Sandpit
-
+    }
 }

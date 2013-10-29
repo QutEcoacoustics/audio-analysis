@@ -914,10 +914,10 @@ namespace AnalysisPrograms
             }
 
             // fill in misisng minutes at end.
-            int minsIn24hrs = 24 * 60;
-            if (minsIn24hrs > minPrev + 1)
+            const int MinsIn24Hrs = 24 * 60;
+            if (MinsIn24Hrs > minPrev + 1)
             {
-                for (int j = minPrev + 1; j < minsIn24hrs; j++)
+                for (int j = minPrev + 1; j < MinsIn24Hrs; j++)
                 {
                     line = string.Format("{0}  time={1}:{2}   Count={3}", j, j / 60, j % 60, 0);
                     LoggedConsole.WriteLine(line);
