@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                 return "Writes information about audio files to a csv file.";
             }
 
-            public string AdditionalNotes()
+            public static string AdditionalNotes()
             {
                 return "Note: Specify a directory to process or an input file containing file paths, but not both.";
             }

@@ -47,6 +47,8 @@ namespace AnalysisPrograms
 
         private static void AttachExceptionHandler()
         {
+            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         }
 
@@ -144,14 +146,12 @@ namespace AnalysisPrograms
 
         internal static void PrintUsage(string message, Usages usageStyle, string actionName = null)
         {
-            Contract.Requires(usageStyle != Usages.Single || actionName != null);
+            //Contract.Requires(usageStyle != Usages.Single || actionName != null);
 
             if (!String.IsNullOrWhiteSpace(message))
             {
                 LoggedConsole.WriteLine(message);
             }
-
-            // TODO print additional usage (i.e. IUSAGE)
 
             if (usageStyle == Usages.All)
             {
@@ -161,8 +161,15 @@ namespace AnalysisPrograms
             }
             else if (usageStyle == Usages.Single)
             {
-                var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { actionName });
-                LoggedConsole.WriteLine(usage);
+                if (string.IsNullOrWhiteSpace(actionName))
+                {
+                    Log.Error("************* Can't print usage due to empty action name **************");
+                }
+                else
+                {
+                    var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { actionName });
+                    LoggedConsole.WriteLine(usage);
+                }
             }
             else if (usageStyle == Usages.ListAvailable)
             {
@@ -209,6 +216,10 @@ namespace AnalysisPrograms
                 {
                     action = (ex as ArgException).Action;
                 }
+                else if (PowerArgs.ArgException.LastAction.NotWhitespace())
+                {
+                    action = PowerArgs.ArgException.LastAction;
+                }
 
                 if (ex is MissingArgException && ex.Message.Contains("action"))
                 {
@@ -226,7 +237,7 @@ namespace AnalysisPrograms
                 }
                 else
                 {
-                    PrintUsage(ex.Message, Usages.Single, action);
+                    PrintUsage(ex.Message, Usages.Single, action ?? string.Empty);
                 }
             }
             else

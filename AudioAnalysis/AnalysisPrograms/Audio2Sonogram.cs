@@ -85,7 +85,7 @@ namespace AnalysisPrograms
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
-                throw new InvalidStartOrEndEception("If StartOffset or EndOffset is specifified, then both must be specified");
+                throw new InvalidStartOrEndException("If StartOffset or EndOffset is specifified, then both must be specified");
             }
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 

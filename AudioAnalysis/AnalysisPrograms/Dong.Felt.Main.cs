@@ -185,7 +185,7 @@ namespace Dong.Felt
         {
             [ArgDescription("The directory to operate on")]
             [ArgExistingDirectory()]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             [ArgRequired]
             public DirectoryInfo TargetDirectory { get; set; }
 

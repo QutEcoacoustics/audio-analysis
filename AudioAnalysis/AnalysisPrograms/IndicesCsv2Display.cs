@@ -25,7 +25,7 @@ namespace AnalysisPrograms
         {
             [ArgDescription("The source csv file to operate on")]
             [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             public FileInfo InputCsv { get; set; }
 
             // Note: not required

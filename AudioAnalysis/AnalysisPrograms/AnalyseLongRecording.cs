@@ -32,21 +32,33 @@ namespace AnalysisPrograms
 
     public class AnalyseLongRecording
     {
-        public class Arguments : SourceConfigOutputDirArguments
+        public class Arguments : SourceConfigOutputDirArguments, IArgClassValidator
         {
 
             [ArgDescription("A TEMP directory where cut files will be stored. Use this option for effciency (e.g. write to a RAM Disk).")]
             [Production.ArgExistingDirectory]
             public DirectoryInfo TempDir { get; set; }
 
-
             [ArgDescription("The start offset to start analysing from (in seconds)")]
             [ArgRange(0, double.MaxValue)]
             public double? StartOffset { get; set; }
 
             [ArgDescription("The end offset to stop analysing (in seconds)")]
-            [ArgRange(0, 10 * 60)]
+            [ArgRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
+
+            public void Validate()
+            {
+                if (this.StartOffset.HasValue ^ this.EndOffset.HasValue)
+                {
+                    throw new InvalidStartOrEndException("If StartOffset or EndOffset is specifified, then both must be specified");
+                }
+
+                if (this.StartOffset.HasValue && this.EndOffset.Value <= this.StartOffset.Value)
+                {
+                    throw new InvalidStartOrEndException("Start offset must be less than end offset.");
+                }
+            }
         }
 
         //use the following paths for the command line.
@@ -141,10 +153,8 @@ namespace AnalysisPrograms
             var outputDir = arguments.Output;
             var tempFilesDirectory = arguments.TempDir;
 
-            if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
-            {
-                throw new InvalidStartOrEndEception("If StartOffset or EndOffset is specifified, then both must be specified");
-            }
+            
+
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
             // if a temp dir is not given, use output dir as temp dir
@@ -200,9 +210,8 @@ namespace AnalysisPrograms
 
             if (offsetsProvided)
             {
-                fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
-                fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
-
+                fileSegment.SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset.Value);
+                fileSegment.SegmentEndOffset = TimeSpan.FromSeconds(arguments.EndOffset.Value);
             }
 
             // 5. initialise the analyser
@@ -338,6 +347,8 @@ namespace AnalysisPrograms
                 cs.X_interval = 60;    // assume one minute spectra and hourly time lines
                 cs.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs.SampleRate = sampleRate; // default value - after resampling
+
+                int startMinute = (int)(fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
                 foreach (var spectrumKey in results[0].Spectra.Keys)
                 {
                     // +1 for header
@@ -345,7 +356,7 @@ namespace AnalysisPrograms
                     var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
                     foreach (var analysisResult in results)
                     {
-                        var index = (int)analysisResult.SegmentStartOffset.TotalMinutes;
+                        var index = ((int)analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
 
                         numbers[index] = analysisResult.Spectra[spectrumKey];
 

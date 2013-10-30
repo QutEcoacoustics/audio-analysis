@@ -135,12 +135,12 @@ namespace AnalysisPrograms
 
             [ArgDescription("Path of the input  file to be processed.")]
             [Production.ArgExistingFile()]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             [ArgRequired]
             public FileInfo Source { get; set; }
 
             [ArgDescription("Path of the output file to store results.")]
-            [ArgPosition(1)]
+            [ArgPosition(2)]
             [ArgRequired]
             public FileInfo Output { get; set; }
         }

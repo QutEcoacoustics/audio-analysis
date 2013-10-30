@@ -31,18 +31,18 @@ namespace AnalysisPrograms
 
             [ArgDescription("The source audio file to operate on")]
             [Production.ArgExistingFile()]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             [ArgRequired]
             public FileInfo Source{get;set;}
 
             [ArgDescription("A directory to write output to")]
             [Production.ArgExistingDirectory(createIfNotExists: true)]
-            [ArgPosition(1)]
+            [ArgPosition(2)]
             [ArgRequired]
             public DirectoryInfo Output{get;set;}
 
             [ArgDescription("")]
-            [ArgPosition(2)]
+            [ArgPosition(3)]
             [ArgRequired]
             //[ArgRange(0,0)]
             public double IntensityThreshold { get; set; }

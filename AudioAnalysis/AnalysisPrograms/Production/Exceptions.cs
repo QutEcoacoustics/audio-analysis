@@ -46,11 +46,14 @@ namespace AnalysisPrograms
                               { typeof(DuplicateArgException), 5 },
                               { typeof(UnexpectedArgException), 6 },
                               { typeof(FormatException), 7 },
+
                               { typeof(ValidationArgException), 50 },
                               { typeof(DirectoryNotFoundException), 51 },
                               { typeof(FileNotFoundException), 52 },
-                              { typeof(InvalidDurationEception), 100 },
-                              { typeof(InvalidStartOrEndEception), 101 },
+
+                              { typeof(InvalidDurationException), 100 },
+                              { typeof(InvalidStartOrEndException), 101 },
+
                               { typeof(AnalysisOptionDevilException), 666 },
                               { typeof(NoDeveloperMethodException), 999},
                               { typeof(Exception), 1000 }
@@ -58,14 +61,14 @@ namespace AnalysisPrograms
         }
     }
 
-    public class InvalidDurationEception : Exception
+    public class InvalidDurationException : Exception
     {
 
     }
 
-    public class InvalidStartOrEndEception : Exception
+    public class InvalidStartOrEndException : Exception
     {
-        public InvalidStartOrEndEception(string message)
+        public InvalidStartOrEndException(string message)
             : base(message)
         {
         }
