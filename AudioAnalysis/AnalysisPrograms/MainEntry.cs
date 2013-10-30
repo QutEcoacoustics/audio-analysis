@@ -209,8 +209,8 @@ namespace AnalysisPrograms
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
             // HACK: Remove the following two line when argument refactoring is done
-            var options = DebugOptions.Yes;
-            AttachDebugger(ref options);
+            //var options = DebugOptions.Yes;
+            //AttachDebugger(ref options);
 
             Arguments = ParseArguments(args);
 
@@ -259,150 +259,7 @@ namespace AnalysisPrograms
             return ExceptionLookup.Ok;
         }
 
-        private static void AudioFileInfo(string[] args)
-        {
-            IEnumerable<string> files = null;
-
-            var outputFile = new FileInfo(args[0]);
-            var input = args[1];
-
-
-            if (Directory.Exists(input))
-            {
-                // three args: 
-                // first is output file path
-                // second is whether to recurse or not
-                // third is dir containing audio files
-                // e.g. AnalysisPrograms.exe "<dir path>" recurse "<output file path>"
-                // e.g. AnalysisPrograms.exe "<dir path>" norecurse "<output file path>"
-
-                var recurse = args[2] == "recurse";
-
-                files = Directory.EnumerateFiles(input, "*.*", recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            }
-            else if (File.Exists(input))
-            {
-                // at least two args:
-                // first is output file path
-                // second is text file path containing audio file paths (one per line)
-
-                // skip the output file
-                files = File.ReadLines(input).Where(l => !string.IsNullOrWhiteSpace(l)).Select(l => l.Trim(' ', '"')).Distinct().OrderBy(l => l);
-            }
-
-            var mau = new MasterAudioUtility();
-            var stopwatch = new Stopwatch();
-
-            var headers = "\"" + string.Join("\", \"",
-                "SourceFile",
-                "SampleRate (hertz)",
-                "BitsPerSecond",
-                "BitsPerSample",
-                "ChannelCount",
-                "Duration (sec)",
-                "MediaType",
-                "FileSize (bytes)",
-                "SHA256 Hash",
-                "Identifier") + "\"";
-
-            using (var fs = File.Open(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.Read))
-            using (var sw = new StreamWriter(fs))
-            {
-                sw.WriteLine(headers);
-
-                foreach (var file in files)
-                {
-                    try
-                    {
-                        var fileInfo = new FileInfo(file);
-
-                        stopwatch.Restart();
-                        var info = mau.Info(fileInfo);
-                        stopwatch.Stop();
-
-                        var infoTime = stopwatch.Elapsed;
-
-                        stopwatch.Restart();
-                        var hash = SHA256Hash(fileInfo);
-                        stopwatch.Stop();
-
-                        Console.WriteLine("info: {1} hash: {2} for {0}.", fileInfo.Name, infoTime, stopwatch.Elapsed);
-
-                        var output = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
-                            CsvSafeString(info.SourceFile != null ? info.SourceFile.ToString() : string.Empty),
-                            CsvSafeString(info.SampleRate.HasValue ? info.SampleRate.Value.ToString() : string.Empty),
-                            CsvSafeString(info.BitsPerSecond.HasValue ? info.BitsPerSecond.Value.ToString() : string.Empty),
-                            CsvSafeString(info.BitsPerSample.HasValue ? info.BitsPerSample.Value.ToString() : string.Empty),
-                            CsvSafeString(info.ChannelCount.HasValue ? info.ChannelCount.Value.ToString() : string.Empty),
-                            CsvSafeString(info.Duration.HasValue ? info.Duration.Value.TotalSeconds.ToString() : string.Empty),
-                            CsvSafeString(info.MediaType),
-                            CsvSafeString(info.SourceFile.Length.ToString()),
-                            CsvSafeString(hash),
-                            GetIdentifierFromPath(info.SourceFile.FullName)
-                            );
-
-                        sw.WriteLine(output);
-
-                        sw.Flush();
-                        fs.Flush();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Log.IsWarnEnabled)
-                        {
-                            Log.Warn("Error processing " + file, ex);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        private static string CsvSafeString(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                value = string.Empty;
-            }
-
-            return "\"" + value.Replace("\"", "\"\"") + "\"";
-        }
-
-        private static string SHA256Hash(FileInfo file)
-        {
-            var filePath = file.FullName;
-
-            // see http://stackoverflow.com/questions/1177607/what-is-the-fastest-way-to-create-a-checksum-for-large-files-in-c-sharp/1177744#1177744
-            // for info about the buffer size
-
-            // buffer of 1.2gb
-            var bufferSize = 1200000;
-
-            //using (FileStream stream = File.OpenRead(filePath))
-            using (var stream = new BufferedStream(File.OpenRead(filePath), bufferSize))
-            {
-                SHA256Managed sha = new SHA256Managed();
-                byte[] checksum = sha.ComputeHash(stream);
-                return BitConverter.ToString(checksum).Replace("-", String.Empty).ToLowerInvariant();
-            }
-        }
-
-        private static Guid GetIdentifierFromPath(string path)
-        {
-            var fileName = Path.GetFileName(path);
-            if (fileName.IndexOf('_') > -1)
-            {
-                var guid = fileName.Substring(0, fileName.IndexOf('_'));
-
-                Guid result;
-                if (Guid.TryParse(guid, out result))
-                {
-                    return result;
-                }
-            }
-
-            return Guid.Empty;
-        }
+        
 
         /*ATA
         private static void Usage()

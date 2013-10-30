@@ -59,6 +59,7 @@
         // Map an audio channel from a given input to an output. 
         // The order of the "-map_channel" option specifies the order of the channels in the output stream.
         // input_file_id, stream_specifier, and channel_id are indexes starting from 0.
+        // assumes that the audio file has one stream.
         private const string ArgsMapChannel = " -map_channel 0.0.{0} ";
 
         // -ac[:stream_specifier] channels (input/output,per-stream)
