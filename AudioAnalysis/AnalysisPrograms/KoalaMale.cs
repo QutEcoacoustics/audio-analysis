@@ -16,8 +16,6 @@ using AnalysisBase;
 using TowseyLib;
 using AudioAnalysisTools;
 
-
-
 namespace AnalysisPrograms
 {
     using System.Diagnostics.Contracts;
@@ -101,16 +99,6 @@ namespace AnalysisPrograms
                 var cmdLineArgs = new List<string>();
                 if (true)
                 {
-                    /*ATA
-                    cmdLineArgs.Add(recordingPath);
-                    cmdLineArgs.Add(configPath);
-                    cmdLineArgs.Add(outputDir);
-                    cmdLineArgs.Add("-tmpwav:" + segmentFName);
-                    cmdLineArgs.Add("-events:" + eventsFname);
-                    cmdLineArgs.Add("-indices:" + indicesFname);
-                    cmdLineArgs.Add("-sgram:" + sonogramFname);
-                    cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-                    cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);*/
                     arguments = new Arguments
                     {
                         Source = recordingPath.ToFileInfo(),
@@ -189,106 +177,6 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-            /*ATA
-            if (args.Length < 4)
-            {
-                LoggedConsole.WriteLine("You require at least 4 command line arguments after the analysis option.");
-                Usage();
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-
-            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
-            string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            if (!diSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiSource = new FileInfo(recordingPath);
-            if (!fiSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
-                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
-            if (!diOP.Exists)
-            {
-                LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }*/
-            /*ATA
-            // INIT SETTINGS
-            AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.ConfigFile = arguments.Source;
-            analysisSettings.AnalysisInstanceOutputDirectory = arguments.Output;
-            analysisSettings.AudioFile = null;
-            analysisSettings.EventsFile = null;
-            analysisSettings.IndicesFile = null;
-            analysisSettings.ImageFile = null;
-            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
-            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
-            var configuration = new ConfigDictionary(arguments.Config);
-            analysisSettings.ConfigDict = configuration.GetTable();*/
-
-            /*ATA
-            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
-            for (int i = 3; i < args.Length; i++)
-            {
-                string[] parts = args[i].Split(':');
-                if (parts[0].StartsWith("-tmpwav"))
-                {
-                    var outputWavPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.AudioFile = new FileInfo(outputWavPath);
-                }
-                else if (parts[0].StartsWith("-events"))
-                {
-                    string eventsPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.EventsFile = new FileInfo(eventsPath);
-                }
-                else if (parts[0].StartsWith("-indices"))
-                {
-                    string indicesPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                }
-                else if (parts[0].StartsWith("-sgram"))
-                {
-                    string sonoImagePath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.ImageFile = new FileInfo(sonoImagePath);
-                }
-                else if (parts[0].StartsWith("-start"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsStart = new TimeSpan(0, 0, s);
-                }
-                else if (parts[0].StartsWith("-duration"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsDuration = new TimeSpan(0, 0, s);
-                    if (tsDuration.TotalMinutes > 10)
-                    {
-                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
-                        
-                        throw new AnalysisOptionInvalidDurationException();
-                    }
-                }
-            }*/
 
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
@@ -773,24 +661,5 @@ namespace AnalysisPrograms
                 };
             }
         }
-
-        /*ATA
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine(
-            @"USAGE:
-            AnalysisPrograms.exe  koalaMale  audioPath  configPath  outputDirectory  startOffset  endOffset
-            where:
-            koalaMale:-       (string) This string identifies the analysis type as ""koalaMale"".
-            audioPath:-       (string) Path of the audio file to be processed.
-            configPath:-      (string) Path of the analysis configuration file.
-            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
-            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
-            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
-            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
-            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
-            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
-            ");
-        }*ATA*/
     } 
 }

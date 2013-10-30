@@ -114,18 +114,11 @@ namespace AnalysisPrograms
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(Title);
             Log.WriteLine(date);
-
-            /*ATA
-            Log.Verbosity = 1;     
-            Segment.CheckArguments(args);*/
        
             FileInfo recordingPath = arguments.Source;
             FileInfo iniPath       = arguments.Config; // path of the ini or params file
             string targetName    = arguments.Target; // prefix of name of created files 
 
-            /*ATA
-            string recordingFileName = Path.GetFileName(recordingPath);
-            string recordingDirectory= Path.GetDirectoryName(recordingPath);*/
             DirectoryInfo outputDir     = iniPath.Directory;
             FileInfo targetPath         = outputDir.CombineFile(targetName + "_target.txt");
             FileInfo targetNoNoisePath  = outputDir.CombineFile(targetName + "_targetNoNoise.txt");

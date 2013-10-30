@@ -67,7 +67,7 @@ namespace AnalysisPrograms
 
             // michael, initiate dev arguments here
 
-            return new Arguments();
+            //return new Arguments();
         }
 
         public static void Execute(Arguments arguments)
@@ -82,9 +82,6 @@ namespace AnalysisPrograms
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
-            /*ATA
-            CheckArguments(args);
-            */
 
             FileInfo recordingPath = arguments.Source;
             FileInfo iniPath   = arguments.Config;
@@ -237,60 +234,5 @@ namespace AnalysisPrograms
                 image.Save(path);
             }
         }
-
-        /*ATA
-        public static void CheckArguments(string[] args)
-        {
-            if (args.Length < 3)
-            {
-                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
-                foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
-                Usage();
-
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-            CheckPaths(args);
-        }*/
-
-        /*ATA
-        /// <summary>
-        /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            if (!File.Exists(args[0]))
-            {
-                LoggedConsole.WriteLine("Cannot find recording file <" + args[0] + ">");
-                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
-                
-                throw new AnalysisOptionInvalidPathsException();
-            }
-            if (!File.Exists(args[1]))
-            {
-                LoggedConsole.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
-                Usage();
-                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
-                
-                throw new AnalysisOptionInvalidPathsException();
-            }
-        }*/
-
-        /*ATA
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
-            LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("OscillationDetection.exe recordingPath iniPath outputFileName");
-            LoggedConsole.WriteLine("where:");
-            LoggedConsole.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
-            LoggedConsole.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
-            LoggedConsole.WriteLine("outputFileName:-   (string) The name of the output file.");
-            LoggedConsole.WriteLine("                            By default, the output dir is that containing the ini file.");
-            LoggedConsole.WriteLine("");
-            LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
-        }*/
     }
 }

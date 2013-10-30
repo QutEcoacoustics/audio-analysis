@@ -18,6 +18,7 @@ namespace AnalysisPrograms
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [CustomDetailedDescription]
+        [CustomDescription]
         public class Arguments : IArgClassValidator
         {
             [ArgIgnore]
@@ -66,6 +67,11 @@ namespace AnalysisPrograms
                 // at least two args:
                 // first is output file path
                 // second is text file path containing audio file paths (one per line)
+            }
+
+            public static string Description()
+            {
+                return "Writes information about audio files to a csv file.";
             }
 
             public string AdditionalNotes()

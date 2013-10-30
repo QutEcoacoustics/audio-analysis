@@ -63,19 +63,6 @@ namespace AnalysisPrograms
             
             Log.Verbosity = 1;
 
-            /*ATA
-            if (args.Length != 3)
-            {
-                LoggedConsole.WriteLine("INCORRECT NUMBER OF ARGUMENTS, i.e. " + args.Length);
-                LoggedConsole.WriteLine("The arguments for SPR are: wavFile intensityThreshold");
-                LoggedConsole.WriteLine();
-                LoggedConsole.WriteLine("Recording File: path to recording file.");
-                LoggedConsole.WriteLine("Ini File:       in directory where output files and images will be placed.");
-                LoggedConsole.WriteLine("Output File:    where events will be written");
-                Console.ReadLine();
-                throw new AnalysisOptionInvalidArgumentsException();
-            }*/
-
             FileInfo recordingPath = arguments.Source;
             FileInfo iniPath       = arguments.Config;
             DirectoryInfo outputDir = arguments.Output;

@@ -15,8 +15,8 @@ namespace AnalysisPrograms
 
     public class LSKiwiROC
     {
-       // LoggedConsole.WriteLine("EventsFilePath:-     ");
-         //   LoggedConsole.WriteLine("SelectionsFilePath:- ");
+        // LoggedConsole.WriteLine("EventsFilePath:-     ");
+        //   LoggedConsole.WriteLine("SelectionsFilePath:- ");
 
         public class Arguments
         {
@@ -24,12 +24,12 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".csv")]
             [ArgPosition(0)]
             [ArgRequired]
-            public FileInfo Events { get; set;}
+            public FileInfo Events { get; set; }
 
             [ArgDescription("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
             [Production.ArgExistingFile(Extension = ".csv")]
             [ArgPosition(1)]
-            public FileInfo Selections {get; set;}
+            public FileInfo Selections { get; set; }
         }
 
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
@@ -46,25 +46,24 @@ namespace AnalysisPrograms
 
         public static void Main(Arguments arguments)
         {
+            if (arguments == null)
+            {
+                throw new NoDeveloperMethodException();
+            }
+
             bool verbose = true;
             if (verbose)
             {
                 string title = "# SOFTWARE TO CALCULATE SENSITIVITY, RECALL AND ROC INFO FOR DETECTION OF CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
-                string date  = "# DATE AND TIME: " + DateTime.Now;
+                string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine(title);
                 LoggedConsole.WriteLine(date);
             }
-            /*ATA
-            CheckArguments(args);
 
-
-            //GET COMMAND LINE ARGUMENTS
-            string eventsCsvPath          = args[0];
-            string ANDREWS_SELECTION_PATH = args[1];*/
             string outputDir = arguments.Events.DirectoryName;
 
             var fiKiwiCallPredictions = arguments.Events;
-            var fiGroundTruth         = arguments.Selections;
+            var fiGroundTruth = arguments.Selections;
 
             //InitOutputTableColumns();
             //############################################################################
@@ -96,10 +95,10 @@ namespace AnalysisPrograms
 
         public static DataTable CalculateRecallPrecision(FileInfo fiPredictions, FileInfo fiGroundTruth)
         {
-            string header_trueSex      = "truSex";
+            string header_trueSex = "truSex";
             string header_predictedSex = "preSex";
-            string header_Harmonics    = "Harmonics";
-            string header_Quality      = "Quality";
+            string header_Harmonics = "Harmonics";
+            string header_Quality = "Quality";
             string[] ROC_HEADERS = { Keys.EVENT_START_ABS,     //typeof(double)
                                        Keys.EVENT_START_MIN, 
                                        Keys.EVENT_START_SEC, 
@@ -124,11 +123,11 @@ namespace AnalysisPrograms
             Type[] ANDREWS_TYPES = { typeof(string), typeof(string), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(string), typeof(string), typeof(int), typeof(int) };
 
             bool isFirstRowHeader = true;
-            var dtGroundTruth = CsvTools.ReadCSVToTable(fiGroundTruth.FullName, isFirstRowHeader, ANDREWS_TYPES);  
+            var dtGroundTruth = CsvTools.ReadCSVToTable(fiGroundTruth.FullName, isFirstRowHeader, ANDREWS_TYPES);
             var dtPredictions = CsvTools.ReadCSVToTable(fiPredictions.FullName, isFirstRowHeader);
             dtPredictions = LSKiwiHelper.MergeAdjacentPredictions(dtPredictions);
             //var weights = LSKiwiHelper.GetFeatureWeights(); //to try different weightings.
-              
+
             //string colName  = "Species"; 
             //string value    = "LSK";
             //DataTableTools.DeleteRows(dtADResults, colName, value); //delete rows where Species name is not "LSK"
@@ -139,27 +138,27 @@ namespace AnalysisPrograms
 
             foreach (DataRow myRow in dtPredictions.Rows)
             {
-                double myStartSecAbs  = (double)myRow[Keys.EVENT_START_ABS];
-                double startMin       = (double)myRow[Keys.EVENT_START_MIN];
+                double myStartSecAbs = (double)myRow[Keys.EVENT_START_ABS];
+                double startMin = (double)myRow[Keys.EVENT_START_MIN];
                 double startSecOffset = (double)myRow[Keys.EVENT_START_SEC];
                 double intensityScore = (double)myRow[Keys.EVENT_INTENSITY];
-                string name           = (string)myRow[Keys.EVENT_NAME];
+                string name = (string)myRow[Keys.EVENT_NAME];
                 //double snrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE];
                 //double sdPeakScore = (double)myRow[LSKiwiHelper.key_PEAKS_STD_SCORE]; //standard deviation of peak snr's
                 //double periodicityScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
                 double gridScore = (double)myRow[LSKiwiHelper.key_GRID_SCORE];
                 double deltScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
                 double chrpScore = (double)myRow[LSKiwiHelper.key_CHIRP_SCORE];
-                double peakSnrScore   = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
+                double peakSnrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
                 double bandWidthScore = (double)myRow[LSKiwiHelper.key_BANDWIDTH_SCORE];
                 //double comboScore   = (double)myRow[LSKiwiHelper.key_COMBO_SCORE];
-                double eventScore     = (double)myRow[Keys.EVENT_SCORE];
-                double normScore      = (double)myRow[Keys.EVENT_NORMSCORE];
+                double eventScore = (double)myRow[Keys.EVENT_SCORE];
+                double normScore = (double)myRow[Keys.EVENT_NORMSCORE];
 
                 string predictedSex;
-                if (name.EndsWith("(m)"))      predictedSex = "M";
+                if (name.EndsWith("(m)")) predictedSex = "M";
                 else if (name.EndsWith("(f)")) predictedSex = "F";
-                else                           predictedSex = "???";
+                else predictedSex = "???";
 
                 //List<string[]> excludeRules = LSKiwiHelper.GetExcludeRules();
                 //if (FilterEvent(myRow, excludeRules) == null) continue;
@@ -175,7 +174,7 @@ namespace AnalysisPrograms
                 opRow[LSKiwiHelper.key_PEAKS_SNR_SCORE] = peakSnrScore;
                 opRow[LSKiwiHelper.key_BANDWIDTH_SCORE] = bandWidthScore;
                 //opRow[LSKiwiHelper.key_COMBO_SCORE]     = comboScore;
-                opRow[Keys.EVENT_SCORE]     = eventScore;
+                opRow[Keys.EVENT_SCORE] = eventScore;
                 opRow[Keys.EVENT_NORMSCORE] = normScore;
                 opRow[header_Quality] = 0; //fill in with blanks
                 opRow[header_predictedSex] = predictedSex;
@@ -188,7 +187,7 @@ namespace AnalysisPrograms
                 foreach (DataRow trueEvent in dtGroundTruth.Rows)
                 {
                     double trueStart = (double)trueEvent["Begin Time (s)"];
-                    string trueSex   = (string)trueEvent["Sex"];
+                    string trueSex = (string)trueEvent["Sex"];
                     if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 20)) && (predictedSex == trueSex)) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
                     {
                         isTP = true;
@@ -231,7 +230,7 @@ namespace AnalysisPrograms
                     //row[LSKiwiHelper.key_NEW_COMBO_SCORE] = 0.0;
                     row[header_predictedSex] = "???";
                     row["Harmonics"] = trueEvent["Harmonics"];
-                    row["Quality"]   = trueEvent["Quality"];
+                    row["Quality"] = trueEvent["Quality"];
                     row[header_trueSex] = trueEvent["Sex"];
                     row["TP"] = 0;
                     row["FP"] = 0;
@@ -310,9 +309,9 @@ namespace AnalysisPrograms
                 if (value == 1) cumulativeTP++;
                 else
                     if ((int)row["FP"] == 1) cumulativeFP++;
-                double recall      = cumulativeTP / (double)totalPositiveCount;  //the true positive rate
+                double recall = cumulativeTP / (double)totalPositiveCount;  //the true positive rate
                 double specificity = cumulativeFP / (double)totalNegativeCount;
-                double precision   = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
+                double precision = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
                 double accuracy = (recall + precision) / (double)2;
                 if (accuracy > maxAccuracy)
                 {
@@ -340,7 +339,7 @@ namespace AnalysisPrograms
                 previousRecall = recall;
             } //foreach row in table
 
-            if (ROC_Curve.Count > 0) 
+            if (ROC_Curve.Count > 0)
             {
                 DataTools.writeBarGraph(ROC_Curve.ToArray());
                 LoggedConsole.WriteLine("Area under ROC curve = {0:f4}", area);
@@ -354,7 +353,7 @@ namespace AnalysisPrograms
         public static void WriteSee5DataFiles(DataTable dt, DirectoryInfo diOutputDir, string fileStem)
         {
             string namesFilePath = Path.Combine(diOutputDir.FullName, fileStem + ".See5.names");
-            string dataFilePath  = Path.Combine(diOutputDir.FullName, fileStem + ".See5.data");
+            string dataFilePath = Path.Combine(diOutputDir.FullName, fileStem + ".See5.data");
 
             //string class1Name = "M";
             //string class2Name = "F";
@@ -367,10 +366,10 @@ namespace AnalysisPrograms
             nameContent.Add(String.Format("{0},  {1}", class1Name, class2Name));
             //nameContent.Add(String.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
             nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR Little Spotted Kiwi Classification.");
-            nameContent.Add(String.Format("{0}: ignore",     Keys.EVENT_START_ABS));
-            nameContent.Add(String.Format("{0}: ignore",     Keys.EVENT_START_MIN));
-            nameContent.Add(String.Format("{0}: ignore",     Keys.EVENT_START_SEC));
-            nameContent.Add(String.Format("{0}: ignore",     "Quality"));
+            nameContent.Add(String.Format("{0}: ignore", Keys.EVENT_START_ABS));
+            nameContent.Add(String.Format("{0}: ignore", Keys.EVENT_START_MIN));
+            nameContent.Add(String.Format("{0}: ignore", Keys.EVENT_START_SEC));
+            nameContent.Add(String.Format("{0}: ignore", "Quality"));
             nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_INTENSITY_SCORE));
             nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_GRID_SCORE));
             nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_DELTA_SCORE));
@@ -381,35 +380,36 @@ namespace AnalysisPrograms
             nameContent.Add(String.Format("{0}: continuous", LSKiwiHelper.key_EVENT_NORMSCORE));
             FileTools.WriteTextFile(namesFilePath, nameContent);
 
-            
+
             var dataContent = new List<string>();
             foreach (DataRow row in dt.Rows)
             {
-                double startSecAbs    = (double)row[Keys.EVENT_START_ABS];
-                double startMin       = (double)row[Keys.EVENT_START_MIN];
-                double startSec       = (double)row[Keys.EVENT_START_SEC];
+                double startSecAbs = (double)row[Keys.EVENT_START_ABS];
+                double startMin = (double)row[Keys.EVENT_START_MIN];
+                double startSec = (double)row[Keys.EVENT_START_SEC];
                 double intensityScore;
                 try
                 {
                     intensityScore = (double)row[Keys.EVENT_INTENSITY];
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     //intensityScore = 0.0;
                     continue;
                 }
                 //string quality        = ((int)row["Quality"]).ToString();     
                 string quality = "--";
-                double gridScore      = (double)row[LSKiwiHelper.key_GRID_SCORE];
-                double deltScore      = (double)row[LSKiwiHelper.key_DELTA_SCORE];
-                double chrpScore      = (double)row[LSKiwiHelper.key_CHIRP_SCORE];
-                double peakSnrScore   = (double)row[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
+                double gridScore = (double)row[LSKiwiHelper.key_GRID_SCORE];
+                double deltScore = (double)row[LSKiwiHelper.key_DELTA_SCORE];
+                double chrpScore = (double)row[LSKiwiHelper.key_CHIRP_SCORE];
+                double peakSnrScore = (double)row[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
                 double bandWidthScore = (double)row[LSKiwiHelper.key_BANDWIDTH_SCORE];
-                double comboScore     = (double)row[LSKiwiHelper.key_COMBO_SCORE];
-                double normScore      = (double)row[Keys.EVENT_NORMSCORE];
+                double comboScore = (double)row[LSKiwiHelper.key_COMBO_SCORE];
+                double normScore = (double)row[Keys.EVENT_NORMSCORE];
 
                 string name = (string)row["truSex"];
-                if ((name.Equals("M")) || (name.Equals("F"))) 
-                     name = class1Name;
+                if ((name.Equals("M")) || (name.Equals("F")))
+                    name = class1Name;
                 else name = class2Name;
 
                 string line = String.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}", startSecAbs, startMin, startSec, quality, intensityScore, gridScore, deltScore, chrpScore, peakSnrScore, bandWidthScore, comboScore, normScore, name);
@@ -417,64 +417,5 @@ namespace AnalysisPrograms
             }
             FileTools.WriteTextFile(dataFilePath, dataContent);
         }
-        /*ATA
-        public static void CheckArguments(string[] args)
-        {
-            int requiredArgumentCount = 2; //start with three command line arguments but at this point only have 2.
-            if (args.Length != requiredArgumentCount)
-            {
-                LoggedConsole.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) LoggedConsole.WriteLine(".......... " + arg);
-                LoggedConsole.WriteLine("YOU REQUIRE 3 COMMAND LINE ARGUMENTS\n");
-                Usage();
-                
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-
-            CheckPaths(args);
-
-        }
-
-        /// <summary>
-        /// this method checks validity of first three command line arguments.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            // GET the OBLIGATORY COMMAND LINE ARGUMENTS
-            string eventsCsvPath = args[0];
-            string selectionsCsvPath = args[1];
-            FileInfo fiPath1 = new FileInfo(eventsCsvPath);
-            if (!fiPath1.Exists)
-            {
-                LoggedConsole.WriteLine("The csv file of potential kiwi events does not exist: " + eventsCsvPath);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-            FileInfo fiConfig = new FileInfo(selectionsCsvPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-        }
-
-
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine("CORRECT USAGE:");
-            LoggedConsole.WriteLine("     There must be three command line arguments:");
-            LoggedConsole.WriteLine("");
-            LoggedConsole.WriteLine(@"X:\\PATH\AnalysisPrograms.exe     kiwiROC     EventsFilePath     SelectionsFilePath");
-            LoggedConsole.WriteLine("where:");
-            LoggedConsole.WriteLine("kiwiROC is an analysis identifier;");
-            LoggedConsole.WriteLine("EventsFilePath:-     Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.");
-            LoggedConsole.WriteLine("SelectionsFilePath:- Full path of the csv file containing description of true kiwi calls. FIle must be in the correct format.");
-            LoggedConsole.WriteLine("Note: The first argument <kiwiROC> is obligatory.");
-            LoggedConsole.WriteLine("");
-        }
-        */
-
     }
 }

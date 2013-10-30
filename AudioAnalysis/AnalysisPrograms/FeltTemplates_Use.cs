@@ -90,13 +90,6 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("# Recording     =" + arguments.Source);//the recording to be scanned
             Log.WriteIfVerbose("# Template list =" + arguments.Config);//the path to a file containing the paths to template locations, one template per line
             Log.WriteIfVerbose("# Output folder =" + arguments.Output);//name of output dir 
-            /*ATA
-            Segment.CheckArguments(args);
-
-            string recordingPath = args[0];    
-            string iniPath       = args[1];    
-            string outputDir     = args[2];    
-             * */
 
             var allEvents     = new List<AcousticEvent>();
             var scoresList    = new List<double[]>(); 

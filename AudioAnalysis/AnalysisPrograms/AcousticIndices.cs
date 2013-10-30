@@ -203,15 +203,6 @@ namespace AnalysisPrograms
                     arguments.Indices = indicesFname;
                     arguments.Start = (int?)tsStart.TotalSeconds;
                     arguments.Duration = (int?)tsDuration.TotalSeconds;
-                    /*ATA
-                    cmdLineArgs.Add(TaskAnalyse);
-                    cmdLineArgs.Add(recordingPath);
-                    cmdLineArgs.Add(configPath);
-                    cmdLineArgs.Add(outputDir);
-                    cmdLineArgs.Add("-tmpwav:" + segmentFName);
-                    cmdLineArgs.Add("-indices:" + indicesFname);
-                    cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-                    cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);*/
                 }
                 if (false) // task_LOAD_CSV
                 {
@@ -219,14 +210,7 @@ namespace AnalysisPrograms
                     arguments.Task = TaskLoadCsv;
                     arguments.InputCsv = csvPath.ToFileInfo();
                     arguments.Config = configPath.ToFileInfo();
-                    /*ATA 
-                     * cmdLineArgs.Add(TaskLoadCsv);
-                    cmdLineArgs.Add(csvPath);
-                    cmdLineArgs.Add(configPath);
-                     * */
-                    //cmdLineArgs.Add(indicesImagePath);
                 }
-
             }
 
             Execute(arguments);
@@ -263,37 +247,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-            /*ATA
-            if (args.Length < 2)
-            {
-                LoggedConsole.WriteLine("ERROR: You have called the AnalysisPrograms.MainEntry() method without sufficient command line arguments.");
-                LoggedConsole.WriteLine("Require at least 2 command line arguments.");
-                //Usage();
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-            else
-            {
-                string[] restOfArgs = args.Skip(1).ToArray();
-                switch (args[0])
-                {
-                    case TaskAnalyse:      // perform the analysis task
-                        ExecuteAnalysis(restOfArgs);
-                        break;
-                    case TaskLoadCsv:     // loads a csv file for visualisation
-                        string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
-                        var fiCsvFile = new FileInfo(restOfArgs[0]);
-                        var fiConfigFile = new FileInfo(restOfArgs[1]);
-                        //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                        IAnalyser analyser = new Acoustic();
-                        var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-                        //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-                        break;
-                    default:
-                        LoggedConsole.WriteLine("Task unrecognised>>>" + args[0]);
-                        throw new AnalysisOptionInvalidArgumentsException();
-                } // switch
-            } // if-else*/
-
+  
             // loads a csv file for visulisation
             if (arguments.TaskIsLoadCsv)
             {
@@ -767,14 +721,10 @@ namespace AnalysisPrograms
             return processedtable;
         }
 
-
-
         public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
         {
             return null;
         }
-
-
 
         public string DefaultConfiguration
         {
@@ -799,8 +749,6 @@ namespace AnalysisPrograms
             }
         }
 
-
-
         /// <summary>
         /// Checks the command line arguments
         /// returns Analysis Settings
@@ -810,20 +758,6 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static AnalysisSettings GetAndCheckAllArguments(Arguments args)
         {
-            /*ATA
-            // check numbre of command line arguments
-            if (args.Length < 4)
-            {
-                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
-                LoggedConsole.WriteLine("You require at least 4 command line arguments after the analysis option.");
-                Usage();
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-            CheckPaths(args); // check paths of first three command line arguments
-
-            FileInfo fiConfig = new FileInfo(args[1]);
-            string outputDir = args[2];*/
-
             // INIT ANALYSIS SETTINGS
             AnalysisSettings analysisSettings = new AnalysisSettings();
             analysisSettings.SourceFile = args.Source;
@@ -833,44 +767,11 @@ namespace AnalysisPrograms
             analysisSettings.EventsFile = null;
             analysisSettings.IndicesFile = null;
             analysisSettings.ImageFile = null;
+
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
             TimeSpan tsDuration = new TimeSpan(0, 0, 0);
             var configuration = new ConfigDictionary(args.Config);
             analysisSettings.ConfigDict = configuration.GetTable();
-
-            /*ATA
-            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
-            for (int i = 3; i < args.Length; i++)
-            {
-                string[] parts = args[i].Split(':');
-                if (parts[0].StartsWith("-tmpwav"))
-                {
-                    var outputWavPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.AudioFile = new FileInfo(outputWavPath);
-                }
-                else if (parts[0].StartsWith("-indices"))
-                {
-                    string indicesPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                }
-                else if (parts[0].StartsWith("-start"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsStart = new TimeSpan(0, 0, s);
-                }
-                else if (parts[0].StartsWith("-duration"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsDuration = new TimeSpan(0, 0, s);
-                    if (tsDuration.TotalMinutes > 10)
-                    {
-                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
-
-                        throw new AnalysisOptionInvalidDurationException();
-                    }
-                }
-            }
-            return System.Tuple.Create(analysisSettings, tsStart, tsDuration);*/
 
             if (!string.IsNullOrWhiteSpace(args.TmpWav))
             {
@@ -887,92 +788,5 @@ namespace AnalysisPrograms
 
             return analysisSettings;
         } // CheckAllArguments()
-
-        /*ATA
-        /// <summary>
-        /// this method checks validity of first three command line arguments.
-        /// Assumes that they are paths.
-        /// NEED TO REWRITE THIS METHOD AS APPROPRIATE
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
-            string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            if (!diSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiSource = new FileInfo(recordingPath);
-            if (!fiSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
-                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
-            if (!diOP.Exists)
-            {
-                bool success = true;
-                try
-                {
-                    LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
-                    LoggedConsole.WriteLine("Creating new output directory:   " + diOP.Name);
-                    Directory.CreateDirectory(outputDir);
-                    success = Directory.Exists(outputDir);
-                }
-                catch
-                {
-                    success = false;
-                }
-
-                if (!success)
-                {
-                    LoggedConsole.WriteLine("Output directory does not exist and unable to create new directory of that name.");
-
-                    throw new AnalysisOptionInvalidPathsException();
-                }
-            }
-        } // CheckPaths()*/
-        /*
-        /// <summary>
-        /// NOTE: EDIT THE "Default" string to describethat indicates analysis type.
-        /// </summary>
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("AnalysisPrograms.exe  " + AnalysisName + "  audioPath  configPath  outputDirectory  startOffset  endOffset");
-            LoggedConsole.WriteLine(
-            @"
-            where:
-            ANALYSIS_NAME:-   (string) Identifies the analysis type.
-            audioPath:-       (string) Path of the audio file to be processed.
-            configPath:-      (string) Path of the analysis configuration file.
-            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
-            THE ABOVE THREE ARGUMENTS ARE OBLIGATORY. 
-            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
-            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
-            duration:         (integer) The duration (in seconds) of that portion of the file to be analysed.
-            IF LAST TWO ARGUMENTS ARE NOT INCLUDED, OR DURATION=0, THE ENTIRE FILE IS ANALYSED.
-            ");
-        }*/
-
-
     } //end class Acoustic
 }
