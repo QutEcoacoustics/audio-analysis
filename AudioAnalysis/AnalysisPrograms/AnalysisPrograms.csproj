@@ -112,9 +112,8 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="PowerArgs, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Extra Assemblies\PowerArgs\Debug\PowerArgs.dll</HintPath>
+    <Reference Include="PowerArgs">
+      <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.3.9.59\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -144,6 +143,7 @@
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
+    <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="EPR.cs" />

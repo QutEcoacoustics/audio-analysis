@@ -326,7 +326,13 @@ namespace AnalysisPrograms.Production
         {
             // Michael's play area
             return AnalysisPrograms.Sandpit.Dev;
-        } 
+        }
+
+        public AudioFileCheck.Arguments AudioFileCheckArgs { get; set; }
+        public static Action<AudioFileCheck.Arguments> AudioFileCheck()
+        {
+            return AnalysisPrograms.AudioFileCheck.Execute;
+        }
 
         #endregion
     }

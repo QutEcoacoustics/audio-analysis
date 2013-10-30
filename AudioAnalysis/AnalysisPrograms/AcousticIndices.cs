@@ -304,11 +304,10 @@ namespace AnalysisPrograms
                 IAnalyser analyser = new Acoustic();
                 var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
                 //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-            }
-
-            // perform the analysis task
-            if (arguments.TaskIsAnalyse)
+            } 
+            else if (arguments.TaskIsAnalyse)
             {
+                // perform the analysis task
                 ExecuteAnalysis(arguments);
             }
         } // Execute()
