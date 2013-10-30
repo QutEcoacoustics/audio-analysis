@@ -47,7 +47,8 @@ namespace AnalysisPrograms.Production
                     throw new ValidationArgException("The specified directory ({0}) for argument {1} exists and should not".Format2(arg, name));
                 }
             }
-            else {
+            else
+            {
                 if (createIfNotExists)
                 {
                     Directory.CreateDirectory(arg);
@@ -55,13 +56,11 @@ namespace AnalysisPrograms.Production
                 else
                 {
                     throw new ValidationArgException(
-                        "Directory not found: '" + arg + "' for argument " + name,
+                        "The specified directory ({0}) for argument {1}{2}, but was not found."
+                            .Format2(arg, name, this.shouldExist ? " was expected" : string.Empty),
                         new DirectoryNotFoundException());
                 }
             }
-
-
-
 
             arg = Path.GetFullPath(arg);
         }
@@ -69,7 +68,8 @@ namespace AnalysisPrograms.Production
 
     public class ArgNotExistingDirectory : ArgExistingDirectory
     {
-        public ArgNotExistingDirectory() : base(false, true)
+        public ArgNotExistingDirectory()
+            : base(false, true)
         {
         }
     }
@@ -118,10 +118,12 @@ namespace AnalysisPrograms.Production
                 }
                 else
                 {
-                    throw new ValidationArgException("File not found: '" + arg + "' for argument " + name, new FileNotFoundException());
+                    throw new ValidationArgException(
+                        "The specified file ({0}) for argument {1}{2}, but was not found."
+                            .Format2(arg, name, this.shouldExist ? " was expected" : string.Empty),
+                        new FileNotFoundException());
                 }
             }
-
 
             arg = Path.GetFullPath(arg);
 
@@ -163,8 +165,8 @@ namespace AnalysisPrograms.Production
 
         bool IsValidFilename(string testName)
         {
-            string strTheseAreInvalidFileNameChars = new string( Path.GetInvalidFileNameChars() ) ;
-            Regex regFixFileName = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars ) + "]");
+            string strTheseAreInvalidFileNameChars = new string(Path.GetInvalidFileNameChars());
+            Regex regFixFileName = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
             if (regFixFileName.IsMatch(testName)) { return false; };
 
 
@@ -173,13 +175,13 @@ namespace AnalysisPrograms.Production
 
         public override void Validate(string name, ref string arg)
         {
-       
+
             if (!this.IsValidFilename(arg))
             {
 
-                    throw new ValidationArgException(
-                        "Not a valid filename: '" + arg + "' (for argument " + name + ")");
-                
+                throw new ValidationArgException(
+                    "Not a valid filename: '" + arg + "' (for argument " + name + ")");
+
             }
 
 

@@ -22,13 +22,13 @@ namespace AnalysisPrograms
         {
             [ArgDescription("Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
             [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             [ArgRequired]
             public FileInfo Events { get; set; }
 
             [ArgDescription("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
             [Production.ArgExistingFile(Extension = ".csv")]
-            [ArgPosition(1)]
+            [ArgPosition(2)]
             public FileInfo Selections { get; set; }
         }
 

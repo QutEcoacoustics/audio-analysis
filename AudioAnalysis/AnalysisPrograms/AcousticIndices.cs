@@ -42,7 +42,7 @@ namespace AnalysisPrograms
         {
             [ArgDescription("The task to execute, either `" + TaskAnalyse + "` or `" + TaskLoadCsv + "`")]
             [ArgRequired]
-            [ArgPosition(0)]
+            [ArgPosition(1)]
             [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognised.")]
             public string Task { get; set; }
 
