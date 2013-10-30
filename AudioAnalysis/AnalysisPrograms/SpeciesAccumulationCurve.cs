@@ -923,57 +923,5 @@ namespace AnalysisPrograms
 
             return Tuple.Create(totalSpeciesList, callingSpeciesList, callMatrix);
         }
-
-        /*ATA
-        public static void CheckArguments(string[] args)
-        {
-            int argumentCount = 2;
-            if (args.Length != argumentCount)
-            {
-                Log.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", argumentCount);
-                Usage();
-            }
-            CheckPaths(args);
-        }*/
-        /*
-        /// <summary>
-        /// this method checks for the existence of a file and directory expected as two arguments of the command line.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            if (!File.Exists(args[0]))
-            {
-                LoggedConsole.WriteLine("Cannot find recording file <" + args[0] + ">");
-                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
-                throw new AnalysisOptionInvalidPathsException();
-            }
-            string opDir = Path.GetDirectoryName(args[1]);
-            if (!Directory.Exists(opDir))
-            {
-                LoggedConsole.WriteLine("Cannot find output directory: <" + opDir + ">");
-                Usage();
-                LoggedConsole.WriteLine("Press <ENTER> key to exit.");
-                throw new AnalysisOptionInvalidPathsException();
-            }
-        }
-
-
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine("INCORRECT COMMAND LINE.");
-            LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("SpeciesAccumulation.exe inputFilePath outputFilePath");
-            LoggedConsole.WriteLine("where:");
-            LoggedConsole.WriteLine("inputFileName:- (string) Path of the input  file to be processed.");
-            LoggedConsole.WriteLine("outputFileName:-(string) Path of the output file to store results.");
-            LoggedConsole.WriteLine("");
-            LoggedConsole.WriteLine("\nPress <ENTER> key to exit.");
-            throw new AnalysisOptionInvalidArgumentsException();
-        }*/
-
-
     }
 }

@@ -62,18 +62,6 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
 
-            /*ATA
-            if (args.Length != 3)
-            {
-                LoggedConsole.WriteLine(
-                @"The arguments for SPT are: wavFile intensityThreshold
-                
-                wavFile:            path to recording file.
-                output dir:         where output files and images will be placed.
-                intensityThreshold: is mandatory");
-                throw new AnalysisOptionInvalidArgumentsException();
-            }*/
-
             FileInfo wavFilePath = arguments.Source;
             DirectoryInfo opDir = arguments.Output;
             double intensityThreshold = arguments.IntensityThreshold;

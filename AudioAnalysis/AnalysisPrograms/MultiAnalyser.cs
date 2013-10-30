@@ -122,18 +122,7 @@ namespace AnalysisPrograms
                 var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
                 var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
                 var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
-                /*ATA
-                var cmdLineArgs = new List<string>();
-                cmdLineArgs.Add(recordingPath);
-                cmdLineArgs.Add(configPath);
-                cmdLineArgs.Add(outputDir);
-                cmdLineArgs.Add("-tmpwav:" + segmentFName);
-                cmdLineArgs.Add("-events:" + eventsFname);
-                cmdLineArgs.Add("-indices:" + indicesFname);
-                cmdLineArgs.Add("-sgram:" + sonogramFname);
-                cmdLineArgs.Add("-start:" + tsStart.TotalSeconds);
-                cmdLineArgs.Add("-duration:" + tsDuration.TotalSeconds);
-                */
+
                 arguments = new Arguments
                 {
                     Source = recordingPath.ToFileInfo(),
@@ -201,105 +190,7 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-            /*ATA
-            if (args.Length < 4)
-            {
-                LoggedConsole.WriteLine("Require at least 4 command line arguments.");
-
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-
-            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
-            string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            if (!diSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-            FileInfo fiSource = new FileInfo(recordingPath);
-            if (!fiSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
-                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
-            if (!diOP.Exists)
-            {
-                LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            // INIT SETTINGS
-            AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.ConfigFile = fiConfig;
-            analysisSettings.AnalysisInstanceOutputDirectory = diOP;
-            analysisSettings.AudioFile = null;
-            analysisSettings.EventsFile = null;
-            analysisSettings.IndicesFile = null;
-            analysisSettings.ImageFile = null;
-            TimeSpan tsStart = new TimeSpan(0, 0, 0);
-            TimeSpan tsDuration = new TimeSpan(0, 0, 0);
-            var configuration = new ConfigDictionary(fiConfig.FullName);
-            analysisSettings.ConfigDict = configuration.GetTable();
-
-
-            // PROCESS REMAINDER OF THE OPTIONAL COMMAND LINE ARGUMENTS
-            for (int i = 3; i < args.Length; i++)
-            {
-                string[] parts = args[i].Split(':');
-                if (parts[0].StartsWith("-tmpwav"))
-                {
-                    var outputWavPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.AudioFile = new FileInfo(outputWavPath);
-                }
-                else if (parts[0].StartsWith("-events"))
-                {
-                    string eventsPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.EventsFile = new FileInfo(eventsPath);
-                }
-                else if (parts[0].StartsWith("-indices"))
-                {
-                    string indicesPath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.IndicesFile = new FileInfo(indicesPath);
-                }
-                else if (parts[0].StartsWith("-sgram"))
-                {
-                    string sonoImagePath = Path.Combine(outputDir, parts[1]);
-                    analysisSettings.ImageFile = new FileInfo(sonoImagePath);
-                }
-                else if (parts[0].StartsWith("-start"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsStart = new TimeSpan(0, 0, s);
-                }
-                else if (parts[0].StartsWith("-duration"))
-                {
-                    int s = int.Parse(parts[1]);
-                    tsDuration = new TimeSpan(0, 0, s);
-                    if (tsDuration.TotalMinutes > 10)
-                    {
-                        LoggedConsole.WriteLine("Segment duration cannot exceed 10 minutes.");
-                        
-                        throw new AnalysisOptionInvalidDurationException();
-                    }
-                }
-            }*/
+           
 
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
@@ -333,8 +224,6 @@ namespace AnalysisPrograms
                 //DataTableTools.WriteTable(dt);
             }
         }
-
-
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {

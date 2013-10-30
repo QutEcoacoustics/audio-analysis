@@ -212,11 +212,7 @@ namespace AnalysisPrograms
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
-            /*ATA
-            Segment.CheckArguments(args);
 
-            string recordingPath = args[0];
-            string iniPath       = args[1]; // path of the ini or params file*/
             string targetName    = arguments.Target; // prefix of name of created files 
 
             string recordingFileName   = arguments.Source.Name;

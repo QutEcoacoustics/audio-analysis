@@ -66,13 +66,6 @@ namespace AnalysisPrograms
 
             bool verbose = true;
 
-            /*ATA
-            CheckArguments(args); //checks validity of the three path arguments
- 
-            string csvPath    = args[0];
-            string configPath = args[1];
-            string imagePath  = args[2]; */
-
             if (arguments.Config == null)
             {
                 LoggedConsole.WriteLine("### WARNING: Config file is not provided - using defaults");
@@ -137,93 +130,5 @@ namespace AnalysisPrograms
             }
 
         } // Main();
-
-
-        /*ATA
-        public static void CheckArguments(string[] args)
-        {
-            if (args.Length != 3)
-            {
-                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
-                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", (args.Length+1));
-                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
-                LoggedConsole.WriteLine("\nYOU REQUIRE 4 COMMAND LINE ARGUMENTS\n");
-                Usage();
-                
-                throw new AnalysisOptionInvalidArgumentsException();
-            }
-
-            CheckPaths(args);
-        }
-
-        /// <summary>
-        /// this method checks validity of first three command line arguments.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            // GET THREE OBLIGATORY COMMAND LINE ARGUMENTS
-            string csvPath    = args[0];
-            string configPath = args[1];
-            string outputPath = args[2];
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(csvPath));
-            if (!diSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
-                
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiSource = new FileInfo(csvPath);
-            if (!fiSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
-                LoggedConsole.WriteLine("\t but the source file does not exist: " + csvPath);
-                
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("### WARNING: Config file does not exist: " + fiConfig.FullName); // LET THIS BE OK. Proceed anyway with default 
-            }
-
-            DirectoryInfo diOP = new DirectoryInfo(Path.GetDirectoryName(outputPath));
-            if (!diOP.Exists)
-            {
-                bool success = true;
-                try
-                {
-                    Directory.CreateDirectory(diOP.FullName);
-                    success = Directory.Exists(diOP.FullName);
-                }
-                catch
-                {
-                    success = false;
-                }
-
-                if (!success)
-                {
-                    LoggedConsole.WriteLine("Output directory does not exist and could not be created: " + diOP.FullName);
-                    throw new AnalysisOptionInvalidPathsException();
-                }
-            }
-        } // CheckPaths()
-
-
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine("USAGE:");
-            LoggedConsole.WriteLine("AnalysisPrograms.exe  indicesCsv2Image  csvPath  configPath  outputPath");
-            LoggedConsole.WriteLine("where:");
-            LoggedConsole.WriteLine("indicesCsv2Image:-   (string) this is a literal string that selects the analytical process to be performed.");
-            LoggedConsole.WriteLine("input  csv  File:-   (string) Path of the indices.csv file to be processed.");
-            LoggedConsole.WriteLine("configuration File:- (string) Path of the configuration file containing relevant parameters.");
-            LoggedConsole.WriteLine("output File:-        (string) Path of the image.png file for output.");
-            LoggedConsole.WriteLine("");
-        } // Usage()*/
-
-
     } //class
 }

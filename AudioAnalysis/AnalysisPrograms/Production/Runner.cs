@@ -41,27 +41,6 @@
                 throw new NoDeveloperMethodException();
             }
 
-            /*ATA
-            // args are stored in a file, the only argument should be the config file.
-            if (args == null)
-            {
-                throw new ArgumentNullException("args");
-            }
-
-            var arguments = args.ToList();
-
-            if (arguments.Count != 1)
-            {
-                throw new ArgumentException("Arguments must be exactly one item - the config file. Given: " + arguments.Count, "args");
-            }
-
-            var configFile = arguments.FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(configFile))
-            {
-                throw new ArgumentException("Config file was not valid:" + configFile, "args");
-            }
- */
            var config =  arguments.Config.ToFileInfo();
 
             if (!File.Exists(config.FullName))

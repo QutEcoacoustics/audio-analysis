@@ -52,26 +52,6 @@ namespace AnalysisPrograms
 
         internal static void AttachDebugger(ref DebugOptions options)
         {
-      /*ATA 
-//            string noDebug = "-nodebug".ToLowerInvariant();
-//            string debug = "-debug".ToLowerInvariant();
-//            var attach = false;
-//            if (args.Length > 0)
-//            {
-//                if (args[0].ToLowerInvariant() == noDebug)
-//                {
-//                    args = args.Skip(1).ToArray();
-//                    return;
-//                }
-//
-//                // no conflict here, if it was nodebug this method would of exited already
-//                if (args[0].ToLowerInvariant() == debug)
-//                {
-//                    args = args.Skip(1).ToArray();
-//                    attach = true;
-//                }
-//            }*/
-
             if (options == DebugOptions.No)
             {
                 return;
@@ -120,7 +100,7 @@ namespace AnalysisPrograms
         private static ArgAction<MainEntryArguments> ParseArguments(string[] args)
         {
             ArgUsage.RegisterHook(null, new CustomUsageHook());
-           return  Args.ParseAction<MainEntryArguments>(args);
+            return Args.ParseAction<MainEntryArguments>(args);
         }
 
         /// <summary>
@@ -135,7 +115,7 @@ namespace AnalysisPrograms
 
                 if (!InDEBUG)
                 {
-                    throw new ArgumentException("Cannot provide no arguments to an analysis in a non-DEBUG build");
+                    throw new ArgumentException("Must provide arguments to an analysis in a RELEASE build.");
                 }
 
                 Log.Warn("Empty (null) analysis arguments recieved. A Dev method should be executed.");
@@ -161,6 +141,7 @@ namespace AnalysisPrograms
                                                                        ShowType = true,
                                                                        NoOptionsMessage = "<< no arguments >>"
                                                                    };
+
         internal static void PrintUsage(string message, Usages usageStyle, string actionName = null)
         {
             Contract.Requires(usageStyle != Usages.Single || actionName != null);
@@ -169,7 +150,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine(message);
             }
-            
+
             // TODO print additional usage (i.e. IUSAGE)
 
             if (usageStyle == Usages.All)
@@ -235,7 +216,7 @@ namespace AnalysisPrograms
                 }
                 else if (ex is UnknownActionArgException)
                 {
-                    PrintUsage(ex.Message , Usages.NoAction);
+                    PrintUsage(ex.Message, Usages.NoAction);
                 }
                 else if (ex is ValidationArgException)
                 {

@@ -165,45 +165,36 @@ namespace AnalysisPrograms
                 throw new NoDeveloperMethodException();
             }
 
-            /*ATA
-            if (args.Length == 0)
+            // "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\""
+
+            Log.Verbosity = 1;
+
+
+            // READ PARAMETER VALUES FROM INI FILE
+            double intensityThreshold;
+            double bandPassFilterMaximum;
+            double bandPassFilterMinimum;
+            int smallAreaThreshold;
+            AED.GetAedParametersFromConfigFileOrDefaults(arguments.Config, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
+
+            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
+            List<AcousticEvent> eprEvents = result.Item2;
+
+            eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+
+            LoggedConsole.WriteLine();
+            foreach (AcousticEvent ae in eprEvents)
             {
-                LoggedConsole.WriteLine("Please supply a .wav recording as a command line argument.");
-                LoggedConsole.WriteLine(
-                    "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\"");
-                
-                throw new AnalysisOptionInvalidArgumentsException();
+                LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             }
-            else
-            {*/
-                Log.Verbosity = 1;
 
-
-                // READ PARAMETER VALUES FROM INI FILE
-                double intensityThreshold;
-                double bandPassFilterMaximum;
-                double bandPassFilterMinimum;
-                int smallAreaThreshold;
-                AED.GetAedParametersFromConfigFileOrDefaults(arguments.Config, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
-
-                Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
-                List<AcousticEvent> eprEvents = result.Item2;
-
-                eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
-
-                LoggedConsole.WriteLine();
-                foreach (AcousticEvent ae in eprEvents)
-                {
-                    LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
-                }
-
-                LoggedConsole.WriteLine();
+            LoggedConsole.WriteLine();
 
             string outputFolder = arguments.Config.DirectoryName;
-                AED.GenerateImage(arguments.Source.FullName, outputFolder, result.Item1, eprEvents);
-                //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
+            AED.GenerateImage(arguments.Source.FullName, outputFolder, result.Item1, eprEvents);
+            //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
-                Log.WriteLine("Finished");
+            Log.WriteLine("Finished");
 
         }
 
@@ -273,7 +264,7 @@ namespace AnalysisPrograms
                 int t2 = (int)Math.Round((groundParrotTemplate1[r, 1] - timeOffset) / timeScale);
                 int f2 = (int)Math.Round(groundParrotTemplate1[r, 2] / hzScale);
                 int f1 = (int)Math.Round(groundParrotTemplate1[r, 3] / hzScale);
-                Oblong o = new Oblong(t1,f1, t2, f2);
+                Oblong o = new Oblong(t1, f1, t2, f2);
                 gpTemplate.Add(new AcousticEvent(o, timeScale, hzScale));
             }
             return gpTemplate;

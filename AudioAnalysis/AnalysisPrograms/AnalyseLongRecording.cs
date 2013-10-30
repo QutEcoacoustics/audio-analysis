@@ -136,15 +136,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(date);
             }
 
-            /*ATA CheckArguments(args); // checks validity of arguments 2, 3, and 4. First argument already removed.
-
-
-            string recordingPath = args[0];
-            string configPath    = args[1];
-            string outputDir     = args[2];
-            string tempFilesDir  = null;
-             * */
-
             var recordingPath = arguments.Source;
             var configPath = arguments.Config;
             var outputDir = arguments.Output;
@@ -435,119 +426,6 @@ namespace AnalysisPrograms
                 ImageTools.DisplayImageWithPaint(imagePath);
             }
         }
-
-        /*ATA
-        public static void CheckArguments(string[] args)
-        {
-            if (args.Length == 4)
-            {
-                // this is the special case temp directory argument (god we need a better way of doing this)
-                if (String.IsNullOrEmpty(args[3]) || !Directory.Exists(args[3]))
-                {
-                    LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.\nA Temp directory was specified in the foruth argument and does not exist");
-                    LoggedConsole.WriteLine("If you are trying to specify a start&end you are missing an argument");
-
-                    Usage();
-
-                    throw new AnalysisOptionInvalidArgumentsException();
-                }
-
-                return;
-            }
-
-            if ((args.Length != 3) && (args.Length != 5))
-            {
-                LoggedConsole.WriteLine("\nINCORRECT COMMAND LINE.");
-                LoggedConsole.WriteLine("\nTHE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) LoggedConsole.WriteLine(arg + "  ");
-                LoggedConsole.WriteLine("\nYOU REQUIRE 4 OR 6 COMMAND LINE ARGUMENTS\n");
-                Usage();
-                
-                 throw new AnalysisOptionInvalidArgumentsException();
-            }
-
-            CheckPaths(args);
-        }*/
-
-        /*ATA
-        /// <summary>
-        /// this method checks validity of first three command line arguments.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            // GET FIRST THREE OBLIGATORY COMMAND LINE ARGUMENTS
-            string recordingPath = args[0];
-            string configPath = args[1];
-            string outputDir = args[2];
-            DirectoryInfo diSource = new DirectoryInfo(Path.GetDirectoryName(recordingPath));
-            if (!diSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory does not exist: " + diSource.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiSource = new FileInfo(recordingPath);
-            if (!fiSource.Exists)
-            {
-                LoggedConsole.WriteLine("Source directory exists: " + diSource.FullName);
-                LoggedConsole.WriteLine("\t but the source file does not exist: " + recordingPath);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            FileInfo fiConfig = new FileInfo(configPath);
-            if (!fiConfig.Exists)
-            {
-                LoggedConsole.WriteLine("Config file does not exist: " + fiConfig.FullName);
-
-                throw new AnalysisOptionInvalidPathsException();
-            }
-
-            DirectoryInfo diOP = new DirectoryInfo(outputDir);
-            if (!diOP.Exists)
-            {
-                bool success = true;
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                    success = Directory.Exists(outputDir);
-                }
-                catch
-                {
-                    success = false;
-                }
-
-                if (!success)
-                {
-                    LoggedConsole.WriteLine("Output directory does not exist: " + diOP.FullName);
-
-                    throw new AnalysisOptionInvalidPathsException();
-                }
-            }
-        }*/
-
-        /* ATA
-        public static void Usage()
-        {
-            LoggedConsole.WriteLine(
-            @"USAGE:
-            AnalysisPrograms.exe  audio2csv  audioPath  configPath  outputDirectory  startOffset  endOffset
-            where:
-            audio2csv:-       a literal string indicating the analysis of a long recording. Analysis type must be set in config file.
-            audioPath:-       (string) Path of the audio file to be processed.
-            configPath:-      (string) Path of the analysis configuration file.
-            outputDirectory:- (string) Path of the output directory in which to store .csv result files.
-            THE ABOVE FOUR ARGUMENTS ARE OBLIGATORY. 
-            THE NEXT TWO ARGUMENTS ARE OPTIONAL:
-            startOffset:      (integer) The start (minutes) of that portion of the file to be analysed.
-            endOffset:        (integer) The end   (minutes) of that portion of the file to be analysed.
-            IF THE LAST TWO ARGUMENTS ARE NOT INCLUDED, THE ENTIRE FILE IS ANALYSED.
-            ");
-        }*/
-
-
     } //class AnalyseLongRecording
 }
 
