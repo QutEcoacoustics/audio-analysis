@@ -1,7 +1,7 @@
 window.power <- sum(hamming ^ 2)
 epsilon <- (1 / 2) ^ (bit - 1)
-min.dc <- 10 * log10(epsilon ^ 2 / window.power / samp.rate)
-min.freq <- 10 * log10(epsilon ^ 2 / window.power / samp.rate * 2)
+min.dc <- 10 * log10(epsilon ^ 2 / samp.rate)
+min.freq <- 10 * log10(epsilon ^ 2 / samp.rate * 2)
 
 # normalise DC values
 dc.row <- amp[1, ]
