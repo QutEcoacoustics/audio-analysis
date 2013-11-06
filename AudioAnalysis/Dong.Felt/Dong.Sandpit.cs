@@ -41,11 +41,11 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Brown Cuckoo-dove1\Testing\DM420008_262m_00s__264m_00s - Faint Toad.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\Spectrogram results";
-                string imageFileName = "1.png";
+                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Query images\query for Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Query images";
+                string imageFileName = "query for Brown Cuckoo-dove1-before noise removal.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1.png";
+                string annotatedImageFileName = "query for Brown Cuckoo-dove1-before noise removal.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -58,47 +58,47 @@
                 double eventThreshold = 0.5; // dummy variable - not used                               
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                /// addd this line to check the result after noise removal.
-                ////image.Save(imagePath, ImageFormat.Png);
+                ///// addd this line to check the result after noise removal.
+                image.Save(imagePath, ImageFormat.Png);
 
-                // This config is to set up the parameters used in ridge Detection. 
-                var ridgeConfig = new RidgeDetectionConfiguration
-                {
-                    ridgeDetectionmMagnitudeThreshold = 5.5,
-                    ridgeMatrixLength = 5,
-                    filterRidgeMatrixLength = 7,
-                    minimumNumberInRidgeInMatrix = 3
-                };
-                //double intensityThreshold = 5.0; // dB
+                //// This config is to set up the parameters used in ridge Detection. 
+                //var ridgeConfig = new RidgeDetectionConfiguration
+                //{
+                //    ridgeDetectionmMagnitudeThreshold = 5.5,
+                //    ridgeMatrixLength = 5,
+                //    filterRidgeMatrixLength = 7,
+                //    minimumNumberInRidgeInMatrix = 3
+                //};
+                ////double intensityThreshold = 5.0; // dB
 
-                double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-                var results = new List<List<string>>();
-                // each region should have same nhCount, here we just get it from the first region item. 
-                var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
-                var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
-                results.Add(new List<string>() { "FileName", "rowIndex", "colIndex", "value"});
-                for (int i = 0; i < matrix.GetLength(0); i++)
-                {
-                    for (int j = 0; j < matrix.GetLength(1); j++)
-                    {
-                        results.Add(new List<string>() { audioFilePath, i.ToString(), j.ToString(),matrix[i,j].ToString()});
-                    }           
-                }
-                File.WriteAllLines(dataOutputFile, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
-                int rows = matrix.GetLength(0);
-                int cols = matrix.GetLength(1);
-                double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
-                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                double herzScale = spectrogram.FBinWidth; //43 hz
-                double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+                //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+                //var results = new List<List<string>>();
+                //// each region should have same nhCount, here we just get it from the first region item. 
+                //var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
+                //var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
+                //results.Add(new List<string>() { "FileName", "rowIndex", "colIndex", "value"});
+                //for (int i = 0; i < matrix.GetLength(0); i++)
+                //{
+                //    for (int j = 0; j < matrix.GetLength(1); j++)
+                //    {
+                //        results.Add(new List<string>() { audioFilePath, i.ToString(), j.ToString(),matrix[i,j].ToString()});
+                //    }           
+                //}
+                //File.WriteAllLines(dataOutputFile, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+                //int rows = matrix.GetLength(0);
+                //int cols = matrix.GetLength(1);
+                //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
+                //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                //double herzScale = spectrogram.FBinWidth; //43 hz
+                //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
 
-                var poiList1 = new List<PointOfInterest>();
-                var ridges = new POISelection(poiList1);
-                ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                /// filter out some redundant ridges                
-                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
-                var neighbourhoodLength = 13;
+                //var poiList1 = new List<PointOfInterest>();
+                //var ridges = new POISelection(poiList1);
+                //ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                ///// filter out some redundant ridges                
+                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;
                 //////var minFrequency = 3359.18;
