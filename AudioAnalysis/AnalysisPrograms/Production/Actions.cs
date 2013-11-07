@@ -225,7 +225,7 @@ namespace AnalysisPrograms.Production
         public static Action<FeltAnalysis.Arguments> Dong()
         {
             // Xueyan's FELT
-            return FeltAnalysis.Execute;
+            return FeltAnalysis.Dev;
         }
 
         public FrogRibit.Arguments FrogRibitArgs { get; set; }
