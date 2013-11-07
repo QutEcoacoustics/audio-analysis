@@ -13,7 +13,7 @@
     using AnalysisBase;
     using Representations;
 
-    public class Dong
+    public class DongSandpit
     {
         public const int RESAMPLE_RATE = 17640;
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";  // why we need this?
@@ -41,15 +41,15 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\DICTA Conference data\Audio data\Query images\query for Brown Cuckoo-dove1.wav";
-                string outputDirectory = @"C:\XUEYAN\DICTA Conference data\Audio data\Query images";
-                string imageFileName = "query for Brown Cuckoo-dove1-before noise removal.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Block-Sulphur-crested Cockatoo2\NEJB_NE465_20101016-064400-064500.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Block-Sulphur-crested Cockatoo2";
+                string imageFileName = "NEJB_NE465_20101016-064400-064500.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "query for Brown Cuckoo-dove1-before noise removal.png";
+                string annotatedImageFileName = "NEJB_NE465_20101016-064400-064500-poi selection.png";
 
                 var recording = new AudioRecording(wavFilePath);
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
                 var scores = new List<double>();
@@ -61,18 +61,18 @@
                 ///// addd this line to check the result after noise removal.
                 image.Save(imagePath, ImageFormat.Png);
 
-                //// This config is to set up the parameters used in ridge Detection. 
-                //var ridgeConfig = new RidgeDetectionConfiguration
-                //{
-                //    ridgeDetectionmMagnitudeThreshold = 5.5,
-                //    ridgeMatrixLength = 5,
-                //    filterRidgeMatrixLength = 7,
-                //    minimumNumberInRidgeInMatrix = 3
-                //};
-                ////double intensityThreshold = 5.0; // dB
+                // This config is to set up the parameters used in ridge Detection. 
+                var ridgeConfig = new RidgeDetectionConfiguration
+                {
+                    ridgeDetectionmMagnitudeThreshold = 5.5,
+                    ridgeMatrixLength = 5,
+                    filterRidgeMatrixLength = 7,
+                    minimumNumberInRidgeInMatrix = 3
+                };
+                //double intensityThreshold = 5.0; // dB
 
-                //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-                //var results = new List<List<string>>();
+                double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+                var results = new List<List<string>>();
                 //// each region should have same nhCount, here we just get it from the first region item. 
                 //var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
                 //var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
@@ -85,19 +85,30 @@
                 //    }           
                 //}
                 //File.WriteAllLines(dataOutputFile, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
-                //int rows = matrix.GetLength(0);
-                //int cols = matrix.GetLength(1);
-                //double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
-                //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                //double herzScale = spectrogram.FBinWidth; //43 hz
-                //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+                int rows = matrix.GetLength(0);
+                int cols = matrix.GetLength(1);
+                double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate); // 0.0116
+                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                double herzScale = spectrogram.FBinWidth; //43 hz
+                double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
 
-                //var poiList1 = new List<PointOfInterest>();
-                //var ridges = new POISelection(poiList1);
-                //ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                ///// filter out some redundant ridges                
-                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                var poiList1 = new List<PointOfInterest>();
+                var ridges = new POISelection(poiList1);
+                ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                /// filter out some redundant ridges                
+                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                Bitmap bmp = (Bitmap)image;
+                foreach (PointOfInterest poi in poiList)
+                {
+                    //poi.DrawColor = Color.Crimson;
+                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    // draw local max
+                    //poi.DrawColor = Color.Cyan;
+                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
+                }
+
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;
@@ -171,8 +182,8 @@
                 ////{
                 ////    RidgeDescriptionNeighbourhoodRepresentation.RidgeNeighbourhoodRepresentationToImage(gr, nh);
                 ////}
-                ////image = (Image)bmp;
-                ////bmp.Save(imagePath);
+                //image = (Image)bmp;
+                //bmp.Save(imagePath);
                 ////////var rank = 10;
                 ////////var itemList = (from l in listOfPositions
                 ////////                orderby l.Item1 ascending
@@ -199,8 +210,10 @@
                 //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, 13, query.nhCountInColumn);
                 //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
                 /// output events image
-                //image = DrawSonogram(spectrogram, similarityScore, filterOverlappedEvents, eventThreshold, filterPoiList);
-                //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
+                imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                image = (Image)bmp;
+                bmp.Save(imagePath);
                 //image.Save(imagePath, ImageFormat.Png);
             }
         } // Dev()
@@ -211,7 +224,7 @@
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if ((poi != null) && (poi.Count > 0))
             {
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);

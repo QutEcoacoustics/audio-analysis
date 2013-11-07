@@ -89,7 +89,7 @@ namespace Dong.Felt
             //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
             // } 
  
-            Dong.Play();
+            DongSandpit.Play();
             // Batch Process
             //foreach (string path in Files)
             //{
