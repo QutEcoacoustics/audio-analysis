@@ -44,6 +44,7 @@ namespace Dong.Felt
                     if (magnitude > magnitudeThreshold)
                     {
                         Point point = new Point(c, r);
+                        
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
                         var poi = new PointOfInterest(time, herz);
@@ -52,6 +53,19 @@ namespace Dong.Felt
                         // convert the orientation into - pi/2 to pi / 2 from 0 ~ pi
                         poi.RidgeOrientation = StatisticalAnalysis.ConvertOrientationFrom0PiToNegativePi2(direction);
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                        //if (poi.OrientationCategory == 1)
+                        //{
+                        //    Point point1 = new Point(c, r);
+                        //    var poi1 = new PointOfInterest(time, herz);
+                        //    poi1.Point = point1;
+                        //    poi1.RidgeOrientation = poi.RidgeOrientation;
+                        //    poi1.OrientationCategory = poi.OrientationCategory;
+                        //    poi1.RidgeMagnitude = poi.RidgeMagnitude;
+                        //    //poi1.Intensity = matrix[r, c];
+                        //    poi1.TimeScale = timeScale;
+                        //    poi1.HerzScale = herzScale;
+                        //    poiList.Add(poi1);
+                        //}                     
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;

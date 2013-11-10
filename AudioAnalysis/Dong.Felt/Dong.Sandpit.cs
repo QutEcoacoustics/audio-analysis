@@ -41,11 +41,11 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Block-Sulphur-crested Cockatoo2\NEJB_NE465_20101016-064400-064500.wav";
-                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Block-Sulphur-crested Cockatoo2";
-                string imageFileName = "NEJB_NE465_20101016-064400-064500.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Quoll Alarm\cec_Conservation Ecology Centre713_20120728-195100-195200.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Quoll Alarm\Spectrogram results";
+                string imageFileName = "cec_Conservation Ecology Centre713_20120728-195100-195200.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "NEJB_NE465_20101016-064400-064500-poi selection.png";
+                string annotatedImageFileName = "cec_Conservation Ecology Centre713_20120728-195100-195200-poi selection.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -98,6 +98,7 @@
                 /// filter out some redundant ridges                
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
                 foreach (PointOfInterest poi in poiList)
                 {
