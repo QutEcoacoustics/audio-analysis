@@ -22,16 +22,16 @@ namespace Dong.Felt
     using Accord.Math.Decompositions;
 
     // several types of points of interest
-    public enum FeatureType { NONE, LOCALMAXIMA, STRUCTURE_TENSOR}
-    
+    public enum FeatureType { NONE, LOCALMAXIMA, STRUCTURE_TENSOR }
+
     /// <summary>
     /// The points of interest detection.
     /// </summary>
     public class PoiAnalysis
     {
         private static readonly SonogramConfig StandardConfig = new SonogramConfig();
-        
-        
+
+
         /// <summary>
         /// AudioToSpectrogram transforms an audio to a spectrogram. 
         /// </summary>
@@ -120,7 +120,7 @@ namespace Dong.Felt
 
         //    return result;
         //}
-       
+
         //public static List<PointOfInterest> FilterPoints(double[,] m)
         //{
         //    int MaximumXIndex = m.GetLength(0);
@@ -248,7 +248,7 @@ namespace Dong.Felt
             return outputPoints;
             ////Log.Info("Found points: \n" + outputPoints);
         }
-  
+
         /// <summary>
         /// Make fake acoustic events randomly. 
         /// </summary>
@@ -377,5 +377,48 @@ namespace Dong.Felt
         }
 
         public static Tuple<int, int, double[,]> result { get; set; }
+
+        public static List<PointOfInterest> ConnectPOI(List<PointOfInterest> poi)
+        {
+            var result = new List<PointOfInterest>();
+            foreach (var p in poi)
+            {
+                result.Add(p);
+                foreach (var p1 in poi)
+                {
+                    if (p != p1)
+                    {
+                        var diffX = Math.Abs(p.Point.X - p1.Point.X);
+                        var diffY = Math.Abs(p.Point.Y - p1.Point.Y);
+                        var stepDiff = 2;
+                        if (p.OrientationCategory == p1.OrientationCategory && (diffX < stepDiff) && (diffY < stepDiff))
+                        {
+                            if ((p.Point.X - p1.Point.X) < 0)
+                            {
+                                Point point = new Point(p.Point.X, p.Point.Y);
+                                var secondsScale = 11.6;
+                                var herzScale = 43;
+                                var freqBinCount = 256;
+                                TimeSpan time = TimeSpan.FromSeconds(p.Point.X * secondsScale);
+                                double herz = (freqBinCount - p.Point.Y - 1) * herzScale;
+                                var poi1 = new PointOfInterest(time, herz);
+                                poi1.Point = point;
+                                //poi.RidgeOrientation = direction;
+                                // convert the orientation into - pi/2 to pi / 2 from 0 ~ pi
+                                poi1.RidgeOrientation = p.RidgeOrientation;
+                                poi1.OrientationCategory = p.OrientationCategory;                               
+                                poi1.RidgeMagnitude = p.RidgeMagnitude;
+                                poi1.Intensity = p.Intensity;
+                                poi1.TimeScale = p.TimeScale;
+                                poi1.HerzScale = p.HerzScale;
+                                result.Add(poi1);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+
+        }
     }
 }
