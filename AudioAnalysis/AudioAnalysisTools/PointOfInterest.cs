@@ -285,7 +285,8 @@ namespace AudioAnalysisTools
             //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
-            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
+            //int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
+            int orientationCategory = this.OrientationCategory;
             //orientation = indexMax * Math.PI / (double)8;
             Color color = this.DrawColor;
 
@@ -330,7 +331,7 @@ namespace AudioAnalysisTools
                             }
                             else
                             {
-                                color = Color.Black;                               
+                                color = Color.Purple;                               
                             }
                     }
                 }

@@ -41,11 +41,11 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Quoll Alarm\cec_Conservation Ecology Centre713_20120728-195100-195200.wav";
-                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Quoll Alarm\Spectrogram results";
-                string imageFileName = "cec_Conservation Ecology Centre713_20120728-195100-195200.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\SERF 1_20091105-173000-173100-white-throated honeyeater.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
+                string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "cec_Conservation Ecology Centre713_20120728-195100-195200-poi selection.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -97,10 +97,11 @@
                 ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
                 /// filter out some redundant ridges                
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in poiList)
+                foreach (PointOfInterest poi in filterPoiList)
                 {
                     //poi.DrawColor = Color.Crimson;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
