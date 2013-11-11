@@ -644,7 +644,7 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
-        public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        public static void Sobel5X5RidgeDetection4Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
         {
             // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
@@ -666,31 +666,34 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
+           
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
+            
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
                                       };
+            
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
-
-            double[] ridgeMagnitudes = new double[8];
+           
+            double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-
+            
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
@@ -698,9 +701,20 @@ namespace Dong.Felt
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
+            /// four directions
             direction = indexMax * Math.PI / (double)4;
+           
         }
 
+        /// <summary>
+        /// This function is used for calculating ridge detection in 8 directions. 
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="isRidge"></param>
+        /// <param name="magnitude"> it is ridge magnitude output
+        /// </param>
+        /// <param name="direction"> it is ridge direction output
+        /// </param>
         public static void Sobel5X5RidgeDetection8Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
         {
             int rows = m.GetLength(0);
@@ -720,9 +734,9 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
-                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4, 0.4},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        { 0.4, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
             double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
@@ -731,11 +745,10 @@ namespace Dong.Felt
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
-
             double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1}
                                       };
             double[,] ridgeDir4Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
@@ -745,9 +758,9 @@ namespace Dong.Felt
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
                                       };
             double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1}
                                       };
             double[,] ridgeDir6Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
@@ -757,9 +770,9 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
             double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        { 0.4, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
 
@@ -782,7 +795,7 @@ namespace Dong.Felt
             magnitude = diffMax / 2;
             direction = indexMax * Math.PI / (double)8;
         }
-        
+
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
@@ -936,6 +949,7 @@ namespace Dong.Felt
                     } // if (OrientationCategory)
                     else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
                     {
+                        // Check whether it is connected to other poi with orientation 2. 
                         if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
                         {
                             /// above and below
@@ -1005,45 +1019,103 @@ namespace Dong.Felt
                                 }
                             }
                         }
-                    }
+                    } // end if (M[r, c].OrientationCategory == 0) 
                 } // c
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
-        // cut off the overlapped lines in the different direction in a 3 * 3 neighbourhood
+        //The difference between this function and PruneAdjacentTracks is tha this function trys to cut off the overlapped lines in different direction. 
+        public static List<PointOfInterest> IntraPruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 1; r < rows - 1; r++)
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (M[r, c] == null) continue;
+                    if (M[r, c].OrientationCategory == 0)  // horizontal line
+                    {
+                        if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 2
+                            || M[r - 1, c].OrientationCategory == 6))
+                        {
+                            if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r - 1, c] = null;
+                        }
+                        if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 2
+                            || M[r + 1, c].OrientationCategory == 6))
+                        {
+                            if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r + 1, c] = null;
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 4) // vertical line
+                    {
+                        if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2
+                            || M[r, c - 1].OrientationCategory == 6))
+                        {
+                            if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
+                        }
+                        if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 2
+                            || M[r, c + 1].OrientationCategory == 6))
+                        {
+                            if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c + 1] = null;
+                        }
+                    } // end if (M[r, c].OrientationCategory == 0) 
+                } // c
+            } // for r loop
+            return PointOfInterest.TransferPOIMatrix2List(M);
+        } // PruneAdjacentTracks()
+        
+        /// <summary>
+        /// This function aims to remove isolated points of interest for filtering out the poi. 
+        /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (13 * 13). 
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <param name="thresholdForLeastPoint"></param>
+        /// <returns></returns>
         public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
-            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (M[r, c] == null) continue;
-                    else
+                    // Check whether it can fit in one neighbourhood, if not, just ignore it. Here didn't think about the part 
+                    // where the boundary of index is out of range, so the last row (corresponding to the bottom line in the spectrogram)
+                    // didn't do the filtering. 
+                    if (r + sizeOfNeighbourhood - 1 < rows && c + sizeOfNeighbourhood - 1 < cols)
                     {
                         var numberOfpoi = 0;
                         // search in a neighbourhood
-                        for (int i = -radiusOfNeighbourhood; i <= radiusOfNeighbourhood; i++)
+                        for (int i = 0; i < sizeOfNeighbourhood; i++)
                         {
-                            for (int j = -radiusOfNeighbourhood; j <= radiusOfNeighbourhood; j++)
+                            for (int j = 0; j < sizeOfNeighbourhood; j++)
                             {
-                                if (r + i >= 0 && c + j >= 0 && r + i < rows && c + j < cols)
+                                if (M[r + i, c + j] != null)
                                 {
-                                    if (M[r + i, c + j] != null)
-                                    {
-                                        numberOfpoi++;
-                                    }
+                                    numberOfpoi++;
                                 }
                             }
                         }
                         if (numberOfpoi < thresholdForLeastPoint)
                         {
-                            M[r, c] = null;
+                            for (int i = 0; i < sizeOfNeighbourhood; i++)
+                            {
+                                for (int j = 0; j < sizeOfNeighbourhood; j++)
+                                {
+                                    if (M[r + i, c + j] != null)
+                                    {
+                                        M[r + i, c + j] = null;
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
+                        c += sizeOfNeighbourhood - 1;
+                    }                    
+                } 
+                r += sizeOfNeighbourhood - 1;              
             }
             return PointOfInterest.TransferPOIMatrix2List(M);
         }

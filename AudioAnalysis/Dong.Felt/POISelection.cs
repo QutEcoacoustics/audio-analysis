@@ -40,7 +40,7 @@ namespace Dong.Felt
                     double magnitude;
                     double direction;
                     bool isRidge = false;
-                    ImageAnalysisTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+                    ImageAnalysisTools.Sobel5X5RidgeDetection8Direction(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold)
                     {
                         Point point = new Point(c, r);
@@ -52,20 +52,15 @@ namespace Dong.Felt
                         //poi.RidgeOrientation = direction;
                         // convert the orientation into - pi/2 to pi / 2 from 0 ~ pi
                         poi.RidgeOrientation = StatisticalAnalysis.ConvertOrientationFrom0PiToNegativePi2(direction);
-                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                        //if (poi.OrientationCategory == 1)
-                        //{
-                        //    Point point1 = new Point(c, r);
-                        //    var poi1 = new PointOfInterest(time, herz);
-                        //    poi1.Point = point1;
-                        //    poi1.RidgeOrientation = poi.RidgeOrientation;
-                        //    poi1.OrientationCategory = poi.OrientationCategory;
-                        //    poi1.RidgeMagnitude = poi.RidgeMagnitude;
-                        //    //poi1.Intensity = matrix[r, c];
-                        //    poi1.TimeScale = timeScale;
-                        //    poi1.HerzScale = herzScale;
-                        //    poiList.Add(poi1);
-                        //}                     
+                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);                    
+                        if (poi.OrientationCategory == 1 || poi.OrientationCategory == 3)
+                        {
+                            poi.OrientationCategory = 2;
+                        }
+                        if (poi.OrientationCategory == 5 || poi.OrientationCategory == 7)
+                        {
+                            poi.OrientationCategory = 6;
+                        }                   
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
