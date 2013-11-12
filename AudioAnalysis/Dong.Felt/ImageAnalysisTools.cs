@@ -702,8 +702,7 @@ namespace Dong.Felt
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
             /// four directions
-            direction = indexMax * Math.PI / (double)4;
-           
+            direction = indexMax * Math.PI / (double)4;          
         }
 
         /// <summary>
