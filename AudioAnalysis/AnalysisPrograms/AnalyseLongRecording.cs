@@ -72,21 +72,6 @@ namespace AnalysisPrograms
         // audio2csv  "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast\Acoustic\Site1"
         // audio2csv  "C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SunshineCoast"
 
-        // MULTI-ANALYSER DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3
-        //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
-        //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
-        //string outputDir     = @"C:\SensorNetworks\Output\Test1";
-
-        // LITTLE SPOTTED KIWI3
-        //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
-        //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
-        //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi3\";
-
-        //ACOUSTIC INDICES
-        //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
-        //string configPath    = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
-        //string outputDir     = @"C:\SensorNetworks\Output\LSKiwi3\";
-
         // THE COMMAND LINES DERIVED FROM ABOVE for the <audio2csv> task. 
         //FOR  MULTI-ANALYSER and CROWS
         //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
@@ -103,37 +88,67 @@ namespace AnalysisPrograms
 
         // SERF TAGGED RECORDINGS FROM OCT 2010
         // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010" 
+        
         private static Dictionary<string, Arguments> devArgs //
             = new Dictionary<string, Arguments>()
               {
                   {
-                      "SerfTaggedRecordingsFromOct2010",
+                      "MULTI-ANALYSER_DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h",
                       new Arguments
                       {
-                          Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
-                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
-                          Output = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010".ToDirectoryInfo()
+                          Source = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3".ToFileInfo(),
+                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg".ToFileInfo(),
+                          Output = @"C:\SensorNetworks\Output\Test1".ToDirectoryInfo()
+                      }
+                  },
+                  {
+                      "ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004",
+                      new Arguments
+                      {
+                          Source = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav".ToFileInfo(),
+                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg".ToFileInfo(),
+                          Output = @"C:\SensorNetworks\Output\LSKiwi3".ToDirectoryInfo()
+                      }
+                  },
+                  {
+                      "TEMPLATE:::::::COPY_THIS FIRST TO ADD NEW ARGUMENT SET",
+                      new Arguments
+                      {
+                          Source = @"PATH TO SOURCE FILE".ToFileInfo(),
+                          Config = @"PATH TO CONFIG FILE".ToFileInfo(),
+                          Output = @"PATH TO OUTPUT DIRECTORY".ToDirectoryInfo()
                       }
                   }
+
+
               };
 
         const string ImagefileExt = ".png";
 
-        private static Arguments Dev()
+        private static void Dev(Arguments arguments)
         {
-            // choose an optional Dev object to return
+            bool executeDev = (arguments == null);
+            if (executeDev)
+            {
+                // choose an optional Dev object to return
+                // NEXT LINE IS TEMPLATE
+                //arguments = devArgs["COPY NAME OF ARGUMENT SET HERE"];
+                arguments = devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
+            }
 
-            // e.g.
-            //return devArgs["SerfTaggedRecordingsFromOct2010"];
+            Execute(arguments);
 
-            throw new NoDeveloperMethodException();
+            if (executeDev)
+            {
+
+            }
         }
 
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
-                arguments = Dev();
+                throw new ArgumentException();
             }
 
             const bool Verbose = true;
@@ -399,12 +414,12 @@ namespace AnalysisPrograms
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_AcousticComplexityIndex, spectroPath);
                 spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Average + ".png");
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_Average, spectroPath);
-                spectroPath = Path.Combine(opdir.FullName, name + ".CMB.png");
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Combined + ".png");
                 cs.DrawCombinedAverageSpectrogram(spectroPath);
                 // colour spectrograms
                 spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".png");
                 cs.DrawFalseColourSpectrogramOfIndices(spectroPath);
-                spectroPath = Path.Combine(opdir.FullName, name + ".TWO.png");
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + "&" + ColourSpectrogram.KEY_BackgroundNoise + ".png");
                 cs.DrawDoubleSpectrogram(spectroPath);
 
             } // if doing acoustic indices

@@ -14,6 +14,7 @@ namespace AnalysisPrograms.Production
     using PowerArgs;
 
     using SammonProjection;
+    using AudioAnalysisTools;
 
     [ArgAllowNullActions]
     public partial class MainEntryArguments
@@ -232,7 +233,7 @@ namespace AnalysisPrograms.Production
         public static Action<FrogRibit.Arguments> FrogRibit()
         {
             // frog calls
-            return AnalysisPrograms.FrogRibit.Execute;
+            return AnalysisPrograms.FrogRibit.Dev;
         }
 
         public Frogs.Arguments FrogArgs { get; set; }
@@ -333,6 +334,14 @@ namespace AnalysisPrograms.Production
         {
             return AnalysisPrograms.AudioFileCheck.Execute;
         }
+
+        public ColourSpectrogram.Arguments ColourSpectrogramArgs { get; set; }
+        public static Action<ColourSpectrogram.Arguments> ColourSpectrogram()
+        {
+            return AudioAnalysisTools.ColourSpectrogram.Dev;
+        }
+
+        
 
         #endregion
     }

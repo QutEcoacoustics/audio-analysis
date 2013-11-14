@@ -316,7 +316,7 @@ namespace AudioAnalysisTools
                 if (spectralPeakArray[r] == 0) continue;  //skip frames with zero value i.e. did not have peak > threshold.
                 PruneTracks(tracks, r, minDuration, permittedGap, maxFreq);
                 if (!ExtendTrack(tracks, r, spectralPeakArray[r], binTolerance))
-                    tracks.Add(new SpectralTrack(r, spectralPeakArray[r], _framesPerSecond, _herzPerBin, _herzOffset));
+                    tracks.Add(new SpectralTrack(r, spectralPeakArray[r], _framesPerSecond, _herzPerBin, _herzOffset)); // init with frame and bin numbers.
             }
             return tracks;
         }

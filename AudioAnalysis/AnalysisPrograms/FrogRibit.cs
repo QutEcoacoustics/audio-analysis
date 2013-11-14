@@ -17,24 +17,26 @@ namespace AnalysisPrograms
         {
         }
 
-        public static Arguments Dev()
+        public static void Dev(Arguments arguments)
         {
-            throw new NotImplementedException();
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\FrogPond_Samford_SE_555_SELECTION_2.03-2.43.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
+            if (arguments == null)
+            {
+                arguments = new Arguments();
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\FrogPond_Samford_SE_555_SELECTION_2.03-2.43.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
+                 string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
+                arguments.Source = new FileInfo(recordingPath);
+            }
 
-
-
-            return new Arguments();
+            Execute(arguments);
         }
 
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
-                arguments = Dev();
+                throw new InvalidOperationException();
             }
 
             string title = "# DETECT FROG RIBBIT.";
