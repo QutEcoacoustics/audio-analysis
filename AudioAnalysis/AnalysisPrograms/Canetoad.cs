@@ -91,8 +91,8 @@ namespace AnalysisPrograms
                 Log.Verbosity = 1;
                 int startMinute = 0;
                 int durationSeconds = 0; //set zero to get entire recording
-                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
+                var tsStart = TimeSpan.FromMinutes(startMinute); //hours, minutes, seconds
+                var tsDuration = TimeSpan.FromSeconds(durationSeconds); //hours, minutes, seconds
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
                 var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
