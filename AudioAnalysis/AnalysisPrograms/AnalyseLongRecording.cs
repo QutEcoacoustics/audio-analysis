@@ -119,36 +119,23 @@ namespace AnalysisPrograms
                           Output = @"PATH TO OUTPUT DIRECTORY".ToDirectoryInfo()
                       }
                   }
-
-
               };
 
         const string ImagefileExt = ".png";
 
-        private static void Dev(Arguments arguments)
+        private static Arguments Dev()
         {
-            bool executeDev = (arguments == null);
-            if (executeDev)
-            {
-                // choose an optional Dev object to return
-                // NEXT LINE IS TEMPLATE
-                //arguments = devArgs["COPY NAME OF ARGUMENT SET HERE"];
-                arguments = devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
-            }
-
-            Execute(arguments);
-
-            if (executeDev)
-            {
-
-            }
+            // choose an optional Dev object to return
+            // NEXT LINE IS TEMPLATE
+            //arguments = devArgs["COPY NAME OF ARGUMENT SET HERE"];
+            return devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
         }
 
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
-                throw new ArgumentException();
+                arguments = Dev();
             }
 
             const bool Verbose = true;
