@@ -370,7 +370,7 @@ namespace AnalysisPrograms
             analysisResults.AudioDuration = results.Item2;
 
             // Accumulate spectra in Dictionary
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BackgroundNoise, indices.bgNoiseSpectrum);
+            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BackgroundNoise, indices.backgroundSpectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_AcousticComplexityIndex, indices.ACIspectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_Average, indices.averageSpectrum);
             analysisResults.Spectra.Add(ColourSpectrogram.KEY_Variance, indices.varianceSpectrum);

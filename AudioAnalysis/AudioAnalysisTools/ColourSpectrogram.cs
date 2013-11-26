@@ -35,18 +35,18 @@ namespace AudioAnalysisTools
         public const string KEY_Colour = "COL";
 
         // NORMALISING CONSTANTS FOR INDICES
-        public const double AVG_MIN = -7.0;
-        public const double AVG_MAX = 0.5;
-        public const double VAR_MIN = -10.0;
-        public const double VAR_MAX = 0.5;
-        public const double BGN_MIN = -7.0;
-        public const double BGN_MAX = 0.5;
         public const double ACI_MIN = 0.3;
         public const double ACI_MAX = 0.7;
+        public const double AVG_MIN = 0.0;
+        public const double AVG_MAX = 50.0;
+        public const double BGN_MIN = -80.0;
+        public const double BGN_MAX = -5.0;
         public const double CVR_MIN = 0.1;
         public const double CVR_MAX = 0.8;
         public const double TEN_MIN = 0.5;
         public const double TEN_MAX = 1.0;
+        public const double VAR_MIN = 0.0;
+        public const double VAR_MAX = 2000.0;
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

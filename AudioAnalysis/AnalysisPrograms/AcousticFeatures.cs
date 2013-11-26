@@ -178,7 +178,8 @@ namespace AnalysisPrograms
             // the following are scalar indices 
             public double snr, activeSnr, bgNoise, activity, avSig_dB, temporalEntropy; //amplitude indices
             public double lowFreqCover, midFreqCover, hiFreqCover;
-            public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
+            // public double entropyOfPeakFreqDistr,;
+            public double entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
             public double ACI; // acoustic complexity index
             public double rainScore, cicadaScore;
             public int segmentCount, clusterCount;
@@ -189,11 +190,12 @@ namespace AnalysisPrograms
             public double tracksPerSec;
 
             // the following are vector spectra 
-            public double[] bgNoiseSpectrum, ACIspectrum, averageSpectrum, varianceSpectrum, coverSpectrum, HtSpectrum;
+            public double[] backgroundSpectrum, ACIspectrum, averageSpectrum, varianceSpectrum, coverSpectrum, HtSpectrum;
 
             public Features(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
-                            double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
+                            //double _peakFreqEntropy, 
+                            double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
                             int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
                             TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore,
                             double[] _bgNoiseSpectrum, double[] _ACIspectrum, double[] _averageSpectrum, double[] _varianceSpectrum,
@@ -211,8 +213,7 @@ namespace AnalysisPrograms
                 hiFreqCover = _hiFreqCover;
                 midFreqCover = _midFreqCover;
                 lowFreqCover = _lowFreqCover;
-
-                entropyOfPeakFreqDistr = _peakFreqEntropy;
+                //entropyOfPeakFreqDistr = _peakFreqEntropy;
                 entropyOfAvSpectrum = _entropyOfAvSpectrum;
                 entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
                 ACI = _ACI;
@@ -231,7 +232,7 @@ namespace AnalysisPrograms
                 cicadaScore = _cicadaScore;
 
                 // assign spectra
-                bgNoiseSpectrum = _bgNoiseSpectrum;
+                backgroundSpectrum = _bgNoiseSpectrum;
                 ACIspectrum = _ACIspectrum;
                 averageSpectrum = _averageSpectrum;
                 varianceSpectrum = _varianceSpectrum;
@@ -291,27 +292,21 @@ namespace AnalysisPrograms
             TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration * TimeSpan.TicksPerSecond));
 
 
-            // i: EXTRACT ENVELOPE and FFTs
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
-            ////double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            double[] signalEnvelope = results2.Envelope;
+            // EXTRACT ENVELOPE and SPECTROGRAM
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+            //double[] avAbsolute = dspOutput.Average; //average absolute value over the minute recording
 
-            // get amplitude spectrogram and remove the DC column ie column zero.
-            double[,] spectrogramData = results2.Spectrogram;
-            spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
-            int nyquistFreq = recording.Nyquist;
-            double binWidth = nyquistFreq / (double)spectrogramData.GetLength(1);
-            int nyquistBin = spectrogramData.GetLength(1) - 1;
+            // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
+            double[] signalEnvelope = dspOutput.Envelope;
 
-
-            // ii: FRAME ENERGIES -
+            // i: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var bgNoise = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope), StandardDeviationCount);
             var dBarray = SNR.TruncateNegativeValues2Zero(bgNoise.noiseReducedSignal);
 
 
-            // iii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
+            // ii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
             var activity = CalculateActivity(dBarray, frameDuration, DEFAULT_activityThreshold_dB);
 
             Features indices; // struct in which to store all indices
@@ -326,86 +321,72 @@ namespace AnalysisPrograms
             indices.avSegmentDuration = activity.avSegmentDuration;         //av segment duration in milliseconds
 
 
-            // calculate the bin id of boundary between mid and low frequency spectrum
-            int lowBinBound = (int)Math.Ceiling(lowFreqBound / binWidth);
+            // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################           
+            double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+            //int nyquistFreq = dspOutput.NyquistFreq;
+            //double binWidth = dspOutput.BinWidth;
+            int nyquistBin = dspOutput.NyquistBin;
+
+            // calculate the bin id of boundary between low & mid frequency bins. This is to avoid low freq bins that contain anthrophony.
+            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput.FreqBinWidth);
+            // calculate reduced spectral width.
+            int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             int originalNyquistFreq = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2; // original sample rate can be anything 11.0-44.1 kHz.
-            if (nyquistFreq > originalNyquistFreq) // i.e. upsampling has been done
+            if (dspOutput.NyquistFreq > originalNyquistFreq) // i.e. upsampling has been done
             {
-                nyquistFreq = originalNyquistFreq;
-                nyquistBin = (int)Math.Floor(originalNyquistFreq / binWidth); // note that binwidth does not change
+                dspOutput.NyquistFreq = originalNyquistFreq;
+                dspOutput.NyquistBin  = (int)Math.Floor(originalNyquistFreq / dspOutput.FreqBinWidth); // note that binwidth does not change
             }
 
-            // iv: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
-            double[] aciArray = AcousticComplexityIndex(spectrogramData);
-            indices.ACIspectrum = aciArray;
-            int reducedLength = aciArray.Length - lowBinBound;
-            double[] reducedSpectrum = DataTools.Subarray(aciArray, lowBinBound, reducedLength);  // remove low band
-            indices.ACI = reducedSpectrum.Average();
+            // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
+            double[] aciArray = AcousticComplexityIndex(amplitudeSpectrogram);
+            indices.ACIspectrum = aciArray; //store ACI spectrum
+            double[] reducedSpectrum = DataTools.Subarray(aciArray, lowerBinBound, reducedFreqBinCount);  // remove low freq band
+            indices.ACI = reducedSpectrum.Average(); // average of ACI spectrum with low freq bins removed
 
-            // v: Calculate Temporal Entropy Spectrum 
-            indices.HtSpectrum = CalculateTemporalEntropySpectrum(spectrogramData);
+            // ii: CALCULATE H(t) or Temporal ENTROPY Spectrum 
+            indices.HtSpectrum = CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
 
-            // vi: remove background noise from the full spectrogram
+            // iii: remove background noise from the amplitude spectrogram
             double SD_COUNT = 0.0;
             double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); // calculate noise value for each freq bin.
-            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the modal profile
-            spectrogramData = SNR.TruncateBgNoiseFromSpectrogram(spectrogramData, noiseValues);
-            spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
-            indices.bgNoiseSpectrum = DataTools.SquareValues(noiseValues);
-            indices.bgNoiseSpectrum = DataTools.LogValues(indices.bgNoiseSpectrum);
+            SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(amplitudeSpectrogram, SD_COUNT); // calculate noise value for each freq bin.
+            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThresholds, 7);      // smooth the modal profile
+            amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, noiseValues);
+            amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, SpectralBgThreshold);
             //ImageTools.DrawMatrix(spectrogramData, @"C:\SensorNetworks\WavFiles\Crows\image.png", false);
             //DataTools.writeBarGraph(modalValues);
 
-            // vii: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is now a noise reduced amplitude spectrogram
-            var tuple_Cover = CalculateSpectralCoverage(spectrogramData, SpectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
-            indices.lowFreqCover = tuple_Cover.Item1;
-            indices.midFreqCover = tuple_Cover.Item2;
-            indices.hiFreqCover = tuple_Cover.Item3;
-            indices.coverSpectrum = tuple_Cover.Item4;
 
-
-            // viii: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
+            // iv: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             // Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
-            var tuple = CalculateSpectralAvAndVariance(spectrogramData);
-            indices.averageSpectrum = DataTools.LogValues(tuple.Item1);
-            reducedSpectrum = DataTools.Subarray(tuple.Item1, lowBinBound, reducedLength); // remove low band
-            indices.entropyOfAvSpectrum = DataTools.Entropy_normalised(reducedSpectrum);     // ENTROPY of spectral averages
+            var tuple = CalculateSpectralAvAndVariance(amplitudeSpectrogram);
+            reducedSpectrum = DataTools.Subarray(tuple.Item1, lowerBinBound, reducedFreqBinCount); // remove low band
+            indices.entropyOfAvSpectrum = DataTools.Entropy_normalised(reducedSpectrum);           // ENTROPY of spectral averages
             if (double.IsNaN(indices.entropyOfAvSpectrum)) indices.entropyOfAvSpectrum = 1.0;
 
-            // ix: ENTROPY OF VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
-            indices.varianceSpectrum = DataTools.LogValues(tuple.Item2);
-            reducedSpectrum = DataTools.Subarray(tuple.Item2, lowBinBound, reducedLength);       // remove low band
-            indices.entropyOfVarianceSpectrum = DataTools.Entropy_normalised(reducedSpectrum);   // ENTROPY of spectral variances
+            // v: ENTROPY OF VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
+            reducedSpectrum = DataTools.Subarray(tuple.Item2, lowerBinBound, reducedFreqBinCount); // remove low band
+            indices.entropyOfVarianceSpectrum = DataTools.Entropy_normalised(reducedSpectrum);     // ENTROPY of spectral variances
             if (double.IsNaN(indices.entropyOfVarianceSpectrum)) indices.entropyOfVarianceSpectrum = 1.0;
             // DataTools.writeBarGraph(indices.varianceSpectrum);
             // Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
 
 
-            // EXTRACT High band SPECTROGRAM which is now noise reduced
-            var midBandSpectrogram = MatrixTools.Submatrix(spectrogramData, 0, lowBinBound, spectrogramData.GetLength(0) - 1, nyquistBin);
+            // ###### SPECTRAL PEAK INDEX DISCONTINUED ON 22-11-2013
+            // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
+            //     First extract High band SPECTROGRAM which is now noise reduced
+            //var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            //var tuple_Peaks = HistogramOfSpectralPeaks(midBandSpectrogram);
+            //indices.entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_Peaks.Item1);
+            //if (Double.IsNaN(indices.entropyOfPeakFreqDistr)) indices.entropyOfPeakFreqDistr = 1.0;
 
-            // x: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS. 
-            var tuple_Peaks = HistogramOfSpectralPeaks(midBandSpectrogram);
-            indices.entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_Peaks.Item1);
-            if (Double.IsNaN(indices.entropyOfPeakFreqDistr)) indices.entropyOfPeakFreqDistr = 1.0;
-
-            // xi: Get Spectral tracks
-            double framesPerSecond = 1 / frameDuration.TotalSeconds;
-            double threshold = 0.005;
-            TrackInfo trackInfo = GetTrackIndices(midBandSpectrogram, framesPerSecond, binWidth, lowFreqBound, threshold);
-            indices.trackDuration_total = trackInfo.totalTrackDuration;
-            indices.trackDuration_percent = trackInfo.percentDuration;
-            indices.trackCount = trackInfo.tracks.Count;
-            indices.tracksPerSec = trackInfo.tracks.Count / wavDuration.TotalSeconds;
-
-            //######################################################################
-            // xii: calculate RAIN and CICADA indices.
+            // viii: calculate RAIN and CICADA indices.
             indices.rainScore = 0.0;
             indices.cicadaScore = 0.0;
-            DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, spectrogramData, lowFreqBound, midFreqBound, binWidth);
+            DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
             if (dt != null)
             {
                 DataRow row = dt.Rows[0];
@@ -413,8 +394,49 @@ namespace AnalysisPrograms
                 indices.cicadaScore = (double)row[Rain.header_cicada];
             }
 
+
+            // (C) ################################## EXTRACT INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
+                        
+            // i: generate deciBel spectrogram from amplitude spectrogram
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            double[,] deciBelSpectrogram = Speech.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+
+            // ii: Calculate background noise spectrum in decibels
+            SD_COUNT = 0.0; // number of SDs above the mean for noise removal
+            SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
+            indices.backgroundSpectrum = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);   // smooth the modal profile
+            deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
+            double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
+            deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
+            ImageTools.DrawMatrix(deciBelSpectrogram, @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring\Towsey.Acoustic\image.png", false);
+            //DataTools.writeBarGraph(indices.backgroundSpectrum);
+
+            // iii: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
+            var tuple_Cover = CalculateSpectralCoverage(deciBelSpectrogram, dBThreshold, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            indices.lowFreqCover = tuple_Cover.Item1;
+            indices.midFreqCover = tuple_Cover.Item2;
+            indices.hiFreqCover = tuple_Cover.Item3;
+            indices.coverSpectrum = tuple_Cover.Item4;
+
+            // iv: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
+            // Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
+            var tuple2 = CalculateSpectralAvAndVariance(deciBelSpectrogram);
+            indices.averageSpectrum  = tuple2.Item1;
+            indices.varianceSpectrum = tuple2.Item2;
+
+            // vii: Get Spectral tracks
+            //var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            double framesPerSecond = 1 / frameDuration.TotalSeconds;
+            var midBandDecibelSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            TrackInfo trackInfo = GetTrackIndices(midBandDecibelSpectrogram, framesPerSecond, dspOutput.FreqBinWidth, lowFreqBound, dBThreshold);
+            indices.trackDuration_total = trackInfo.totalTrackDuration;
+            indices.trackDuration_percent = trackInfo.percentDuration;
+            indices.trackCount = trackInfo.tracks.Count;
+            indices.tracksPerSec = trackInfo.tracks.Count / wavDuration.TotalSeconds;
+
+
             // #V#####################################################################################################################################################
-            // xiii:  set up other info to return
+            // iv:  set up other info to return
             BaseSonogram sonogram = null;
             double[,] hits = null;
             var scores = new List<Plot>();
@@ -445,10 +467,11 @@ namespace AnalysisPrograms
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 //convert spectral peaks to frequency
+                var tuple_Peaks = HistogramOfSpectralPeaks(deciBelSpectrogram);
                 int[] peaksBins = tuple_Peaks.Item2;
                 double[] freqPeaks = new double[peaksBins.Length];
                 int binCount = sonogram.Data.GetLength(1);
-                for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowBinBound + peaksBins[i]) / (double)nyquistBin;
+                for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
                 scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
             }
 
@@ -469,9 +492,10 @@ namespace AnalysisPrograms
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
             double binaryThreshold = 0.06; // for deriving binary spectrogram
             double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
-            var parameters = new SpectralClustering.ClusteringParameters(lowBinBound, midBandSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
+            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
 
-            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(spectrogramData, parameters);
+            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(amplitudeSpectrogram, parameters);
 
             SpectralClustering.ClusterInfo clusterInfo;
             // cluster pruning parameters
@@ -852,7 +876,8 @@ namespace AnalysisPrograms
             dt.Rows.Add(0, 0.0, 0.0, //add dummy values to the first two columns. These will be entered later.
                         indices.avSig_dB, indices.snr, indices.activeSnr, indices.bgNoise,
                         indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover,
-                        indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
+                        indices.temporalEntropy, //indices.entropyOfPeakFreqDistr, 
+                        indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
                         indices.ACI,
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds, indices.triGramUniqueCount, indices.triGramRepeatRate,
                         indices.tracksPerSec, indices.trackDuration_percent,
@@ -870,6 +895,7 @@ namespace AnalysisPrograms
 
         //############################################################################################################################################################
 
+        // ############## THE FOLLOWING METHOD COULD BE DELETED - IT WAS USED ONLY IN DEC 2011!
         /// <summary>
         /// this method used to process Jason Wimmer's original xls spreadsheet that did not have a row for silent minutes
         /// this method added in the silent minutes to construct new csv file.

@@ -723,19 +723,19 @@ namespace TowseyLib
             if (nrt == NoiseReductionType.STANDARD)
             {
                 NoiseProfile profile = SNR.CalculateNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-                smoothedArray = DataTools.filterMovingAverage(profile.noiseThreshold, 7); //smooth the noise profile
+                smoothedArray = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
                 m = SNR.NoiseReduce_Standard(m, smoothedArray, parameter); // parameter = nhBackgroundThreshold
             }
             else if (nrt == NoiseReductionType.MODAL)
             {
                 NoiseProfile profile = SNR.CalculateNoiseProfile(m, 0.0); //calculate modal profile - any matrix of values
-                smoothedArray = DataTools.filterMovingAverage(profile.noiseThreshold, 7); //smooth the modal profile
+                smoothedArray = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the modal profile
                 m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedArray);
             }
             else if (nrt == NoiseReductionType.BINARY)
             {
                 NoiseProfile profile = SNR.CalculateNoiseProfile(m, SD_COUNT); //calculate noise profile
-                smoothedArray = DataTools.filterMovingAverage(profile.noiseThreshold, 7); //smooth the noise profile
+                smoothedArray = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
                 m = SNR.NoiseReduce_Standard(m, smoothedArray, parameter); // parameter = nhBackgroundThreshold
                 m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
             }
@@ -776,7 +776,7 @@ namespace TowseyLib
             double SD_COUNT = 0.1; // number of noise standard deviations used to calculate noise threshold - determines severity of noise reduction
             double backgroundThreshold = 2.0; //SETS MIN DECIBEL BOUND
             NoiseProfile profile = SNR.CalculateNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile            
-            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThreshold, 7); //smooth the noise profile
+            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
             return NoiseReduce_Standard(matrix, smoothedProfile, backgroundThreshold);
         }
 
@@ -808,7 +808,7 @@ namespace TowseyLib
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange, double SD_COUNT)
         {
             NoiseProfile profile = SNR.CalculateNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile
-            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThreshold, 7); //smooth the noise profile
+            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
             double[,] mnr = SNR.SubtractBgNoiseFromSpectrogram(matrix, smoothedProfile);
             mnr = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);
             return mnr;
@@ -1207,7 +1207,7 @@ namespace TowseyLib
         {
             public double[] noiseMode { get; set; }
             public double[] noiseSd   { get; set; }
-            public double[] noiseThreshold { get; set; }
+            public double[] noiseThresholds { get; set; }
             public double[] minDb { get; set; }
             public double[] maxDb { get; set; }
 
@@ -1215,7 +1215,7 @@ namespace TowseyLib
             {
                 this.noiseMode = _noiseMode;
                 this.noiseSd   = _noiseSD;
-                this.noiseThreshold = _noiseThreshold;
+                this.noiseThresholds = _noiseThreshold;
                 this.minDb     = _min_DB;
                 this.maxDb     = _max_DB;
             }
