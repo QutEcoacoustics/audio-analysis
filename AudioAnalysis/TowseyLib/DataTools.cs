@@ -2228,7 +2228,7 @@ namespace TowseyLib
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++) 
                 sum += v[i];
-            Console.WriteLine("Area={0:f4}",sum);
+            //Console.WriteLine("Area={0:f4}",sum);
             if (sum == 0.0) return data;
 
             double[] ret = new double[v.Length];

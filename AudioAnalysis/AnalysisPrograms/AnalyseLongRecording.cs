@@ -106,8 +106,8 @@ namespace AnalysisPrograms
                       new Arguments
                       {
                           Source = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav".ToFileInfo(),
-                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg".ToFileInfo(),
-                          Output = @"C:\SensorNetworks\Output\LSKiwi3".ToDirectoryInfo()
+                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                          Output = @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring".ToDirectoryInfo()
                       }
                   },
                   {
@@ -123,7 +123,7 @@ namespace AnalysisPrograms
 
         const string ImagefileExt = ".png";
 
-        private static Arguments Dev()
+        public static Arguments Dev()
         {
             // choose an optional Dev object to return
             // NEXT LINE IS TEMPLATE

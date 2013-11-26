@@ -18,19 +18,22 @@ namespace TowseyLib
         public class EnvelopeAndFFT
         {
             public double[] Envelope { get; set; }
-
-            public double[,] Spectrogram { get; set; }
-
+            public double[,] amplitudeSpectrogram { get; set; }
             public double WindowPower { get; set; }
-
             public double[] Average { get; set; }
+            public int NyquistFreq { get; set; } 
+            public double FreqBinWidth { get; set; }
+            public int NyquistBin { get; set; }
 
-            public EnvelopeAndFFT(double[] average, double[] envelope, double[,] spectrogram, double windowPower)
+            public EnvelopeAndFFT(double[] average, double[] envelope, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, int nyquistBin)
             {
                 this.Envelope = envelope;
-                this.Spectrogram = spectrogram;
+                this.amplitudeSpectrogram = amplSpectrogram;
                 this.WindowPower = windowPower;
                 this.Average = average;
+                this.NyquistFreq = nyquistFreq; 
+                this.FreqBinWidth = binWidth;
+                this.NyquistBin = nyquistBin;
             }
         }
 
@@ -179,7 +182,16 @@ namespace TowseyLib
                     spectrogram[i, j] = f1[j];             //transfer amplitude
                 
             } // end frames
-            return new EnvelopeAndFFT(average, envelope, spectrogram, fft.WindowPower);
+
+            // Remove the DC column ie column zero from amplitude spectrogram.
+            double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
+
+            int nyquistFreq = sr / 2;
+            double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
+            int nyquistBin = amplSpectrogram.GetLength(1) - 1;
+
+
+            return new EnvelopeAndFFT(average, envelope, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
 

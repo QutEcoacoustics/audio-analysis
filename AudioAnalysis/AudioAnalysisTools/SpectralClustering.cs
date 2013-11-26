@@ -412,7 +412,7 @@ namespace AudioAnalysisTools
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, _windowOverlap);
-            double[,] spectrogramData = results2.Spectrogram;
+            double[,] spectrogramData = results2.amplitudeSpectrogram;
             double epsilon = Math.Pow(0.5, 16 - 1);
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 
@@ -421,7 +421,7 @@ namespace AudioAnalysisTools
             double SD_COUNT = 0.1;
             double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the noise profile
+            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThresholds, 7);      // smooth the noise profile
             spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
 
             // convert spectrum to decibels

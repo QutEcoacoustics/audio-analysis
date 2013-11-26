@@ -295,7 +295,7 @@ namespace AnalysisPrograms
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
-            double[,] spectrogram = results2.Spectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double[,] spectrogram = results2.amplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
             double windowPower = results2.WindowPower;
 
             //############################ NEXT LINE FOR DEBUGGING ONLY
