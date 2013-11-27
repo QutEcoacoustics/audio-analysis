@@ -178,7 +178,7 @@ namespace AnalysisPrograms
             // the following are scalar indices 
             public double snr, activeSnr, bgNoise, activity, avSig_dB, temporalEntropy; //amplitude indices
             public double lowFreqCover, midFreqCover, hiFreqCover;
-            // public double entropyOfPeakFreqDistr,;
+            public double entropyOfPeakFreqDistr;
             public double entropyOfAvSpectrum, entropyOfVarianceSpectrum; //spectral indices
             public double ACI; // acoustic complexity index
             public double rainScore, cicadaScore;
@@ -194,7 +194,7 @@ namespace AnalysisPrograms
 
             public Features(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                             double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
-                            //double _peakFreqEntropy, 
+                            double _peakFreqEntropy, 
                             double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
                             int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
                             TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore,
@@ -213,7 +213,7 @@ namespace AnalysisPrograms
                 hiFreqCover = _hiFreqCover;
                 midFreqCover = _midFreqCover;
                 lowFreqCover = _lowFreqCover;
-                //entropyOfPeakFreqDistr = _peakFreqEntropy;
+                entropyOfPeakFreqDistr = _peakFreqEntropy;
                 entropyOfAvSpectrum = _entropyOfAvSpectrum;
                 entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
                 ACI = _ACI;
@@ -378,10 +378,10 @@ namespace AnalysisPrograms
             // ###### SPECTRAL PEAK INDEX DISCONTINUED ON 22-11-2013
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            //var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
-            //var tuple_Peaks = HistogramOfSpectralPeaks(midBandSpectrogram);
-            //indices.entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_Peaks.Item1);
-            //if (Double.IsNaN(indices.entropyOfPeakFreqDistr)) indices.entropyOfPeakFreqDistr = 1.0;
+            var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var tuple_AmplitudePeaks = HistogramOfSpectralPeaks(midBandSpectrogram);
+            indices.entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_AmplitudePeaks.Item1);
+            if (Double.IsNaN(indices.entropyOfPeakFreqDistr)) indices.entropyOfPeakFreqDistr = 1.0;
 
             // viii: calculate RAIN and CICADA indices.
             indices.rainScore = 0.0;
@@ -467,8 +467,8 @@ namespace AnalysisPrograms
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 //convert spectral peaks to frequency
-                var tuple_Peaks = HistogramOfSpectralPeaks(deciBelSpectrogram);
-                int[] peaksBins = tuple_Peaks.Item2;
+                var tuple_DecibelPeaks = HistogramOfSpectralPeaks(deciBelSpectrogram);
+                int[] peaksBins = tuple_DecibelPeaks.Item2;
                 double[] freqPeaks = new double[peaksBins.Length];
                 int binCount = sonogram.Data.GetLength(1);
                 for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
