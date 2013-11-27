@@ -111,6 +111,15 @@ namespace AnalysisPrograms
                       }
                   },
                   {
+                      "ACOUSTIC_INDICES_SERF_SE_2010OCT13",
+                      new Arguments
+                      {
+                          Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
+                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                          Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
+                      }
+                  },
+                  {
                       "TEMPLATE:::::::COPY_THIS FIRST TO ADD NEW ARGUMENT SET",
                       new Arguments
                       {
@@ -128,7 +137,8 @@ namespace AnalysisPrograms
             // choose an optional Dev object to return
             // NEXT LINE IS TEMPLATE
             //arguments = devArgs["COPY NAME OF ARGUMENT SET HERE"];
-            return devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
+            //return devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
+            return devArgs["ACOUSTIC_INDICES_SERF_SE_2010OCT13"];
         }
 
         public static void Execute(Arguments arguments)
