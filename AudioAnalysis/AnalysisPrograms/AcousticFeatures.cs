@@ -408,26 +408,26 @@ namespace AnalysisPrograms
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
-            ImageTools.DrawMatrix(deciBelSpectrogram, @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring\Towsey.Acoustic\image.png", false);
+            //ImageTools.DrawMatrix(deciBelSpectrogram, @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring\Towsey.Acoustic\image.png", false);
             //DataTools.writeBarGraph(indices.backgroundSpectrum);
 
-            // iii: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
+            // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
+            var tuple2 = CalculateSpectralAvAndVariance(deciBelSpectrogram);
+            indices.averageSpectrum  = tuple2.Item1;
+            indices.varianceSpectrum = tuple2.Item2;
+
+            // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
+            dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
             var tuple_Cover = CalculateSpectralCoverage(deciBelSpectrogram, dBThreshold, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
             indices.lowFreqCover = tuple_Cover.Item1;
             indices.midFreqCover = tuple_Cover.Item2;
             indices.hiFreqCover = tuple_Cover.Item3;
             indices.coverSpectrum = tuple_Cover.Item4;
 
-            // iv: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
-            // Entropy is a measure of ENERGY dispersal, therefore must square the amplitude.
-            var tuple2 = CalculateSpectralAvAndVariance(deciBelSpectrogram);
-            indices.averageSpectrum  = tuple2.Item1;
-            indices.varianceSpectrum = tuple2.Item2;
-
             // vii: Get Spectral tracks
-            //var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
-            var midBandDecibelSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var midBandDecibelSpectrogram = MatrixTools.Submatrix(deciBelSpectrogram, 0, lowerBinBound, deciBelSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            dBThreshold = 3.0;
             TrackInfo trackInfo = GetTrackIndices(midBandDecibelSpectrogram, framesPerSecond, dspOutput.FreqBinWidth, lowFreqBound, dBThreshold);
             indices.trackDuration_total = trackInfo.totalTrackDuration;
             indices.trackDuration_percent = trackInfo.percentDuration;
@@ -489,13 +489,13 @@ namespace AnalysisPrograms
             }
             //#V#####################################################################################################################################################
 
-            // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband spectrum
+            // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
             double binaryThreshold = 0.06; // for deriving binary spectrogram
             double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
             var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
 
-            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(amplitudeSpectrogram, parameters);
+            SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
 
             SpectralClustering.ClusterInfo clusterInfo;
             // cluster pruning parameters
@@ -876,7 +876,7 @@ namespace AnalysisPrograms
             dt.Rows.Add(0, 0.0, 0.0, //add dummy values to the first two columns. These will be entered later.
                         indices.avSig_dB, indices.snr, indices.activeSnr, indices.bgNoise,
                         indices.activity, indices.segmentCount, indices.avSegmentDuration.TotalMilliseconds, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover,
-                        indices.temporalEntropy, //indices.entropyOfPeakFreqDistr, 
+                        indices.temporalEntropy, indices.entropyOfPeakFreqDistr, 
                         indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
                         indices.ACI,
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds, indices.triGramUniqueCount, indices.triGramRepeatRate,

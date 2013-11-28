@@ -137,8 +137,8 @@ namespace AnalysisPrograms
             // choose an optional Dev object to return
             // NEXT LINE IS TEMPLATE
             //arguments = devArgs["COPY NAME OF ARGUMENT SET HERE"];
-            //return devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
-            return devArgs["ACOUSTIC_INDICES_SERF_SE_2010OCT13"];
+            return devArgs["ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004"];
+            //return devArgs["ACOUSTIC_INDICES_SERF_SE_2010OCT13"];
         }
 
         public static void Execute(Arguments arguments)
@@ -414,10 +414,14 @@ namespace AnalysisPrograms
                 spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Combined + ".png");
                 cs.DrawCombinedAverageSpectrogram(spectroPath);
                 // colour spectrograms
-                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".png");
-                cs.DrawFalseColourSpectrogramOfIndices(spectroPath);
-                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + "&" + ColourSpectrogram.KEY_BackgroundNoise + ".png");
-                cs.DrawDoubleSpectrogram(spectroPath);
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".NEG.png");
+                cs.DrawFalseColourSpectrogramOfIndices(spectroPath, "NEGATIVE");
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + ".POS.png");
+                cs.DrawFalseColourSpectrogramOfIndices(spectroPath, "POSITIVE");
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + "NEG&" + ColourSpectrogram.KEY_BackgroundNoise + ".png");
+                cs.DrawDoubleSpectrogram(spectroPath, "NEGATIVE");
+                spectroPath = Path.Combine(opdir.FullName, name + "." + ColourSpectrogram.KEY_Colour + "POS&" + ColourSpectrogram.KEY_BackgroundNoise + ".png");
+                cs.DrawDoubleSpectrogram(spectroPath, "POSITIVE");
 
             } // if doing acoustic indices
 

@@ -193,11 +193,11 @@ namespace AnalysisPrograms
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into ColourSpectrogram.DrawFalseColourSpectrogramOfIndices()
                 //string colorSchemeID = "DEFAULT"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-AVG-REV"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
                 string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR-REV";
+                //string colorSchemeID = "ACI-TEN-CVR";
                 //string colorSchemeID = "ACI-CVR-TEN";
-                //string colorSchemeID = "ACI-TEN-CVR_AVG-REV";
+                //string colorSchemeID = "ACI-TEN-CVR_AVG";
                 //string colorSchemeID = "ACI-TEN-CVR_AVG";
 
                 var cs = new ColourSpectrogram();
@@ -211,13 +211,13 @@ namespace AnalysisPrograms
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_AcousticComplexityIndex, aciCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_TemporalEntropy, tenCsvPath);
-                cs.DrawFalseColourSpectrogramOfIndices(imagePath1);
+                cs.DrawFalseColourSpectrogramOfIndices(imagePath1, "NEGATIVE");
                 // draw gray scale spectrogram
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BackgroundNoise, imagePath2);
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_TemporalEntropy, imagePath3);
 
                 cs.DrawCombinedAverageSpectrogram(imagePath4);
-                cs.DrawDoubleSpectrogram(imagePath5);
+                cs.DrawDoubleSpectrogram(imagePath5, "NEGATIVE");
             }
 
 
