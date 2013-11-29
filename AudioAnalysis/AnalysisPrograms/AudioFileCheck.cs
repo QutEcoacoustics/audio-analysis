@@ -5,6 +5,7 @@ using PowerArgs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -183,6 +184,8 @@ namespace AnalysisPrograms
 
         private static string SHA256Hash(FileInfo file)
         {
+            Contract.Requires(file != null);
+
             var filePath = file.FullName;
 
             // see http://stackoverflow.com/questions/1177607/what-is-the-fastest-way-to-create-a-checksum-for-large-files-in-c-sharp/1177744#1177744

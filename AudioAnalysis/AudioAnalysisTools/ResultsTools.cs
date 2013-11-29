@@ -125,6 +125,12 @@ namespace AudioAnalysisTools
                     masterDataTable = segmentDataTable.Clone();
                 }
 
+                // set IndicesCount,start-min,SegTimeSpan
+                // int, double, double
+                // segmentDataTable is the datatable for the current result only
+                segmentDataTable.Rows[0][Keys.INDICES_COUNT] = segmentIndex;
+                segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
+                segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
 
                 masterDataTable.Merge(segmentDataTable);
                 /*
