@@ -11,8 +11,9 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Runtime.Serialization;
 
+#if DEBUG
     using Acoustics.Shared.Debugging;
-
+#endif
     using AnalysisPrograms.Production;
 
     using PowerArgs;
@@ -110,6 +111,8 @@ namespace AnalysisPrograms
         /// </summary>
         private static void Execute(ArgAction<MainEntryArguments> arguments)
         {
+            Contract.Requires(arguments != null);
+
             // just a pointer for executing dev methods
             // however, actions with no args get a plain old Object, so don't log in that case
             if (arguments.EmptyArgActionValue && arguments.ActionArgsProperty.PropertyType != typeof(object))

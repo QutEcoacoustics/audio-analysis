@@ -165,6 +165,8 @@ namespace AnalysisPrograms.Production
 
         bool IsValidFilename(string testName)
         {
+            Contract.Requires(testName != null);
+
             string strTheseAreInvalidFileNameChars = new string(Path.GetInvalidFileNameChars());
             Regex regFixFileName = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
             if (regFixFileName.IsMatch(testName)) { return false; };

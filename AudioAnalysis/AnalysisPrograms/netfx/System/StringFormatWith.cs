@@ -24,6 +24,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 /// <summary>
 /// Requires a reference to System.Web.
@@ -130,6 +131,8 @@ internal static class StringFormatWithExtension
 
 	private static string OutExpression(object source, string expression)
 	{
+        Contract.Requires(expression != null);
+
 		var format = "";
 		var colonIndex = expression.IndexOf(':');
 

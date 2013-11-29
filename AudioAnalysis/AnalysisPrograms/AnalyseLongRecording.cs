@@ -282,7 +282,7 @@ namespace AnalysisPrograms
             if ((datatable == null) || (datatable.Rows.Count == 0))
             {
                 LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a null data table or one with zero rows.");
+                LoggedConsole.WriteLine("MergeResultsIntoSingleDataTable has returned a null data table or one with zero rows.");
                 LoggedConsole.WriteLine("###################################################\n");
                 throw new AnalysisOptionDevilException();
             }

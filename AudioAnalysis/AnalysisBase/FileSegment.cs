@@ -3,9 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     /// Represents a segment file. Also stores the orginal file. 
@@ -74,8 +76,73 @@
                 this.SegmentStartOffset.HasValue ? this.SegmentStartOffset.Value.ToString() : "start",
                 this.SegmentEndOffset.HasValue ? this.SegmentEndOffset.Value.ToString() : "end",
                 this.OriginalFileDuration,
-                this.OriginalFileSampleRate.HasValue ? ", "+this.OriginalFileSampleRate.Value+"hz" : string.Empty
+                this.OriginalFileSampleRate.HasValue ? ", " + this.OriginalFileSampleRate.Value + "hz" : string.Empty
                 );
+        }
+
+        public DateTime? FileModifedDateTime()
+        {
+            if (this.OriginalFile != null && this.OriginalFile.Exists)
+            {
+                var createTime = this.OriginalFile.CreationTime;
+                //var accessTime = this.OriginalFile.LastAccessTime;
+                var modifyTime = this.OriginalFile.LastWriteTime;
+
+                // just assume the earliest date is the one to use
+                var result = createTime < modifyTime ? createTime : modifyTime;
+                return result;
+            }
+
+            return null;
+        }
+
+        // Prefix_YYYYMMDD_hhmmss.wav
+        private readonly string fileNameWithPrefixPattern = @".*_(\d{8}_\d{6})\..+";
+
+        public DateTime? FileNameDateTime()
+        {
+            if (this.OriginalFile != null && this.OriginalFile.Exists)
+            {
+                var fileName = this.OriginalFile.Name;
+
+                if (Regex.IsMatch(fileName, fileNameWithPrefixPattern, RegexOptions.IgnoreCase))
+                {
+                    var match = Regex.Match(fileName, fileNameWithPrefixPattern, RegexOptions.IgnoreCase);
+                    DateTime dt;
+                    if (DateTime.TryParseExact(
+                        match.Groups[1].Value,
+                        "yyyyMMdd_HHmmss",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.AssumeLocal,
+                        out dt))
+                    {
+
+                        return dt;
+                    }
+                }
+
+                return DateTime.MinValue;
+            }
+
+            return null;
+        }
+
+        public DateTime? AudioFileStart()
+        {
+            var dateTime = FileNameDateTime();
+            if (dateTime.HasValue && dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
+            {
+                return dateTime;
+            }
+
+            dateTime = FileModifedDateTime();
+            if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
+                dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
+            {
+                return dateTime - this.OriginalFileDuration;
+            }
+
+            return null;
         }
     }
 }
