@@ -185,6 +185,7 @@ namespace AnalysisPrograms
         private static string SHA256Hash(FileInfo file)
         {
             Contract.Requires(file != null);
+            Contract.Requires(!string.IsNullOrWhiteSpace(file.FullName));
 
             var filePath = file.FullName;
 
@@ -205,6 +206,8 @@ namespace AnalysisPrograms
 
         private static Guid GetIdentifierFromPath(string path)
         {
+            Contract.Requires(Path.GetFileName(path) != null);
+
             var fileName = Path.GetFileName(path);
             if (fileName.IndexOf('_') > -1)
             {
