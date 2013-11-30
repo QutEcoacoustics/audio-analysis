@@ -112,6 +112,8 @@ namespace AnalysisPrograms
         private static void Execute(ArgAction<MainEntryArguments> arguments)
         {
             Contract.Requires(arguments != null);
+            Contract.Requires(arguments.ActionArgsProperty != null);
+
 
             // just a pointer for executing dev methods
             // however, actions with no args get a plain old Object, so don't log in that case
@@ -203,6 +205,10 @@ namespace AnalysisPrograms
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
         {
+            Contract.Requires(unhandledExceptionEventArgs != null);
+            Contract.Requires(unhandledExceptionEventArgs.ExceptionObject != null);
+
+
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
             int returnCode;
 

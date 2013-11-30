@@ -1,31 +1,24 @@
 ﻿namespace AudioBrowser
 {
     using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
     using AnalysisBase;
+    using AnalysisRunner;
+    using AudioAnalysisTools;
+    using AudioBase;
     using log4net;
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.IO;
-    using System.Linq;
-    using AnalysisBase;
-    using AnalysisRunner;
-    using AudioAnalysisTools;
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
+    using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
-    using System.Threading.Tasks;
-    using TowseyLib;
-    using System.Reflection;
     using System.Windows.Forms;
-    using AudioBase;
-    using System.Diagnostics;
-    using Acoustics.Tools.Audio;
+    using TowseyLib;
 
     public class Helper
     {

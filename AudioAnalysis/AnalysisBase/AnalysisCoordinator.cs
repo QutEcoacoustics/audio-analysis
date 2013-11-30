@@ -423,7 +423,8 @@
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
             Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseDirectory was not set.");
-            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null && Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName), "AnalysisRunDirectory was not valid.");
+            var analysisInstanceOutputDirectoryExists =  Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName);
+            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null && analysisInstanceOutputDirectoryExists, "AnalysisRunDirectory was not valid.");
 
             // create directory for analysis run
             settings.AnalysisInstanceOutputDirectory = this.SubFoldersUnique
