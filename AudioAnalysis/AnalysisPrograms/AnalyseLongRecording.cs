@@ -115,13 +115,20 @@ namespace AnalysisPrograms
                    };*/
 
             // ACOUSTIC_INDICES_SERF_SE_2010OCT13
-            return new Arguments
-               {
-                   Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
-                   Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
-                   Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
-               };
+            //return new Arguments
+            //   {
+            //       Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
+            //       Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+            //       Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
+            //   };
 
+            // ACOUSTIC_INDICES_SUNSHINE_COAST SITE1 
+            return new Arguments
+            {
+                Source = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3".ToFileInfo(),
+                Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\SunshineCoast\Site1".ToDirectoryInfo()
+            };
 
             throw new NotImplementedException();
         }

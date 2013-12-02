@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
         public const double ACI_MAX = 0.9;
         public const double AVG_MIN = 0.0;
         public const double AVG_MAX = 60.0;
-        public const double BGN_MIN = -100.0;
+        public const double BGN_MIN = -90.0;
         public const double BGN_MAX = -10.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.9;
@@ -114,6 +114,26 @@ namespace AudioAnalysisTools
                 //string imagePath5 = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.COL&BGNSpectroTest11.png";
 
                 // SERF 13th October 2010
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";
+                //string aciCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.ACI.csv");
+                //string avgCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.AVG.csv");
+                //string bgnCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.BGN.csv");
+                //string cvrCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.CVR.csv");
+                //string tenCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TEN.csv");
+
+                //string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";
+                //string imagePath1 = Path.Combine(opdir, "Test1.ACI.png");
+                //string imagePath2 = Path.Combine(opdir, "Test1.AVG.png");
+                //string imagePath3 = Path.Combine(opdir, "Test1.BGN.png");
+                //string imagePath4 = Path.Combine(opdir, "Test1.CVR.png");
+                //string imagePath5 = Path.Combine(opdir, "Test1.TEN.png");
+                //string imagePath6 = Path.Combine(opdir, "Test1.CMB.png");
+                //string imagePath7 = Path.Combine(opdir, "Test1.COLNEG.png");
+                //string imagePath8 = Path.Combine(opdir, "Test1.COLPOS.png");
+                //string imagePath9 = Path.Combine(opdir, "Test1.COLNEG&BGN.png");
+                //string imagePath10 = Path.Combine(opdir, "Test1.COLPOS&BGN.png");
+
+                // SUNSHINE COAST 13th October 2011 DM420036.MP3
                 string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";
                 string aciCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.ACI.csv");
                 string avgCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.AVG.csv");
@@ -132,13 +152,13 @@ namespace AudioAnalysisTools
                 string imagePath8 = Path.Combine(opdir, "Test1.COLPOS.png");
                 string imagePath9 = Path.Combine(opdir, "Test1.COLNEG&BGN.png");
                 string imagePath10 = Path.Combine(opdir, "Test1.COLPOS&BGN.png");
-
                 
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
                 //string colorSchemeID = "DEFAULT"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
-                string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR";
                 //string colorSchemeID = "ACI-CVR-TEN";
                 //string colorSchemeID = "ACI-TEN-CVR_AVG";
@@ -255,8 +275,9 @@ namespace AudioAnalysisTools
             var cvrMatrix = spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
             var aciMatrix = spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
             var tenMatrix = spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
+            var bgnMatrix = spectrogramMatrices[ColourSpectrogram.KEY_BackgroundNoise];
 
-            Image bmp = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, colorMODE, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
+            Image bmp = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, colorMODE, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix, bgnMatrix);
             bmp.Save(imagePath);
         }
 
@@ -270,8 +291,9 @@ namespace AudioAnalysisTools
             var cvrMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
             var aciMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
             var tenMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
+            //var bgnMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BackgroundNoise];
 
-            Image bmp2 = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, colorMODE, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix);
+            Image bmp2 = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, colorMODE, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix, bgnMatrix);
 
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
@@ -353,7 +375,7 @@ namespace AudioAnalysisTools
             return matrix;
         }
 
-        public static Image DrawFalseColourSpectrogramOfIndices(string colorSchemeID, string colorMODE, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
+        public static Image DrawFalseColourSpectrogramOfIndices(string colorSchemeID, string colorMODE, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix, double[,] bgnMatrix)
         {
             avgMatrix = DataTools.NormaliseInZeroOne(avgMatrix, ColourSpectrogram.AVG_MIN, ColourSpectrogram.AVG_MAX);
             aciMatrix = DataTools.NormaliseInZeroOne(aciMatrix, ColourSpectrogram.ACI_MIN, ColourSpectrogram.ACI_MAX);
@@ -367,10 +389,14 @@ namespace AudioAnalysisTools
             Image bmp = null;
             if (colorSchemeID.Equals("ACI-TEN-CVR"))
             {
-                //doReverseColour = true;
                 bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
             }
             else
+                if (colorSchemeID.Equals("ACI-TEN-BGN"))
+                {
+                    bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, bgnMatrix, doReverseColour);
+                }
+                else
                 if (colorSchemeID.Equals("ACI-TEN-CVR"))
                 {
                     bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, cvrMatrix, doReverseColour);
@@ -383,7 +409,6 @@ namespace AudioAnalysisTools
                     else
                         if (colorSchemeID.Equals("ACI-TEN-AVG")) //R-G-B
                         {
-                            //doReverseColour = true;
                             bmp = ColourSpectrogram.DrawRGBColourMatrix(aciMatrix, tenMatrix, avgMatrix, doReverseColour);
                         }
                         else // the default
