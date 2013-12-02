@@ -423,7 +423,7 @@
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
             Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseDirectory was not set.");
-            var analysisInstanceOutputDirectoryExists =  Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName);
+            var analysisInstanceOutputDirectoryExists = false;
             Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null && analysisInstanceOutputDirectoryExists, "AnalysisRunDirectory was not valid.");
 
             // create directory for analysis run
@@ -448,6 +448,8 @@
                     Directory.CreateDirectory(settings.AnalysisInstanceTempDirectory.FullName);
                 }
             }
+
+            analysisInstanceOutputDirectoryExists  = Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName);
         }
 
         /// <summary>
@@ -532,15 +534,14 @@
 
             AnalysisResult result = null;
 
-            try
-            {
+            //try
+            //{
                 result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
 
                 var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
-            }
-            catch (Exception ex)
-            {
-
+            //}
+            //catch (Exception ex)
+            //{
                 //// try to get all the results up to the exception
                 //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
                 //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
@@ -550,8 +551,9 @@
                 //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
                 //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-                Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
-            }
+                //Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
+                //throw;
+            //}
 
             return result;
         }

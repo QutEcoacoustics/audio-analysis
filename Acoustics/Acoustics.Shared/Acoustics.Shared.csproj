@@ -120,6 +120,7 @@
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Extensions\DoubleSquareArrayExtensions.cs" />
+    <Compile Include="Extensions\ExceptionsExtensions.cs" />
     <Compile Include="Extensions\ExtensionsDateTime.cs" />
     <Compile Include="Extensions\ExtensionsDrawing.cs" />
     <Compile Include="Extensions\ExtensionsString.cs" />
