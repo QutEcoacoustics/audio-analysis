@@ -38,15 +38,15 @@ namespace AudioAnalysisTools
         public const double ACI_MIN = 0.3;
         public const double ACI_MAX = 0.9;
         public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 60.0;
-        public const double BGN_MIN = -90.0;
-        public const double BGN_MAX = -10.0;
+        public const double AVG_MAX = 100.0;
+        public const double BGN_MIN = -100.0;
+        public const double BGN_MAX = -50.0;
         public const double CVR_MIN = 0.0;
-        public const double CVR_MAX = 0.9;
-        public const double TEN_MIN = 0.6;
-        public const double TEN_MAX = 1.0;
+        public const double CVR_MAX = 0.7;
+        public const double TEN_MIN = 0.3;
+        public const double TEN_MAX = 0.95;
         public const double VAR_MIN = 0.0;
-        public const double VAR_MAX = 3000.0;
+        public const double VAR_MAX = 50000.0;
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -134,31 +134,34 @@ namespace AudioAnalysisTools
                 //string imagePath10 = Path.Combine(opdir, "Test1.COLPOS&BGN.png");
 
                 // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";
-                string aciCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.ACI.csv");
-                string avgCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.AVG.csv");
-                string bgnCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.BGN.csv");
-                string cvrCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.CVR.csv");
-                string tenCsvPath = Path.Combine(ipdir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.TEN.csv");
+                string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic";
+                string aciCsvPath = Path.Combine(ipdir, "DM420036.ACI.csv");
+                string avgCsvPath = Path.Combine(ipdir, "DM420036.AVG.csv");
+                string bgnCsvPath = Path.Combine(ipdir, "DM420036.BGN.csv");
+                string cvrCsvPath = Path.Combine(ipdir, "DM420036.CVR.csv");
+                string tenCsvPath = Path.Combine(ipdir, "DM420036.TEN.csv");
+                string varCsvPath = Path.Combine(ipdir, "DM420036.CVR.csv");
 
-                string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";
-                string imagePath1 = Path.Combine(opdir, "Test1.ACI.png");
-                string imagePath2 = Path.Combine(opdir, "Test1.AVG.png");
-                string imagePath3 = Path.Combine(opdir, "Test1.BGN.png");
-                string imagePath4 = Path.Combine(opdir, "Test1.CVR.png");
-                string imagePath5 = Path.Combine(opdir, "Test1.TEN.png");
-                string imagePath6 = Path.Combine(opdir, "Test1.CMB.png");
-                string imagePath7 = Path.Combine(opdir, "Test1.COLNEG.png");
-                string imagePath8 = Path.Combine(opdir, "Test1.COLPOS.png");
-                string imagePath9 = Path.Combine(opdir, "Test1.COLNEG&BGN.png");
-                string imagePath10 = Path.Combine(opdir, "Test1.COLPOS&BGN.png");
+                string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic";
+                string fileName = "DM420036.Test2";
+                string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");
+                string imagePath2 = Path.Combine(opdir, fileName + ".AVG.png");
+                string imagePath3 = Path.Combine(opdir, fileName + ".BGN.png");
+                string imagePath4 = Path.Combine(opdir, fileName + ".CVR.png");
+                string imagePath5 = Path.Combine(opdir, fileName + ".TEN.png");
+                string imagePath5a = Path.Combine(opdir, fileName + ".VAR.png");
+                string imagePath6 = Path.Combine(opdir, fileName + ".CMB.png");
+                string imagePath7 = Path.Combine(opdir, fileName + ".COLNEG.png");
+                string imagePath8 = Path.Combine(opdir, fileName + ".COLPOS.png");
+                string imagePath9 = Path.Combine(opdir, fileName + ".COLNEG&BGN.png");
+                string imagePath10 = Path.Combine(opdir, fileName + ".COLPOS&BGN.png");
                 
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
                 //string colorSchemeID = "DEFAULT"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
-                string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
+                string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR";
                 //string colorSchemeID = "ACI-CVR-TEN";
                 //string colorSchemeID = "ACI-TEN-CVR_AVG";
@@ -176,6 +179,7 @@ namespace AudioAnalysisTools
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_AcousticComplexityIndex, aciCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_TemporalEntropy, tenCsvPath);
+                cs.ReadSpectrogram(ColourSpectrogram.KEY_Variance, varCsvPath);
 
                 // draw gray scale spectrograms
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_AcousticComplexityIndex, imagePath1);
@@ -183,6 +187,7 @@ namespace AudioAnalysisTools
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BackgroundNoise, imagePath3);
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_BinCover,        imagePath4);
                 cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_TemporalEntropy, imagePath5);
+                cs.DrawGreyscaleSpectrogramOfIndex(ColourSpectrogram.KEY_Variance,        imagePath5a);
                 cs.DrawCombinedAverageSpectrogram(imagePath6);
                 // draw colour spectrograms
                 cs.DrawFalseColourSpectrogramOfIndices(imagePath7, "NEGATIVE");
@@ -291,7 +296,7 @@ namespace AudioAnalysisTools
             var cvrMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BinCover];
             var aciMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_AcousticComplexityIndex];
             var tenMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_TemporalEntropy];
-            //var bgnMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BackgroundNoise];
+            bgnMatrix = this.spectrogramMatrices[ColourSpectrogram.KEY_BackgroundNoise];
 
             Image bmp2 = ColourSpectrogram.DrawFalseColourSpectrogramOfIndices(this.ColorSchemeID, colorMODE, this.X_interval, this.Y_interval, avgMatrix, cvrMatrix, aciMatrix, tenMatrix, bgnMatrix);
 
@@ -379,6 +384,7 @@ namespace AudioAnalysisTools
         {
             avgMatrix = DataTools.NormaliseInZeroOne(avgMatrix, ColourSpectrogram.AVG_MIN, ColourSpectrogram.AVG_MAX);
             aciMatrix = DataTools.NormaliseInZeroOne(aciMatrix, ColourSpectrogram.ACI_MIN, ColourSpectrogram.ACI_MAX);
+            bgnMatrix = DataTools.NormaliseInZeroOne(bgnMatrix, ColourSpectrogram.BGN_MIN, ColourSpectrogram.BGN_MAX);
             cvrMatrix = DataTools.NormaliseInZeroOne(cvrMatrix, ColourSpectrogram.CVR_MIN, ColourSpectrogram.CVR_MAX);
             tenMatrix = DataTools.NormaliseReverseInZeroOne(tenMatrix, ColourSpectrogram.TEN_MIN, ColourSpectrogram.TEN_MAX);
 
