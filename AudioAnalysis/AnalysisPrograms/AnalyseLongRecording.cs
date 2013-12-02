@@ -123,12 +123,19 @@ namespace AnalysisPrograms
             //   };
 
             // ACOUSTIC_INDICES_SUNSHINE_COAST SITE1 
+            //return new Arguments
+            //{
+            //    Source = @"D:\Anthony escience Experiment data\4c77b524-1857-4550-afaa-c0ebe5e3960a_101013-0000.mp3".ToFileInfo(),
+            //    Config = @"C:\Work\Sensors\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+            //    Output = @"C:\tmp\results\".ToDirectoryInfo()
+            //};
             return new Arguments
             {
-                Source = @"D:\Anthony escience Experiment data\4c77b524-1857-4550-afaa-c0ebe5e3960a_101013-0000.mp3".ToFileInfo(),
-                Config = @"C:\Work\Sensors\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
-                Output = @"C:\tmp\results\".ToDirectoryInfo()
+                Source = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3".ToFileInfo(),
+                Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\SunshineCoast\Site1\".ToDirectoryInfo()
             };
+
 
             throw new NotImplementedException();
         }
