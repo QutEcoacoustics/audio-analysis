@@ -143,7 +143,7 @@ namespace AudioAnalysisTools
                 string varCsvPath = Path.Combine(ipdir, "DM420036.CVR.csv");
 
                 string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic";
-                string fileName = "DM420036.Test2";
+                string fileName = "DM420036.Test3";
                 string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");
                 string imagePath2 = Path.Combine(opdir, fileName + ".AVG.png");
                 string imagePath3 = Path.Combine(opdir, fileName + ".BGN.png");
@@ -159,8 +159,8 @@ namespace AudioAnalysisTools
                 // colour scheme IDs for RGB plus reverse
                 // Need to add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
                 //string colorSchemeID = "DEFAULT"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
-                string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+                string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
+                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
                 //string colorSchemeID = "ACI-TEN-CVR";
                 //string colorSchemeID = "ACI-CVR-TEN";
