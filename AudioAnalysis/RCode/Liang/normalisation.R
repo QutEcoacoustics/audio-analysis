@@ -1,28 +1,29 @@
-window.power <- sum(hamming ^ 2)
-epsilon <- (1 / 2) ^ (bit - 1)
-min.dc <- 10 * log10(epsilon ^ 2 / samp.rate)
-min.freq <- 10 * log10(epsilon ^ 2 / samp.rate * 2)
 
-# normalise DC values
-dc.row <- amp[1, ]
-dc.row[which(dc.row <  epsilon)] <- min.dc
-dc.row[which(dc.row >= epsilon)] <- 10 * log10(dc.row[which(dc.row >= epsilon)] ^ 
-                                                 2 / samp.rate)
-amp[1, ] <- dc.row
-rm(dc.row)
+amp2dB <- function (amp, bit, sampleRate){
 
-# normalise Nyquist values
-ny.row <- amp[nrow(amp), ]
-ny.row[which(ny.row <  epsilon)] <- min.dc
-ny.row[which(ny.row >= epsilon)] <- 10 * log10(ny.row[which(ny.row >= epsilon)] ^
-                                                 2 / samp.rate)
-amp[nrow(amp), ] <- ny.row
-rm(ny.row)
+#   windowPower <- sum(hamming ^ 2)
+  epsilon <- (1 / 2) ^ (bit - 1)
+  minDC <- 10 * log10(epsilon ^ 2 / sampleRate)
+  minFrequency <- 10 * log10(epsilon ^ 2 / sampleRate * 2)
 
-# normalise frequency components
-fq.row <- amp[c(2 : (nrow(amp) - 1)), ]
-fq.row[which(fq.row <  epsilon)] <- min.freq
-fq.row[which(fq.row >= epsilon)] <- 10 * log10(fq.row[which(fq.row >= epsilon)] ^ 
-                                                 2 / samp.rate * 2)
-amp[c(2 : (nrow(amp) - 1)), ] <- fq.row
-rm(fq.row)
+  # normalise DC values
+  DC <- amp[1, ]
+  DC[which(DC <  epsilon)] <- minDC
+  DC[which(DC >= epsilon)] <- 10 * log10(DC[which(DC >= epsilon)] ^ 2 / sampleRate)
+  amp[1, ] <- DC
+
+
+  # normalise frequency components
+  freqComp <- amp[c(2 : nrow(amp), ]
+  freqComp[which(freqComp <  epsilon)] <- minFrequency
+  freqComp[which(freqComp >= epsilon)] <- 10 * log10(freqComp[which(freqComp >= epsilon)] ^ 
+                                                 2 / sampleRate * 2)
+  amp[c(2 : nrow(amp), ] <- freqComp
+
+  #   normalise Nyquist values
+  #   Nyquist <- amp[nrow(amp), ]
+  #   Nyquist[which(Nyquist <  epsilon)] <- minDC
+  #   Nyquist[which(Nyquist >= epsilon)] <- 10 * log10(Nyquist[which(Nyquist >= epsilon)] ^
+  #                                                  2 / sampleRate)
+  #   amp[nrow(amp), ] <- Nyquist
+}

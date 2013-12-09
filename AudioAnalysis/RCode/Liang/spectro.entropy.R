@@ -1,5 +1,5 @@
 
-temporalEntropy <- function(){
+temporalEntropy <- function(amp){
 
   # calculate the entropy of each frequency bin from spectrogram
   powerSpectro <- amp ^ 2

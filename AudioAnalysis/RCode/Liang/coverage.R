@@ -1,7 +1,10 @@
-# calculate the cover spectrum from noise removed spectrogram amplitude
-copy.noise.removed <- noise.removed
-copy.noise.removed[which(copy.noise.removed <= 3)] <- 0
-copy.noise.removed[which(copy.noise.removed > 3)] <- 1
-cover.spectrum <- rowMeans(copy.noise.removed)
 
-rm(copy.noise.removed)
+coverage <- function(noiseRemovedAmp){
+
+  # calculate the cover spectrum from noise removed spectrogram amplitude
+  noiseRemovedAmp[which(noiseRemovedAmp <= 3)] <- 0
+  noiseRemovedAmp[which(noiseRemovedAmp > 3)] <- 1
+  cover <- rowMeans(noiseRemovedAmp)
+
+  return(cover)
+}

@@ -1,5 +1,5 @@
 
-spectrogram <- function(filepath){
+spectrogram <- function(filepath, TFRAME){
   
   library(tuneR)
 
@@ -10,7 +10,7 @@ spectrogram <- function(filepath){
   #mono signal (left channel)
   # origin <- readWave('cabin_EarlyMorning4_CatBirds20091101-000000_0min.wav')
   origin <- readWave(filepath)
-  samp.rate <- origin@samp.rate
+  sampRate <- origin@samp.rate
   bit <- origin@bit
   left <- origin@left
   len <- length(left)
@@ -21,18 +21,19 @@ spectrogram <- function(filepath){
   sig <- Mod(mvfft(sig * hamming))
 
   # smooth the data
-  first.temp <- sig[1, ]
+  temp <- sig[1, ]
   sig <- filter(sig, rep(1 / 3, 3))
-  sig[1, ] <- first.temp
-  amp <- sig[c(1:(TFRAME / 2 + 1)), ]
+  sig[1, ] <- temp
+  amp <- sig[c(1:(TFRAME / 2)), ]
 
-  return(amp)
+  result <- list(amp=amp, sampleRate=sampRate, bit=bit)
+  return(result)
   
   ######################
   # draw the spectrogram
   ######################
   # duration <- 60
   # x <- seq(0, duration, duration / (nframe-1))
-  # y <- seq(0, samp.rate / 2, samp.rate / 2 / 256)
+  # y <- seq(0, sampRate / 2, sampRate / 2 / 256)
   # filled.contour(x,y,t(amp),col=gray(seq(1,0,-1/19)),levels=pretty(c(0,20),20))
 }
