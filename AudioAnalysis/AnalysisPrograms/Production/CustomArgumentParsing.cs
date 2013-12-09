@@ -177,17 +177,44 @@ namespace AnalysisPrograms.Production
 
         public override void Validate(string name, ref string arg)
         {
-
             if (!this.IsValidFilename(arg))
+            {
+                throw new ValidationArgException(
+                    "Not a valid filename: '" + arg + "' (for argument " + name + ")");
+            }
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ArgValidPathName : ArgValidator
+    {
+
+        public ArgValidPathName()
+        {
+        }
+
+        bool IsValidPathName(string testName)
+        {
+            Contract.Requires(testName != null);
+
+            string strTheseAreInvalidPathNameChars = new string(Path.GetInvalidPathChars());
+            Regex regFixPathName = new Regex("[" + Regex.Escape(strTheseAreInvalidPathNameChars) + "]");
+            if (regFixPathName.IsMatch(testName)) { return false; };
+
+
+            return true;
+        }
+
+        public override void Validate(string name, ref string arg)
+        {
+
+            if (!this.IsValidPathName(arg))
             {
 
                 throw new ValidationArgException(
-                    "Not a valid filename: '" + arg + "' (for argument " + name + ")");
+                    "Not a valid path: '" + arg + "' (for argument " + name + ")");
 
             }
-
-
-
         }
     }
 
