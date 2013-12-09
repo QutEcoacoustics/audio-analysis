@@ -1,51 +1,52 @@
 
-daylight<-read.csv("c:/work/myfile/sunrise_sunset.csv")
-# daylight<-read.csv("c:/work/myfile/sunrise&sunset.csv")
-daylight<-as.matrix(daylight)
+setDaylight <- function(filepath){
+  filepath <- "c:/work/myfile/sunrise_sunset.csv"
+  
+  daylight <- read.csv(filepath)
+  daylight <- as.matrix(daylight)
 
-#column 2 is sunrise, column 3 is sunset
-# char.sunrise <- daylight[ , 2]
-# char.sunset <- daylight[ , 3]
-# ast.start <- daylight[ , 5]
-# naut.start <- daylight[ , 7]
-civil.start <- daylight[ , 9]
-# ast.end <- daylight[ , 6]
-# naut.end <- daylight[ , 8]
-civil.end <- daylight[ , 10]
-# civil.start <- daylight[ , 6]
-# civil.end <- daylight[ , 7]
+  #column 2 is sunrise, column 3 is sunset
+  # charSunrise <- daylight[ , 2]
+  # charSunset <- daylight[ , 3]
+  # astStart <- daylight[ , 5]
+  # astEnd <- daylight[ , 6]
+  # nautStart <- daylight[ , 7]
+  # nautEnd <- daylight[ , 8]
+  civilStart <- daylight[ , 9]
+  civilEnd <- daylight[ , 10]
 
-#regular expression to find the 
-for(cnt in 1:length(civil.start)){
-#   char.sunrise[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", char.sunrise[cnt])
-#   char.sunset[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", char.sunset[cnt])
-#   ast.start[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", ast.start[cnt])
-#   naut.start[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", naut.start[cnt])
-  civil.start[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", civil.start[cnt])
-#   ast.end[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", ast.end[cnt])
-#   naut.end[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", naut.end[cnt])
-  civil.end[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", civil.end[cnt])
+  #regular expression to find the 
+  for(cnt in 1:length(civilStart)){
+    civilStart[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", civilStart[cnt])
+    civilEnd[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", civilEnd[cnt])
+    #   charSunrise[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", charSunrise[cnt])
+    #   charSunset[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", charSunset[cnt])
+    #   astStart[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", astStart[cnt])
+    #   astEnd[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", astEnd[cnt])
+    #   nautStart[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", nautStart[cnt])
+    #   nautEnd[cnt] <- sub("([[:digit:]]).([[:digit:]]+).*", "\\1\\2", nautEnd[cnt])
+  }
+
+  civilS <- as.numeric(civilStart)
+  civilS <- civilS %/% 100 * 60 + civilS %% 100
+  civilE <- as.numeric(civilEnd)
+  civilE <- civilE %/% 100 * 60 + civilE %% 100
+  
+  # sunrise <- as.numeric(charSunrise)
+  # sunrise <- sunrise %/% 100 * 60 + sunrise %% 100
+  # sunset <- as.numeric(charSunset)
+  # sunset <- sunset %/% 100 * 60 + sunset %% 100
+  # 
+  # astS <- as.numeric(astStart)
+  # astS <- astS %/% 100 * 60 + astS %% 100
+  # astE <- as.numeric(astEnd)
+  # astE <- astE %/% 100 * 60 + astE %% 100
+  # 
+  # nautS <- as.numeric(nautStart)
+  # nautS <- nautS %/% 100 * 60 + nautS %% 100
+  # nautE <- as.numeric(nautEnd)
+  # nautE <- nautE %/% 100 * 60 + nautE %% 100
+  
+  result <- list(civilS=civilS, civilE=civilE)
+  return (result)
 }
-# sunrise <- as.numeric(char.sunrise)
-# sunrise <- sunrise %/% 100 * 60 + sunrise %% 100
-# 
-# sunset <- as.numeric(char.sunset)
-# sunset <- sunset %/% 100 * 60 + sunset %% 100
-# 
-# ast.s <- as.numeric(ast.start)
-# ast.s <- ast.s %/% 100 * 60 + ast.s %% 100
-# 
-# naut.s <- as.numeric(naut.start)
-# naut.s <- naut.s %/% 100 * 60 + naut.s %% 100
-
-civil.s <- as.numeric(civil.start)
-civil.s <- civil.s %/% 100 * 60 + civil.s %% 100
-
-# ast.e <- as.numeric(ast.end)
-# ast.e <- ast.e %/% 100 * 60 + ast.e %% 100
-# 
-# naut.e <- as.numeric(naut.end)
-# naut.e <- naut.e %/% 100 * 60 + naut.e %% 100
-
-civil.e <- as.numeric(civil.end)
-civil.e <- civil.e %/% 100 * 60 + civil.e %% 100

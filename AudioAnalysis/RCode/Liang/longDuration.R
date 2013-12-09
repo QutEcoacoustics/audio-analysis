@@ -1,49 +1,55 @@
-#create all the dates
-dates <- seq(as.Date("2011/10/20"), as.Date("2012/7/2"), "day")
-dates <- as.character(dates)
-for(cnt in 1:length(dates)){
-  dates[cnt] <- sub("([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)", 
+
+readLongDuration <- function(startDate, endDate, filepath){
+  startDate <- "2011/10/20"
+  endDate <- "2012/7/2"
+  filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
+
+  filefolder <- dir(path = filepath, pattern = "MP3")
+  #create all the dates
+  dates <- seq(as.Date(startDate), as.Date(endDate), "day")
+  dates <- as.character(dates)
+  for(cnt in 1:length(dates)){
+    dates[cnt] <- sub("([[:digit:]]+).([[:digit:]]+).([[:digit:]]+)", 
                     "\\1\\2\\3", dates[cnt])
-}
+  }
 
-filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
-filefolder <- dir(path = filepath, pattern = "MP3")
-
-current <- 1
-for(cnt in 1:length(dates)){
-  file.date <- sub(".*_([[:digit:]]+)_.*", "\\1", filefolder[current])
-  if(dates[cnt] == file.date){
-    subfolder <- paste(filepath, filefolder[current], '/Towsey.Acoustic/', sep = "")
-    filename <- paste(subfolder, dir(subfolder, pattern = "Indices.csv"), sep = "")
-    indices <- read.csv(filename)
-    indices <- as.matrix(indices)
-    if(nrow(indices) < 1435){
-      comp.row <- 1435 - nrow(indices)
-      comp.col <- ncol(indices)
-      comp.data <- matrix(rep(-1, comp.row * comp.col), comp.row, comp.col)
-      indices <- rbind(indices, comp.data)
-    }
+  current <- 1
+  for(cnt in 1:length(dates)){
+    fileDate <- sub(".*_([[:digit:]]+)_.*", "\\1", filefolder[current])
+    if(dates[cnt] == fileDate){
+      subfolder <- paste(filepath, filefolder[current], '/Towsey.Acoustic/', sep = "")
+      filename <- paste(subfolder, dir(subfolder, pattern = "Indices.csv"), sep = "")
+      indices <- read.csv(filename)
+      indices <- as.matrix(indices)
+      if(nrow(indices) < 1435){
+        compRow <- 1435 - nrow(indices)
+        compCol <- ncol(indices)
+        compData <- matrix(rep(-1, compRow * compCol), compRow, compCol)
+        indices <- rbind(indices, compData)
+      }
     
-    #26 variables(columns) in total. Column 8 for activity(?cover), Column 14 for temporal entropy
-    #Column 18 for ACI
-    if(cnt == 1){
-      long.aci <- indices[ , 18]
-      long.ten <- indices[ , 14]
-      long.cvr <- indices[ , 8]
+      #26 variables(columns) in total. Column 8 for activity(?cover), Column 14 for temporal entropy
+      #Column 18 for ACI
+      if(cnt == 1){
+        longACI <- indices[ , 18]
+        longTEN <- indices[ , 14]
+        longCVR <- indices[ , 8]
+      }
+      else{
+        longACI <- cbind(longACI, indices[ , 18])
+        longTEN <- cbind(longTEN, indices[ , 14])
+        longCVR <- cbind(longCVR, indices[ , 8])
+      }
+      current <- current + 1
     }
     else{
-      long.aci <- cbind(long.aci, indices[ , 18])
-      long.ten <- cbind(long.ten, indices[ , 14])
-      long.cvr <- cbind(long.cvr, indices[ , 8])
+      missingValues <- rep(-1, 1435)
+      dim(missingValues) <- c(1435, 1)
+      longACI <- cbind(longACI, missingValues)
+      longTEN <- cbind(longTEN, missingValues)
+      longCVR <- cbind(longCVR, missingValues)
     }
-    current <- current + 1
   }
-  else{
-    missing.values <- rep(-1, 1435)
-    dim(missing.values) <- c(1435, 1)
-    long.aci <- cbind(long.aci, missing.values)
-    long.ten <- cbind(long.ten, missing.values)
-    long.cvr <- cbind(long.cvr, missing.values)
-  }
-
+  result <- list(longACI=longACI, longTEN=longTEN, longCVR=longCVR)
+  return (result)
 }
