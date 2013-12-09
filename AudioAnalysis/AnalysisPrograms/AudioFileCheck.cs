@@ -32,8 +32,7 @@ namespace AnalysisPrograms
             }
 
             [ArgDescription("Csv file containing audio file information.")]
-            [Production.ArgValidFilename]
-            //[ArgEx]
+            [Production.ArgValidPathName]
             [ArgPosition(1)]
             [ArgRequired]
             public FileInfo OutputFile { get; set; }
@@ -42,6 +41,7 @@ namespace AnalysisPrograms
             [Production.ArgExistingDirectory]
             public DirectoryInfo InputDirectory { get; set; }
 
+            [ArgDescription("true to recurse into subdirectories (if processing directories).")]
             [DefaultValue(false)]
             public bool Recurse { get; set; }
 

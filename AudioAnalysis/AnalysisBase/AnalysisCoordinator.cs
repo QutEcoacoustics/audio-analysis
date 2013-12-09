@@ -422,9 +422,9 @@
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
-            Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseDirectory was not set.");
-            var analysisInstanceOutputDirectoryExists = false;
-            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null && analysisInstanceOutputDirectoryExists, "AnalysisRunDirectory was not valid.");
+            Contract.Requires(settings.AnalysisBaseOutputDirectory != null, "AnalysisBaseOutputDirectory is not set.");
+            Contract.Ensures(settings.AnalysisInstanceOutputDirectory != null, "AnalysisInstanceOutputDirectory was not set.");
+            Contract.Ensures(Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName), "AnalysisInstanceOutputDirectory did not exist.");
 
             // create directory for analysis run
             settings.AnalysisInstanceOutputDirectory = this.SubFoldersUnique
@@ -448,8 +448,6 @@
                     Directory.CreateDirectory(settings.AnalysisInstanceTempDirectory.FullName);
                 }
             }
-
-            analysisInstanceOutputDirectoryExists  = Directory.Exists(settings.AnalysisInstanceOutputDirectory.FullName);
         }
 
         /// <summary>
