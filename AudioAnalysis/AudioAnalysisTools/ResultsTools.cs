@@ -30,7 +30,8 @@ namespace AudioAnalysisTools
             int count = 0;
             foreach (var result in analyserResults)
             {
-                if (result != null)
+                // HACK: (Anthony) added so that MultiAnalyser with no results could continue to work
+                if (result != null && result.Data != null)
                     datatable = AppendToDataTable(
                         datatable,
                         result.Data,
