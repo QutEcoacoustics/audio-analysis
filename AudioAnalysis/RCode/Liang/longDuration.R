@@ -1,5 +1,5 @@
 
-readLongDuration <- function(startDate, endDate, filepath){
+readLongDuration <- function(startDate, endDate, filepath, rCol, gCol, bCol){
   startDate <- "2011/10/20"
   endDate <- "2012/7/2"
   filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
@@ -31,25 +31,25 @@ readLongDuration <- function(startDate, endDate, filepath){
       #26 variables(columns) in total. Column 8 for activity(?cover), Column 14 for temporal entropy
       #Column 18 for ACI
       if(cnt == 1){
-        longACI <- indices[ , 18]
-        longTEN <- indices[ , 14]
-        longCVR <- indices[ , 8]
+        red <- indices[ , rCol]
+        green <- indices[ , gCol]
+        blue <- indices[ , bCol]
       }
       else{
-        longACI <- cbind(longACI, indices[ , 18])
-        longTEN <- cbind(longTEN, indices[ , 14])
-        longCVR <- cbind(longCVR, indices[ , 8])
+        red <- cbind(red, indices[ , rCol])
+        green <- cbind(green, indices[ , gCol])
+        blue <- cbind(blue, indices[ , bCol])
       }
       current <- current + 1
     }
     else{
       missingValues <- rep(-1, 1435)
       dim(missingValues) <- c(1435, 1)
-      longACI <- cbind(longACI, missingValues)
-      longTEN <- cbind(longTEN, missingValues)
-      longCVR <- cbind(longCVR, missingValues)
+      red <- cbind(red, missingValues)
+      green <- cbind(green, missingValues)
+      blue <- cbind(blue, missingValues)
     }
   }
-  result <- list(longACI=longACI, longTEN=longTEN, longCVR=longCVR)
+  result <- list(red=red, green=green, blue=blue)
   return (result)
 }
