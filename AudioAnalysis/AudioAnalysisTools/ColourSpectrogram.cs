@@ -90,7 +90,7 @@ namespace AudioAnalysisTools
 
         public static void Dev(Arguments arguments)
         {
-            bool executeDev = arguments == null;
+            bool executeDev = (arguments == null);
             if (executeDev)
             {
                 //KIWI one hour recording

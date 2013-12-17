@@ -137,7 +137,8 @@ namespace AnalysisPrograms.Production
         public AnalysisSettings ToAnalysisSettings()
         {
             AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.ConfigFile = this.Source;
+            analysisSettings.SourceFile = this.Source;
+            analysisSettings.ConfigFile = this.Config;
             analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
             analysisSettings.AudioFile = null;
             analysisSettings.EventsFile = null;
