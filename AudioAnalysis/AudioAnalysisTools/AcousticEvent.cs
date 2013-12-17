@@ -956,13 +956,17 @@ namespace AudioAnalysisTools
                         double duration = endTime - startTime;
                         // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
-                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
-                        // obtain an average score for the duration of the event.
+                        // obtain an average score for the duration of the potential event.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
-                        ev.Score = av / (double)(i - startFrame + 1);
+                        av /= (double)(i - startFrame + 1);
+                        if (av < scoreThreshold) continue; //skip events whose score is < the threshold
+
+
+                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                        ev.Score = av;
                         ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
                         if (ev.ScoreNormalised > 1.0) ev.ScoreNormalised = 1.0;
                         ev.Score_MaxPossible = maxPossibleScore;

@@ -63,7 +63,8 @@ namespace AnalysisPrograms
         }
 
         public static void Dev(Arguments arguments)
-        {            var executeDev = arguments == null;
+        {            
+            var executeDev = (arguments == null);
             if (executeDev)
             {
                 //HUMAN
@@ -73,7 +74,7 @@ namespace AnalysisPrograms
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min452Speech.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
-                string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
                 //MACHINES
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Machines\DM420036_min173Airplane.wav";
@@ -88,7 +89,7 @@ namespace AnalysisPrograms
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
 
                 //KOALA MALE
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
@@ -100,14 +101,11 @@ namespace AnalysisPrograms
 
 
 
-                string configPath =
-                    @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
-                string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
+                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
+                string outputDir  = @"C:\SensorNetworks\Output\MultiAnalyser\";
 
-                string title = "# RUNS MULTIPLE ANALYSES";
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(title);
-                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine(MultiAnalyser.identifier);
+                LoggedConsole.WriteLine("# DATE AND TIME: " + DateTime.Now);
                 LoggedConsole.WriteLine("# Output folder:  " + outputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
                 var diOutputDir = new DirectoryInfo(outputDir);
@@ -190,9 +188,12 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
-           
 
+            // Get analysis settings and construct config dictionary
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            analysisSettings.ConfigDict = configuration.GetTable();
+
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
@@ -382,8 +383,7 @@ namespace AnalysisPrograms
             //KOALA-MALE
             //######################################################################
             newDict = new Dictionary<string, string>();
-            filter = "KOALAMALE";
-            keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, filter);
+            keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, "KOALAMALE");
 
             foreach (string key in keysFiltered)  //derive new dictionary for crow
             {
@@ -405,6 +405,7 @@ namespace AnalysisPrograms
                     foreach (AcousticEvent ae in results5.Item4)
                     {
                         ae.Name = KoalaMale.ANALYSIS_NAME;
+                        ae.ScoreNormalised = ae.Score;
                         events.Add(ae);
                     }
                 }
