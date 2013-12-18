@@ -191,8 +191,8 @@ namespace AnalysisPrograms
 
             // Get analysis settings and construct config dictionary
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
-            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            analysisSettings.ConfigDict = configuration.GetTable();
+            //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            //analysisSettings.ConfigDict = configuration.GetTable();
 
             TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
@@ -228,9 +228,10 @@ namespace AnalysisPrograms
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            //var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
-            //Dictionary<string, string> configDict = configuration.GetTable();
-            var configDict = analysisSettings.ConfigDict;
+            var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
+            Dictionary<string, string> configDict = configuration.GetTable();
+            analysisSettings.ConfigDict = configDict;
+
             string frameLength = null;
             if (configDict.ContainsKey(Keys.FRAME_LENGTH))
                 frameLength = (int.Parse(configDict[Keys.FRAME_LENGTH]).ToString());
@@ -598,11 +599,13 @@ namespace AnalysisPrograms
             if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
             if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
             double start = segmentStartMinute.TotalSeconds;
+            int count = 0;
             foreach (DataRow row in dt.Rows)
             {
-                row[AudioAnalysisTools.Keys.SEGMENT_TIMESPAN] = recordingTimeSpan.TotalSeconds;
+                row[AudioAnalysisTools.Keys.EVENT_COUNT] = (double)(count++);
+                row[AudioAnalysisTools.Keys.SEGMENT_TIMESPAN] = (double)recordingTimeSpan.TotalSeconds;
                 row[AudioAnalysisTools.Keys.EVENT_START_ABS] = start + (double)row[AudioAnalysisTools.Keys.EVENT_START_SEC];
-                row[AudioAnalysisTools.Keys.EVENT_START_MIN] = start;
+                row[AudioAnalysisTools.Keys.EVENT_START_MIN] = (double)start;
             }
         } //AddContext2Table()
 

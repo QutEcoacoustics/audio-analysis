@@ -99,12 +99,14 @@ namespace AnalysisPrograms
             // choose an optional Dev object to return
 
             // MULTI-ANALYSER_DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h
-            /*return new Arguments
+            string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
+//                          Source = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3".ToFileInfo(),
+            return new Arguments
                       {
-                          Source = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3".ToFileInfo(),
+                          Source = recordingPath.ToFileInfo(),
                           Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg".ToFileInfo(),
                           Output = @"C:\SensorNetworks\Output\Test1".ToDirectoryInfo()
-                      };*/
+                      };
           
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
             /*return new Arguments
@@ -129,12 +131,12 @@ namespace AnalysisPrograms
             //    Config = @"C:\Work\Sensors\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
             //    Output = @"C:\tmp\results\".ToDirectoryInfo()
             //};
-            return new Arguments
-            {
-                Source = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3".ToFileInfo(),
-                Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\SunshineCoast\Site1\".ToDirectoryInfo()
-            };
+            //return new Arguments
+            //{
+            //    Source = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036.MP3".ToFileInfo(),
+            //    Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+            //    Output = @"C:\SensorNetworks\Output\SunshineCoast\Site1\".ToDirectoryInfo()
+            //};
 
 
             throw new NotImplementedException();
@@ -277,11 +279,11 @@ namespace AnalysisPrograms
             }
 
             // write the results to file
-            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-            if ((datatable == null) || (datatable.Rows.Count == 0))
+            DataTable mergedDatatable = ResultsTools.MergeEventResultsIntoSingleDataTable(analyserResults);
+            if ((mergedDatatable == null) || (mergedDatatable.Rows.Count == 0))
             {
                 LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("MergeResultsIntoSingleDataTable has returned a null data table or one with zero rows.");
+                LoggedConsole.WriteLine("MergeEventResultsIntoSingleDataTable() has returned a null data table or one with zero rows.");
                 LoggedConsole.WriteLine("###################################################\n");
                 throw new AnalysisOptionDevilException();
             }
@@ -291,7 +293,7 @@ namespace AnalysisPrograms
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
             
-            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value);
             var eventsDatatable  = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;
