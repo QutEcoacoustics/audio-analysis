@@ -160,7 +160,7 @@
                 return null;
             }
 
-            DataTable datatable = ResultsTools.MergeEventResultsIntoSingleDataTable(results);
+            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility();

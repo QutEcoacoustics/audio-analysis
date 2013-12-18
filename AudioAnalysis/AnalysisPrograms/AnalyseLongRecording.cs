@@ -100,7 +100,7 @@ namespace AnalysisPrograms
 
             // MULTI-ANALYSER_DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h
             string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
-//                          Source = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3".ToFileInfo(),
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             return new Arguments
                       {
                           Source = recordingPath.ToFileInfo(),
@@ -278,8 +278,8 @@ namespace AnalysisPrograms
                 throw new AnalysisOptionDevilException();
             }
 
-            // write the results to file
-            DataTable mergedDatatable = ResultsTools.MergeEventResultsIntoSingleDataTable(analyserResults);
+            // merge all the datatables from the analysis into a single datatable
+            DataTable mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
             if ((mergedDatatable == null) || (mergedDatatable.Rows.Count == 0))
             {
                 LoggedConsole.WriteLine("###################################################\n");
