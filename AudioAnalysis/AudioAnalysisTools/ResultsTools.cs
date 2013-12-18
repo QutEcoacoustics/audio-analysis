@@ -24,39 +24,73 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="analyserResults"></param>
         /// <returns></returns>
-        public static DataTable MergeEventResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
+        public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
-            DataTable mergedDatatable = new DataTable();
-            int resultCount = 0;
+            DataTable mergedDatatable = null;
             foreach (var result in analyserResults)
             {
                 if ((result == null)||(result.Data == null)) continue;
-                // result.Data is the segmentDataTable for the current result only
-                result.Data.Rows[0][Keys.EVENT_COUNT]      = resultCount++;
-                result.Data.Rows[0][Keys.START_MIN]        = result.SegmentStartOffset.TotalMinutes;
-                result.Data.Rows[0][Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalMinutes;
-
-                mergedDatatable.Merge(result.Data);
-
-
-
-
-
-
-
-                // HACK: (Anthony) added so that MultiAnalyser with no results could continue to work
-                //if (result != null && result.Data != null)
-                //    mergedDatatable = AppendToDataTable(
-                //        mergedDatatable,
-                //        result.Data,
-                //        result.AudioDuration,
-                //        result.SegmentStartOffset,
-                //        resultCount);
-                //resultCount++;
+                if (mergedDatatable == null) //create the data table
+                {
+                    mergedDatatable = result.Data.Clone();
+                }
+                DataTable segmentDataTable = GetSegmentDatatableWithContext(result);
+                if (segmentDataTable != null) mergedDatatable.Merge(segmentDataTable);
             }
             return mergedDatatable;
         }
 
+        public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
+        {
+            TimeSpan segmentStartOffset = result.SegmentStartOffset;
+            DataTable dt = result.Data;
+            if (dt == null) return null;
+            //get the column headers in order to determine what kind of results tabble - i.e. events or indices?
+            var headers = new List<string>();
+
+            foreach (DataColumn col in dt.Columns)
+            {
+                headers.Add(col.ColumnName);
+            }
+
+            if (headers.Contains(Keys.EVENT_COUNT)) //this is a file of events
+            {
+                //these columns should already be in the datatable.
+                //if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
+                //if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
+                //if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
+
+                int count = 0;
+                foreach (DataRow row in dt.Rows)
+                {
+                    row[Keys.EVENT_COUNT] = (double)count++;
+                    if (headers.Contains(Keys.SEGMENT_TIMESPAN))
+                        row[Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
+                    if (headers.Contains(Keys.EVENT_START_SEC))
+                    {
+                        double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
+                        if (headers.Contains(Keys.EVENT_START_ABS))
+                            row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
+                        if (headers.Contains(Keys.EVENT_START_MIN))
+                            row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
+                        row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
+                    }
+                }
+            }
+            else //treat the results as acoustic indices at one minute resolution
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    row[Keys.INDICES_COUNT] = (double)result.SegmentStartOffset.Minutes;
+                    if (headers.Contains(Keys.SEGMENT_TIMESPAN)) 
+                        row[Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
+                }
+            }
+
+            return dt;
+        } //GetSegmentDatatableWithContext()
+
+        
         /// <summary>
         /// 
         /// </summary>
@@ -68,13 +102,6 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         //public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
         //{
-        //    if (segmentDataTable != null)
-        //    {
-        //        if (masterDataTable == null) //create the data table
-        //        {
-        //            masterDataTable = segmentDataTable.Clone();
-        //        }
-
         //        // set IndicesCount,start-min,SegTimeSpan
         //        // int, double, double
         //        // segmentDataTable is the datatable for the current result only
@@ -82,7 +109,6 @@ namespace AudioAnalysisTools
         //        segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
         //        segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
 
-        //        masterDataTable.Merge(segmentDataTable);
         //        /*
         //        var headers = new List<string>();
 
@@ -106,8 +132,6 @@ namespace AudioAnalysisTools
         //            masterDataTable.ImportRow(row);
         //        }
         //        */
-        //    } //if (dt != null)
-
         //    return masterDataTable;
         //}
 
