@@ -24,89 +24,38 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="analyserResults"></param>
         /// <returns></returns>
-        public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
+        public static DataTable MergeEventResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
-            DataTable datatable = new DataTable();
-            int count = 0;
+            DataTable mergedDatatable = new DataTable();
+            int resultCount = 0;
             foreach (var result in analyserResults)
             {
+                if ((result == null)||(result.Data == null)) continue;
+                // result.Data is the segmentDataTable for the current result only
+                result.Data.Rows[0][Keys.EVENT_COUNT]      = resultCount++;
+                result.Data.Rows[0][Keys.START_MIN]        = result.SegmentStartOffset.TotalMinutes;
+                result.Data.Rows[0][Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalMinutes;
+
+                mergedDatatable.Merge(result.Data);
+
+
+
+
+
+
+
                 // HACK: (Anthony) added so that MultiAnalyser with no results could continue to work
-                if (result != null && result.Data != null)
-                    datatable = AppendToDataTable(
-                        datatable,
-                        result.Data,
-                        result.AudioDuration,
-                        result.SegmentStartOffset,
-                        count);
-                count++;
+                //if (result != null && result.Data != null)
+                //    mergedDatatable = AppendToDataTable(
+                //        mergedDatatable,
+                //        result.Data,
+                //        result.AudioDuration,
+                //        result.SegmentStartOffset,
+                //        resultCount);
+                //resultCount++;
             }
-            return datatable;
+            return mergedDatatable;
         }
-        /*
-        public static List<TowseyLib.Spectrum> MergeBGNSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.bgnSpectrum, result.SegmentStartOffset.Minutes, "bgNoiseSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeAVGSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.avgSpectrum, result.SegmentStartOffset.Minutes, "averageSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeVARSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.varSpectrum, result.SegmentStartOffset.Minutes, "varianceSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeACISpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.aciSpectrum, result.SegmentStartOffset.Minutes, "aciSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeCVRSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.cvrSpectrum, result.SegmentStartOffset.Minutes, "cvrSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeTENSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.tenSpectrum, result.SegmentStartOffset.Minutes, "tenSpectrum"));
-            }
-            return s;
-        }
-        public static List<TowseyLib.Spectrum> MergeCMBSpectraIntoSpectrograms(IEnumerable<AnalysisResult> analyserResults)
-        {
-            var s = new List<Spectrum>();
-            foreach (var result in analyserResults)
-            {
-                s.Add(new Spectrum(result.cmbSpectrum, result.SegmentStartOffset.Minutes, "cmbSpectrum"));
-            }
-            return s;
-        }
-        */
 
         /// <summary>
         /// 
@@ -117,50 +66,50 @@ namespace AudioAnalysisTools
         /// <param name="segmentStartOffset"></param>
         /// <param name="segmentIndex"></param>
         /// <returns></returns>
-        public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
-        {
-            if (segmentDataTable != null)
-            {
-                if (masterDataTable == null) //create the data table
-                {
-                    masterDataTable = segmentDataTable.Clone();
-                }
+        //public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
+        //{
+        //    if (segmentDataTable != null)
+        //    {
+        //        if (masterDataTable == null) //create the data table
+        //        {
+        //            masterDataTable = segmentDataTable.Clone();
+        //        }
 
-                // set IndicesCount,start-min,SegTimeSpan
-                // int, double, double
-                // segmentDataTable is the datatable for the current result only
-                segmentDataTable.Rows[0][Keys.INDICES_COUNT] = segmentIndex;
-                segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
-                segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
+        //        // set IndicesCount,start-min,SegTimeSpan
+        //        // int, double, double
+        //        // segmentDataTable is the datatable for the current result only
+        //        segmentDataTable.Rows[0][Keys.INDICES_COUNT] = segmentIndex;
+        //        segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
+        //        segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
 
-                masterDataTable.Merge(segmentDataTable);
-                /*
-                var headers = new List<string>();
+        //        masterDataTable.Merge(segmentDataTable);
+        //        /*
+        //        var headers = new List<string>();
 
-                foreach (DataColumn col in segmentDataTable.Columns)
-                {
-                    headers.Add(col.ColumnName);
-                }
+        //        foreach (DataColumn col in segmentDataTable.Columns)
+        //        {
+        //            headers.Add(col.ColumnName);
+        //        }
 
-                foreach (DataRow row in segmentDataTable.Rows)
-                {
-                    if (headers.Contains(Keys.EVENT_START_SEC)) //this is a file of events
-                    {
-                        double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
-                        if (headers.Contains(Keys.EVENT_START_ABS)) row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
-                        if (headers.Contains(Keys.EVENT_START_MIN)) row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
-                        if (headers.Contains(Keys.EVENT_COUNT)) row[Keys.EVENT_COUNT] = masterDataTable.Rows.Count + 1;
-                        row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
-                    }
-                    if (headers.Contains(Keys.INDICES_COUNT)) row[Keys.INDICES_COUNT] = segmentIndex;
-                    if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
-                    masterDataTable.ImportRow(row);
-                }
-                */
-            } //if (dt != null)
+        //        foreach (DataRow row in segmentDataTable.Rows)
+        //        {
+        //            if (headers.Contains(Keys.EVENT_START_SEC)) //this is a file of events
+        //            {
+        //                double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
+        //                if (headers.Contains(Keys.EVENT_START_ABS)) row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
+        //                if (headers.Contains(Keys.EVENT_START_MIN)) row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
+        //                if (headers.Contains(Keys.EVENT_COUNT)) row[Keys.EVENT_COUNT] = masterDataTable.Rows.Count + 1;
+        //                row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
+        //            }
+        //            if (headers.Contains(Keys.INDICES_COUNT)) row[Keys.INDICES_COUNT] = segmentIndex;
+        //            if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
+        //            masterDataTable.ImportRow(row);
+        //        }
+        //        */
+        //    } //if (dt != null)
 
-            return masterDataTable;
-        }
+        //    return masterDataTable;
+        //}
 
         /// <summary>
         /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
