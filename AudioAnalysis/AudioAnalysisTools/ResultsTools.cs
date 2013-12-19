@@ -144,7 +144,8 @@ namespace AudioAnalysisTools
         /// <param name="analyser"></param>
         /// <param name="durationOfTheOriginalAudioFile"></param>
         /// <returns></returns>
-        public static Tuple<DataTable, DataTable> GetEventsAndIndicesDataTables(DataTable masterDataTable, IAnalyser analyser, TimeSpan durationOfTheOriginalAudioFile)
+        public static Tuple<DataTable, DataTable> GetEventsAndIndicesDataTables(DataTable masterDataTable, IAnalyser analyser,
+                                                                                TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
         {
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
@@ -157,7 +158,6 @@ namespace AudioAnalysisTools
 
             //masterDataTable must be an events data table. Therefore also need to create an indices data table
             var unitTime = new TimeSpan(0, 0, 60);
-            double scoreThreshold = 0.2;
             indicesDatatable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, durationOfTheOriginalAudioFile, scoreThreshold); //convert to datatable of indices
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }

@@ -167,7 +167,11 @@
             var mimeType = MediaTypes.GetMediaType(audioFile.Extension);
             var sourceInfo = audioUtility.Info(audioFile);
 
-            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value);
+            double scoreThreshold = double.Parse(settings.ConfigDict[AudioAnalysisTools.Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
+            scoreThreshold *= 3; // triple the threshold - used to filter high scoring events
+            if (scoreThreshold > 1.0) scoreThreshold = 1.0;
+
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, sourceInfo.Duration.Value, scoreThreshold);
             var eventsDatatable = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;

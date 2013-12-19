@@ -265,10 +265,13 @@ namespace AnalysisPrograms
                 analysisResults.EventsFile = null;
 
 
+            double scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
+            scoreThreshold *= 3; // double the threshold - used to filter high scoring events
+            //if (scoreThreshold > 1.0) scoreThreshold = 1.0;
+
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
-                double scoreThreshold = 0.1;
-                TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
+                TimeSpan unitTime = TimeSpan.FromSeconds(60); //one index for each time span of one minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
@@ -280,8 +283,7 @@ namespace AnalysisPrograms
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
-                double eventThreshold = 0.1;
-                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, scoreThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
             }
@@ -434,16 +436,16 @@ namespace AnalysisPrograms
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,
-                                 AudioAnalysisTools.Keys.EVENT_START_MIN,
-                                 AudioAnalysisTools.Keys.EVENT_START_SEC, 
-                                 AudioAnalysisTools.Keys.EVENT_START_ABS,
-                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,
-                                 AudioAnalysisTools.Keys.EVENT_DURATION, 
-                                 AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.Keys.EVENT_NAME,
-                                 AudioAnalysisTools.Keys.EVENT_SCORE,
-                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE 
+            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,     //1
+                                 AudioAnalysisTools.Keys.EVENT_START_MIN, //2
+                                 AudioAnalysisTools.Keys.EVENT_START_SEC, //3
+                                 AudioAnalysisTools.Keys.EVENT_START_ABS, //4
+                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,//5
+                                 AudioAnalysisTools.Keys.EVENT_DURATION,  //6
+                                 AudioAnalysisTools.Keys.OSCILLATION_RATE,//7
+                                 AudioAnalysisTools.Keys.EVENT_NAME,//8
+                                 AudioAnalysisTools.Keys.EVENT_SCORE,//9
+                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE//10 
 
                                };
             //                   1                2               3              4                5              6               7              8
@@ -458,11 +460,11 @@ namespace AnalysisPrograms
                 DataRow row = dataTable.NewRow();
                 row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
                 row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;    //duratio in seconds
-                row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
-                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_DURATION]  = (double)ev.Duration;   //duratio in seconds
+                row[AudioAnalysisTools.Keys.OSCILLATION_RATE]= (double)ev.Intensity;  //Actually the oscillation rate
+                row[AudioAnalysisTools.Keys.EVENT_NAME]      = (string)ev.Name;       //
+                row[AudioAnalysisTools.Keys.EVENT_SCORE]     = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.Score;      // norm score = OscRate score
                 dataTable.Rows.Add(row);
             }
             return dataTable;

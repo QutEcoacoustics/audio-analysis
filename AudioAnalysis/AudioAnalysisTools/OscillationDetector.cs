@@ -48,7 +48,7 @@ namespace AudioAnalysisTools
             scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
             scores = DataTools.filterMovingAverage(scores, 3);
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
+            events = ConvertOscillationScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                           minDuration, sonogram.Configuration.SourceFName);
         }//end method
 
@@ -231,12 +231,12 @@ namespace AudioAnalysisTools
         /// <param name="durationThreshold">duration of event must exceed this duration to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
+        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
                                                                double maxThreshold, double durationThreshold, string fileName)
         {
             //double minThreshold = 0.1;
             //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
-            double scoreThreshold = maxThreshold; //set this to the minimum threshold to start with
+            double scoreThreshold = maxThreshold;   //set this to the maximum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
@@ -276,6 +276,7 @@ namespace AudioAnalysisTools
                         av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += oscFreq[n];
                         ev.Score2 = av / (double)(i - startFrame + 1);
+                        ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                         events.Add(ev);
                     }
 
