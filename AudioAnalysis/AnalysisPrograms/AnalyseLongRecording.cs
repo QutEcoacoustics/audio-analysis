@@ -96,17 +96,19 @@ namespace AnalysisPrograms
             // SERF TAGGED RECORDINGS FROM OCT 2010
             // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010" 
 
-            // choose an optional Dev object to return
-
-            // MULTI-ANALYSER_DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h
+            // MULTI-ANALYSER
             string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
+            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Human.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Crow.cfg";
             return new Arguments
-                      {
-                          Source = recordingPath.ToFileInfo(),
-                          Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg".ToFileInfo(),
-                          Output = @"C:\SensorNetworks\Output\Test1".ToDirectoryInfo()
-                      };
+            {
+                Source = recordingPath.ToFileInfo(),
+                Config = configPath.ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Test1".ToDirectoryInfo()
+            };
           
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
             /*return new Arguments
@@ -292,8 +294,15 @@ namespace AnalysisPrograms
             var audioUtility = new MasterAudioUtility(tempFilesDirectory);
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
-            
-            var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value);
+
+            double scoreThreshold = 0.2;
+            if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD)) 
+                scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
+            scoreThreshold *= 3; // increase the threshold - used to display number of high scoring events
+            if (scoreThreshold > 1.0) scoreThreshold = 1.0;
+
+
+            var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold);
             var eventsDatatable  = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;
