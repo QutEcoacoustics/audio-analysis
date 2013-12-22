@@ -17,6 +17,34 @@ namespace AnalysisPrograms
 
     public static class ExceptionLookup
     {
+        public class ExceptionStyle
+        {
+            private int errorCode = UnhandledExceptionErrorCode;
+            public int ErrorCode 
+            { 
+                get {
+                    return errorCode;
+                }
+                set
+                {
+                    if (value == Ok)
+                    {
+                        // NOTE: to my future self: I'm sorry... this is gonna fuck up an exception with more exceptions
+                        throw new ArgumentException("An exception can not have a 0 exit code");
+                    }
+
+                    errorCode = value;
+                }
+            }
+
+            public bool Handle { get; set; }
+
+            public ExceptionStyle()
+            {
+                Handle = true;
+            }
+        }
+
         public static int Ok
         {
             get
@@ -25,38 +53,40 @@ namespace AnalysisPrograms
             }
         }
 
+        public const int UnhandledExceptionErrorCode = 1000;
+
         public static int SpecialExceptionErrorLevel
         {
             get
             {
-                return ErrorLevels[typeof(Exception)];
+                return ErrorLevels[typeof(Exception)].ErrorCode;
             }
         }
 
-        public static Dictionary<Type, int> ErrorLevels;
+        public static Dictionary<Type, ExceptionStyle> ErrorLevels;
 
         static ExceptionLookup()
         {
-            ErrorLevels = new Dictionary<Type, int>
+            ErrorLevels = new Dictionary<Type, ExceptionStyle>
                           {
-                              { typeof(UnknownActionArgException), 1 },
-                              { typeof(ArgException), 2 },
-                              { typeof(MissingArgException), 3 },
-                              { typeof(InvalidArgDefinitionException), 4 },
-                              { typeof(DuplicateArgException), 5 },
-                              { typeof(UnexpectedArgException), 6 },
-                              { typeof(FormatException), 7 },
+                              { typeof(UnknownActionArgException), new ExceptionStyle {ErrorCode = 1} },
+                              { typeof(ArgException), new ExceptionStyle {ErrorCode = 2}  },
+                              { typeof(MissingArgException), new ExceptionStyle {ErrorCode = 3}  },
+                              { typeof(InvalidArgDefinitionException), new ExceptionStyle {ErrorCode = 4}  },
+                              { typeof(DuplicateArgException), new ExceptionStyle {ErrorCode = 5}  },
+                              { typeof(UnexpectedArgException), new ExceptionStyle {ErrorCode = 6}  },
+                              { typeof(FormatException), new ExceptionStyle {ErrorCode = 7}  },
 
-                              { typeof(ValidationArgException), 50 },
-                              { typeof(DirectoryNotFoundException), 51 },
-                              { typeof(FileNotFoundException), 52 },
+                              { typeof(ValidationArgException), new ExceptionStyle {ErrorCode = 50}  },
+                              { typeof(DirectoryNotFoundException), new ExceptionStyle {ErrorCode = 51}  },
+                              { typeof(FileNotFoundException), new ExceptionStyle {ErrorCode = 52}  },
 
-                              { typeof(InvalidDurationException), 100 },
-                              { typeof(InvalidStartOrEndException), 101 },
+                              { typeof(InvalidDurationException), new ExceptionStyle {ErrorCode = 100}  },
+                              { typeof(InvalidStartOrEndException), new ExceptionStyle {ErrorCode = 101}  },
 
-                              { typeof(AnalysisOptionDevilException), 666 },
-                              { typeof(NoDeveloperMethodException), 999},
-                              { typeof(Exception), 1000 }
+                              { typeof(AnalysisOptionDevilException), new ExceptionStyle {ErrorCode = 666, Handle = false}  },
+                              { typeof(NoDeveloperMethodException), new ExceptionStyle {ErrorCode = 999} },
+                              { typeof(Exception), new ExceptionStyle {ErrorCode = UnhandledExceptionErrorCode}  }
                           };
         }
     }

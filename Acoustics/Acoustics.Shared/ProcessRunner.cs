@@ -7,6 +7,7 @@
     using System.Text;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.ComponentModel;
 
     /// <summary>
     /// Helper class for running processes.
@@ -145,10 +146,8 @@
 
             if (this.process != null)
             {
-                if (!this.process.HasExited)
-                {
-                    this.process.Kill();
-                }
+                
+                KillProcess();
 
                 this.process.Dispose();
             }
@@ -172,6 +171,50 @@
                 },
                 EnableRaisingEvents = true,
             };
+        }
+
+        /// <summary>
+        /// THis function kills a process... or attempts to do so gracefully. 
+        /// Processes that currently terminating are indistinguishable from process that cannot be killed due to permission issues.
+        /// Processes that are terminating also do no satisy the HasExited flag.
+        /// </summary>
+        private void KillProcess()
+        {
+            List<Exception> exceptions = new List<Exception>(3);
+
+            while (exceptions.Count < 3)
+            {
+                this.process.Refresh();
+
+                if (this.process.HasExited)
+                {
+                    // nothing to do here
+                    return;
+                }
+                else 
+                {
+                    try
+                    {
+                        this.process.Kill();
+
+                        // success, quit
+                        return;
+                    }
+                    catch (Win32Exception wex)
+                    {
+                        // access denied exception. Either not enough rights, or process already terminating
+                        exceptions.Add(wex);
+                    }
+
+                    // Wait a short while, let the process attempt to kill itself
+                    System.Threading.Thread.Sleep(500);
+                }
+            }
+
+            throw new InvalidOperationException(
+                "Cannot kill the current process! tried {0} times. Process Name: {1}. Arguments: {2}."
+                    .Format2(exceptions.Count, this.ExecutableFile.FullName, this.process.StartInfo.Arguments), 
+                new AggregateException(exceptions));
         }
 
         private void RunAsyncOutputs(string arguments, string workingDirectory, int retryCount)
@@ -232,40 +275,42 @@
             {
                 if (this.WaitForExitMilliseconds > 0)
                 {
-                    using (Task<bool> processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit(this.WaitForExitMilliseconds)))
-                    using (Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardOutput))
-                    using (Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardError))
+                    Task<bool> processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit(this.WaitForExitMilliseconds));
+                    Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardOutput);
+                    Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, process.StandardError);
+
+                    processWaiter.Wait();
+
+                    var processExited = processWaiter.Result;
+
+                    if (!processExited && this.KillProcessOnWaitTimeout)
                     {
-                        var processExited = processWaiter.Result;
-
-                        if (!processExited && this.KillProcessOnWaitTimeout)
-                        {
-                            ProcessTimeout(arguments, workingDirectory, retryCount, this.RunTaskReaders);
-                        }
-                        else
-                        {
-                            Task.WaitAll(outputReader, errorReader);
-                            // if waitResult == true hope those already finished or will finish fast
-                            // otherwise wait for taks to complete to be able to dispose them
-
-                            //exitCode = process.ExitCode;
-
-                            standardOutput.Append(outputReader.Result);
-                            errorOutput.Append(errorReader.Result);
-                        }
+                        ProcessTimeout(arguments, workingDirectory, retryCount, this.RunTaskReaders);
                     }
-                }
-                else
-                {
-                    using (Task processWaiter = Task.Factory.StartNew(() => process.WaitForExit()))
-                    using (Task<string> outputReader = Task.Factory.StartNew(() => process.StandardOutput.ReadToEnd()))
-                    using (Task<string> errorReader = Task.Factory.StartNew(() => process.StandardError.ReadToEnd()))
+                    else
                     {
-                        Task.WaitAll(processWaiter, outputReader, errorReader);
+                        Task.WaitAll(outputReader, errorReader);
+                        // if waitResult == true hope those already finished or will finish fast
+                        // otherwise wait for taks to complete to be able to dispose them
+
+                        //exitCode = process.ExitCode;
 
                         standardOutput.Append(outputReader.Result);
                         errorOutput.Append(errorReader.Result);
                     }
+                    
+                }
+                else
+                {
+                    Task processWaiter = Task.Factory.StartNew(() => process.WaitForExit());
+                    Task<string> outputReader = Task.Factory.StartNew(() => process.StandardOutput.ReadToEnd());
+                    Task<string> errorReader = Task.Factory.StartNew(() => process.StandardError.ReadToEnd());
+
+                    Task.WaitAll(processWaiter, outputReader, errorReader);
+
+                    standardOutput.Append(outputReader.Result);
+                    errorOutput.Append(errorReader.Result);
+                    
                 }
             }
         }
@@ -279,15 +324,20 @@
 
         private void ProcessTimeout(string arguments, string workingDirectory, int retryCount, Action<string, string, int> retryMethod)
         {
-            this.process.Kill();
+            var exited = this.process.HasExited; 
+            if (!exited)
+            {
+                this.process.Kill();
+            }
 
             this.failedRuns.Add(string.Format(
-                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Stdout: {5}. Stderr: {6}.",
+                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Process had{7} already terminated after timeout.\n\nStdout: {5}\n\nStderr: {6}",
                 DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture),
                 this.ExecutableFile.Name,
                 arguments,
                 workingDirectory,
                 TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds).ToString("c"),
+                exited ? "" : " not",
                 this.StandardOutput,
                 this.ErrorOutput
                 ));
