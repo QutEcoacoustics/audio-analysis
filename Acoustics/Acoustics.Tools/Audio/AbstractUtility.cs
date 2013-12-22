@@ -359,7 +359,7 @@
 
                 // set ProcessRunner to have a timeout and retry
                 processRunner.KillProcessOnWaitTimeout = true;
-                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(2).TotalMilliseconds);
+                processRunner.WaitForExitMilliseconds = Convert.ToInt32(TimeSpan.FromMinutes(3).TotalMilliseconds);
                 processRunner.MaxRetries = 3;
                 processRunner.WaitForExit = true;
 

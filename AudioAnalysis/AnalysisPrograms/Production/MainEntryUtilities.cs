@@ -210,10 +210,13 @@ namespace AnalysisPrograms
 
 
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
-            int returnCode;
+            ExceptionLookup.ExceptionStyle style;
+            
+            bool found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);            
+            found = found ? style.Handle : false;
 
             // print usage, if exception is recognised
-            if (ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out returnCode) && ex.GetType() != typeof(Exception))
+            if (found && ex.GetType() != typeof(Exception))
             {
                 // attempt to retrieve action
                 string action = null;
@@ -241,7 +244,7 @@ namespace AnalysisPrograms
                 else if (ex is ValidationArgException)
                 {
                     // for validation exceptions, use the inner exception
-                    ExceptionLookup.ErrorLevels.TryGetValue(ex.InnerException.GetType(), out returnCode);
+                    ExceptionLookup.ErrorLevels.TryGetValue(ex.InnerException.GetType(), out style);
                     PrintUsage(ex.Message, Usages.Single, action);
                 }
                 else
@@ -253,8 +256,17 @@ namespace AnalysisPrograms
             {
                 // otherwise its a unhandled exception, log and raise
                 Log.Fatal("Unhandled exception ->", ex);
-                returnCode = ExceptionLookup.SpecialExceptionErrorLevel;
+
+                StringBuilder extraInformation = null;
+                PrintAggregateException(ex, ref extraInformation);
+
+                //if (extraInformation != null)
+                //{
+                //    Log.Error(extraInformation.ToString());
+                //}
             }
+
+            int returnCode = style ==  null ? ExceptionLookup.SpecialExceptionErrorLevel : style.ErrorCode;
 
             // finally return error level
             NoConsole.Log.Info("ERRORLEVEL: " + returnCode);
@@ -270,6 +282,31 @@ namespace AnalysisPrograms
                 // Everything has already been logged, just exit with appropriate errorlevel
                 Environment.Exit(returnCode);
             }
+        }
+
+        private static void PrintAggregateException(Exception ex, ref StringBuilder innerExcpetions, int depth = 0)
+        {
+            var depthString = "==".PadLeft(depth * 2, '=');
+            //innerExcpetions = innerExcpetions ?? new StringBuilder();
+
+            if (ex is AggregateException)
+            {
+                var aex = (AggregateException)ex;
+                 
+                //innerExcpetions.AppendLine("Writing detailed information about inner exceptions!");
+
+                foreach (var exception in aex.InnerExceptions)
+                {
+                    //innerExcpetions.AppendLine();
+                    Log.Fatal("\n\n" + depthString +  "> Inner exception:", exception);
+
+
+                    if (exception is AggregateException) {
+                        PrintAggregateException(exception, ref innerExcpetions, depth++);
+                    }
+                }
+            }
+
         }
 
         /// <summary>

@@ -109,7 +109,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Test1".ToDirectoryInfo()
             };
-          
+
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
             /*return new Arguments
                    {
@@ -151,8 +151,10 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
+            //throw new AggregateException(new AggregateException(new InvalidOperationException("Test1"), new ArgumentException("Test2")), new NullReferenceException("Test3"));
+
             const bool Verbose = true;
-            bool debug   = MainEntry.InDEBUG;
+            bool debug = MainEntry.InDEBUG;
 
 
             if (Verbose)
@@ -168,7 +170,7 @@ namespace AnalysisPrograms
             var outputDir = arguments.Output;
             var tempFilesDirectory = arguments.TempDir;
 
-            
+
 
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
@@ -206,9 +208,9 @@ namespace AnalysisPrograms
                 saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, configDict);
 
             bool displayCSVImage = false;
-            if ( configDict.ContainsKey(Keys.DISPLAY_CSV_IMAGE))
+            if (configDict.ContainsKey(Keys.DISPLAY_CSV_IMAGE))
                 displayCSVImage = ConfigDictionary.GetBoolean(Keys.DISPLAY_CSV_IMAGE, configDict);
-            
+
             bool doParallelProcessing = false;
             if (configDict.ContainsKey(Keys.PARALLEL_PROCESSING))
                 doParallelProcessing = ConfigDictionary.GetBoolean(Keys.PARALLEL_PROCESSING, configDict);
@@ -221,7 +223,7 @@ namespace AnalysisPrograms
             };
 
             // 4. get the segment of audio to be analysed
-            var fileSegment = new FileSegment { OriginalFile = fiSourceRecording }; 
+            var fileSegment = new FileSegment { OriginalFile = fiSourceRecording };
 
             if (offsetsProvided)
             {
@@ -274,36 +276,50 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("");
             if (analyserResults == null)
             {
-                LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("The Analysis Run Coordinator has returned a null result.");
-                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteErrorLine("###################################################\n");
+                LoggedConsole.WriteErrorLine("The Analysis Run Coordinator has returned a null result.");
+                LoggedConsole.WriteErrorLine("###################################################\n");
                 throw new AnalysisOptionDevilException();
             }
 
             // merge all the datatables from the analysis into a single datatable
             DataTable mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-            if ((mergedDatatable == null) || (mergedDatatable.Rows.Count == 0))
+            if (mergedDatatable == null)
             {
-                LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("MergeEventResultsIntoSingleDataTable() has returned a null data table or one with zero rows.");
-                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteErrorLine("###################################################\n");
+                LoggedConsole.WriteErrorLine("MergeEventResultsIntoSingleDataTable() has returned a null data table.");
+                LoggedConsole.WriteErrorLine("###################################################\n");
                 throw new AnalysisOptionDevilException();
             }
 
-            //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
+            // not an exceptional state, do not throw exception
+            if (mergedDatatable.Rows.Count == 0)
+            {
+                LoggedConsole.WriteWarnLine("The analysis produced no results at all (MergedDatatable had zero rows)");
+            }
+
+            // get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility(tempFilesDirectory);
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
 
             double scoreThreshold = 0.2;
-            if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD)) 
-                scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
-            scoreThreshold *= 3; // increase the threshold - used to display number of high scoring events
-            if (scoreThreshold > 1.0) scoreThreshold = 1.0;
+            if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD))
+            {
+                // min score for an acceptable event
+                scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);
+            }
+
+            // increase the threshold - used to display number of high scoring events
+            scoreThreshold *= 3;
+            if (scoreThreshold > 1.0)
+            {
+                scoreThreshold = 1.0;
+            }
 
 
             var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold);
-            var eventsDatatable  = op1.Item1;
+            var eventsDatatable = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;
             if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
@@ -313,7 +329,7 @@ namespace AnalysisPrograms
             string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-            var fiEventsCSV  = op2.Item1;
+            var fiEventsCSV = op2.Item1;
             var fiIndicesCSV = op2.Item2;
 
             LoggedConsole.WriteLine("\n###################################################");
@@ -385,14 +401,14 @@ namespace AnalysisPrograms
                         // add one to offset header
                         lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
                     }
-                
+
                     // write spectrogram to disk as CSV file
                     var saveCsvPath = Path.Combine(opdir.FullName, name + "." + spectrumKey + ".csv");
                     lines[0] = Spectrum.GetHeader(numbers[0].Length);  // add in header
                     FileTools.WriteTextFile(saveCsvPath, lines);
 
                     // prepare image and write to disk
-                    var imagePath = Path.Combine(opdir.FullName, name + "."+ spectrumKey +".png");
+                    var imagePath = Path.Combine(opdir.FullName, name + "." + spectrumKey + ".png");
                     double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
 
                     // store all the spectrograms as matrices to use later
@@ -446,8 +462,8 @@ namespace AnalysisPrograms
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
         {
             string outputDir = csvPath.DirectoryName;
-            string fName     = Path.GetFileNameWithoutExtension(csvPath.Name);
-            var imagePath    = Path.Combine(outputDir, fName + ImagefileExt).ToFileInfo();
+            string fName = Path.GetFileNameWithoutExtension(csvPath.Name);
+            var imagePath = Path.Combine(outputDir, fName + ImagefileExt).ToFileInfo();
 
             var args = new IndicesCsv2Display.Arguments()
                        {

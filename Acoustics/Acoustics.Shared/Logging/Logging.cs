@@ -80,6 +80,13 @@ namespace System
             Console.Error.WriteLine(str);
         }
 
+        public static void WriteWarnLine(string format, params object[] args)
+        {
+            var str = string.Format(format, args);
+            Log.Warn(str);
+            Console.WriteLine(str);
+        }
+
         public static void WriteErrorLine(string str)
         {
             Log.Error(str);

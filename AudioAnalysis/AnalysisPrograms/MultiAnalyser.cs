@@ -63,7 +63,7 @@ namespace AnalysisPrograms
         }
 
         public static void Dev(Arguments arguments)
-        {            
+        {
             var executeDev = (arguments == null);
             if (executeDev)
             {
@@ -102,7 +102,7 @@ namespace AnalysisPrograms
 
 
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
-                string outputDir  = @"C:\SensorNetworks\Output\MultiAnalyser\";
+                string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
 
                 LoggedConsole.WriteLine(MultiAnalyser.identifier);
                 LoggedConsole.WriteLine("# DATE AND TIME: " + DateTime.Now);
@@ -415,21 +415,22 @@ namespace AnalysisPrograms
             //######################################################################
 
 
-            if ((events != null) && (events.Count != 0))
+            // returning a null datattable for no detected events, is not appropriate.
+            // always return a datatable, even if has zero events
+            string analysisName = configDict[Keys.ANALYSIS_NAME];
+            string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
+            foreach (AcousticEvent ev in events)
             {
-                string analysisName = configDict[Keys.ANALYSIS_NAME];
-                string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
-                foreach (AcousticEvent ev in events)
-                {
-                    ev.SourceFileName = fName;
-                    //ev.Name = analysisName;
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
-                }
-                //write events to a data table to return.
-                dataTable = WriteEvents2DataTable(events);
-                string sortString = Keys.EVENT_START_SEC + " ASC";
-                dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
+                ev.SourceFileName = fName;
+                //ev.Name = analysisName;
+                ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
             }
+
+            // write events to a data table to return.
+            dataTable = WriteEvents2DataTable(events);
+            string sortString = Keys.EVENT_START_SEC + " ASC";
+            dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
+
 
             if ((analysisSettings.EventsFile != null) && (dataTable != null))
             {
@@ -494,7 +495,11 @@ namespace AnalysisPrograms
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
-            if (predictedEvents == null) return null;
+            if (predictedEvents == null)
+            {
+                return null;
+            }
+
             string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,
                                  AudioAnalysisTools.Keys.EVENT_START_MIN,
                                  AudioAnalysisTools.Keys.EVENT_START_SEC, 
@@ -511,7 +516,10 @@ namespace AnalysisPrograms
             Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), typeof(double) };
 
             var dataTable = DataTableTools.CreateTable(headers, types);
-            if (predictedEvents.Count == 0) return dataTable;
+            if (predictedEvents.Count == 0)
+            {
+                return dataTable;
+            }
 
             foreach (var ev in predictedEvents)
             {
