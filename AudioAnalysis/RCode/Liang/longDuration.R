@@ -1,5 +1,5 @@
 
-readLongDuration <- function(startDate, endDate, filepath, rCol, gCol, bCol){
+readLongDuration2011 <- function(startDate, endDate, filepath, rCol, gCol, bCol){
   startDate <- "2011/10/20"
   endDate <- "2012/7/2"
   filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
@@ -21,8 +21,8 @@ readLongDuration <- function(startDate, endDate, filepath, rCol, gCol, bCol){
       filename <- paste(subfolder, dir(subfolder, pattern = "Indices.csv"), sep = "")
       indices <- read.csv(filename)
       indices <- as.matrix(indices)
-      if(nrow(indices) < 1435){
-        compRow <- 1435 - nrow(indices)
+      if(nrow(indices) < 1440){
+        compRow <- 1440 - nrow(indices)
         compCol <- ncol(indices)
         compData <- matrix(rep(-1, compRow * compCol), compRow, compCol)
         indices <- rbind(indices, compData)
@@ -43,13 +43,14 @@ readLongDuration <- function(startDate, endDate, filepath, rCol, gCol, bCol){
       current <- current + 1
     }
     else{
-      missingValues <- rep(-1, 1435)
-      dim(missingValues) <- c(1435, 1)
+      missingValues <- rep(-1, 1440)
+      dim(missingValues) <- c(1440, 1)
       red <- cbind(red, missingValues)
       green <- cbind(green, missingValues)
       blue <- cbind(blue, missingValues)
     }
   }
+  
   result <- list(red=red, green=green, blue=blue)
   return (result)
 }
