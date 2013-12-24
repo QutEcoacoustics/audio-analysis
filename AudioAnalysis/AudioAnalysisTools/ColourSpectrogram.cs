@@ -38,15 +38,15 @@ namespace AudioAnalysisTools
         public const double ACI_MIN = 0.3;
         public const double ACI_MAX = 0.9;
         public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 100.0;
+        public const double AVG_MAX = 70.0;
         public const double BGN_MIN = -100.0;
         public const double BGN_MAX = -50.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.7;
-        public const double TEN_MIN = 0.3;
-        public const double TEN_MAX = 0.95;
+        public const double TEN_MIN = 0.5;
+        public const double TEN_MAX = 1.0;
         public const double VAR_MIN = 0.0;
-        public const double VAR_MAX = 50000.0;
+        public const double VAR_MAX = 30000.0;
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
