@@ -82,6 +82,7 @@ namespace AudioAnalysisTools
                 foreach (DataRow row in dt.Rows)
                 {
                     row[Keys.INDICES_COUNT] = (double)result.SegmentStartOffset.Minutes;
+                    row[Keys.START_MIN]     = (double)result.SegmentStartOffset.Minutes;
                     if (headers.Contains(Keys.SEGMENT_TIMESPAN)) 
                         row[Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
                 }
