@@ -298,6 +298,56 @@ namespace AnalysisPrograms
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
             double[] signalEnvelope = dspOutput.Envelope;
+            double avSignalEnvolope = signalEnvelope.Average();
+
+            Features indices; // struct in which to store all indices
+            int freqBinCount = frameSize / 2;
+
+            // following deals with case where the signal waveform is continuous flat zero. Has happened!! 
+            if (avSignalEnvolope == 0.0)
+            {
+                indices.recordingDuration = wavDuration;                        // total duration of recording
+                indices.activity = 0.0;                                         // fraction of frames having acoustic activity 
+                indices.bgNoise = -100.0;                                       // bg noise in dB
+                indices.snr = 0.0;                                              // snr
+                indices.activeSnr = 0.0;                                        // snr calculated from active frames only
+                indices.avSig_dB = -100.0; 
+                indices.segmentCount = 0;                                       // number of segments whose duration > one frame
+                indices.avSegmentDuration = TimeSpan.Zero;                      // av segment duration in milliseconds
+                indices.clusterCount = 0;
+                indices.avClusterDuration = TimeSpan.Zero;                      // av cluster durtaion in milliseconds
+                indices.triGramUniqueCount = 0;
+                indices.triGramRepeatRate = 0.0;
+                indices.ACI = 0.0;
+                indices.temporalEntropy = 1.00;                                 // ENTROPY of ENERGY ENVELOPE
+                indices.entropyOfAvSpectrum = 1.0;
+                indices.entropyOfVarianceSpectrum = 1.0;
+                indices.entropyOfPeakFreqDistr = 1.0;
+
+                indices.rainScore    = 0.0;
+                indices.cicadaScore  = 0.0;
+                indices.lowFreqCover = 0.0;
+                indices.midFreqCover = 0.0;
+                indices.hiFreqCover  = 0.0;
+
+                indices.backgroundSpectrum = new double[freqBinCount];
+                indices.ACIspectrum = new double[freqBinCount];
+                indices.coverSpectrum = new double[freqBinCount];
+                indices.HtSpectrum = new double[freqBinCount];
+                indices.averageSpectrum = new double[freqBinCount];
+                indices.varianceSpectrum = new double[freqBinCount];
+
+                indices.trackDuration_total = TimeSpan.Zero;
+                indices.trackDuration_percent = 0;
+                indices.trackCount = 0;
+                indices.tracksPerSec = 0.0;
+                
+                BaseSonogram sg = null;
+                double[,] hitsDummy = null;
+                var dummyScores = new List<Plot>();
+                List<SpectralTrack> list = null;
+                return Tuple.Create(indices, wavDuration, sg, hitsDummy, dummyScores, list);
+            }
 
             // i: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
@@ -309,7 +359,6 @@ namespace AnalysisPrograms
             // ii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
             var activity = CalculateActivity(dBarray, frameDuration, DEFAULT_activityThreshold_dB);
 
-            Features indices; // struct in which to store all indices
             indices.recordingDuration = wavDuration;                        // total duration of recording
             indices.activity = activity.activeFrameCover;                   // fraction of frames having acoustic activity 
             indices.bgNoise = bgNoise.NoiseMode;                            // bg noise in dB
