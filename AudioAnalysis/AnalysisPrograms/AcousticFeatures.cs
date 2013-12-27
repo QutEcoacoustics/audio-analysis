@@ -298,13 +298,13 @@ namespace AnalysisPrograms
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
             double[] signalEnvelope = dspOutput.Envelope;
-            double avSignalEnvolope = signalEnvelope.Average();
+            double avSignalEnvelope = signalEnvelope.Average();
 
             Features indices; // struct in which to store all indices
             int freqBinCount = frameSize / 2;
 
-            // following deals with case where the signal waveform is continuous flat zero. Has happened!! 
-            if (avSignalEnvolope == 0.0)
+            // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
+            if (avSignalEnvelope < 0.001) // although signal appears zero, this condition is required
             {
                 indices.recordingDuration = wavDuration;                        // total duration of recording
                 indices.activity = 0.0;                                         // fraction of frames having acoustic activity 
