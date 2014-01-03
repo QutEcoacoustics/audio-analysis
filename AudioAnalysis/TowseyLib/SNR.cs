@@ -18,17 +18,17 @@ namespace TowseyLib
         {
             public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
             public const string key_DYNAMIC_RANGE        = "DYNAMIC_RANGE";
-            //public const string Key_SilenceRecording   = "SILENCE_RECORDING_PATH"; //used to determin silence model.
         }
 
+        //reference dB levels for different signals
+        public const double MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL = -80; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
+        public const double MINIMUM_dB_BOUND_FOR_ENVIR_NOISE = -70; // might also be used as minimum bound. Calculated from actual silent environmental recording.
 
         //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinLogEnergyReference = -6.0; // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
-
+        public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
+        public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
         //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        public const double MaxLogEnergyReference = 0.0; // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
-
         //note that the cicada recordings reach max average frame amplitude = 0.55
 
 
