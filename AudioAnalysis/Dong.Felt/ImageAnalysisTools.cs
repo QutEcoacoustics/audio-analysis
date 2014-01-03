@@ -732,58 +732,58 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
-            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4, 0.4},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        { 0.4, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
-                                      };
-            double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+            //double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+            //                            {-0.1,-0.1,-0.1, 0.4, 0.4},
+            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
+            //                            { 0.4, 0.4,-0.1,-0.1,-0.1},
+            //                            {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      //};
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
-            double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1}
-                                      };
-            double[,] ridgeDir4Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+            //double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
+            //                            {-0.1,-0.1,-0.1, 0.4,-0.1},
+            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
+            //                            {-0.1, 0.4,-0.1,-0.1,-0.1},
+            //                            {-0.1, 0.4,-0.1,-0.1,-0.1}
+            //                          };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
                                       };
-            double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4,-0.1}
-                                      };
-            double[,] ridgeDir6Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+            //double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
+            //                            {-0.1, 0.4,-0.1,-0.1,-0.1},
+            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
+            //                            {-0.1,-0.1,-0.1, 0.4,-0.1},
+            //                            {-0.1,-0.1,-0.1, 0.4,-0.1}
+            //                          };
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
-            double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-                                        { 0.4, 0.4,-0.1,-0.1,-0.1},
-                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
-                                        {-0.1,-0.1,-0.1, 0.4, 0.4},
-                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
-                                      };
+            //double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+            //                            { 0.4, 0.4,-0.1,-0.1,-0.1},
+            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
+            //                            {-0.1,-0.1,-0.1, 0.4, 0.4},
+            //                            {-0.1,-0.1,-0.1,-0.1,-0.1}
+            //                          };
 
             double[] ridgeMagnitudes = new double[8];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-            ridgeMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
-            ridgeMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
-            ridgeMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
-            ridgeMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
+            //ridgeMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
+            //ridgeMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
+            //ridgeMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
+            //ridgeMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
 
             int indexMin, indexMax;
             double diffMin, diffMax;
@@ -792,7 +792,7 @@ namespace Dong.Felt
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
-            direction = indexMax * Math.PI / (double)8;
+            direction = indexMax * Math.PI / (double)4;
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
