@@ -308,10 +308,10 @@ namespace AnalysisPrograms
             {
                 indices.recordingDuration = wavDuration;                        // total duration of recording
                 indices.activity = 0.0;                                         // fraction of frames having acoustic activity 
-                indices.bgNoise = -100.0;                                       // bg noise in dB
+                indices.bgNoise = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL;         // calculated from actual zero signal
                 indices.snr = 0.0;                                              // snr
                 indices.activeSnr = 0.0;                                        // snr calculated from active frames only
-                indices.avSig_dB = -100.0; 
+                indices.avSig_dB = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL;        // calculated from actual zero signal. 
                 indices.segmentCount = 0;                                       // number of segments whose duration > one frame
                 indices.avSegmentDuration = TimeSpan.Zero;                      // av segment duration in milliseconds
                 indices.clusterCount = 0;

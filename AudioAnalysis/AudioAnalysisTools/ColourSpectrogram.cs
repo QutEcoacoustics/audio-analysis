@@ -39,8 +39,8 @@ namespace AudioAnalysisTools
         public const double ACI_MAX = 0.9;
         public const double AVG_MIN = 0.0;
         public const double AVG_MAX = 70.0;
-        public const double BGN_MIN = -100.0;
-        public const double BGN_MAX = -50.0;
+        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL;
+        public const double BGN_MAX = -40.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.7;
         public const double TEN_MIN = 0.5;
