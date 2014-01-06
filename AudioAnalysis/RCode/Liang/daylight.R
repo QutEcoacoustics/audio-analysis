@@ -1,6 +1,6 @@
 
 setDaylight <- function(filepath){
-  filepath <- "c:/work/myfile/sunrise_sunset.csv"
+#   filepath <- "c:/work/myfile/sunrise_sunset.csv"
   
   daylight <- read.csv(filepath)
   daylight <- as.matrix(daylight)
@@ -12,8 +12,8 @@ setDaylight <- function(filepath){
   # astEnd <- daylight[ , 6]
   # nautStart <- daylight[ , 7]
   # nautEnd <- daylight[ , 8]
-  civilStart <- daylight[ , 9]
-  civilEnd <- daylight[ , 10]
+  civilStart <- daylight[ , 6]
+  civilEnd <- daylight[ , 7]
 
   #regular expression to find the 
   for(cnt in 1:length(civilStart)){
