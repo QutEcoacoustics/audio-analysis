@@ -775,7 +775,7 @@ namespace Dong.Felt
             //                            {-0.1,-0.1,-0.1,-0.1,-0.1}
             //                          };
 
-            double[] ridgeMagnitudes = new double[8];
+            double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
@@ -792,7 +792,7 @@ namespace Dong.Felt
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
-            direction = indexMax * Math.PI / (double)4;
+            direction = indexMax * Math.PI / 4.0;
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
