@@ -11,6 +11,8 @@ namespace Dong.Felt
 
     class POISelection
     {
+        public enum RidgeOrientationType { NONE, HORIZONTAL, POSITIVE_QUATERPI, VERTICAL, NEGATIVE_QUATERPI }
+
         public List<PointOfInterest> poiList { get; set; }
 
         public int RowsCount { get; set; }
@@ -47,6 +49,7 @@ namespace Dong.Felt
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
                         // RidgeOrientation ranges from 0 to pi, they are 0, pi/4, pi/2, 3pi/4.
@@ -54,8 +57,8 @@ namespace Dong.Felt
                         // convert the orientation into - pi/2 to pi/2 from 0 ~ pi
                         //poi.RidgeOrientation = StatisticalAnalysis.ConvertOrientationFrom0PiToNegativePi2(direction);
 
-                        // OrientationCategory only has four values, they are 0, 1, 2, 3, 4. 
-                        poi.OrientationCategory = (int)Math.Round((direction * 4) / Math.PI);
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
 
                         /// Here when I added another 4 directional masks, they will become useful. 
                         //if (poi.OrientationCategory == 1 || poi.OrientationCategory == 3)
@@ -75,7 +78,7 @@ namespace Dong.Felt
                         var neighbourPoint1 = new Point(0, 0);
                         var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
                         var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        FillinGap(poi, rows, cols, out neighbourPoi1, out neighbourPoi2);
+                        FillinGap(poi, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
                         poiList.Add(poi);
                         poiList.Add(neighbourPoi1);
                         poiList.Add(neighbourPoi2);
@@ -84,7 +87,8 @@ namespace Dong.Felt
             }
         }
 
-        public void FillinGap(PointOfInterest poi, int rowsMax, int colsMax, out PointOfInterest neighbourPoi1, out PointOfInterest neighbourPoi2)
+        // Fill the gap between seperated points. 
+        public void FillinGap(PointOfInterest poi, int rowsMax, int colsMax, double[,] matrix, out PointOfInterest neighbourPoi1, out PointOfInterest neighbourPoi2, double secondsScale, double freqBinCount)
         {
             var col = poi.Point.X;  // c
             var row = poi.Point.Y; // r
@@ -100,54 +104,70 @@ namespace Dong.Felt
                 {
                     var Neighpoi1 = new PointOfInterest(neighbourPoint1);
                     var Neighpoi2 = new PointOfInterest(neighbourPoint2);
-                    PoiCopy(poi, out neighbourPoi1, col - 1, row);
-                    PoiCopy(poi, out neighbourPoi2, col + 1, row);
+                    neighbourPoi1 = PoiCopy(poi, col - 1, row, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = PoiCopy(poi, col + 1, row, matrix, secondsScale, freqBinCount);
                 }
             }
-            if (poi.OrientationCategory == 1)
+            if (poi.OrientationCategory == 2)
             {
                 if (col + 1 < colsMax && col - 1 > colsMin && row + 1 < rowsMax && row - 1 > rowsMin)
                 {
 
                     var Neighpoi1 = new PointOfInterest(neighbourPoint1);
                     var Neighpoi2 = new PointOfInterest(neighbourPoint2);
-                    PoiCopy(poi, out neighbourPoi1, col - 1, row + 1);
-                    PoiCopy(poi, out neighbourPoi2, col + 1, row - 1);
+                    neighbourPoi1 = PoiCopy(poi, col - 1, row + 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = PoiCopy(poi, col + 1, row - 1, matrix, secondsScale, freqBinCount);
                 }
             }
-            if (poi.OrientationCategory == 2)
+            if (poi.OrientationCategory == 4)
             {
                 if (row + 1 < rowsMax && row - 1 > rowsMin)
                 {
                     var Neighpoi1 = new PointOfInterest(neighbourPoint1);
                     var Neighpoi2 = new PointOfInterest(neighbourPoint2);
-                    PoiCopy(poi, out neighbourPoi1, col, row - 1);
-                    PoiCopy(poi, out neighbourPoi2, col, row + 1);
+                    neighbourPoi1 = PoiCopy(poi, col, row - 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = PoiCopy(poi, col, row + 1, matrix, secondsScale, freqBinCount);
                 }
             }
-            if (poi.OrientationCategory == 3)
+            if (poi.OrientationCategory == 6)
             {
                 if (col + 1 < colsMax && col - 1 > colsMin && row + 1 < rowsMax && row - 1 > rowsMin)
                 {
                     var Neighpoi1 = new PointOfInterest(neighbourPoint1);
                     var Neighpoi2 = new PointOfInterest(neighbourPoint2);
-                    PoiCopy(poi, out neighbourPoi1, col - 1, row - 1);
-                    PoiCopy(poi, out neighbourPoi2, col + 1, row + 1);
+                    neighbourPoi1 = PoiCopy(poi, col - 1, row - 1, matrix, secondsScale, freqBinCount);
+                    neighbourPoi2 = PoiCopy(poi, col + 1, row + 1, matrix, secondsScale, freqBinCount);
                 }
             }
         }
 
-        public void PoiCopy(PointOfInterest point, out PointOfInterest copyPoi, int xCordinate, int yCordinate)
+        // Copy a pointOfInterst to another pointOfInterest. 
+        public PointOfInterest PoiCopy(PointOfInterest point, int xCordinate, int yCordinate, double[,] matrix, double secondsScale, double freqBinCount)
         {
-            var newPoint = new Point(0, 0);
-            copyPoi = new PointOfInterest(newPoint);
-            copyPoi.Point = new Point(xCordinate, yCordinate);
+            var newPoint = new Point(xCordinate, yCordinate);
+            TimeSpan time = TimeSpan.FromSeconds(xCordinate * secondsScale);
+            double herz = (freqBinCount - yCordinate - 1) * point.HerzScale;
+            var copyPoi = new PointOfInterest(time, herz);
+            copyPoi.Point = newPoint;
             copyPoi.RidgeOrientation = point.RidgeOrientation;
             copyPoi.OrientationCategory = point.OrientationCategory;
             copyPoi.RidgeMagnitude = point.RidgeMagnitude;
-            copyPoi.Intensity = point.Intensity;
+            copyPoi.Intensity = matrix[yCordinate, xCordinate];
             copyPoi.TimeScale = point.TimeScale;
             copyPoi.HerzScale = point.HerzScale;
+            return copyPoi;
+        }
+
+        // using the structure tensor to calculate the real values for each poi's magnitude and direction.  
+        public void CalulateRidgeRealValues(List<PointOfInterest> poiList)
+        {
+            foreach (var p in poiList)
+            {
+                var deltaMagnitudeY = p.RidgeMagnitude;
+                var deltaMagnitudeX = p.RidgeMagnitude;
+                var magnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
+                var direction = Math.Atan(deltaMagnitudeY / deltaMagnitudeX);
+            }
         }
 
         public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)

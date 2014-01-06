@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection-fillinGap-afterPrune.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -58,8 +58,8 @@
                 double eventThreshold = 0.5; // dummy variable - not used                               
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                ///// addd this line to check the result after noise removal.
-                image.Save(imagePath, ImageFormat.Png);
+                /// addd this line to check the result after noise removal.
+                //image.Save(imagePath, ImageFormat.Png);
 
                 // This config is to set up the parameters used in ridge Detection. 
                 var ridgeConfig = new RidgeDetectionConfiguration
@@ -97,18 +97,14 @@
                 ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
                 /// filter out some redundant ridges                
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in filterPoiList)
+                foreach (PointOfInterest poi in poiList)
                 {
-                    //poi.DrawColor = Color.Crimson;
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                    // draw local max
-                    //poi.DrawColor = Color.Cyan;
-                    //poi.DrawLocalMax(bmp, (int)freqBinCount);
                 }
 
                 //var neighbourhoodLength = 13;
@@ -168,7 +164,7 @@
                 //var queryRegionRepresentation1 = CSVResults.CSVToNormalisedRegionRepresentation(file);
                 //var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation1, ridgeArray, wavFilePath);
                 //var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
-                
+
                 //var csvFileName2 = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1-regionRepresentation1.csv";
                 //string csvPath2 = Path.Combine(CSVResultDirectory, csvFileName2);                
                 //CSVResults.RegionRepresentationListToCSV(candidatesVector, csvPath2);
