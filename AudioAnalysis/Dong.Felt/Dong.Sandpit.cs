@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection-fillinGap-afterPrune.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection-fillinGap-afterfilterPoiList.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -97,11 +97,11 @@
                 ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
                 /// filter out some redundant ridges                
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in poiList)
+                foreach (PointOfInterest poi in filterPoiList)
                 {
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     poi.DrawOrientationPoint(bmp, (int)freqBinCount);
