@@ -26,59 +26,85 @@
 ##
 
 # clear the workspace
-# rm(list = ls());
+# rm(list = ls())
 
 
 
-source('config.R');
-source('events.R');
-source('features.R');
-source('cluster.R');
-source('samples.R');
-source('tags.R');
-source('util.R');
-source('spectrogram.R');
+source('config.R')
+source('events.R')
+source('features.R')
+source('cluster.R')
+source('samples.R')
+source('tags.R')
+source('util.R')
+source('spectrogram.R')
 
-
-
-SS <- function (
-    events = FALSE,
-    feature.extraction = FALSE,
-    clustering = FALSE,
-    sample.selection = FALSE,
-    all = FALSE,
-    overwrite.output = FALSE
-) {
+test <- function (...) {
     
-    CheckPaths();
+    
+    return(...)
+}
 
+SS <- function (...) {
+    # Main entry point whcih runs the specified steps.
+    #
+    # Args:
+    #   events: Boolean; Whether to run events step
+    #   feature.extraction: Boolean; Whether to run feature extraction
+    #   clustering: Boolean; Whether to run clustering step
+    #   sample.selection: Boolean; Whether to run sample selection step
+    #   all: Boolean; Whether to run all steps. Overrides the above params
+
+    
+    CheckPaths()
+    
+    default.steps <- c('events',
+                       'feature.extraction',
+                       'clustering',
+                       'sample.selection')
+    steps <- unlist(list(...));
+    
+    if (length(steps) == 0) {
+        steps <- default.steps;
+    }
+    
     
     # Step 1:
     # Audio Event Detection
     # This is done by another program, currently birgit's matlab code
-    # Events are detected and their frequency bounds, start time and duration are written\
-    # to a csv file for each audio file. 
+    # Events are detected. Frequency bounds, start time and duration
+    # are written to a csv file for each audio file. 
     
     
-    if (events || all) {
+    if (!is.na(match('events', steps))) {
         
         # Step 2: 
-        # merge events from several files (one for each audio file), including the filename
-        MergeEvents();
+        # merge events from several files (one for each audio file)
+        # into a single csv file
+        MergeEvents()
     }
     
-    if (feature.extraction || all) {
-        DoFeatureExtraction(); 
+
+    if (!is.na(match('feature.extraction', steps))) {
+        # Step 3: 
+        # feature extraction 
+        # creates a new output file parallel to the events file
+        DoFeatureExtraction() 
     }
     
-    if (clustering || all) {
-        print('about to cluster events');
-        ClusterEvents();  
+    if (!is.na(match('clustering', steps))) {
+        # Step 4: 
+        # creates a new output csv file, identical to the events file,
+        # except for the addition of a "group" column.
+        ClusterEvents()  
     }
     
-    if (sample.selection || all) {
-        samples <- SelectSamples();
-        EvaluateSamples(samples); 
+    if (!is.na(match('sample.selection', steps))) {
+        # Step 5:
+        # chooses samples based on cluster groups
+        # outputs a list of minute samples to a csv file
+        samples <- SelectSamples()
+        EvaluateSamples(samples) 
     }
     
     
@@ -91,10 +117,13 @@ CheckPaths <- function () {
     #
     # if one of them doesn't exist, execution will stop
     
-    to.test <- c(g.output.parent.dir, g.source.dir, g.audio.dir, g.events.source.dir);
+    to.test <- c(g.output.parent.dir, 
+                 g.source.dir, 
+                 g.audio.dir, 
+                 g.events.source.dir)
     for (t in 1:length(to.test)) {
         if (!file.exists(to.test[t])) {
-            stop(paste(to.test[t], 'path does not exist'));
+            stop(paste(to.test[t], 'path does not exist'))
         }
     }
     
@@ -102,48 +131,58 @@ CheckPaths <- function () {
 
 
 OutputPath <- function (fn, new = FALSE, ext = 'csv') {
-    # returns the correct path for output of a particular type
-    # to be used both by functions writing the output and reading output of other functions
+    # Returns the correct path for output of a particular type
     #
     # Args:
     #   fn: String; the name of the output file, eg "features"
-    #   new: Boolean; whether to create a new output folder or overwrite/use any values in the 
-    #                 latest already created folder
+    #   new: Boolean; whether to create a new output folder or 
+    #     overwrite/use any values in the latest already created folder
     #
+    # Returns: 
+    #   String; Something like:
+    #     "output/2010-10-13.80.2010-10-13.120.NW.SWBackup/1/events.csv"
+    #  
     # Details:
-    #    First creates a directory based on the start and end time and dates and dates to be processed
-    #    so changing any of these will cause the system to read and write to a different directory.
-    #    Within this directory output will be sent to a numbered folder, so that the user has the option of keeping
-    #    different versions of output with the same start/end time/dates and sites. 
-    #    will return a path someting like "output/2010-10-13.80.2010-10-13.120.NW.SWBackup/1/events.csv"
+    #   Used both by functions writing the output and reading previous output
+    #   First creates a directory based on the start and end time and dates 
+    #   and dates to be processed (so changing any of these will cause the  
+    #   system to read and write to a different directory). Within this 
+    #   directory output will be sent to a numbered folder, so that the user  
+    #   has the option of keeping different versions of output with the same  
+    #   start/end time/dates and sites. 
     
     # first create the output directory 
-    sites <- paste(g.sites, collapse = ".");
-    dir.name <- paste(g.start.date, g.start.min, g.end.date, g.end.min, sites, sep='.');
-    dir.name <- gsub(" ","", dir.name);
-    output.dir <- file.path(g.output.parent.dir,dir.name);
-    if (!file.exists(output.dir)) {
-        dir.create(output.dir);
-        dir.create(file.path(output.dir, "1"));
+    sites <- paste(g.sites, collapse = ".")
+    dir.name <- paste(g.start.date, g.start.min, g.end.date,
+                      g.end.min, sites, sep='.')
+    dir.name <- gsub(" ","", dir.name)
+    output.dir <- file.path(g.output.parent.dir,dir.name)
+    if (!file.exists(g.output.parent.dir)) {
+        dir.create(g.output.parent.dir)
     }
-    dirs <- list.files(path = output.dir, full.names = FALSE, recursive = FALSE);
+    if (!file.exists(output.dir)) {
+        dir.create(output.dir)
+        dir.create(file.path(output.dir, "1"))
+    }
+    dirs <- list.files(path = output.dir, full.names = FALSE, 
+                       recursive = FALSE)
     if (length(dirs) > 0) {
-        v <- as.numeric(dirs[length(dirs)]);
+        v <- as.numeric(dirs[length(dirs)])
         if (is.na(v)) {
-            warning('bad folder name');
+            warning('bad folder name')
         }
     } else {
-        v <- 1;   
+        v <- 1   
     }
     if (new) {
-        v <- v + 1;
+        v <- v + 1
     }
-    path <- file.path(output.dir,v);
+    path <- file.path(output.dir,v)
     if (!file.exists(path)) {
-        dir.create(path);
+        dir.create(path)
     }
-    op <- file.path(path, paste(fn,ext, sep='.'));
-    return(op);
+    op <- file.path(path, paste(fn,ext, sep='.'))
+    return(op)
 }
 
 TempDirectory <- function () {
@@ -161,20 +200,20 @@ TempDirectory <- function () {
     #    - hundredths of a second since the start of the day
     
     
-    parent.temp.dir <- file.path(g.output.parent.dir, 'temp');
+    parent.temp.dir <- file.path(g.output.parent.dir, 'temp')
     if (!file.exists(parent.temp.dir)) {
-        dir.create(parent.temp.dir);
+        dir.create(parent.temp.dir)
     }
     op <- options(digits.secs = 6)
-    t <- as.POSIXlt(Sys.time());
+    t <- as.POSIXlt(Sys.time())
     options(op)  
-    s <- t$sec+ t$min * 60 + t$hour * 100 * 60 * 60;
-    hs <- round(s*100);
-    print(t$year);
-    temp.dir.name <- paste0(t$year, t$yday, hs);
-    temp.dir.path <- file.path(parent.temp.dir, temp.dir.name);
-    dir.create(temp.dir.path);
-    return(temp.dir.path);   
+    s <- t$sec + t$min * 60 + t$hour * 100 * 60 * 60
+    hs <- round(s * 100)
+    print(t$year)
+    temp.dir.name <- paste0(t$year, t$yday, hs)
+    temp.dir.path <- file.path(parent.temp.dir, temp.dir.name)
+    dir.create(temp.dir.path)
+    return(temp.dir.path)   
 }
 
 IsWithinTargetTimes <- function (date, min, site) {
@@ -192,22 +231,22 @@ IsWithinTargetTimes <- function (date, min, site) {
     # Details:
     #   first tests for site, then
     #   constructs date-time strings and compares the strings
-    require('stringr');
+    require('stringr')
     
     
     if (!site %in% g.sites) {
-        return(FALSE);
+        return(FALSE)
     }
-    date <- FixDate(date);
-    start.date <- FixDate(g.start.date);
-    end.date <- FixDate(g.end.date);
-    start.date.time <- paste(start.date, MinToTime(g.start.min));
-    end.date.time <- paste(end.date, MinToTime(g.end.min));
-    date.time <- paste(date, MinToTime(min));
+    date <- FixDate(date)
+    start.date <- FixDate(g.start.date)
+    end.date <- FixDate(g.end.date)
+    start.date.time <- paste(start.date, MinToTime(g.start.min))
+    end.date.time <- paste(end.date, MinToTime(g.end.min))
+    date.time <- paste(date, MinToTime(min))
     if (date.time >=  start.date.time && date.time <= end.date.time) {
-        return(TRUE);
+        return(TRUE)
     } else  {
-        return(FALSE);
+        return(FALSE)
     }
 }
 
@@ -215,7 +254,7 @@ Report <- function (level, ...) {
     # prints output to the screen if the level is above the 
     # global output level. 
     if (level < g.report.level) {
-        cat(paste(c(as.vector(list(...)), "\n"), collapse=" "));
+        cat(paste(c(as.vector(list(...)), "\n"), collapse=" "))
     }
 }
 
