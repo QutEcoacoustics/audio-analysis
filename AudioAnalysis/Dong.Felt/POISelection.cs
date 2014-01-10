@@ -194,15 +194,63 @@ namespace Dong.Felt
         }
 
         // using the structure tensor to calculate the real values for each poi's magnitude and direction.  
-        public void CalulateRidgeRealValues(List<PointOfInterest> poiList)
+        public static List<PointOfInterest> CalulateRidgeRealValues(List<PointOfInterest> poiList, int rowsMax, int colsMax)
         {
-            foreach (var p in poiList)
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
+            for (int r = 0; r < rowsMax -1; r++)
             {
-                var deltaMagnitudeY = p.RidgeMagnitude;
-                var deltaMagnitudeX = p.RidgeMagnitude;
-                var magnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
-                var direction = Math.Atan(deltaMagnitudeY / deltaMagnitudeX);
+                for (int c = 0; c < colsMax - 1 ; c++)
+                {
+                    if (poiMatrix[r, c] != null)
+                    {
+                        var deltaMagnitudeY = poiMatrix[r, c].RidgeMagnitude;
+                        var deltaMagnitudeX = poiMatrix[r, c].RidgeMagnitude;                                            
+                        var neighbouringHPoint = poiMatrix[r + 1, c];                     
+                        var neighbouringVPoint = poiMatrix[r, c + 1];                      
+                        if (poiMatrix[r + 1, c] != null)
+                        {
+                            deltaMagnitudeX = neighbouringHPoint.RidgeMagnitude - poiMatrix[r, c].RidgeMagnitude;
+                        } 
+                        if (poiMatrix[r, c + 1] != null)
+                        {
+                            deltaMagnitudeY = neighbouringVPoint.RidgeMagnitude - poiMatrix[r, c].RidgeMagnitude;
+                        }
+                        
+                        poiMatrix[r, c].RidgeMagnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
+                        // because the gradient direction is perpendicular with its real direction, here we add another pi/2 to get its real value.
+                        poiMatrix[r, c].RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;                                
+                    }
+                }
             }
+            var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
+                /// It takes time to execute this two foreach when there are a bunch of points of interest in the list. 
+                //foreach (var p in poiList)
+                //{
+                //    var deltaMagnitudeY = p.RidgeMagnitude;
+                //    var deltaMagnitudeX = p.RidgeMagnitude;
+                //    var poiXcordinates = p.Point.X; 
+                //    var poiYcordinates = p.Point.Y;
+                //    var neighbouringHPoint = new Point(poiXcordinates + 1, poiYcordinates);
+                //    var neighbouringVPoint = new Point(poiXcordinates, poiYcordinates + 1);
+                //    foreach (var p1 in poiList)
+                //    {
+                //        if ((p1.Point.X == neighbouringHPoint.X) && (p1.Point.Y == neighbouringHPoint.Y))
+                //        {
+                //            deltaMagnitudeX = p1.RidgeMagnitude - p.RidgeMagnitude;
+                //        }
+                //        if ((p1.Point.X == neighbouringVPoint.X) && (p1.Point.Y == neighbouringVPoint.Y))
+                //        {
+                //            deltaMagnitudeY = p1.RidgeMagnitude - p.RidgeMagnitude;
+                //        }
+                //        if (deltaMagnitudeY != 0 && deltaMagnitudeX != 0)
+                //        {
+                //            p.RidgeMagnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
+                //            // because the gradient direction is perpendicular with its real direction, here we add another pi/2 to get its real value.
+                //            p.RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;
+                //        }
+                //    }              
+                //}
+                return result;
         }
 
         public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)

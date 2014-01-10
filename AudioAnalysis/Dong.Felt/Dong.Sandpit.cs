@@ -96,12 +96,13 @@
                 var ridges = new POISelection(poiList1);
                 ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
                 /// filter out some redundant ridges                
-                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                poiList1 = POISelection.CalulateRidgeRealValues(ridges.poiList, rows, cols);
+                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in filterPoiList)
+                foreach (PointOfInterest poi in poiList1)
                 {
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     poi.DrawOrientationPoint(bmp, (int)freqBinCount);
