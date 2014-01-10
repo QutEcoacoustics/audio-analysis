@@ -25,6 +25,23 @@
             return m;
         }
 
+        public static List<PointOfInterest> TransposeMatrixToPOIlist(PointOfInterest[,] matrix)
+        {
+            var result = new List<PointOfInterest>();
+            var rowsMax = matrix.GetLength(0);
+            var colsMax = matrix.GetLength(1);
+            for (int r = 0; r < rowsMax; r++)
+            {
+                for (int c = 0; c < colsMax; c++)
+                {
+                    if (matrix[r, c] != null)
+                    {
+                        result.Add(matrix[r, c]);
+                    }
+                }
+            }
+            return result;
+        }
         /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
