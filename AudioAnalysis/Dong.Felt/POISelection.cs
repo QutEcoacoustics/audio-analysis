@@ -31,8 +31,10 @@ namespace Dong.Felt
             poiList = list;
         }
 
-        public void SelectRidgesFromMatrix(double[,] matrix, int rows, int cols, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
+        public void SelectRidgesFromMatrix(double[,] matrix, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
         {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
             for (int r = halfLength; r < rows - halfLength; r++)
             {
@@ -52,24 +54,10 @@ namespace Dong.Felt
                         // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
                         var poi = new PointOfInterest(time, herz);
                         poi.Point = point;
-
                         // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
                         poi.RidgeOrientation = direction;
-                        // convert the orientation into - pi/2 to pi/2 from 0 ~ pi
-                        //poi.RidgeOrientation = StatisticalAnalysis.ConvertOrientationFrom0PiToNegativePi2(direction);
-
                         // OrientationCategory only has four values, they are 0, 1, 2, 3. 
                         poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-
-                        /// Here when I added another 4 directional masks, they will become useful. 
-                        //if (poi.OrientationCategory == 1 || poi.OrientationCategory == 3)
-                        //{
-                        //    poi.OrientationCategory = 2;
-                        //}
-                        //if (poi.OrientationCategory == 5 || poi.OrientationCategory == 7)
-                        //{
-                        //    poi.OrientationCategory = 6;
-                        //}                   
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
@@ -223,34 +211,44 @@ namespace Dong.Felt
                 }
             }
             var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
-                /// It takes time to execute this two foreach when there are a bunch of points of interest in the list. 
-                //foreach (var p in poiList)
-                //{
-                //    var deltaMagnitudeY = p.RidgeMagnitude;
-                //    var deltaMagnitudeX = p.RidgeMagnitude;
-                //    var poiXcordinates = p.Point.X; 
-                //    var poiYcordinates = p.Point.Y;
-                //    var neighbouringHPoint = new Point(poiXcordinates + 1, poiYcordinates);
-                //    var neighbouringVPoint = new Point(poiXcordinates, poiYcordinates + 1);
-                //    foreach (var p1 in poiList)
-                //    {
-                //        if ((p1.Point.X == neighbouringHPoint.X) && (p1.Point.Y == neighbouringHPoint.Y))
-                //        {
-                //            deltaMagnitudeX = p1.RidgeMagnitude - p.RidgeMagnitude;
-                //        }
-                //        if ((p1.Point.X == neighbouringVPoint.X) && (p1.Point.Y == neighbouringVPoint.Y))
-                //        {
-                //            deltaMagnitudeY = p1.RidgeMagnitude - p.RidgeMagnitude;
-                //        }
-                //        if (deltaMagnitudeY != 0 && deltaMagnitudeX != 0)
-                //        {
-                //            p.RidgeMagnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
-                //            // because the gradient direction is perpendicular with its real direction, here we add another pi/2 to get its real value.
-                //            p.RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;
-                //        }
-                //    }              
-                //}
-                return result;
+            return result;
+        }
+
+        ///Until now, ridge direction has up to 4, which are 0, pi/2, pi/4, -pi/4. 
+        ///But they might be not enough to differenciate the lines with slope change. 
+        public void RefineRidgeDirection(List<PointOfInterest> poiList, double[,] matrix, int rowsMax, int colsMax)
+        {
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
+            for (int row = 0; row < rowsMax; row++)
+            {
+                for (int col = 0; col < colsMax; col++)
+                {
+                    if (poiMatrix[row, col] != null)
+                    {
+                        if (poiMatrix[row, col].OrientationCategory == Math.PI * 0)
+                        {
+                            // going to recalculate the direction in a 5*1 neighbourhood, so here have to make sure the index is greater than 2. 
+                            if (row > 2 && col > 2 && (row - 2) > 0 && (col - 2) > 0)
+                            {
+                                if (poiMatrix[row, col - 1] != null
+                                    && poiMatrix[row, col + 1] != null
+                                   )
+                                {
+                                    if (poiMatrix[row, col - 2] != null
+                                    && poiMatrix[row, col + 2] != null)
+                                    {
+                                        var tempArray = new double[5]{0.0, 0.0, 0.0, 0.0, 0.0};
+
+                                    }
+                                }                               
+                            }
+                        }
+                        if (poiMatrix[row, col].OrientationCategory == Math.PI / 2)
+                        {
+                        }
+                    }
+                }
+            }
         }
 
         public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)
@@ -268,7 +266,7 @@ namespace Dong.Felt
             var colsCount = matrix.GetLength(1);
 
             var pointsOfInterest = new POISelection();
-            pointsOfInterest.SelectRidgesFromMatrix(matrix, rowsCount, colsCount, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+            pointsOfInterest.SelectRidgesFromMatrix(matrix, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
             poiList = pointsOfInterest.poiList;
             RowsCount = rowsCount;
             ColsCount = colsCount;

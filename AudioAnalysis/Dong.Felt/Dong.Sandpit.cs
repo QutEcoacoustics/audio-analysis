@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-poi selection-fillinGap-afterfilterPoiList.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved-fillinGap-realValues-afterPrune-afterFilteroutPoi.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -64,7 +64,7 @@
                 // This config is to set up the parameters used in ridge Detection. 
                 var ridgeConfig = new RidgeDetectionConfiguration
                 {
-                    ridgeDetectionmMagnitudeThreshold = 5.5,
+                    ridgeDetectionmMagnitudeThreshold = 6.5,
                     ridgeMatrixLength = 5,
                     filterRidgeMatrixLength = 7,
                     minimumNumberInRidgeInMatrix = 3
@@ -94,20 +94,19 @@
 
                 var poiList1 = new List<PointOfInterest>();
                 var ridges = new POISelection(poiList1);
-                ridges.SelectRidgesFromMatrix(matrix, rows, cols, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
                 /// filter out some redundant ridges                
-                poiList1 = POISelection.CalulateRidgeRealValues(ridges.poiList, rows, cols);
-                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                //poiList1 = POISelection.CalulateRidgeRealValues(ridges.poiList, rows, cols);
+                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in poiList1)
+                foreach (PointOfInterest poi in filterPoiList)
                 {
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
                     poi.DrawOrientationPoint(bmp, (int)freqBinCount);
                 }
-
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;

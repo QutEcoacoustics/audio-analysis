@@ -731,68 +731,88 @@ namespace Dong.Felt
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
-                                      };
-            //double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-            //                            {-0.1,-0.1,-0.1, 0.4, 0.4},
-            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
-            //                            { 0.4, 0.4,-0.1,-0.1,-0.1},
-            //                            {-0.1,-0.1,-0.1,-0.1,-0.1}
-                                      //};
+                                      };          
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
-            //double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
-            //                            {-0.1,-0.1,-0.1, 0.4,-0.1},
-            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
-            //                            {-0.1, 0.4,-0.1,-0.1,-0.1},
-            //                            {-0.1, 0.4,-0.1,-0.1,-0.1}
-            //                          };
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
                                       };
-            //double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
-            //                            {-0.1, 0.4,-0.1,-0.1,-0.1},
-            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
-            //                            {-0.1,-0.1,-0.1, 0.4,-0.1},
-            //                            {-0.1,-0.1,-0.1, 0.4,-0.1}
-            //                          };
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
-            //double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
-            //                            { 0.4, 0.4,-0.1,-0.1,-0.1},
-            //                            {-0.1,-0.1, 0.4,-0.1,-0.1},
-            //                            {-0.1,-0.1,-0.1, 0.4, 0.4},
-            //                            {-0.1,-0.1,-0.1,-0.1,-0.1}
-            //                          };
-
             double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-            //ridgeMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
-            //ridgeMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
-            //ridgeMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
-            //ridgeMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
-
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
-            magnitude = diffMax / 2;
+            magnitude = diffMax / 2;            
             direction = indexMax * Math.PI / 4.0;
+            // For the diagonal direction at mask[1] and mask[3], it needs to do another condion check. 
+            double[,] dir1FurtherMask1 =  { {  0,  0,   0,   0, 0.4},
+                                            {  0,  0,   0, 0.4,   0},
+                                            {  0,  0, 0.4,   0,   0},
+                                            {  0,  0,   0,   0,   0},
+                                            {  0,  0,   0,   0,   0}
+                                         };
+            double[,] dir1FurtherMask2 =  { {  0,   0,   0,   0,   0},
+                                            {  0,   0,   0,   0,   0},
+                                            {  0,   0, 0.4,   0,   0},
+                                            {  0, 0.4,   0,   0,   0},
+                                            {0.4,   0,   0,   0,   0}
+                                         };
+            double[,] dir3FurtherMask1 =  { {0.4,   0,   0,   0,   0},
+                                            {  0, 0.4,   0,   0,   0},
+                                            {  0,   0, 0.4,   0,   0},
+                                            {  0,   0,   0,   0,   0},
+                                            {  0,   0,   0,   0,   0}
+                                         };
+            double[,] dir3FurtherMask2 =  { {  0,    0,   0,   0,   0},
+                                            {  0,    0,   0,   0,   0},
+                                            {  0,    0, 0.4,   0,   0},
+                                            {  0,    0,   0, 0.4,   0},
+                                            {  0,    0,   0,   0, 0.4}
+                                         };
+            var difference = 0.0;
+            var sum1 = 0.0;
+            var sum2 = 0.0;
+            var DifferenceThreshold = 1.0;
+            if (direction == 1 * Math.PI / 4.0)
+            {
+                sum1 = MatrixTools.DotProduct(dir1FurtherMask1, m);
+                sum2 = MatrixTools.DotProduct(dir1FurtherMask2, m);
+                difference = Math.Abs(sum1 - sum2);
+                if (difference > DifferenceThreshold)
+                {
+                    magnitude = 0;
+                }              
+            }
+
+            if (direction == 3 * Math.PI / 4.0)
+            {
+                sum1 = MatrixTools.DotProduct(dir3FurtherMask1, m);
+                sum2 = MatrixTools.DotProduct(dir3FurtherMask2, m);
+                difference = Math.Abs(sum1 - sum2);
+                if (difference > DifferenceThreshold)
+                {
+                    magnitude = 0;
+                }              
+            }
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
@@ -1024,7 +1044,7 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
-        //The difference between this function and PruneAdjacentTracks is tha this function trys to cut off the overlapped lines in different direction. 
+        //The difference between this function and PruneAdjacentTracks is tha this function trys to cut off the overlapped lines at different directions. 
         public static List<PointOfInterest> IntraPruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
