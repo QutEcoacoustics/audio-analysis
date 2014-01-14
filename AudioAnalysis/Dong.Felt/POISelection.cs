@@ -62,15 +62,14 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-
-                        var neighbourPoint1 = new Point(0, 0);
-                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        /// Fill the gap by adding two more neighbourhood points.
-                        FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+                        //var neighbourPoint1 = new Point(0, 0);
+                        //var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+                        //var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
+                        ///// Fill the gap by adding two more neighbourhood points.
+                        //FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
                         poiList.Add(poi);
-                        poiList.Add(neighbourPoi1);
-                        poiList.Add(neighbourPoi2);
+                        //poiList.Add(neighbourPoi1);
+                        //poiList.Add(neighbourPoi2);
                     }
                 }
             }
@@ -238,7 +237,6 @@ namespace Dong.Felt
                                     && poiMatrix[row, col + 2] != null)
                                     {
                                         var tempArray = new double[5]{0.0, 0.0, 0.0, 0.0, 0.0};
-
                                     }
                                 }                               
                             }
