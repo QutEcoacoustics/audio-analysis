@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved-fillinGap-realValues-afterPrune-afterFilteroutPoi.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-afterPrune-afterFilteroutPoi.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };

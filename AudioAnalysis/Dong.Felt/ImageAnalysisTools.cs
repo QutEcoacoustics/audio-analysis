@@ -764,34 +764,34 @@ namespace Dong.Felt
             magnitude = diffMax / 2;            
             direction = indexMax * Math.PI / 4.0;
             // For the diagonal direction at mask[1] and mask[3], it needs to do another condion check. 
-            double[,] dir1FurtherMask1 =  { {  0,  0,   0,   0, 0.4},
-                                            {  0,  0,   0, 0.4,   0},
-                                            {  0,  0, 0.4,   0,   0},
+            double[,] dir1FurtherMask1 =  { {  0,  0, 0.1, 0.1, 0.1},
+                                            {  0,  0, 0.1, 0.1, 0.1},
+                                            {  0,  0, 0.1, 0.1, 0.1},
                                             {  0,  0,   0,   0,   0},
                                             {  0,  0,   0,   0,   0}
                                          };
             double[,] dir1FurtherMask2 =  { {  0,   0,   0,   0,   0},
                                             {  0,   0,   0,   0,   0},
-                                            {  0,   0, 0.4,   0,   0},
-                                            {  0, 0.4,   0,   0,   0},
-                                            {0.4,   0,   0,   0,   0}
+                                            {0.1, 0.1, 0.1,   0,   0},
+                                            {0.1, 0.1, 0.1,   0,   0},
+                                            {0.1, 0.1, 0.1,   0,   0}
                                          };
-            double[,] dir3FurtherMask1 =  { {0.4,   0,   0,   0,   0},
-                                            {  0, 0.4,   0,   0,   0},
-                                            {  0,   0, 0.4,   0,   0},
+            double[,] dir3FurtherMask1 =  { {0.1, 0.1, 0.1,   0,   0},
+                                            {0.1, 0.1, 0.1,   0,   0},
+                                            {0.1, 0.1, 0.1,   0,   0},
                                             {  0,   0,   0,   0,   0},
                                             {  0,   0,   0,   0,   0}
                                          };
-            double[,] dir3FurtherMask2 =  { {  0,    0,   0,   0,   0},
-                                            {  0,    0,   0,   0,   0},
-                                            {  0,    0, 0.4,   0,   0},
-                                            {  0,    0,   0, 0.4,   0},
-                                            {  0,    0,   0,   0, 0.4}
+            double[,] dir3FurtherMask2 =  { {  0,   0,   0,   0,   0},
+                                            {  0,   0,   0,   0,   0},
+                                            {  0,   0, 0.1, 0.1, 0.1},
+                                            {  0,   0, 0.1, 0.1, 0.1},
+                                            {  0,   0, 0.1, 0.1, 0.1}
                                          };
             var difference = 0.0;
             var sum1 = 0.0;
             var sum2 = 0.0;
-            var DifferenceThreshold = 1.0;
+            var DifferenceThreshold = 6;
             if (direction == 1 * Math.PI / 4.0)
             {
                 sum1 = MatrixTools.DotProduct(dir1FurtherMask1, m);
@@ -800,19 +800,19 @@ namespace Dong.Felt
                 if (difference > DifferenceThreshold)
                 {
                     magnitude = 0;
-                }              
+                }
             }
 
-            if (direction == 3 * Math.PI / 4.0)
-            {
-                sum1 = MatrixTools.DotProduct(dir3FurtherMask1, m);
-                sum2 = MatrixTools.DotProduct(dir3FurtherMask2, m);
-                difference = Math.Abs(sum1 - sum2);
-                if (difference > DifferenceThreshold)
-                {
-                    magnitude = 0;
-                }              
-            }
+            //if (direction == 3 * Math.PI / 4.0)
+            //{
+            //    sum1 = MatrixTools.DotProduct(dir3FurtherMask1, m);
+            //    sum2 = MatrixTools.DotProduct(dir3FurtherMask2, m);
+            //    difference = Math.Abs(sum1 - sum2);
+            //    if (difference > DifferenceThreshold)
+            //    {
+            //        magnitude = 0;
+            //    }
+            //}
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
