@@ -714,7 +714,7 @@ namespace Dong.Felt
         /// </param>
         /// <param name="direction"> it is ridge direction output
         /// </param>
-        public static void Sobel5X5RidgeDetection8Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        public static void Sobel5X5RidgeDetectionDirection2(double[,] m, out bool isRidge, out double magnitude, out double direction)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -803,16 +803,16 @@ namespace Dong.Felt
                 }
             }
 
-            //if (direction == 3 * Math.PI / 4.0)
-            //{
-            //    sum1 = MatrixTools.DotProduct(dir3FurtherMask1, m);
-            //    sum2 = MatrixTools.DotProduct(dir3FurtherMask2, m);
-            //    difference = Math.Abs(sum1 - sum2);
-            //    if (difference > DifferenceThreshold)
-            //    {
-            //        magnitude = 0;
-            //    }
-            //}
+            if (direction == 3 * Math.PI / 4.0)
+            {
+                sum1 = MatrixTools.DotProduct(dir3FurtherMask1, m);
+                sum2 = MatrixTools.DotProduct(dir3FurtherMask2, m);
+                difference = Math.Abs(sum1 - sum2);
+                if (difference > DifferenceThreshold)
+                {
+                    magnitude = 0;
+                }
+            }
         }
 
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
