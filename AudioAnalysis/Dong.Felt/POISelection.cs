@@ -45,7 +45,7 @@ namespace Dong.Felt
                     double direction;
                     bool isRidge = false;
                     // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
-                    ImageAnalysisTools.Sobel5X5RidgeDetection8Direction(subM, out isRidge, out magnitude, out direction);
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold)
                     {
                         Point point = new Point(c, r);
@@ -62,14 +62,14 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        //var neighbourPoint1 = new Point(0, 0);
-                        //var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        //var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        ///// Fill the gap by adding two more neighbourhood points.
-                        //FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+                        var neighbourPoint1 = new Point(0, 0);
+                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
+                        /// Fill the gap by adding two more neighbourhood points.
+                        FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
                         poiList.Add(poi);
-                        //poiList.Add(neighbourPoi1);
-                        //poiList.Add(neighbourPoi2);
+                        poiList.Add(neighbourPoi1);
+                        poiList.Add(neighbourPoi2);
                     }
                 }
             }
@@ -227,19 +227,130 @@ namespace Dong.Felt
                         if (poiMatrix[row, col].OrientationCategory == Math.PI * 0)
                         {
                             // going to recalculate the direction in a 5*1 neighbourhood, so here have to make sure the index is greater than 2. 
+                            int leftIndex, rightIndex;
+                            double leftMagnitudeMax, rightMagnitudeMax; 
                             if (row > 2 && col > 2 && (row - 2) > 0 && (col - 2) > 0)
                             {
-                                if (poiMatrix[row, col - 1] != null
-                                    && poiMatrix[row, col + 1] != null
-                                   )
+                                var leftCol1Index = 0;
+                                var leftCol1Magnitude = 0.0;
+                                if (poiMatrix[row - 1, col - 2] != null)
                                 {
-                                    if (poiMatrix[row, col - 2] != null
-                                    && poiMatrix[row, col + 2] != null)
+                                    leftCol1Index = 7;
+                                    leftCol1Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
+                                }
+                                else
+                                {
+                                    if (poiMatrix[row, col - 2] != null)
                                     {
-                                        var tempArray = new double[5]{0.0, 0.0, 0.0, 0.0, 0.0};
+                                        leftCol1Index = 8;
+                                        leftCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
                                     }
-                                }                               
+                                    else
+                                    {
+                                        if (poiMatrix[row + 1, col - 2] != null)
+                                        {
+                                            leftCol1Index = 9;
+                                            leftCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                        }
+                                    }
+                                }
+                                var leftCol2Index = 0;
+                                var leftCol2Magnitude = 0.0;
+                                if (poiMatrix[row - 1, col - 2] != null)
+                                {
+                                    leftCol2Index = 10;
+                                    leftCol2Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
+                                }
+                                else
+                                {
+                                    if (poiMatrix[row, col - 2] != null)
+                                    {
+                                        leftCol2Index = 11;
+                                        leftCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                    }
+                                    else
+                                    {
+                                        if (poiMatrix[row + 1, col - 2] != null)
+                                        {
+                                            leftCol2Index = 12;
+                                            leftCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                        }
+                                    }
+                                }
+
+                                if (leftCol1Magnitude >= leftCol2Magnitude)
+                                {
+                                    leftIndex = leftCol1Index;
+                                    leftMagnitudeMax = leftCol1Magnitude;
+                                }
+                                else
+                                {
+                                    leftIndex = leftCol2Index;
+                                    leftMagnitudeMax = leftCol2Magnitude;
+                                } 
+                                
+                                // Turn to the right side for calculating the maximum for the centre point. 
+                                var rightCol1Index = 0;
+                                var rightCol1Magnitude = 0.0;
+                                if (poiMatrix[row - 1, col - 2] != null)
+                                {
+                                    rightCol1Index = 7;
+                                    rightCol1Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
+                                }
+                                else
+                                {
+                                    if (poiMatrix[row, col - 2] != null)
+                                    {
+                                        rightCol1Index = 8;
+                                        rightCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                    }
+                                    else
+                                    {
+                                        if (poiMatrix[row + 1, col - 2] != null)
+                                        {
+                                            rightCol1Index = 9;
+                                            rightCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                        }
+                                    }
+                                }
+                                var rightCol2Index = 0;
+                                var rightCol2Magnitude = 0.0;
+                                if (poiMatrix[row - 1, col - 2] != null)
+                                {
+                                    rightCol2Index = 10;
+                                    rightCol2Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
+                                }
+                                else
+                                {
+                                    if (poiMatrix[row, col - 2] != null)
+                                    {
+                                        rightCol2Index = 11;
+                                        rightCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                    }
+                                    else
+                                    {
+                                        if (poiMatrix[row + 1, col - 2] != null)
+                                        {
+                                            rightCol2Index = 12;
+                                            rightCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
+                                        }
+                                    }
+                                }
+
+                                if (rightCol1Magnitude >= rightCol2Magnitude)
+                                {
+                                    rightIndex = rightCol1Index;
+                                    rightMagnitudeMax = rightCol1Magnitude;
+                                }
+                                else
+                                {
+                                    rightIndex = rightCol2Index;
+                                    rightMagnitudeMax = rightCol2Magnitude;
+                                }                                
                             }
+
+                            // To determine its final direction by checking which places the left or right max is in. 
+                            
                         }
                         if (poiMatrix[row, col].OrientationCategory == Math.PI / 2)
                         {

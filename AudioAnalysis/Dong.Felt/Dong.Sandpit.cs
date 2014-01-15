@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-afterPrune-afterFilteroutPoi.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-FillinGaps-afterPrune-afterFilteroutPoi.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -95,8 +95,7 @@
                 var poiList1 = new List<PointOfInterest>();
                 var ridges = new POISelection(poiList1);
                 ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                /// filter out some redundant ridges                
-                //poiList1 = POISelection.CalulateRidgeRealValues(ridges.poiList, rows, cols);
+                /// filter out some redundant ridges               
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
                 var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
                 var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
