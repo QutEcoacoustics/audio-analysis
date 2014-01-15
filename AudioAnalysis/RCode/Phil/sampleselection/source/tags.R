@@ -8,7 +8,7 @@ GetTags <- function (fields = c('start_date',
     require('RMySQL')
     
     start.time <- MinToTime(g.start.min)
-    end.time <- MinToTime(g.end.min)
+    end.time <- MinToTime(g.end.min + 1) # target is inclusive of end min
     
     # need to round start time down to the nearest 10 mins 
     # and end time up to the nearest 10 mins. 

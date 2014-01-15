@@ -35,76 +35,45 @@ intensity.val <- c(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
 
 
 IntensityMap <- function () {
-    
     intensities <- read.csv(intensities.csv);
-    
     complete.mins <- GetDateTimes(2011, 10, 1, 2012, 6, 2, every.this.many.mins = 1);
     write.csv(complete.mins, complete.mins.csv, row.names = FALSE);
-    
     #adjust for timezone: add 10 hours
     adjust.mins <- 10*60+1;
     complete.mins <- complete.mins[adjust.mins:nrow(complete.mins),];
-
-
     vals <- Interpolate(as.vector(intensities[,7]), 6);
-    
     if (length(vals) < nrow(complete.mins)) {
        complete.mins <- complete.mins[1:length(vals), ];
     } else {
        vals <- vals[1:nrow(complete.mins)];
     }
-    
     print(length(vals));
     print(nrow(complete.mins));
-    
     vals <- cbind(complete.mins, vals);
-    
-    
-
-    
     write.csv(vals, final.intensities.csv, row.names = FALSE);
-    
-    
 }
 
 ConvertMinNum <- function (minnum) {
-    
-    
     day <- floor(minnum/1440);
     rest <- minnum - day*1440;
-    
     hour <- floor(rest/60);
     rest <- rest - hour*60;
     min <- rest;
-    
     print(day);
     print(hour);
     print(min)
-    
-    
-    
 }
 
 Interpolate <- function (vals, num.steps) {
     i1 <- vals;
     i2 <- i1[-1];
     i1 <- i1[1:(length(i1)-1)];
-    
-    
     step <- (i2 - i1) / num.steps;
-    
     vals <- i1;
-    
- 
-    
     for (i in 1:(num.steps-1)) {
       vals <- cbind(vals, i1+step*i);
-      
     }
-    
-
     vals <- as.vector(t(vals));
-    
     return(vals);
 }
 

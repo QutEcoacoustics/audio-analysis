@@ -61,11 +61,17 @@ SliceStft <- function (bounds, spectro, get.bounds = FALSE) {
 }
 
 VectorFluctuation <- function (v, relative = TRUE) {
-    # return the sum of the different between consecutive values in a vector
+    # Returns the sum of the difference between consecutive values in a vector
     #
-    # eg. [1, 5, 2, 9] would return 14 (4 + 3 + 7)
     # Args
     #    v: vector
+    #    relative: boolean; whether to return the total or the mean. 
+    #
+    # Returns: 
+    #   number;
+    #
+    # Details:
+    #   eg. [1, 5, 2, 9] would return 14 (4 + 3 + 7)
     
     v1 <- v[1:(length(v) - 1)]
     v2 <- v[2:(length(v))]
@@ -78,11 +84,10 @@ VectorFluctuation <- function (v, relative = TRUE) {
         fluctuation <- sum(diff)
     }
     
-    return(fluctuation)
-    
-    
+    return(fluctuation)  
 }
 
+# this whole function is crap
 FindCenter <- function (v) {
     # Finds the index of a vector so that the values on each side 
     # add up to the same. Returns a float, which shows the proportion of 
@@ -94,10 +99,25 @@ FindCenter <- function (v) {
     # Returns:
     #   float;
     #
-    #  TODO: explain this better with examples
+    # Details:
+    #   examples:
+    #   v = c(1,1,1,1,1) returns 3. Same total (2) both sides of index 3
+    #   v = c(1,1,1,1,1,1) returns 3.5, 3.5 is halfway between 3 and 4. 
+    #   There is the same total above and below halfway between index 3 and 4
+    #   v = c(c(1,2,3,4,5,6,7,8)) returns 6. Same total (15) both sides of index 6
+    #   v = c(1,2,3,4,5,6,7) returns 5.3. below index 5 adds to 10, but below index 6
+    #   adds up to 15, which is more than half the total. The centre point is 
+    #   between 5 and 6. 
+    
+    # special case, all the values are the same
+    if (min(v) == max(v)) {
+        return((length(v) + 1) / 2);
+    }
     
     
-    v <- NormalizeVector(v)
+    # make the minimum value zero
+    # this is necessary to avoid problems with negative values
+    v <- v - min(v);
     
     
     len <- length(v)
@@ -120,12 +140,12 @@ FindCenter <- function (v) {
     
 }
 
-NormalizeVector <- function (v) {
+Normalize <- function (v) {
     # Changes the values of a vector so that they lie 
     # between zero and 1 inclusive
     #
     # Args:
-    #    v: vector (numeric)
+    #    v: vector or matrix (numeric)
     # 
     # Returns:
     #    vector (numeric)
@@ -147,6 +167,8 @@ NormalizeVector <- function (v) {
     max.val <- max(v)
     if (max.val != 0) {
         v <- v / max.val
+    } else {
+        v <- 0.5
     }
     
     return(v)
@@ -205,6 +227,28 @@ RenameMatlabOutput <- function () {
     }
 }
 
+SecToTime <- function (sec, decimals = 2,  midnight.is.1st.min = FALSE) {
+    #given a second number, returns a string which is the time of day
+    # eg 322 returns 5:21 because 5:21am is the 322min minute of the day
+    # eg 1 returns 00:00:00 because that is the 1st minute of the day
+    sec <- as.numeric(sec)
+    if (midnight.is.1st.min) {
+        min <- min - 60
+    }
+    h <- floor(sec / 3600)
+    m <- floor(sec / 60) - h * 60
+    s1 <- round(sec - (h * 3600 + m * 60), digits = decimals)
+    s <- floor(s1)
+    cs <- round((s1 - s)*100)
+    h <- sprintf("%02d", h)
+    m <- sprintf("%02d", m)
+    s <- sprintf("%02s", s)
+    cs <- sprintf("%02s", cs)
+    return(paste(h, m, paste(s, cs, sep = "."), sep = ':'))
+}
+
+ 
+
 MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     #given a minute number, returns a string which is the time of day
     # eg 322 returns 5:21 because 5:21am is the 322min minute of the day
@@ -260,69 +304,8 @@ FixDate <- function (date) {
     return(str_replace_all(date, "[^[:digit:]]", '-'))
 }
 
-DateTimeToFn <- function (site, start.datetime, end.datetime) {
-    # determines which file the 
-    # recording at a given site and datetime (POSIXlt), 
-    # and the number of seconds into the recording it is   
-    start.datetime <- as.POSIXct(start.datetime, tz = "GMT")  
-    end.datetime <- as.POSIXct(end.datetime, tz = "GMT") 
-    target.diff <-  as.double(difftime(start.datetime, 
-                                       end.datetime, 
-                                       units = 'secs'))
-    cur.start.datetime <- start.datetime
-    files <- list.files(g.audio.dir)
-    target.fns <- character()
-    target.from.sec <- numeric()
-    target.to.sec <- numeric()
-    
-    for (i in 1:length(files)) {
-        fn <- unlist(strsplit(files[i], '.', fixed = TRUE))    
-        fn.site <- fn[1]
-        if (site != fn.site) {
-            next()
-        }
-        fn.date <- as.Date(fn[2], format = "%Y_%m_%d")
-        fn.min <- as.numeric(fn[3])
-        fn.duration <- as.numeric(fn[4]) * 60
-        fn.datetime <- as.POSIXct(paste0(format(fn.date, "%Y-%m-%d"), 
-                                         " ", 
-                                         MinToTime(fn.min)), 
-                                  tz = "GMT")
-        
-        #cur start datetime minus file start datetime in seconds
-        diff <- as.double(difftime(cur.start.datetime, 
-                                   fn.datetime, units = 'secs'))
-        if (diff < fn.duration && diff >= 0) {
-            
-            file.start.at <- diff
-            file.end.at <- as.double(difftime(end.datetime, 
-                                              cur.start.datetime, 
-                                              units = 'secs')) + file.start.at
-            if (file.end.at > fn.duration) {
-                # if the end datetime is not within the same 
-                # file as the start datetime set the end point for 
-                # this file to the end of the file
-                file.end.at <- fn.duration
-                cur.start.datetime <- cur.start.datetime + (file.end.at - file.start.at)
-                brk <- FALSE
-            } else {
-                brk <- TRUE
-            }
-            
-            target.fns <- c(target.fns, files[i])
-            target.from.sec <- c(target.from.sec, file.start.at)
-            target.to.sec <- c(target.to.sec, file.end.at)
-            
-            if (brk) {
-                break()
-            }
-            
-            
-        } 
-    }
-
-    return(data.frame(fn = target.fns, from.sec = target.from.sec, 
-                      to.sec = target.to.sec))
-    
-    
-}
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+    # check if a number is a whole number
+    # copied from the help file for is.integer
+    abs(x - round(x)) < tol
+} 

@@ -9,6 +9,13 @@ ReadEvents <- function () {
 MergeEvents <- function () {
     # takes the separate list of events and merges them into one big long list
     
+    Report(3, "merging events ...")
+    Report(2, 'target times (set in config):');
+    Report(2, 'From: ', g.start.date, ' minute number', g.start.min);
+    Report(2, 'To: ', g.end.date, ' minute number', g.end.min);
+    Report(2, 'Sites: ', g.sites);
+    
+    
     # set this to how many files to process, 
     # false to do them all
     limit <- FALSE 
@@ -26,6 +33,10 @@ MergeEvents <- function () {
     
     output.path <- OutputPath('events')
     file.count <- 0
+    
+    file.statuses <- rep(NA, limit)
+    
+    
     for (f in 1:limit) {
 
         filename <- substr(files[f], 1, (nchar(files[f]) - 8))
@@ -37,16 +48,20 @@ MergeEvents <- function () {
         file.start.is.within <- IsWithinTargetTimes(date, file.startmin, site)
         file.end.min <- file.startmin + file.duration - 1
         file.end.is.within <- IsWithinTargetTimes(date, file.end.min, site) 
+       
         
         if (!file.start.is.within && !file.end.is.within) {
-            Report(4, 'Skipping file', filename)
+            Report(5, 'Skipping file', filename)
+            file.statuses[f] <- 'skipped'
             next()
         } else if (!file.start.is.within || !file.end.is.within) {
             # this file spans the start or end times that we are looking at 
+            file.statuses[f] <- 'partial'
             check.each.event <- TRUE 
         } else {
             # this file is comepletely within times that we are looking at 
             check.each.event <- FALSE  
+            file.statuses[f] <- 'all'
         }
 
         events <- as.data.frame(
@@ -74,16 +89,23 @@ MergeEvents <- function () {
                                       byrow = TRUE)
             colnames(events.complete) <- c(new.col.names, old.col.names)
             is.first <- (file.count == 1)
-            Report(4, 'Saving events from', filename, 
+            Report(4, 'Merging events from', filename, 
                    '(', nrow(events), ' events) is.first = ', is.first)
             write.table(events.complete, file = output.path, 
                         append = (!is.first), col.names = is.first, 
                         sep = ",", quote = FALSE, row.names = FALSE) 
         }
 
-
-
     }
+    
+    Report(4, paste('of', limit, 'files,', 
+                    length(file.statuses[file.statuses == 'skipped']), 
+                    'were not within the target,',
+                    length(file.statuses[file.statuses == 'partial']), 
+                    'were partly in within the target, and', 
+                    length(file.statuses[file.statuses == 'all']), 
+                    'were completely within the target'))
+    
 }
 
 
@@ -99,5 +121,20 @@ DrawEvent <- function (event.num) {
     } 
 }
 
-
+EventLables <- function (events) {
+    
+    cns <- colnames(events);
+    
+    labels <- apply(events, 1, 
+                                   function (r) {
+                                       time <- SecToTime(r[4])
+                                       # todo: if start/end date are the same don't show date
+                                       # if all from same site, don't show site
+                                       return(time)
+                                       #return(paste(r[2], r[3], time))
+                                   })
+    
+    return(labels)
+    
+}
 

@@ -1,6 +1,6 @@
 ClusterEvents <- function (num.groups = 'auto', 
                            num.rows.to.use = FALSE, 
-                           show.dendrogram = FALSE, 
+                           save.dendrogram = TRUE, 
                            method = 'complete', 
                            save = TRUE) {
     # clusters events found in g.events.path
@@ -37,25 +37,22 @@ ClusterEvents <- function (num.groups = 'auto',
     Report(2, 'scaling features (m = ',  num.rows.to.use, ')')
     ptm <- proc.time()
     event.features <- as.matrix(scale(event.features))  # standardize variables
-    Report(2, proc.time() - ptm)
+    Timer(ptm, 'scaling features')
     
     Report(2, 'calculating distance matrix (m = ',  num.rows.to.use, ')')
+    
     ptm <- proc.time()
     d <- dist(event.features, method = "euclidean")  # distance matrix
-    Report(3, proc.time() - ptm)
+    Timer(ptm, 'distance matrix')
     
-    if (show.dendrogram) {
-        
-        labels.for.dendrogram <- apply(events[1:num.rows.to.use, ], 1, 
-                                       function (r) {
-                                           return(paste(r[2], r[3]))
-                                       })
+    if (save.dendrogram) { 
+        labels.for.dendrogram <- EventLables(events[1:num.rows.to.use, ])
     }
     #get a cluster object
     Report(2, 'clustering ... (method = ',  method, ')')
     ptm <- proc.time()
     fit <- hclust(d, method=method)
-    Report(3, proc.time() - ptm)
+    Timer(ptm, 'clustering')
     
     if (num.groups == 'auto') {
         num.groups <- floor(sqrt(num.rows.to.use))
@@ -71,11 +68,14 @@ ClusterEvents <- function (num.groups = 'auto',
     }
     
     
-    if (show.dendrogram) {
+    if (save.dendrogram) {
         # display dendogram
-        plot(fit, labels = labels)
+        img.path <- OutputPath('cluster_dendrogram', ext = 'png');
+#        png(img.path, width = 30000, height = 20000)
+        plot(fit, labels = labels.for.dendrogram)
         # draw dendogram with red borders around the k clusters
         rect.hclust(fit, k=num.groups, border="red")
+#       dev.off()
     }
 }
 

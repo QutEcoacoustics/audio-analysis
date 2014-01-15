@@ -19,17 +19,17 @@ g.output.parent.dir <- '../output'
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 300
+g.start.min <- 1
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 330
+g.end.min <- 1440
 
 # which sites to include in sample selection
-g.sites <- c('NW', 'SW Backup')
+g.sites <- c('NW')
 
 # how many minute samples to use
-g.num.samples <- 10
+g.num.samples <- 120
 
 #column names for the events file
 g.events.col.names <- c('filename','site','date','start.sec',

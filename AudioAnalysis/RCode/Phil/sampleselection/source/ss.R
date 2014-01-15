@@ -25,9 +25,10 @@
 #
 ##
 
-# clear the workspace
-# rm(list = ls())
 
+# clear the workspace
+cat('clearing the workspace \n')
+rm(list = ls())
 
 
 source('config.R')
@@ -38,6 +39,7 @@ source('samples.R')
 source('tags.R')
 source('util.R')
 source('spectrogram.R')
+source('audio.R')
 
 test <- function (...) {
     
@@ -209,7 +211,6 @@ TempDirectory <- function () {
     options(op)  
     s <- t$sec + t$min * 60 + t$hour * 100 * 60 * 60
     hs <- round(s * 100)
-    print(t$year)
     temp.dir.name <- paste0(t$year, t$yday, hs)
     temp.dir.path <- file.path(parent.temp.dir, temp.dir.name)
     dir.create(temp.dir.path)
@@ -250,12 +251,46 @@ IsWithinTargetTimes <- function (date, min, site) {
     }
 }
 
-Report <- function (level, ...) {
+Report <- function (level, ..., nl = TRUE) {
     # prints output to the screen if the level is above the 
     # global output level. 
+    #
+    # Args:
+    #   level: int; how important is this? 1 = most important
+    #   ... : strings;  concatenated to form the message
+    #   nl: boolean; whether to start at a new line
     if (level < g.report.level) {
-        cat(paste(c(as.vector(list(...)), "\n"), collapse=" "))
+        if (nl) {
+            nl <- "\n"
+        } else {
+            nl <- ""
+        }
+        cat(paste(c(nl, paste(as.vector(list(...)), collapse = " ")), collapse = ""))
     }
+}
+
+Dot <- function(level = 5) {
+    #outputs a dot, used for feedback during long loops
+    Report(level, ".", nl = FALSE)
+}
+
+Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
+    # used for reporting on the execution time of parts of the code
+
+    if(is.null(prev)) {
+        return(proc.time())
+    } else {
+        t <- (proc.time() - prev)[3]
+        Report(3, 'finished', what, ':', round(t, 2), ' sec')
+        if (!is.null(num)) {
+            time.per.each <- round(t / num, 3)
+            Report(3, " ", time.per.each, "per", per, nl = FALSE)
+        }
+
+
+        
+    }
+    
 }
 
 

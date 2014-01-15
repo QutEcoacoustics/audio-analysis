@@ -29,18 +29,36 @@ DoFeatureExtraction <- function () {
     
     Report(2, 'Extracting features for events', OutputPath('events'), '...')
     Report(2, nrow(events), 'events in total')
+    
+    num.events.before.previous.file <- 0
+    ptmt <- proc.time();
+    ptm <- proc.time()
     for (ev in 1:nrow(events)) {
+        Dot()
         bounds <- as.numeric(as.vector(events[ev,5:8]))
         wav.path <- file.path(g.audio.dir, paste0(events[ev,1], '.wav'))
         if (wav.path != cur.wav.path) {
-            cur.spectro <- Sp.create(wav.path, draw=FALSE)
-            cur.wav.path <- wav.path
+            if (ev > 1) {
+                #not starting the first file, so we can report on the previous
+                num.events.in.prev.file <-  ev - num.events.before.previous.file
+                timer.msg <- paste('feature extraction for events', num.events.before.previous.file, 'to', ev)
+                Timer(ptm, timer.msg, num.events.in.prev.file, 'event')
+                num.events.before.previous.file <- ev - 1
+                ptm <- proc.time()
+            }
+            
+            
             Report(3, 'processing features for events in', wav.path)
             Report(3, 'starting with event', ev)
+            
+            cur.spectro <- Sp.Create(wav.path, draw=FALSE)
+            cur.wav.path <- wav.path
+            
         }
         features <- as.vector(unlist(GetFeatures(bounds, cur.spectro)))
         features.all <- c(features.all, features)
     }
+    Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
     features.all <- as.data.frame(matrix(data = features.all, 
                                          nrow = nrow(events), 
                                          byrow = TRUE))
@@ -66,24 +84,35 @@ GetFeatures <- function (bounds, spectro) {
     features <- list(
         duration = bounds[2],
         bottom.f = bounds[3],
-        top.f = bounds[4]
+        top.f = bounds[4],
+        mid.f = (bounds[3] + bounds[4]) / 2,
+        f.range = bounds[4] - bounds[3]
     )
     
     # gets the sub-matrix of the event from the full matrix
-    event_vals <- SliceStft(bounds, spectro)
-    duration <- ncol(event_vals) / spectro$frames.per.sec
+    event_vals <- SliceStft(bounds, spectro) 
+    duration <- bounds[2]
+    
+    # Feature: Peak frequency oscillation
+    
     # get a vector of peak frequency bins (rows numbers) for each frame
     peaks <- apply(event_vals, 2, which.max)
     #average change in peak frequency from one frame to the next
     peak.f.osc <- (VectorFluctuation(peaks) * spectro$hz.per.bin)
-    bbscores <- BbScores(event_vals)
-    db.osc <- ColFluctuation(event_vals)
-    center.freqs <- CenterFreqs(event_vals, 
-                                spectro$hz.per.bin, 
-                                features$bottom.f)
+    
+    # Feature: pureness of tone
+    
+#    pure.tone.score <- mean(GetPureness(event_vals))
+    
+    # feature: amplitude modulation
+    
+#    db.osc <- ColFluctuation(event_vals)
+    
+    
+
     
     return(c(features, list(
-        peak.f.osc = peak.f.osc,
+        peak.f.osc = peak.f.osc
         #the average standard deviation of frequency db values across all frames
         # broadband frames will have a low, pure whistle will have a low value
  #       bb.score.mean = mean(bbscores),
@@ -91,8 +120,8 @@ GetFeatures <- function (bounds, spectro) {
         # i.e. how much the standard deviation of frequency changes
  #       bb.score.sd  = sd(bbscores),
  #       db.osc  = db.osc,
-        center.freq.mean = center.freqs$cfs.mean,
-        center.freq.slope = center.freqs$cfs.slope
+ #       center.freq.mean = center.freqs$cfs.mean,
+ #       center.freq.slope = center.freqs$cfs.slope
     )))
 }
 
@@ -153,24 +182,103 @@ CenterFreqs <- function (m, hz.per.bin, low.f) {
     
 }
 
-BbScores <- function (m) {
-    # measures how broadband each frame of the matrix is
+GetPureness <- function (m) {
+    # measures how pure the tone is
     #
-    # sums the distance in db of each frequency band from the peak value.
+    # Args:
+    #   m: matrix; Spectrogram values
+    #
+    # Returns:
+    #   vector; a score for each time frame
+    #
+    # the mean distance in db of each frequency band from the peak frequency DB value.
+    # divided by the number of frequency bands
     
-    bbscores <- apply(m, 2, 
+    scores <- apply(m, 2, 
                       function (col) {
                           max <- rep(max(col), length(col))
                           return(mean(abs(col - max)))
                       })
     
-    return(bbscores)
-    
-    
+    return(scores)
     
 }
 
 
+GetLineOfBestFit <- function (m) {
+    # given a matrix of spectrogram values
+    # uses linear model function to produce a line which best fits
+    # the sound
+    # 
+    # Details:
+    #   convert the matrix to a list of examples with 2 variables, Hz and time
+    #   for each hz/time cell in the matrix the amplitude will be converted
+    #   to a number of examples. A higher amplitude will mean more examples 
+    
+    # 1. normalize to 0 - 100 and round to integers
+    m <- round(Normalize(m) * 100)
+    
+    data <- MatrixToExamples(m);
+    
+    res <- lm(data[ ,2]~data[ ,1])
+    
+    
+    return(res);
+    
+}
+
+
+MatrixToExamples <- function (m) {
+    # converts a matrix of integers to a 2 column table
+    # the 2 columns are row number and column number of the matrix
+    # the integer value in the matrix is the number of times the 
+    # row and column number appear in the resulting table
+    #
+    # Args:
+    #   m: matrix
+    # 
+    # Returns: 
+    #   data.frame; 
+    #
+    # Details:
+    #   example:
+    #   given the matrix 
+    #   1 2 
+    #   3 1
+    #   it will return
+    #   y x
+    #   1 1  # row 1 column 1 appears once
+    #   1 2  # row 1 column 2 appears twice
+    #   1 2 
+    #   2 1  # row 2 column 1 appears thrice
+    #   2 1 
+    #   2 1
+    #   2 2  # row 2 column 2 appears once
+    
+
+    examples <- mapply(function (r,c, val) {
+        mx <- rep(c(r,c), val)  
+        return(mx)  
+    }, c(row(m)), c(col(m)), c(m), SIMPLIFY = TRUE);
+    examples <- matrix(unlist(examples), ncol = 2, byrow = TRUE);
+    #colnames(example) <- c('y', 'x');
+    return(examples);
+}
+
+
+testGetLineOfBestFit <- function () {
+    
+    m <- matrix(seq(1,100,1), nrow = 10) + 
+        t(matrix((seq(1,100,1) ^ 2) / 100, nrow = 10)) + 
+        matrix(rep(seq(1,25,5),20),nrow = 10, byrow = FALSE) + 
+        matrix(rep(seq(1,250,10) / 3 ,4),nrow = 10, byrow = FALSE)
+    
+    bf <- GetLineOfBestFit(m);
+    
+    return(bf)
+    
+    
+}
 
 
 

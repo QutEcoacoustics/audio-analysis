@@ -1,17 +1,16 @@
 TS <- function (s = NA) {
     # if (is.na(s)) {
-    #     s <- Sp.create('/Users/n8933464/Documents/SERF/NW/test/test.wav')
+    #     s <- Sp.Create('/Users/n8933464/Documents/SERF/NW/test/test.wav')
     # }
     
     Sp.draw(s, '../output/test/s2.png')
 }
 
 
-#todo
-Sp.createTargeted <- function (site, start.date, start.sec, 
+
+Sp.CreateTargeted <- function (site, start.date, start.sec, 
                                duration, img.path = NA, rects = NA) {
-    # use extractWave from TuneR to take a subset of a wave 
-    # then create a spectrogram of it. 
+    # creates a spectrogram of audio given the start, duration and site 
     #
     # Args:
     #   site: string; 
@@ -27,40 +26,20 @@ Sp.createTargeted <- function (site, start.date, start.sec,
     # 2. identify whether the target spans more than 1 file
     # 3. idenify the sample number for the start and end
     
-    require('tuneR')
     
-    start <- as.POSIXlt(start.date, tz = "GMT") + start.sec
-    end <- as.POSIXlt(start + duration)
-    file.positions <- DateTimeToFn(site, start, end)
-    wav.samples <- c()
-    samp.rate <- NA
-    bit <- NA
-    for (i in 1:nrow(file.positions)) {   
-        w <- readWave(file.path(g.audio.dir, file.positions$fn[i]))
-        if (is.na(samp.rate) && is.na(bit)) {
-            samp.rate <- w@samp.rate
-            bit <- w@bit
-        } else if (samp.rate != w@samp.rate || bit != w@bit ) {
-            stop(paste('requested segment spans multiple files of',
-                       'different sample rates and/or bit resolutions'))    
-        }
-        from.sample <- file.positions$from.sec[i] * samp.rate
-        to.sample <- file.positions$to.sec[i] * samp.rate
-        sub.wave <- extractWave(w, from = from.sample, to = to.sample)
-        wav.samples <- c(wav.samples, sub.wave@left)
-    }
-    w <- Wave(left = wav.samples, right = numeric(0), 
-              samp.rate = samp.rate, bit = bit)
-    spec <- Sp.create(w)
+    w <- Audio.Targeted(site, start.date, start.sec, duration)
+   # w <- Wave(left = wav.samples, right = numeric(0), 
+   #           samp.rate = samp.rate, bit = bit)
+    spec <- Sp.Create(w)
     spec$rects <- rects
     if (!is.na(img.path)) {
-        Sp.draw(spec, img.path)      
+        Sp.Draw(spec, img.path)      
     }
     return(spec)
     
 }
 
-Sp.create <- function(wav, frame.width = 512, draw = FALSE, 
+Sp.Create <- function(wav, frame.width = 512, draw = FALSE, 
                       smooth = TRUE, db = TRUE, filename = FALSE) {
     # performs a stft on a mono wave file (no overlap)
     #  
@@ -77,6 +56,9 @@ Sp.create <- function(wav, frame.width = 512, draw = FALSE,
     # Returns:
     #   spectrogram; (custom object) each column is a time-frame, 
     #     each row is a frequency bin \n
+    
+    Report('Generating spectrogram')
+    ptm <- proc.time()
     
     #read and shape the original signal\n
     TFRAME <- frame.width
@@ -110,9 +92,7 @@ Sp.create <- function(wav, frame.width = 512, draw = FALSE,
     # perform fft on each of the time frames
     # use Mod to remove imaginary part (phase), leaving only amplitude
     sig <- Mod(mvfft(sig * hamming))
-    
-    #  print(nrow(sig))
-    
+        
     # smooth the data\n
     if (smooth) {
         first.temp <- sig[1, ]
@@ -143,6 +123,7 @@ Sp.create <- function(wav, frame.width = 512, draw = FALSE,
     
     class(spectro) <- "spectrogram"
     
+    Timer(ptm, 'generating spectrogram',  len / samp.rate, 'second of audio')
     
     if (draw) {
         Sp.draw(spectro, filename)
@@ -184,7 +165,7 @@ ConvertToDb <- function (amp, bit.resolution = 16) {
 
 
 
-Sp.draw <- function (spectro, img.path = FALSE) {
+Sp.Draw <- function (spectro, img.path = FALSE) {
     #  draws a spectrogram given a matrix of amplitudes
     #
     #  Args: 
@@ -202,12 +183,14 @@ Sp.draw <- function (spectro, img.path = FALSE) {
     if (img.path != FALSE) {
         png(img.path, width = width, height = height)
     }
-    rast <- Sp.ampToRaster(amp)
+    rast <- Sp.AmpToRaster(amp)
     grid.raster(image = rast)
-    for (i in 1:nrow(spectro$rects)) {
+    if (!is.null(spectro$rects)) {
+      for (i in 1:nrow(spectro$rects)) {
         # add rectangles
         rect <- spectro$rects[i, ]
-        Sp.rect(spectro, rect)
+        Sp.Rect(spectro, rect)
+      }
     }
     
     
@@ -221,7 +204,7 @@ Sp.draw <- function (spectro, img.path = FALSE) {
     
 }
 
-Sp.ampToRaster <- function (amp) {
+Sp.AmpToRaster <- function (amp) {
     ma <- max(amp)
     mi <- min(amp)  
     #raster renders higher values as white, so lets inverse
@@ -232,7 +215,7 @@ Sp.ampToRaster <- function (amp) {
 }
 
 
-Sp.rect <- function (spectro, rect.borders) {
+Sp.Rect <- function (spectro, rect.borders) {
     
     #  top.pix <- ft * spectro[['hz.per.bin']]
     #  bottom.pix <- fb * spectro[['hz.per.bin']]

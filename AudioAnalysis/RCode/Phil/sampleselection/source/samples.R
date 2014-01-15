@@ -14,6 +14,9 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     # order by the sum of the 2 ranks for final rank.
     require('plyr')
     
+    Report(1, 'Selecting samples')
+    
+    
     events <- as.data.frame(read.csv(OutputPath('clusters')))
     
     # limit the number of events for dev
@@ -51,8 +54,9 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     # (i.e. remove duplicate groups from the same minute)
     unique.cluster.minutes <- unique(events[, c(id.cols, group.col)])
     num.clusters.per.min <- count(unique.cluster.minutes[,1:length(id.cols)])
-    Report(4, nrow(unique.cluster.minutes), 'cluster - minutes')
-    Report(4, nrow(num.clusters.per.min), '')
+    Report(4, nrow(unique.cluster.minutes), 'cluster minutes ')
+    # todo: check this part
+ #   Report(4, nrow(num.clusters.per.min), '')
     
     
     mins <- cbind(num.events.per.min, 
@@ -65,13 +69,17 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     mins <- cbind(mins, total)
     
     mins.sorted <- mins[order(mins[,ncol(mins)], decreasing = TRUE),]
-    
+ 
+    # Todo: improve selection method
+    Report(2, 'Sorting minutes based on number of unique cluster groups and number of events')
+    Report(1, 'Selecting ', g.num.samples, "(number to minutes to select is set in config")
     if (nrow(mins.sorted) < g.num.samples) {
         g.num.samples <- nrow(mins.sorted)
     }
     
     selection <- mins.sorted[1:g.num.samples, ]
     
+    Report(2, 'Saving selected minute samples to ', OutputPath('selected_samples'));
     write.csv(selection, OutputPath('selected_samples'), row.names = FALSE)
     
     return(selection) 
@@ -88,7 +96,8 @@ CountSpecies <- function (selected.samples, speciesmins) {
         cond <- speciesmins$start_date == selected.samples$date[i] & 
             speciesmins$site == selected.samples$site[i] &
             speciesmins$min == selected.samples$min[i]
-        hits <- speciesmins[which(cond), ]  
+        rownums <- which(cond)
+        hits <- speciesmins[rownums, ]  
         
         if (nrow(hits) > 0) {
             found.species <- c(found.species, as.vector(hits$species_id))
@@ -117,15 +126,14 @@ EvaluateSamples <- function (samples) {
     
     #speciesmins <- read.csv(g.species.path)
     
-    tag.fields <- c('start_date', 'start_time', 'site', 'species_id')  
+    Report(1, 'evaluating samples') 
+    tag.fields <- c('start_date', 'start_time', 'site', 'species_id')
+    Report(2, 'Checking mySql database of labeled minutes (tags)');
     tags <- GetTags(tag.fields)
-    
     date.col <- match('start_date', colnames(tags))
     time.col <- match('start_time', colnames(tags))
-    
     # we have the samples as the minute number within the day (eg 1000 = 4:40pm)
     # need to transforme the date_time of speciesmins to the same format
-    
     min.nums <- apply(tags, 1, 
                       function (tag, date.col, time.col) {
                           sdt <- strptime(paste(tag[date.col], tag[time.col]), 
@@ -135,15 +143,11 @@ EvaluateSamples <- function (samples) {
                           minnum <- as.numeric(hour) * 60 + as.numeric(min) 
                           return(minnum)
                       }, date.col, time.col)
-    
     tags <- as.data.frame(cbind(tags, min.nums))
     colnames(tags) <- c(tag.fields,'min')
     CountSpecies(samples, tags)
-    
     Report(3, "Saving spectrograms of samples with events.")
     InspectSamples()
-    
-    
 }
 
 
@@ -188,7 +192,9 @@ InspectSamples <- function (samples = NA) {
     
     
     w <- 1000
-    h <- length(samples * 256)
+    # todo: fix this so that it the height of each spectrogram
+    # is what it actually is, instead of hardcoded 256
+    h <- nrow(samples) * 256
     
     temp.dir <- TempDirectory()
     
@@ -196,11 +202,13 @@ InspectSamples <- function (samples = NA) {
     im.command.fns <- ""
     
     
-    for (i in 1:length(samples)) {
+    for (i in 1:nrow(samples)) {
         
         #add events which belong in this sample
         min.id <- as.character(samples$min.id[i])
         minute.events <- events[which(events$min.id == min.id),]
+        
+        
         
         # offset the start sec of the event so that it is 
         # relative to the start of the sample
@@ -211,9 +219,19 @@ InspectSamples <- function (samples = NA) {
         img.path <- file.path(temp.dir, temp.fn)
         im.command.fns <- paste(im.command.fns, img.path)
         
-        Sp.createTargeted(samples$site[i], samples$date[i], 
-                          samples$min[i] * 60, 60, 
-                          img.path, minute.events)
+    # TODO: get this to work    
+#         wav <- Audio.Targeted(site = as.character(samples$site[i]),
+#                               start.date = as.character(samples$date[i]), 
+#                               start.sec = as.numeric(samples$min[i] * 60), 
+#                               duration = 60,
+#                               save = TRUE)
+
+        Sp.CreateTargeted(site = samples$site[i], 
+                          start.date = samples$date[i], 
+                          start.sec = samples$min[i] * 60, 
+                          duration = 60, 
+                          img.path = img.path, 
+                          rects = minute.events)
         
         
         
@@ -223,6 +241,7 @@ InspectSamples <- function (samples = NA) {
                      im.command.fns, "-append", output.file)
     
     err <- try(system(command))  # ImageMagick's 'convert'
+    RemoveTempDir(temp.dir)
     
 }
 
@@ -239,7 +258,7 @@ AssignColourToGroup <- function (events) {
     groups <- unique(events$group)   
     num.groups <- length(groups)
     colors <- rainbow(num.groups)
-    Report(4, 'Cluster group colors', colors)
+    Report(6, 'Cluster group colors', colors)
     event.colors <- events$group
     for (i in 1:num.groups) {
         event.colors[event.colors == groups[i]] <- colors[i]
@@ -266,7 +285,7 @@ AddMinuteIdCol <- function (data) {
         if (is.na(min.col)) {
             min <- floor(as.numeric(v[sec.col]) / 60)
         } else {
-            min <- v[min.col]
+            min <- as.numeric(v[min.col])
         }
         
         id <- paste0(v[date.col], v[site.col], min)
