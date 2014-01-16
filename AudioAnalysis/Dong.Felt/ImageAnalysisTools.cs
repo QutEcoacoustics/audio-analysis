@@ -636,6 +636,7 @@ namespace Dong.Felt
             result = magnitude;
             return result;
         }
+
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
@@ -649,7 +650,6 @@ namespace Dong.Felt
             // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
             // We calculate the ridge magnitude for each possible ridge direction using masks.
-
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
@@ -706,7 +706,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This function is used for calculating ridge detection in 8 directions. 
+        /// This function is used for calculating ridge detection but for direciton at 2 and 6, it improved. 
         /// </summary>
         /// <param name="m"></param>
         /// <param name="isRidge"></param>
@@ -815,6 +815,12 @@ namespace Dong.Felt
             }
         }
 
+        /// <summary>
+        /// This function implements the sobel edge detection in a different way. And the size of the mask neighbourhood is 3*3.  
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="relThreshold"></param>
+        /// <returns></returns>
         public static double[,] SobelEdgeDetectorImproved(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
@@ -877,10 +883,14 @@ namespace Dong.Felt
             return newMatrix;
         }
 
+        /// <summary>
+        /// This function is an implementation of CannyEdge detection. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static Tuple<double[,], double[,]> CannyEdgeDetector(double[,] matrix)
         {
-            // For using Michael's sobel edge algorithm
-
+            // Use Michael's sobel edge algorithm
             var MaximumXIndex = matrix.GetLength(0);
             var MaximumYIndex = matrix.GetLength(1);
             var result1 = new double[MaximumXIndex, MaximumYIndex];
@@ -935,7 +945,7 @@ namespace Dong.Felt
             return result;
         }
 
-        // cut off the overlapped lines in the same direction
+        /// To cut off the overlapped lines in the same direction
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1044,7 +1054,7 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
-        //The difference between this function and PruneAdjacentTracks is tha this function trys to cut off the overlapped lines at different directions. 
+        ///The difference between this function and PruneAdjacentTracks is that this function tries to cut off the overlapped ridges in different directions. 
         public static List<PointOfInterest> IntraPruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1139,7 +1149,14 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(M);
         }
 
+        /// <summary>
         /// Change poi spectrogram into black and white image and just show the poi on the spectrogram. 
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="poiList"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
         public static double[,] ShowPOIOnSpectrogram(SpectralSonogram spectrogram, List<PointOfInterest> poiList, int rows, int cols)
         {          
             foreach (var poi in poiList)

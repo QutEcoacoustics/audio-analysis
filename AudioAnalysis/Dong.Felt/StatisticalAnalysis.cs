@@ -13,15 +13,63 @@
     class StatisticalAnalysis
     {
 
-        // Transpose matrix by transform the top row to the bottom row, the column doesn't change. 
+        /// <summary>
+        /// Returns the submatrix of passed matrix.
+        /// The returned submatrix includes the rows and column passed as bounds.
+        /// Assume that r1 < r2, c1 < c2. 
+        /// Row, column indices start at 0
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="r1"></param>
+        /// <param name="c1"></param>
+        /// <param name="r2"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public static PointOfInterest[,] SubmatrixFromPointOfInterest(PointOfInterest[,] poiMatrix, int r1, int c1, int r2, int c2)
+        {
+            int subRowCount = r2 - r1 + 1;
+            int subColCount = c2 - c1 + 1;
+
+            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];
+
+            for (int i = 0; i < subRowCount; i++)
+            {
+                for (int j = 0; j < subColCount; j++)
+                {
+                    sm[i, j] = poiMatrix[r1 + i, c1 + j];
+                }
+            }
+            return sm;
+        }
+
+        /// <summary>
+        /// This function tries to transfer a poiList into a matrix. 
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
-
-            foreach (PointOfInterest poi in list)
+            for (int rowIndex = 0; rowIndex < rows; rowIndex++)
             {
-                m[rows - poi.Point.Y, poi.Point.X] = poi;
+                for (int colIndex = 0; colIndex < cols; colIndex++)
+                {
+                    var point = new Point(0, 0);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    m[rowIndex, colIndex] = tempPoi;
+                }
             }
+                foreach (PointOfInterest poi in list)
+                {
+                    // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
+                    // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
+                    // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                    // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
+                    m[rows - poi.Point.Y - 1, poi.Point.X] = poi;
+                }
             return m;
         }
 
@@ -34,7 +82,7 @@
             {
                 for (int c = 0; c < colsMax; c++)
                 {
-                    if (matrix[r, c] != null)
+                    if (matrix[r, c].Point.X != 0 && matrix[r, c].Point.Y != 0)
                     {
                         result.Add(matrix[r, c]);
                     }
@@ -42,6 +90,7 @@
             }
             return result;
         }
+
         /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
@@ -137,7 +186,11 @@
             return subMatrix;
         }
 
-        // check wether it's an integer.
+        /// <summary>
+        /// To check wether it's an integer.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static bool checkIfInteger(int value)
         {
             var result = false;
@@ -272,6 +325,11 @@
         //    return histogram; 
         //}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fv"></param>
+        /// <returns></returns>
         public static int NumberOfpoiInSlice(List<RidgeNeighbourhoodFeatureVector> fv)
         {
             int result = 0;
@@ -285,6 +343,11 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fv"></param>
+        /// <returns></returns>
         public static int NumberOfpoiInSlice(RidgeNeighbourhoodFeatureVector fv)
         {
             int result = 0;
@@ -317,6 +380,12 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="path"></param>
         public static void WriteCSV<T>(IEnumerable<T> items, string path)
         {
             Type itemType = typeof(T);
@@ -331,6 +400,11 @@
             }
         }
 
+        /// <summary>
+        /// Transfer millisends to frame index.
+        /// </summary>
+        /// <param name="milliSeconds"></param>
+        /// <returns></returns>
         public static int MilliSecondsToFrameIndex(double milliSeconds)
         {
             // int maxFrequencyBand = 256;
@@ -340,6 +414,11 @@
             return (int)(milliSeconds / timeTransfromUnit * framePerSecond);
         }
 
+        /// <summary>
+        /// Transfer frequency value to frequency band index. 
+        /// </summary>
+        /// <param name="frequency"></param>
+        /// <returns></returns>
         public static int FrequencyToFruencyBandIndex(double frequency)
         {
 
@@ -347,12 +426,24 @@
             return (int)(frequency / frequencyScale);
         }
 
+        /// <summary>
+        /// Transfer seconds to million seconds. 
+        /// </summary>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
         public static double SecondsToMillionSeconds(double seconds)
         {
             var unit = 1000.0;
             return seconds * unit;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ridgeNhList"></param>
+        /// <param name="NhCountInRow"></param>
+        /// <param name="NhCountInColumn"></param>
+        /// <returns></returns>
         public static RidgeDescriptionNeighbourhoodRepresentation[,] RidgeNhListToArray(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhList, int NhCountInRow, int NhCountInColumn)
         {
             var result = new RidgeDescriptionNeighbourhoodRepresentation[NhCountInRow, NhCountInColumn];
@@ -407,6 +498,13 @@
             return normaliseScore;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="candidatesList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <returns></returns>
         public static RegionRerepresentation[,] RegionRepresentationListToArray(List<RegionRerepresentation> candidatesList, int rowsCount, int colsCount)
         {
             var result = new RegionRerepresentation[rowsCount, colsCount];
@@ -418,6 +516,11 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scoreVectorList"></param>
+        /// <returns></returns>
         public static double ScoreVectorStatisticalAnalysis(List<List<RegionRerepresentation>> scoreVectorList)
         {
             var frequencyBandCount = scoreVectorList.Count;
@@ -438,6 +541,11 @@
                 return 0.0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="region"></param>
+        /// <returns></returns>
         public static RidgeDescriptionNeighbourhoodRepresentation[,] RegionRepresentationToNHArray(RegionRerepresentation region)
         {           
             var rowsCount = region.NhCountInRow;
@@ -452,6 +560,11 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns></returns>
         public static double ConvertOrientationFrom0PiToNegativePi2(double radians)
         {
             var result = 0.0;
@@ -466,18 +579,33 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns></returns>
         public static double ConvertRadiusToDegree(double radians)
         {
             var result = radians / Math.PI * 180;
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <returns></returns>
         public static double ConvertDegreeToRadians(double degree)
         {
             var result = degree / 180 * Math.PI;
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="distanceValue"></param>
+        /// <returns></returns>
         public static List<double> ConvertDistanceToPercentageSimilarityScore(List<double> distanceValue)
         {
             var max = distanceValue.Max();
@@ -490,6 +618,11 @@
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="similarityScoreList"></param>
+        /// <returns></returns>
         public static List<List<Tuple<double, double, double>>> SimilarityScoreListToVector(List<Tuple<double, double, double>> similarityScoreList)
         {
             var result = new List<List<Tuple<double, double, double>>>();

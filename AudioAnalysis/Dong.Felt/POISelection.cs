@@ -31,6 +31,24 @@ namespace Dong.Felt
             poiList = list;
         }
 
+        /// <summary>
+        /// To select ridges on the spectrogram data, matrix. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="ridgeLength"> By default, it's 5. Because our ridge detection is 5*5 neighbourhood.
+        /// </param>
+        /// <param name="magnitudeThreshold"> The range usually goest to 5 ~ 7. If the value is low, it will give you more ridges.
+        /// otherwise, less ridges will return. 
+        /// </param>
+        /// <param name="secondsScale"> This depends on the FFT parameters you've done. For my case, it's 0.0116 s. It means every
+        /// pixel represents such second.
+        /// </param>
+        /// <param name="timeScale"> As above, it's 11.6 ms for each frame. 
+        /// </param>
+        /// <param name="herzScale"> As above, it's 43 Hz for each frequency bin. 
+        /// </param>
+        /// <param name="freqBinCount"> As above, it's 256 frequency bins.
+        /// </param>
         public void SelectRidgesFromMatrix(double[,] matrix, int ridgeLength, double magnitudeThreshold, double secondsScale, TimeSpan timeScale, double herzScale, double freqBinCount)
         {
             int rows = matrix.GetLength(0);
@@ -87,8 +105,8 @@ namespace Dong.Felt
         /// <param name="secondsScale"></param>
         /// <param name="freqBinCount"></param>
         public void FillinGaps(PointOfInterest poi, List<PointOfInterest> pointOfInterestList, int rowsMax, int colsMax, double[,] matrix, out PointOfInterest neighbourPoi1, out PointOfInterest neighbourPoi2, double secondsScale, double freqBinCount)
-        {    
-            var neighbourPoint1 = new Point(0, 0);          
+        {
+            var neighbourPoint1 = new Point(0, 0);
             neighbourPoi1 = new PointOfInterest(neighbourPoint1);
             neighbourPoi2 = new PointOfInterest(neighbourPoint1);
             var poiListLength = pointOfInterestList.Count;
@@ -129,7 +147,7 @@ namespace Dong.Felt
             if (poi.OrientationCategory == (int)Direction.East)
             {
                 if (col + 1 < colsMax && col - 1 > colsMin)
-                {                  
+                {
                     neighbourPoi1 = PoiCopy(poi, col - 1, row, matrix, secondsScale, freqBinCount);
                     neighbourPoi2 = PoiCopy(poi, col + 1, row, matrix, secondsScale, freqBinCount);
 
@@ -138,7 +156,7 @@ namespace Dong.Felt
             if (poi.OrientationCategory == (int)Direction.NorthEast)
             {
                 if (col + 1 < colsMax && col - 1 > colsMin && row + 1 < rowsMax && row - 1 > rowsMin)
-                {                  
+                {
                     neighbourPoi1 = PoiCopy(poi, col - 1, row + 1, matrix, secondsScale, freqBinCount);
                     neighbourPoi2 = PoiCopy(poi, col + 1, row - 1, matrix, secondsScale, freqBinCount);
 
@@ -147,7 +165,7 @@ namespace Dong.Felt
             if (poi.OrientationCategory == (int)Direction.North)
             {
                 if (row + 1 < rowsMax && row - 1 > rowsMin)
-                {                
+                {
                     neighbourPoi1 = PoiCopy(poi, col, row - 1, matrix, secondsScale, freqBinCount);
                     neighbourPoi2 = PoiCopy(poi, col, row + 1, matrix, secondsScale, freqBinCount);
                 }
@@ -184,28 +202,28 @@ namespace Dong.Felt
         public static List<PointOfInterest> CalulateRidgeRealValues(List<PointOfInterest> poiList, int rowsMax, int colsMax)
         {
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
-            for (int r = 0; r < rowsMax -1; r++)
+            for (int r = 0; r < rowsMax - 1; r++)
             {
-                for (int c = 0; c < colsMax - 1 ; c++)
+                for (int c = 0; c < colsMax - 1; c++)
                 {
                     if (poiMatrix[r, c] != null)
                     {
                         var deltaMagnitudeY = poiMatrix[r, c].RidgeMagnitude;
-                        var deltaMagnitudeX = poiMatrix[r, c].RidgeMagnitude;                                            
-                        var neighbouringHPoint = poiMatrix[r + 1, c];                     
-                        var neighbouringVPoint = poiMatrix[r, c + 1];                      
+                        var deltaMagnitudeX = poiMatrix[r, c].RidgeMagnitude;
+                        var neighbouringHPoint = poiMatrix[r + 1, c];
+                        var neighbouringVPoint = poiMatrix[r, c + 1];
                         if (poiMatrix[r + 1, c] != null)
                         {
                             deltaMagnitudeX = neighbouringHPoint.RidgeMagnitude - poiMatrix[r, c].RidgeMagnitude;
-                        } 
+                        }
                         if (poiMatrix[r, c + 1] != null)
                         {
                             deltaMagnitudeY = neighbouringVPoint.RidgeMagnitude - poiMatrix[r, c].RidgeMagnitude;
                         }
-                        
+
                         poiMatrix[r, c].RidgeMagnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
                         // because the gradient direction is perpendicular with its real direction, here we add another pi/2 to get its real value.
-                        poiMatrix[r, c].RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;                                
+                        poiMatrix[r, c].RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;
                     }
                 }
             }
@@ -215,149 +233,128 @@ namespace Dong.Felt
 
         ///Until now, ridge direction has up to 4, which are 0, pi/2, pi/4, -pi/4. 
         ///But they might be not enough to differenciate the lines with slope change. 
-        public void RefineRidgeDirection(List<PointOfInterest> poiList, double[,] matrix, int rowsMax, int colsMax)
+        public static List<PointOfInterest> RefineRidgeDirection(List<PointOfInterest> poiList, int rowsMax, int colsMax)
         {
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
-            for (int row = 0; row < rowsMax; row++)
+            int Radius = 2;
+            for (int row = Radius; row < rowsMax - 2; row++)
             {
-                for (int col = 0; col < colsMax; col++)
+                for (int col = Radius; col < colsMax - 2; col++)
                 {
-                    if (poiMatrix[row, col] != null)
-                    {
-                        if (poiMatrix[row, col].OrientationCategory == Math.PI * 0)
-                        {
-                            // going to recalculate the direction in a 5*1 neighbourhood, so here have to make sure the index is greater than 2. 
-                            int leftIndex, rightIndex;
-                            double leftMagnitudeMax, rightMagnitudeMax; 
-                            if (row > 2 && col > 2 && (row - 2) > 0 && (col - 2) > 0)
-                            {
-                                var leftCol1Index = 0;
-                                var leftCol1Magnitude = 0.0;
-                                if (poiMatrix[row - 1, col - 2] != null)
-                                {
-                                    leftCol1Index = 7;
-                                    leftCol1Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
-                                }
-                                else
-                                {
-                                    if (poiMatrix[row, col - 2] != null)
-                                    {
-                                        leftCol1Index = 8;
-                                        leftCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                    }
-                                    else
-                                    {
-                                        if (poiMatrix[row + 1, col - 2] != null)
-                                        {
-                                            leftCol1Index = 9;
-                                            leftCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                        }
-                                    }
-                                }
-                                var leftCol2Index = 0;
-                                var leftCol2Magnitude = 0.0;
-                                if (poiMatrix[row - 1, col - 2] != null)
-                                {
-                                    leftCol2Index = 10;
-                                    leftCol2Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
-                                }
-                                else
-                                {
-                                    if (poiMatrix[row, col - 2] != null)
-                                    {
-                                        leftCol2Index = 11;
-                                        leftCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                    }
-                                    else
-                                    {
-                                        if (poiMatrix[row + 1, col - 2] != null)
-                                        {
-                                            leftCol2Index = 12;
-                                            leftCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                        }
-                                    }
-                                }
-
-                                if (leftCol1Magnitude >= leftCol2Magnitude)
-                                {
-                                    leftIndex = leftCol1Index;
-                                    leftMagnitudeMax = leftCol1Magnitude;
-                                }
-                                else
-                                {
-                                    leftIndex = leftCol2Index;
-                                    leftMagnitudeMax = leftCol2Magnitude;
-                                } 
-                                
-                                // Turn to the right side for calculating the maximum for the centre point. 
-                                var rightCol1Index = 0;
-                                var rightCol1Magnitude = 0.0;
-                                if (poiMatrix[row - 1, col - 2] != null)
-                                {
-                                    rightCol1Index = 7;
-                                    rightCol1Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
-                                }
-                                else
-                                {
-                                    if (poiMatrix[row, col - 2] != null)
-                                    {
-                                        rightCol1Index = 8;
-                                        rightCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                    }
-                                    else
-                                    {
-                                        if (poiMatrix[row + 1, col - 2] != null)
-                                        {
-                                            rightCol1Index = 9;
-                                            rightCol1Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                        }
-                                    }
-                                }
-                                var rightCol2Index = 0;
-                                var rightCol2Magnitude = 0.0;
-                                if (poiMatrix[row - 1, col - 2] != null)
-                                {
-                                    rightCol2Index = 10;
-                                    rightCol2Magnitude = poiMatrix[row - 1, col - 2].RidgeMagnitude;
-                                }
-                                else
-                                {
-                                    if (poiMatrix[row, col - 2] != null)
-                                    {
-                                        rightCol2Index = 11;
-                                        rightCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                    }
-                                    else
-                                    {
-                                        if (poiMatrix[row + 1, col - 2] != null)
-                                        {
-                                            rightCol2Index = 12;
-                                            rightCol2Magnitude = poiMatrix[row, col - 2].RidgeMagnitude;
-                                        }
-                                    }
-                                }
-
-                                if (rightCol1Magnitude >= rightCol2Magnitude)
-                                {
-                                    rightIndex = rightCol1Index;
-                                    rightMagnitudeMax = rightCol1Magnitude;
-                                }
-                                else
-                                {
-                                    rightIndex = rightCol2Index;
-                                    rightMagnitudeMax = rightCol2Magnitude;
-                                }                                
-                            }
-
-                            // To determine its final direction by checking which places the left or right max is in. 
-                            
-                        }
-                        if (poiMatrix[row, col].OrientationCategory == Math.PI / 2)
-                        {
-                        }
-                    }
+                    // Here we just want to check it in a 3 * 5 matrix.
+                   
+                    var matrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, row - Radius, col - Radius, row + Radius, col + Radius);
+                    double[,] m = 
+                    {{matrix[0,0].RidgeMagnitude, matrix[0,1].RidgeMagnitude, matrix[0,2].RidgeMagnitude, matrix[0,3].RidgeMagnitude, matrix[0,4].RidgeMagnitude},
+                    {matrix[1,0].RidgeMagnitude, matrix[1,1].RidgeMagnitude, matrix[1,2].RidgeMagnitude, matrix[1,3].RidgeMagnitude, matrix[1,4].RidgeMagnitude},
+                    {matrix[2,0].RidgeMagnitude, matrix[2,1].RidgeMagnitude, matrix[2,2].RidgeMagnitude, matrix[2,3].RidgeMagnitude, matrix[2,4].RidgeMagnitude},
+                    {matrix[3,0].RidgeMagnitude, matrix[3,1].RidgeMagnitude, matrix[3,2].RidgeMagnitude, matrix[3,3].RidgeMagnitude, matrix[3,4].RidgeMagnitude},
+                    {matrix[4,0].RidgeMagnitude, matrix[4,1].RidgeMagnitude, matrix[4,2].RidgeMagnitude, matrix[4,3].RidgeMagnitude, matrix[4,4].RidgeMagnitude},
+                    };
+                    var magnitude = 0.0;
+                    var direction = 0.0;
+                    RecalculateRidgeDirection(m, out magnitude, out direction);
+                    poiMatrix[row, col].RidgeMagnitude = magnitude;
+                    poiMatrix[row, col].RidgeOrientation = direction;
                 }
             }
+            var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
+            return result;
+        }
+        // Refine Directions
+        public static void RecalculateRidgeDirection(double[,] m, out double magnitude, out double direction)
+        {
+            double[,] dir0Mask = { {  0,   0,   0,   0,   0},
+                                           {  0,   0,   0,   0,   0},
+                                           {0.1, 0.1, 0.1, 0.1, 0.1},
+                                           {  0,   0,   0,   0,   0},
+                                           {  0,   0,   0,   0,   0},
+                                         };
+            double[,] dir1Mask = { {  0,   0,   0,   0,   0},
+                                           {  0,   0,   0,   0, 0.1},
+                                           {  0, 0.1, 0.1, 0.1,   0},
+                                           {0.1,   0,   0,   0,   0},
+                                           {  0,   0,   0,   0,   0},
+                                         };
+            double[,] dir2Mask = { {  0,   0,   0,   0,   0},
+                                           {  0,   0,   0, 0.1, 0.1},
+                                           {  0,   0, 0.1,   0,   0},
+                                           {0.1, 0.1,   0,   0,   0}, 
+                                           {  0,   0,   0,   0,   0},
+                                         };
+            double[,] dir3Mask = { {  0,   0,   0,   0, 0.1},
+                                   {  0,   0,   0, 0.1,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0, 0.1,   0,   0,   0}, 
+                                   {0.1,   0,   0,   0,   0},
+                                   };
+            double[,] dir4Mask = { {  0,   0,   0, 0.1,   0},
+                                               {  0,   0,   0, 0.1,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0, 0.1,   0,   0,   0},
+                                               {  0, 0.1,   0,   0,   0},
+                                         };
+            double[,] dir5Mask = { {  0,   0,   0, 0.1,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0}, 
+                                               {  0, 0.1,   0,   0,   0},
+                                         };
+            double[,] dir6Mask = { {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                         };
+            double[,] dir7Mask = { {  0, 0.1,   0,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0, 0.1,   0,   0}, 
+                                               {  0,   0,   0, 0.1,   0},
+                                         };
+            double[,] dir8Mask = { {  0, 0.1,   0,   0,   0},
+                                               {  0, 0.1,   0,   0,   0},
+                                               {  0,   0, 0.1,   0,   0},
+                                               {  0,   0,   0, 0.1,   0},
+                                               {  0,   0,   0, 0.1,   0},
+                                         };
+            double[,] dir9Mask = { {0.1,   0,   0,   0,   0},
+                                   {  0, 0.1,   0,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0,   0, 0.1,   0},
+                                   {  0,   0,   0,   0, 0.1},
+                                  };
+            double[,] dir10Mask = {{  0,   0,   0,   0,   0},
+                                   {0.1, 0.1,   0,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0,   0, 0.1, 0.1},
+                                   {  0,   0,   0,   0,   0},
+                                  };
+            double[,] dir11Mask = {{  0,   0,   0,   0,   0},
+                                   {0.1,   0,   0,   0,   0},
+                                   {  0, 0.1, 0.1, 0.1,   0},
+                                   {  0,   0,   0,   0, 0.1},
+                                   {  0,   0,   0,   0,   0},
+                                  };
+            double[] magnitudes = new double[12];
+            magnitudes[0] = MatrixTools.DotProduct(dir0Mask, m);
+            magnitudes[1] = MatrixTools.DotProduct(dir1Mask, m);
+            magnitudes[2] = MatrixTools.DotProduct(dir2Mask, m);
+            magnitudes[3] = MatrixTools.DotProduct(dir3Mask, m);
+            magnitudes[4] = MatrixTools.DotProduct(dir4Mask, m);
+            magnitudes[5] = MatrixTools.DotProduct(dir5Mask, m);
+            magnitudes[6] = MatrixTools.DotProduct(dir6Mask, m);
+            magnitudes[7] = MatrixTools.DotProduct(dir7Mask, m);
+            magnitudes[8] = MatrixTools.DotProduct(dir8Mask, m);
+            magnitudes[9] = MatrixTools.DotProduct(dir9Mask, m);
+            magnitudes[10] = MatrixTools.DotProduct(dir10Mask, m);
+            magnitudes[11] = MatrixTools.DotProduct(dir11Mask, m);
+
+            int indexMin, indexMax;
+            double sumMin, sumMax;
+            DataTools.MinMax(magnitudes, out indexMin, out indexMax, out sumMin, out sumMax);
+            magnitude = sumMax;
+            direction = indexMax * Math.PI / (double)12;
         }
 
         public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)
