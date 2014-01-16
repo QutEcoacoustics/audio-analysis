@@ -45,7 +45,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
                 string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-FillinGaps-afterPrune-afterFilteroutPoi.png";
+                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-FillinGaps-afterPrune-afterFilteroutPoi-RefinedRidgeDirection.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -98,13 +98,15 @@
                 /// filter out some redundant ridges               
                 var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
                 var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);               
                 //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
                 Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in filterPoiList)
+                var refinedPoiList = POISelection.RefineRidgeDirection(filterPoiList, rows, cols);
+                foreach (PointOfInterest poi in refinedPoiList)
                 {
                     //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    poi.DrawRefinedOrientationPoint(bmp, (int)freqBinCount);
                 }
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
