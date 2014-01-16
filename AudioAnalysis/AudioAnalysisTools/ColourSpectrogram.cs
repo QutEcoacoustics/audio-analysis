@@ -58,7 +58,7 @@ namespace AudioAnalysisTools
             set { x_interval = value; }
         }
         private int frameWidth = 512;   // default value - from which spectrogram was derived
-        public int FrameWidth
+        public int FrameWidth           // used only to calculate scale of Y-axis to draw grid lines
         {
             get { return frameWidth; }
             set { frameWidth = value; }
@@ -133,17 +133,20 @@ namespace AudioAnalysisTools
                 //string imagePath9 = Path.Combine(opdir, "Test1.COLNEG&BGN.png");
                 //string imagePath10 = Path.Combine(opdir, "Test1.COLPOS&BGN.png");
 
-                // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic";
-                string aciCsvPath = Path.Combine(ipdir, "DM420036.ACI.csv");
-                string avgCsvPath = Path.Combine(ipdir, "DM420036.AVG.csv");
-                string bgnCsvPath = Path.Combine(ipdir, "DM420036.BGN.csv");
-                string cvrCsvPath = Path.Combine(ipdir, "DM420036.CVR.csv");
-                string tenCsvPath = Path.Combine(ipdir, "DM420036.TEN.csv");
-                string varCsvPath = Path.Combine(ipdir, "DM420036.CVR.csv");
+                // INPUT CSV FILES
+                //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
+                string ipdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
+                string fileName = "DM420233_20120302_000000";
+                string aciCsvPath = Path.Combine(ipdir, fileName + ".ACI.csv");
+                string avgCsvPath = Path.Combine(ipdir, fileName + ".AVG.csv");
+                string bgnCsvPath = Path.Combine(ipdir, fileName + ".BGN.csv");
+                string cvrCsvPath = Path.Combine(ipdir, fileName + ".CVR.csv");
+                string tenCsvPath = Path.Combine(ipdir, fileName + ".TEN.csv");
+                string varCsvPath = Path.Combine(ipdir, fileName + ".CVR.csv");
 
-                string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic";
-                string fileName = "DM420036.Test3";
+                string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
+                //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
+                fileName = fileName + ".Test3";
                 string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");
                 string imagePath2 = Path.Combine(opdir, fileName + ".AVG.png");
                 string imagePath3 = Path.Combine(opdir, fileName + ".BGN.png");
@@ -170,10 +173,8 @@ namespace AudioAnalysisTools
                 var cs = new ColourSpectrogram();
                 // set the X and Y axis scales for the spectrograms 
                 cs.X_interval = 60;    // assume one minute spectra and hourly time lines
-                cs.FrameWidth = 1024;   // default value - from which spectrogram was derived
                 cs.SampleRate = 17640; // default value - after resampling
                 cs.ColorSchemeID = colorSchemeID;
-                //cs.ColorMODE = "NEGATIVE"; //NEG=colour on black. POS = color on white.
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_BackgroundNoise, bgnCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_BinCover, cvrCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
@@ -212,6 +213,10 @@ namespace AudioAnalysisTools
         public void ReadSpectrogram(string key, string csvPath)
         {
             double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
+            int binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
+            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
+            this.FrameWidth = binCount * 2;         
+
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
@@ -239,7 +244,7 @@ namespace AudioAnalysisTools
         {
             double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key]);
             Image bmp = ImageTools.DrawMatrix(matrix);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, this.Y_interval);
             bmp.Save(imagePath);
         }
 
