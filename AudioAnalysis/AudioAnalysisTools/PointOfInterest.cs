@@ -134,7 +134,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public bool IsLocalMaximum { get; set; }
 
-        
+
 
         #endregion
 
@@ -180,7 +180,7 @@ namespace AudioAnalysisTools
         /// <param name="graphics"></param>
         /// <param name="pointsOfInterest"></param>
         /// <param name="radius"></param>
-        public void DrawBox(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest,int radius)
+        public void DrawBox(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int radius)
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
@@ -192,7 +192,7 @@ namespace AudioAnalysisTools
 
         public void DrawLocalMax(Bitmap bmp, int spectrogramHeight)
         {
-            if(this.IsLocalMaximum)
+            if (this.IsLocalMaximum)
             {
                 int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
                 int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
@@ -214,7 +214,7 @@ namespace AudioAnalysisTools
             //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
-            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI); 
+            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
             //orientation = indexMax * Math.PI / (double)8;
 
             Color color = this.DrawColor;
@@ -279,76 +279,67 @@ namespace AudioAnalysisTools
             }
         }
 
+        /// <summary>
+        /// Currently, I can only refine the ridge orientation up to 12 possibilities.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="spectrogramHeight"></param>
         public void DrawRefinedOrientationPoint(Bitmap bmp, int spectrogramHeight)
         {
-            //int x = this.Point.X;
-            //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
-            //int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
             double orientation = this.RidgeOrientation;
-            //orientation = indexMax * Math.PI / (double)8;
             Color color = this.DrawColor;
 
-            if (orientation == 0 * Math.PI/12)
+            if (orientation == 0 * Math.PI / 12)
             {
                 color = Color.Red;
             }
+            else if (orientation == 1 * Math.PI / 12)
+            {
+                color = Color.Orange;
+            }
+            else if (orientation == 2 * Math.PI / 12)
+            {
+                color = Color.Cyan;
+            }
+            else if (orientation == 3 * Math.PI / 12)
+            {
+                color = Color.Green;
+            }
+            else if (orientation == 4 * Math.PI / 12)
+            {
+                color = Color.Chocolate;
+            }
+            else if (orientation == 5 * Math.PI / 12)
+            {
+                color = Color.LightBlue;
+            }
+            else if (orientation == 6 * Math.PI / 12)
+            {
+                color = Color.Blue;
+            }
+            else if (orientation == 7 * Math.PI / 12)
+            {
+                color = Color.Magenta;
+            }
+            else if (orientation == 8 * Math.PI / 12)
+            {
+                color = Color.Crimson;
+            }
+            else if (orientation == 9 * Math.PI / 12)
+            {
+                color = Color.Purple;
+            }
+            else if (orientation == 10 * Math.PI / 12)
+            {
+                color = Color.Brown;
+            }
             else
             {
-                if (orientation == 1 * Math.PI / 12)
-                {
-                    color = Color.Orange;
-                }
-                else
-                {
-                    if (orientation == 2 * Math.PI / 12)
-                    {
-                        color = Color.Cyan;
-                    }
-                    else
-                    {
-                        if (orientation == 3 * Math.PI / 12)
-                        {
-                            color = Color.Purple;
-                        }
-                        else
-                            if (orientation == 4 * Math.PI / 12)
-                            {
-                                color = Color.Chocolate;
-                            }
-                            else if (orientation == 5 * Math.PI / 12)
-                            {
-                                color = Color.LightBlue;
-                            }
-                            else if (orientation == 6 * Math.PI / 12)
-                            {
-                                color = Color.Blue;
-                            }
-                            else if (orientation == 7 * Math.PI / 12)
-                            {
-                                color = Color.Magenta;
-                            }
-                            else if (orientation == 8 * Math.PI / 12)
-                            {
-                                color = Color.Crimson;
-                            }
-                            else if (orientation == 9 * Math.PI / 12)
-                            {
-                                color = Color.Green;
-                            }
-                            else if (orientation == 10 * Math.PI / 12)
-                            {
-                                color = Color.Brown;
-                            }
-                            else
-                            {
-                                color = Color.Black;
-                            }
+                color = Color.Black;
+            }
 
-                    }
-                }
-            } 
             bmp.SetPixel(x, y, color);
         } // DrawOrientationPoint
 
@@ -404,7 +395,7 @@ namespace AudioAnalysisTools
                             }
                             else
                             {
-                                color = Color.Purple;                               
+                                color = Color.Purple;
                             }
                     }
                 }
@@ -433,11 +424,11 @@ namespace AudioAnalysisTools
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = TransferPOIsToMatrix(poiList, rows, cols);
-            for (int r = 1; r < rows-1; r++)
+            for (int r = 1; r < rows - 1; r++)
             {
-                for (int c = 1; c < cols-1; c++)
+                for (int c = 1; c < cols - 1; c++)
                 {
-                    if(M[r,c] == null) continue;
+                    if (M[r, c] == null) continue;
                     if (M[r, c].OrientationCategory == 0)  // horizontal line
                     {
                         if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
@@ -448,10 +439,10 @@ namespace AudioAnalysisTools
                         {
                             if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r + 1, c] = null;
                         }
-                    } 
+                    }
                     else if (M[r, c].OrientationCategory == 4) // vertical line
                     {
-                        if ((M[r, c-1] != null) && (M[r, c-1].OrientationCategory == 4))
+                        if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
                         {
                             if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
                         }
@@ -578,7 +569,7 @@ namespace AudioAnalysisTools
 
         public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
         {
-            for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--)  //each (PointOfInterest poi in list)
             {
                 if (m[list[i].Point.Y, list[i].Point.X] == 0.0)
                 {
@@ -589,7 +580,7 @@ namespace AudioAnalysisTools
 
         public static void RemoveLowIntensityPOIs(List<PointOfInterest> list, double threshold)
         {
-            for (int i = list.Count-1; i >=0; i--)  //each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--)  //each (PointOfInterest poi in list)
             {
                 if (list[i].Intensity < threshold)
                 {
@@ -618,7 +609,7 @@ namespace AudioAnalysisTools
 
         #endregion
 
-        
+
 
     }
 }

@@ -236,26 +236,43 @@ namespace Dong.Felt
         public static List<PointOfInterest> RefineRidgeDirection(List<PointOfInterest> poiList, int rowsMax, int colsMax)
         {
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
-            int Radius = 2;
-            for (int row = Radius; row < rowsMax - 2; row++)
+            int lenghth = 5;
+            int Radius = lenghth / 2;
+            for (int row = Radius; row < rowsMax - Radius; row++)
             {
-                for (int col = Radius; col < colsMax - 2; col++)
+                for (int col = Radius; col < colsMax - Radius; col++)
                 {
                     // Here we just want to check it in a 3 * 5 matrix.
-                   
-                    var matrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, row - Radius, col - Radius, row + Radius, col + Radius);
-                    double[,] m = 
+                    if (poiMatrix[row, col].RidgeMagnitude != 0)
+                    {
+                        var matrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, row - Radius, col - Radius, row + Radius, col + Radius);
+                        double[,] m = 
                     {{matrix[0,0].RidgeMagnitude, matrix[0,1].RidgeMagnitude, matrix[0,2].RidgeMagnitude, matrix[0,3].RidgeMagnitude, matrix[0,4].RidgeMagnitude},
                     {matrix[1,0].RidgeMagnitude, matrix[1,1].RidgeMagnitude, matrix[1,2].RidgeMagnitude, matrix[1,3].RidgeMagnitude, matrix[1,4].RidgeMagnitude},
                     {matrix[2,0].RidgeMagnitude, matrix[2,1].RidgeMagnitude, matrix[2,2].RidgeMagnitude, matrix[2,3].RidgeMagnitude, matrix[2,4].RidgeMagnitude},
                     {matrix[3,0].RidgeMagnitude, matrix[3,1].RidgeMagnitude, matrix[3,2].RidgeMagnitude, matrix[3,3].RidgeMagnitude, matrix[3,4].RidgeMagnitude},
                     {matrix[4,0].RidgeMagnitude, matrix[4,1].RidgeMagnitude, matrix[4,2].RidgeMagnitude, matrix[4,3].RidgeMagnitude, matrix[4,4].RidgeMagnitude},
                     };
-                    var magnitude = 0.0;
-                    var direction = 0.0;
-                    RecalculateRidgeDirection(m, out magnitude, out direction);
-                    poiMatrix[row, col].RidgeMagnitude = magnitude;
-                    poiMatrix[row, col].RidgeOrientation = direction;
+                        var magnitude = 0.0;
+                        var direction = 0.0;
+                        var poiCountInMatrix = 0;
+                        for (int i = 0; i < lenghth; i++)
+                        {
+                            for (int j = 0; j < lenghth; j++)
+                            {
+                                if (m[i, j] > 0)
+                                {
+                                    poiCountInMatrix++;
+                                }
+                            }
+                        }
+                        if (poiCountInMatrix >= 5)
+                        {
+                            RecalculateRidgeDirection(m, out magnitude, out direction);
+                            poiMatrix[row, col].RidgeMagnitude = magnitude;
+                            poiMatrix[row, col].RidgeOrientation = direction;
+                        }
+                    }
                 }
             }
             var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
@@ -265,59 +282,59 @@ namespace Dong.Felt
         public static void RecalculateRidgeDirection(double[,] m, out double magnitude, out double direction)
         {
             double[,] dir0Mask = { {  0,   0,   0,   0,   0},
-                                           {  0,   0,   0,   0,   0},
-                                           {0.1, 0.1, 0.1, 0.1, 0.1},
-                                           {  0,   0,   0,   0,   0},
-                                           {  0,   0,   0,   0,   0},
-                                         };
+                                   {  0,   0,   0,   0,   0},
+                                   {0.1, 0.1, 0.1, 0.1, 0.1},
+                                   {  0,   0,   0,   0,   0},
+                                   {  0,   0,   0,   0,   0},
+                                 };
             double[,] dir1Mask = { {  0,   0,   0,   0,   0},
-                                           {  0,   0,   0,   0, 0.1},
-                                           {  0, 0.1, 0.1, 0.1,   0},
-                                           {0.1,   0,   0,   0,   0},
-                                           {  0,   0,   0,   0,   0},
-                                         };
+                                   {  0,   0,   0,   0, 0.1},
+                                   {  0, 0.1, 0.1, 0.1,   0},
+                                   {0.1,   0,   0,   0,   0},
+                                   {  0,   0,   0,   0,   0},
+                                 };
             double[,] dir2Mask = { {  0,   0,   0,   0,   0},
-                                           {  0,   0,   0, 0.1, 0.1},
-                                           {  0,   0, 0.1,   0,   0},
-                                           {0.1, 0.1,   0,   0,   0}, 
-                                           {  0,   0,   0,   0,   0},
-                                         };
+                                   {  0,   0,   0, 0.1, 0.1},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {0.1, 0.1,   0,   0,   0}, 
+                                   {  0,   0,   0,   0,   0},
+                                 };
             double[,] dir3Mask = { {  0,   0,   0,   0, 0.1},
                                    {  0,   0,   0, 0.1,   0},
                                    {  0,   0, 0.1,   0,   0},
                                    {  0, 0.1,   0,   0,   0}, 
                                    {0.1,   0,   0,   0,   0},
-                                   };
+                                 };
             double[,] dir4Mask = { {  0,   0,   0, 0.1,   0},
-                                               {  0,   0,   0, 0.1,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0, 0.1,   0,   0,   0},
-                                               {  0, 0.1,   0,   0,   0},
-                                         };
+                                   {  0,   0,   0, 0.1,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0, 0.1,   0,   0,   0},
+                                   {  0, 0.1,   0,   0,   0},
+                                 };
             double[,] dir5Mask = { {  0,   0,   0, 0.1,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0}, 
-                                               {  0, 0.1,   0,   0,   0},
-                                         };
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0}, 
+                                   {  0, 0.1,   0,   0,   0},
+                                 };
             double[,] dir6Mask = { {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                         };
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                 };
             double[,] dir7Mask = { {  0, 0.1,   0,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0, 0.1,   0,   0}, 
-                                               {  0,   0,   0, 0.1,   0},
-                                         };
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0, 0.1,   0,   0}, 
+                                   {  0,   0,   0, 0.1,   0},
+                                 };
             double[,] dir8Mask = { {  0, 0.1,   0,   0,   0},
-                                               {  0, 0.1,   0,   0,   0},
-                                               {  0,   0, 0.1,   0,   0},
-                                               {  0,   0,   0, 0.1,   0},
-                                               {  0,   0,   0, 0.1,   0},
-                                         };
+                                   {  0, 0.1,   0,   0,   0},
+                                   {  0,   0, 0.1,   0,   0},
+                                   {  0,   0,   0, 0.1,   0},
+                                   {  0,   0,   0, 0.1,   0},
+                                 };
             double[,] dir9Mask = { {0.1,   0,   0,   0,   0},
                                    {  0, 0.1,   0,   0,   0},
                                    {  0,   0, 0.1,   0,   0},
