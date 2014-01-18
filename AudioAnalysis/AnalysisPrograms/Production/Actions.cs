@@ -175,7 +175,7 @@ namespace AnalysisPrograms.Production
         public AED.Arguments AedArgs { get; set; }
         public static Action<AED.Arguments> Aed()
         {
-            return AED.Detect;
+            return AED.Execute;
         }
 
         public FeltTemplate_Create.Arguments FeltCreateTemplateArgs { get; set; }
