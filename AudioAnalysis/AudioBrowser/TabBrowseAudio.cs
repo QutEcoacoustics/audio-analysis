@@ -84,7 +84,7 @@ namespace AudioBrowser
 
         public Point ClickLocation { get; private set; }
 
-        public TabBrowseAudio(Helper helper, string defaultAnalysisId, 
+        public TabBrowseAudio(Helper helper, string defaultAnalysisId,
             DirectoryInfo defaultOutputDir, DirectoryInfo defaultconfigDir,
             string defaultConfigFileExt, string defaultAudioFileExt, string defaultResultImageFileExt, string defaultResultTextFileExt)
         {
@@ -117,11 +117,6 @@ namespace AudioBrowser
             this.ConfigFile = configFile;
             this.OutputDirectory = outputDir;
 
-            UpdateCommon();
-        }
-
-        private void UpdateCommon()
-        {
             // update analyser
             this.Analyser = this.helper.GetAnalyser(this.AnalysisId);
             if (this.Analyser == null)
@@ -133,30 +128,35 @@ namespace AudioBrowser
                 Log.InfoFormat("Loaded analyser matching id: {0}.", this.AnalysisId);
             }
 
-            // compare config file to analyser expectations
-            string fileName = Path.GetFileNameWithoutExtension(this.CsvFile.FullName);
-            string[] fileNameSplit = fileName.Split('_');
-            string[] array = fileNameSplit[fileNameSplit.Length - 1].Split('.');
+            if (this.CsvFile != null)
+            {
+                // compare config file to analyser expectations
+                string fileName = Path.GetFileNameWithoutExtension(this.CsvFile.FullName);
+                string[] fileNameSplit = fileName.Split('_');
+                string[] array = fileNameSplit[fileNameSplit.Length - 1].Split('.');
 
-            if (array.Length >= 3)
-            {
-                if (array[2].ToLowerInvariant() == "indices")
+                if (array.Length >= 3)
                 {
-                    Log.InfoFormat("Recognised as an indicies csv file: {0}", this.CsvFile);
+                    if (array[2].ToLowerInvariant() == "indices")
+                    {
+                        Log.InfoFormat("Recognised as an indicies csv file: {0}", this.CsvFile);
+                    }
                 }
-            }
-            else if (array.Length >= 2)
-            {
-                var analysisName = array[0] + "." + array[1];
-                Log.InfoFormat("Parsed analysis type {0} from file name {1}.", analysisName, this.CsvFile);
-            }
-            else if (fileNameSplit.Any(n => n.ToLowerInvariant().Contains(this.AnalysisId.ToLowerInvariant())))
-            {
-                Log.InfoFormat("Recognised analysis type {0} in csv file name: {1}", this.AnalysisId, this.CsvFile);
-            }
-            else
-            {
-                Log.WarnFormat("Could not parse analysis type from file name: {0}", this.CsvFile);
+                else if (array.Length >= 2)
+                {
+                    var analysisName = array[0] + "." + array[1];
+                    Log.InfoFormat("Parsed analysis type {0} from file name {1}.", analysisName, this.CsvFile);
+                }
+                else if (fileNameSplit.Any(n => n.ToLowerInvariant().Contains(this.AnalysisId.ToLowerInvariant())))
+                {
+                    Log.InfoFormat("Recognised analysis type {0} in csv file name: {1}", this.AnalysisId, this.CsvFile);
+                }
+                else
+                {
+                    Log.WarnFormat("Could not parse analysis type from file name: {0}", this.CsvFile);
+                }
+            } else if(this.IndicesImageFile != null){
+                Log.InfoFormat("Loading an image: {0}", this.IndicesImageFile);
             }
 
             // update analysis parameters from config file
@@ -230,7 +230,7 @@ namespace AudioBrowser
                 File.Delete(audioSegmentFile.FullName);
             }
 
-            Log.DebugFormat("Extracting audio segment at offset {0} to {1} to new file {2}.",  adjustedStart, adjustedEnd, audioSegmentFile);
+            Log.DebugFormat("Extracting audio segment at offset {0} to {1} to new file {2}.", adjustedStart, adjustedEnd, audioSegmentFile);
 
             st.Start();
 
@@ -292,7 +292,7 @@ namespace AudioBrowser
                 SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, defaultFrameLength.ToString().ToLowerInvariant());
             }
 
-            if (! config.ContainsKey(AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD))
+            if (!config.ContainsKey(AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD))
             {
                 SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
             }

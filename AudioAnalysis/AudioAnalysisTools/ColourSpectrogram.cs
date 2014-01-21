@@ -35,18 +35,29 @@ namespace AudioAnalysisTools
         public const string KEY_Variance = "VAR";
 
         // NORMALISING CONSTANTS FOR INDICES
-        public const double ACI_MIN = 0.3;
-        public const double ACI_MAX = 0.9;
+        public const double ACI_MIN = 0.4;
+        public const double ACI_MAX = 0.7;
         public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 70.0;
-        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL;
-        public const double BGN_MAX = -40.0;
+        public const double AVG_MAX = 50.0;
+        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL-20; //-20 adds more contrast into bgn image
+        public const double BGN_MAX = -20.0;
         public const double CVR_MIN = 0.0;
-        public const double CVR_MAX = 0.7;
+        public const double CVR_MAX = 0.3;
         public const double TEN_MIN = 0.5;
-        public const double TEN_MAX = 1.0;
+        public const double TEN_MAX = 0.95;
         public const double VAR_MIN = 0.0;
         public const double VAR_MAX = 30000.0;
+
+        // colour scheme IDs
+        // Add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
+        //string colorSchemeID = "DEFAULT"; //R-G-B
+        //string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
+        public const string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
+        //string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
+        //string colorSchemeID = "ACI-TEN-CVR";
+        //string colorSchemeID = "ACI-CVR-TEN";
+        //string colorSchemeID = "ACI-TEN-CVR_AVG";
+
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -135,8 +146,9 @@ namespace AudioAnalysisTools
 
                 // INPUT CSV FILES
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                string ipdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
-                string fileName = "DM420233_20120302_000000";
+                string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
+                //string fileName = "DM420233_20120302_000000";
+                string fileName = "SERF_20130915_Merged";
                 string aciCsvPath = Path.Combine(ipdir, fileName + ".ACI.csv");
                 string avgCsvPath = Path.Combine(ipdir, fileName + ".AVG.csv");
                 string bgnCsvPath = Path.Combine(ipdir, fileName + ".BGN.csv");
@@ -144,9 +156,10 @@ namespace AudioAnalysisTools
                 string tenCsvPath = Path.Combine(ipdir, fileName + ".TEN.csv");
                 string varCsvPath = Path.Combine(ipdir, fileName + ".CVR.csv");
 
-                string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
+                //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
+                string opdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs";
                 //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
-                fileName = fileName + ".Test3";
+                fileName = fileName + ".Test1";
                 string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");
                 string imagePath2 = Path.Combine(opdir, fileName + ".AVG.png");
                 string imagePath3 = Path.Combine(opdir, fileName + ".BGN.png");
@@ -159,22 +172,12 @@ namespace AudioAnalysisTools
                 string imagePath9 = Path.Combine(opdir, fileName + ".COLNEG&BGN.png");
                 string imagePath10 = Path.Combine(opdir, fileName + ".COLPOS&BGN.png");
                 
-                // colour scheme IDs for RGB plus reverse
-                // Need to add new ones into DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
-                //string colorSchemeID = "DEFAULT"; //R-G-B
-                string colorSchemeID = "ACI-TEN-AVG"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-BGN"; //R-G-B
-                //string colorSchemeID = "ACI-TEN-CVR";
-                //string colorSchemeID = "ACI-CVR-TEN";
-                //string colorSchemeID = "ACI-TEN-CVR_AVG";
-                //string colorSchemeID = "ACI-TEN-CVR_AVG";
 
                 var cs = new ColourSpectrogram();
                 // set the X and Y axis scales for the spectrograms 
                 cs.X_interval = 60;    // assume one minute spectra and hourly time lines
                 cs.SampleRate = 17640; // default value - after resampling
-                cs.ColorSchemeID = colorSchemeID;
+                cs.ColorSchemeID = ColourSpectrogram.colorSchemeID;
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_BackgroundNoise, bgnCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_BinCover, cvrCsvPath);
                 cs.ReadSpectrogram(ColourSpectrogram.KEY_Average, avgCsvPath);
