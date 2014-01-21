@@ -337,7 +337,11 @@
             this.txtAudioNavClickLocation.Text = this.tabBrowseAudio.GetLocationString(this.tabBrowseAudio.ClickLocation.X);
             this.txtAudioNavClickValue.Text = this.tabBrowseAudio.GetValueString(this.tabBrowseAudio.ClickLocation.X, this.tabBrowseAudio.TrackValues);
 
-            var value = this.tabBrowseAudio.TrackValues[this.tabBrowseAudio.ClickLocation.X];
+            var value = 0.0;
+            if (this.tabBrowseAudio.TrackValues != null) // not applicable if clicking on spectrogram image
+            {
+                value = this.tabBrowseAudio.TrackValues[this.tabBrowseAudio.ClickLocation.X];
+            }
             this.lblCurrentSegment.Text = this.txtAudioNavClickLocation.Text + " (" + value.ToString("f2") + ")";
         }
 
@@ -464,7 +468,6 @@
                         selectFilesForm.AnalysisConfigFile,
                         selectFilesForm.OutputDir,
                         this.helper.TrackNormalisedDisplay);
-
 
                     ClearIndicesImage();
 
