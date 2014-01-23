@@ -26,6 +26,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     # 2. identify whether the target spans more than 1 file
     # 3. idenify the sample number for the start and end
     
+
     
     w <- Audio.Targeted(site, start.date, start.sec, duration)
    # w <- Wave(left = wav.samples, right = numeric(0), 

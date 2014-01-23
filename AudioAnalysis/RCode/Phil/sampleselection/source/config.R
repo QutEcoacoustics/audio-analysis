@@ -28,8 +28,14 @@ g.end.min <- 1440
 # which sites to include in sample selection
 g.sites <- c('NW')
 
+# select this many percent of the target minutes
+# to use as target. Reason for this is to have a 
+# representative sample of a long recording without
+# needing to process all the long recording
+g.percent.of.target <- 100
+
 # how many minute samples to use
-g.num.samples <- 120
+g.num.samples <- 60
 
 #column names for the events file
 g.events.col.names <- c('filename','site','date','start.sec',

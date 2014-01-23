@@ -1,6 +1,6 @@
 ClusterEvents <- function (num.groups = 'auto', 
                            num.rows.to.use = FALSE, 
-                           save.dendrogram = TRUE, 
+                           save.dendrogram = FALSE, 
                            method = 'complete', 
                            save = TRUE) {
     # clusters events found in g.events.path
@@ -21,10 +21,12 @@ ClusterEvents <- function (num.groups = 'auto',
     #     Will create a csv file which is the same as 
     #     events.csv but with a new 'groups' column
     
+    
     Report(4, 'reading features')
     event.features <- read.csv(OutputPath('features'), header = TRUE)
     Report(4, 'reading events')
     events <- ReadEvents()
+    event.col.names <- colnames(events)
     
     if (num.rows.to.use != FALSE && num.rows.to.use < nrow(event.features)) {
         Report(4, 'subsetting features')
@@ -39,7 +41,7 @@ ClusterEvents <- function (num.groups = 'auto',
     event.features <- as.matrix(scale(event.features))  # standardize variables
     Timer(ptm, 'scaling features')
     
-    Report(2, 'calculating distance matrix (m = ',  num.rows.to.use, ')')
+    Report(2, 'calculating distance matrix (m = ',  num.rows.to.use, 'n = ', ncol(event.features),')')
     
     ptm <- proc.time()
     d <- dist(event.features, method = "euclidean")  # distance matrix
@@ -58,9 +60,10 @@ ClusterEvents <- function (num.groups = 'auto',
         num.groups <- floor(sqrt(num.rows.to.use))
     }
     groups <- as.matrix(cutree(fit, num.groups))
+    Report(2, 'num cluster groups = ',  num.groups)
     
     output <- cbind(events[1:num.rows.to.use, ], groups)
-    col.names <- c(g.events.col.names, 'group')
+    col.names <- c(event.col.names, 'group')
     
     if (save) {
         write.table(output, file = OutputPath('clusters'), sep=',', 
@@ -69,13 +72,17 @@ ClusterEvents <- function (num.groups = 'auto',
     
     
     if (save.dendrogram) {
+        library('pvclust')
         # display dendogram
         img.path <- OutputPath('cluster_dendrogram', ext = 'png');
-#        png(img.path, width = 30000, height = 20000)
+        Report(5, 'saving dendrogram')
+        png(img.path, width = 30000, height = 20000)
+        Dot()
         plot(fit, labels = labels.for.dendrogram)
         # draw dendogram with red borders around the k clusters
         rect.hclust(fit, k=num.groups, border="red")
-#       dev.off()
+        #pvrect(fit, alpha=.95)
+        dev.off()
     }
 }
 

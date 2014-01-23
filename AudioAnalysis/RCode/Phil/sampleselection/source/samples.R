@@ -37,7 +37,7 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     
     minute.col <- ncol(events)
     group.col <- minute.col - 1
-    date.site.cols <- match(c('date', 'site'), g.events.col.names)
+    date.site.cols <- match(c('date', 'site'), colnames(events))
     
     # the number of the columns with the site, date, and minute of the day
     # to identify a unique minute recording
@@ -91,20 +91,14 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
 
 
 CountSpecies <- function (selected.samples, speciesmins) {
-    found.species <- c()
-    for (i in 1:nrow(selected.samples)) {
-        cond <- speciesmins$start_date == selected.samples$date[i] & 
-            speciesmins$site == selected.samples$site[i] &
-            speciesmins$min == selected.samples$min[i]
-        rownums <- which(cond)
-        hits <- speciesmins[rownums, ]  
-        
-        if (nrow(hits) > 0) {
-            found.species <- c(found.species, as.vector(hits$species_id))
-        }
-    }
-    found.species <- unique(found.species)  
-    total.species <- unique(speciesmins$species_id)
+    # finds which species were present in the minutes supplied in selected.samples
+    # out of a full species list speciesmins
+    
+    found.species <- DoSpeciesCount(selected.samples, speciesmins)
+
+    min.list <- read.csv(OutputPath('minlist'))
+    
+    total.species <- DoSpeciesCount(min.list, speciesmins)
     Report(1, 'number of species found = ', length(found.species))   
     if (length(found.species) > 0) {
         Report(2, 'species list:')
@@ -117,6 +111,33 @@ CountSpecies <- function (selected.samples, speciesmins) {
     }
     Report(1, percent,"% of ", length(total.species)," species present")
 }
+
+
+DoSpeciesCount <- function (sample.mins, speciesmins) {
+    #
+    # Args:
+    #   sample.mins: data.frame
+    #       table with the columns site, date, min
+    #    species.mins: data.frame
+    #       table with the columns site, date, min
+    
+    
+    found.species <- c()
+    for (i in 1:nrow(sample.mins)) {
+        cond <- speciesmins$start_date == sample.mins$date[i] & 
+            speciesmins$site == sample.mins$site[i] &
+            speciesmins$min == sample.mins$min[i]
+        rownums <- which(cond)
+        hits <- speciesmins[rownums, ]  
+        
+        if (nrow(hits) > 0) {
+            found.species <- c(found.species, as.vector(hits$species_id))
+        }
+    }
+    found.species <- unique(found.species)  
+    return(found.species)
+}
+
 
 EvaluateSamples <- function (samples) {
     # given a list of minutes, finds the number of species that 
@@ -132,7 +153,7 @@ EvaluateSamples <- function (samples) {
     tags <- GetTags(tag.fields)
     date.col <- match('start_date', colnames(tags))
     time.col <- match('start_time', colnames(tags))
-    # we have the samples as the minute number within the day (eg 1000 = 4:40pm)
+    # we have the samples and selected minutes as the minute number within the day (eg 1000 = 4:40pm)
     # need to transforme the date_time of speciesmins to the same format
     min.nums <- apply(tags, 1, 
                       function (tag, date.col, time.col) {
@@ -145,9 +166,12 @@ EvaluateSamples <- function (samples) {
                       }, date.col, time.col)
     tags <- as.data.frame(cbind(tags, min.nums))
     colnames(tags) <- c(tag.fields,'min')
+    
+    
+    
     CountSpecies(samples, tags)
     Report(3, "Saving spectrograms of samples with events.")
-    InspectSamples()
+
 }
 
 
@@ -241,7 +265,7 @@ InspectSamples <- function (samples = NA) {
                      im.command.fns, "-append", output.file)
     
     err <- try(system(command))  # ImageMagick's 'convert'
-    RemoveTempDir(temp.dir)
+
     
 }
 

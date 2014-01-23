@@ -1,13 +1,17 @@
 
 
-Read.Events <- function () {
-    return(read.csv(OutputPath('events'), header = FALSE, 
-                    col.names = g.events.col.names))
-}
 
 
 DoFeatureExtraction <- function () {
-    # performs feature extraction the events listed in multiple text files
+    # performs feature extraction on the events in the events file
+    # 
+    # Details:
+    #   reads events one at a time. For each event, generates the 
+    #   spectrogram for the audio file that event was in. Before generating
+    #   the spectrogram, the spectrogram for the previous event is checked to 
+    #   see if it is the same (if the current event belongs to the same file as
+    #   the previous event). For this reason, the function will run much more quickly if
+    #   the events are sorted by site then date then start second. 
     
     # set this to how many files to process, 
     # false to do them all
@@ -15,13 +19,15 @@ DoFeatureExtraction <- function () {
     
     library('tuneR')
     
-    events <- read.csv(OutputPath('events'), header = TRUE)
+    events <- ReadEvents()
     
     if (limit != FALSE && limit < nrow(events)) {
         events <- events[1:limit,]
     }
     
-    events <- as.matrix(events)
+    #events <- as.matrix(events)
+    
+
     
     cur.wav.path <- FALSE
     cur.spectro <- FALSE
@@ -35,13 +41,21 @@ DoFeatureExtraction <- function () {
     ptm <- proc.time()
     for (ev in 1:nrow(events)) {
         Dot()
-        bounds <- as.numeric(as.vector(events[ev,5:8]))
-        wav.path <- file.path(g.audio.dir, paste0(events[ev,1], '.wav'))
+        bounds <- as.numeric(c(events$start.sec.in.file[ev], 
+                             events$duration[ev],
+                             events$top.frequency[ev],
+                             events$bottom.frequency[ev]))
+        fn <- EventFile(events$site[ev], events$date[ev], events$min[ev], ext = 'wav')
+        wav.path <- file.path(g.audio.dir, fn$fn)
         if (wav.path != cur.wav.path) {
             if (ev > 1) {
                 #not starting the first file, so we can report on the previous
-                num.events.in.prev.file <-  ev - num.events.before.previous.file
-                timer.msg <- paste('feature extraction for events', num.events.before.previous.file, 'to', ev)
+                first.ev.in.prev.file <- num.events.before.previous.file + 1
+                last.ev.in.prev.file <- ev - 1
+                num.events.in.prev.file <-  last.ev.in.prev.file - first.ev.in.prev.file + 1
+                timer.msg <- paste('feature extraction for events', 
+                                   first.ev.in.prev.file, 'to', last.ev.in.prev.file, 
+                                   '(', num.events.in.prev.file, 'events)')
                 Timer(ptm, timer.msg, num.events.in.prev.file, 'event')
                 num.events.before.previous.file <- ev - 1
                 ptm <- proc.time()

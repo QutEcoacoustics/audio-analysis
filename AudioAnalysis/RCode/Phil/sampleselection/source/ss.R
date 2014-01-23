@@ -60,22 +60,38 @@ SS <- function (...) {
     
     CheckPaths()
     
-    default.steps <- c('events',
+    all.steps <- c('minute.list',
+                       'events',
                        'feature.extraction',
                        'clustering',
-                       'sample.selection')
+                       'sample.selection',
+                       'inspect.samples')
     steps <- unlist(list(...));
     
     if (length(steps) == 0) {
-        steps <- default.steps;
+        steps <- all.steps;
+    } else {
+        diff <- setdiff(steps, all.steps)
+        if (length(diff) > 0) {
+            # if an invalid step is passed, give an error
+            stop('invalid step listed: ', paste(diff, collapse = ", "), '. Valid steps include: ', paste(all.steps, collapse = ", "))
+        }
     }
     
     
-    # Step 1:
+    # Step 0:
     # Audio Event Detection
     # This is done by another program, currently birgit's matlab code
     # Events are detected. Frequency bounds, start time and duration
     # are written to a csv file for each audio file. 
+    
+    
+    if (!is.na(match('minute.list', steps))) {
+        
+        # Step 1: 
+        # generate a list of minutes to use in as the target
+        CreateMinuteList()
+    }
     
     
     if (!is.na(match('events', steps))) {
@@ -107,9 +123,20 @@ SS <- function (...) {
         # outputs a list of minute samples to a csv file
         samples <- SelectSamples()
         EvaluateSamples(samples) 
+        
     }
     
+    if (!is.na(match('inspect.samples', steps))) {
+        # Step 6:
+        # output a series of spectrograms of the samples
+        # with the events colorcoded by cluster
+        InspectSamples()
+        
+    }
     
+
+    
+    CleanupTempDir();
 }
 
 CheckPaths <- function () {
@@ -156,7 +183,7 @@ OutputPath <- function (fn, new = FALSE, ext = 'csv') {
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
     dir.name <- paste(g.start.date, g.start.min, g.end.date,
-                      g.end.min, sites, sep='.')
+                      g.end.min, sites, g.percent.of.target, sep='.')
     dir.name <- gsub(" ","", dir.name)
     output.dir <- file.path(g.output.parent.dir,dir.name)
     if (!file.exists(g.output.parent.dir)) {
@@ -217,6 +244,11 @@ TempDirectory <- function () {
     return(temp.dir.path)   
 }
 
+CleanupTempDir <- function () {
+    parent.temp.dir <- file.path(g.output.parent.dir, 'temp')
+    unlink(parent.temp.dir, recursive = TRUE)
+}
+
 IsWithinTargetTimes <- function (date, min, site) {
     # determines whether the given date, startmin and site are within
     # the start and end date and min and list of sites to process
@@ -259,7 +291,7 @@ Report <- function (level, ..., nl = TRUE) {
     #   level: int; how important is this? 1 = most important
     #   ... : strings;  concatenated to form the message
     #   nl: boolean; whether to start at a new line
-    if (level < g.report.level) {
+    if (level <= g.report.level) {
         if (nl) {
             nl <- "\n"
         } else {
@@ -271,7 +303,7 @@ Report <- function (level, ..., nl = TRUE) {
 
 Dot <- function(level = 5) {
     #outputs a dot, used for feedback during long loops
-    Report(level, ".", nl = FALSE)
+    Report(level, " .", nl = FALSE)
 }
 
 Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
