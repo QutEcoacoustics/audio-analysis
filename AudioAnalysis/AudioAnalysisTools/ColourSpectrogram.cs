@@ -146,9 +146,12 @@ namespace AudioAnalysisTools
 
                 // INPUT CSV FILES
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
+                string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
+
                 //string fileName = "DM420233_20120302_000000";
-                string fileName = "SERF_20130915_Merged";
+                //string fileName = "SERF_20130915_Merged";
+                string fileName = "SERF_20130730_Merged";
                 string aciCsvPath = Path.Combine(ipdir, fileName + ".ACI.csv");
                 string avgCsvPath = Path.Combine(ipdir, fileName + ".AVG.csv");
                 string bgnCsvPath = Path.Combine(ipdir, fileName + ".BGN.csv");
@@ -157,7 +160,7 @@ namespace AudioAnalysisTools
                 string varCsvPath = Path.Combine(ipdir, fileName + ".CVR.csv");
 
                 //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
-                string opdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs";
+                string opdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs";
                 //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
                 fileName = fileName + ".Test1";
                 string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");

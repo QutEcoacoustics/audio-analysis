@@ -30,7 +30,7 @@ namespace AudioAnalysisTools
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            Bitmap tracksImage = ConstructVisualIndexImage(dt, title, timeScale, order, doNormalisation);
+            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt, title, timeScale, order, doNormalisation);
 
             //SAVE THE IMAGE
             tracksImage.Save(imagePath.FullName);
@@ -51,7 +51,7 @@ namespace AudioAnalysisTools
         {
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
-            int trackHeight = DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DisplayIndices.DEFAULT_TRACK_HEIGHT;
 
             // accumulate the individual tracks
             int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             var bitmaps = new List<Bitmap>();
             double threshold = 0.0;
             double[] array;
-            for (int i = 0; i < values.Count - 1; i++) // for each column of valuesin data table (except last) create a display track
+            for (int i = 0; i < values.Count - 1; i++) // for each column of values in data table (except last) create a display track
             {
                 if (values[i].Length == 0) continue;
                 array = values[i];
@@ -104,11 +104,6 @@ namespace AudioAnalysisTools
             return compositeBmp;
         }
 
-        public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile)
-        {
-            FileInfo fiConfigFile = null;
-            return ProcessCsvFile(fiCsvFile, fiConfigFile);
-        }
 
         public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -192,6 +187,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// takes a data table of indices and normalises column values to values in [0,1].
+        /// These indices could be of anything i.e. koala counts rain events etc and therefore only normalise AV_AMPLITUDE tracks
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>

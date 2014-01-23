@@ -151,11 +151,11 @@ namespace AnalysisPrograms
             //###### get sonogram image ##############################################################################################
             if ((configDict.ContainsKey(Keys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(Keys.MAKE_SOX_SONOGRAM, configDict)))
             {
-                SonogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+                SpectrogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
             }
             else
             {
-                using (Image image = SonogramTools.Audio2SonogramImage(fiOutputSegment, configDict))
+                using (Image image = SpectrogramTools.Audio2SonogramImage(fiOutputSegment, configDict))
                 {
                     // TODO: remove eventually
                     Debug.Assert(image != null, "The image should not be null - there is no reason it can be");

@@ -264,7 +264,7 @@ namespace AnalysisPrograms
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 double eventThreshold = 0.1;
-                Image image = SonogramTools.Sonogram2Image(sonogram, analysisSettings.ConfigDict, hits, scores, predictedEvents, eventThreshold);
+                Image image = SpectrogramTools.Sonogram2Image(sonogram, analysisSettings.ConfigDict, hits, scores, predictedEvents, eventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
             }
             else

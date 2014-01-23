@@ -303,7 +303,7 @@ namespace AudioBrowser
 
             st.Reset();
             st.Start();
-            Image image = SonogramTools.GetImageFromAudioSegment(audioSegmentFile, fiTempConfig, fiImage, analyser);
+            Image image = SpectrogramTools.GetImageFromAudioSegment(audioSegmentFile, fiTempConfig, fiImage, analyser);
             st.Stop();
 
             Log.DebugFormat("Time taken to generate sonogram: {0}", st.Elapsed);

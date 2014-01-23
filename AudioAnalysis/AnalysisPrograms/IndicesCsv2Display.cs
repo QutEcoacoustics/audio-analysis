@@ -82,7 +82,7 @@ namespace AnalysisPrograms
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine("# MAKE AN IMAGE FROM A CSV FILE OF INDICES DERIVED FROM AN AUDIO RECORDING");
                 LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Input  audio  file: " + arguments.InputCsv);
+                LoggedConsole.WriteLine("# Input  .csv   file: " + arguments.InputCsv);
                 LoggedConsole.WriteLine("# Configuration file: " + arguments.Config);
                 LoggedConsole.WriteLine("# Output image  file: " + arguments.Output);
             }
@@ -103,7 +103,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
                 LoggedConsole.WriteLine("\t\t Will construct default image");
-                outputDTs = DisplayIndices.ProcessCsvFile(arguments.InputCsv);
+                outputDTs = DisplayIndices.ProcessCsvFile(arguments.InputCsv, null);
             }
             else
             {
@@ -123,7 +123,7 @@ namespace AnalysisPrograms
             // Convert datatable to image
             bool normalisedDisplay = false;
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
-            string title = String.Format("(c) QUT.EDU.AU - SOURCE:{0};  ", fileName);
+            string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, arguments.Output);
             // #########################################################################################################
 

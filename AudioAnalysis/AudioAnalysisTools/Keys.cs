@@ -47,6 +47,11 @@ namespace AudioAnalysisTools
         public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
         public static string THRESHOLD        = "THRESHOLD";
 
+
+        // Keys to recognise identifiers in ANALYSIS CONFIG file. 
+        public static string LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
+        public static string MID_FREQ_BOUND = "MID_FREQ_BOUND";
+
         // KEYS to SONOGRAMS
         public static string SAVE_SONOGRAMS         = "SAVE_SONOGRAM_FILES";
         public static string TIME_REDUCTION_FACTOR  = "TIME_REDUCTION_FACTOR";

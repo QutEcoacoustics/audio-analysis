@@ -174,7 +174,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AcousticFeatures.cs" />
+    <Compile Include="AcousticIndicesCalculate.cs" />
+    <Compile Include="AcousticIndicesStore.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
