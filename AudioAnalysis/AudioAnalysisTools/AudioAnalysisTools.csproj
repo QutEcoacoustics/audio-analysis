@@ -164,7 +164,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticComplexityIndex.cs" />
+    <Compile Include="AcousticEntropy.cs" />
     <Compile Include="AcousticEvent.cs" />
+    <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="ColourSpectrogram.cs" />
     <Compile Include="ConfigurationClasses.cs" />
@@ -175,7 +178,7 @@
     <Compile Include="HMMSettings.cs" />
     <Compile Include="Keys.cs" />
     <Compile Include="PointOfInterest.cs" />
-    <Compile Include="SonogramTools.cs" />
+    <Compile Include="SpectrogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />
     <Compile Include="NeuralNets\BinaryCluster.cs" />
@@ -198,6 +201,7 @@
     <Compile Include="Sonogram\PointOfInterest.cs" />
     <Compile Include="SpectralClustering.cs" />
     <Compile Include="SpectralTrack.cs" />
+    <Compile Include="SpectralTracks.cs" />
     <Compile Include="SprTools.cs" />
     <Compile Include="ResultsTools.cs">
       <SubType>Code</SubType>

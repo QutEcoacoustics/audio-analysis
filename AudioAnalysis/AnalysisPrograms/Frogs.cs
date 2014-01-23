@@ -366,7 +366,7 @@ namespace AnalysisPrograms
             double severity = 0.5;
             double dynamicRange = 60; // deciBels above background noise. BG noise has already been removed from each bin.
             // convert sonogram to a list of frequency bin arrays
-            var listOfFrequencyBins = SonogramTools.Sonogram2ListOfFreqBinArrays(sonogram, dynamicRange);
+            var listOfFrequencyBins = SpectrogramTools.Sonogram2ListOfFreqBinArrays(sonogram, dynamicRange);
             int minFrameLength = SpectralTrack.FrameCountEquivalent(SpectralTrack.MIN_TRACK_DURATION, framesPerSecond);
 
             for (int i = tracks.Count-1; i >= 0; i--)
