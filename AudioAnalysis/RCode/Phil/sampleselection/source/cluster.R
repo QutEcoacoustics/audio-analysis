@@ -23,9 +23,9 @@ ClusterEvents <- function (num.groups = 'auto',
     
     
     Report(4, 'reading features')
-    event.features <- read.csv(OutputPath('features'), header = TRUE)
+    event.features <-  ReadOutput('features')
     Report(4, 'reading events')
-    events <- ReadEvents()
+    events <- ReadOutput('events')
     event.col.names <- colnames(events)
     
     if (num.rows.to.use != FALSE && num.rows.to.use < nrow(event.features)) {
@@ -48,7 +48,7 @@ ClusterEvents <- function (num.groups = 'auto',
     Timer(ptm, 'distance matrix')
     
     if (save.dendrogram) { 
-        labels.for.dendrogram <- EventLables(events[1:num.rows.to.use, ])
+        labels.for.dendrogram <- EventLabels(events[1:num.rows.to.use, ])
     }
     #get a cluster object
     Report(2, 'clustering ... (method = ',  method, ')')
@@ -63,11 +63,10 @@ ClusterEvents <- function (num.groups = 'auto',
     Report(2, 'num cluster groups = ',  num.groups)
     
     output <- cbind(events[1:num.rows.to.use, ], groups)
-    col.names <- c(event.col.names, 'group')
+    colnames(output) <- c(event.col.names, 'group')
     
     if (save) {
-        write.table(output, file = OutputPath('clusters'), sep=',', 
-                    row.names = FALSE, col.names = col.names)
+        WriteOutput(output, 'clusters')
     }
     
     

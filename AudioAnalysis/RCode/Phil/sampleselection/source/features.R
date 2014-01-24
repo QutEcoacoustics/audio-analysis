@@ -19,7 +19,7 @@ DoFeatureExtraction <- function () {
     
     library('tuneR')
     
-    events <- ReadEvents()
+    events <- ReadOutput('events')
     
     if (limit != FALSE && limit < nrow(events)) {
         events <- events[1:limit,]
@@ -78,8 +78,7 @@ DoFeatureExtraction <- function () {
                                          byrow = TRUE))
     # have not escaped separator char, but shouldn't 
     # matter with numeric values anyway
-    write.table(features.all, file = OutputPath('features'), append = FALSE, 
-                col.names = TRUE, row.names = FALSE, sep = ",", quote = FALSE)
+    WriteOutput(features.all, 'features')
     
 }
 

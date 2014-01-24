@@ -54,8 +54,7 @@ SliceStft <- function (bounds, spectro, get.bounds = FALSE) {
     } else {
         # slice the part out and return the sub-matrix
         sub <- spectro$vals[bottom.row:top.row, left.col:right.col]
-        #write.table(spectro$vals,file="big.csv", sep=",")
-        #write.table(sub,file="small.csv", sep=",")
+
         return(sub)	
     }
 }

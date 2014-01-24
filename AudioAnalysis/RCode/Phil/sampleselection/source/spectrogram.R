@@ -166,12 +166,13 @@ ConvertToDb <- function (amp, bit.resolution = 16) {
 
 
 
-Sp.Draw <- function (spectro, img.path = FALSE) {
+Sp.Draw <- function (spectro, img.path = NA) {
     #  draws a spectrogram given a matrix of amplitudes
     #
     #  Args: 
     #    spectro: Spectrogram;
-    #    img.path: string: where to save the image
+    #    img.path: string: where to save the image. if NA, then 
+    #              outputs to screen
     #
     #  Returns:
     #    NULL
@@ -181,7 +182,7 @@ Sp.Draw <- function (spectro, img.path = FALSE) {
     amp <- spectro$vals
     width <- ncol(amp)
     height <- nrow(amp)
-    if (img.path != FALSE) {
+    if (!is.na(img.path)) {
         png(img.path, width = width, height = height)
     }
     rast <- Sp.AmpToRaster(amp)
@@ -198,7 +199,7 @@ Sp.Draw <- function (spectro, img.path = FALSE) {
     
     #Sp.rect(spectro, rr)
     
-    if (img.path != FALSE) {
+    if (!is.na(img.path)) {
         dev.off()
     }
     

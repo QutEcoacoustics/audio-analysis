@@ -1,6 +1,42 @@
 
 
-GetTags <- function (fields = c('start_date', 
+GetTags <- function () {
+    # Calls a function to get the tags from the db, 
+    # then adds the minute number for each tag and modifies the 
+    # column names
+    #
+    # Value:
+    #   data.frame
+    #     site, date, time, species.id, min
+    
+    Report(2, 'Checking mySql database of labeled minutes (tags)');
+    tag.fields <- c('site',
+                    'start_date', 
+                    'start_time', 
+                    'species_id')
+    tags <- ReadTagsFromDb(tag.fields)
+    date.col <- match('start_date', colnames(tags))
+    time.col <- match('start_time', colnames(tags))
+    # add a column which is the minute number in the day for each tag (eg 1000 = 4:40pm)
+    min.nums <- apply(tags, 1, 
+                      function (tag, date.col, time.col) {
+                          sdt <- strptime(paste(tag[date.col], tag[time.col]), 
+                                          format = '%Y-%m-%d %H:%M:%S')
+                          hour <- format(sdt, format = '%H')
+                          min <- format(sdt, format = '%M')
+                          minnum <- as.numeric(hour) * 60 + as.numeric(min) 
+                          return(minnum)
+                      }, date.col, time.col)
+    tags <- as.data.frame(cbind(tags, min.nums))
+    colnames(tags) <- c('site', 'date', 'time', 'species.id','min')
+    
+    return(tags);
+    
+}
+
+
+
+ReadTagsFromDb <- function (fields = c('start_date', 
                                 'start_time', 
                                 'site', 
                                 'species_id')) {

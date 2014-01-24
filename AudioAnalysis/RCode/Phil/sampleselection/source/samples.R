@@ -1,8 +1,10 @@
 
-SelectSamples <- function (num.rows.to.use = FALSE) {
-    # selects 1 minute samples from a recording as the 'best' for finding the 
-    # most species
+RankSamples <- function (num.rows.to.use = FALSE) {
+    # ranks all the minutes in the target in the order 
+    # that should find the most species in the shortest number of minute
+    # samples
     #
+    # Details:
     # reads the list of events as detected in part 1 of the whole process
     # combines this with the cluster-list
     # denotes which minute each event belongs i
@@ -17,7 +19,7 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     Report(1, 'Selecting samples')
     
     
-    events <- as.data.frame(read.csv(OutputPath('clusters')))
+    events <- ReadOutput('clusters')
     
     # limit the number of events for dev
     if (num.rows.to.use != FALSE && num.rows.to.use < nrow(events)) {
@@ -79,25 +81,115 @@ SelectSamples <- function (num.rows.to.use = FALSE) {
     
     selection <- mins.sorted[1:g.num.samples, ]
     
-    Report(2, 'Saving selected minute samples to ', OutputPath('selected_samples'));
-    write.csv(selection, OutputPath('selected_samples'), row.names = FALSE)
+
+    WriteOutput(mins.sorted, 'ranked_samples')
     
     return(selection) 
     
 }
 
 
+OptimalSamples <- function (speciesmins = NA, mins = NA, num.samples = NA) {
+    # determines the best possible selection of [numsamples] minute samples
+    # to find the most species
+    # 
+    # Args:
+    #   speciesmins: dataframe; the list of species in each minute. If not included
+    #                            will retreive from database
+    #   mins: dataframe; the list of minutes we can select from. If not
+    #                    included then will be read from config
+    #   num.samples: int; how many samples to select. If not supplied, 
+    #                     will be read from config
+    #
+    # Value:
+    #   list: containing
+    #       data.frame; A list of minutes. Cols: site, date, min
+    #       the progression of species found in each of those minutes
+    #       the progression of total species found count after each minute
+    
+    if (class(speciesmins) != 'data.frame') {
+        speciesmins <- GetTags()
+    }
+    
+    if (class(mins) != 'data.frame') {
+        mins <- ReadOutput('minlist', false.on.missing = TRUE)
+        if (class(mins) != 'data.frame') {
+            CreateMinuteList()
+            mins <- ReadOutput('minlist')
+        }
+    }
+    
+    if (is.na(num.samples)) {
+        num.samples <- g.num.samples
+    }
+    
+    species.in.each.min <- vector("list", nrow(mins))
+    total.num.species <- length(unique(speciesmins$species.id))
+    # maximum number of samples is the number of species
+    selected.samples <- rep(NA, total.num.species)
+    found.species.count.progression <- rep(NA, total.num.species)
+    found.species.progression <- vector("list", total.num.species)
+    all.found.species <- numeric()
+    
+    # create list of the species in each minute
+    for (i in 1:nrow(mins)) {
+        sp.list <- speciesmins$species.id[speciesmins$site == mins$site[i] & speciesmins$date == mins$date[i] & speciesmins$min == mins$min[i]]
+        species.in.each.min[[i]] <- sp.list
+    }
 
+    for(sp in 1:length(selected.samples)) {
+        # find minute with most species
+        max.sp <- 0
+        max.sp.i <- -1
+        for (m in 1:length(species.in.each.min)) {
+            if (length(species.in.each.min[[m]]) > max.sp) {
+                max.sp <- length(species.in.each.min[[m]])
+                max.sp.i <- m
+            } 
+        }
+        
+        if (max.sp == 0) {
+            # all species have been included in the selected mins 
+            # (or there were no species)
+            break()
+        }
+        
+        #record that minute
+        selected.samples[sp] <- max.sp.i
+        last.found.species <- species.in.each.min[[max.sp.i]]
+        all.found.species <- union(all.found.species, last.found.species)
+        found.species.progression[[sp]] <- all.found.species
+        found.species.count.progression[sp] <- length(all.found.species)
+        #remove the already found species from the list
+        for (m in 1:length(species.in.each.min)) { 
+               sp <- species.in.each.min[[m]]
+               species.in.each.min[[m]] <- sp[! sp %in% last.found.species]
+        }
+
+    }
+    
+    selected.samples <- selected.samples[! is.na(selected.samples)]
+    found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
+    selected.sample.mins <- mins[selected.samples,]
+    
+    plot(found.species.count.progression, type='both')
+    
+    return(list(
+        found.species.progression = found.species.progression
+        found.species.count.progression = found.species.count.progression
+        selected.mins = selected.samples
+        ))
+    
+    
+    
+}
 
 
 CountSpecies <- function (selected.samples, speciesmins) {
     # finds which species were present in the minutes supplied in selected.samples
     # out of a full species list speciesmins
-    
     found.species <- DoSpeciesCount(selected.samples, speciesmins)
-
-    min.list <- read.csv(OutputPath('minlist'))
-    
+    min.list <- ReadOutput('minlist')
     total.species <- DoSpeciesCount(min.list, speciesmins)
     Report(1, 'number of species found = ', length(found.species))   
     if (length(found.species) > 0) {
@@ -139,37 +231,30 @@ DoSpeciesCount <- function (sample.mins, speciesmins) {
 }
 
 
-EvaluateSamples <- function (samples) {
+EvaluateSamples <- function (samples = NA) {
+    # given a list of minutes
+    # 
+    
+    if(is.na(samples)) {
+        samples <- ReadOutput('ranked_samples')
+    }
+    
+    
+}
+
+
+EvaluateSamples.old <- function (samples = NA) {
     # given a list of minutes, finds the number of species that 
     # appear in those minutes. 
     # also finds the number of total species that appear in between
     # the processed dates at the processed sites
     
-    #speciesmins <- read.csv(g.species.path)
-    
     Report(1, 'evaluating samples') 
-    tag.fields <- c('start_date', 'start_time', 'site', 'species_id')
-    Report(2, 'Checking mySql database of labeled minutes (tags)');
-    tags <- GetTags(tag.fields)
-    date.col <- match('start_date', colnames(tags))
-    time.col <- match('start_time', colnames(tags))
-    # we have the samples and selected minutes as the minute number within the day (eg 1000 = 4:40pm)
-    # need to transforme the date_time of speciesmins to the same format
-    min.nums <- apply(tags, 1, 
-                      function (tag, date.col, time.col) {
-                          sdt <- strptime(paste(tag[date.col], tag[time.col]), 
-                                          format = '%Y-%m-%d %H:%M:%S')
-                          hour <- format(sdt, format = '%H')
-                          min <- format(sdt, format = '%M')
-                          minnum <- as.numeric(hour) * 60 + as.numeric(min) 
-                          return(minnum)
-                      }, date.col, time.col)
-    tags <- as.data.frame(cbind(tags, min.nums))
-    colnames(tags) <- c(tag.fields,'min')
-    
-    
-    
-    CountSpecies(samples, tags)
+    if(is.na(samples)) {
+        samples <- ReadOutput('selected_samples')
+    }
+    speciesmins <- GetTags();
+    CountSpecies(samples, speciesmins)
     Report(3, "Saving spectrograms of samples with events.")
 
 }
@@ -203,9 +288,9 @@ SetMinute <- function (events)  {
 # maybe move this somewhere else
 InspectSamples <- function (samples = NA) {
     if(is.na(samples)) {
-        samples <- read.csv(OutputPath('selected_samples'))
+        samples <- ReadOutput('selected_samples')
     }
-    events <- read.csv(OutputPath('clusters'), stringsAsFactors=FALSE)
+    events <- ReadOutput('clusters')
     events <- AssignColourToGroup(events)
     events <- AddMinuteIdCol(events)
     samples <- AddMinuteIdCol(samples)
