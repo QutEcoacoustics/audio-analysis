@@ -519,19 +519,28 @@
             var audacityExe = this.helper.AudacityExe;
             var audioSegmentFile = this.tabBrowseAudio.AudioSegmentFile;
 
-            if (!File.Exists(audacityExe.FullName))
+            if (audacityExe == null || !File.Exists(audacityExe.FullName))
             {
-                MessageBox.Show("Could not find Audacity. Is it installed?");
+                LoggedConsole.WriteWarnLine("Audacity.exe not found." + 
+                                           " Edit the AudioBrowser.exe.config file and enter correct path in the 'AudacityExeList' key.");
+                // switch to the console.
+                this.tabControlMain.SelectTab(this.tabPageConsole);
+                //MessageBox.Show("Could not find Audacity. Is it installed?");
             }
-            else if (!File.Exists(audioSegmentFile.FullName))
+            else 
             {
-                MessageBox.Show("Could not find audio segment file.");
-            }
-            else
-            {
+                string audioSegmentPath = string.Empty;
+                if (audioSegmentFile == null || !File.Exists(audioSegmentFile.FullName))
+                {
+                    MessageBox.Show("There is no audio file specified for Audacity to open!");
+                }
+                else
+                {
+                    audioSegmentPath = audioSegmentFile.FullName;
+                }
                 TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.AudacityExe.FullName);
-                process.Run(audioSegmentFile.FullName, this.helper.DefaultOutputDir.FullName, false);
-            }
+                process.Run(audioSegmentPath, this.helper.DefaultOutputDir.FullName, false);
+            }                            
         }
 
         private void pictureBoxAudioNavIndicies_MouseHover(object sender, EventArgs e)
