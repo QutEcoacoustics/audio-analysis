@@ -35,8 +35,8 @@ namespace AudioAnalysisTools
         public const string KEY_Variance = "VAR";
 
         // NORMALISING CONSTANTS FOR INDICES
-        public const double ACI_MIN = 0.4;
-        public const double ACI_MAX = 0.7;
+        public const double ACI_MIN = 0.3;
+        public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;
         public const double AVG_MAX = 50.0;
         public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL-20; //-20 adds more contrast into bgn image
@@ -147,11 +147,13 @@ namespace AudioAnalysisTools
                 // INPUT CSV FILES
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
-                string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
+                string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
 
+                string fileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
                 //string fileName = "DM420233_20120302_000000";
                 //string fileName = "SERF_20130915_Merged";
-                string fileName = "SERF_20130730_Merged";
+                //string fileName = "SERF_20130730_Merged";
                 string aciCsvPath = Path.Combine(ipdir, fileName + ".ACI.csv");
                 string avgCsvPath = Path.Combine(ipdir, fileName + ".AVG.csv");
                 string bgnCsvPath = Path.Combine(ipdir, fileName + ".BGN.csv");
@@ -160,7 +162,7 @@ namespace AudioAnalysisTools
                 string varCsvPath = Path.Combine(ipdir, fileName + ".CVR.csv");
 
                 //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
-                string opdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs";
+                string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
                 //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
                 fileName = fileName + ".Test1";
                 string imagePath1 = Path.Combine(opdir, fileName + ".ACI.png");
@@ -467,7 +469,7 @@ namespace AudioAnalysisTools
                     //d1 = redM[row, column];
                     //d2 = grnM[row, column];
                     //d3 = bluM[row, column];
-                    d1 = redM[row, column] * redM[row, column]; // note that the matrix values are squared.
+                    d1 = redM[row, column] * redM[row, column]; // NOTE: MATRIX VALUES ARE SQUARED
                     d2 = grnM[row, column] * grnM[row, column];
                     d3 = bluM[row, column] * bluM[row, column];
                     if (doReverseColour)

@@ -369,7 +369,7 @@
             const char cross = '\u2718';
 
             LoggedConsole.WriteLine("BROWSER SETTINGS:");
-            LoggedConsole.WriteLine("(Any problems can be corrected by fixing the app.config file.)");
+            LoggedConsole.WriteWarnLine("(If a cross appears below, the problem can be corrected by editing the AudioBrowser.exe.config file.)");
 
             var SystemTemp = new List<DirectoryInfo>() { this.DefaultTempFilesDir };
             var ExeDir = new List<DirectoryInfo>() { this.GetExeDir };
