@@ -93,7 +93,15 @@ namespace AnalysisPrograms
 
     public class InvalidDurationException : Exception
     {
+        public InvalidDurationException()
+            : base()
+        {
+        }
 
+        public InvalidDurationException(string message)
+            : base(message)
+        {
+        }
     }
 
     public class InvalidStartOrEndException : Exception
