@@ -225,7 +225,11 @@ namespace AnalysisPrograms
             var results = Detect(fiAudioF, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
             //######################################################################
 
-            if (results == null) return analysisResults; //nothing to process 
+            if (results == null)
+            {
+                //nothing to process
+                return analysisResults; 
+            }
 
             var sonogram = results.Item1;
             var predictedEvents = results.Item2;
@@ -259,7 +263,9 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
             }
             else
+            {
                 analysisResults.EventsFile = null;
+            }
 
             if ((analysisSettings.IndicesFile != null) && (dataTable != null))
             {
@@ -269,7 +275,9 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
             }
             else
+            {
                 analysisResults.IndicesFile = null;
+            }
 
             //save image of sonograms
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
@@ -281,7 +289,9 @@ namespace AnalysisPrograms
                 analysisResults.ImageFile = analysisSettings.ImageFile;
             }
             else
+            {
                 analysisResults.ImageFile = null;
+            }
 
             analysisResults.Data = dataTable;
             analysisResults.AudioDuration = recordingTimeSpan;

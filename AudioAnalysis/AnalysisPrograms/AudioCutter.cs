@@ -15,8 +15,14 @@
 
     public class AudioCutter
     {
+        [CustomDescription]
         public class Arguments : IArgClassValidator
         {
+            public static string Description()
+            {
+                return "Cuts audio into segments of desired length and format";
+            }
+
             //[ArgDescription("The directory containing audio files.")]
             //[Production.ArgExistingDirectory(createIfNotExists: false)]
             //[ArgRequired]
@@ -26,17 +32,17 @@
             [ArgDescription("The audio file to segment.")]
             [ArgRequired]
             [ArgPosition(1)]
-            public virtual FileInfo InputFile { get; set; }
+            public FileInfo InputFile { get; set; }
 
             [ArgDescription("The directory to create segmented audio files.")]
             [Production.ArgExistingDirectory(createIfNotExists: true)]
             [ArgRequired]
             [ArgPosition(2)]
-            public virtual DirectoryInfo OutputDir { get; set; }
+            public DirectoryInfo OutputDir { get; set; }
 
             [ArgDescription("The directory for temporary files.")]
             [Production.ArgExistingDirectory(createIfNotExists: true)]
-            public virtual DirectoryInfo TemporaryFilesDir { get; set; }
+            public DirectoryInfo TemporaryFilesDir { get; set; }
 
             //[ArgDescription("Whether to recurse into subdirectories.")]
             //[DefaultValue(false)]
@@ -72,7 +78,7 @@
 
             [ArgDescription("The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).")]
             [DefaultValue(22050)]
-            [ArgRange(17640, 44100)]
+            [ArgRange(8000, 44100)]
             public int SampleRate { get; set; }
 
             //[ArgDescription("The channel(s) to include in the segmented audio files (default is no modifications).")]
@@ -131,7 +137,7 @@
         {
             if (arguments == null)
             {
-                throw new ArgumentException("Arguments cannot be null", "arguments");
+                throw new NoDeveloperMethodException();
             }
 
             var sw = new Stopwatch();
@@ -163,7 +169,7 @@
 
             var fileSegments = sourcePreparer.CalculateSegments(new FileSegment[] { fileSegment }, settings).ToList();
 
-            Console.WriteLine("Started segmenting at {0} {1}: {2}.", 
+            LoggedConsole.WriteLine("Started segmenting at {0} {1}: {2}.", 
                 DateTime.Now, 
                 arguments.RunParallel ? "in parallel" : "sequentially", 
                 arguments.InputFile);
@@ -177,7 +183,7 @@
                 RunSequential(fileSegments, sourcePreparer, settings, arguments);
             }
             sw.Stop();
-            Console.WriteLine("Took {0}. Done.", sw.Elapsed);
+            LoggedConsole.WriteLine("Took {0}. Done.", sw.Elapsed);
         }
 
         private static void RunSequential(List<FileSegment> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
@@ -214,7 +220,7 @@
                     fileSegment.SegmentEndOffset.Value,
                     settings.SegmentTargetSampleRate,
                     settings.AnalysisInstanceTempDirectory);
-            Console.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.OriginalFile.Name);
+            LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.OriginalFile.Name);
         }
     }
 }

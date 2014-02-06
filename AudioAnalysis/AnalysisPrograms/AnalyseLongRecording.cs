@@ -330,9 +330,15 @@ namespace AnalysisPrograms
             var eventsDatatable = op1.Item1;
             var indicesDatatable = op1.Item2;
             int eventsCount = 0;
-            if (eventsDatatable != null) eventsCount = eventsDatatable.Rows.Count;
+            if (eventsDatatable != null) 
+            {
+                eventsCount = eventsDatatable.Rows.Count;
+            }
             int indicesCount = 0;
-            if (indicesDatatable != null) indicesCount = indicesDatatable.Rows.Count;
+            if (indicesDatatable != null)
+            {
+                indicesCount = indicesDatatable.Rows.Count;
+            }
             var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
             string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
