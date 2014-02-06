@@ -341,7 +341,11 @@ namespace AnalysisPrograms.Production
             return AudioAnalysisTools.ColourSpectrogram.Dev;
         }
 
-        
+        public AudioCutter.Arguments AudioCutterArgs { get; set; }
+        public static Action<AudioCutter.Arguments> AudioCutter()
+        {
+            return AnalysisPrograms.AudioCutter.Execute;
+        }
 
         #endregion
     }
