@@ -37,7 +37,7 @@ ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
     #   false.on.fail: boolean. If true, will check if exists and 
     #     return false if it is missing. If true, will cause an error
     #     if missing
-    Report(4, 'reading', fn)
+    Report(4, 'Reading:', fn)
     path <- OutputPath(fn, ext = ext)
     if (false.on.missing && !file.exists(path)) {
         return(FALSE)

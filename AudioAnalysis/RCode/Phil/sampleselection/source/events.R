@@ -13,8 +13,8 @@ CreateMinuteList <- function () {
     #
     #  TODO: update the way that output is saved
     #   
-    start.date.time <- as.POSIXlt(g.start.date, tz = 'GMT') + 60 * (g.start.min - 1)
-    end.date.time<- as.POSIXlt(g.end.date, tz = 'GMT') + 60 * g.end.min
+    start.date.time <- as.POSIXlt(g.start.date, tz = 'GMT') + 60 * (g.start.min)
+    end.date.time<- as.POSIXlt(g.end.date, tz = 'GMT') + 60 * (g.end.min + 1)
     diff <- (as.double(end.date.time) - as.double(start.date.time)) / 60;   
     cols <- c('site', 'date', 'min');
     # the total number of mins in the target
@@ -55,27 +55,43 @@ MergeEvents <- function () {
     # looks for the events and adds them to a single csv file
     # including the site, date, start second in day and minute num in day 
     # columns, as well as the frequency bounds and duration
+    #
+    # TODO:
+    #   - handle missing event file (currently causes error, stops)
     
     files <- list.files(path = g.events.source.dir, full.names = FALSE)
  
     min.list <- ReadOutput('minlist')
+    Report(3, "Merging events for each minute")
+    prev.fn <- ''
     for(i in 1:nrow(min.list)) {
+        Dot()
         site <- min.list[i, 1]
         date <- min.list[i, 2]
         min <- min.list[i, 3]
+        min.id <- i
         event.file <- EventFile(site, date, min)
+        
         fn <- file.path(g.events.source.dir, event.file$fn)
-        if (!file.exists(fn)) {
-            stop(paste('missing event file',fn))
+        if (fn != prev.fn) {
+            if (!file.exists(fn)) {
+                stop(paste('missing event file',fn))
+            }
+            #todo: make more efficient by not reading the same csv file over and over again
+            if (file.info(fn)$size == 0) {
+                next()
+            }
+            events.1 <- as.data.frame(read.csv(fn, header = FALSE))
+            events.1 <- AddMinCol(events.1, as.numeric(event.file$start.min))
+            prev.fn <- fn
         }
-        events <- as.data.frame(read.csv(fn, header = FALSE))
-        events <- AddMinCol(events, as.numeric(event.file$start.min))
         #subset the events
-        events <- events[events$min == min, ]
+        events <- events.1[events.1$min == min, ]
         # add the date and site columns
+        min.id.col <- rep(min.id, nrow(events))
         date.col <- rep(date, nrow(events))
         site.col <- rep(site, nrow(events))
-        events <- cbind(site.col, date.col, events)
+        events <- cbind(min.id.col, site.col, date.col, events)
         if (!exists('selected.events')) {
             selected.events <- events
         } else {
@@ -83,7 +99,7 @@ MergeEvents <- function () {
         }
     }
     
-    colnames(selected.events) <- c('site', 'date', 'start.sec', 'start.sec.in.file', 'duration', 'bottom.frequency', 'top.frequency',  'min')
+    colnames(selected.events) <- c('min.id', 'site', 'date', 'start.sec', 'start.sec.in.file', 'duration', 'bottom.frequency', 'top.frequency',  'min')
     
     # TODO: check that it is sorted correctly (by site, date and start second)
     

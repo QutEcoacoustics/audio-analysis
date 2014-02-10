@@ -12,18 +12,18 @@ g.source.dir <- '../../../../../../SERF'
 g.audio.dir  <- file.path(g.source.dir, 'mono')
 
 # events source directory, containing one csv file for each wave file
-g.events.source.dir  <- file.path(g.source.dir,'events')
+g.events.source.dir  <- file.path(g.source.dir,'events/2')
 
 # output parent directory. All output is within this directory
 g.output.parent.dir <- '../output'
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 300
+g.start.min <- 0
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 400
+g.end.min <- 1439
 
 # which sites to include in sample selection
 g.sites <- c('NW')
@@ -32,17 +32,14 @@ g.sites <- c('NW')
 # to use as target. Reason for this is to have a 
 # representative sample of a long recording without
 # needing to process all the long recording
-g.percent.of.target <- 100 
+g.percent.of.target <- 100
 
-# how many minute samples to use
-g.num.samples <- 20
+# how many minute samples to use when inspecting
+g.num.samples <- 12
 
-#column names for the events file
-g.events.col.names <- c('filename','site','date','start.sec',
-                        'file.start.sec','duration','bottom.freq','top.freq')
 
 # evaluation is done against mysql database of tags
 g.tags.db.user <- 'root'
 g.tags.db.password <- 'root'
-g.tags.db.dbname <- 'tags'
+g.tags.db.dbname <- 'speciestags'
 g.tags.db.unix.socket <- '/Applications/MAMP/tmp/mysql/mysql.sock'
