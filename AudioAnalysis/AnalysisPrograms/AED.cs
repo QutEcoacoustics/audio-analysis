@@ -65,7 +65,9 @@ namespace AnalysisPrograms
         /// </summary>
         public const string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
 
-        public const int RESAMPLE_RATE = 17640;
+        public const int RESAMPLE_RATE = 22050;//wtf even is this shit: 17640;
+
+        private static readonly Color aedEventColor = Color.Red;
 
 
         /// <summary>
@@ -103,7 +105,7 @@ namespace AnalysisPrograms
                         SegmentMinDuration = TimeSpan.FromSeconds(20),
                         SegmentMediaType = MediaTypes.MediaTypeWav,
                         SegmentOverlapDuration = TimeSpan.Zero,
-                        SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                        SegmentTargetSampleRate = RESAMPLE_RATE
                     };
             }
         }
@@ -283,7 +285,7 @@ namespace AnalysisPrograms
             if ((sonogram != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
-                double eventThreshold = 0.1;
+                double eventThreshold = 0.0;
                 Image image = DrawSonogram(sonogram, predictedEvents, eventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
@@ -509,7 +511,11 @@ namespace AnalysisPrograms
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
 
             List<AcousticEvent> events =
-                oblongs.Select(o => new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth)).ToList();
+                oblongs.Select(o => {
+                    var ae = new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth);
+                    ae.BorderColour = aedEventColor;
+                    return ae;
+                }).ToList();
             TowseyLib.Log.WriteIfVerbose("AED # events: " + events.Count);
             return events;
         }
@@ -626,7 +632,7 @@ namespace AnalysisPrograms
         public static Image DrawSonogram(BaseSonogram sonogram, List<AcousticEvent> events, double eventThreshold)
         {
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-
+            
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
