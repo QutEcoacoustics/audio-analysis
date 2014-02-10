@@ -244,7 +244,8 @@ namespace AudioAnalysisTools
                 tWidth = this.oblong.r2 - t1 + 1;
             }
 
-            g.DrawRectangle(p2, t1, y, tWidth, height);
+            // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
+            g.DrawRectangle(p1, t1, y, tWidth, height);
 
             //draw the score bar to indicate relative score
             int scoreHt = (int)Math.Round(height * this.ScoreNormalised);

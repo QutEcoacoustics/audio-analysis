@@ -162,7 +162,9 @@ namespace AudioAnalysisTools
                 if (this.eventList != null) //draw events first because their rectangles can cover other features
                 {
                     foreach (AcousticEvent e in this.eventList)
+                    {
                         e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                    }
                 }
 
                 if (this.Points != null) //draw events first because their rectangles can cover other features

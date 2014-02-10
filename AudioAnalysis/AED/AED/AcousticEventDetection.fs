@@ -93,11 +93,11 @@ let detectEventsMinor intensityThreshold smallAreaThreshold (bandPassFilter:floa
             let mPrime = m.Region (1 + min, 0, 1 + max - min, m.NumCols) 
             detectEventsMatlab intensityThreshold smallAreaThreshold mPrime
                 // transpose results back & compensate for removing first row & any bandpass
-                |> Seq.map (fun r -> cornersToRect r.Left (r.Top + 1 + min) (right r) (bottom r + 1 + min)) 
+                |> Seq.map (fun r -> cornersToRect r.Left (right r) (r.Top + 1 + min)  (bottom r + 1 + min)) 
                 
         else 
             failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
 
 let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*float) a =
     detectEventsMinor intensityThreshold smallAreaThreshold bandPassFilter a
-    |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) 
+    |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r )) 
