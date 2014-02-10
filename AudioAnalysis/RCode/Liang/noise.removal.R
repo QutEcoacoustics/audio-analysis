@@ -101,6 +101,6 @@ removeNoise <- function(amp){
   # y=seq(0, sampleRate / 2, sampleRate / 2 / 256)
   # filled.contour(x,y,t(noiseRemovedAmp),col=gray(seq(1,0,-1/49)),levels=pretty(c(0,50),50))
 
-  result <- list(noiseProfile=backgroundNoise, noiseRemovedAmp=noiseRemovedAmp)
+  result <- list(noiseProfile=noiseProfile, noiseRemovedAmp=noiseRemovedAmp)
   return(result)
 }
