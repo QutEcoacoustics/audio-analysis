@@ -112,7 +112,16 @@ type EventRect = Rectangle<float<s>, float<Hz>>
 type pxf = float<px>
 
 let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b}
-let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1}
+let inline lengthsToRect l t w h = 
+    if w < 0 then
+        failwith "Width cannot be less than zero"
+    if h < 0 then
+        failwith "Height cannot be less than zero"
+    if t < 0 then
+        failwith "top cannot be less than zero"
+    if l < 0 then
+        failwith "left canot be less than zero"
+    {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1}
 let inline cornersToRect2 (l, r) (t, b) = cornersToRect l r t b
 let fcornersToRect (l:float) r (t:float) b = cornersToRect l r t b // for C#
 let inline left r = r.Left
@@ -121,9 +130,13 @@ let inline top r = r.Top
 let inline bottom r = r.Bottom
 let inline bottomLeft r = (r.Left, r.Bottom)
 
-let inline width r = (right r) - (left r)
-let inline height r = (top r) - (bottom r)
-let inline area r = (width r) - (height r)
+let inline increment n = n + LanguagePrimitives.GenericOne
+let inline width r = (right r) - (left r) |> abs |> increment
+let inline width2 (right:float<_>) (left:float<_>) = right - left |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
+
+let inline height r = (top r) - (bottom r) |> abs |> increment
+let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
+let inline area r = (width r) * (height r)
 
 let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)

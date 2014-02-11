@@ -111,7 +111,7 @@
             let create x y = {x = x; y = y}
 
         let centroid (ae: Rectangle<float<_>,float<_>>) =
-            {x = left ae + ((Util.width ae) / 2.0) ; y = top ae  + ((Util.height ae) / 2.0)}
+            {x = left ae + ((Util.width2 ae.Right ae.Left) / 2.0) ; y = top ae  + ((Util.height2 ae.Top ae.Bottom) / 2.0)}
 
         let inline centerToEdges center width =
             let h = LanguagePrimitives.DivideByInt width 2
