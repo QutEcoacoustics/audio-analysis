@@ -369,7 +369,7 @@
             const char cross = '\u2718';
 
             LoggedConsole.WriteLine("BROWSER SETTINGS:");
-            LoggedConsole.WriteWarnLine("(If a cross appears below, the problem can be corrected by editing the AudioBrowser.exe.config file.)");
+            LoggedConsole.WriteWarnLine("(If a warning appears below, the problem can be corrected by editing the AudioBrowser.exe.config file.)");
 
             var SystemTemp = new List<DirectoryInfo>() { this.DefaultTempFilesDir };
             var ExeDir = new List<DirectoryInfo>() { this.GetExeDir };
@@ -484,7 +484,7 @@
 
         private void LoadSettingsProblem(string formatString, params object[] args)
         {
-            LoggedConsole.WriteLine(formatString, args);
+            LoggedConsole.WriteWarnLine(formatString, args);
 
             if (Debugger.IsAttached)
             {

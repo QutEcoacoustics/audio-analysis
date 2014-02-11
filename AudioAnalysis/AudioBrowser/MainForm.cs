@@ -87,7 +87,6 @@
 
             this.tabControlMain.SelectTab(this.tabPageConsole);
 
-
         } //MainForm()
 
         private void btnClearConsole_Click(object sender, EventArgs e)

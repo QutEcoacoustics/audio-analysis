@@ -541,8 +541,11 @@ namespace AudioBrowser
 
         private static FileInfo GetAudioSegmentFile(FileInfo audioFile, TimeSpan offsetStart, DirectoryInfo outputDir)
         {
-            var segmentFileName = Path.GetFileNameWithoutExtension(audioFile.FullName) + "_min" +
-                (int)offsetStart.TotalMinutes + ".wav";
+            int minInHour = 60;
+            int currentCursorX = (int)offsetStart.TotalMinutes;
+            string timeStr = String.Format("{0:d2}{1:d2}h", (currentCursorX / minInHour), (currentCursorX % minInHour));
+                                           
+            var segmentFileName = Path.GetFileNameWithoutExtension(audioFile.FullName) + "_" + timeStr + ".wav";
 
             var segmentFilePath = Path.Combine(outputDir.FullName, segmentFileName);
 
