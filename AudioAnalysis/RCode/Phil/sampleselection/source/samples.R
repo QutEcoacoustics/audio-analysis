@@ -637,21 +637,6 @@ GetProgression <- function (species.in.each.sample) {
 }
 
 
-EvaluateSamples.old <- function (samples = NA) {
-    # given a list of minutes, finds the number of species that 
-    # appear in those minutes. 
-    # also finds the number of total species that appear in between
-    # the processed dates at the processed sites
-    
-    Report(1, 'evaluating samples') 
-    if(is.na(samples)) {
-        samples <- ReadOutput('selected_samples')
-    }
-    speciesmins <- GetTags();
-    CountSpecies(samples, speciesmins)
-    Report(3, "Saving spectrograms of samples with events.")
-
-}
 
 
 
@@ -697,8 +682,9 @@ InspectSamples <- function (samples = NA) {
     
     events <- ReadOutput('clusters')
     events <- AssignColourToGroup(events)
-    events <- AddMinuteIdCol(events)
-#    samples <- AddMinuteIdCol(samples)
+
+    
+
     
     event.col <- as.data.frame(rep(NA, nrow(samples)))
     colnames(event.col) <- c('events')
@@ -721,11 +707,6 @@ InspectSamples <- function (samples = NA) {
         #add events which belong in this sample
         min.id <- as.character(samples$min.id[i])
         minute.events <- events[which(events$min.id == min.id),]
-        
-        # offset the start sec of the event so that it is 
-        # relative to the start of the sample
-        minute.events$start.sec <- (minute.events$start.sec - 
-                                        (samples$min[i] * 60))
         
         temp.fn <- paste(i, 'png', sep = '.')
         img.path <- file.path(temp.dir, temp.fn)

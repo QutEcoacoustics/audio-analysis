@@ -43,8 +43,8 @@ DoFeatureExtraction <- function () {
         Dot()
         bounds <- as.numeric(c(events$start.sec.in.file[ev], 
                              events$duration[ev],
-                             events$top.frequency[ev],
-                             events$bottom.frequency[ev]))
+                             events$top.f[ev],
+                             events$bottom.f[ev]))
         fn <- EventFile(events$site[ev], events$date[ev], events$min[ev], ext = 'wav')
         wav.path <- file.path(g.audio.dir, fn$fn)
         if (wav.path != cur.wav.path) {

@@ -191,7 +191,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
         rect <- spectro$rects[i, ]
-        Sp.Rect(spectro, rect)
+        Sp.Rect(spectro, rect, labels = list(top.left = 'event.id', bottom.right = 'group'))
       }
     }
     
@@ -217,7 +217,7 @@ Sp.AmpToRaster <- function (amp) {
 }
 
 
-Sp.Rect <- function (spectro, rect.borders) {
+Sp.Rect <- function (spectro, rect.borders, labels = list()) {
     
     #  top.pix <- ft * spectro[['hz.per.bin']]
     #  bottom.pix <- fb * spectro[['hz.per.bin']]
@@ -231,11 +231,11 @@ Sp.Rect <- function (spectro, rect.borders) {
     #    hz.per.bin = (samp.rate/(2 * nrow(amp))), 
     #    frames.per.sec = (ncol(amp))/(len/samp.rate))
     
-    x <-  rect.borders$start.sec / spectro$duration
-    width <- rect.borders$duration / spectro$duration
-    y <- rect.borders$top.freq / spectro$frequency.range
-    height <- ((rect.borders$top.freq - rect.borders$bottom.freq) / 
-                   spectro$frequency.range)
+    x <-  unit(rect.borders$start.sec / spectro$duration, "npc")
+    width <- unit(rect.borders$duration / spectro$duration, "npc")
+    y <- unit(rect.borders$top.f / spectro$frequency.range, "npc")
+    height <- unit(((rect.borders$top.f - rect.borders$bottom.f) / 
+                   spectro$frequency.range), "npc")
     
     if (!is.null(rect.borders$rect.color)) {
         rect.col <- as.character(rect.borders$rect.color)
@@ -245,30 +245,57 @@ Sp.Rect <- function (spectro, rect.borders) {
     
    
     
-    fill.alpha <- 0.1;
+    fill.alpha <- 0.1
     line.alpha <- 0.9
+    text.alpha <- 0.7
+
+
+    
+
     
     # 2 rectangles, one for fill and one for line
     # to allow the fill and lines to have different alpha 
-    grid.rect(x = unit(x, "npc"), 
-              y = unit(y, "npc"),
-              width = unit(width, "npc"), 
-              height = unit(height, "npc"),
+    grid.rect(x = x, 
+              y = y,
+              width = width, 
+              height = height,
               hjust = 0, vjust = 1,
               default.units = "npc", name = NULL,
               gp = gpar(col = rect.col, fill = rect.col, alpha = fill.alpha), 
               draw = TRUE, 
               vp = NULL)
     
-    grid.rect(x = unit(x, "npc"), 
-              y = unit(y, "npc"),
-              width = unit(width, "npc"), 
-              height = unit(height, "npc"),
+    grid.rect(x = x, 
+              y = y,
+              width = width, 
+              height = height,
               hjust = 0, vjust = 1,
               default.units = "npc", name = NULL,
               gp = gpar(col = rect.col, fill = NA, alpha = line.alpha), 
               draw = TRUE, 
               vp = NULL) 
+    
+
+    text.gp <- gpar(col = rect.col, alpha = text.alpha);
+    
+    if (!is.null(labels$top.left)) {
+        text.txt <- rect.borders[[labels$top.left]]
+        grid.text(text.txt, x , y, 
+                  gp = text.gp,
+                  just = c('left', 'top')
+                  )
+    }
+    
+    if (!is.null(labels$bottom.right)) {
+        text.txt <- rect.borders[[labels$bottom.right]]
+        grid.text(text.txt, x + width , y - height, 
+                  gp = text.gp,
+                  just = c('right', 'bottom')
+        )
+    }
+    
+    
+    
     
     
 }

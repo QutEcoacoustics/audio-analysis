@@ -50,7 +50,96 @@ CreateMinuteList <- function () {
     
 }
 
+
 MergeEvents <- function () {
+    # merge all events into 1 file, adding extra columns
+    files <- list.files(path = g.events.source.dir, full.names = FALSE)
+    Report(3, "Merging events")
+    
+
+    
+    orig.col.names <- c('start.sec.in.file', 'duration', 'bottom.f', 'top.f')
+     
+    
+    for(f in 1:length(files)) {
+
+        filepath <- file.path(g.events.source.dir, files[f])
+        if (file.info(filepath)$size == 0) {
+            next()
+        }
+        events <- as.data.frame(read.csv(filepath, header = FALSE, col.names = orig.col.names));
+        filename <- substr(files[f], 1, (nchar(files[f]) - 8));
+        filename.parts <- unlist(strsplit(filename, '.', fixed=TRUE));
+        file.site <- filename.parts[1];
+        file.date <- FixDate(filename.parts[2]);
+        file.startmin <- as.numeric(filename.parts[3]);
+        file.duration <- as.numeric(filename.parts[4]);
+        date <- rep(file.date, nrow(events))
+        site <- rep(file.site, nrow(events))
+        start.sec <- events$start.sec.in.file %% 60
+        min <- ((events$start.sec.in.file - start.sec) / 60) + file.startmin
+        filename <- rep(filename, nrow(events))
+        
+        events <- cbind(filename, date, site, start.sec, min, events)
+        
+        if (f == 1) {
+            all.events <- events
+            
+        } else {
+            
+            all.events <- rbind(all.events, events)
+        }
+        
+        
+        
+    }
+    
+    # sort by site then chronological. Should be already, except that I stuffed up the naming
+    all.events <- all.events[with(all.events, order(site, date, min, start.sec)), ]
+    
+    event.id <- 1:nrow(all.events)
+    all.events <- cbind(event.id, all.events)
+    
+    WriteAllEvents(all.events);
+    
+}
+
+CreateEventList <- function () {
+    
+    min.list <- ReadOutput('minlist')
+    
+    all.events <- ReadAllEvents()
+ 
+    
+    
+    for(m in 1:nrow(min.list)) {
+        Dot()
+        #subset
+        condition <- all.events$site == min.list$site[m] & 
+        all.events$date == min.list$date[m] &
+        all.events$min == min.list$min[m]
+    
+        this.mins.events <- all.events[condition, ]
+    
+        min.id <- rep(m, nrow(this.mins.events))
+        this.mins.events <- cbind(this.mins.events, min.id)
+    
+        if (m == 1) {
+            all.selected.events <- this.mins.events
+        } else {
+            all.selected.events <- rbind(all.selected.events, this.mins.events)
+        }
+        
+    }
+    
+    WriteOutput(all.selected.events, 'events')
+    
+    
+    
+}
+
+
+MergeEventsOld <- function () {
     # for each target minute (generated in minute list) 
     # looks for the events and adds them to a single csv file
     # including the site, date, start second in day and minute num in day 
@@ -138,6 +227,16 @@ EventFile <- function (site, date, min, ext = 'wav.txt') {
     return(list(fn = fn, start.min = min))
 }
 
+
+FromFn <- function (fn) {
+    
+    
+    
+    
+    
+}
+
+
 AddMinCol <- function (events, start.min) {
     # given a list of events where column 1 is start second in file
     # adds a column which is the minute that the event occurs in
@@ -155,4 +254,16 @@ AddMinCol <- function (events, start.min) {
     return(events)
 }
 
+
+
+WriteAllEvents <- function (events) {
+    write.csv(events, file = AllEventsPath(), row.names = FALSE)
+}
+ReadAllEvents <- function () {
+    return(read.csv(AllEventsPath(), header = TRUE, stringsAsFactors=FALSE))
+}
+
+AllEventsPath <- function () {
+    return(file.path(g.output.parent.dir, 'events', paste(g.all.events.version, 'csv', sep = '.')))  
+}
 

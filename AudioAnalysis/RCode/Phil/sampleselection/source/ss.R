@@ -96,7 +96,7 @@ SS <- function (...) {
         # Step 2: 
         # merge events from several files (one for each audio file)
         # into a single csv file
-        MergeEvents()
+        CreateEventList()
     }
     
 
