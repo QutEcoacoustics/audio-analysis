@@ -14,11 +14,11 @@ amp2dB <- function (amp, bit, sampleRate){
 
 
   # normalise frequency components
-  freqComp <- amp[c(2 : nrow(amp), ]
+  freqComp <- amp[c(2 : nrow(amp)), ]
   freqComp[which(freqComp <  epsilon)] <- minFrequency
   freqComp[which(freqComp >= epsilon)] <- 10 * log10(freqComp[which(freqComp >= epsilon)] ^ 
                                                  2 / sampleRate * 2)
-  amp[c(2 : nrow(amp), ] <- freqComp
+  amp[c(2 : nrow(amp)), ] <- freqComp
 
   #   normalise Nyquist values
   #   Nyquist <- amp[nrow(amp), ]
