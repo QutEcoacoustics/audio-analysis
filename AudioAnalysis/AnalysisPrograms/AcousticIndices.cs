@@ -333,13 +333,13 @@ namespace AnalysisPrograms
             string dir = Path.GetDirectoryName(path);
             string fname = Path.GetFileNameWithoutExtension(path);
             string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[ColourSpectrogram.KEY_BackgroundNoise]);
+            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[SpectrogramConstants.KEY_BackgroundNoise]);
             string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[ColourSpectrogram.KEY_AcousticComplexityIndex]);
+            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[SpectrogramConstants.KEY_AcousticComplexityIndex]);
             string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[ColourSpectrogram.KEY_Average]);
+            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[SpectrogramConstants.KEY_Average]);
             string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[ColourSpectrogram.KEY_Variance]);
+            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[SpectrogramConstants.KEY_Variance]);
         } // ExecuteAnalysis()
 
 
@@ -370,12 +370,12 @@ namespace AnalysisPrograms
             analysisResults.AudioDuration = results.Item2;
 
             // Accumulate spectra in Dictionary
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BackgroundNoise, indices.backgroundSpectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_AcousticComplexityIndex, indices.ACIspectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_Average, indices.averageSpectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_Variance, indices.varianceSpectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_BinCover, indices.coverSpectrum);
-            analysisResults.Spectra.Add(ColourSpectrogram.KEY_TemporalEntropy, indices.HtSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.backgroundSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.ACIspectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.averageSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.varianceSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.coverSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.HtSpectrum);
 
             var sonogram = results.Item3;
             var hits = results.Item4;
