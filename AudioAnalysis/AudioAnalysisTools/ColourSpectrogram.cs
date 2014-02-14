@@ -147,6 +147,12 @@ namespace AudioAnalysisTools
             this.spectrogramMatrices = dictionary;
         }
 
+        public void BlurSpectrogramMatrix(string key)
+        {
+            double[,] matrix = ImageTools.GaussianBlur_5cell(spectrogramMatrices[key]);
+            spectrogramMatrices[key] = matrix;
+        }
+
         public void DrawGreyScaleSpectrograms(string opdir, string opFileName)
         {
             string path = Path.Combine(opdir, opFileName + ".ACI.png");
@@ -181,7 +187,29 @@ namespace AudioAnalysisTools
 
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
+            if (!this.spectrogramMatrices.ContainsKey(key))
+            {
+                Console.WriteLine("WARNING: Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
+                string list = "";
+                foreach (string str in keyList)
+                {
+                    list += (str + ", ");
+                }
+                Console.WriteLine("  List of keys in dictionary = {0}", list);
+                Console.WriteLine("  Press <RETURN> to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(666);
+            }
             double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key]);
+            if (matrix == null)
+            {
+                Console.WriteLine("WARNING: Null matrix returned with this key: {0}", key);
+                Console.WriteLine("  Press <RETURN> to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(666);
+            }
+
             Image bmp = ImageTools.DrawMatrix(matrix);
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, this.Y_interval);
             return bmp;
