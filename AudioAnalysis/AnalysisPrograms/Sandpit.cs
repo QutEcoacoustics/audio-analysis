@@ -157,22 +157,6 @@ namespace AnalysisPrograms
             string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
             string opFileName = ipFileName + ".Test1";
 
-            // code to test reading of csv files into matrix into spectrogram
-            if (false)
-            {
-                // set the X and Y axis scales for the spectrograms 
-                int xScale = 60;  // assume one minute spectra and hourly time lines
-                int sampleRate = 17640; // default value - after resampling
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
-                var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
-                cs.FrameWidth = 512;   // default value - from which spectrogram was derived
-
-                cs.ReadCSVFiles(ipdir, ipFileName);
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName);
-            }
-
-
 
             // experiments with false colour images - categorising/discretising the colours
             if (true)
@@ -182,11 +166,12 @@ namespace AnalysisPrograms
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
+                bool deemphasizeBackground = false;
                 var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs.FrameWidth = 512;   // default value - from which spectrogram was derived
                 cs.ReadCSVFiles(ipdir, ipFileName);
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName);
+                cs.DrawGreyScaleSpectrograms(opdir, opFileName, deemphasizeBackground);
+                cs.DrawFalseColourSpectrograms(opdir, opFileName, deemphasizeBackground);
             }
 
 

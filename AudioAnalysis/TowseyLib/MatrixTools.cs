@@ -248,6 +248,20 @@ namespace TowseyLib
             return op;
         }
 
+        public static double[,] SquareValues(double[,] M)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double[,] newM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    newM[i, j] = M[i, j] * M[i, j];
+                }
+            return newM;
+        }
+
         /// <summary>
         /// bounds a matrix of numbers between a minimum and a maximum.
         /// Numbers that fall outside the bound are truncated to the bound.
