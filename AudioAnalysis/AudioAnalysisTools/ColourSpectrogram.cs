@@ -153,39 +153,39 @@ namespace AudioAnalysisTools
             spectrogramMatrices[key] = matrix;
         }
 
-        public void DrawGreyScaleSpectrograms(string opdir, string opFileName)
+        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, bool deemphasizeBackground)
         {
             string path = Path.Combine(opdir, opFileName + ".ACI.png");
-            Image bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_AcousticComplexityIndex);
+            Image bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_AcousticComplexityIndex, deemphasizeBackground);
             bmp.Save(path);
 
             path = Path.Combine(opdir, opFileName + ".AVG.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Average);
+            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Average, deemphasizeBackground);
             bmp.Save(path);
 
             path = Path.Combine(opdir, opFileName + ".CVR.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BinCover);
+            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BinCover, deemphasizeBackground);
             bmp.Save(path);
 
             path = Path.Combine(opdir, opFileName + ".TEN.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_TemporalEntropy);
+            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_TemporalEntropy, deemphasizeBackground);
             bmp.Save(path);
 
             path = Path.Combine(opdir, opFileName + ".VAR.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Variance);
+            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Variance, deemphasizeBackground);
             bmp.Save(path);
 
             path = Path.Combine(opdir, opFileName + ".CMB.png");
-            bmp = bmp = this.DrawCombinedAverageSpectrogram();
+            bmp = bmp = this.DrawCombinedAverageSpectrogram(deemphasizeBackground);
             bmp.Save(path);
 
             // must return the background image because it will be used elsewhere
             path = Path.Combine(opdir, opFileName + ".BGN.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise);
+            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, deemphasizeBackground);
             bmp.Save(path);
         }
 
-        public Image DrawGreyscaleSpectrogramOfIndex(string key)
+        public Image DrawGreyscaleSpectrogramOfIndex(string key, bool deemphasizeBackground)
         {
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
@@ -201,29 +201,29 @@ namespace AudioAnalysisTools
                 Console.ReadLine();
                 System.Environment.Exit(666);
             }
-            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key]);
-            if (matrix == null)
+            if (this.spectrogramMatrices[key] == null)
             {
-                Console.WriteLine("WARNING: Null matrix returned with this key: {0}", key);
+                Console.WriteLine("WARNING: Null matrix returned with key: {0}", key);
                 Console.WriteLine("  Press <RETURN> to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(666);
             }
 
+            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], deemphasizeBackground);
             Image bmp = ImageTools.DrawMatrix(matrix);
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, this.Y_interval);
             return bmp;
         }
 
-        public void DrawFalseColourSpectrograms(string opdir, string opFileName)
+        public void DrawFalseColourSpectrograms(string opdir, string opFileName, bool deemphasizeBackground)
         {
-            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
+            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE", deemphasizeBackground);
             bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEG.png"));
 
-            Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
+            Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE", deemphasizeBackground);
             bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOS.png"));
 
-            Image bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise);
+            Image bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, deemphasizeBackground);
 
             bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
             bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
@@ -236,12 +236,12 @@ namespace AudioAnalysisTools
         /// Calculates a COMBO spectrogram from four equal weighted normalised indices.
         /// </summary>
         /// <param name="imagePath"></param>
-        public Image DrawCombinedAverageSpectrogram()
+        public Image DrawCombinedAverageSpectrogram(bool deemphasizeBackground)
         {
-            var avgMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_Average, spectrogramMatrices[SpectrogramConstants.KEY_Average]);
-            var cvrMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_BinCover, spectrogramMatrices[SpectrogramConstants.KEY_BinCover]);
-            var aciMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex, spectrogramMatrices[SpectrogramConstants.KEY_AcousticComplexityIndex]);
-            var tenMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy, spectrogramMatrices[SpectrogramConstants.KEY_TemporalEntropy]);
+            var avgMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_Average, spectrogramMatrices[SpectrogramConstants.KEY_Average], deemphasizeBackground);
+            var cvrMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_BinCover, spectrogramMatrices[SpectrogramConstants.KEY_BinCover], deemphasizeBackground);
+            var aciMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex, spectrogramMatrices[SpectrogramConstants.KEY_AcousticComplexityIndex], deemphasizeBackground);
+            var tenMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy, spectrogramMatrices[SpectrogramConstants.KEY_TemporalEntropy], deemphasizeBackground);
 
             // assume all matrices have same rows and columns
             int rows = avgMatrix.GetLength(0);
@@ -262,15 +262,13 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-        public Image DrawFalseColourSpectrogram(string colorMODE)
+        public Image DrawFalseColourSpectrogram(string colorMODE, bool deemphasizeBackground)
         {
             string[] rgbMap = this.ColorMap.Split('-');
 
-            var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]]);
-            var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]]);
-            var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]]);
-            string bgnKey = SpectrogramConstants.KEY_BackgroundNoise;
-            var bgnMatrix = NormaliseSpectrogramMatrix(bgnKey, spectrogramMatrices[bgnKey]);
+            var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], deemphasizeBackground);
+            var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]], deemphasizeBackground);
+            var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]], deemphasizeBackground);
 
             bool doReverseColour = false;
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
@@ -334,20 +332,23 @@ namespace AudioAnalysisTools
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
-                string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
+                string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic";
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
 
-                string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+                //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+                string ipFileName = @"TEST_TUITCE_20091215_220004";
                 //string ipFileName = "DM420233_20120302_000000";
                 //string ipFileName = "SERF_20130915_Merged";
                 //string ipFileName = "SERF_20130730_Merged";
 
                 // OUTPUT CSV FILES
+                string opdir = ipdir;
                 //string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";  //SERF
                 //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
                 //string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
                 //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
-                string opdir = @"C:\SensorNetworks\Output\temp";
+                //string opdir = @"C:\SensorNetworks\Output\temp";
                 string opFileName = ipFileName + ".Test1";
 
 
@@ -357,8 +358,9 @@ namespace AudioAnalysisTools
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
                 var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs.ReadCSVFiles(ipdir, ipFileName);
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName);
+                bool deemphasizeBackground = false;
+                cs.DrawGreyScaleSpectrograms(opdir, opFileName, deemphasizeBackground);
+                cs.DrawFalseColourSpectrograms(opdir, opFileName, deemphasizeBackground);
             }
 
             Execute(arguments);
@@ -380,7 +382,7 @@ namespace AudioAnalysisTools
         //# STATIC METHODS ###########################################################################################################################################
         //############################################################################################################################################################
 
-        public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix)
+        public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix, bool deemphasizeBackground)
         {
             if (key == SpectrogramConstants.KEY_AcousticComplexityIndex) //.Equals("ACI"))
             {
@@ -422,20 +424,10 @@ namespace AudioAnalysisTools
                 Console.WriteLine("DrawSpectrogramsOfIndicies is rendering an UNKNOWN INDEX or one not normalised");
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
+
+            if(deemphasizeBackground) matrix = MatrixTools.SquareValues(matrix); // to de-demphasize the background small values
             return matrix;
-        }
-
-        //public static Image DrawFalseColourSpectrogramOfIndice(string colorSchemeID, string colorMODE, int X_interval, int Y_interval, double[,] redMatrix, double[,] grnMatrix, double[,] bluMatrix, double[,] bgnMatrix)
-        //{
-        //    // default is R,G,B -> aci, ten, avg/cvr
-        //    bool doReverseColour = false;
-        //    if (colorMODE.StartsWith("POS")) doReverseColour = true;
-
-        //    Image bmp = ColourSpectrogram.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-
-        //    ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
-        //    return bmp;
-        //}
+        } //NormaliseSpectrogramMatrix()
 
         public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
         {
@@ -454,18 +446,17 @@ namespace AudioAnalysisTools
             {
                 for (int column = 0; column < cols; column++) 
                 {
-                    //d1 = redM[row, column];
-                    //d2 = grnM[row, column];
-                    //d3 = bluM[row, column];
-                    d1 = redM[row, column] * redM[row, column]; // NOTE: MATRIX VALUES ARE SQUARED
-                    d2 = grnM[row, column] * grnM[row, column];
-                    d3 = bluM[row, column] * bluM[row, column];
+                    d1 = redM[row, column];
+                    d2 = grnM[row, column];
+                    d3 = bluM[row, column];
+
                     if (doReverseColour)
                     {
                         d1 = 1 - d1;
                         d2 = 1 - d2;
                         d3 = 1 - d3;
                     }
+
                     v1 = Convert.ToInt32(Math.Max(0, d1 * MaxRGBValue));
                     v2 = Convert.ToInt32(Math.Max(0, d2 * MaxRGBValue));
                     v3 = Convert.ToInt32(Math.Max(0, d3 * MaxRGBValue));

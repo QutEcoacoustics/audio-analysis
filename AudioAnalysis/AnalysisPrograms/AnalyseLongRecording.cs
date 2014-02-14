@@ -430,8 +430,9 @@ namespace AnalysisPrograms
                 var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 string ipFileName = name;
                 cs.LoadSpectrogramDictionary(spectrogramDictionary);
-                cs.DrawGreyScaleSpectrograms(opdir.FullName, ipFileName);
-                cs.DrawFalseColourSpectrograms(opdir.FullName, ipFileName);
+                bool deemphasizeBackground = false;
+                cs.DrawGreyScaleSpectrograms(opdir.FullName, ipFileName, deemphasizeBackground);
+                cs.DrawFalseColourSpectrograms(opdir.FullName, ipFileName, deemphasizeBackground);
 
             } // if doing acoustic indices
 
