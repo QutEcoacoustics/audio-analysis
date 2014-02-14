@@ -62,9 +62,14 @@ namespace AudioAnalysisTools
         public string ColorMap { get; set; }    //within current recording     
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
-        Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+        private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
 
-
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="Xscale"></param>
+        /// <param name="sampleRate"></param>
+        /// <param name="colourMap"></param>
         public ColourSpectrogram(int Xscale, int sampleRate, string colourMap)
         {
             // set the X and Y axis scales for the spectrograms 
@@ -129,6 +134,17 @@ namespace AudioAnalysisTools
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
             spectrogramMatrices.Add(key, matrix);
+        }
+
+
+        /// <summary>
+        /// Call this method if already have a dictionary of Matrix spectorgrams and wish to loae directly
+        /// For example, call this method from AnalyseLongRecordings.
+        /// </summary>
+        /// <param name="dictionary"></param>
+        public void LoadSpectrogramDictionary(Dictionary<string, double[,]> dictionary)
+        {
+            this.spectrogramMatrices = dictionary;
         }
 
         public void DrawGreyScaleSpectrograms(string opdir, string opFileName)
@@ -227,8 +243,6 @@ namespace AudioAnalysisTools
             var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]]);
             string bgnKey = SpectrogramConstants.KEY_BackgroundNoise;
             var bgnMatrix = NormaliseSpectrogramMatrix(bgnKey, spectrogramMatrices[bgnKey]);
-            //var bgnMatrix = spectrogramMatrices[SpectrogramConstants.KEY_BackgroundNoise];
-            //bgnMatrix = DataTools.NormaliseInZeroOne(bgnMatrix, SpectrogramConstants.BGN_MIN, SpectrogramConstants.BGN_MAX);
 
             bool doReverseColour = false;
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
@@ -289,11 +303,11 @@ namespace AudioAnalysisTools
             {
 
                 // INPUT CSV FILES
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";// SERF 13th October 2010
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
-                string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
+                string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
 
                 string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
                 //string ipFileName = "DM420233_20120302_000000";
@@ -383,17 +397,17 @@ namespace AudioAnalysisTools
             return matrix;
         }
 
-        public static Image DrawFalseColourSpectrogramOfIndice(string colorSchemeID, string colorMODE, int X_interval, int Y_interval, double[,] redMatrix, double[,] grnMatrix, double[,] bluMatrix, double[,] bgnMatrix)
-        {
-            // default is R,G,B -> aci, ten, avg/cvr
-            bool doReverseColour = false;
-            if (colorMODE.StartsWith("POS")) doReverseColour = true;
+        //public static Image DrawFalseColourSpectrogramOfIndice(string colorSchemeID, string colorMODE, int X_interval, int Y_interval, double[,] redMatrix, double[,] grnMatrix, double[,] bluMatrix, double[,] bgnMatrix)
+        //{
+        //    // default is R,G,B -> aci, ten, avg/cvr
+        //    bool doReverseColour = false;
+        //    if (colorMODE.StartsWith("POS")) doReverseColour = true;
 
-            Image bmp = ColourSpectrogram.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+        //    Image bmp = ColourSpectrogram.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
 
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
-            return bmp;
-        }
+        //    ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+        //    return bmp;
+        //}
 
         public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
         {
@@ -444,9 +458,9 @@ namespace AudioAnalysisTools
         /// <param name="greM"></param>
         /// <param name="doReverseColour"></param>
         /// <returns></returns>
-        public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColour)
+        public static Image DrawFourColourSpectrogram(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColour)
         {
-            // assume all amtricies are normalised and of the same dimensions
+            // assume all matrices are normalised and of the same dimensions
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
 
@@ -482,7 +496,10 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// draw a colour spectrum of basic colours
+        /// Draw colour patches at top of spectrogram.
+        /// These show basic colour combinations.
+        /// Used to aid interpretation of the false-colour sepctorgram.
+        /// 
         /// </summary>
         /// <param name="ht"></param>
         /// <returns></returns>
