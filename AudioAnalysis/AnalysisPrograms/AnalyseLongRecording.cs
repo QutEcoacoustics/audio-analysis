@@ -313,10 +313,9 @@ namespace AnalysisPrograms
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceInfo = audioUtility.Info(fiSourceRecording);
 
-            double scoreThreshold = 0.2;
+            double scoreThreshold = 0.2;                 // min score for an acceptable event
             if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD))
             {
-                // min score for an acceptable event
                 scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);
             }
 
@@ -384,9 +383,10 @@ namespace AnalysisPrograms
 
 
                 int frameWidth = 512;   // default value
-                int sampleRate = 17640; // default value
                 if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
                     frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
+
+                int sampleRate = 17640; // default value
                 if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
                     sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
 
@@ -394,9 +394,9 @@ namespace AnalysisPrograms
                 // this is the most effcient way to do this
                 // gather up numbers and strings store in memory, write to disk one time
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
-                //var spectrogramMatrixes = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
                 
                 int startMinute = (int)(fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+                var spectrogramDictionary = new Dictionary<string, double[,]>();
                 foreach (var spectrumKey in results[0].Spectra.Keys)
                 {
                     // +1 for header
@@ -417,17 +417,11 @@ namespace AnalysisPrograms
                     lines[0] = Spectrum.GetHeader(numbers[0].Length);  // add in header
                     FileTools.WriteTextFile(saveCsvPath, lines);
 
-                    //following lines used to save spectrograms but this now done by ColourSpectrogram class
-                    // prepare image and write to disk
-                    //double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                    //following lines used to store spectrogram matrices in Dictionary
+                    double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    spectrogramDictionary.Add(spectrumKey, matrix);
 
-                    // store all the spectrograms as matrices to use later
-                    //cs.AddRotatedSpectrogram(spectrumKey, matrix);
-
-                    //draw and save the grey scale spectrograms
-                    //Image bmp = cs.DrawGreyscaleSpectrogramOfIndex(spectrumKey);
-                    //var imagePath = Path.Combine(opdir.FullName, name + "." + spectrumKey + ".png");
-                    //bmp.Save(imagePath);
                 } // foreach spectrumKey
 
                 // now Draw the false colour spectrogram
@@ -435,34 +429,9 @@ namespace AnalysisPrograms
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 string ipFileName = name;
-                cs.ReadCSVFiles(opdir.FullName, ipFileName);
+                cs.LoadSpectrogramDictionary(spectrogramDictionary);
                 cs.DrawGreyScaleSpectrograms(opdir.FullName, ipFileName);
                 cs.DrawFalseColourSpectrograms(opdir.FullName, ipFileName);
-
-
-                //// draw background spectrogram
-                //var spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_BackgroundNoise + ".png");
-                ////cs.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, spectroPath);
-                //// draw gray scale spectrogram
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_TemporalEntropy + ".png");
-                ////cs.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_TemporalEntropy, spectroPath);
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_BinCover + ".png");
-                ////cs.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BinCover, spectroPath);
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_AcousticComplexityIndex + ".png");
-                ////cs.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_AcousticComplexityIndex, spectroPath);
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Average + ".png");
-                ////cs.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Average, spectroPath);
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Combined + ".png");
-                ////cs.DrawCombinedAverageSpectrogram(spectroPath);
-                //// colour spectrograms
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Colour + ".NEG.png");
-                ////cs.DrawFalseColourSpectrogram(spectroPath, "NEGATIVE");
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Colour + ".POS.png");
-                ////cs.DrawFalseColourSpectrogram(spectroPath, "POSITIVE");
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Colour + "NEG&" + SpectrogramConstants.KEY_BackgroundNoise + ".png");
-                ////cs.DrawDoubleSpectrogram(spectroPath, "NEGATIVE");
-                //spectroPath = Path.Combine(opdir.FullName, name + "." + SpectrogramConstants.KEY_Colour + "POS&" + SpectrogramConstants.KEY_BackgroundNoise + ".png");
-                ////cs.DrawDoubleSpectrogram(spectroPath, "POSITIVE");
 
             } // if doing acoustic indices
 
@@ -472,7 +441,6 @@ namespace AnalysisPrograms
 
 
         // Main(string[] args)
-
 
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
         {
