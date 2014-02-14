@@ -1265,6 +1265,48 @@ namespace TowseyLib
         }// end of SubtractAverage()
 
 
+        /// <summary>
+        /// Returns matrix after convolving with Gaussian blur.
+        /// The blurring is in 2D, first blurred in x-direction, then in y-direction.
+        /// Blurring function is {0.006,0.061, 0.242,0.383,0.242,0.061,0.006}
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] GaussianBlur_5cell(double[,] matrix)
+        {
+            double[] bf = {0.006, 0.061, 0.242, 0.383, 0.242, 0.061, 0.006}; //blurring function
+            int edge = 4;
+
+            int height = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
+
+            // first convolve in x-dimension, i.e. along a row
+            double[,] M1 = (double[,])matrix.Clone(); 
+            for (int r = edge; r < height - edge; r++)//for all rows
+            {
+                for (int c = edge; c < width - edge; c++)//for all cols
+                {
+                    double sum = 0.0;
+                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * matrix[r, c - edge + i]);
+                    M1[r, c] = sum;
+                }//for all cols
+            }//for all rows
+
+            // then convolve in y-dimension, i.e. along a col
+            double[,] M2 = (double[,])M1.Clone();
+            for (int r = edge; r < height - edge; r++)//for all rows
+            {
+                for (int c = edge; c < width - edge; c++)//for all cols
+                {
+                    double sum = 0.0;
+                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * M1[r - edge + i, c]);
+                    M2[r, c] = sum;
+                }//for all cols
+            }//for all rows
+
+            return M2;
+        }// end of Shapes_lines()
+
 
 
         /// <summary>

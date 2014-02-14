@@ -171,7 +171,6 @@
     <Compile Include="AudioRecording.cs" />
     <Compile Include="ColourSpectrogram.cs" />
     <Compile Include="ConfigurationClasses.cs" />
-    <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="DisplayIndices.cs" />
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
