@@ -571,8 +571,62 @@ namespace AudioAnalysisTools
         }
 
 
+        public static Image DrawDifferenceSpectrogram(ColourSpectrogram target, ColourSpectrogram reference)
+        {
+        //public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
+            double[,] tgtRedM = target.spectrogramMatrices["ACI"]; 
+            double[,] tgtGrnM = target.spectrogramMatrices["TEN"]; 
+            double[,] tgtBluM = target.spectrogramMatrices["CVR"];
+
+            double[,] refRedM = reference.spectrogramMatrices["ACI"];
+            double[,] refGrnM = reference.spectrogramMatrices["TEN"];
+            double[,] refBluM = reference.spectrogramMatrices["CVR"];
 
 
+            // assume all matricies are normalised and of the same dimensions
+            int rows = tgtRedM.GetLength(0); //number of rows
+            int cols = tgtRedM.GetLength(1); //number
 
-    }
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            int MaxRGBValue = 255;
+            // int MinRGBValue = 0;
+            //int v1, v2, v3;
+            double d1, d2, d3;
+            int i1, i2, i3;
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < cols; column++) 
+                {
+                    d1 = tgtRedM[row, column] - refRedM[row, column];
+                    d2 = tgtGrnM[row, column] - refGrnM[row, column];
+                    d3 = tgtBluM[row, column] - refBluM[row, column];
+
+                    //if (doReverseColour)
+                    //{
+                    //    d1 = 1 - d1;
+                    //    d2 = 1 - d2;
+                    //    d3 = 1 - d3;
+                    //}
+
+                    i1 = 127 - Convert.ToInt32(d1 * MaxRGBValue);
+                    i1 = Math.Max(0, i1);
+                    i1 = Math.Min(MaxRGBValue, i1);
+                    i2 = 127 - Convert.ToInt32(d2 * MaxRGBValue);
+                    i2 = Math.Max(0, i2);
+                    i2 = Math.Min(MaxRGBValue, i2);
+                    i3 = 127 - Convert.ToInt32(d3 * MaxRGBValue);
+                    i3 = Math.Max(0, i3);
+                    i3 = Math.Min(MaxRGBValue, i3);
+
+                    Color colour = Color.FromArgb(i1, i2, i3);
+                    bmp.SetPixel(column, row, colour);
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
+
+
+    } //ColourSpectrogram
 }
