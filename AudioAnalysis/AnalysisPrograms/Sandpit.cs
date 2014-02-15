@@ -150,28 +150,43 @@ namespace AnalysisPrograms
             } // experiments with Sobel ridge detector
 
             // INPUT FILES
-            string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
+            string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
             string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
 
             // OUTPUT FILES
-            string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
-            string opFileName = ipFileName + ".Test1";
+            string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
 
 
-            // experiments with false colour images - categorising/discretising the colours
+            // experiments with false colour spectrograms
             if (true)
             {
 
                 // set the X and Y axis scales for the spectrograms 
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
+                int frameWidth = 512;   // default value - from which spectrogram was derived
+                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 bool deemphasizeBackground = false;
-                var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
-                cs.FrameWidth = 512;   // default value - from which spectrogram was derived
-                cs.ReadCSVFiles(ipdir, ipFileName);
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName, deemphasizeBackground);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName, deemphasizeBackground);
+                string opFileName1 = ipFileName + ".Reference";
+                var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs1.ReadCSVFiles(ipdir, ipFileName);
+                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, deemphasizeBackground);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
+                cs1.DrawFalseColourSpectrograms(opdir, opFileName1, deemphasizeBackground);
+
+                string opFileName2 = ipFileName + ".Target";
+                var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs2.ReadCSVFiles(ipdir, ipFileName);
+                cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, deemphasizeBackground);
+                cs2.DrawFalseColourSpectrograms(opdir, opFileName2, deemphasizeBackground);
+
+                string opFileName3 = ipFileName + ".Difference.COLNEG.png";
+                var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1);
+                diffSp.Save(Path.Combine(opdir, opFileName3));
             }
 
 
