@@ -166,26 +166,27 @@ namespace AnalysisPrograms
                 int sampleRate = 17640; // default value - after resampling
                 int frameWidth = 512;   // default value - from which spectrogram was derived
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-                bool deemphasizeBackground = false;
+                double backgroundFilterCoeff = 1.0; //must be value <=1.0
                 string opFileName1 = ipFileName + ".Reference";
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs1.ReadCSVFiles(ipdir, ipFileName);
-                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, deemphasizeBackground);
+                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
-                cs1.DrawFalseColourSpectrograms(opdir, opFileName1, deemphasizeBackground);
+                cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
                 string opFileName2 = ipFileName + ".Target";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs2.ReadCSVFiles(ipdir, ipFileName);
-                cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, deemphasizeBackground);
-                cs2.DrawFalseColourSpectrograms(opdir, opFileName2, deemphasizeBackground);
+                cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
 
                 string opFileName3 = ipFileName + ".Difference.COLNEG.png";
-                var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1);
+                double colourGain = 5.0;
+                var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
                 diffSp.Save(Path.Combine(opdir, opFileName3));
             }
 
