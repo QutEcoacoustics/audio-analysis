@@ -1274,8 +1274,9 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] GaussianBlur_5cell(double[,] matrix)
         {
-            double[] bf = {0.006, 0.061, 0.242, 0.383, 0.242, 0.061, 0.006}; //blurring function
+            double[] bf = {0.006, 0.061, 0.242, 0.382, 0.242, 0.061, 0.006}; //blurring function
             int edge = 4;
+            int backtrack = edge - 1;
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
@@ -1287,7 +1288,7 @@ namespace TowseyLib
                 for (int c = edge; c < width - edge; c++)//for all cols
                 {
                     double sum = 0.0;
-                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * matrix[r, c - edge + i]);
+                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * matrix[r, c - backtrack + i]);
                     M1[r, c] = sum;
                 }//for all cols
             }//for all rows
@@ -1299,7 +1300,7 @@ namespace TowseyLib
                 for (int c = edge; c < width - edge; c++)//for all cols
                 {
                     double sum = 0.0;
-                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * M1[r - edge + i, c]);
+                    for (int i = 0; i < bf.Length; i++) sum += (bf[i] * M1[r - backtrack + i, c]);
                     M2[r, c] = sum;
                 }//for all cols
             }//for all rows
