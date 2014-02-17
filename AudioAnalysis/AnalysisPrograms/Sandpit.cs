@@ -150,21 +150,30 @@ namespace AnalysisPrograms
             } // experiments with Sobel ridge detector
 
             // INPUT FILES
-            string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
-            string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES
+            string ipFileName = @"TEST_TUITCE_20091215_220004";
+
+            //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
+            //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+
+            //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
+            //string ipFileName = @"Test24hSpectrogram";
+
 
             // OUTPUT FILES
-            string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
+            string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
+            //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
 
 
-            // experiments with false colour spectrograms
-            if (true)
+            // experiments with difference false-colour spectrograms
+            if (false)
             {
 
                 // set the X and Y axis scales for the spectrograms 
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
                 int frameWidth = 512;   // default value - from which spectrogram was derived
+                //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 double backgroundFilterCoeff = 1.0; //must be value <=1.0
                 string opFileName1 = ipFileName + ".Reference";
@@ -175,6 +184,7 @@ namespace AnalysisPrograms
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
                 cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
+                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
                 string opFileName2 = ipFileName + ".Target";
@@ -191,6 +201,41 @@ namespace AnalysisPrograms
             }
 
 
+            // experiments with t-statistic spectrograms 
+            // to start with just t-statistic spectrograms on a single index - average power. 
+            if (true)
+            {
+
+                // set the X and Y axis scales for the spectrograms 
+                int xScale = 60;  // assume one minute spectra and hourly time lines
+                int sampleRate = 17640; // default value - after resampling
+                int frameWidth = 512;   // default value - from which spectrogram was derived
+                //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
+                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+                double backgroundFilterCoeff = 1.0; //must be value <=1.0
+                string opFileName1 = ipFileName + ".Blur";
+                var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs1.ReadCSVFiles(ipdir, ipFileName);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_Average);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_Variance);
+                //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+
+                string opFileName2 = ipFileName + ".NonBlur";
+                var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs2.ReadCSVFiles(ipdir, ipFileName);
+                //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                //cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+
+                string opFileName3 = ipFileName + ".tTest.COLNEG.png";
+                int N = 4140;
+                double tStatisticMax = 10.0; // for normalising the image
+                var tTestSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
+                ImageTools.DrawGridLinesOnImage((Bitmap)tTestSp, cs2.X_interval, cs2.Y_interval);
+                tTestSp.Save(Path.Combine(opdir, opFileName3));
+            }
 
 
 

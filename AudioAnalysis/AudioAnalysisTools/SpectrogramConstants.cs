@@ -21,6 +21,8 @@ namespace AudioAnalysisTools
         public const string KEY_Variance = "VAR";
 
         // NORMALISING CONSTANTS FOR INDICES
+        //public const double ACI_MIN = 0.0;
+        //public const double ACI_MAX = 1.0;
         public const double ACI_MIN = 0.35;
         public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;

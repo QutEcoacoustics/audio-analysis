@@ -627,5 +627,93 @@ namespace AudioAnalysisTools
         }
 
 
+        public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, int N, double tStatisticMax)
+        {
+            double[,] avg1 = cs1.spectrogramMatrices["AVG"];
+            double[,] var1 = cs1.spectrogramMatrices["VAR"];
+
+            double[,] avg2 = cs2.spectrogramMatrices["AVG"];
+            double[,] var2 = cs2.spectrogramMatrices["VAR"];
+
+
+            // assume all matricies are normalised and of the same dimensions
+            int rows = avg1.GetLength(0); //number of rows
+            int cols = avg1.GetLength(1); //number
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            int MaxRGBValue = 255;
+            double tStat;
+            int i1, i2, i3;
+            double u1,u2,v1,v2;
+            int expectedMinAvg = 0; // expected minimum average  of spectral dB above background
+            int expectedMinVar = 1; // expected minimum variance of spectral dB above background
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < cols; column++)
+                {
+                    //catch low values of dB used to avoid log of zero amplitude.
+                    u1 = avg1[row, column];
+                    u2 = avg2[row, column];
+                    v1 = Math.Abs(var1[row, column]);
+                    v2 = Math.Abs(var2[row, column]);
+                    if (u1 < expectedMinAvg) 
+                    { u1 = expectedMinAvg; v1 = expectedMinVar; } 
+                    if (u2 < expectedMinAvg) 
+                    { u2 = expectedMinAvg; v2 = expectedMinVar; }
+
+                    double diffOfMeans = Math.Abs(u1 - u2);
+                    if (diffOfMeans < 0.0001) tStat = 0.0;
+                    else
+                    {
+                        double S12 = (v1 + v2) / N;
+                        tStat = diffOfMeans / Math.Sqrt(S12);
+                        if (tStat > tStatisticMax) tStat = tStatisticMax; // upper bound
+                        tStat /= tStatisticMax; // normalise
+                    }
+
+                    i1 = Convert.ToInt32(tStat * MaxRGBValue);
+                    //i1 = Math.Max(0, i1);
+                    //i1 = Math.Min(MaxRGBValue, i1);
+
+                    Color colour = Color.FromArgb(i1, i1, i1);
+
+                    if (i1 > 240) {colour = Color.Red; } //99.9% conf
+                    else 
+                    {
+                        if (i1 > 120) {colour = Color.Orange;}
+                        else 
+                        {
+                            if (i1 > 60) { colour = Color.Yellow; }
+                            else
+                            {
+                                if (i1 > 30) { colour = Color.FromArgb(60, 60, 60); }
+                            }
+                        }
+                    }
+
+                    //if (i1 > 3.29) { colour = Color.Red; } //99.9% conf
+                    //else
+                    //{
+                    //    if (i1 > 2.58) { colour = Color.Orange; }
+                    //    else
+                    //    {
+                    //        if (i1 > 2.33) { colour = Color.Yellow; }
+                    //        else
+                    //        {
+                    //            if (i1 > 1.96) { colour = Color.Cyan; }
+                    //        }
+                    //    }
+                    //}
+                    bmp.SetPixel(column, row, colour);
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
+
+
+
+
     } //ColourSpectrogram
 }

@@ -265,6 +265,7 @@ namespace TowseyLib
         /// <summary>
         /// Filters background values by applying a polynomial that lies between y=x and y=x^2.
         /// That is, y=x represents the unfiltered matrix and y=x^2 represents the maximally filtered matrix.
+        /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
         /// 
         /// </summary>
         /// <param name="M"></param>
@@ -272,19 +273,21 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] FilterBackgroundValues(double[,] M, double filterCoeff)
         {
-            double param = 1 / (double)filterCoeff;
-            if (param <= 1.0) return M;
-            if (param >= 10.0) return MatrixTools.SquareValues(M); 
+            if (filterCoeff >= 1.0) return M;
+            if (filterCoeff <= 0.1) return MatrixTools.SquareValues(M);
 
+            double param = 1 / (double)filterCoeff;
             int rows = M.GetLength(0);
             int cols = M.GetLength(1);
             double[,] newM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
+            {
                 for (int j = 0; j < cols; j++)
                 {
-                    newM[i, j] = (((param - 1) * (M[i, j] * M[i, j] * M[i, j]) ) + M[i, j]) / param;
+                    newM[i, j] = (((param - 1) * (M[i, j] * M[i, j])) + M[i, j]) / param;
                 }
+            }
             return newM;
         }
 
