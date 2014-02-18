@@ -1096,7 +1096,7 @@ namespace Dong.Felt
         
         /// <summary>
         /// This function aims to remove isolated points of interest for filtering out the poi. 
-        /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (13 * 13). 
+        /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (it could be 7 * 7, 9 * 9, 11 * 11, 13 * 13). 
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="rows"></param>

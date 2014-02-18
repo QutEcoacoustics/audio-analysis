@@ -32,6 +32,21 @@
         //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         //}
 
+        public static List<Box> CsvFileReader(string filePath)
+        {
+            var lines = File.ReadAllLines(filePath).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var lines2 = lines1.Skip(1);
+            var results = new List<Box>();
+            foreach (var csvRow in lines2)
+            {
+                var tempRectangle = new Box(int.Parse(csvRow[3]), int.Parse(csvRow[4]), double.Parse(csvRow[6]), double.Parse(csvRow[7]));
+                results.Add(tempRectangle);
+            }
+            return results;
+        }
+
         public static RidgeDescriptionNeighbourhoodRepresentation CSVToNeighbourhoodRepresentation(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
