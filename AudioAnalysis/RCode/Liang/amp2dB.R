@@ -1,5 +1,5 @@
 
-amp2dB <- function (amp, bit, sampleRate){
+amp2dB <- function (amp, sampleRate, bit){
 
 #   windowPower <- sum(hamming ^ 2)
   epsilon <- (1 / 2) ^ (bit - 1)
@@ -14,11 +14,11 @@ amp2dB <- function (amp, bit, sampleRate){
 
 
   # normalise frequency components
-  freqComp <- amp[c(2 : nrow(amp)), ]
+  freqComp <- amp[2 : nrow(amp), ]
   freqComp[which(freqComp <  epsilon)] <- minFrequency
   freqComp[which(freqComp >= epsilon)] <- 10 * log10(freqComp[which(freqComp >= epsilon)] ^ 
                                                  2 / sampleRate * 2)
-  amp[c(2 : nrow(amp)), ] <- freqComp
+  amp[2 : nrow(amp), ] <- freqComp
 
   #   normalise Nyquist values
   #   Nyquist <- amp[nrow(amp), ]
@@ -26,4 +26,5 @@ amp2dB <- function (amp, bit, sampleRate){
   #   Nyquist[which(Nyquist >= epsilon)] <- 10 * log10(Nyquist[which(Nyquist >= epsilon)] ^
   #                                                  2 / sampleRate)
   #   amp[nrow(amp), ] <- Nyquist
+  return(amp)
 }
