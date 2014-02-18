@@ -167,6 +167,7 @@ Normalize <- function (v) {
     if (max.val != 0) {
         v <- v / max.val
     } else {
+        # all vals were the same
         v <- 0.5
     }
     
@@ -308,3 +309,27 @@ is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
     # copied from the help file for is.integer
     abs(x - round(x)) < tol
 } 
+
+Between <- function (x, l, u, inclusive = TRUE, ignore.order = TRUE) {
+    # returns whether x is between l (lower) and u (upper)
+    
+    if (ignore.order && u < l) {
+        t <- l
+        l <- u
+        u <- t
+    }
+    
+    if (inclusive) {
+        return(x >= l & x <= u)
+    } else {
+        return(x > l & x < u)
+    } 
+    
+    
+}
+
+OrderBy <- function (df, col, decreasing = FALSE) {
+    #reorders a data frame by the values in col 
+    df <- df[order(df[[col]], decreasing = decreasing),]
+    return(df)
+}

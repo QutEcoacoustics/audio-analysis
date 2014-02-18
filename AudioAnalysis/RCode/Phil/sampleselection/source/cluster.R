@@ -22,15 +22,15 @@ ClusterEvents <- function (num.groups = 'auto',
     #     events.csv but with a new 'groups' column
     
     
-    Report(4, 'reading features')
-    event.features <-  ReadOutput('features')
-    Report(4, 'reading events')
-    events <- ReadOutput('events')
-    event.col.names <- colnames(events)
+
+    vals <- GetEventsAndFeatures()
+    event.features <- vals$event.features
+    events <- vals$events
     
     if (num.rows.to.use != FALSE && num.rows.to.use < nrow(event.features)) {
         Report(4, 'subsetting features')
         event.features <- event.features[1:num.rows.to.use, ]
+        events <- num.rows.to.use
     } else {
         num.rows.to.use <- nrow(event.features)
     }
@@ -47,6 +47,7 @@ ClusterEvents <- function (num.groups = 'auto',
     d <- dist(event.features, method = "euclidean")  # distance matrix
     Timer(ptm, 'distance matrix')
     
+    
     if (save.dendrogram) { 
         labels.for.dendrogram <- EventLabels(events[1:num.rows.to.use, ])
     }
@@ -62,11 +63,11 @@ ClusterEvents <- function (num.groups = 'auto',
     groups <- as.matrix(cutree(fit, num.groups))
     Report(2, 'num cluster groups = ',  num.groups)
     
-    output <- cbind(events[1:num.rows.to.use, ], groups)
-    colnames(output) <- c(event.col.names, 'group')
+    events$group <- groups
+
     
     if (save) {
-        WriteOutput(output, 'clusters')
+        WriteOutput(events, 'clusters')
     }
     
     
@@ -84,6 +85,53 @@ ClusterEvents <- function (num.groups = 'auto',
         dev.off()
     }
 }
+
+
+GetEventsAndFeatures <- function () {
+    event.features <-  ReadOutput('features')
+    events <- ReadOutput('events')
+    
+    #todo: ensure that both are sorted by event id
+    events <- events[with(events, order(event.id)) ,]
+    event.features <- event.features[with(event.features, order(event.id)) ,]
+    
+    # remove event.id.column from features table
+    drop.cols <- names(event.features) %in% c('event.id')
+    event.features <- event.features[!drop.cols]
+    
+    return (list(events = events, event.features = event.features))
+    
+}
+
+
+InternalMinuteDistances <- function () {
+    vals <- GetEventsAndFeatures()
+    mins <- ReadOutput('minlist')
+    vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
+    dist.scores <- sapply(1:nrow(mins), InternalMinuteDistance, vals$event.features, vals$events);
+    mins$v.score <- dist.scores
+    WriteOutput(mins, 'minlist')
+}
+
+
+InternalMinuteDistance <- function (min.id, features, events) {
+    # get the relevant event ids for this min
+    rows <- events$min.id == min.id
+    #event.ids <- events$event.id[]
+    # get the relevant feature vectors
+    features <- features[rows, ]
+    d <- dist(features, method = "euclidean")  # distance matrix
+    return(sum(d))
+}
+
+
+
+
+
+
+
+
+
 
 TestClusterSpeed <- function () {
     # graphs the execution time of the clustering on the event-data

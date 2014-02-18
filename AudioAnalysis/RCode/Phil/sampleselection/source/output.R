@@ -47,13 +47,14 @@ ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
 }
 
 
-OutputPath <- function (fn, new = FALSE, ext = 'csv') {
+OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     # Returns the correct path for output of a particular type
     #
     # Args:
     #   fn: String; the name of the output file, eg "features"
     #   new: Boolean; whether to create a new output folder or 
     #     overwrite/use any values in the latest already created folder
+    #   ext: the extension of the file
     #
     # Returns: 
     #   String; Something like:
@@ -67,6 +68,8 @@ OutputPath <- function (fn, new = FALSE, ext = 'csv') {
     #   directory output will be sent to a numbered folder, so that the user  
     #   has the option of keeping different versions of output with the same  
     #   start/end time/dates and sites. 
+    #   to get the current output path, leave fn empth
+    #   to create a new folder for output without a particular file, just pass new = TRUE
     
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
@@ -98,7 +101,12 @@ OutputPath <- function (fn, new = FALSE, ext = 'csv') {
     if (!file.exists(path)) {
         dir.create(path)
     }
-    op <- file.path(path, paste(fn,ext, sep='.'))
+    if (fn != FALSE) {
+        op <- file.path(path, paste(fn,ext, sep='.'))
+    } else {
+        op <- path
+    }
+
     return(op)
 }
 

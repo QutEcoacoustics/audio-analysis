@@ -2,7 +2,7 @@
 
 
 
-DoFeatureExtraction <- function () {
+DoFeatureExtraction <- function (limit = FALSE) {
     # performs feature extraction on the events in the events file
     # 
     # Details:
@@ -15,17 +15,22 @@ DoFeatureExtraction <- function () {
     
     # set this to how many files to process, 
     # false to do them all
-    limit <- FALSE
+    
     
     library('tuneR')
     
     events <- ReadOutput('events')
     
+    # make sure it is sorted by filename 
+    events <- events[with(events, order(filename)) ,]
+    
+    
     if (limit != FALSE && limit < nrow(events)) {
+        # set a limit for faster debug
         events <- events[1:limit,]
     }
     
-    #events <- as.matrix(events)
+    
     
 
     
@@ -45,8 +50,8 @@ DoFeatureExtraction <- function () {
                              events$duration[ev],
                              events$top.f[ev],
                              events$bottom.f[ev]))
-        fn <- EventFile(events$site[ev], events$date[ev], events$min[ev], ext = 'wav')
-        wav.path <- file.path(g.audio.dir, fn$fn)
+        #fn <- EventFile(events$site[ev], events$date[ev], events$min[ev], ext = 'wav')
+        wav.path <- file.path(g.audio.dir, paste(events$filename[ev], 'wav', sep='.'))
         if (wav.path != cur.wav.path) {
             if (ev > 1) {
                 #not starting the first file, so we can report on the previous
@@ -62,6 +67,7 @@ DoFeatureExtraction <- function () {
             }
             
             
+            
             Report(3, 'processing features for events in', wav.path)
             Report(3, 'starting with event', ev)
             
@@ -69,20 +75,25 @@ DoFeatureExtraction <- function () {
             cur.wav.path <- wav.path
             
         }
-        features <- as.vector(unlist(GetFeatures(bounds, cur.spectro)))
-        features.all <- c(features.all, features)
+        features <- as.data.frame(GetFeatures(events[ev,], cur.spectro));
+        features$event.id <- events$event.id[ev]
+        
+        if (ev > 1) {
+            features.all <- rbind(features.all, features)
+        } else {
+            features.all <- features
+        }
+
     }
     Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
-    features.all <- as.data.frame(matrix(data = features.all, 
-                                         nrow = nrow(events), 
-                                         byrow = TRUE))
+
     # have not escaped separator char, but shouldn't 
     # matter with numeric values anyway
     WriteOutput(features.all, 'features')
     
 }
 
-GetFeatures <- function (bounds, spectro) {
+GetFeatures <- function (event, spectro) {
     # for a particular event, calculates all the features to be used
     #
     # Args:
@@ -95,47 +106,41 @@ GetFeatures <- function (bounds, spectro) {
     #start.time, duration, bottom.f, top.f
     
     features <- list(
-        duration = bounds[2],
-        bottom.f = bounds[3],
-        top.f = bounds[4],
-        mid.f = (bounds[3] + bounds[4]) / 2,
-        f.range = bounds[4] - bounds[3]
+        duration = event$duration,
+        mid.f = (event$bottom.f + event$top.f) / 2,
+        f.range = event$top.f - event$bottom.f
     )
     
     # gets the sub-matrix of the event from the full matrix
-    event_vals <- SliceStft(bounds, spectro) 
-    duration <- bounds[2]
+    event_vals <- SliceStft(c(event$start.sec.in.file, event$duration, event$bottom.f, event$top.f), spectro) 
+
     
     # Feature: Peak frequency oscillation
     
     # get a vector of peak frequency bins (rows numbers) for each frame
     peaks <- apply(event_vals, 2, which.max)
+    
+    peak.vals <- apply(event_vals, 2, max)
+    
+    # the average peak frequency bin, allowing for amplitude of peak
+    mean.peak.f.bin <- mean(peaks * peak.vals) / sum(peak.vals)
+    features$mean.peak.f <- (mean.peak.f.bin * spectro$hz.per.bin) + event$bottom.f
+    
+    
     #average change in peak frequency from one frame to the next
-    peak.f.osc <- (VectorFluctuation(peaks) * spectro$hz.per.bin)
+    features$peak.f.osc <- (VectorFluctuation(peaks) * spectro$hz.per.bin)
+    
+    features$peak.amp.osc <- VectorFluctuation(peak.vals)
     
     # Feature: pureness of tone
-    
 #    pure.tone.score <- mean(GetPureness(event_vals))
-    
     # feature: amplitude modulation
-    
 #    db.osc <- ColFluctuation(event_vals)
     
     
 
     
-    return(c(features, list(
-        peak.f.osc = peak.f.osc
-        #the average standard deviation of frequency db values across all frames
-        # broadband frames will have a low, pure whistle will have a low value
- #       bb.score.mean = mean(bbscores),
-        # standard deviation of frequency standard devitions
-        # i.e. how much the standard deviation of frequency changes
- #       bb.score.sd  = sd(bbscores),
- #       db.osc  = db.osc,
- #       center.freq.mean = center.freqs$cfs.mean,
- #       center.freq.slope = center.freqs$cfs.slope
-    )))
+    return(features)
 }
 
 

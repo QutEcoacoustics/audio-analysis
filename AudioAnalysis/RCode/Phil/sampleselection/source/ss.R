@@ -44,16 +44,16 @@ source('output.R')
 
 
 
-SS <- function (...) {
+SS <- function (from.step = NA, to.step = NA) {
     # Main entry point whcih runs the specified steps.
     #
-    # Args:
-    #   events: Boolean; Whether to run events step
-    #   feature.extraction: Boolean; Whether to run feature extraction
-    #   clustering: Boolean; Whether to run clustering step
-    #   sample.selection: Boolean; Whether to run sample selection step
-    #   all: Boolean; Whether to run all steps. Overrides the above params
-
+    # Args: 
+    #   from.step: string or int. The step name or number to start running from
+    #              if ommitted, will run from the start
+    #   to.step: string or int. The step name or number to finish at
+    #              if ommited, will only run from.step. If both are ommitted, 
+    #              will run all steps. If "end" will run until the end
+    
     
     CheckPaths()
     
@@ -61,74 +61,105 @@ SS <- function (...) {
                        'events',
                        'feature.extraction',
                        'clustering',
+                       'internal.distance',
                        'sample.selection',
                        'inspect.samples')
-    steps <- unlist(list(...));
     
-    if (length(steps) == 0) {
-        steps <- all.steps;
+    if (is.na(from.step)) {
+        from.step.num <- 1
+    } else if (class(from.step) == 'character') {
+        from.step.num <- match(from.step, all.steps)
     } else {
-        diff <- setdiff(steps, all.steps)
-        if (length(diff) > 0) {
-            # if an invalid step is passed, give an error
-            stop('invalid step listed: ', paste(diff, collapse = ", "), '. Valid steps include: ', paste(all.steps, collapse = ", "))
-        }
+        # make sure the from step num is between 1 and the total number of steps
+        from.step.num <- min(c(from.step, length(all.steps)))
+        from.step.num <- max(1, from.step.num)
     }
     
+    
+    if (is.na(to.step) && !is.na(from.step)) {
+        to.step.num <- from.step.num
+    } else if (is.na(to.step) || to.step == 'end') {
+        to.step.num <- length(all.steps)
+    } else if (class(to.step) == 'character') {
+        to.step.num <- match(to.step, all.steps)
+    } else {
+        #make sure the to step num is not less than the from step or more than the length
+        to.step.num <- min(c(to.step, length(all.steps)))
+        to.step.num <- max(to.step.num, from.step.num)
+    }
+
+    
+    invalid <- c()
+    if (is.na(to.step.num)) {
+        invalid <- c(invalid, to.step)
+    }
+    if (is.na(from.step.num)) {
+        invalid <- c(invalid, from.step)
+    }
+    
+    
+    if (length(invalid) > 0) {
+        stop('invalid step listed: ', paste(invalid, collapse = ", "), '. Valid steps include: ', paste(all.steps, collapse = ", ")) 
+    }
+    
+    Report(1, 'Executing steps', paste(all.steps[from.step.num:to.step.num], collapse = ', '))
+    
+
     
     # Step 0:
     # Audio Event Detection
     # This is done by another program, currently birgit's matlab code
     # Events are detected. Frequency bounds, start time and duration
     # are written to a csv file for each audio file. 
-    
-    
-    if (!is.na(match('minute.list', steps))) {
-        
-        # Step 1: 
-        # generate a list of minutes to use in as the target
-        CreateMinuteList()
-    }
-    
-    
-    if (!is.na(match('events', steps))) {
-        
-        # Step 2: 
-        # merge events from several files (one for each audio file)
-        # into a single csv file
-        CreateEventList()
-    }
-    
 
-    if (!is.na(match('feature.extraction', steps))) {
-        # Step 3: 
-        # feature extraction 
-        # creates a new output file parallel to the events file
-        DoFeatureExtraction() 
-    }
+    steps <- list(
+        function () {
+            # Step 1: 
+            # generate a list of minutes to use in as the target
+            CreateMinuteList()
+        },
+        function () {
+            # Step 2: 
+            # merge events from several files (one for each audio file)
+            # into a single csv file
+            CreateEventList()
+        },
+        function () {
+            # Step 3: 
+            # feature extraction 
+            # creates a new output file parallel to the events file
+            DoFeatureExtraction() 
+        },
+        function () {
+            # Step 4: 
+            # creates a new output csv file, identical to the events file,
+            # except for the addition of a "group" column.
+            ClusterEvents() 
+        },
+        function () {
+            # Step 5:
+            # calculates the sum of distances between all pairs of 
+            # events in each minute
+            InternalMinuteDistances()
+        },
+        function () {
+            # Step 6:
+            # chooses samples based on cluster groups
+            # outputs a list of minute samples to a csv file
+            samples <- RankSamples()
+            EvaluateSamples(samples) 
+        },
+        function () {
+            # Step 7:
+            # output a series of spectrograms of the samples
+            # with the events colorcoded by cluster
+            InspectSamples()
+        }
+    )
     
-    if (!is.na(match('clustering', steps))) {
-        # Step 4: 
-        # creates a new output csv file, identical to the events file,
-        # except for the addition of a "group" column.
-        ClusterEvents()  
-    }
-    
-    if (!is.na(match('sample.selection', steps))) {
-        # Step 5:
-        # chooses samples based on cluster groups
-        # outputs a list of minute samples to a csv file
-        samples <- RankSamples()
-        EvaluateSamples(samples) 
         
-    }
-    
-    if (!is.na(match('inspect.samples', steps))) {
-        # Step 6:
-        # output a series of spectrograms of the samples
-        # with the events colorcoded by cluster
-        InspectSamples()
-        
+    for (s in from.step.num:to.step.num) {
+        steps[[s]]()
     }
     
 

@@ -24,13 +24,13 @@ g.output.parent.dir <- file.path('..','output')
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-#g.start.min <- 0
-g.start.min <- 300
+g.start.min <- 0
+#g.start.min <- 300
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-#g.end.min <- 1439
-g.end.min <- 480
+g.end.min <- 439
+#g.end.min <- 400
 
 # which sites to include in sample selection
 g.sites <- c('NW')
@@ -39,7 +39,7 @@ g.sites <- c('NW')
 # to use as target. Reason for this is to have a 
 # representative sample of a long recording without
 # needing to process all the long recording
-g.percent.of.target <- 100
+g.percent.of.target <- 50
 
 # how many minute samples to use when inspecting
 g.num.samples <- 2

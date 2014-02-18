@@ -187,7 +187,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
     }
     rast <- Sp.AmpToRaster(amp)
     grid.raster(image = rast)
-    if (!is.null(spectro$rects)) {
+    if (!is.null(spectro$rects) && nrow(spectro$rects) > 0) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
         rect <- spectro$rects[i, ]
