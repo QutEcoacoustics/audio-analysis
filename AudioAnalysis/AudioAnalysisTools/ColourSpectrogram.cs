@@ -147,6 +147,15 @@ namespace AudioAnalysisTools
             this.spectrogramMatrices = dictionary;
         }
 
+        /// <summary>
+        /// Call this method to access a spectrogram matrix
+        /// </summary>
+        /// <param name="dictionary"></param>
+        public double[,] GetMatrix(string key)
+        {
+            return this.spectrogramMatrices[key];
+        }
+
         public void BlurSpectrogramMatrix(string key)
         {
             double[,] matrix = ImageTools.GaussianBlur_5cell(spectrogramMatrices[key]);
@@ -713,6 +722,86 @@ namespace AudioAnalysisTools
         }
 
 
+        public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, double avDist, double sdDist)
+        {
+            double[,] aciMatrix1 = cs1.GetMatrix("ACI");
+            double[,] tenMatrix1 = cs1.GetMatrix("TEN");
+            double[,] cvrMatrix1 = cs1.GetMatrix("CVR");
+            double[,] aciMatrix2 = cs2.GetMatrix("ACI");
+            double[,] tenMatrix2 = cs2.GetMatrix("TEN");
+            double[,] cvrMatrix2 = cs2.GetMatrix("CVR");
+            double[] v1 = new double[3];
+            double[] v2 = new double[3];
+
+            // assume all matricies are normalised and of the same dimensions
+            int rows = aciMatrix1.GetLength(0); //number of rows
+            int cols = aciMatrix1.GetLength(1); //number
+            double d;
+            double[,] zScoreMatrix = new double[rows, cols];
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    v1[0] = aciMatrix1[row, col];
+                    v1[1] = tenMatrix1[row, col];
+                    v1[2] = cvrMatrix1[row, col];
+
+                    v2[0] = aciMatrix2[row, col];
+                    v2[1] = tenMatrix2[row, col];
+                    v2[2] = cvrMatrix2[row, col];
+
+                    d = DataTools.EuclidianDistance(v1, v2);
+                    zScoreMatrix[row, col] = (d - avDist) / sdDist;
+                }
+            }
+
+            int MaxRGBValue = 255;
+            int v;
+            double zScore, zNorm;
+            double zMax = 5.0;
+            Color colour;
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    zScore = zScoreMatrix[row, col];
+                    //if (zNorm < 0.0) zNorm = 0.0;
+                    //if (zNorm > zMax) zNorm = zMax; // upper bound
+                    //zNorm /= zMax; // normalise
+
+                    //v = Convert.ToInt32(zNorm * MaxRGBValue);
+                    //v = Math.Max(0, v);
+                    //v = Math.Min(MaxRGBValue, i1);
+
+                    //colour = Color.FromArgb(v, v, v);
+
+                    if (zScore > 1.0) { colour = Color.Red; } //99.9% conf
+                    else
+                    {
+                        if (zScore > 0.5) { colour = Color.Orange; }
+                        else
+                        {
+                            if (zScore > 0) { colour = Color.Yellow; }
+                            else
+                            {
+                                //if (zScore > 1) { 
+                                    colour = Color.FromArgb(10, 10, 10); 
+                                //}
+                            }
+                        }
+                    }  // if() else
+                    bmp.SetPixel(col, row, colour);
+
+                } //all rows
+            } //all rows
+
+            return bmp;
+        } // DrawDistanceSpectrogram()
 
 
     } //ColourSpectrogram

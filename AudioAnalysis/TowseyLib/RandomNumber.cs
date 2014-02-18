@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+
 
 namespace TowseyLib
 {
@@ -119,6 +121,54 @@ namespace TowseyLib
             }
             return randomArray;
         } //end of RandomizeNumberOrder()
+
+
+
+        /// <summary>
+        /// generates vectors of numbers numbers 0 - 1.0
+        /// </summary>
+        public static double[] GetRandomVector(int length, RandomNumber rn)
+        {
+            double[] v = new double[length];
+            v[0] = rn.GetDouble();
+            v[1] = rn.GetDouble();
+            v[2] = rn.GetDouble();
+            return v;
+        }
+
+        public static int[] GetVectorOfRandomIntegers(int[] maxValues, RandomNumber rn)
+        {
+            int length = maxValues.Length;
+            int[] array = new int[length];
+            for (int i = 0; i < length; i++)
+            {
+                array[i] = rn.GetInt(maxValues[i]);
+            }
+            return array;
+        }
+
+        /// <summary>
+        /// generates numbers 1 - 100
+        /// </summary>
+        public static void GetRandomDistancesInEuclidianSpace(int trialCount, int dimensions)
+        {
+            double[] distanceArray = new double[trialCount];
+
+            //int seed = 123456;
+            int seed = (int)DateTime.Now.Ticks;
+            var rn = new RandomNumber(seed);
+            for (int i = 0; i < trialCount; i++)
+            {
+                double[] v1 = RandomNumber.GetRandomVector(dimensions, rn);
+                double[] v2 = RandomNumber.GetRandomVector(dimensions, rn);
+                distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+            }
+            double av, sd;
+            NormalDist.AverageAndSD(distanceArray, out av, out sd);
+            double[] avAndsd = {av, sd };
+            Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 5));
+            Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
+        } //GetRandomDistancesInEuclidianSpace()
 
     }
 }

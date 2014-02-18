@@ -150,19 +150,19 @@ namespace AnalysisPrograms
             } // experiments with Sobel ridge detector
 
             // INPUT FILES
-            string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES
-            string ipFileName = @"TEST_TUITCE_20091215_220004";
+            //string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES
+            //string ipFileName = @"TEST_TUITCE_20091215_220004";
 
-            //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
-            //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
+            string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
 
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
             //string ipFileName = @"Test24hSpectrogram";
 
 
             // OUTPUT FILES
-            string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
-            //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
+            //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
+            string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
 
 
             // experiments with difference false-colour spectrograms
@@ -203,7 +203,7 @@ namespace AnalysisPrograms
 
             // experiments with t-statistic spectrograms 
             // to start with just t-statistic spectrograms on a single index - average power. 
-            if (true)
+            if (false)
             {
 
                 // set the X and Y axis scales for the spectrograms 
@@ -237,7 +237,86 @@ namespace AnalysisPrograms
                 tTestSp.Save(Path.Combine(opdir, opFileName3));
             }
 
+            if (true)
+            {
+                //SET UP TWO SPECTROGRAMS
+                // set the X and Y axis scales for the spectrograms 
+                int xScale = 60;  // assume one minute spectra and hourly time lines
+                int sampleRate = 17640; // default value - after resampling
+                int frameWidth = 512;   // default value - from which spectrogram was derived
+                //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
+                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+                double backgroundFilterCoeff = 1.0; //must be value <=1.0
+                string opFileName1 = ipFileName + ".Blur";
+                var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs1.ReadCSVFiles(ipdir, ipFileName);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
+                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
+                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
+                string opFileName2 = ipFileName + ".NonBlur";
+                var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs2.ReadCSVFiles(ipdir, ipFileName);
+                cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                //cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+
+
+                // average distance betwen two random points in ED euclidian space = 0.666 +/- 0.25
+                int trialCount = 10000;
+                int dimensions = 3;
+                RandomNumber.GetRandomDistancesInEuclidianSpace(trialCount, dimensions);
+
+                // get distances between randomly selected indices
+                double[] distanceArray = new double[trialCount];
+                int seed = (int)DateTime.Now.Ticks;
+                var rn = new RandomNumber(seed);
+                int[] maxValues = {254, 75};
+
+                double[,] aciMatrix1 = cs1.GetMatrix("ACI");
+                double[,] tenMatrix1 = cs1.GetMatrix("TEN");
+                double[,] cvrMatrix1 = cs1.GetMatrix("CVR");
+                double[,] aciMatrix2 = cs2.GetMatrix("ACI");
+                double[,] tenMatrix2 = cs2.GetMatrix("TEN");
+                double[,] cvrMatrix2 = cs2.GetMatrix("CVR");
+                double[] v1 = new double[3];
+                double[] v2 = new double[3];
+
+                for (int i = 0; i < trialCount; i++)
+                {
+                    int[] pt1 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
+                    int[] pt2 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
+
+                    v1[0] = aciMatrix1[pt1[0], pt1[1]]; 
+                    v1[1] = tenMatrix1[pt1[0], pt1[1]]; 
+                    v1[2] = cvrMatrix1[pt1[0], pt1[1]];
+
+                    v2[0] = aciMatrix2[pt2[0], pt2[1]]; 
+                    v2[1] = tenMatrix2[pt2[0], pt2[1]]; 
+                    v2[2] = cvrMatrix2[pt2[0], pt2[1]];
+
+                    distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+                }
+                int[] histo = Histogram.Histo(distanceArray, 100);
+                DataTools.writeBarGraph(histo);
+
+                double avDist, sdDist;
+                NormalDist.AverageAndSD(distanceArray, out avDist, out sdDist);
+                double[] avAndsd = { avDist, sdDist };
+                Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
+                Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
+
+
+
+                string opFileName3 = ipFileName + ".distance.COLNEG.png";
+                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2, avDist, sdDist);
+                ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
+                distanceSp.Save(Path.Combine(opdir, opFileName3));
+
+            }
 
             // experiments with false colour images - categorising/discretising the colours
             if (false)
