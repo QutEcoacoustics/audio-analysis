@@ -1,10 +1,9 @@
 
-spectrogram <- function(filepath, TFRAME){
+spectrogram <- function(filepath, TFRAME=512){
   
   library(tuneR)
 
   #read and shape the original signal
-  TFRAME <- 512
   hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:TFRAME) / (TFRAME - 1))
 
   #mono signal (left channel)
