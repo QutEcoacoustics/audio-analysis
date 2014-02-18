@@ -41,11 +41,11 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\SERF 1_20091105-173000-173100-white-throated honeyeater.wav";
-                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\White-throated honeyeater\Spectrogram results";
-                string imageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Liang's recording\SE_SE727_20101014-074900-075000.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Liang's recording";
+                string imageFileName = "SE_SE727_20101014-074900-075000.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SERF 1_20091105-173000-173100-white-throated honeyeater-magnitudeThreshold6.5-poi selectionImproved(6)-FillinGaps-afterPrune-afterFilteroutPoi-RefinedRidgeDirection2.png";
+                string annotatedImageFileName = "SE_SE727_20101014-074900-075000.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -72,7 +72,7 @@
                 //double intensityThreshold = 5.0; // dB
 
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-                var results = new List<List<string>>();
+                
                 //// each region should have same nhCount, here we just get it from the first region item. 
                 //var dataOutputFile = @"C:\XUEYAN\DICTA Conference data\Spectrogram data for Toad.csv";
                 //var audioFilePath = "DM420008_262m_00s__264m_00s - Faint Toad.wav";
@@ -92,22 +92,39 @@
                 double herzScale = spectrogram.FBinWidth; //43 hz
                 double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
 
-                var poiList1 = new List<PointOfInterest>();
-                var ridges = new POISelection(poiList1);
-                ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                /// filter out some redundant ridges               
-                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);               
-                //var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
-                Bitmap bmp = (Bitmap)image;
-                var refinedPoiList = POISelection.RefineRidgeDirection(filterPoiList, rows, cols);
-                foreach (PointOfInterest poi in refinedPoiList)
+                //Output the spectrogram data for Liang
+                var result = new List<List<string>>();
+                result.Add(new List<string>() {"FileName","Value"});
+                string fileName = "SE_SE727_20101014-074900-075000";
+               // var csvFileName2 = "SE_SE727_20101014-074900-075000.csv";
+                string csvPath = Path.Combine(outputDirectory, fileName + ".csv");   
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
                 {
-                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                    poi.DrawRefinedOrientationPoint(bmp, (int)freqBinCount);
+                    for (int colIndex = 0; colIndex < cols; colIndex++)
+                    {
+                        result.Add(new List<string>() { fileName, matrix[rowIndex, colIndex].ToString() });
+                    }
                 }
+                File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+
+
+                //var poiList1 = new List<PointOfInterest>();
+                //var ridges = new POISelection(poiList1);
+                //ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                ///// filter out some redundant ridges               
+                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);               
+                ////var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
+                Bitmap bmp = (Bitmap)image;
+                //var refinedPoiList = POISelection.RefineRidgeDirection(filterPoiList, rows, cols);
+                //foreach (PointOfInterest poi in refinedPoiList)
+                //{
+                //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                //    poi.DrawRefinedOrientationPoint(bmp, (int)freqBinCount);
+                //}
+
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;
