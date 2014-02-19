@@ -7,13 +7,13 @@ namespace Dong.Felt
 {
     public class Box
     {
-        private int BottomBorder;
+        public int BottomBorder;
 
-        private int TopBorder;
+        public int TopBorder;
 
-        private double leftBorder;
+        public double leftBorder;
 
-        private double rigthBorder;
+        public double rigthBorder;
 
         public Box(int minFrequency, int maxFrequency, double startTime, double endTime)
         {
