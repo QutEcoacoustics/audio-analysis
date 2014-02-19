@@ -161,11 +161,7 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            //throw new AggregateException(new AggregateException(new InvalidOperationException("Test1"), new ArgumentException("Test2")), new NullReferenceException("Test3"));
-
             const bool Verbose = true;
-            bool debug = MainEntry.InDEBUG;
-
 
             if (Verbose)
             {
@@ -199,13 +195,12 @@ namespace AnalysisPrograms
             }
 
             // 1. set up the necessary files
-            DirectoryInfo diSource = recordingPath.Directory;
-            FileInfo fiSourceRecording = recordingPath;
-            FileInfo fiConfig = configPath;
-            DirectoryInfo diOP = outputDir;
+            FileInfo sourceAudio = recordingPath;
+            FileInfo configFile = configPath;
+            DirectoryInfo outputDirectory = outputDir;
 
             // 2. get the analysis config dictionary
-            var configuration = new ConfigDictionary(fiConfig.FullName);
+            var configuration = new ConfigDictionary(configFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
@@ -213,7 +208,7 @@ namespace AnalysisPrograms
             if (configDict.ContainsKey(Keys.SAVE_INTERMEDIATE_WAV_FILES))
                 saveIntermediateWavFiles = ConfigDictionary.GetBoolean(Keys.SAVE_INTERMEDIATE_WAV_FILES, configDict);
 
-            bool saveSonograms = false;
+            bool saveSonograms;
             if (configDict.ContainsKey(Keys.SAVE_SONOGRAMS))
                 saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, configDict);
 
@@ -233,7 +228,7 @@ namespace AnalysisPrograms
             };
 
             // 4. get the segment of audio to be analysed
-            var fileSegment = new FileSegment { OriginalFile = fiSourceRecording };
+            var fileSegment = new FileSegment { OriginalFile = sourceAudio };
 
             if (offsetsProvided)
             {
@@ -275,7 +270,7 @@ namespace AnalysisPrograms
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(tempFilesDirectory, fiConfig, configDict, diOP, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
@@ -310,8 +305,8 @@ namespace AnalysisPrograms
 
             // get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility(tempFilesDirectory);
-            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-            var sourceInfo = audioUtility.Info(fiSourceRecording);
+            var mimeType = MediaTypes.GetMediaType(sourceAudio.Extension);
+            var sourceInfo = audioUtility.Info(sourceAudio);
 
             double scoreThreshold = 0.2;                 // min score for an acceptable event
             if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD))
@@ -341,14 +336,14 @@ namespace AnalysisPrograms
                 indicesCount = indicesDatatable.Rows.Count;
             }
             var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
-            string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + analyser.Identifier;
+            string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
             var fiEventsCSV = op2.Item1;
             var fiIndicesCSV = op2.Item2;
 
             LoggedConsole.WriteLine("\n###################################################");
-            LoggedConsole.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+            LoggedConsole.WriteLine("Finished processing " + sourceAudio.Name + ".");
             //LoggedConsole.WriteLine("Output  to  directory: " + diOP.FullName);
             LoggedConsole.WriteLine("\n");
 
@@ -379,7 +374,7 @@ namespace AnalysisPrograms
             {
                 // ensure results are sorted in order
                 var results = analyserResults.ToArray();
-                string name = Path.GetFileNameWithoutExtension(fiSourceRecording.Name);
+                string name = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
 
                 int frameWidth = 512;   // default value

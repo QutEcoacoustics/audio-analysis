@@ -155,14 +155,13 @@
 
         // different spectra for displaying spectrograms of long duration recordings
         // These spectra typically calculated from one minute of recording
-        //public double[] bgnSpectrum { get; set; } // background noise spectrum
-        //public double[] aciSpectrum { get; set; } // acoutic complexity index spectrum
-        //public double[] avgSpectrum { get; set; } // average spectrum
-        //public double[] varSpectrum { get; set; } // variance spectrum
-        //public double[] cvrSpectrum { get; set; } // bin coverage spectrum
-        //public double[] tenSpectrum { get; set; } // temporal entropy spectrum
-        //public double[] cmbSpectrum { get; set; } // combination of indices
-
+        // background noise spectrum
+        // acoutic complexity index spectrum
+        // average spectrum
+        // variance spectrum
+        // bin coverage spectrum
+        // temporal entropy spectrum
+        // combination of indices
         public readonly Dictionary<string, double[]> spectrumsDict = new Dictionary<string, double[]>();
 
         public Dictionary<string, double[]> Spectra
@@ -172,54 +171,13 @@
                 return this.spectrumsDict;
             }
         }
-        
+    }
 
-//        public static string[] SpectrumKeys
-//        {
-//            get
-//            {
-//                return new[]
-//                       {
-//                           Acoustic
-//                           "backgroundNoise", "acousticComplexityIndex", "average", "variance", "binCoverage",
-//                           "temporalEntropy", "combination"
-//                       };
-//            }
-//        }
-//
-//        public double[] this[string key]
-//        {
-//            get
-//            {
-//                switch (key)
-//                {
-//                    case "backgroundNoise":
-//                        return bgnSpectrum;
-//                        break;
-//                    case "acousticComplexityIndex":
-//                        return aciSpectrum;
-//                        break;
-//                    case "average":
-//                        return avgSpectrum;
-//                        break;
-//                    case "variance":
-//                        return varSpectrum;
-//                        break;
-//                    case "binCoverage":
-//                        return cvrSpectrum;
-//                        break;
-//                    case "temporalEntropy":
-//                        return tenSpectrum;
-//                        break;
-//                    case "combination":
-//                        return cmbSpectrum;
-//                        break;
-//                }
-//
-//                throw new ArgumentException();
-//            }
-//
-//        }
-
+    public class AnalysisResult<TResult> : AnalysisResult
+    {
+        /// <summary>
+        /// Gets or sets results.
+        /// </summary>
+        public new TResult Data { get; set; }
     }
 }
