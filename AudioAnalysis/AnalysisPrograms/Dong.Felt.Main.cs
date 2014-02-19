@@ -17,12 +17,15 @@ namespace Dong.Felt
     using System.Text;
     using System.Drawing;
 
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
 
     using AnalysisBase;
     using AudioAnalysisTools;
 
     using PowerArgs;
+
+    using ServiceStack.Text;
 
     using TowseyLib;
     using log4net;
@@ -257,5 +260,141 @@ namespace Dong.Felt
             Log.Info("Finished, yay!");
         }
 
+    }
+
+    public class RidgeEvent
+    {
+        public RidgeEvent(PointOfInterest pointOfInterest)
+        {
+            this.Time = pointOfInterest.TimeLocation.TotalSeconds;
+            this.Frequency = pointOfInterest.Herz;
+            this.Frame = pointOfInterest.Point.X;
+            this.Bin = pointOfInterest.Point.Y;
+            this.Amplitude = pointOfInterest.Intensity;
+            this.Orientation = pointOfInterest.RidgeOrientation;
+
+            throw new NotImplementedException();
+        }
+
+        public double Time { get; set; }
+
+        public double Frequency { get; set; }
+
+        public int Frame { get; set; }
+
+        public int Bin { get; set; }
+
+        public double Amplitude { get; set; }
+
+        public double Orientation { get; set; }
+    }
+
+    public class RidgeAnalysis : IAnalyser<RidgeEvent>
+    {
+        public AnalysisResult<IEnumerable<RidgeEvent>> Analyse(AnalysisSettings analysisSettings)
+        {
+            var audioFile = analysisSettings.AudioFile;
+            var startOffset = analysisSettings.StartOfSegment ?? TimeSpan.Zero;
+            var result = new AnalysisResult<IEnumerable<RidgeEvent>>()
+                         {
+                             AnalysisIdentifier = this.Identifier,
+                             SettingsUsed = analysisSettings,
+                             SegmentStartOffset = startOffset
+                         };
+
+            var recording = new AudioRecording(audioFile.FullName);
+            if (recording.SampleRate != 22050)
+            {
+                throw new NotSupportedException();
+            }
+
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+            var sonogram = new SpectralSonogram(config, recording.GetWavReader());
+
+            // Dong.RidgeDetection(sonogram, threshold, threshold)
+            var ridges = new List<PointOfInterest>();
+
+            if (ridges.IsNullOrEmpty())
+            {
+                return result;
+            }
+
+            result.Data = new RidgeEvent[ridges.Count];
+            for (int index = 0; index < ridges.Count; index++)
+            {
+                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index]);
+            }
+
+            if (analysisSettings.EventsFile != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (analysisSettings.IndicesFile != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (analysisSettings.ImageFile != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            result.AudioDuration = recording.Duration();
+            return result;
+        }
+
+        public IEnumerable<RidgeEvent> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                return "Ridge Detection";
+            }
+        }
+
+        public string Identifier
+        {
+            get
+            {
+                return "Dong.RidgeDetection";
+            }
+        }
+
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings()
+                {
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentMinDuration = TimeSpan.FromSeconds(20),
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = 22050
+                };
+            }
+        }
+
+        #region ignored
+        AnalysisResult IAnalyser.Analyse(AnalysisSettings analysisSettings)
+        {
+            throw new NotImplementedException();
+        }
+
+        Tuple<DataTable, DataTable> IAnalyser.ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        DataTable IAnalyser.ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }

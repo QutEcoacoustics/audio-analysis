@@ -3,6 +3,8 @@ using System.Data;
 using System.IO;
 namespace AnalysisBase
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Interface a compatible analysis must implement.
     /// </summary>
@@ -39,5 +41,12 @@ namespace AnalysisBase
         DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold);
 
         //FileInfo AnalysisImage(AnalysisSettings settings);
+    }
+
+    public interface IAnalyser<TResult> : IAnalyser
+    {
+        new AnalysisResult<IEnumerable<TResult>> Analyse(AnalysisSettings analysisSettings);
+
+        new IEnumerable<TResult> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
     }
 }
