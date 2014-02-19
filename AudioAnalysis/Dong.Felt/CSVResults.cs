@@ -32,17 +32,32 @@
         //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         //}
 
+        /// <summary>
+        /// Read CSV  file into variables. 
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static List<Box> CsvFileReader(string filePath)
         {
+            var results = new List<Box>();
+            
             var lines = File.ReadAllLines(filePath).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
-            var lines1 = lines.Skip(1);
-            var lines2 = lines1.Skip(1);
-            var results = new List<Box>();
-            foreach (var csvRow in lines2)
+            var lines1 = lines.Skip(1);           
+            foreach (var csvRow in lines1)
             {
-                var tempRectangle = new Box(int.Parse(csvRow[3]), int.Parse(csvRow[4]), double.Parse(csvRow[6]), double.Parse(csvRow[7]));
-                results.Add(tempRectangle);
+                if (csvRow.GetLength(0) != 0)
+                {
+                    var bottom = int.Parse(csvRow[3]);
+                    // using Parse, if the string is integer, then please use the int.Parse, if the string is double value, please use the double.Parse. 
+                    // you can't use int.Parse to parse the integer value. 
+                    var top = int.Parse(csvRow[4]);
+                    var left = double.Parse(csvRow[6]);
+                    var right = double.Parse(csvRow[7]);
+                    var tempRectangle = new Box(bottom, top, left, right);
+
+                    results.Add(tempRectangle);
+                }
             }
             return results;
         }
@@ -58,6 +73,32 @@
                 nh = RidgeDescriptionNeighbourhoodRepresentation.FromNeighbourhoodCsv(csvRow);
             }
             return nh;
+        }
+
+        public static void PointOfInterestListToCSV(List<PointOfInterest> poiList, string outputFilePath, string inputFilePath)
+        {
+            var results = new List<List<string>>();
+            results.Add(new List<string>() { "FileName", "Time", "Frequency", "FrameNo.", "FreBinNo.", 
+            "Direction", "Magnitude"});
+
+            foreach (var poi in poiList)
+            {
+                var time = poi.Point.X * poi.TimeScale.TotalSeconds;
+                var frequency = (int)poi.Herz;
+                var frameIndex = poi.Point.X;
+                // the drawing device is inversed with spectrogram. 
+                var freqBinIndex = 256- poi.Point.Y;
+                var directionCatogory = poi.OrientationCategory;
+                var magnitude = poi.RidgeMagnitude;
+                var direction = poi.RidgeOrientation;
+                results.Add(new List<string> { inputFilePath, time.ToString(), frequency.ToString(), 
+                                                   frameIndex.ToString(), freqBinIndex.ToString(),
+                                                   directionCatogory.ToString(), magnitude.ToString(),
+                                                   direction.ToString(),
+
+                }); 
+            }
+            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));          
         }
 
         public static void RegionRepresentationListToCSV(List<List<RegionRerepresentation>> region, string outputFilePath)

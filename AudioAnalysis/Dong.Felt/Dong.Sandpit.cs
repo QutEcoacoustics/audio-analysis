@@ -41,15 +41,14 @@
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\PHD research work\Audio\Liang's recording\SE_SE727_20101014-074900-075000.wav";
-                string outputDirectory = @"C:\XUEYAN\PHD research work\Audio\Liang's recording";
-                string imageFileName = "SE_SE727_20101014-074900-075000.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
+                string imageFileName = "1NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.png";
                 //This file will show the annotated spectrogram result.  
-                string annotatedImageFileName = "SE_SE727_20101014-074900-075000.png";
+                string annotatedImageFileName = "2NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
 
                 var scores = new List<double>();
@@ -70,7 +69,6 @@
                     minimumNumberInRidgeInMatrix = 3
                 };
                 //double intensityThreshold = 5.0; // dB
-
                 double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
                 
                 //// each region should have same nhCount, here we just get it from the first region item. 
@@ -92,38 +90,58 @@
                 double herzScale = spectrogram.FBinWidth; //43 hz
                 double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
 
-                //Output the spectrogram data for Liang
-                var result = new List<List<string>>();
-                result.Add(new List<string>() {"FileName","Value"});
-                string fileName = "SE_SE727_20101014-074900-075000";
-               // var csvFileName2 = "SE_SE727_20101014-074900-075000.csv";
-                string csvPath = Path.Combine(outputDirectory, fileName + ".csv");   
-                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
-                {
-                    for (int colIndex = 0; colIndex < cols; colIndex++)
-                    {
-                        result.Add(new List<string>() { fileName, matrix[rowIndex, colIndex].ToString() });
-                    }
-                }
-                File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
-
-
-                //var poiList1 = new List<PointOfInterest>();
-                //var ridges = new POISelection(poiList1);
-                //ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
-                ///// filter out some redundant ridges               
-                //var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
-                //var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
-                //var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);               
-                ////var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
-                Bitmap bmp = (Bitmap)image;
-                //var refinedPoiList = POISelection.RefineRidgeDirection(filterPoiList, rows, cols);
-                //foreach (PointOfInterest poi in refinedPoiList)
+                /// Try to draw boxes around the eventes Xueyan has already detected visually. 
+                //string fileName = "test.csv";
+                //string csvPath = Path.Combine(outputDirectory, fileName);
+                //var boxList = CSVResults.CsvFileReader(csvPath);
+                //foreach (var box in boxList)
                 //{
-                //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-                //    poi.DrawRefinedOrientationPoint(bmp, (int)freqBinCount);
+                //    // top row
+                //    int row1 = (int)(box.TopBorder / herzScale); 
+                //    // bottom row
+                //    int row2 = (int)(box.BottomBorder / herzScale);
+                //    // left column
+                //    int col1 = (int)(box.leftBorder / secondsScale);
+                //    // right column
+                //    int col2 = (int)(box.rigthBorder / secondsScale);
+                //    var eventBoundary = new Oblong(row1, col1, row2, col2);
+                //    var acousticEvent = new AcousticEvent(eventBoundary, secondsScale, herzScale);
+                //    acousticEventlist.Add(acousticEvent);
                 //}
+
+                /// Read the spectrogram.data into csv for Liang. 
+                //var result = new List<List<string>>();
+                //result.Add(new List<string>() { "FileName", "Value" });
+                //string fileName = "SE_SE727_20101014-074900-075000";
+                //string csvPath = Path.Combine(outputDirectory, fileName + ".csv");   
+                //for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+                //{
+                //    for (int colIndex = 0; colIndex < cols; colIndex++)
+                //    {
+                //        result.Add(new List<string>() { fileName, matrix[rowIndex, colIndex].ToString() });
+                //    }
+                //}
+                //File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+
+                var poiList1 = new List<PointOfInterest>();
+                var ridges = new POISelection(poiList1);
+                ridges.SelectRidgesFromMatrix(matrix, ridgeConfig.ridgeMatrixLength, ridgeConfig.ridgeDetectionmMagnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
+                /// filter out some redundant ridges               
+                var poiList = ImageAnalysisTools.PruneAdjacentTracks(ridges.poiList, rows, cols);
+                var poiList2 = ImageAnalysisTools.IntraPruneAdjacentTracks(poiList, rows, cols);
+                var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList2, rows, cols, ridgeConfig.filterRidgeMatrixLength, ridgeConfig.minimumNumberInRidgeInMatrix);
+                var connectedPoiList = PoiAnalysis.ConnectPOI(filterPoiList);
+                Bitmap bmp = (Bitmap)image;
+                var refinedPoiList = POISelection.RefineRidgeDirection(filterPoiList, rows, cols);
+                foreach (PointOfInterest poi in refinedPoiList)
+                {
+                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
+                    poi.DrawRefinedOrientationPoint(bmp, (int)freqBinCount);
+                }
+                string fileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
+                string csvPath = Path.Combine(outputDirectory, fileName);
+                CSVResults.PointOfInterestListToCSV(refinedPoiList, csvPath, wavFilePath);  
 
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
@@ -226,24 +244,27 @@
                 //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, 13, query.nhCountInColumn);
                 //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
                 /// output events image
-                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, filterPoiList);
+                
                 imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                // to save the original spectrogram. 
                 image = (Image)bmp;
                 bmp.Save(imagePath);
+                // to save the annotated spectrogram. 
+                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, poiList1);
                 //image.Save(imagePath, ImageFormat.Png);
             }
         } // Dev()
 
-        public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> poi, double eventThreshold, List<PointOfInterest> poiList)
+        public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if ((poi != null) && (poi.Count > 0))
+            if ((acousticEvent != null) && (acousticEvent.Count > 0))
             {
-                image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+                image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
             return image.GetImage();
         } //DrawSonogram()
