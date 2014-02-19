@@ -83,6 +83,11 @@ namespace AudioAnalysisTools
             string key = SpectrogramConstants.KEY_BackgroundNoise;
             string path = Path.Combine(ipdir, fileName + "." + key + ".csv");
             if (File.Exists(path)) this.ReadSpectrogram(key, path);
+            else
+            {
+                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                Console.WriteLine("         File does not exist: " + path);
+            }
 
             key = SpectrogramConstants.KEY_AcousticComplexityIndex;
             path = Path.Combine(ipdir, fileName + "." + key + ".csv");
@@ -198,21 +203,23 @@ namespace AudioAnalysisTools
         {
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
-                Console.WriteLine("WARNING: Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                Console.WriteLine("\n\nWARNING: From method ColourSpectrogram.DrawGreyscaleSpectrogramOfIndex()");
+                Console.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
                 List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
                 string list = "";
                 foreach (string str in keyList)
                 {
                     list += (str + ", ");
                 }
-                Console.WriteLine("  List of keys in dictionary = {0}", list);
+                Console.WriteLine("          List of keys in dictionary = {0}", list);
                 Console.WriteLine("  Press <RETURN> to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(666);
             }
             if (this.spectrogramMatrices[key] == null)
             {
-                Console.WriteLine("WARNING: Null matrix returned with key: {0}", key);
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawGreyscaleSpectrogramOfIndex()");
+                Console.WriteLine("         Null matrix returned with key: {0}", key);
                 Console.WriteLine("  Press <RETURN> to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(666);
