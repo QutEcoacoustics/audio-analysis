@@ -153,7 +153,7 @@ namespace AnalysisPrograms
             //string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES
             //string ipFileName = @"TEST_TUITCE_20091215_220004";
 
-            string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic"; // SERF
+            string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
             string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
 
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
@@ -162,10 +162,11 @@ namespace AnalysisPrograms
 
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
-            string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
+            //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb20";
 
 
-            // experiments with difference false-colour spectrograms
+            // experiments with DIFFERENCE false-colour spectrograms
             if (false)
             {
 
@@ -201,7 +202,7 @@ namespace AnalysisPrograms
             }
 
 
-            // experiments with t-statistic spectrograms 
+            // Experiments with t-STATISTIC spectrograms 
             // to start with just t-statistic spectrograms on a single index - average power. 
             if (false)
             {
@@ -231,12 +232,13 @@ namespace AnalysisPrograms
 
                 string opFileName3 = ipFileName + ".tTest.COLNEG.png";
                 int N = 4140;
-                double tStatisticMax = 10.0; // for normalising the image
+                double tStatisticMax = 15.0; // for normalising the image
                 var tTestSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
                 ImageTools.DrawGridLinesOnImage((Bitmap)tTestSp, cs2.X_interval, cs2.Y_interval);
                 tTestSp.Save(Path.Combine(opdir, opFileName3));
             }
 
+            // Experiments with z-SCORE EUCLIDIAN DISTANCE spectrograms 
             if (true)
             {
                 //SET UP TWO SPECTROGRAMS
@@ -267,11 +269,11 @@ namespace AnalysisPrograms
 
                 // average distance betwen two random points in ED euclidian space = 0.666 +/- 0.25
                 int trialCount = 10000;
-                int dimensions = 3;
-                RandomNumber.GetRandomDistancesInEuclidianSpace(trialCount, dimensions);
+                //int dimensions = 3;
+                //RandomNumber.GetRandomDistancesInEuclidianSpace(trialCount, dimensions);
 
                 // get distances between randomly selected indices
-                double[] distanceArray = new double[trialCount];
+                //double[] distanceArray = new double[trialCount];
                 int seed = (int)DateTime.Now.Ticks;
                 var rn = new RandomNumber(seed);
                 int[] maxValues = {254, 75};
@@ -285,24 +287,47 @@ namespace AnalysisPrograms
                 double[] v1 = new double[3];
                 double[] v2 = new double[3];
 
-                for (int i = 0; i < trialCount; i++)
+                //for (int i = 0; i < trialCount; i++)
+                //{
+                //    int[] pt1 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
+                //    int[] pt2 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
+
+                //    v1[0] = aciMatrix1[pt1[0], pt1[1]]; 
+                //    v1[1] = tenMatrix1[pt1[0], pt1[1]]; 
+                //    v1[2] = cvrMatrix1[pt1[0], pt1[1]];
+
+                //    v2[0] = aciMatrix2[pt2[0], pt2[1]]; 
+                //    v2[1] = tenMatrix2[pt2[0], pt2[1]]; 
+                //    v2[2] = cvrMatrix2[pt2[0], pt2[1]];
+
+                //    distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+                //}
+                int rowCount = aciMatrix1.GetLength(0);
+                int colCount = aciMatrix1.GetLength(1);
+                double[,] distanceMatrix = new double[rowCount, colCount];
+
+                for (int r = 0; r < rowCount; r++) // avoid top 5 freq bins and bottom 14 bins
                 {
-                    int[] pt1 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
-                    int[] pt2 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        v1[0] = aciMatrix1[r, c];
+                        v1[1] = tenMatrix1[r, c];
+                        v1[2] = cvrMatrix1[r, c];
 
-                    v1[0] = aciMatrix1[pt1[0], pt1[1]]; 
-                    v1[1] = tenMatrix1[pt1[0], pt1[1]]; 
-                    v1[2] = cvrMatrix1[pt1[0], pt1[1]];
-
-                    v2[0] = aciMatrix2[pt2[0], pt2[1]]; 
-                    v2[1] = tenMatrix2[pt2[0], pt2[1]]; 
-                    v2[2] = cvrMatrix2[pt2[0], pt2[1]];
-
-                    distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+                        v2[0] = aciMatrix2[r, c];
+                        v2[1] = tenMatrix2[r, c];
+                        v2[2] = cvrMatrix2[r, c];
+                        distanceMatrix[r, c] = DataTools.EuclidianDistance(v1, v2);
+                    }
                 }
+                double[] distanceArray = DataTools.Matrix2Array(distanceMatrix);
+
+
                 int[] histo = Histogram.Histo(distanceArray, 100);
                 DataTools.writeBarGraph(histo);
+                Console.WriteLine("Above bar graph is distance distribution for distance bewteen randomly selected pairs from 2 spectrograms.");
 
+                Console.WriteLine("Below av & sd is for same distance data.");
                 double avDist, sdDist;
                 NormalDist.AverageAndSD(distanceArray, out avDist, out sdDist);
                 double[] avAndsd = { avDist, sdDist };
