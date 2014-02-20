@@ -311,6 +311,7 @@ namespace TowseyLib
         /// returns a list of the column values in a csv file plus the column headings
         /// ASSUMED to be doubles
         /// returns as lists of type double
+        /// TODO Anthony to use the new U-BEAUT csv file reader.
         /// </summary>
         /// <param name="csvFileName"></param>
         /// <returns></returns>

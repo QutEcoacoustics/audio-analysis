@@ -108,7 +108,11 @@ namespace AudioAnalysisTools
             key = SpectrogramConstants.KEY_Variance;
             path = Path.Combine(ipdir, fileName + "." + key + ".csv");
             if (File.Exists(path)) this.ReadSpectrogram(key, path);
-
+            if (this.spectrogramMatrices.Count == 0)
+            {
+                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+            }
         }
 
         public void ReadSpectrogram(string key, string csvPath)
@@ -698,30 +702,12 @@ namespace AudioAnalysisTools
                     if (i1 > 240) {colour = Color.Red; } //99.9% conf
                     else 
                     {
-                        if (i1 > 120) {colour = Color.Orange;}
-                        else 
+                        if (i1 > 200) {colour = Color.Orange;}
+                        else
                         {
-                            if (i1 > 60) { colour = Color.Yellow; }
-                            else
-                            {
-                                if (i1 > 30) { colour = Color.FromArgb(60, 60, 60); }
-                            }
+                            if (i1 > 160) { colour = Color.Yellow; }
                         }
                     }
-
-                    //if (i1 > 3.29) { colour = Color.Red; } //99.9% conf
-                    //else
-                    //{
-                    //    if (i1 > 2.58) { colour = Color.Orange; }
-                    //    else
-                    //    {
-                    //        if (i1 > 2.33) { colour = Color.Yellow; }
-                    //        else
-                    //        {
-                    //            if (i1 > 1.96) { colour = Color.Cyan; }
-                    //        }
-                    //    }
-                    //}
                     bmp.SetPixel(column, row, colour);
                 }//end all columns
             }//end all rows
@@ -765,8 +751,8 @@ namespace AudioAnalysisTools
 
             int MaxRGBValue = 255;
             int v;
-            double zScore, zNorm;
-            double zMax = 5.0;
+            double zScore;
+            //double zMax = 5.0;
             Color colour;
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
@@ -785,20 +771,21 @@ namespace AudioAnalysisTools
                     //v = Math.Max(0, v);
                     //v = Math.Min(MaxRGBValue, i1);
 
-                    //colour = Color.FromArgb(v, v, v);
-
-                    if (zScore > 1.0) { colour = Color.Red; } //99.9% conf
+                    if (zScore > 3.08) { colour = Color.Red; } //99.9% conf
                     else
                     {
-                        if (zScore > 0.5) { colour = Color.Orange; }
+                        if (zScore > 2.33) { colour = Color.Orange; } //99.0% conf
                         else
                         {
-                            if (zScore > 0) { colour = Color.Yellow; }
+                            if (zScore > 1.65) { colour = Color.Yellow; } //95% conf
                             else
                             {
-                                //if (zScore > 1) { 
-                                    colour = Color.FromArgb(10, 10, 10); 
-                                //}
+                                if (zScore < 0.0) { colour = Color.Black; }
+                                else
+                                {
+                                    //v = Convert.ToInt32(zScore * MaxRGBValue);
+                                    colour = Color.FromArgb(60, 60, 60);
+                                }
                             }
                         }
                     }  // if() else
@@ -809,6 +796,25 @@ namespace AudioAnalysisTools
 
             return bmp;
         } // DrawDistanceSpectrogram()
+
+        public static void BlurSpectrogram(ColourSpectrogram cs)
+        {
+            string[] rgbMap = cs.ColorMap.Split('-');
+
+            cs.BlurSpectrogramMatrix(rgbMap[0]);
+            cs.BlurSpectrogramMatrix(rgbMap[1]);
+            cs.BlurSpectrogramMatrix(rgbMap[2]);
+        }
+
+        public static void BlurSpectrogram(ColourSpectrogram cs, string matrixKeys)
+        {
+            string[] keys = matrixKeys.Split('-');
+
+            for (int k = 0; k < keys.Length; k++)
+            {
+                cs.BlurSpectrogramMatrix(keys[k]);
+            }
+        }
 
 
     } //ColourSpectrogram
