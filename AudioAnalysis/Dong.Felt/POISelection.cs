@@ -21,9 +21,14 @@ namespace Dong.Felt
 
         #region Public Methods
 
-        public POISelection()
+        public static List<PointOfInterest> RidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
+            // list size based on avg result size
+            var instance = new POISelection(new List<PointOfInterest>(9000));
 
+            instance.RidgeDetectionInternal(spectrogram, ridgeConfiguration);
+
+            return instance.poiList;
         }
 
         public POISelection(List<PointOfInterest> list)
@@ -31,11 +36,11 @@ namespace Dong.Felt
             poiList = list;
         }
 
-        public void RidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        internal void RidgeDetectionInternal(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            int ridgeLength = ridgeConfiguration.ridgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.ridgeDetectionmMagnitudeThreshold;
+            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
             double herzScale = spectrogram.FBinWidth; //43 hz
@@ -142,8 +147,8 @@ namespace Dong.Felt
         public List<PointOfInterest> RidgeDetectionNoFilter(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration, double[,] falseMatrix)
         {           
             //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(falseMatrix);
-            int ridgeLength = ridgeConfiguration.ridgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.ridgeDetectionmMagnitudeThreshold;
+            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
             double herzScale = spectrogram.FBinWidth; //43 hz
@@ -546,7 +551,7 @@ namespace Dong.Felt
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
 
-            var pointsOfInterest = new POISelection();
+            var pointsOfInterest = new POISelection(new List<PointOfInterest>());
             pointsOfInterest.SelectRidgesFromMatrix(matrix, ridgeLength, magnitudeThreshold, secondsScale, timeScale, herzScale, freqBinCount);
             poiList = pointsOfInterest.poiList;
             RowsCount = rowsCount;

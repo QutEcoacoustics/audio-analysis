@@ -43,10 +43,26 @@ namespace AnalysisBase
         //FileInfo AnalysisImage(AnalysisSettings settings);
     }
 
-    public interface IAnalyser<TResult> : IAnalyser
+    public interface IAnalyser2 : IAnalyser
     {
-        new AnalysisResult<IEnumerable<TResult>> Analyse(AnalysisSettings analysisSettings);
+        new AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
 
-        new IEnumerable<TResult> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
+        new IEnumerable<ResultBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
+
+        IEnumerable<IndexBase> ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
+    }
+
+    public abstract class ResultBase
+    {
+        public int MinuteOffset { get; set; }
+        protected abstract AnalysisSettings AnalysisSettings { get; set; }
+    }
+
+    public abstract class EventBase : ResultBase
+    {
+    }
+
+    public abstract class IndexBase : ResultBase
+    {
     }
 }

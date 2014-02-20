@@ -99,16 +99,16 @@
                 //double intensityThreshold = 5.0; // dB
                 var ridgeConfig = new RidgeDetectionConfiguration
                 {
-                    ridgeDetectionmMagnitudeThreshold = 6.5,
-                    ridgeMatrixLength = 5,
-                    filterRidgeMatrixLength = 7,
-                    minimumNumberInRidgeInMatrix = 3
+                    RidgeDetectionmMagnitudeThreshold = 6.5,
+                    RidgeMatrixLength = 5,
+                    FilterRidgeMatrixLength = 7,
+                    MinimumNumberInRidgeInMatrix = 3
                 };
 
                 var poiList1 = new List<PointOfInterest>();
                 var poiTemperObject = new POISelection(poiList1);
                 //poiTemperObject.RidgeDetectionNoFilter(spectrogram, ridgeConfig, matrix1);
-                poiTemperObject.RidgeDetection(spectrogram, ridgeConfig);
+                poiTemperObject.RidgeDetectionInternal(spectrogram, ridgeConfig);
                 var ridges = poiTemperObject.poiList;
                 //var refinedPoiList = POISelection.RefineRidgeDirection(ridges, spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0));
                 Bitmap bmp = (Bitmap)image;

@@ -28,6 +28,8 @@ namespace AnalysisPrograms
 
     using AudioAnalysisTools;
 
+    using Dong.Felt;
+
     using PowerArgs;
 
     using TowseyLib;
@@ -240,6 +242,7 @@ namespace AnalysisPrograms
             string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+            // TODO: refactor so that any base type can be used
             if (analyser == null)
             {
                 LoggedConsole.WriteLine("###################################################\n");
@@ -250,7 +253,12 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("\t  " + anal.Identifier);
                 }
                 LoggedConsole.WriteLine("###################################################\n");
+
+                throw new Exception("Cannot find a valid IAnalyser");
             }
+            Type strongType;
+            var isStrongTypedAnalyser = analyser.GetType().IsInstanceOfGenericType(analyser, out strongType);
+
 
 
             //test conversion of events file to indices file
@@ -274,8 +282,11 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
+
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
             //    ###########################################################################################
+
+            var analyserResultsStrong = analyserResults as IEnumerable<AnalysisResult2>;
 
             // 8. PROCESS THE RESULTS
             LoggedConsole.WriteLine("");
@@ -287,21 +298,36 @@ namespace AnalysisPrograms
                 throw new AnalysisOptionDevilException();
             }
 
-            // merge all the datatables from the analysis into a single datatable
-            DataTable mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-            if (mergedDatatable == null)
+            DataTable mergedDatatable = null;
+            Tuple<EventBase[], IndexBase[]> mergedResults = null;
+            if (isStrongTypedAnalyser)
             {
-                LoggedConsole.WriteErrorLine("###################################################\n");
-                LoggedConsole.WriteErrorLine("MergeEventResultsIntoSingleDataTable() has returned a null data table.");
-                LoggedConsole.WriteErrorLine("###################################################\n");
-                throw new AnalysisOptionDevilException();
+                mergedResults = ResultsTools.MergeResults(analyserResultsStrong);
+            }
+            else
+            {
+                // merge all the datatables from the analysis into a single datatable
+                mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
+                if (mergedDatatable == null)
+                {
+                    LoggedConsole.WriteErrorLine("###################################################\n");
+                    LoggedConsole.WriteErrorLine(
+                        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
+                    LoggedConsole.WriteErrorLine("###################################################\n");
+                    throw new AnalysisOptionDevilException();
+                }
             }
 
             // not an exceptional state, do not throw exception
-            if (mergedDatatable.Rows.Count == 0)
+            if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no results at all (MergedDatatable had zero rows)");
             }
+            if (mergedResults != null && mergedResults.Item1.Length == 0 && mergedResults.Item2.Length == 0)
+            {
+                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+            }
+
 
             // get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility(tempFilesDirectory);
@@ -321,7 +347,14 @@ namespace AnalysisPrograms
                 scoreThreshold = 1.0;
             }
 
+            if (isStrongTypedAnalyser)
+            {
 
+            }
+            else
+            {
+
+            }
             var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold);
             var eventsDatatable = op1.Item1;
             var indicesDatatable = op1.Item2;
@@ -335,7 +368,7 @@ namespace AnalysisPrograms
             {
                 indicesCount = indicesDatatable.Rows.Count;
             }
-            var opdir = analyserResults.ElementAt(0).SettingsUsed.AnalysisInstanceOutputDirectory;
+            var opdir = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
             string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
             var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 

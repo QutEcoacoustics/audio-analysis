@@ -262,18 +262,20 @@ namespace Dong.Felt
 
     }
 
-    public class RidgeEvent
+
+
+    public class RidgeEvent : EventBase
     {
-        public RidgeEvent(PointOfInterest pointOfInterest)
+        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, int binCount)
         {
             this.Time = pointOfInterest.TimeLocation.TotalSeconds;
             this.Frequency = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
-            this.Bin = pointOfInterest.Point.Y;
-            this.Amplitude = pointOfInterest.Intensity;
-            this.Orientation = pointOfInterest.RidgeOrientation;
+            this.Bin = binCount - pointOfInterest.Point.Y;
+            this.Magnitude = pointOfInterest.RidgeMagnitude;
+            this.Orientation = (Direction)pointOfInterest.OrientationCategory;
 
-            throw new NotImplementedException();
+            this.AnalysisSettings = analysisSettings;
         }
 
         public double Time { get; set; }
@@ -284,18 +286,36 @@ namespace Dong.Felt
 
         public int Bin { get; set; }
 
-        public double Amplitude { get; set; }
+        public double Magnitude { get; set; }
 
-        public double Orientation { get; set; }
+        public Direction Orientation { get; set; }
+
+        public string FileName
+        {
+            get
+            {
+                return "Dummy text";// this.AnalysisSettings.SourceFile.Name;
+            }
+        }
+
+        public int MinuteOffset
+        {
+            get
+            {
+                return (int)(this.AnalysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
+            }
+        }
+
+        protected override AnalysisSettings AnalysisSettings { get; set; }
     }
 
-    public class RidgeAnalysis : IAnalyser<RidgeEvent>
+    public class RidgeAnalysis : IAnalyser2
     {
-        public AnalysisResult<IEnumerable<RidgeEvent>> Analyse(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var startOffset = analysisSettings.StartOfSegment ?? TimeSpan.Zero;
-            var result = new AnalysisResult<IEnumerable<RidgeEvent>>()
+            var result = new AnalysisResult2
                          {
                              AnalysisIdentifier = this.Identifier,
                              SettingsUsed = analysisSettings,
@@ -311,19 +331,15 @@ namespace Dong.Felt
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
             var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
-            /// This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
-            var ridgeConfig = new RidgeDetectionConfiguration
-            {
-                ridgeDetectionmMagnitudeThreshold = 6.5,
-                ridgeMatrixLength = 5,
-                filterRidgeMatrixLength = 7,
-                minimumNumberInRidgeInMatrix = 3
+            // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
+            var ridgeConfig = new RidgeDetectionConfiguration {
+                RidgeDetectionmMagnitudeThreshold = 6.5,
+                RidgeMatrixLength = 5,
+                FilterRidgeMatrixLength = 7,
+                MinimumNumberInRidgeInMatrix = 3
             };
-
-            var poiList1 = new List<PointOfInterest>();
-            var poiTemperObject = new POISelection(poiList1);
-            poiTemperObject.RidgeDetection(sonogram, ridgeConfig);
-            var ridges = poiTemperObject.poiList;
+            
+            var ridges = POISelection.RidgeDetection(sonogram, ridgeConfig);;
 
             if (ridges.IsNullOrEmpty())
             {
@@ -333,12 +349,15 @@ namespace Dong.Felt
             result.Data = new RidgeEvent[ridges.Count];
             for (int index = 0; index < ridges.Count; index++)
             {
-                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index]);
+                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram.Configuration.FreqBinCount);
             }
 
             if (analysisSettings.EventsFile != null)
             {
-                throw new NotImplementedException();
+                using (TextWriter writer = File.CreateText(analysisSettings.EventsFile.FullName))
+                {
+                    CsvSerializer.SerializeToWriter(result.Data, writer);
+                }
             }
 
             if (analysisSettings.IndicesFile != null)
@@ -355,7 +374,12 @@ namespace Dong.Felt
             return result;
         }
 
-        public IEnumerable<RidgeEvent> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        public IEnumerable<ResultBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IndexBase> ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
             throw new NotImplementedException();
         }
@@ -407,5 +431,8 @@ namespace Dong.Felt
             throw new NotImplementedException();
         }
         #endregion
+
+
+
     }
 }
