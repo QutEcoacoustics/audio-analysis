@@ -153,8 +153,10 @@ namespace AnalysisPrograms
             //string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES
             //string ipFileName = @"TEST_TUITCE_20091215_220004";
 
-            string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
+            string ipdir = @"C:\SensorNetworks\Output\SERF\2013MonthlyAveraged"; // SERF
             string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            string ipFileName1 = "avApril";
+            string ipFileName2 = "avJune";
 
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
             //string ipFileName = @"Test24hSpectrogram";
@@ -163,13 +165,12 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb20";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb21";
 
 
             // experiments with DIFFERENCE false-colour spectrograms
-            if (false)
+            if (true)
             {
-
                 // set the X and Y axis scales for the spectrograms 
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
@@ -177,25 +178,22 @@ namespace AnalysisPrograms
                 //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 double backgroundFilterCoeff = 1.0; //must be value <=1.0
-                string opFileName1 = ipFileName + ".Reference";
+                string opFileName1 = ipFileName1 + ".Reference";
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs1.ReadCSVFiles(ipdir, ipFileName);
-                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
+                cs1.ReadCSVFiles(ipdir, ipFileName1);
+                //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
-                string opFileName2 = ipFileName + ".Target";
+                string opFileName2 = ipFileName2 + ".Target";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs2.ReadCSVFiles(ipdir, ipFileName);
+                cs2.ReadCSVFiles(ipdir, ipFileName2);
                 cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
                 cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
 
-                string opFileName3 = ipFileName + ".Difference.COLNEG.png";
+                string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
                 double colourGain = 5.0;
                 var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
                 diffSp.Save(Path.Combine(opdir, opFileName3));
@@ -218,10 +216,7 @@ namespace AnalysisPrograms
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs1.ReadCSVFiles(ipdir, ipFileName);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_Average);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_Variance);
-                //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
-                //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                ColourSpectrogram.BlurSpectrogram(cs1, "AVG-VAR");
 
                 string opFileName2 = ipFileName + ".NonBlur";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
@@ -232,14 +227,14 @@ namespace AnalysisPrograms
 
                 string opFileName3 = ipFileName + ".tTest.COLNEG.png";
                 int N = 4140;
-                double tStatisticMax = 15.0; // for normalising the image
+                double tStatisticMax = 10.0; // for normalising the image
                 var tTestSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
                 ImageTools.DrawGridLinesOnImage((Bitmap)tTestSp, cs2.X_interval, cs2.Y_interval);
                 tTestSp.Save(Path.Combine(opdir, opFileName3));
             }
 
             // Experiments with z-SCORE EUCLIDIAN DISTANCE spectrograms 
-            if (true)
+            if (false)
             {
                 //SET UP TWO SPECTROGRAMS
                 // set the X and Y axis scales for the spectrograms 
@@ -253,9 +248,7 @@ namespace AnalysisPrograms
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs1.ReadCSVFiles(ipdir, ipFileName);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy);
-                cs1.BlurSpectrogramMatrix(SpectrogramConstants.KEY_BinCover);
+                ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
