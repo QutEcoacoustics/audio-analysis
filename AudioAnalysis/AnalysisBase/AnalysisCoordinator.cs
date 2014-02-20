@@ -314,13 +314,14 @@
 
             var tempDir = settings.AnalysisInstanceTempDirectoryChecked;
 
-            //if user requests, save the audio files
-            bool saveIntermediateWavFiles = false;
-            if (settings.ConfigDict.ContainsKey(keySaveIntermediateWavFiles))
-            {
-                string value = settings.ConfigDict[keySaveIntermediateWavFiles].ToString();
-                saveIntermediateWavFiles = Boolean.Parse(value);
-            }
+            // if user requests, save the audio files
+            // WARNING: the following has no affect, disabled
+            //bool saveIntermediateWavFiles = false;
+            //if (settings.ConfigDict.ContainsKey(keySaveIntermediateWavFiles))
+            //{
+            //    string value = settings.ConfigDict[this.keySaveIntermediateWavFiles];
+            //    saveIntermediateWavFiles = Boolean.Parse(value);
+            //}
 
             // create the file for the analysis
             // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
@@ -362,7 +363,7 @@
             //if user requests, save the intermediate csv files 
             if (settings.ConfigDict.ContainsKey(keySaveIntermediateCsvFiles))
             {
-                string value = settings.ConfigDict[keySaveIntermediateCsvFiles].ToString();
+                string value = settings.ConfigDict[this.keySaveIntermediateCsvFiles];
                 bool saveIntermediateCsvFiles = false;
                 saveIntermediateCsvFiles = Boolean.Parse(value);
                 if (saveIntermediateCsvFiles)
@@ -373,14 +374,21 @@
                 }
             }
 
-            //System.Threading.Thread.Sleep(2000);
-
             Log.DebugFormat("Item {0} started analysing file {1}.", settings.InstanceId, settings.AudioFile.Name);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             //##### RUN the ANALYSIS ################################################################
-            var result = analyser.Analyse(settings);
+            AnalysisResult result;
+            var strongAnalyser = analyser as IAnalyser2;
+            if (strongAnalyser != null)
+            {
+                result = strongAnalyser.Analyse(settings);
+            }
+            else
+            {
+                result = analyser.Analyse(settings);
+            }
             //#######################################################################################
 
             stopwatch.Stop();

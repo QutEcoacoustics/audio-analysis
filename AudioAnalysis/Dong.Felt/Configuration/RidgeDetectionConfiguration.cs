@@ -10,37 +10,16 @@
     /// </summary>
     public class RidgeDetectionConfiguration
     {
-        #region public properties
-
-        public double ridgeDetectionmMagnitudeThreshold { get; set; }
+        public double RidgeDetectionmMagnitudeThreshold { get; set; }
 
         /// <summary>
         /// dimension of NxN matrix to use for ridge detection, must be odd number.
         /// </summary>
-        public int ridgeMatrixLength { get; set; }
+        public int RidgeMatrixLength { get; set; }
 
-        public int filterRidgeMatrixLength { get; set; }
+        public int FilterRidgeMatrixLength { get; set; }
 
-        public int minimumNumberInRidgeInMatrix { get; set; }
-
-        #endregion
-
-        #region constructor
-
-        public RidgeDetectionConfiguration()
-        {
-
-        }
-
-        public RidgeDetectionConfiguration(double ridgeMagnitudeThreshold, int ridgeDetectionMatrixLength, int filterRidgesMatrixLength, int miniNumberInRidgeMatrix)
-        {
-            ridgeDetectionmMagnitudeThreshold = ridgeMagnitudeThreshold;
-            ridgeMatrixLength = ridgeDetectionMatrixLength;
-            filterRidgeMatrixLength = filterRidgesMatrixLength;
-            minimumNumberInRidgeInMatrix = miniNumberInRidgeMatrix;
-        }
-
-        #endregion
+        public int MinimumNumberInRidgeInMatrix { get; set; }
     }
 }
 

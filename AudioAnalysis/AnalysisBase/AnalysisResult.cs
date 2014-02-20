@@ -173,11 +173,13 @@
         }
     }
 
-    public class AnalysisResult<TResult> : AnalysisResult
+    public class AnalysisResult2 : AnalysisResult
     {
         /// <summary>
         /// Gets or sets results.
         /// </summary>
-        public new TResult Data { get; set; }
+        public new IEnumerable<EventBase> Data { get; set; }
+
+        public new IEnumerable<IndexBase> Indexes { get; set; }
     }
 }

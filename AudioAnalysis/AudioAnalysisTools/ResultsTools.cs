@@ -40,6 +40,40 @@ namespace AudioAnalysisTools
             return mergedDatatable;
         }
 
+        public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult2> results)
+        {
+            var eventCount = 0;
+            var indexCount = 0;
+
+            foreach (var result in results)
+            {
+                eventCount += result.Data.Count();
+                indexCount += result.Indexes.Count();
+            }
+            
+            var mergedEvents = new EventBase[eventCount];
+            var mergedIndices = new IndexBase[eventCount];
+
+            int eventIndex = 0;
+            int indexIndex = 0;            
+            foreach (var result in results)
+            {
+                foreach (var ev in result.Data)
+                {
+                    mergedEvents[eventIndex] = ev;
+                    eventIndex++;
+                }
+
+                foreach (var index in result.Indexes)
+                {
+                    mergedIndices[indexIndex] = index;
+                    indexIndex++;
+                }
+            }
+
+            return Tuple.Create(mergedEvents, mergedIndices);
+        }
+
         public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
         {
             TimeSpan segmentStartOffset = result.SegmentStartOffset;
@@ -162,6 +196,8 @@ namespace AudioAnalysisTools
             indicesDatatable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, durationOfTheOriginalAudioFile, scoreThreshold); //convert to datatable of indices
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
+
+      
 
 
         /// <summary>

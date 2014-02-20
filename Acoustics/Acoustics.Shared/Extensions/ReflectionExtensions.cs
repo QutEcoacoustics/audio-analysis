@@ -1,5 +1,6 @@
-﻿namespace Acoustics.Shared.Extensions
+﻿namespace System
 {
+    using System;
     using System.Reflection;
 
     public static class ReflectionExtensions
@@ -20,6 +21,24 @@
             {
                 return default(T);
             }
+        }
+
+        public static bool IsInstanceOfGenericType(this Type genericType, object instance, out Type matchedType)
+        {
+            Type type = instance.GetType();
+            while (type != null)
+            {
+                if (type.IsGenericType &&
+                    type.GetGenericTypeDefinition() == genericType)
+                {
+                    matchedType = type;
+                    return true;
+                }
+                type = type.BaseType;
+            }
+
+            matchedType = null;
+            return false;
         }
     }
 }
