@@ -22,7 +22,7 @@ namespace Dong.Felt
     using Accord.Math.Decompositions;
 
     // several types of points of interest
-    public enum FeatureType { NONE, LOCALMAXIMA, STRUCTURE_TENSOR }
+    public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
 
     /// <summary>
     /// The points of interest detection.
@@ -378,6 +378,7 @@ namespace Dong.Felt
 
         public static Tuple<int, int, double[,]> result { get; set; }
 
+        // Why I have to this step? I forgot. 
         public static List<PointOfInterest> ConnectPOI(List<PointOfInterest> poi)
         {
             var result = new List<PointOfInterest>();

@@ -8,7 +8,7 @@
     /// <summary>
     /// This class is to store the 
     /// </summary>
-    class RidgeDetectionConfiguration
+    public class RidgeDetectionConfiguration
     {
         #region public properties
 

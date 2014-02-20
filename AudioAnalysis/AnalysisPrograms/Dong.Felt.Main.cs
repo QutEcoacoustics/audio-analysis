@@ -311,8 +311,19 @@ namespace Dong.Felt
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
             var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
-            // Dong.RidgeDetection(sonogram, threshold, threshold)
-            var ridges = new List<PointOfInterest>();
+            /// This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
+            var ridgeConfig = new RidgeDetectionConfiguration
+            {
+                ridgeDetectionmMagnitudeThreshold = 6.5,
+                ridgeMatrixLength = 5,
+                filterRidgeMatrixLength = 7,
+                minimumNumberInRidgeInMatrix = 3
+            };
+
+            var poiList1 = new List<PointOfInterest>();
+            var poiTemperObject = new POISelection(poiList1);
+            poiTemperObject.RidgeDetection(sonogram, ridgeConfig);
+            var ridges = poiTemperObject.poiList;
 
             if (ridges.IsNullOrEmpty())
             {

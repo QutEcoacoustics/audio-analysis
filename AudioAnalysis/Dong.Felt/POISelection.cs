@@ -9,7 +9,7 @@ namespace Dong.Felt
     using TowseyLib;
     using System.Drawing;
 
-    class POISelection
+    public class POISelection
     {
         public enum RidgeOrientationType { NONE, HORIZONTAL, POSITIVE_QUATERPI, VERTICAL, NEGATIVE_QUATERPI }
 
@@ -29,6 +29,162 @@ namespace Dong.Felt
         public POISelection(List<PointOfInterest> list)
         {
             poiList = list;
+        }
+
+        public void RidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        {
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            int ridgeLength = ridgeConfiguration.ridgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.ridgeDetectionmMagnitudeThreshold;
+            double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            double herzScale = spectrogram.FBinWidth; //43 hz
+            double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int halfLength = ridgeLength / 2;
+            for (int r = halfLength; r < rows - halfLength; r++)
+            {
+                for (int c = halfLength; c < cols - halfLength; c++)
+                {
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    double direction;
+                    bool isRidge = false;
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
+                    if (magnitude > magnitudeThreshold)
+                    {
+                        Point point = new Point(c, r);
+                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                        double herz = (freqBinCount - r - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi = new PointOfInterest(time, herz);
+                        poi.Point = point;
+                        // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
+                        poi.RidgeOrientation = direction;
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                        poi.RidgeMagnitude = magnitude;
+                        poi.Intensity = matrix[r, c];
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        var neighbourPoint1 = new Point(0, 0);
+                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
+                        /// Fill the gap by adding two more neighbourhood points.
+                        poiList.Add(poi);                       
+                    }
+                }
+            }  /// filter out some redundant ridges
+        }         
+
+        //public void RidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        //{
+        //    double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+        //    int ridgeLength = ridgeConfiguration.ridgeMatrixLength;
+        //    double magnitudeThreshold = ridgeConfiguration.ridgeDetectionmMagnitudeThreshold;
+        //    double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+        //    var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+        //    double herzScale = spectrogram.FBinWidth; //43 hz
+        //    double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+        //    int rows = matrix.GetLength(0);
+        //    int cols = matrix.GetLength(1);
+        //    int halfLength = ridgeLength / 2;
+        //    for (int r = halfLength; r < rows - halfLength; r++)
+        //    {
+        //        for (int c = halfLength; c < cols - halfLength; c++)
+        //        {
+        //            var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+        //            double magnitude;
+        //            double direction;
+        //            bool isRidge = false;
+        //            // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
+        //            ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
+        //            if (magnitude > magnitudeThreshold)
+        //            {
+        //                Point point = new Point(c, r);
+        //                TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+        //                double herz = (freqBinCount - r - 1) * herzScale;
+        //                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+        //                var poi = new PointOfInterest(time, herz);
+        //                poi.Point = point;
+        //                // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
+        //                poi.RidgeOrientation = direction;
+        //                // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+        //                poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+        //                poi.RidgeMagnitude = magnitude;
+        //                poi.Intensity = matrix[r, c];
+        //                poi.TimeScale = timeScale;
+        //                poi.HerzScale = herzScale;
+        //                var neighbourPoint1 = new Point(0, 0);
+        //                var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+        //                var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
+        //                /// Fill the gap by adding two more neighbourhood points.
+        //                FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+        //                poiList.Add(poi);
+        //                poiList.Add(neighbourPoi1);
+        //                poiList.Add(neighbourPoi2);
+        //            }
+        //        }
+        //    }           
+        //    /// filter out some redundant ridges               
+        //    var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+        //    var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
+        //    var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.filterRidgeMatrixLength, ridgeConfiguration.minimumNumberInRidgeInMatrix);
+        //    //var connectedPoiList = PoiAnalysis.ConnectPOI(filteredPoiList);
+        //    //var refinedPoiList = POISelection.RefineRidgeDirection(filteredPoiList, rows, cols);
+        //    poiList = filteredPoiList;
+        //}
+
+
+
+        public List<PointOfInterest> RidgeDetectionNoFilter(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration, double[,] falseMatrix)
+        {           
+            //double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(falseMatrix);
+            int ridgeLength = ridgeConfiguration.ridgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.ridgeDetectionmMagnitudeThreshold;
+            double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            double herzScale = spectrogram.FBinWidth; //43 hz
+            double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+            int rows = falseMatrix.GetLength(0);
+            int cols = falseMatrix.GetLength(1);
+            int halfLength = ridgeLength / 2;
+            for (int r = halfLength; r < rows - halfLength; r++)
+            {
+                for (int c = halfLength; c < cols - halfLength; c++)
+                {
+                    var subM = MatrixTools.Submatrix(falseMatrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    double direction;
+                    bool isRidge = false;
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
+                    if (magnitude > magnitudeThreshold)
+                    {
+                        Point point = new Point(c, r);
+                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                        double herz = (freqBinCount - r - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi = new PointOfInterest(time, herz);
+                        poi.Point = point;
+                        // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
+                        poi.RidgeOrientation = direction;
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                        poi.RidgeMagnitude = magnitude;
+                        poi.Intensity = falseMatrix[r, c];
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        var neighbourPoint1 = new Point(0, 0);
+                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);           
+                        poiList.Add(poi);                
+                    }
+                }
+            }
+            return poiList;
         }
 
         /// <summary>
@@ -242,7 +398,6 @@ namespace Dong.Felt
             {
                 for (int col = Radius; col < colsMax - Radius; col++)
                 {
-                    // Here we just want to check it in a 3 * 5 matrix.
                     if (poiMatrix[row, col].RidgeMagnitude != 0)
                     {
                         var matrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, row - Radius, col - Radius, row + Radius, col + Radius);
@@ -278,6 +433,7 @@ namespace Dong.Felt
             var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
             return result;
         }
+
         // Refine Directions
         public static void RecalculateRidgeDirection(double[,] m, out double magnitude, out double direction)
         {
@@ -299,6 +455,7 @@ namespace Dong.Felt
                                    {0.1, 0.1,   0,   0,   0}, 
                                    {  0,   0,   0,   0,   0},
                                  };
+            // The fourth mask for pi/4. But something got wrong.
             double[,] dir3Mask = { {  0,   0,   0,   0, 0.1},
                                    {  0,   0,   0, 0.1,   0},
                                    {  0,   0, 0.1,   0,   0},
@@ -335,6 +492,7 @@ namespace Dong.Felt
                                    {  0,   0,   0, 0.1,   0},
                                    {  0,   0,   0, 0.1,   0},
                                  };
+            // The tenth mask for 3*pi/4. But something got wrong.
             double[,] dir9Mask = { {0.1,   0,   0,   0,   0},
                                    {  0, 0.1,   0,   0,   0},
                                    {  0,   0, 0.1,   0,   0},
