@@ -155,8 +155,8 @@ namespace AnalysisPrograms
 
             string ipdir = @"C:\SensorNetworks\Output\SERF\2013MonthlyAveraged"; // SERF
             string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            string ipFileName1 = "avApril";
-            string ipFileName2 = "avJune";
+            string ipFileName1 = "April.monthlyAv";
+            string ipFileName2 = "June.monthlyAv";
 
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
             //string ipFileName = @"Test24hSpectrogram";
@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb21";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb22";
 
 
             // experiments with DIFFERENCE false-colour spectrograms
@@ -178,10 +178,11 @@ namespace AnalysisPrograms
                 //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 double backgroundFilterCoeff = 1.0; //must be value <=1.0
+
                 string opFileName1 = ipFileName1 + ".Reference";
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs1.ReadCSVFiles(ipdir, ipFileName1);
+                cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
@@ -189,14 +190,24 @@ namespace AnalysisPrograms
                 string opFileName2 = ipFileName2 + ".Target";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs2.ReadCSVFiles(ipdir, ipFileName2);
+                cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
                 cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
                 cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
 
                 string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
-                double colourGain = 5.0;
+                double colourGain = 3.0;
                 var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
+                ImageTools.DrawGridLinesOnImage((Bitmap)diffSp, cs2.X_interval, cs2.Y_interval);
+                string title = String.Format("DIFFERENCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
+                diffSp = ColourSpectrogram.FrameSpectrogram(diffSp, title);
                 diffSp.Save(Path.Combine(opdir, opFileName3));
+
+                string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
+                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2/*, avDist, sdDist*/);
+                ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
+                title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
+                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, title);
+                distanceSp.Save(Path.Combine(opdir, opFileName4));
             }
 
 
@@ -247,15 +258,15 @@ namespace AnalysisPrograms
                 string opFileName1 = ipFileName + ".Blur";
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs1.ReadCSVFiles(ipdir, ipFileName);
-                ColourSpectrogram.BlurSpectrogram(cs1);
+                cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
+                //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
 
                 string opFileName2 = ipFileName + ".NonBlur";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs2.ReadCSVFiles(ipdir, ipFileName);
+                cs2.ReadCSVFiles(ipdir, ipFileName, colorMap);
                 cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
                 //cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
 
@@ -330,10 +341,11 @@ namespace AnalysisPrograms
 
 
                 string opFileName3 = ipFileName + ".distance.COLNEG.png";
-                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2, avDist, sdDist);
+                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2 /*, avDist, sdDist*/);
                 ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
+                string title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
+                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, title);
                 distanceSp.Save(Path.Combine(opdir, opFileName3));
-
             }
 
             // experiments with false colour images - categorising/discretising the colours
