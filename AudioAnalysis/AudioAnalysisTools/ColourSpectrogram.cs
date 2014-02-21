@@ -115,6 +115,28 @@ namespace AudioAnalysisTools
             }
         }
 
+
+        public void ReadCSVFiles(string ipdir, string fileName, string indexKeys)
+        {
+            string[] keys = indexKeys.Split('-');
+            for (int key = 0; key < keys.Length; key++)
+            {
+                string path = Path.Combine(ipdir, fileName + "." + keys[key] + ".csv");
+                if (File.Exists(path)) this.ReadSpectrogram(keys[key], path);
+                else
+                {
+                    Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                    Console.WriteLine("         File does not exist: " + path);
+                }
+            } // for loop
+
+            if (this.spectrogramMatrices.Count == 0)
+            {
+                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+            }
+        }
+
         public void ReadSpectrogram(string key, string csvPath)
         {
             double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
@@ -173,34 +195,24 @@ namespace AudioAnalysisTools
 
         public void DrawGreyScaleSpectrograms(string opdir, string opFileName, double backgroundFilter)
         {
-            string path = Path.Combine(opdir, opFileName + ".ACI.png");
-            Image bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_AcousticComplexityIndex, backgroundFilter);
-            bmp.Save(path);
-
-            path = Path.Combine(opdir, opFileName + ".AVG.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Average, backgroundFilter);
-            bmp.Save(path);
-
-            path = Path.Combine(opdir, opFileName + ".CVR.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BinCover, backgroundFilter);
-            bmp.Save(path);
-
-            path = Path.Combine(opdir, opFileName + ".TEN.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_TemporalEntropy, backgroundFilter);
-            bmp.Save(path);
-
-            path = Path.Combine(opdir, opFileName + ".VAR.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_Variance, backgroundFilter);
-            bmp.Save(path);
-
-            path = Path.Combine(opdir, opFileName + ".CMB.png");
-            bmp = bmp = this.DrawCombinedAverageSpectrogram(backgroundFilter);
-            bmp.Save(path);
-
-            // must return the background image because it will be used elsewhere
-            path = Path.Combine(opdir, opFileName + ".BGN.png");
-            bmp = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, backgroundFilter);
-            bmp.Save(path);
+            string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
+            string[] keys = putativeIndices.Split('-');
+            for (int i = 0; i < keys.Length; i++)
+            {
+                string key = keys[i];
+                if (this.spectrogramMatrices.ContainsKey(key))
+                {
+                    //this.ReadSpectrogram(key, path);
+                    string path = Path.Combine(opdir, opFileName + "." + key + ".png");
+                    Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key, backgroundFilter);
+                    bmp.Save(path);
+                }
+                else
+                {
+                    Console.WriteLine("WARNING: from method ColourSpectrogram.DrawGreyScaleSpectrograms()");
+                    Console.WriteLine("         Dictionary of SpectrogramMatrices does not contain key: " + key);
+                }
+            } // for loop
         }
 
         public Image DrawGreyscaleSpectrogramOfIndex(string key, double backgroundFilter)
@@ -216,17 +228,19 @@ namespace AudioAnalysisTools
                     list += (str + ", ");
                 }
                 Console.WriteLine("          List of keys in dictionary = {0}", list);
-                Console.WriteLine("  Press <RETURN> to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(666);
+                return null;
+                //Console.WriteLine("  Press <RETURN> to exit.");
+                //Console.ReadLine();
+                //System.Environment.Exit(666);
             }
             if (this.spectrogramMatrices[key] == null)
             {
                 Console.WriteLine("WARNING: From method ColourSpectrogram.DrawGreyscaleSpectrogramOfIndex()");
                 Console.WriteLine("         Null matrix returned with key: {0}", key);
-                Console.WriteLine("  Press <RETURN> to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(666);
+                return null;
+                //Console.WriteLine("  Press <RETURN> to exit.");
+                //Console.ReadLine();
+                //System.Environment.Exit(666);
             }
 
             double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], backgroundFilter);
@@ -244,6 +258,12 @@ namespace AudioAnalysisTools
             bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOS.png"));
 
             Image bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, backgroundFilter);
+            if (bmpBgn == null)
+            {
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawFalseColourSpectrograms()");
+                Console.WriteLine("         Null image returned with key: {0}", SpectrogramConstants.KEY_BackgroundNoise);
+                return;
+            }
 
             bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
             bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
@@ -329,6 +349,37 @@ namespace AudioAnalysisTools
             return compositeBmp;
         }
 
+
+        public static Image FrameSpectrogram(Image bmp1, string title)
+        {
+            int imageWidth = bmp1.Width;
+            int trackHeight = 20;
+            int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+            int timeScale = 60;
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
+
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            int offset = 0;
+            gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+            offset += timeBmp.Height;
+            gr.DrawImage(timeBmp, 0, offset); //dra
+            offset += titleBmp.Height;
+            gr.DrawImage(bmp1, 0, offset); //dra
+            offset += bmp1.Height;
+            gr.DrawImage(timeBmp, 0, offset); //dra
+            //offset += timeBmp.Height;
+            //gr.DrawImage(timeBmp, 0, offset); //dra
+
+            //draw a colour spectrum of basic colours
+            int maxScaleLength = imageWidth / 3;
+            Image scale = ColourSpectrogram.DrawColourScale(maxScaleLength, trackHeight - 2);
+            int xLocation = imageWidth * 2 / 3;
+            gr.DrawImage(scale, xLocation, 1); //dra
+            return compositeBmp;
+        }
 
 
 
@@ -715,7 +766,7 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, double avDist, double sdDist)
+        public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2 /*, double avDist, double sdDist*/)
         {
             double[,] aciMatrix1 = cs1.GetMatrix("ACI");
             double[,] tenMatrix1 = cs1.GetMatrix("TEN");
@@ -729,8 +780,7 @@ namespace AudioAnalysisTools
             // assume all matricies are normalised and of the same dimensions
             int rows = aciMatrix1.GetLength(0); //number of rows
             int cols = aciMatrix1.GetLength(1); //number
-            double d;
-            double[,] zScoreMatrix = new double[rows, cols];
+            double[,] dMatrix = new double[rows, cols];
 
             for (int row = 0; row < rows; row++)
             {
@@ -744,8 +794,18 @@ namespace AudioAnalysisTools
                     v2[1] = tenMatrix2[row, col];
                     v2[2] = cvrMatrix2[row, col];
 
-                    d = DataTools.EuclidianDistance(v1, v2);
-                    zScoreMatrix[row, col] = (d - avDist) / sdDist;
+                    dMatrix[row, col] = DataTools.EuclidianDistance(v1, v2);
+                }
+            }
+
+            double[] array = DataTools.Matrix2Array(dMatrix);
+            double avDist, sdDist;
+            NormalDist.AverageAndSD(array, out avDist, out sdDist);
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    dMatrix[row, col] = (dMatrix[row, col] - avDist) / sdDist;
                 }
             }
 
@@ -762,7 +822,7 @@ namespace AudioAnalysisTools
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    zScore = zScoreMatrix[row, col];
+                    zScore = dMatrix[row, col];
                     //if (zNorm < 0.0) zNorm = 0.0;
                     //if (zNorm > zMax) zNorm = zMax; // upper bound
                     //zNorm /= zMax; // normalise
