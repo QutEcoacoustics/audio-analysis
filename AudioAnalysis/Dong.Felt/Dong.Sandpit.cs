@@ -42,10 +42,10 @@
                 //CSVResults.BatchProcess(fileDirectory);
 
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\Liang's recording\SE_SE727_20101014-074900-075000.wav";
-                string outputDirectory = @"C:\XUEYAN\Liang's recording";
-                string imageFileName = "1SE_SE727_20101014-074900-075000.wav-spectrogram.png";
-                string annotatedImageFileName = "1SE_SE727_20101014-074900-075000.wav-annotate.png";
+                string wavFilePath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
+                string imageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-spectrogram.png";
+                string annotatedImageFileName = "1NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-annotate.png";
 
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
@@ -94,7 +94,7 @@
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
                 /// addd this line to check the result after noise removal.
-                image.Save(imagePath, ImageFormat.Png);
+                //image.Save(imagePath, ImageFormat.Png);
                 
                 //double intensityThreshold = 5.0; // dB
                 var ridgeConfig = new RidgeDetectionConfiguration
@@ -108,7 +108,8 @@
                 var poiList1 = new List<PointOfInterest>();
                 var poiTemperObject = new POISelection(poiList1);
                 //poiTemperObject.RidgeDetectionNoFilter(spectrogram, ridgeConfig, matrix1);
-                poiTemperObject.RidgeDetectionInternal(spectrogram, ridgeConfig);
+                //poiTemperObject.RidgeDetectionInternal(spectrogram, ridgeConfig);
+                poiTemperObject.ImprovedRidgeDetection(spectrogram, ridgeConfig);
                 var ridges = poiTemperObject.poiList;
                 //var refinedPoiList = POISelection.RefineRidgeDirection(ridges, spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0));
                 Bitmap bmp = (Bitmap)image;
@@ -170,7 +171,7 @@
                 //    }
                 //}
                 //File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
-                             
+
                 //var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;
