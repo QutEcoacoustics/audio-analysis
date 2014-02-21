@@ -86,7 +86,7 @@
                 var time = poi.Point.X * poi.TimeScale.TotalSeconds;
                 var frequency = (int)poi.Herz;
                 var frameIndex = poi.Point.X;
-                // the drawing device is inversed with spectrogram. 
+                // the coordinates of drawing device is inversed with ones generated spectrogram. 
                 var freqBinIndex = 256- poi.Point.Y;
                 var directionCatogory = poi.OrientationCategory;
                 var magnitude = poi.RidgeMagnitude;

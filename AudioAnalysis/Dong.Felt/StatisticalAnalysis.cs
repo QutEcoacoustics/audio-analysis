@@ -43,7 +43,7 @@
         }
 
         /// <summary>
-        /// This function tries to transfer a poiList into a matrix. 
+        /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         /// </summary>
         /// <param name="list"></param>
         /// <param name="rows"></param>
@@ -52,11 +52,11 @@
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
-            for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+            for (int colIndex = 0; colIndex < cols; colIndex++)
             {
-                for (int colIndex = 0; colIndex < cols; colIndex++)
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
                 {
-                    var point = new Point(0, 0);
+                    var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
                     m[rowIndex, colIndex] = tempPoi;
@@ -68,11 +68,16 @@
                     // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
                     // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
                     // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                    m[rows - poi.Point.Y - 1, poi.Point.X] = poi;
+                    m[poi.Point.Y, poi.Point.X] = poi;
                 }
             return m;
         }
 
+        /// <summary>
+        /// It is a reverse process to TransposePOIsToMatrix.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static List<PointOfInterest> TransposeMatrixToPOIlist(PointOfInterest[,] matrix)
         {
             var result = new List<PointOfInterest>();
@@ -134,7 +139,7 @@
             {
                 for (int col = 0; col < subColCount; col++)
                 {
-                    subMatrix[row, col] = new PointOfInterest(new Point(row1 + row, col1 + col));
+                    subMatrix[row, col] = new PointOfInterest(new Point(col1 + col, row1 + row));
                     if (matrix[row1 + row, col1 + col] != null)
                     {
                         subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
