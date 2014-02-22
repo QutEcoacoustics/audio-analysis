@@ -242,7 +242,6 @@ namespace AnalysisPrograms
             string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-            // TODO: refactor so that any base type can be used
             if (analyser == null)
             {
                 LoggedConsole.WriteLine("###################################################\n");
@@ -284,11 +283,12 @@ namespace AnalysisPrograms
             // 7. ####################################### DO THE ANALYSIS ###################################
 
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
+
             //    ###########################################################################################
 
+            // 8. PROCESS THE RESULTS
             var analyserResultsStrong = analyserResults as IEnumerable<AnalysisResult2>;
 
-            // 8. PROCESS THE RESULTS
             LoggedConsole.WriteLine("");
             if (analyserResults == null)
             {
@@ -299,10 +299,11 @@ namespace AnalysisPrograms
             }
 
             DataTable mergedDatatable = null;
-            Tuple<EventBase[], IndexBase[]> mergedResults = null;
+            EventBase[] mergedEventResults = null;
+            IndexBase[] mergedIndicesResults = null;
             if (isStrongTypedAnalyser)
             {
-                mergedResults = ResultsTools.MergeResults(analyserResultsStrong);
+                ResultsTools.MergeResults(analyserResultsStrong).Decompose(out mergedEventResults, out mergedIndicesResults);
             }
             else
             {
@@ -321,9 +322,13 @@ namespace AnalysisPrograms
             // not an exceptional state, do not throw exception
             if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (MergedDatatable had zero rows)");
+                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
             }
-            if (mergedResults != null && mergedResults.Item1.Length == 0 && mergedResults.Item2.Length == 0)
+            if (mergedEventResults != null && mergedEventResults.Length == 0)
+            {
+                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+            }
+            if (mergedIndicesResults != null && mergedIndicesResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
             }
@@ -347,62 +352,73 @@ namespace AnalysisPrograms
                 scoreThreshold = 1.0;
             }
 
+            // 9. CREATE INDICES IF NECESSARY
+            DataTable eventsDatatable = null;
+            DataTable indicesDatatable = null;
+            int eventsCount;
+            int indicesCount;
             if (isStrongTypedAnalyser)
             {
-
+                ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
+                eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
+                indicesCount = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
             }
             else
             {
+                ResultsTools
+                    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
+                    .Decompose(out eventsDatatable, out indicesDatatable);
+                eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
+                indicesCount = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
+            }
 
-            }
-            var op1 = ResultsTools.GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold);
-            var eventsDatatable = op1.Item1;
-            var indicesDatatable = op1.Item2;
-            int eventsCount = 0;
-            if (eventsDatatable != null) 
+            // 10. SAVE THE RESULTS
+            var resultsDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
+            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
+            FileInfo eventsFile;
+            FileInfo indicesFile;
+            if (isStrongTypedAnalyser)
             {
-                eventsCount = eventsDatatable.Rows.Count;
+                eventsFile = ResultsTools.SaveEvents(mergedEventResults, fileNameBase, resultsDirectory);
+                indicesFile = ResultsTools.SaveIndices(mergedIndicesResults, fileNameBase, resultsDirectory);
             }
-            int indicesCount = 0;
-            if (indicesDatatable != null)
+            else
             {
-                indicesCount = indicesDatatable.Rows.Count;
+                ResultsTools
+                    .SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fileNameBase, resultsDirectory.FullName)
+                    .Decompose(out eventsFile, out indicesFile);
             }
-            var opdir = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
-            string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
-            var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-
-            var fiEventsCSV = op2.Item1;
-            var fiIndicesCSV = op2.Item2;
 
             LoggedConsole.WriteLine("\n###################################################");
             LoggedConsole.WriteLine("Finished processing " + sourceAudio.Name + ".");
             //LoggedConsole.WriteLine("Output  to  directory: " + diOP.FullName);
             LoggedConsole.WriteLine("\n");
 
-            if (fiEventsCSV == null)
+            if (eventsFile == null)
             {
                 LoggedConsole.WriteLine("An Events CSV file was NOT returned.");
             }
             else
             {
-                LoggedConsole.WriteLine("EVENTS CSV file(s) = " + fiEventsCSV.Name);
+                LoggedConsole.WriteLine("EVENTS CSV file(s) = " + eventsFile.Name);
                 LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
             LoggedConsole.WriteLine("\n");
-            if (fiIndicesCSV == null)
+            if (indicesFile == null)
             {
                 LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
             }
             else
             {
-                LoggedConsole.WriteLine("INDICES CSV file(s) = " + fiIndicesCSV.Name);
+                LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
                 LoggedConsole.WriteLine("");
-                SaveImageOfIndices(fiIndicesCSV, configPath, displayCSVImage);
+
+                // TODO: optimise this so it does read the csv file off disk
+                SaveImageOfIndices(indicesFile, configPath, displayCSVImage);
             }
 
-            // if doing ACOUSTIC INDICES then write SPECTROGRAMS to CSV files and draw their images
+            // if doing ACOUSTIC INDICES then write meta-SPECTROGRAMS to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))
             {
                 // ensure results are sorted in order
@@ -441,7 +457,7 @@ namespace AnalysisPrograms
                     }
 
                     // write spectrogram to disk as CSV file
-                    var saveCsvPath = Path.Combine(opdir.FullName, name + "." + spectrumKey + ".csv");
+                    var saveCsvPath = Path.Combine(resultsDirectory.FullName, name + "." + spectrumKey + ".csv");
                     lines[0] = Spectrum.GetHeader(numbers[0].Length);  // add in header
                     FileTools.WriteTextFile(saveCsvPath, lines);
 
@@ -459,8 +475,8 @@ namespace AnalysisPrograms
                 string ipFileName = name;
                 cs.LoadSpectrogramDictionary(spectrogramDictionary);
                 double backgroundFilter = 1.0;
-                cs.DrawGreyScaleSpectrograms(opdir.FullName, ipFileName, backgroundFilter);
-                cs.DrawFalseColourSpectrograms(opdir.FullName, ipFileName, backgroundFilter);
+                cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
+                cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
 
             } // if doing acoustic indices
 

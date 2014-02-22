@@ -4,9 +4,10 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using Acoustics.Shared.Extensions;
 using AnalysisBase;
 //using AudioAnalysisTools;
+using log4net;
 using TowseyLib;
 //using Acoustics.Shared;
 //using Acoustics.Tools.Audio;
@@ -18,11 +19,12 @@ namespace AudioAnalysisTools
     public static class ResultsTools
     {
         public const string ReportFileExt = ".csv";
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="analyserResults"></param>
+        /// <param name="analyserResults"></param>  
         /// <returns></returns>
         public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
@@ -51,24 +53,24 @@ namespace AudioAnalysisTools
                 indexCount += result.Indexes.Count();
             }
             
-            var mergedEvents = new EventBase[eventCount];
-            var mergedIndices = new IndexBase[eventCount];
+            var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
+            var mergedIndices = indexCount > 0 ? new IndexBase[eventCount] :  null;
 
             int eventIndex = 0;
             int indexIndex = 0;            
             foreach (var result in results)
             {
+                
                 foreach (var ev in result.Data)
                 {
                     mergedEvents[eventIndex] = ev;
                     eventIndex++;
                 }
 
-                foreach (var index in result.Indexes)
-                {
-                    mergedIndices[indexIndex] = index;
-                    indexIndex++;
-                }
+                indexIndex = CorrectIndexOffsets(mergedIndices, indexIndex, result);
+
+                // have not yet incorporated the functionality of GetSegmentDatatableWithContext
+                throw new NotImplementedException();
             }
 
             return Tuple.Create(mergedEvents, mergedIndices);
@@ -124,6 +126,47 @@ namespace AudioAnalysisTools
 
             return dt;
         } //GetSegmentDatatableWithContext()
+
+        public static int CorrectEventOffsets(EventBase[] destination, int destinationIndex, AnalysisResult2 result)
+        {
+            var resultStartSeconds = result.SegmentStartOffset.TotalSeconds;
+            var count = 0;
+            foreach (var eventBase in result.Data)
+            {
+                eventBase.EventCount = count;
+                count++;
+
+                eventBase.SegmentDuration = result.AudioDuration.TotalSeconds;
+                var absoluteOffset = resultStartSeconds + eventBase.EventStartSeconds;
+                eventBase.EventStartAbsolute = absoluteOffset;
+                
+                // just in case the event was in a segment longer than 60 seconds, rebase values
+                eventBase.MinuteOffset = (int) (absoluteOffset / 60);
+                eventBase.EventStartSeconds = resultStartSeconds % 60;
+
+                destination[destinationIndex] = eventBase;
+                destinationIndex++;
+            }
+
+            return destinationIndex;
+        }
+
+        public static int CorrectIndexOffsets(IndexBase[] destination, int destinationIndex, AnalysisResult2 result)
+        {
+            foreach (var indexBase in result.Indexes)
+            {
+                // (double)result.SegmentStartOffset.Minutes
+                indexBase.MinuteOffset = (int)result.SegmentStartOffset.TotalMinutes;
+                indexBase.SegmentDuration = result.AudioDuration.TotalSeconds;
+
+                // TODO: what is the purpose of Indices_Count
+
+                destination[destinationIndex] = indexBase;
+                destinationIndex++;
+            }
+
+            return destinationIndex;
+        }
 
         
         /// <summary>
@@ -197,7 +240,33 @@ namespace AudioAnalysisTools
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
 
-      
+        private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
+
+        public static void ConvertEventsToIndices(IAnalyser2 analyser, 
+            EventBase[] events, ref IndexBase[] indices, TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
+        {
+            if (events == null && indices == null)
+            {
+                throw new InvalidOperationException("If no results were produced, events cannot be made into indices");
+            }
+            else if (events == null && indices != null)
+            {
+                // no-op, no events to convert, but indices already calculated
+                Log.Debug("No events recieved, indices already given, no further action");
+            }
+            else if (events != null && indices == null)
+            {
+                Log.InfoFormat("Converting Events to {0} minute Indices", IndexUnitTime.TotalMinutes);
+
+                indices = analyser.ConvertEventsToIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
+                    scoreThreshold).ToArray();
+            }
+            else if (events != null && indices != null)
+            {
+                // no-op both values already present, just ensure they match
+                Log.Debug("Both events and indices already given");
+            }
+        } 
 
 
         /// <summary>
@@ -242,6 +311,36 @@ namespace AudioAnalysisTools
             }
 
             return Tuple.Create(fiEvents, fiIndices);
+        }
+
+        public static FileInfo SaveEvents(IEnumerable<EventBase> events,
+            string fileName, DirectoryInfo outputDirectory)
+        {
+            return SaveResults(events, outputDirectory, fileName + ".Events");
+        }
+
+        public static FileInfo SaveIndices(IEnumerable<IndexBase> indices,
+            string fileName, DirectoryInfo outputDirectory)
+        {
+            return SaveResults(indices, outputDirectory, fileName + ".Indices");
+        }
+
+        private static FileInfo SaveResults<T>(IEnumerable<T> results, DirectoryInfo outputDirectory, string resultFilenamebase)
+        {
+            if (results == null)
+            {
+                return null;
+            }
+
+            var reportfilePath = outputDirectory.CombineFile(resultFilenamebase + ReportFileExt);
+            var reportfilePathBackup = outputDirectory.CombineFile(resultFilenamebase + "_BACKUP" + ReportFileExt);
+
+            CsvTools.WriteResultsToCsv(reportfilePath, results);
+
+            reportfilePathBackup.Delete();
+            reportfilePath.CopyTo(reportfilePathBackup.FullName);
+
+            return reportfilePath;
         }
 
     } //TempTools

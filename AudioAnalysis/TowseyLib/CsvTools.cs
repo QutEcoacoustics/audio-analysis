@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using System.IO;
+using ServiceStack.Text;
 
 
 namespace TowseyLib
@@ -447,7 +448,17 @@ namespace TowseyLib
             }
         }// end AppendRow2CSVFile()
 
+        #region newCsvMethods
 
+        public static void WriteResultsToCsv<T>(FileInfo destination, IEnumerable<T> results)
+        {
+            using (var stream =  destination.Create())
+            {
+                CsvSerializer.SerializeToStream(results, stream);
+            }
+        }
+
+        #endregion
 
 
     } //class
