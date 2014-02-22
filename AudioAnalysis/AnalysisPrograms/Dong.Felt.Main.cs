@@ -268,19 +268,17 @@ namespace Dong.Felt
     {
         public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, int binCount)
         {
-            this.Time = pointOfInterest.TimeLocation.TotalSeconds;
-            this.Frequency = pointOfInterest.Herz;
+            this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = binCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
             this.Orientation = (Direction)pointOfInterest.OrientationCategory;
 
-            this.AnalysisSettings = analysisSettings;
+            this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
+
+            this.MinuteOffset = (int)(analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
+            this.FileName = analysisSettings.SourceFile.FullName;
         }
-
-        public double Time { get; set; }
-
-        public double Frequency { get; set; }
 
         public int Frame { get; set; }
 
@@ -289,24 +287,6 @@ namespace Dong.Felt
         public double Magnitude { get; set; }
 
         public Direction Orientation { get; set; }
-
-        public string FileName
-        {
-            get
-            {
-                return "Dummy text";// this.AnalysisSettings.SourceFile.Name;
-            }
-        }
-
-        public int MinuteOffset
-        {
-            get
-            {
-                return (int)(this.AnalysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
-            }
-        }
-
-        protected override AnalysisSettings AnalysisSettings { get; set; }
     }
 
     public class RidgeAnalysis : IAnalyser2
@@ -317,12 +297,13 @@ namespace Dong.Felt
             var startOffset = analysisSettings.StartOfSegment ?? TimeSpan.Zero;
             var result = new AnalysisResult2
                          {
-                             AnalysisIdentifier = this.Identifier,
+                             AnalysisIdentifier = Identifier,
                              SettingsUsed = analysisSettings,
                              SegmentStartOffset = startOffset
                          };
 
             var recording = new AudioRecording(audioFile.FullName);
+            result.AudioDuration = recording.Duration();
             if (recording.SampleRate != 22050)
             {
                 throw new NotSupportedException();
@@ -354,15 +335,13 @@ namespace Dong.Felt
 
             if (analysisSettings.EventsFile != null)
             {
-                using (TextWriter writer = File.CreateText(analysisSettings.EventsFile.FullName))
-                {
-                    CsvSerializer.SerializeToWriter(result.Data, writer);
-                }
+                CsvTools.WriteResultsToCsv(analysisSettings.EventsFile, result.Data);
             }
 
             if (analysisSettings.IndicesFile != null)
             {
-                throw new NotImplementedException();
+                var unitTime = TimeSpan.FromMinutes(1.0);
+                result.Indexes = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
             }
 
             if (analysisSettings.ImageFile != null)
@@ -379,9 +358,60 @@ namespace Dong.Felt
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IndexBase> ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
+        public IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
-            throw new NotImplementedException();
+            if (duration == TimeSpan.Zero)
+            {
+                return null;
+            }
+
+            double units = duration.TotalSeconds / unitTime.TotalSeconds;
+
+            // get whole minutes
+            int unitCount = (int)(units / 1);
+
+            // add fractional minute
+            if ((units % 1) > 0.0)
+            {
+                unitCount += 1;
+            } 
+
+            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
+            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
+
+            foreach (EventBase anEvent in events)
+            {
+                double eventStart = anEvent.EventStartAbsolute.Value;// (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+
+                // TODO: why not -gt, ask michael
+                if (eventScore != 0.0)
+                {
+                    eventsPerUnitTime[timeUnit]++;
+                }
+                if (eventScore > scoreThreshold)
+                {
+                    bigEvsPerUnitTime[timeUnit]++;
+                }
+            }
+
+            var indices = new IndexBase[eventsPerUnitTime.Length];
+
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
+            {
+                var newIndex = new EventIndex();
+
+                int unitId = (int) (i * unitTime.TotalMinutes);
+
+                newIndex.MinuteOffset = unitId;
+                newIndex.EventsTotal = eventsPerUnitTime[i];
+                newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
+
+                indices[i] = newIndex;
+            }
+
+            return indices;
         }
 
         public string DisplayName

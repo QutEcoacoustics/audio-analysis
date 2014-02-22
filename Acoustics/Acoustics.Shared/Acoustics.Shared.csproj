@@ -131,6 +131,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="Extensions\ReflectionExtensions.cs" />
+    <Compile Include="Extensions\TupleExtensions.cs" />
     <Compile Include="FilterResult.cs" />
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />
