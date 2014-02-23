@@ -7,6 +7,9 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Linq;
+using ServiceStack;
+
 namespace Dong.Felt
 {
     using System;
@@ -272,11 +275,11 @@ namespace Dong.Felt
             this.Frame = pointOfInterest.Point.X;
             this.Bin = binCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
-            this.Orientation = (Direction)pointOfInterest.OrientationCategory;
+            this.Orientation = (Direction) pointOfInterest.OrientationCategory;
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
 
-            this.MinuteOffset = (int)(analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
+            this.MinuteOffset = (int) (analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
         }
 
@@ -309,7 +312,7 @@ namespace Dong.Felt
                 throw new NotSupportedException();
             }
 
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.0};
             var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
@@ -335,13 +338,15 @@ namespace Dong.Felt
 
             if (analysisSettings.EventsFile != null)
             {
-                CsvTools.WriteResultsToCsv(analysisSettings.EventsFile, result.Data);
+                WriteEventsFile(analysisSettings.EventsFile, result.Data);
             }
 
             if (analysisSettings.IndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 result.Indexes = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
+
+                WriteIndicesFile(analysisSettings.IndicesFile, result.Indexes);
             }
 
             if (analysisSettings.ImageFile != null)
@@ -353,65 +358,24 @@ namespace Dong.Felt
             return result;
         }
 
-        public IEnumerable<ResultBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        public IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
         {
             throw new NotImplementedException();
         }
 
+        public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            CsvTools.WriteResultsToCsv(destination, results.Cast<RidgeEvent>());
+        }
+
+        public void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        {
+            CsvTools.WriteResultsToCsv(destination, results.Cast<EventIndex>());
+        }
+
         public IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
         {
-            if (duration == TimeSpan.Zero)
-            {
-                return null;
-            }
-
-            double units = duration.TotalSeconds / unitTime.TotalSeconds;
-
-            // get whole minutes
-            int unitCount = (int)(units / 1);
-
-            // add fractional minute
-            if ((units % 1) > 0.0)
-            {
-                unitCount += 1;
-            } 
-
-            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
-            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
-
-            foreach (EventBase anEvent in events)
-            {
-                double eventStart = anEvent.EventStartAbsolute.Value;// (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
-                double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
-                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-
-                // TODO: why not -gt, ask michael
-                if (eventScore != 0.0)
-                {
-                    eventsPerUnitTime[timeUnit]++;
-                }
-                if (eventScore > scoreThreshold)
-                {
-                    bigEvsPerUnitTime[timeUnit]++;
-                }
-            }
-
-            var indices = new IndexBase[eventsPerUnitTime.Length];
-
-            for (int i = 0; i < eventsPerUnitTime.Length; i++)
-            {
-                var newIndex = new EventIndex();
-
-                int unitId = (int) (i * unitTime.TotalMinutes);
-
-                newIndex.MinuteOffset = unitId;
-                newIndex.EventsTotal = eventsPerUnitTime[i];
-                newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
-
-                indices[i] = newIndex;
-            }
-
-            return indices;
+            return AnalyserHelpers.StandardEventToIndexConverter(events, unitTime, duration, scoreThreshold);
         }
 
         public string DisplayName

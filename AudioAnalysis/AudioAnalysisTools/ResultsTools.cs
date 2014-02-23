@@ -42,35 +42,27 @@ namespace AudioAnalysisTools
             return mergedDatatable;
         }
 
-        public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult2> results)
+        public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
         {
             var eventCount = 0;
             var indexCount = 0;
 
-            foreach (var result in results)
+            foreach (AnalysisResult2 result in results)
             {
                 eventCount += result.Data.Count();
                 indexCount += result.Indexes.Count();
             }
             
             var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
-            var mergedIndices = indexCount > 0 ? new IndexBase[eventCount] :  null;
+            var mergedIndices = indexCount > 0 ? new IndexBase[indexCount] :  null;
 
             int eventIndex = 0;
             int indexIndex = 0;            
-            foreach (var result in results)
+            foreach (AnalysisResult2 result in results)
             {
-                
-                foreach (var ev in result.Data)
-                {
-                    mergedEvents[eventIndex] = ev;
-                    eventIndex++;
-                }
+                eventIndex = CorrectEventOffsets(mergedEvents, eventIndex, result);
 
                 indexIndex = CorrectIndexOffsets(mergedIndices, indexIndex, result);
-
-                // have not yet incorporated the functionality of GetSegmentDatatableWithContext
-                throw new NotImplementedException();
             }
 
             return Tuple.Create(mergedEvents, mergedIndices);
@@ -313,29 +305,29 @@ namespace AudioAnalysisTools
             return Tuple.Create(fiEvents, fiIndices);
         }
 
-        public static FileInfo SaveEvents(IEnumerable<EventBase> events,
-            string fileName, DirectoryInfo outputDirectory)
+        public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
+            DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
         {
-            return SaveResults(events, outputDirectory, fileName + ".Events");
+            return SaveResults(outputDirectory, fileName + ".Events", analyser2.WriteEventsFile, events);
         }
 
-        public static FileInfo SaveIndices(IEnumerable<IndexBase> indices,
-            string fileName, DirectoryInfo outputDirectory)
+        public static FileInfo SaveIndices(IAnalyser2 analyser2, string fileName,
+            DirectoryInfo outputDirectory, IEnumerable<IndexBase> indices) 
         {
-            return SaveResults(indices, outputDirectory, fileName + ".Indices");
+            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteIndicesFile, indices);
         }
 
-        private static FileInfo SaveResults<T>(IEnumerable<T> results, DirectoryInfo outputDirectory, string resultFilenamebase)
+        private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
         {
             if (results == null)
             {
-                return null;
+                return null;    
             }
 
             var reportfilePath = outputDirectory.CombineFile(resultFilenamebase + ReportFileExt);
             var reportfilePathBackup = outputDirectory.CombineFile(resultFilenamebase + "_BACKUP" + ReportFileExt);
 
-            CsvTools.WriteResultsToCsv(reportfilePath, results);
+            serialiseFunc(reportfilePath, results);
 
             reportfilePathBackup.Delete();
             reportfilePath.CopyTo(reportfilePathBackup.FullName);
