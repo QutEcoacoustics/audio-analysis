@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.IO;
 using ServiceStack.Text;
+using ServiceStack.Text.Jsv;
 
 
 namespace TowseyLib
@@ -450,11 +451,29 @@ namespace TowseyLib
 
         #region newCsvMethods
 
+        /// <summary>
+        /// Serialise results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="destination"></param>
+        /// <param name="results"></param>
         public static void WriteResultsToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
-            using (var stream =  destination.Create())
+            using (var stream =  destination.CreateText())
             {
-                CsvSerializer.SerializeToStream(results, stream);
+//              JsvStringSerializer s = new JsvStringSerializer();
+//              var o = s.SerializeToString(results);
+//              stream.Write(o);
+
+                CsvSerializer.SerializeToWriter(results, stream);
+            }
+        }
+
+        public static IEnumerable<T> ReadResultsFromCsv<T>(FileInfo source)
+        {
+            using (var stream = source.Open(FileMode.Open, FileAccess.Read))
+            {
+                return CsvSerializer.DeserializeFromStream<IEnumerable<T>>(stream);
             }
         }
 

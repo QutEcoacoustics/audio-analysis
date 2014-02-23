@@ -1,5 +1,8 @@
 ﻿
 
+using System.Reflection;
+using log4net;
+
 namespace AnalysisPrograms
 {
     using System;
@@ -64,6 +67,8 @@ namespace AnalysisPrograms
                 }
             }
         }
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         const string ImagefileExt = ".png";
 
@@ -255,8 +260,7 @@ namespace AnalysisPrograms
 
                 throw new Exception("Cannot find a valid IAnalyser");
             }
-            Type strongType;
-            var isStrongTypedAnalyser = analyser.GetType().IsInstanceOfGenericType(analyser, out strongType);
+            var isStrongTypedAnalyser = analyser is IAnalyser2;
 
 
 
@@ -278,6 +282,8 @@ namespace AnalysisPrograms
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SourceFile = sourceAudio;
+
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
 
             // 7. ####################################### DO THE ANALYSIS ###################################
@@ -287,7 +293,6 @@ namespace AnalysisPrograms
             //    ###########################################################################################
 
             // 8. PROCESS THE RESULTS
-            var analyserResultsStrong = analyserResults as IEnumerable<AnalysisResult2>;
 
             LoggedConsole.WriteLine("");
             if (analyserResults == null)
@@ -303,7 +308,7 @@ namespace AnalysisPrograms
             IndexBase[] mergedIndicesResults = null;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.MergeResults(analyserResultsStrong).Decompose(out mergedEventResults, out mergedIndicesResults);
+                ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
             }
             else
             {
@@ -359,7 +364,7 @@ namespace AnalysisPrograms
             int indicesCount;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
+                ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
                 eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
                 indicesCount = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
             }
@@ -379,8 +384,8 @@ namespace AnalysisPrograms
             FileInfo indicesFile;
             if (isStrongTypedAnalyser)
             {
-                eventsFile = ResultsTools.SaveEvents(mergedEventResults, fileNameBase, resultsDirectory);
-                indicesFile = ResultsTools.SaveIndices(mergedIndicesResults, fileNameBase, resultsDirectory);
+                eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
+                indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
             }
             else
             {
@@ -414,78 +419,86 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
                 LoggedConsole.WriteLine("");
 
-                // TODO: optimise this so it does read the csv file off disk
-                SaveImageOfIndices(indicesFile, configPath, displayCSVImage);
+                if (isStrongTypedAnalyser)
+                {
+                    Log.Warn(
+                        "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
+                }
+                else
+                {
+                    // TODO: optimise this so it does read the csv file off disk
+                    SaveImageOfIndices(indicesFile, configPath, displayCSVImage);
+                }
             }
 
             // if doing ACOUSTIC INDICES then write meta-SPECTROGRAMS to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))
             {
-                // ensure results are sorted in order
-                var results = analyserResults.ToArray();
-                string name = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-
-
-                int frameWidth = 512;   // default value
-                if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
-                    frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
-
-                int sampleRate = 17640; // default value
-                if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
-                    sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
-
-                // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-                // this is the most effcient way to do this
-                // gather up numbers and strings store in memory, write to disk one time
-                // this method also AUTOMATICALLY SORTS because it uses array indexing
-                
-                int startMinute = (int)(fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
-                var spectrogramDictionary = new Dictionary<string, double[,]>();
-                foreach (var spectrumKey in results[0].Spectra.Keys)
-                {
-                    // +1 for header
-                    var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
-                    var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
-                    foreach (var analysisResult in results)
-                    {
-                        var index = ((int)analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
-
-                        numbers[index] = analysisResult.Spectra[spectrumKey];
-
-                        // add one to offset header
-                        lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
-                    }
-
-                    // write spectrogram to disk as CSV file
-                    var saveCsvPath = Path.Combine(resultsDirectory.FullName, name + "." + spectrumKey + ".csv");
-                    lines[0] = Spectrum.GetHeader(numbers[0].Length);  // add in header
-                    FileTools.WriteTextFile(saveCsvPath, lines);
-
-                    //following lines used to store spectrogram matrices in Dictionary
-                    double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramDictionary.Add(spectrumKey, matrix);
-
-                } // foreach spectrumKey
-
-                // now Draw the false colour spectrogram
-                int xScale = 60;  // assume one minute spectra and hourly time lines
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-                var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
-                string ipFileName = name;
-                cs.LoadSpectrogramDictionary(spectrogramDictionary);
-                double backgroundFilter = 1.0;
-                cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
-                cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
-
+                ProcessSpectrums(analyserResults, sourceAudio, analysisSettings, fileSegment, resultsDirectory);
             } // if doing acoustic indices
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
 
+        private static void ProcessSpectrums(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
+            AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
+        {
+            // ensure results are sorted in order
+            var results = analyserResults.ToArray();
+            string name = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
 
-        // Main(string[] args)
+            int frameWidth = 512; // default value
+            if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
+                frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
+
+            int sampleRate = 17640; // default value
+            if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
+                sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
+
+            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+            // this is the most effcient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
+
+            int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+            var spectrogramDictionary = new Dictionary<string, double[,]>();
+            foreach (var spectrumKey in results[0].Spectra.Keys)
+            {
+                // +1 for header
+                var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
+                var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
+                foreach (var analysisResult in results)
+                {
+                    var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
+
+                    numbers[index] = analysisResult.Spectra[spectrumKey];
+
+                    // add one to offset header
+                    lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
+                }
+
+                // write spectrogram to disk as CSV file
+                var saveCsvPath = Path.Combine(resultsDirectory.FullName, name + "." + spectrumKey + ".csv");
+                lines[0] = Spectrum.GetHeader(numbers[0].Length); // add in header
+                FileTools.WriteTextFile(saveCsvPath, lines);
+
+                //following lines used to store spectrogram matrices in Dictionary
+                double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                spectrogramDictionary.Add(spectrumKey, matrix);
+            } // foreach spectrumKey
+
+            // now Draw the false colour spectrogram
+            int xScale = 60; // assume one minute spectra and hourly time lines
+            string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+            var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
+            string ipFileName = name;
+            cs.LoadSpectrogramDictionary(spectrogramDictionary);
+            double backgroundFilter = 1.0;
+            cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
+            cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
+        }
 
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
         {
@@ -510,25 +523,3 @@ namespace AnalysisPrograms
     } //class AnalyseLongRecording
 }
 
-
-//rem run the analysis, note: needs multi analysis build of analysis programs.exe
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site1\DM420036.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site1"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site3\DM420037.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site3"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site4\DM420062.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site4"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site5\DM420050.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site5"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site6\DM420048.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site6"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site9\DM420039.MP3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site9"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site10\DM420049.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site10"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site11\DM420057.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site11"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site12\DM420041.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site12"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site13\DM420054.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site13"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site14\DM420053.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site14"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site22\DM420040.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site22"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site24\DM420002.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site24"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site25\DM420012.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site25"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site27\DM420029.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site27"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site28\DM420009.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site28"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site29\DM420016.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site29"
-//C:\SensorNetworks\Software\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe "Z:\Sunshine Coast\Site30\DM420015.MP3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\SunshineCoast\Towsey.MultiAnalyser\Site30"
-
-//pause

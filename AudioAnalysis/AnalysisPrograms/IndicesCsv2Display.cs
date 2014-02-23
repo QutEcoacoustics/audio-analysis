@@ -96,34 +96,57 @@ namespace AnalysisPrograms
             }
 
             var outputDTs = Tuple.Create(new DataTable(), new DataTable() );
+            IEnumerable<IndexBase> indices = null;
 
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+            var isStrongTypedAnalyser = analyser is IAnalyser2;
             if (analyser == null)
             {
                 LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
                 LoggedConsole.WriteLine("\t\t Will construct default image");
                 outputDTs = DisplayIndices.ProcessCsvFile(arguments.InputCsv, null);
             }
+            else if (isStrongTypedAnalyser)
+            {
+                indices = ((IAnalyser2) analyser).ProcessCsvFile(arguments.InputCsv, arguments.Config);
+            }
             else
             {
                 outputDTs = analyser.ProcessCsvFile(arguments.InputCsv, arguments.Config);
 
             }
-            analyser = null;
 
             //DataTable dtRaw = output.Item1;
             DataTable dt2Display = outputDTs.Item2;
-            if (dt2Display == null)
+            if (isStrongTypedAnalyser)
             {
-                throw new InvalidOperationException("Data table is null - cannot continue");
+                if (indices == null)
+                {
+                    throw new InvalidOperationException("Indices are null - cannot continue");
+                }
             }
+            else
+            {
+                if (dt2Display == null)
+                {
+                    throw new InvalidOperationException("Data table is null - cannot continue");
+                }
+            }
+
 
             // #########################################################################################################
             // Convert datatable to image
             bool normalisedDisplay = false;
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
             string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+
+            if (isStrongTypedAnalyser)
+            {
+                // TODO: add suport for drawing images from strong typed classes - talk to anthony about this
+                throw new NotImplementedException();
+            }
+
             Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, arguments.Output);
             // #########################################################################################################
 

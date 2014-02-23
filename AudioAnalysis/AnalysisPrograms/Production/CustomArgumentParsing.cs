@@ -243,7 +243,7 @@ namespace AnalysisPrograms.Production
 
             if (matches != 1)
             {
-                var valids = "{" + ValidItems.Join(", ") + "}";
+                var valids = "{" + ValidItems.Aggregate("", (seed, current) => seed + ", " + current) + "}";
                 throw new ValidationArgException(
                     this.ExceptionMessage
                     + "Supplied value {1} for argument {0} not match any of the allowed values: ".Format2(

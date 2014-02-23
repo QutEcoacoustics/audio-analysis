@@ -47,9 +47,82 @@ namespace AnalysisBase
     {
         new AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
 
-        new IEnumerable<ResultBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
+        new IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
+
+        /// <summary>
+        /// Ensures abstract types are downcast by the analyser and written to file.
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="results"></param>
+        void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
+        
+        /// <summary>
+        /// Ensures abstract types are downcast by the analyser and written to file.
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="results"></param>
+        void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
 
         IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
+    }
+
+    public static class AnalyserHelpers
+    {
+        public static IndexBase[] StandardEventToIndexConverter(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
+        {
+            if (duration == TimeSpan.Zero)
+            {
+                return null;
+            }
+
+            double units = duration.TotalSeconds / unitTime.TotalSeconds;
+
+            // get whole minutes
+            int unitCount = (int)(units / 1);
+
+            // add fractional minute
+            if ((units % 1) > 0.0)
+            {
+                unitCount += 1;
+            }
+
+            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
+            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
+
+            foreach (EventBase anEvent in events)
+            {
+                double eventStart = anEvent.EventStartAbsolute ?? anEvent.EventStartSeconds;// (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
+
+                // TODO: why not -gt, ask michael
+                if (eventScore != 0.0)
+                {
+                    eventsPerUnitTime[timeUnit]++;
+                }
+                if (eventScore > scoreThreshold)
+                {
+                    bigEvsPerUnitTime[timeUnit]++;
+                }
+            }
+
+            var indices = new IndexBase[eventsPerUnitTime.Length];
+
+            for (int i = 0; i < eventsPerUnitTime.Length; i++)
+            {
+                var newIndex = new EventIndex();
+
+                int unitId = (int)(i * unitTime.TotalMinutes);
+
+                newIndex.MinuteOffset = unitId;
+                newIndex.EventsTotal = eventsPerUnitTime[i];
+                newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
+
+                indices[i] = newIndex;
+            }
+
+            return indices;
+        }
     }
 
     public abstract class ResultBase
@@ -108,6 +181,10 @@ namespace AnalysisBase
     public class EventIndex : IndexBase
     {
         public int EventsTotal { get; set; }
+
+        // TODO: possibility for dynamic column name
         public int EventsTotalThresholded { get; set; }
+
+        
     }
 }
