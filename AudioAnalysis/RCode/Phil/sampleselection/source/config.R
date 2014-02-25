@@ -29,7 +29,7 @@ g.start.min <- 0
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 439
+g.end.min <- 1439
 #g.end.min <- 400
 
 # which sites to include in sample selection

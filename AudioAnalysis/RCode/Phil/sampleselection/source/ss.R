@@ -27,9 +27,11 @@
 
 
 # clear the workspace
-cat('clearing the workspace \n')
+# flush output device. the stack can get stuck on an output file that 
+# doesn't exist sometimes if execution is interrupted before dev.off is called
+cat('clearing the workspace \n flushing dev \v')
 rm(list = ls())
-
+dev.flush()
 
 source('config.R')
 source('events.R')

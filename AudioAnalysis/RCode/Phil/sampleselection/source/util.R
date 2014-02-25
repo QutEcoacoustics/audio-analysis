@@ -247,8 +247,6 @@ SecToTime <- function (sec, decimals = 2,  midnight.is.1st.min = FALSE) {
     return(paste(h, m, paste(s, cs, sep = "."), sep = ':'))
 }
 
- 
-
 MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     #given a minute number, returns a string which is the time of day
     # eg 322 returns 5:21 because 5:21am is the 322min minute of the day
@@ -296,7 +294,6 @@ TimeToMin <- function (time = NULL, hour = NULL, min = NULL,
     return(min)
     
 }
-
 FixDate <- function (date) {
     require('stringr')
     #takes a date string which may be written in a different format
@@ -332,4 +329,13 @@ OrderBy <- function (df, col, decreasing = FALSE) {
     #reorders a data frame by the values in col 
     df <- df[order(df[[col]], decreasing = decreasing),]
     return(df)
+}
+
+Truncate <- function (v, num) {
+    if (length(v) > num) {
+        return(v[1:num])
+    } else {
+        return(v)
+    }
+    
 }
