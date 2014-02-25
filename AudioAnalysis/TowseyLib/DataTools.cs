@@ -2871,6 +2871,104 @@ namespace TowseyLib
   }
 
 
+  //=============================================================================
+
+
+
+      /// <summary>
+      /// Returns the min, max, mode and one-sided standard deviation of an array of double values.
+      /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
+      /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
+      /// i.e. the modal position is assumed to be the average of the underlying distribution.
+      /// This method is used to calculate the mean and SD of acoustic indices whose distrubtions are very skewed, e.g. temporal entropy and cover.
+      /// </summary>
+      /// <param name="values"></param>
+      /// <param name="min"></param>
+      /// <param name="max"></param>
+      /// <param name="mode"></param>
+      /// <param name="SD"></param>
+      public static void GetModeAndOneTailedStandardDeviation(double[] values, out double min, out double max, out double mode, out double SD)
+      {
+          int binCount = 100;
+          double binWidth;
+          int[] histo = Histogram.Histo(values, binCount, out binWidth, out min, out max);
+          //DataTools.writeBarGraph(histo);
+          //Console.WriteLine("Above bar graph is distribution of {0} index values.", key);
+
+          //Calculate the SD on longest tail. Assume that the tail is Gaussian.
+          int indexOfMode, indexOfOneSD;
+          DataTools.GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
+          mode = min + (indexOfMode * binWidth);
+          SD = Math.Abs(indexOfOneSD - indexOfMode) * binWidth;
+
+
+          // the below av and sd are just a check on the one-tailed calcualtion.
+          //double avDist, sdDist;
+          //NormalDist.AverageAndSD(values, out avDist, out sdDist);
+          //double[] avAndsd = new double[2];
+          //avAndsd[0] = avDist;
+          //avAndsd[1] = sdDist;
+          //Console.Write("Standard av & sd for data.");
+          //Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
+      }
+
+  /// <summary>
+  /// Assuming the passed histogram represents a distribution of values (derived from acoustic indices). which a signal is added to Gaussian noise,
+      /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
+      /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
+      /// i.e. the modal position is assumed to be the average of the underlying distribution.
+      /// This method is used to calculate the mean and SD of acoustic indices whose distrubtions are very skewed, e.g. temporal entropy and cover.
+      /// </summary>
+  /// <param name="histo"></param>
+  /// <param name="indexOfMode"></param>
+  /// <param name="indexOfOneSD"></param>
+  public static void GetModeAndOneTailedStandardDeviation(int[] histo, out int indexOfMode, out int indexOfOneSD)
+  {
+      indexOfMode = DataTools.GetMaxIndex(histo);
+
+      int halfway = histo.Length / 2;
+      double totalAreaUnderLowerCurve = 0.0;
+      double partialSum, thresholdSum; // 0.68 = area under one SD
+      indexOfOneSD = 0;
+
+      if (indexOfMode >= halfway)
+      {
+          for (int i = indexOfMode; i >= 0; i--) //sum area back to zero inex.
+          {
+              totalAreaUnderLowerCurve += histo[i];
+          }
+          thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
+          partialSum = 0.0;
+          for (int i = indexOfMode; i >= 0; i--) //sum in direction of zero index.
+          {
+              partialSum += histo[i];
+              indexOfOneSD = i;
+              if (partialSum > thresholdSum) // we have passed the one SD point
+              {
+                  break;
+              }
+          }
+      }
+      else //bin count < halfway - //sum area up to length of array.
+      {
+          for (int i = indexOfMode; i < histo.Length; i++)
+          {
+              totalAreaUnderLowerCurve += histo[i];
+          }
+          thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
+          partialSum = 0.0;
+          for (int i = indexOfMode; i < histo.Length; i++) //sum in direction of max index.
+          {
+              partialSum += histo[i];
+              indexOfOneSD = i;
+              if (partialSum > thresholdSum) // we have passed the one SD point
+              {
+                  break;
+              }
+          }
+      }
+  } // GetModeAndOneStandardDeviation()
+
 
 
 //=============================================================================

@@ -205,7 +205,7 @@ namespace AnalysisPrograms
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
                 var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2/*, avDist, sdDist*/);
                 ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
-                title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
+                title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (RED: April>June.  GRN: June>April)      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
                 distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, title);
                 distanceSp.Save(Path.Combine(opdir, opFileName4));
             }
