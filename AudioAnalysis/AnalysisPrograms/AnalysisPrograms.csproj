@@ -323,4 +323,27 @@ rem copy configs
 xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  
+  <PropertyGroup>
+    <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
+</PropertyGroup>  
+
+<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+  <Target Name="BeforeBuild">
+    <PropertyGroup>
+      <File>$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>
+      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.\d+\.\d+)\x22</Expr>
+      <reg>
+			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
+			</reg>
+      <maj>$(reg.Split(".")[0])</maj>
+      <min>$(reg.Split(".")[1])</min>
+      <bld>$(reg.Split(".")[2])</bld>
+      <rev>$(reg.Split(".")[3].Trim())</rev>
+      <year>$([System.DateTime]::Now.ToString("yy"))</year>
+      <month>$([System.DateTime]::Now.ToString("MM"))</month>
+    </PropertyGroup>
+    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />
+    <FileUpdate Files="Properties\AssemblyInfo.cs" Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
+  </Target>
 </Project>

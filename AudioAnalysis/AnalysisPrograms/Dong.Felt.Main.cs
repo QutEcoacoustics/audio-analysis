@@ -312,7 +312,7 @@ namespace Dong.Felt
                 throw new NotSupportedException();
             }
 
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.0};
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5};
             var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 

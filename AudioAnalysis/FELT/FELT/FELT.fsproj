@@ -214,39 +214,31 @@
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.	-->
+		   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+		 <PropertyGroup>
+    <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
+</PropertyGroup>  
+
+<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <Target Name="BeforeBuild">
-    <!-- C:\Program Files (x86)\CollabNet\Subversion Server\ -->
-    <!-- ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\" -->
-    <!-- C:\Program Files\CollabNet\Subversion Client -->
-    <!--
-    <PropertyGroup>
-      <ToolPath Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\')">$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\Subversion Server\</ToolPath>
-      <ToolPath Condition="Exists('D:\Work\Sensors\Extra Assemblies\Subversion Server\')">D:\Work\Sensors\Extra Assemblies\Subversion Server\</ToolPath>
-      <ToolPath Condition="Exists('C:\Program Files (x86)\CollabNet\Subversion Server\')">C:\Program Files (x86)\CollabNet\Subversion Server\</ToolPath>
-      <ToolPath Condition="Exists('C:\Program Files\CollabNet\Subversion Client')">C:\Program Files\CollabNet\Subversion Client</ToolPath>
-    </PropertyGroup>
-    <SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(ToolPath)">
-      <Output TaskParameter="Revision" PropertyName="Revision" />
-    </SvnVersion>
+    <!-- Turning this on because that lazy arsehole can't be bother doing basic diagnostics	-->
     <PropertyGroup>
       <File>$([System.IO.File]::ReadAllText("AssemblyInfo.fs"))</File>
-      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.\d+\.\d+)</Expr>
+      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.\d+\.\d+)\x22</Expr>
       <reg>
 			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
 			</reg>
       <maj>$(reg.Split(".")[0])</maj>
       <min>$(reg.Split(".")[1])</min>
       <bld>$(reg.Split(".")[2])</bld>
-      <rev>$(reg.Split(".")[3])</rev>
+      <rev>$(reg.Split(".")[3].Trim())</rev>
+      <year>$([System.DateTime]::Now.ToString("yy"))</year>
+      <month>$([System.DateTime]::Now.ToString("MM"))</month>
     </PropertyGroup>
-    <Math.Add Numbers="$(bld);1">
-      <Output TaskParameter="Result" PropertyName="Result" />
-    </Math.Add>
-    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(maj).$(min).$(Result).$(Revision)!" Importance="High" />
-    <FileUpdate Files="AssemblyInfo.fs" Regex="(\d+)\.(\d+)\.(\d+)\.(\d+)" ReplacementText="$1.$2.$(Result).$(Revision)" />
-	-->
+    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />
+    <FileUpdate Files="AssemblyInfo.fs" Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+
 </Project>

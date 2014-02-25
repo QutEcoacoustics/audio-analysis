@@ -30,7 +30,8 @@ namespace AnalysisPrograms
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
 
             LoggedConsole.WriteLine(
-                "QUT Bioacoustic Analysis Program - version " + fvi.FileVersion + "\n"
+                "QUT Bioacoustic Analysis Program - version " + fvi.FileVersion
+                + "( " + (InDEBUG ? "DEBUG" : "RELEASE") + " build) \n"
                 + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
         }
 
