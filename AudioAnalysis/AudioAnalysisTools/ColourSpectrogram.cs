@@ -63,6 +63,7 @@ namespace AudioAnalysisTools
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+        private Dictionary<string, double[]> avAndSd = new Dictionary<string, double[]>(); // used to save mode and sd of the indices 
 
         /// <summary>
         /// CONSTRUCTOR
@@ -185,6 +186,16 @@ namespace AudioAnalysisTools
         public double[,] GetMatrix(string key)
         {
             return this.spectrogramMatrices[key];
+        }
+
+        public void CalculateIndexModeAndStandardDeviation(string key)
+        {
+            double[] values = DataTools.Matrix2Array(this.spectrogramMatrices[key]);
+            double min, max, mode, SD;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, out min, out max, out mode, out SD);
+            Console.WriteLine("{0}: Min={1:f3}   Max={2:f3}    Mode={3:f3}+/-{4:f3} (SD=One-tailed)", key, min, max, mode, SD);
+            double[] avSD = {mode, SD};
+            this.avAndSd.Add(key, avSD);
         }
 
         public void BlurSpectrogramMatrix(string key)
@@ -769,18 +780,30 @@ namespace AudioAnalysisTools
         public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2 /*, double avDist, double sdDist*/)
         {
             double[,] aciMatrix1 = cs1.GetMatrix("ACI");
+            cs1.CalculateIndexModeAndStandardDeviation("ACI");
             double[,] tenMatrix1 = cs1.GetMatrix("TEN");
+            cs1.CalculateIndexModeAndStandardDeviation("TEN");
             double[,] cvrMatrix1 = cs1.GetMatrix("CVR");
+            cs1.CalculateIndexModeAndStandardDeviation("CVR");
             double[,] aciMatrix2 = cs2.GetMatrix("ACI");
+            cs2.CalculateIndexModeAndStandardDeviation("ACI");
             double[,] tenMatrix2 = cs2.GetMatrix("TEN");
+            cs2.CalculateIndexModeAndStandardDeviation("TEN");
             double[,] cvrMatrix2 = cs2.GetMatrix("CVR");
+            cs2.CalculateIndexModeAndStandardDeviation("CVR");
             double[] v1 = new double[3];
+            double[] mode1 = { cs1.avAndSd["ACI"][0], cs1.avAndSd["TEN"][0], cs1.avAndSd["CVR"][0]};
+            double[] stDv1 = { cs1.avAndSd["ACI"][1], cs1.avAndSd["TEN"][1], cs1.avAndSd["CVR"][1]};
             double[] v2 = new double[3];
+            double[] mode2 = { cs2.avAndSd["ACI"][0], cs2.avAndSd["TEN"][0], cs2.avAndSd["CVR"][0] };
+            double[] stDv2 = { cs2.avAndSd["ACI"][1], cs2.avAndSd["TEN"][1], cs2.avAndSd["CVR"][1] };
 
             // assume all matricies are normalised and of the same dimensions
             int rows = aciMatrix1.GetLength(0); //number of rows
             int cols = aciMatrix1.GetLength(1); //number
-            double[,] dMatrix = new double[rows, cols];
+            double[,] d12Matrix = new double[rows, cols];
+            double[,] d11Matrix = new double[rows, cols];
+            double[,] d22Matrix = new double[rows, cols];
 
             for (int row = 0; row < rows; row++)
             {
@@ -794,18 +817,20 @@ namespace AudioAnalysisTools
                     v2[1] = tenMatrix2[row, col];
                     v2[2] = cvrMatrix2[row, col];
 
-                    dMatrix[row, col] = DataTools.EuclidianDistance(v1, v2);
+                    d12Matrix[row, col] = DataTools.EuclidianDistance(v1, v2);
+                    d11Matrix[row, col] = DataTools.EuclidianDistance(v1, mode1);
+                    d22Matrix[row, col] = DataTools.EuclidianDistance(v2, mode2);
                 }
             }
 
-            double[] array = DataTools.Matrix2Array(dMatrix);
+            double[] array = DataTools.Matrix2Array(d12Matrix);
             double avDist, sdDist;
             NormalDist.AverageAndSD(array, out avDist, out sdDist);
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    dMatrix[row, col] = (dMatrix[row, col] - avDist) / sdDist;
+                    d12Matrix[row, col] = (d12Matrix[row, col] - avDist) / sdDist;
                 }
             }
 
@@ -817,12 +842,11 @@ namespace AudioAnalysisTools
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
-
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    zScore = dMatrix[row, col];
+                    zScore = d12Matrix[row, col];
                     //if (zNorm < 0.0) zNorm = 0.0;
                     //if (zNorm > zMax) zNorm = zMax; // upper bound
                     //zNorm /= zMax; // normalise
@@ -831,31 +855,60 @@ namespace AudioAnalysisTools
                     //v = Math.Max(0, v);
                     //v = Math.Min(MaxRGBValue, i1);
 
-                    if (zScore > 3.08) { colour = Color.Red; } //99.9% conf
-                    else
+                    if(d11Matrix[row, col] >= d22Matrix[row, col])
                     {
-                        if (zScore > 2.33) { colour = Color.Orange; } //99.0% conf
-                        else
-                        {
-                            if (zScore > 1.65) { colour = Color.Yellow; } //95% conf
+                            if (zScore > 3.08) { colour = Color.FromArgb(255, 0, 200); } //99.9% conf
                             else
                             {
-                                if (zScore < 0.0) { colour = Color.Black; }
+                                if (zScore > 2.33) { colour = Color.FromArgb(220, 0, 100); } //99.0% conf
                                 else
                                 {
-                                    //v = Convert.ToInt32(zScore * MaxRGBValue);
-                                    colour = Color.FromArgb(60, 60, 60);
+                                    if (zScore > 1.65) { colour = Color.FromArgb(200, 0, 0); } //95% conf
+                                    else
+                                    {
+                                        if (zScore < 0.0) { colour = Color.Black; }
+                                        else
+                                        {
+                                            //v = Convert.ToInt32(zScore * MaxRGBValue);
+                                            //colour = Color.FromArgb(v, 0, v);
+                                            colour = Color.FromArgb(90, 30, 60);
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    }  // if() else
-                    bmp.SetPixel(col, row, colour);
+                            }  // if() else
+                            bmp.SetPixel(col, row, colour);
+                    }
+                    else
+                    {
+                            if (zScore > 3.08) { colour = Color.FromArgb(0, 255, 200); } //99.9% conf
+                            else
+                            {
+                                if (zScore > 2.33) { colour = Color.FromArgb(0, 220, 100); } //99.0% conf
+                                else
+                                {
+                                    if (zScore > 1.65) { colour = Color.FromArgb(0, 200, 0); } //95% conf
+                                    else
+                                    {
+                                        if (zScore < 0.0) { colour = Color.Black; }
+                                        else
+                                        {
+                                            //v = Convert.ToInt32(zScore * MaxRGBValue);
+                                            //if()
+                                            //colour = Color.FromArgb(0, v, v);
+                                            colour = Color.FromArgb(30, 90, 60);
+                                        }
+                                    }
+                                }
+                            }  // if() else
+                            bmp.SetPixel(col, row, colour);
+                    }
 
                 } //all rows
             } //all rows
 
             return bmp;
         } // DrawDistanceSpectrogram()
+
 
         public static void BlurSpectrogram(ColourSpectrogram cs)
         {
