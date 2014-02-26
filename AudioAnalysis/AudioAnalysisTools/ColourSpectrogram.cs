@@ -188,7 +188,7 @@ namespace AudioAnalysisTools
             return this.spectrogramMatrices[key];
         }
 
-        public void CalculateIndexModeAndStandardDeviation(string key)
+        public void CalculateAcousticIndexModeAndStandardDeviation(string key)
         {
             double[] values = DataTools.Matrix2Array(this.spectrogramMatrices[key]);
             double min, max, mode, SD;
@@ -354,19 +354,21 @@ namespace AudioAnalysisTools
 
             //draw a colour spectrum of basic colours
             int maxScaleLength = imageWidth / 3;
-            Image scale = ColourSpectrogram.DrawColourScale(maxScaleLength, trackHeight - 2);
+            Image scale = ImageTools.DrawColourScale(maxScaleLength, trackHeight - 2);
             int xLocation = imageWidth * 2 / 3;
             gr.DrawImage(scale, xLocation, 1); //dra
             return compositeBmp;
         }
 
 
-        public static Image FrameSpectrogram(Image bmp1, string title)
+        public static Image FrameSpectrogram(Image bmp1, Image titleBar, int X_interval, int Y_interval)
         {
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, X_interval, Y_interval);
+
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
+
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
             int timeScale = 60;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
 
@@ -374,10 +376,10 @@ namespace AudioAnalysisTools
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
             int offset = 0;
-            gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+            gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
             offset += timeBmp.Height;
             gr.DrawImage(timeBmp, 0, offset); //dra
-            offset += titleBmp.Height;
+            offset += titleBar.Height;
             gr.DrawImage(bmp1, 0, offset); //dra
             offset += bmp1.Height;
             gr.DrawImage(timeBmp, 0, offset); //dra
@@ -385,13 +387,108 @@ namespace AudioAnalysisTools
             //gr.DrawImage(timeBmp, 0, offset); //dra
 
             //draw a colour spectrum of basic colours
-            int maxScaleLength = imageWidth / 3;
-            Image scale = ColourSpectrogram.DrawColourScale(maxScaleLength, trackHeight - 2);
-            int xLocation = imageWidth * 2 / 3;
-            gr.DrawImage(scale, xLocation, 1); //dra
+            //int maxScaleLength = imageWidth / 3;
+            //Image scale = ColourSpectrogram.DrawColourScale(maxScaleLength, trackHeight - 2);
+            //int xLocation = imageWidth * 2 / 3;
+            //gr.DrawImage(scale, xLocation, 1); //dra
             return compositeBmp;
         }
 
+        public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width, int height)
+        {
+            Image colourChart = ImageTools.DrawColourScale(width, height - 2);
+
+            Bitmap bmp = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            //string text = title;
+            int X = 4;
+            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(title, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            //text = name1 + "  +99.9%conf";
+            //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            //stringSize = g.MeasureString(text, stringFont);
+            //X += (stringSize.ToSize().Width + 1);
+            g.DrawImage(colourChart, X, 1);
+
+            //X += colourChart.Width;
+            //text = "-99.9%conf   " + name2;
+            //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+            //stringSize = g.MeasureString(text, stringFont);
+            //X += (stringSize.ToSize().Width + 1); //distance to end of string
+
+
+            string text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+
+            
+            //Bitmap titleBmp = Image_Track.DrawTitleTrack(width, height, title);
+            //Graphics gr = Graphics.FromImage(titleBmp);
+            //int offset = 0;
+            ////gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+
+            ////draw a colour spectrum of basic colours
+            //int maxScaleLength = width / 3;
+            //int xLocation = width * 2 / 3;
+            //gr.DrawImage(scale, xLocation, 1); //dra
+            //return titleBmp;
+        }
+
+        public static Image DrawTitleBarOfDifferenceSpectrogram(string name1, string name2, Color[] colorArray, int width, int height)
+        {
+            Image colourChart = ImageTools.DrawColourChart(width, height, colorArray);
+
+            Bitmap bmp = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            string text = String.Format("EUCLIDIAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
+            int X = 4;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            text = name1 + "  +99.9%conf";
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1);
+            g.DrawImage(colourChart, X, 1);
+
+            X += colourChart.Width;
+            text = "-99.9%conf   " + name2;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1); //distance to end of string
+
+
+            text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if(X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+        }
 
 
 
@@ -595,62 +692,6 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-        /// <summary>
-        /// Draw colour patches at top of spectrogram.
-        /// These show basic colour combinations.
-        /// Used to aid interpretation of the false-colour sepctorgram.
-        /// 
-        /// </summary>
-        /// <param name="ht"></param>
-        /// <returns></returns>
-        public static Image DrawColourScale(int maxScaleLength, int ht)
-        {
-            int width = maxScaleLength / 7;
-            if (width > ht) width = ht;
-            else if (width < 3) width = 3;
-            Bitmap colorScale = new Bitmap(8 * width, ht);
-            Graphics gr = Graphics.FromImage(colorScale);
-            int offset = width + 1;
-            if (width < 5) offset = width;
-
-            Bitmap colorBmp = new Bitmap(width - 1, ht);
-            Graphics gr2 = Graphics.FromImage(colorBmp);
-            Color c = Color.FromArgb(250, 15, 250);
-            gr2.Clear(c);
-            int x = 0;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            c = Color.FromArgb(250, 15, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            //yellow
-            c = Color.FromArgb(250, 250, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            //green
-            c = Color.FromArgb(15, 250, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // pale blue
-            c = Color.FromArgb(15, 250, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // blue
-            c = Color.FromArgb(15, 15, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // purple
-            c = Color.FromArgb(250, 15, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            return (Image)colorScale;
-        }
-
 
         public static Image DrawDifferenceSpectrogram(ColourSpectrogram target, ColourSpectrogram reference, double colourGain)
         {
@@ -779,21 +820,73 @@ namespace AudioAnalysisTools
 
         public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2 /*, double avDist, double sdDist*/)
         {
-            double[,] aciMatrix1 = cs1.GetMatrix("ACI");
-            cs1.CalculateIndexModeAndStandardDeviation("ACI");
-            double[,] tenMatrix1 = cs1.GetMatrix("TEN");
-            cs1.CalculateIndexModeAndStandardDeviation("TEN");
-            double[,] cvrMatrix1 = cs1.GetMatrix("CVR");
-            cs1.CalculateIndexModeAndStandardDeviation("CVR");
-            double[,] aciMatrix2 = cs2.GetMatrix("ACI");
-            cs2.CalculateIndexModeAndStandardDeviation("ACI");
-            double[,] tenMatrix2 = cs2.GetMatrix("TEN");
-            cs2.CalculateIndexModeAndStandardDeviation("TEN");
-            double[,] cvrMatrix2 = cs2.GetMatrix("CVR");
-            cs2.CalculateIndexModeAndStandardDeviation("CVR");
+            string key = "ACI";
+            double[,] aciMatrix1 = cs1.GetMatrix(key);
+            cs1.CalculateAcousticIndexModeAndStandardDeviation(key);
+            aciMatrix1 = MatrixTools.Matrix2ZScores(aciMatrix1, cs1.avAndSd[key][0], cs1.avAndSd[key][1]);
+
+            key = "TEN";
+            double[,] tenMatrix1 = cs1.GetMatrix(key);
+            cs1.CalculateAcousticIndexModeAndStandardDeviation(key);
+            tenMatrix1 = MatrixTools.Matrix2ZScores(tenMatrix1, cs1.avAndSd[key][0], cs1.avAndSd[key][1]);
+
+            key = "CVR";
+            double[,] cvrMatrix1 = cs1.GetMatrix(key);
+            cs1.CalculateAcousticIndexModeAndStandardDeviation(key);
+            cvrMatrix1 = MatrixTools.Matrix2ZScores(cvrMatrix1, cs1.avAndSd[key][0], cs1.avAndSd[key][1]);
+
+            key = "ACI";
+            double[,] aciMatrix2 = cs2.GetMatrix(key);
+            cs2.CalculateAcousticIndexModeAndStandardDeviation(key);
+            aciMatrix2 = MatrixTools.Matrix2ZScores(aciMatrix2, cs2.avAndSd[key][0], cs2.avAndSd[key][1]);
+
+            key = "TEN";
+            double[,] tenMatrix2 = cs2.GetMatrix(key);
+            cs2.CalculateAcousticIndexModeAndStandardDeviation(key);
+            tenMatrix2 = MatrixTools.Matrix2ZScores(tenMatrix2, cs2.avAndSd[key][0], cs2.avAndSd[key][1]);
+
+            key = "CVR";
+            double[,] cvrMatrix2 = cs2.GetMatrix(key);
+            cs2.CalculateAcousticIndexModeAndStandardDeviation(key);
+            cvrMatrix2 = MatrixTools.Matrix2ZScores(cvrMatrix2, cs2.avAndSd[key][0], cs2.avAndSd[key][1]);
+
+            //double[] v1 = new double[3];
+            //double[] mode1 = { cs1.avAndSd["ACI"][0], cs1.avAndSd["TEN"][0], cs1.avAndSd["CVR"][0]};
+            //double[] stDv1 = { cs1.avAndSd["ACI"][1], cs1.avAndSd["TEN"][1], cs1.avAndSd["CVR"][1]};
+            //double[] v2 = new double[3];
+            //double[] mode2 = { cs2.avAndSd["ACI"][0], cs2.avAndSd["TEN"][0], cs2.avAndSd["CVR"][0] };
+            //double[] stDv2 = { cs2.avAndSd["ACI"][1], cs2.avAndSd["TEN"][1], cs2.avAndSd["CVR"][1] };
+
+            //// assume all matricies are normalised and of the same dimensions
+            //int rows = aciMatrix1.GetLength(0); //number of rows
+            //int cols = aciMatrix1.GetLength(1); //number
+            //double[,] d12Matrix = new double[rows, cols];
+            //double[,] d11Matrix = new double[rows, cols];
+            //double[,] d22Matrix = new double[rows, cols];
+
+            //for (int row = 0; row < rows; row++)
+            //{
+            //    for (int col = 0; col < cols; col++)
+            //    {
+            //        v1[0] = aciMatrix1[row, col];
+            //        v1[1] = tenMatrix1[row, col];
+            //        v1[2] = cvrMatrix1[row, col];
+
+            //        v2[0] = aciMatrix2[row, col];
+            //        v2[1] = tenMatrix2[row, col];
+            //        v2[2] = cvrMatrix2[row, col];
+
+            //        d12Matrix[row, col] = DataTools.EuclidianDistance(v1, v2);
+            //        d11Matrix[row, col] = DataTools.EuclidianDistance(v1, mode1);
+            //        d22Matrix[row, col] = DataTools.EuclidianDistance(v2, mode2);
+            //    }
+            //}
+
+
+
             double[] v1 = new double[3];
-            double[] mode1 = { cs1.avAndSd["ACI"][0], cs1.avAndSd["TEN"][0], cs1.avAndSd["CVR"][0]};
-            double[] stDv1 = { cs1.avAndSd["ACI"][1], cs1.avAndSd["TEN"][1], cs1.avAndSd["CVR"][1]};
+            double[] mode1 = { cs1.avAndSd["ACI"][0], cs1.avAndSd["TEN"][0], cs1.avAndSd["CVR"][0] };
+            double[] stDv1 = { cs1.avAndSd["ACI"][1], cs1.avAndSd["TEN"][1], cs1.avAndSd["CVR"][1] };
             double[] v2 = new double[3];
             double[] mode2 = { cs2.avAndSd["ACI"][0], cs2.avAndSd["TEN"][0], cs2.avAndSd["CVR"][0] };
             double[] stDv2 = { cs2.avAndSd["ACI"][1], cs2.avAndSd["TEN"][1], cs2.avAndSd["CVR"][1] };
@@ -818,10 +911,12 @@ namespace AudioAnalysisTools
                     v2[2] = cvrMatrix2[row, col];
 
                     d12Matrix[row, col] = DataTools.EuclidianDistance(v1, v2);
-                    d11Matrix[row, col] = DataTools.EuclidianDistance(v1, mode1);
-                    d22Matrix[row, col] = DataTools.EuclidianDistance(v2, mode2);
+                    d11Matrix[row, col] = DataTools.VectorEuclidianLength(v1);
+                    d22Matrix[row, col] = DataTools.VectorEuclidianLength(v2);
                 }
             }
+
+
 
             double[] array = DataTools.Matrix2Array(d12Matrix);
             double avDist, sdDist;
@@ -834,10 +929,10 @@ namespace AudioAnalysisTools
                 }
             }
 
-            int MaxRGBValue = 255;
-            int v;
+            //int MaxRGBValue = 255;
+            //int v;
             double zScore;
-            //double zMax = 5.0;
+            Dictionary<string, Color> colourChart = ColourSpectrogram.GetDifferenceColourChart();
             Color colour;
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
@@ -847,31 +942,24 @@ namespace AudioAnalysisTools
                 for (int col = 0; col < cols; col++)
                 {
                     zScore = d12Matrix[row, col];
-                    //if (zNorm < 0.0) zNorm = 0.0;
-                    //if (zNorm > zMax) zNorm = zMax; // upper bound
-                    //zNorm /= zMax; // normalise
-
-                    //v = Convert.ToInt32(zNorm * MaxRGBValue);
-                    //v = Math.Max(0, v);
-                    //v = Math.Min(MaxRGBValue, i1);
 
                     if(d11Matrix[row, col] >= d22Matrix[row, col])
                     {
-                            if (zScore > 3.08) { colour = Color.FromArgb(255, 0, 200); } //99.9% conf
+                        if (zScore > 3.08) { colour = colourChart["+99.9%"]; } //99.9% conf
                             else
                             {
-                                if (zScore > 2.33) { colour = Color.FromArgb(220, 0, 100); } //99.0% conf
+                                if (zScore > 2.33) { colour = colourChart["+99.0%"]; } //99.0% conf
                                 else
                                 {
-                                    if (zScore > 1.65) { colour = Color.FromArgb(200, 0, 0); } //95% conf
+                                    if (zScore > 1.65) { colour = colourChart["+95.0%"]; } //95% conf
                                     else
                                     {
-                                        if (zScore < 0.0) { colour = Color.Black; }
+                                        if (zScore < 0.0) { colour = colourChart["NoValue"]; }
                                         else
                                         {
                                             //v = Convert.ToInt32(zScore * MaxRGBValue);
                                             //colour = Color.FromArgb(v, 0, v);
-                                            colour = Color.FromArgb(90, 30, 60);
+                                            colour = colourChart["+NotSig"];
                                         }
                                     }
                                 }
@@ -880,22 +968,22 @@ namespace AudioAnalysisTools
                     }
                     else
                     {
-                            if (zScore > 3.08) { colour = Color.FromArgb(0, 255, 200); } //99.9% conf
+                        if (zScore > 3.08) { colour = colourChart["-99.9%"]; } //99.9% conf
                             else
                             {
-                                if (zScore > 2.33) { colour = Color.FromArgb(0, 220, 100); } //99.0% conf
+                                if (zScore > 2.33) { colour = colourChart["-99.0%"]; } //99.0% conf
                                 else
                                 {
-                                    if (zScore > 1.65) { colour = Color.FromArgb(0, 200, 0); } //95% conf
+                                    if (zScore > 1.65) { colour = colourChart["-95.0%"]; } //95% conf
                                     else
                                     {
-                                        if (zScore < 0.0) { colour = Color.Black; }
+                                        if (zScore < 0.0) { colour = colourChart["NoValue"]; }
                                         else
                                         {
                                             //v = Convert.ToInt32(zScore * MaxRGBValue);
                                             //if()
                                             //colour = Color.FromArgb(0, v, v);
-                                            colour = Color.FromArgb(30, 90, 60);
+                                            colour = colourChart["-NotSig"];
                                         }
                                     }
                                 }
@@ -908,6 +996,75 @@ namespace AudioAnalysisTools
 
             return bmp;
         } // DrawDistanceSpectrogram()
+
+
+
+        public static Image FrameThreeSpectrograms(Image spg1, Image spg2, Image distanceSpg, Image titleBar, int X_interval, int Y_interval)
+        {
+            int width = spg1.Width; // assume all images have the same width
+            //int spgHeight = spg1.Height; // assume all images have the same width
+            int trackHeight = titleBar.Height;
+
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(width, X_interval, width, trackHeight, "hours");
+            int compositeHeight = trackHeight + trackHeight + spg1.Height + trackHeight + spg2.Height + /*trackHeight +*/ distanceSpg.Height;
+
+            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            int yOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            gr.DrawImage(titleBar, 0, yOffset); //draw in the top tile bar
+            yOffset += titleBar.Height;
+            gr.DrawImage(timeBmp, 0, yOffset); //draw in the top time scale
+            yOffset += timeBmp.Height;
+
+            gr.DrawImage(spg1, 0, yOffset); //draw in the top spectrogram
+            yOffset += spg1.Height;
+            gr.DrawImage(timeBmp, 0, yOffset); //draw in the top time scale
+            yOffset += timeBmp.Height;
+            gr.DrawImage(spg2, 0, yOffset); //draw in the second spectrogram
+            yOffset += spg2.Height;
+            //gr.DrawImage(timeBmp, 0, yOffset); //draw in the top time scale
+            //yOffset += timeBmp.Height;
+
+            gr.DrawImage(distanceSpg, 0, yOffset); //draw in the distance spectrogram
+            //yOffset += distanceSpg.Height;
+            //gr.DrawImage(timeBmp, 0, yOffset); //draw in the top time scale
+            //yOffset += timeBmp.Height;
+
+            return (Image)compositeBmp;
+        }
+
+        public static Dictionary<string, Color> GetDifferenceColourChart()
+        {
+            Dictionary<string, Color> colourChart = new Dictionary<string, Color>();
+            colourChart.Add("+99.9%", Color.FromArgb(255, 190, 20));
+            colourChart.Add("+99.0%", Color.FromArgb(240, 50, 30)); //+99% conf
+            colourChart.Add("+95.0%", Color.FromArgb(200, 30, 15)); //+95% conf
+            colourChart.Add("+NotSig", Color.FromArgb(50, 5, 5));   //+ not significant
+            colourChart.Add("NoValue", Color.Black);
+            //no value
+            colourChart.Add("-99.9%", Color.FromArgb(20, 255, 230));
+            colourChart.Add("-99.0%", Color.FromArgb(30, 240, 50)); //+99% conf
+            colourChart.Add("-95.0%", Color.FromArgb(15, 200, 30)); //+95% conf
+            colourChart.Add("-NotSig", Color.FromArgb(10, 50, 20)); //+ not significant
+            return colourChart;
+        }
+        public static Color[] ColourChart2Array(Dictionary<string, Color> chart)
+        {
+            Color[] array = new Color[9];
+            array[0] = chart["+99.9%"];
+            array[1] = chart["+99.0%"];
+            array[2] = chart["+95.0%"];
+            array[3] = chart["+NotSig"];
+            array[4] = chart["NoValue"];
+            array[5] = chart["-NotSig"];
+            array[6] = chart["-95.0%"];
+            array[7] = chart["-99.0%"];
+            array[8] = chart["-99.9%"];
+            return array;
+        }
+
+
 
 
         public static void BlurSpectrogram(ColourSpectrogram cs)

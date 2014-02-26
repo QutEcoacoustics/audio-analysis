@@ -814,20 +814,21 @@
             g.Clear(Color.Black);
             
             int hour = 0;
-            Pen pen = new Pen(Color.White);
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 9);
 
             for (int x = 0; x < duration; x++) //for pixels in the line
             {
                 if (x % scale != 0) continue;
-                g.DrawLine(pen, x, 0, x, trackHeight);
-                g.DrawString(hour.ToString(), new Font("Tahoma", 8), Brushes.White, new PointF(x + 2, 0)); //draw time
+                g.DrawLine(whitePen, x, 0, x, trackHeight);
+                g.DrawString(hour.ToString(), stringFont, Brushes.White, new PointF(x + 2, 1)); //draw time
                 hour++;
             }//end over all pixels
-            g.DrawLine(new Pen(Color.Gray), 0, 0, trackWidth, 0);//draw upper boundary
-            g.DrawLine(pen, duration, 0, duration, trackHeight);
-            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
+            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
 
-            g.DrawString(title, new Font("Tahoma", 9), Brushes.White, new PointF(duration + 4, 3));
+            g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
             return bmp;
         }
 

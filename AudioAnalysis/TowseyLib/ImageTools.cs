@@ -168,8 +168,6 @@ namespace TowseyLib
 
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
-
-            //Image myImg = Image.FromFile(fileName);
             return (Bitmap)Bitmap.FromFile(fileName);
         }
 
@@ -1949,6 +1947,98 @@ namespace TowseyLib
             return pens;
         }
 
+        /// <summary>
+        /// Returns an image of an array of colour patches.
+        /// It shows the three primary colours and pairwise combinations.
+        /// </summary>
+        /// <param name="ht"></param>
+        /// <returns></returns>
+        public static Image DrawColourScale(int maxScaleLength, int ht)
+        {
+            int width = maxScaleLength / 7;
+            if (width > ht) width = ht;
+            else if (width < 3) width = 3;
+            Bitmap colorScale = new Bitmap(8 * width, ht);
+            Graphics gr = Graphics.FromImage(colorScale);
+            int offset = width + 1;
+            if (width < 5) offset = width;
+
+            Bitmap colorBmp = new Bitmap(width - 1, ht);
+            Graphics gr2 = Graphics.FromImage(colorBmp);
+            Color c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            int x = 0;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            c = Color.FromArgb(250, 15, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //yellow
+            c = Color.FromArgb(250, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //green
+            c = Color.FromArgb(15, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // pale blue
+            c = Color.FromArgb(15, 250, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // blue
+            c = Color.FromArgb(15, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // purple
+            c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            return (Image)colorScale;
+        }
+
+        /// <summary>
+        /// Returns an image of an array of the passed colour patches.
+        /// </summary>
+        /// <param name="ht"></param>
+        /// <returns></returns>
+        public static Image DrawColourChart(int width, int ht, Color[] colorArray)
+        {
+            if((colorArray==null)||(colorArray.Length==0)) 
+                return null;
+
+            int colourCount = colorArray.Length;
+            int patchWidth = width / colourCount;
+            int maxPathWidth = (int)(ht / 1.5);
+            if (patchWidth > maxPathWidth) patchWidth = maxPathWidth;
+            else if (width < 3) width = 3;
+            Bitmap colorScale = new Bitmap(colourCount * patchWidth, ht);
+            Graphics gr = Graphics.FromImage(colorScale);
+            int offset = width + 1;
+            if (width < 5) offset = width;
+
+            Bitmap colorBmp = new Bitmap(width - 1, ht);
+            Graphics gr2 = Graphics.FromImage(colorBmp);
+            Color c;
+            int x = 0;
+
+            for (int i = 0; i < colourCount; i++)
+            {
+                //c = Color.FromArgb(250, 15, 250);
+                gr2.Clear(colorArray[i]);
+                //int x = 0;
+                gr.DrawImage(colorBmp, x, 0); //dra
+                //c = Color.FromArgb(250, 15, 15);
+                //gr2.Clear(c);
+                x += patchWidth;
+                gr.DrawImage(colorBmp, x, 0); //dra
+            }
+            return (Image)colorScale;
+        }
 
 
         public static Color[] GrayScale()
