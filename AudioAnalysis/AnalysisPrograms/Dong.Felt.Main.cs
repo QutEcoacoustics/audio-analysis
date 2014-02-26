@@ -330,7 +330,7 @@ namespace Dong.Felt
                 return result;
             }
 
-            result.Data = new RidgeEvent[ridges.Count];
+            result.Data = new RidgeEvent[ridges.Count];                      
             for (int index = 0; index < ridges.Count; index++)
             {
                 ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram.Configuration.FreqBinCount);

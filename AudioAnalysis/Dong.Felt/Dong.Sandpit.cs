@@ -43,8 +43,8 @@
 
                 /// Read audio files into spectrogram.
                 string wavFilePath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
-                string imageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-spectrogram.png";
+                string outputDirectory = @"C:\XUEYAN\Liang's recording\Three test recordings";
+                string imageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
                 string annotatedImageFileName = "1NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-annotate.png";
 
                 var recording = new AudioRecording(wavFilePath);
@@ -107,11 +107,8 @@
 
                 var poiList1 = new List<PointOfInterest>();
                 var poiTemperObject = new POISelection(poiList1);
-                //poiTemperObject.RidgeDetectionNoFilter(spectrogram, ridgeConfig, matrix1);
-                //poiTemperObject.RidgeDetectionInternal(spectrogram, ridgeConfig);
                 poiTemperObject.ImprovedRidgeDetection(spectrogram, ridgeConfig);
                 var ridges = poiTemperObject.poiList;
-                //var refinedPoiList = POISelection.RefineRidgeDirection(ridges, spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0));
                 Bitmap bmp = (Bitmap)image;
                 foreach (PointOfInterest poi in ridges)
                 {
@@ -211,11 +208,15 @@
                 /////////// For Scarlet honeyeater2
                 //////var scarletHoneyeater2 = new Query(7020.0, 3575.0, 95.215, 96.348);
                 ////////var duration = scarletHoneyeater2.duration;       
-                //var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(filterPoiList, rows, cols, neighbourhoodLength);     
+                int neighbourhoodLength = 13;
+                var rows = spectrogram.Data.GetLength(1);
+                var cols = spectrogram.Data.GetLength(0);
+
+                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength);
                 //var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
-                ////var outPutPath = @"C:\XUEYAN\DICTA Conference data\Audio data\New testing results\Brown Cuckoo-dove\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
+                var outPutPath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
                 ////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                ////CSVResults.NeighbourhoodRepresentationToCSV(filterPoiList, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
+                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
                 //var nhFrequencyRange = neighbourhoodLength * herzScale;
                 //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
                 //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
@@ -274,11 +275,11 @@
                 //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
                 /// output events image
 
-                imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 
-                /// to save the original spectrogram. 
-                image = (Image)bmp;
-                bmp.Save(imagePath);
+                ///// to save the original spectrogram. 
+                //image = (Image)bmp;
+                //bmp.Save(imagePath);
 
                 /// to save the annotated spectrogram. 
                 //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, poiList1);

@@ -137,7 +137,7 @@
             var frequencyScale = 43.0; // hz
             var results = new List<List<string>>();
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
-                "NeighbourhoodMagnitude", "NeighbourhooddominantOrientation" });
+                "NeighbourhoodMagnitude", "NeighbourhoodOrientation" });
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var rowOffset = neighbourhoodLength;
             var colOffset = neighbourhoodLength;
@@ -153,7 +153,8 @@
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
                         neighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength);
                         var RowIndex = col * timeScale;
-                        var ColIndex = row * frequencyScale;
+                        // Changed this. 
+                        var ColIndex = (256 - row) * frequencyScale;
                         var Magnitude = neighbourhoodRepresentation.magnitude;
                         var Orientation = neighbourhoodRepresentation.orientation;
                         results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),

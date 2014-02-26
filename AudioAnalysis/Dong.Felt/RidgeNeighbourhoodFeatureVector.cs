@@ -15,6 +15,10 @@
     {
         #region Public Properties
 
+        public double NeighbourhoodMagnitude { get; set; }
+ 
+        public double NeighbourhoodOrientation { get; set; }
+        
         public int MinRowIndex { get; set; }
 
         public int MaxRowIndex { get; set; }
@@ -162,6 +166,59 @@
 
 
         #region Public Method
+
+        /// <summary>
+        /// This method tries to use a feature vector,{m, o}, to represent a ridge Neighbourhood. 
+        /// So the result is a list of vectors. 
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <returns></returns>
+        public static List<RidgeNeighbourhoodFeatureVector> NeighbourhoodFeatureVector(List<PointOfInterest> poiList, int rowsCount, int colsCount, int sizeOfNeighbourhood)
+        {
+            var result = new List<RidgeNeighbourhoodFeatureVector>();
+
+            // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
+            var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
+            var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
+            // limite the frequency rang
+            for (int row = radiusOfNeighbourhood; row < rowsCount; row++)
+            {
+                for (int col = radiusOfNeighbourhood; col < colsCount; col++)
+                {
+                    // search from the anchor point among pointOfInterest, in the centroid of neighbourhood, and then search its Neighbourhood to get RidgeNeighbourhoodFeatureVector
+                    double magnitudeX = 0.0;
+                    double magnitudeY = 0.0;
+
+                    // For the calculation of horizontal direction byte, we need to check each row 
+                    for (int rowNeighbourhoodIndex = -radiusOfNeighbourhood; rowNeighbourhoodIndex <= radiusOfNeighbourhood; rowNeighbourhoodIndex++)
+                    {
+                        for (int colNeighbourhoodIndex = -radiusOfNeighbourhood; colNeighbourhoodIndex <= radiusOfNeighbourhood; colNeighbourhoodIndex++)
+                        {
+                            // check boundary of index 
+                            if (StatisticalAnalysis.checkBoundary(row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex, rowsCount, colsCount))
+                            {
+                                var OrientationDegree = matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].RidgeOrientation / Math.PI * 180;
+                                var magnitude = matrix[row + rowNeighbourhoodIndex, col + colNeighbourhoodIndex].RidgeMagnitude;
+                                magnitudeX += Math.Sin(OrientationDegree) * magnitude;
+                                magnitudeY += Math.Cos(OrientationDegree) * magnitude;
+                            }
+                        }
+                    }
+                    var neighbourhoodMagnitude = Math.Sqrt(Math.Pow(magnitudeX, 2.0) + Math.Pow(magnitudeY, 2.0));
+                    var neighbourhoodOrientation = Math.Tanh(magnitudeY / magnitudeX);
+                    result.Add(new RidgeNeighbourhoodFeatureVector(new Point(col, 256 - row))
+                    {
+                        NeighbourhoodMagnitude = neighbourhoodMagnitude,
+                        NeighbourhoodOrientation = neighbourhoodOrientation,
+
+                    });
+                }
+            }
+            return result; 
+        }
 
         /// <summary>
         /// This method uses another diagonal orientation edge representation.  And e.g. the neighbourhoodWindow size is 13 * 13, then the feature vector can 
@@ -406,7 +463,7 @@
         }
 
         /// <summary>
-        /// Normalize the values in the feature Vector to the range (0,1) by taking a integer array.
+        /// Normalize the values in the feature Vector to the range (0,1) by taking an integer array.
         /// </summary>
         /// <param name="array"></param>
         /// <returns>

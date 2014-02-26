@@ -201,7 +201,6 @@ namespace Dong.Felt.Representations
                         neighbourhoodXdirectionMagnitudeSum += magnitude * Math.Cos(radiant);
                         neighbourhoodYdirectionMagnitudeSum += magnitude * Math.Sin(radiant);                       
                     }
-
                 }
             }
             this.magnitude = Math.Sqrt(Math.Pow(neighbourhoodXdirectionMagnitudeSum, 2) + Math.Pow(neighbourhoodYdirectionMagnitudeSum, 2));
