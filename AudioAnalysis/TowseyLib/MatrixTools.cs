@@ -248,6 +248,24 @@ namespace TowseyLib
             return op;
         }
 
+        public static double[,] Matrix2ZScores(double[,] M, double av, double sd)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double[,] op = new double[rowCount, colCount];
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    op[r, c] = (M[r, c] - av) / sd;
+                }
+            }
+            return op;
+        }
+
+
+
         public static double[,] SquareValues(double[,] M)
         {
             int rows = M.GetLength(0);

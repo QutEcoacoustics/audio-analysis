@@ -182,6 +182,7 @@ namespace AnalysisPrograms
                 string opFileName1 = ipFileName1 + ".Reference";
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs1.ColorMODE = colorMap;
                 cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
@@ -190,6 +191,7 @@ namespace AnalysisPrograms
                 string opFileName2 = ipFileName2 + ".Target";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
+                cs2.ColorMODE = colorMap;
                 cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
                 cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
                 cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
@@ -197,17 +199,29 @@ namespace AnalysisPrograms
                 string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
                 double colourGain = 3.0;
                 var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
-                ImageTools.DrawGridLinesOnImage((Bitmap)diffSp, cs2.X_interval, cs2.Y_interval);
-                string title = String.Format("DIFFERENCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
-                diffSp = ColourSpectrogram.FrameSpectrogram(diffSp, title);
+                //ImageTools.DrawGridLinesOnImage((Bitmap)diffSp, cs2.X_interval, cs2.Y_interval);
+                int titleHt = 20;
+                string title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+                Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, diffSp.Width, titleHt);
+                diffSp = ColourSpectrogram.FrameSpectrogram(diffSp, titleBar, cs2.X_interval, cs2.Y_interval);
                 diffSp.Save(Path.Combine(opdir, opFileName3));
 
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
                 var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2/*, avDist, sdDist*/);
-                ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
-                title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (RED: April>June.  GRN: June>April)      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
-                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, title);
+                Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
+                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, diffSp.Width, titleHt);
+                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, titleBar, cs2.X_interval, cs2.Y_interval);
                 distanceSp.Save(Path.Combine(opdir, opFileName4));
+
+                string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";
+                string path1 = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
+                Image image1 = ImageTools.ReadImage2Bitmap(path1);
+                string path2 = Path.Combine(opdir, opFileName2 + ".COLNEG.png");
+                Image image2 = ImageTools.ReadImage2Bitmap(path2);
+                title = String.Format("FALSE COLOUR SPECTROGRAMS ({0} and {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, diffSp.Width, titleHt);
+                distanceSp = ColourSpectrogram.FrameThreeSpectrograms(image1, image2, distanceSp, titleBar, cs2.X_interval, cs2.Y_interval);
+                distanceSp.Save(Path.Combine(opdir, opFileName5));
             }
 
 
@@ -242,110 +256,6 @@ namespace AnalysisPrograms
                 var tTestSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
                 ImageTools.DrawGridLinesOnImage((Bitmap)tTestSp, cs2.X_interval, cs2.Y_interval);
                 tTestSp.Save(Path.Combine(opdir, opFileName3));
-            }
-
-            // Experiments with z-SCORE EUCLIDIAN DISTANCE spectrograms 
-            if (false)
-            {
-                //SET UP TWO SPECTROGRAMS
-                // set the X and Y axis scales for the spectrograms 
-                int xScale = 60;  // assume one minute spectra and hourly time lines
-                int sampleRate = 17640; // default value - after resampling
-                int frameWidth = 512;   // default value - from which spectrogram was derived
-                //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-                double backgroundFilterCoeff = 1.0; //must be value <=1.0
-                string opFileName1 = ipFileName + ".Blur";
-                var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
-                cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
-                //ColourSpectrogram.BlurSpectrogram(cs1);
-                cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
-                //cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
-
-                string opFileName2 = ipFileName + ".NonBlur";
-                var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
-                cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs2.ReadCSVFiles(ipdir, ipFileName, colorMap);
-                cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
-                //cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
-
-
-                // average distance betwen two random points in ED euclidian space = 0.666 +/- 0.25
-                int trialCount = 10000;
-                //int dimensions = 3;
-                //RandomNumber.GetRandomDistancesInEuclidianSpace(trialCount, dimensions);
-
-                // get distances between randomly selected indices
-                //double[] distanceArray = new double[trialCount];
-                int seed = (int)DateTime.Now.Ticks;
-                var rn = new RandomNumber(seed);
-                int[] maxValues = {254, 75};
-
-                double[,] aciMatrix1 = cs1.GetMatrix("ACI");
-                double[,] tenMatrix1 = cs1.GetMatrix("TEN");
-                double[,] cvrMatrix1 = cs1.GetMatrix("CVR");
-                double[,] aciMatrix2 = cs2.GetMatrix("ACI");
-                double[,] tenMatrix2 = cs2.GetMatrix("TEN");
-                double[,] cvrMatrix2 = cs2.GetMatrix("CVR");
-                double[] v1 = new double[3];
-                double[] v2 = new double[3];
-
-                //for (int i = 0; i < trialCount; i++)
-                //{
-                //    int[] pt1 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
-                //    int[] pt2 = RandomNumber.GetVectorOfRandomIntegers(maxValues, rn);
-
-                //    v1[0] = aciMatrix1[pt1[0], pt1[1]]; 
-                //    v1[1] = tenMatrix1[pt1[0], pt1[1]]; 
-                //    v1[2] = cvrMatrix1[pt1[0], pt1[1]];
-
-                //    v2[0] = aciMatrix2[pt2[0], pt2[1]]; 
-                //    v2[1] = tenMatrix2[pt2[0], pt2[1]]; 
-                //    v2[2] = cvrMatrix2[pt2[0], pt2[1]];
-
-                //    distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
-                //}
-                int rowCount = aciMatrix1.GetLength(0);
-                int colCount = aciMatrix1.GetLength(1);
-                double[,] distanceMatrix = new double[rowCount, colCount];
-
-                for (int r = 0; r < rowCount; r++) // avoid top 5 freq bins and bottom 14 bins
-                {
-                    for (int c = 0; c < colCount; c++)
-                    {
-                        v1[0] = aciMatrix1[r, c];
-                        v1[1] = tenMatrix1[r, c];
-                        v1[2] = cvrMatrix1[r, c];
-
-                        v2[0] = aciMatrix2[r, c];
-                        v2[1] = tenMatrix2[r, c];
-                        v2[2] = cvrMatrix2[r, c];
-                        distanceMatrix[r, c] = DataTools.EuclidianDistance(v1, v2);
-                    }
-                }
-                double[] distanceArray = DataTools.Matrix2Array(distanceMatrix);
-
-
-                int[] histo = Histogram.Histo(distanceArray, 100);
-                DataTools.writeBarGraph(histo);
-                Console.WriteLine("Above bar graph is distance distribution for distance bewteen randomly selected pairs from 2 spectrograms.");
-
-                Console.WriteLine("Below av & sd is for same distance data.");
-                double avDist, sdDist;
-                NormalDist.AverageAndSD(distanceArray, out avDist, out sdDist);
-                double[] avAndsd = { avDist, sdDist };
-                Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
-                Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
-
-
-
-                string opFileName3 = ipFileName + ".distance.COLNEG.png";
-                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2 /*, avDist, sdDist*/);
-                ImageTools.DrawGridLinesOnImage((Bitmap)distanceSp, cs2.X_interval, cs2.Y_interval);
-                string title = String.Format("DISTANCE SPECTROGRAM ({0}-{1})     (scale:hours x kHz)      (colour: R-G-B={2})      (c) QUT.EDU.AU.  ", ipFileName1, ipFileName2, colorMap);
-                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, title);
-                distanceSp.Save(Path.Combine(opdir, opFileName3));
             }
 
             // experiments with false colour images - categorising/discretising the colours

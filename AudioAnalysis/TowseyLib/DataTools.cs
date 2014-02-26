@@ -341,7 +341,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="V"></param>
         /// <returns></returns>
-        public static double VectorEuclidanLength(double[] V)
+        public static double VectorEuclidianLength(double[] V)
         {
             int length = V.Length;
 
@@ -357,7 +357,7 @@ namespace TowseyLib
 
         public static double[] Vector_NormLength(double[] V)
         {
-            double euclidLength = VectorEuclidanLength(V);
+            double euclidLength = VectorEuclidianLength(V);
             double[] Vnorm = new double[V.Length];
 
             for (int i = 0; i < V.Length; i++)
@@ -367,7 +367,7 @@ namespace TowseyLib
 
              
             // now that length = 1.0;
-            double L = VectorEuclidanLength(Vnorm);
+            double L = VectorEuclidianLength(Vnorm);
             if (L > 1.00001) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
             if (L < 0.99999) LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
 
