@@ -269,19 +269,24 @@ namespace Dong.Felt
 
     public class RidgeEvent : EventBase
     {
-        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, int binCount)
+        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectralSonogram sonogram)
         {
             this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
-            this.Bin = binCount - pointOfInterest.Point.Y;
+            this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
             this.Orientation = (Direction) pointOfInterest.OrientationCategory;
+            this.FrameMaximum = sonogram.FrameCount;
+            this.BinMaximum = sonogram.Configuration.FreqBinCount;
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
 
             this.MinuteOffset = (int) (analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
+            
         }
+
+        public int BinMaximum { get; set; }
 
         public int Frame { get; set; }
 
@@ -290,6 +295,8 @@ namespace Dong.Felt
         public double Magnitude { get; set; }
 
         public Direction Orientation { get; set; }
+
+        public int FrameMaximum { get; set; }
     }
 
     public class RidgeAnalysis : IAnalyser2
@@ -333,7 +340,7 @@ namespace Dong.Felt
             result.Data = new RidgeEvent[ridges.Count];                      
             for (int index = 0; index < ridges.Count; index++)
             {
-                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram.Configuration.FreqBinCount);
+                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
             }
 
             if (analysisSettings.EventsFile != null)
