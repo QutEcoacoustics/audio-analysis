@@ -74,10 +74,6 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        var neighbourPoint1 = new Point(0, 0);
-                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        /// Fill the gap by adding two more neighbourhood points.
                         poiList.Add(poi);                       
                     }
                 }
@@ -182,10 +178,7 @@ namespace Dong.Felt
                         poi.RidgeMagnitude = magnitude;
                         poi.Intensity = falseMatrix[r, c];
                         poi.TimeScale = timeScale;
-                        poi.HerzScale = herzScale;
-                        var neighbourPoint1 = new Point(0, 0);
-                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);           
+                        poi.HerzScale = herzScale;         
                         poiList.Add(poi);                
                     }
                 }
