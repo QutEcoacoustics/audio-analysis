@@ -6,7 +6,8 @@
     using System.Text;
     using System.Drawing;
     using System.ComponentModel;
-
+    using Representations;
+    
     public enum Direction
     {
         /// <summary>
@@ -36,6 +37,26 @@
 
     public static class Distance
     {
+        
+        /// <summary>
+        /// To calculate the distance between two vectors by representing them with X and Y components. 
+        /// </summary>
+        /// <param name="ridgeNeighbourhood1"></param>
+        /// <param name="ridgeNeighbourhood2"></param>
+        /// <returns></returns>
+        public static double VectorConversionDistance(RidgeDescriptionNeighbourhoodRepresentation ridgeNeighbourhood1, RidgeDescriptionNeighbourhoodRepresentation ridgeNeighbourhood2)
+        {            
+            var magnitude1 = ridgeNeighbourhood1.magnitude;
+            var orientation1 = ridgeNeighbourhood1.orientation;
+            var magnitude2 = ridgeNeighbourhood2.magnitude;
+            var orientation2 = ridgeNeighbourhood2.orientation;
+            var magnitudeX1 = magnitude1 * Math.Cos(orientation1);
+            var magnitudeY1 = magnitude1 * Math.Sin(orientation1);
+            var magnitudeX2 = magnitude2 * Math.Cos(orientation2);
+            var magnitudeY2 = magnitude2 * Math.Sin(orientation2);
+            var result = Math.Sqrt(Math.Pow((magnitudeX1 - magnitudeX2), 2) + Math.Pow((magnitudeY1 - magnitudeY2), 2));            
+            return result; 
+        }
 
         /// <summary>
         /// The euclidean distance.
