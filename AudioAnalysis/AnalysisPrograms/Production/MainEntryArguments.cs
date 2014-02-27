@@ -16,6 +16,8 @@ namespace AnalysisPrograms.Production
 
     using PowerArgs;
 
+    using TowseyLib;
+
     public enum DebugOptions
     {
         No = 0,
@@ -137,14 +139,18 @@ namespace AnalysisPrograms.Production
         public AnalysisSettings ToAnalysisSettings()
         {
             AnalysisSettings analysisSettings = new AnalysisSettings();
-            //analysisSettings.SourceFile = this.Source; //this not required at this point
+
+            // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points // this not required at this point
+            analysisSettings.SourceFile = this.Source; 
             analysisSettings.ConfigFile = this.Config;
             analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
-            analysisSettings.AudioFile = null;
+            analysisSettings.AudioFile = this.Output.CombineFile(this.Source.Name);
             analysisSettings.EventsFile = null;
             analysisSettings.IndicesFile = null;
             analysisSettings.ImageFile = null;
 
+            var configuration = new ConfigDictionary(this.Config);
+            analysisSettings.ConfigDict = configuration.GetTable();
 
             if (this.TmpWav.NotEmpty())
             {

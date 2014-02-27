@@ -390,6 +390,7 @@ namespace AudioAnalysisTools
             int halfSample = xCorrelationLength / 2;
             int lowerBin = (int)Math.Round(track.AverageBin);
             int upperBin = lowerBin + 1;
+            upperBin = upperBin >= listOfSpectralBins.Count ? listOfSpectralBins.Count - 1 : upperBin;
             int length = track.Length;
             //only sample the middle third of track
             int start = length / 3;
