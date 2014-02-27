@@ -332,7 +332,7 @@ xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</Po
   <Target Name="BeforeBuild">
     <PropertyGroup>
       <File>$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>
-      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.\d+\.\d+)\x22</Expr>
+      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.[\*\d]+\.[\*\d]+)\x22</Expr>
       <reg>
 			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
 			</reg>
@@ -344,6 +344,6 @@ xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</Po
       <month>$([System.DateTime]::Now.ToString("MM"))</month>
     </PropertyGroup>
     <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />
-    <FileUpdate Files="Properties\AssemblyInfo.cs" Regex="&quot;(\d+)\.(\d+)\.(\d+)\.(\d+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
+    <FileUpdate Files="Properties\AssemblyInfo.cs" Regex="&quot;(\d+)\.(\d+)\.([\*\d+])\.([\*\d]+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
   </Target>
 </Project>

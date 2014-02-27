@@ -330,7 +330,7 @@ namespace Dong.Felt
                 MinimumNumberInRidgeInMatrix = 3
             };
             
-            var ridges = POISelection.RidgeDetection(sonogram, ridgeConfig);;
+            var ridges = POISelection.RidgeDetection(sonogram, ridgeConfig);
 
             if (ridges.IsNullOrEmpty())
             {
