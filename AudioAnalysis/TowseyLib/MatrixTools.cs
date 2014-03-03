@@ -591,8 +591,19 @@ namespace TowseyLib
       return newMatrix;
   }
 
+    public static double[,] SubtractValuesFromOne(double[,] m)
+    {
+        int rows = m.GetLength(0);
+        int cols = m.GetLength(1);
 
-
+        double[,] newMatrix = new double[rows, cols];
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+            {
+                newMatrix[r, c] = 1 - m[r, c];
+            }
+        return newMatrix;
+    }
 
   public static double[] GetColumn(double[,] m, int colID)
   {

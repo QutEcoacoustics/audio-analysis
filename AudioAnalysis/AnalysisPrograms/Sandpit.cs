@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014Feb22";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March04";
 
 
             // experiments with DIFFERENCE false-colour spectrograms
@@ -187,6 +187,11 @@ namespace AnalysisPrograms
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                Image spg1Image = ImageTools.ReadImage2Bitmap(Path.Combine(opdir, opFileName1 + ".COLNEG.png"));
+                int titleHt = 20;
+                string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
+                Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
+                spg1Image = ColourSpectrogram.FrameSpectrogram(spg1Image, titleBar, cs1.X_interval, cs1.Y_interval);
 
                 string opFileName2 = ipFileName2 + ".Target";
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
@@ -195,33 +200,29 @@ namespace AnalysisPrograms
                 cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
                 cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
                 cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                Image spg2Image = ImageTools.ReadImage2Bitmap(Path.Combine(opdir, opFileName2 + ".COLNEG.png"));
+                title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
+                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
+                spg2Image = ColourSpectrogram.FrameSpectrogram(spg2Image, titleBar, cs2.X_interval, cs2.Y_interval);
 
-                string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
+                title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
                 double colourGain = 3.0;
-                var diffSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
-                //ImageTools.DrawGridLinesOnImage((Bitmap)diffSp, cs2.X_interval, cs2.Y_interval);
-                int titleHt = 20;
-                string title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-                Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, diffSp.Width, titleHt);
-                diffSp = ColourSpectrogram.FrameSpectrogram(diffSp, titleBar, cs2.X_interval, cs2.Y_interval);
-                diffSp.Save(Path.Combine(opdir, opFileName3));
+                Image deltaSp = ColourSpectrogram.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
+                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, deltaSp.Width, titleHt);
+                deltaSp = ColourSpectrogram.FrameSpectrogram(deltaSp, titleBar, cs2.X_interval, cs2.Y_interval);
+                string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
+                deltaSp.Save(Path.Combine(opdir, opFileName3));
 
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
-                var distanceSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2/*, avDist, sdDist*/);
+                deltaSp = ColourSpectrogram.DrawDistanceSpectrogram(cs1, cs2);
                 Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
-                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, diffSp.Width, titleHt);
-                distanceSp = ColourSpectrogram.FrameSpectrogram(distanceSp, titleBar, cs2.X_interval, cs2.Y_interval);
-                distanceSp.Save(Path.Combine(opdir, opFileName4));
+                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, deltaSp.Width, titleHt);
+                deltaSp = ColourSpectrogram.FrameSpectrogram(deltaSp, titleBar, cs2.X_interval, cs2.Y_interval);
+                deltaSp.Save(Path.Combine(opdir, opFileName4));
 
                 string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";
-                string path1 = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
-                Image image1 = ImageTools.ReadImage2Bitmap(path1);
-                string path2 = Path.Combine(opdir, opFileName2 + ".COLNEG.png");
-                Image image2 = ImageTools.ReadImage2Bitmap(path2);
-                title = String.Format("FALSE COLOUR SPECTROGRAMS ({0} and {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, diffSp.Width, titleHt);
-                distanceSp = ColourSpectrogram.FrameThreeSpectrograms(image1, image2, distanceSp, titleBar, cs2.X_interval, cs2.Y_interval);
-                distanceSp.Save(Path.Combine(opdir, opFileName5));
+                deltaSp = ColourSpectrogram.FrameThreeSpectrograms(spg1Image, spg2Image, deltaSp, cs2.X_interval, cs2.Y_interval);
+                deltaSp.Save(Path.Combine(opdir, opFileName5));
             }
 
 
