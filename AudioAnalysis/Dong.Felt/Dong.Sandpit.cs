@@ -42,11 +42,13 @@
                 //CSVResults.BatchProcess(fileDirectory);
 
                 /// Read audio files into spectrogram.
-                string wavFilePath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string outputDirectory = @"C:\XUEYAN\Liang's recording\Three test recordings";
-                string imageFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string annotatedImageFileName = "1NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-annotate.png";
-
+                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Testing";
+                string audioFileName = "NEJB_NE465_20101016-045600-046700-Eastern Whipbird.wav";
+                string wavFilePath = Path.Combine(inputDirectory, audioFileName);
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\CSVAnnotations";
+                string imageFileName = audioFileName +".png";
+                string annotatedImageFileName = audioFileName + "-annotate.png";
+                string csvFileName = "NEJB_NE465_20101016-045600-046700-Eastern Whipbird.csv";
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
@@ -90,32 +92,37 @@
                 var scores = new List<double>();
                 scores.Add(1.0);
                 List<AcousticEvent> acousticEventlist = null;
+                var poiList = new List<PointOfInterest>();
                 double eventThreshold = 0.5; // dummy variable - not used                               
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
+                string csvPath = Path.Combine(outputDirectory, csvFileName);
+                var file = new FileInfo(csvPath);
                 /// addd this line to check the result after noise removal.
                 //image.Save(imagePath, ImageFormat.Png);
                 
                 //double intensityThreshold = 5.0; // dB
-                var ridgeConfig = new RidgeDetectionConfiguration
-                {
-                    RidgeDetectionmMagnitudeThreshold = 6.5,
-                    RidgeMatrixLength = 5,
-                    FilterRidgeMatrixLength = 7,
-                    MinimumNumberInRidgeInMatrix = 3
-                };
+                
+                ///Ridge detection experiment
+                //var ridgeConfig = new RidgeDetectionConfiguration
+                //{
+                //    RidgeDetectionmMagnitudeThreshold = 6.5,
+                //    RidgeMatrixLength = 5,
+                //    FilterRidgeMatrixLength = 7,
+                //    MinimumNumberInRidgeInMatrix = 3
+                //};
 
-                var poiList1 = new List<PointOfInterest>();
-                var poiTemperObject = new POISelection(poiList1);
-                poiTemperObject.ImprovedRidgeDetection(spectrogram, ridgeConfig);
-                var ridges = poiTemperObject.poiList;
-                Bitmap bmp = (Bitmap)image;
-                foreach (PointOfInterest poi in ridges)
-                {
-                    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                    //poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    poi.DrawRefinedOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                }
+                //var poiList1 = new List<PointOfInterest>();
+                //var poiTemperObject = new POISelection(poiList1);
+                //poiTemperObject.ImprovedRidgeDetection(spectrogram, ridgeConfig);
+                //var ridges = poiTemperObject.poiList;
+                //Bitmap bmp = (Bitmap)image;
+                //foreach (PointOfInterest poi in ridges)
+                //{
+                //    //poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
+                //    //poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                //    poi.DrawRefinedOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                //}
                 ///Output poiList to CSV
                 //string fileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-before refine direction.csv";
                 //string csvPath = Path.Combine(outputDirectory, fileName);
@@ -208,15 +215,15 @@
                 /////////// For Scarlet honeyeater2
                 //////var scarletHoneyeater2 = new Query(7020.0, 3575.0, 95.215, 96.348);
                 ////////var duration = scarletHoneyeater2.duration;       
-                int neighbourhoodLength = 13;
-                var rows = spectrogram.Data.GetLength(1);
-                var cols = spectrogram.Data.GetLength(0);
+                //int neighbourhoodLength = 13;
+                //var rows = spectrogram.Data.GetLength(1);
+                //var cols = spectrogram.Data.GetLength(0);
 
-                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength);
-                //var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
-                var outPutPath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
-                ////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
+                //var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength);
+                ////var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
+                //var outPutPath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
+                //////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
+                //CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
                 //var nhFrequencyRange = neighbourhoodLength * herzScale;
                 //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
                 //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
@@ -273,17 +280,18 @@
                 //}
                 //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, 13, query.nhCountInColumn);
                 //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation1, candidatesVector));
-                /// output events image
-
-                //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
                 
-                ///// to save the original spectrogram. 
+                acousticEventlist = CSVResults.CsvToAcousticEvent(file);
+                /// output events image
+                imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+
+                /// to save the original spectrogram. 
                 //image = (Image)bmp;
                 //bmp.Save(imagePath);
 
                 /// to save the annotated spectrogram. 
-                //image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, poiList1);
-                //image.Save(imagePath, ImageFormat.Png);
+                image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, poiList);
+                image.Save(imagePath, ImageFormat.Png);
             }
         } // Dev()
 

@@ -216,7 +216,7 @@ namespace AudioAnalysisTools
 
 
 
-
+        // For some unsure reason, the default color doesn't work. So I changed it into p3.   
         public void DrawEvent(Graphics g, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
             Pen p1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR); // default colour
@@ -243,9 +243,9 @@ namespace AudioAnalysisTools
                 t1 = this.oblong.r1; //temporal start of event
                 tWidth = this.oblong.r2 - t1 + 1;
             }
-
+            var p3 = new Pen(Color.Green);
             // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
-            g.DrawRectangle(p1, t1, y, tWidth, height);
+            g.DrawRectangle(p3, t1, y, tWidth, height);
 
             //draw the score bar to indicate relative score
             int scoreHt = (int)Math.Round(height * this.ScoreNormalised);

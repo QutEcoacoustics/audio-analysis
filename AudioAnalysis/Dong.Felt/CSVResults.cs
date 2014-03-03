@@ -32,6 +32,31 @@
         //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         //}
 
+        public static List<AcousticEvent> CsvToAcousticEvent(FileInfo file)
+        {
+            var result = new List<AcousticEvent>();
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var startTime = 0.0;
+            var duration = 0.0;
+            var minFreq = 0;
+            var maxFreq = 0; 
+            foreach (var csvRow in lines1)
+            {
+                if (csvRow[3] != "")
+                {
+                    startTime = double.Parse(csvRow[3]);
+                    duration = double.Parse(csvRow[4]) - startTime;
+                    minFreq = int.Parse(csvRow[1]);
+                    maxFreq = int.Parse(csvRow[2]);
+                }
+                var ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                result.Add(ae);
+            }
+            return result;
+        }
+
         /// <summary>
         /// Read CSV  file into variables. 
         /// </summary>
