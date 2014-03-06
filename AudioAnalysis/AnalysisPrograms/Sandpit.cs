@@ -155,8 +155,10 @@ namespace AnalysisPrograms
 
             string ipdir = @"C:\SensorNetworks\Output\SERF\2013MonthlyAveraged"; // SERF
             string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            string ipFileName1 = "April.monthlyAv";
-            string ipFileName2 = "June.monthlyAv";
+            string ipFileName1 = "April.monthAv";
+            string ipFileName2 = "June.monthAv";
+            string ipSdFileName1 = "April.monthSd";
+            string ipSdFileName2 = "June.monthSd";
 
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
             //string ipFileName = @"Test24hSpectrogram";
@@ -165,11 +167,11 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March04";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March06";
 
 
             // experiments with DIFFERENCE false-colour spectrograms
-            if (true)
+            if (false)
             {
                 // set the X and Y axis scales for the spectrograms 
                 int xScale = 60;  // assume one minute spectra and hourly time lines
@@ -179,7 +181,7 @@ namespace AnalysisPrograms
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 double backgroundFilterCoeff = 1.0; //must be value <=1.0
 
-                string opFileName1 = ipFileName1 + ".Reference";
+                string opFileName1 = ipFileName1;
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs1.ColorMODE = colorMap;
@@ -187,13 +189,19 @@ namespace AnalysisPrograms
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
                 cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
-                Image spg1Image = ImageTools.ReadImage2Bitmap(Path.Combine(opdir, opFileName1 + ".COLNEG.png"));
+                string imagePath = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
+                Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
+                if (spg1Image == null)
+                {
+                    Console.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
+                    return;
+                }
                 int titleHt = 20;
                 string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
                 Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
                 spg1Image = ColourSpectrogram.FrameSpectrogram(spg1Image, titleBar, cs1.X_interval, cs1.Y_interval);
 
-                string opFileName2 = ipFileName2 + ".Target";
+                string opFileName2 = ipFileName2;
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
                 cs2.ColorMODE = colorMap;
@@ -228,7 +236,7 @@ namespace AnalysisPrograms
 
             // Experiments with t-STATISTIC spectrograms 
             // to start with just t-statistic spectrograms on a single index - average power. 
-            if (false)
+            if (true)
             {
 
                 // set the X and Y axis scales for the spectrograms 
@@ -238,25 +246,62 @@ namespace AnalysisPrograms
                 //string colorMap = "ACI-ACI-ACI"; //CHANGE RGB mapping here.
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
                 double backgroundFilterCoeff = 1.0; //must be value <=1.0
-                string opFileName1 = ipFileName + ".Blur";
+
+                string opFileName1 = ipFileName1;
                 var cs1 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs1.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs1.ReadCSVFiles(ipdir, ipFileName);
-                ColourSpectrogram.BlurSpectrogram(cs1, "AVG-VAR");
+                cs1.ColorMODE = colorMap;
+                cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
+                //ColourSpectrogram.BlurSpectrogram(cs1);
+                //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                cs1.DrawFalseColourSpectrograms(opdir, opFileName1, backgroundFilterCoeff);
+                string imagePath = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
+                Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
+                if (spg1Image == null)
+                {
+                    Console.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
+                    return;
+                }
+                int titleHt = 20;
+                string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
+                Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
+                spg1Image = ColourSpectrogram.FrameSpectrogram(spg1Image, titleBar, cs1.X_interval, cs1.Y_interval);
 
-                string opFileName2 = ipFileName + ".NonBlur";
+                string opFileName2 = ipFileName2;
                 var cs2 = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs2.FrameWidth = frameWidth;   // default value - from which spectrogram was derived
-                cs2.ReadCSVFiles(ipdir, ipFileName);
+                cs2.ColorMODE = colorMap;
+                cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
-                //cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                cs2.DrawFalseColourSpectrograms(opdir, opFileName2, backgroundFilterCoeff);
+                Image spg2Image = ImageTools.ReadImage2Bitmap(Path.Combine(opdir, opFileName2 + ".COLNEG.png"));
+                title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
+                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
+                spg2Image = ColourSpectrogram.FrameSpectrogram(spg2Image, titleBar, cs2.X_interval, cs2.Y_interval);
 
-                string opFileName3 = ipFileName + ".tTest.COLNEG.png";
-                int N = 4140;
-                double tStatisticMax = 10.0; // for normalising the image
-                var tTestSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
-                ImageTools.DrawGridLinesOnImage((Bitmap)tTestSp, cs2.X_interval, cs2.Y_interval);
-                tTestSp.Save(Path.Combine(opdir, opFileName3));
+
+
+                int N = 30;
+                double tStatisticMax = 10.0; // for normalising the t-Statistic. See Statistics.tStatisticAlpha(double t, int df)
+                cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1);
+                cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2);
+                Image deltaSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, N, tStatisticMax);
+
+                title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+                Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
+                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, deltaSp.Width, titleHt);
+                deltaSp = ColourSpectrogram.FrameSpectrogram(deltaSp, titleBar, cs2.X_interval, cs2.Y_interval);
+                string opFileName3 = ipFileName1 + ".tTest.COLNEG.png";
+                deltaSp.Save(Path.Combine(opdir, opFileName3));
+
+
+                string opFileName5 = ipFileName1 + ".3tTest.COLNEG.png";
+                deltaSp = ColourSpectrogram.FrameThreeSpectrograms(spg1Image, spg2Image, deltaSp, cs2.X_interval, cs2.Y_interval);
+                deltaSp.Save(Path.Combine(opdir, opFileName5));
+
+
+
+
             }
 
             // experiments with false colour images - categorising/discretising the colours

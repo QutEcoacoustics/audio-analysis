@@ -63,7 +63,7 @@ namespace TowseyLib
         {
             double t = tStatistic(m1, sd1, count1, m2, sd2, count2);
             int df = count1 + count2 - 2;
-            double p = tStatisticAlpha(t, df);
+            double p = tStatisticAlpha(Math.Abs(t), df);
             StringBuilder sb = new StringBuilder("t=" + t.ToString("F3"));
             sb.Append(" p=" + p.ToString("F4"));
             if (p == 0.050) sb.Append("*");
@@ -98,7 +98,7 @@ namespace TowseyLib
             int df = count1 + count2 - 2;
             double v = ((count1 - 1) * v1 + (count2 - 1) * v2) / df;
             double SEsquared = v * (count1 + count2) / (count1 * count2);
-            double t = Math.Abs(m1 - m2) / Math.Sqrt(SEsquared);
+            double t = (m1 - m2) / Math.Sqrt(SEsquared);
             return t;
         }
 
@@ -246,7 +246,7 @@ namespace TowseyLib
             double t = tStatistic(av1, sd1, count1, av2, sd2, count2);
             LoggedConsole.WriteLine("t=" + t);
             int df = count1 + count2 - 2;
-            LoggedConsole.WriteLine("alpha=" + tStatisticAlpha(t, df));
+            LoggedConsole.WriteLine("alpha=" + tStatisticAlpha(Math.Abs(t), df));
 
 
             //calculate a lot of t-statistics taken from two files.
