@@ -168,6 +168,7 @@ namespace TowseyLib
 
         public static Bitmap ReadImage2Bitmap(string fileName)
         {
+            if (!File.Exists(fileName)) return null;
             return (Bitmap)Bitmap.FromFile(fileName);
         }
 

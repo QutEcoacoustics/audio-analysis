@@ -63,6 +63,7 @@ namespace AudioAnalysisTools
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
+        private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
         private Dictionary<string, Dictionary<string, double>> indexStats = new Dictionary<string, Dictionary<string, double>>(); // used to save mode and sd of the indices 
 
         /// <summary>
@@ -92,56 +93,41 @@ namespace AudioAnalysisTools
 
         public void ReadCSVFiles(string ipdir, string fileName)
         {
-            string key = SpectrogramConstants.KEY_BackgroundNoise;
-            string path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-            else
-            {
-                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
-                Console.WriteLine("         File does not exist: " + path);
-            }
-
-            key = SpectrogramConstants.KEY_AcousticComplexityIndex;
-            path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-
-            key = SpectrogramConstants.KEY_TemporalEntropy;
-            path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-
-            key = SpectrogramConstants.KEY_BinCover;
-            path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-
-            key = SpectrogramConstants.KEY_Average;
-            path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-
-            key = SpectrogramConstants.KEY_Variance;
-            path = Path.Combine(ipdir, fileName + "." + key + ".csv");
-            if (File.Exists(path)) this.ReadSpectrogram(key, path);
-            if (this.spectrogramMatrices.Count == 0)
-            {
-                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
-                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
-            }
+            string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
+            ReadCSVFiles(ipdir, fileName, keys);
         }
 
 
         public void ReadCSVFiles(string ipdir, string fileName, string indexKeys)
         {
             string[] keys = indexKeys.Split('-');
+            string warning = null;
             for (int key = 0; key < keys.Length; key++)
             {
                 string path = Path.Combine(ipdir, fileName + "." + keys[key] + ".csv");
-                if (File.Exists(path)) this.ReadSpectrogram(keys[key], path);
+                if (File.Exists(path))
+                {
+                    int freqBinCount;
+                    double[,] matrix = ColourSpectrogram.ReadSpectrogram(path, out freqBinCount);
+                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    this.spectrogramMatrices.Add(keys[key], matrix);
+                    this.FrameWidth = freqBinCount * 2;
+
+                }
                 else
                 {
-                    Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
-                    Console.WriteLine("         File does not exist: " + path);
+                    if (warning == null)
+                    {
+                        warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
+                    }
+                    warning += String.Format("\n      {0} File does not exist: {1}", keys[key], path);
                 }
             } // for loop
 
+            if (warning != null)
+            {
+                Console.WriteLine(warning);
+            }
             if (this.spectrogramMatrices.Count == 0)
             {
                 Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
@@ -149,18 +135,68 @@ namespace AudioAnalysisTools
             }
         }
 
-        public void ReadSpectrogram(string key, string csvPath)
+
+        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(string ipdir, string fileName, string indexKeys, out int freqBinCount)
+        {
+            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
+            string[] keys = indexKeys.Split('-');
+            string warning = null;
+            freqBinCount = 256; //the default
+            for (int key = 0; key < keys.Length; key++)
+            {
+                string path = Path.Combine(ipdir, fileName + "." + keys[key] + ".csv");
+                if (File.Exists(path))
+                {
+                    int binCount;
+                    double[,] matrix = ColourSpectrogram.ReadSpectrogram(path, out binCount);
+                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    dict.Add(keys[key], matrix);
+                    freqBinCount = binCount;
+                }
+                else
+                {
+                    if (warning == null)
+                    {
+                        warning = "\nWARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()";
+                    }
+                    warning += String.Format("\n      {0} File does not exist: {1}", keys[key], path);
+                }
+            } // for loop
+
+            if (warning != null)
+            {
+                Console.WriteLine(warning);
+            }
+            if (dict.Count == 0)
+            {
+                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
+                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+            }
+            return dict;
+        }
+
+        public void ReadStandardDeviationSpectrogramCSVs(string ipdir, string fileName)
+        {
+            //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
+            int freqBinCount;
+            this.spgr_StdDevMatrices = ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.FrameWidth = freqBinCount * 2;
+        }
+
+
+
+        public static double[,] ReadSpectrogram(string csvPath, out int binCount)
         {
             double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
-            int binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
+            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
             // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
-            this.FrameWidth = binCount * 2;
 
             // remove left most column - consists of index numbers
             matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
-            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-            spectrogramMatrices.Add(key, matrix);
+            return matrix;
         }
+
+
 
         /// <summary>
         /// All matrices must be in spectrogram orientation before adding to list of spectrograms.
@@ -215,24 +251,38 @@ namespace AudioAnalysisTools
 
         public void DrawGreyScaleSpectrograms(string opdir, string opFileName, double backgroundFilter)
         {
-            string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
-            string[] keys = putativeIndices.Split('-');
+            DrawGreyScaleSpectrograms(opdir, opFileName, backgroundFilter, this.ColorMap);
+        }
+
+        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, double backgroundFilter, string keyString)
+        {
+            //string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
+            string warning = null;
+
+            string[] keys = keyString.Split('-');
             for (int i = 0; i < keys.Length; i++)
             {
                 string key = keys[i];
                 if (this.spectrogramMatrices.ContainsKey(key))
                 {
-                    //this.ReadSpectrogram(key, path);
                     string path = Path.Combine(opdir, opFileName + "." + key + ".png");
                     Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key, backgroundFilter);
                     bmp.Save(path);
                 }
                 else
                 {
-                    Console.WriteLine("WARNING: from method ColourSpectrogram.DrawGreyScaleSpectrograms()");
-                    Console.WriteLine("         Dictionary of SpectrogramMatrices does not contain key: " + key);
+                    if (warning == null)
+                    {
+                        warning = "\nWARNING: from method ColourSpectrogram.DrawGreyScaleSpectrograms()";
+                        warning += "\n     " + opFileName + ": Dictionary of SpectrogramMatrices does not contain key(s): ";
+                    }
+                    warning += String.Format("{0} ", key);
                 }
             } // for loop
+            if (warning != null)
+            {
+                Console.WriteLine(warning);
+            }
         }
 
         public Image DrawGreyscaleSpectrogramOfIndex(string key, double backgroundFilter)
@@ -277,20 +327,24 @@ namespace AudioAnalysisTools
             Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE", backgroundFilter);
             bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOS.png"));
 
-            Image bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(SpectrogramConstants.KEY_BackgroundNoise, backgroundFilter);
-            if (bmpBgn == null)
+            Image bmpBgn;
+            string key = SpectrogramConstants.KEY_BackgroundNoise;
+            if (!this.spectrogramMatrices.ContainsKey(key))
             {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawFalseColourSpectrograms()");
-                Console.WriteLine("         Null image returned with key: {0}", SpectrogramConstants.KEY_BackgroundNoise);
-                return;
+                Console.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
+                //return;
             }
+            else
+            {
+                bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key, backgroundFilter);
+                bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
+                bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
 
-            bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
-            bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
-
-            bmpPos = this.DrawDoubleSpectrogram(bmpPos, bmpBgn, "POSITIVE");
-            bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOSBGN.png"));
+                bmpPos = this.DrawDoubleSpectrogram(bmpPos, bmpBgn, "POSITIVE");
+                bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOSBGN.png"));
+            }
         }
+
 
         /// <summary>
         /// Calculates a COMBO spectrogram from four equal weighted normalised indices.
@@ -324,6 +378,11 @@ namespace AudioAnalysisTools
 
         public Image DrawFalseColourSpectrogram(string colorMODE, double backgroundFilter)
         {
+            if (spectrogramMatrices.Count == 0)
+            {
+                Console.WriteLine("ERROR! ERROR! ERROR! - There are no indices with which to construct a false-colour spectrogram!");
+                return null;
+            }
             string[] rgbMap = this.ColorMap.Split('-');
 
             var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], backgroundFilter);
@@ -777,23 +836,126 @@ namespace AudioAnalysisTools
 
         public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, int N, double tStatisticMax)
         {
-            double[,] avg1 = cs1.spectrogramMatrices["AVG"];
-            double[,] var1 = cs1.spectrogramMatrices["VAR"];
 
-            double[,] avg2 = cs2.spectrogramMatrices["AVG"];
-            double[,] var2 = cs2.spectrogramMatrices["VAR"];
+            string[] keys = cs1.ColorMap.Split('-');
+
+            double[,] avg1a = cs1.spectrogramMatrices[keys[0]];
+            if (keys[0].Equals("TEN")) avg1a = MatrixTools.SubtractValuesFromOne(avg1a);
+            double[,] avg1b = cs1.spectrogramMatrices[keys[1]];
+            if (keys[1].Equals("TEN")) avg1b = MatrixTools.SubtractValuesFromOne(avg1b);
+            double[,] avg1c = cs1.spectrogramMatrices[keys[2]];
+            if (keys[2].Equals("TEN")) avg1c = MatrixTools.SubtractValuesFromOne(avg1c);
+
+            double[,] std1a = cs1.spgr_StdDevMatrices[keys[0]];
+            double[,] std1b = cs1.spgr_StdDevMatrices[keys[1]];
+            double[,] std1c = cs1.spgr_StdDevMatrices[keys[2]];
+
+            double[,] avg2a = cs2.spectrogramMatrices[keys[0]];
+            if (keys[0].Equals("TEN")) avg2a = MatrixTools.SubtractValuesFromOne(avg2a);
+            double[,] avg2b = cs2.spectrogramMatrices[keys[1]];
+            if (keys[1].Equals("TEN")) avg2b = MatrixTools.SubtractValuesFromOne(avg2b);
+            double[,] avg2c = cs2.spectrogramMatrices[keys[2]];
+            if (keys[2].Equals("TEN")) avg2c = MatrixTools.SubtractValuesFromOne(avg2c);
+
+            double[,] std2a = cs2.spgr_StdDevMatrices[keys[0]];
+            double[,] std2b = cs2.spgr_StdDevMatrices[keys[1]];
+            double[,] std2c = cs2.spgr_StdDevMatrices[keys[2]];
+
+            double[,] tStatA = GetTStatisticMatrix(avg1a, std1a, N, avg2a, std2a, N);
+            double[,] tStatB = GetTStatisticMatrix(avg1b, std1b, N, avg2b, std2b, N);
+            double[,] tStatC = GetTStatisticMatrix(avg1c, std1c, N, avg2c, std2c, N);
 
 
             // assume all matricies are normalised and of the same dimensions
-            int rows = avg1.GetLength(0); //number of rows
-            int cols = avg1.GetLength(1); //number
+            int rows = avg1a.GetLength(0); //number of rows
+            int cols = avg1a.GetLength(1); //number
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
-            int MaxRGBValue = 255;
+            double maxTStat = 10.0;
+            double halfTStat = maxTStat / 1.5;
+            double qtrTStat = maxTStat / 2.0;
             double tStat;
             int i1, i2, i3;
-            double u1,u2,v1,v2;
+            //double av1a, av1b, av1c, av2a, av2b, av2c;
+            //double sd1a, sd1b, sd1c, sd2a, sd2b, sd2c;
+            double tA, tB, tC;
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    //catch low values of dB used to avoid log of zero amplitude.
+                    tA = tStatA[row, col];
+                    tB = tStatB[row, col];
+                    tC = tStatC[row, col];
+
+                    tStat = (tA + tB + tC) / 3.000;
+                    double tStatAbsolute = Math.Abs(tStat);
+                    Dictionary<string, Color> colourChart = ColourSpectrogram.GetDifferenceColourChart();
+                    Color colour;
+
+                    if (tStat >= 0)
+                    {
+                        if (tStatAbsolute > maxTStat) { colour = colourChart["+99.9%"]; } //99.9% conf
+                        else
+                        {
+                            if (tStatAbsolute > halfTStat) { colour = colourChart["+99.0%"]; } //99.0% conf
+                            else
+                            {
+                                if (tStatAbsolute > qtrTStat) { colour = colourChart["+95.0%"]; } //95% conf
+                                else
+                                {
+                                    if (tStatAbsolute < 0.0) { colour = colourChart["NoValue"]; }
+                                    else
+                                    {
+                                        colour = colourChart["+NotSig"];
+                                    }
+                                }
+                            }
+                        }  // if() else
+                        bmp.SetPixel(col, row, colour);
+                    }
+                    else //  if (tStat < 0)
+                    {
+                        if (tStatAbsolute > maxTStat) { colour = colourChart["-99.9%"]; } //99.9% conf
+                        else
+                        {
+                            if (tStatAbsolute > halfTStat) { colour = colourChart["-99.0%"]; } //99.0% conf
+                            else
+                            {
+                                if (tStatAbsolute > qtrTStat) { colour = colourChart["-95.0%"]; } //95% conf
+                                else
+                                {
+                                    if (tStatAbsolute < 0.0) { colour = colourChart["NoValue"]; }
+                                    else
+                                    {
+                                        //v = Convert.ToInt32(zScore * MaxRGBValue);
+                                        //if()
+                                        //colour = Color.FromArgb(0, v, v);
+                                        colour = colourChart["-NotSig"];
+                                    }
+                                }
+                            }
+                        }  // if() else
+                        bmp.SetPixel(col, row, colour);
+                    }
+
+
+
+
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
+
+
+        public static double[,] GetTStatisticMatrix(double[,] m1Av, double[,] m1Sd, int N1, double[,] m2Av, double[,] m2Sd, int N2)
+        {
+            int rows = m1Av.GetLength(0); //number of rows
+            int cols = m1Av.GetLength(1); //number
+            double avg1, avg2, std1, std2;
+            double[,] M = new double[rows, cols];
             int expectedMinAvg = 0; // expected minimum average  of spectral dB above background
             int expectedMinVar = 1; // expected minimum variance of spectral dB above background
 
@@ -802,44 +964,26 @@ namespace AudioAnalysisTools
                 for (int column = 0; column < cols; column++)
                 {
                     //catch low values of dB used to avoid log of zero amplitude.
-                    u1 = avg1[row, column];
-                    u2 = avg2[row, column];
-                    v1 = Math.Abs(var1[row, column]);
-                    v2 = Math.Abs(var2[row, column]);
-                    if (u1 < expectedMinAvg) 
-                    { u1 = expectedMinAvg; v1 = expectedMinVar; } 
-                    if (u2 < expectedMinAvg) 
-                    { u2 = expectedMinAvg; v2 = expectedMinVar; }
+                    avg1 = m1Av[row, column];
+                    avg2 = m2Av[row, column];
+                    std1 = m1Sd[row, column];
+                    std2 = m2Sd[row, column];
 
-                    double diffOfMeans = Math.Abs(u1 - u2);
-                    if (diffOfMeans < 0.0001) tStat = 0.0;
-                    else
-                    {
-                        double S12 = (v1 + v2) / N;
-                        tStat = diffOfMeans / Math.Sqrt(S12);
-                        if (tStat > tStatisticMax) tStat = tStatisticMax; // upper bound
-                        tStat /= tStatisticMax; // normalise
+                    if (avg1 < expectedMinAvg)
+                    { 
+                        avg1 = expectedMinAvg; 
+                        std1 = expectedMinVar;
+                    }
+                    if (avg2 < expectedMinAvg)
+                    {   avg2 = expectedMinAvg;
+                        std2 = expectedMinVar;
                     }
 
-                    i1 = Convert.ToInt32(tStat * MaxRGBValue);
-                    //i1 = Math.Max(0, i1);
-                    //i1 = Math.Min(MaxRGBValue, i1);
-
-                    Color colour = Color.FromArgb(i1, i1, i1);
-
-                    if (i1 > 240) {colour = Color.Red; } //99.9% conf
-                    else 
-                    {
-                        if (i1 > 200) {colour = Color.Orange;}
-                        else
-                        {
-                            if (i1 > 160) { colour = Color.Yellow; }
-                        }
-                    }
-                    bmp.SetPixel(column, row, colour);
+                    M[row, column] = Statistics.tStatistic(avg1, std1, N1, avg2, std2, N2);
                 }//end all columns
             }//end all rows
-            return bmp;
+
+            return M;
         }
 
 
