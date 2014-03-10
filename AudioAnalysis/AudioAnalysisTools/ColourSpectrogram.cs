@@ -31,6 +31,13 @@ namespace AudioAnalysisTools
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private int minOffset = 0;    // default recording starts at midnight
+        public int MinuteOffset
+        {
+            get { return minOffset; }
+            set { minOffset = value; }
+        }
+
         private int x_interval = 60;    // assume one minute spectra and hourly time lines
         public int X_interval
         {
@@ -59,12 +66,26 @@ namespace AudioAnalysisTools
             }
         }
 
+        private double backgroundFilter = 1.0; // default value = no filtering
+        public double BackgroundFilter
+        {
+            get { return backgroundFilter; }
+            set { backgroundFilter = value; }
+        }
+
         public string ColorMap { get; set; }    //within current recording     
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
         private Dictionary<string, Dictionary<string, double>> indexStats = new Dictionary<string, Dictionary<string, double>>(); // used to save mode and sd of the indices 
+
+        private int N; // default value 
+        public int SampleCount // only used where the spectrograms are derived from vaerages and want to do t-test of difference.
+        {
+            get { return N; }
+            set { N = value; }
+        }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -79,6 +100,26 @@ namespace AudioAnalysisTools
             this.SampleRate = sampleRate; 
             this.ColorMap = colourMap; 
         }
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="minuteOffset">minute of day at which the spectrogram starts</param>
+        /// <param name="Xscale">time scale : pixels per hour</param>
+        /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
+        /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
+        /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
+        public ColourSpectrogram(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap)
+        {
+            // set the X-axis scale for the spectrogram 
+            this.minOffset = minuteOffset;
+            this.X_interval = Xscale;
+            // set the Y axis scale for the spectrogram 
+            this.SampleRate = sampleRate;
+            this.FrameWidth = frameWidth;
+            this.ColorMap = colourMap;
+        }
+
 
 
         public Dictionary<string, double> GetIndexStatistics(string key)
@@ -235,13 +276,19 @@ namespace AudioAnalysisTools
             return this.spectrogramMatrices[key];
         }
 
-        //public void CalculateAcousticIndexModeAndStandardDeviation(string key)
-        //{
-        //    Dictionary<string, double> dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(this.spectrogramMatrices[key]);
-        //    Console.WriteLine("{0}: Min={1:f3}   Max={2:f3}    Mode={3:f3}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
-        //    double[] avSD = { dict["mode"], dict["sd"] };
-        //    this.avAndSd.Add(key, avSD);
-        //}
+        /// <summary>
+        /// returns a matrix of acoustic indices whose values are normalised.
+        /// In addition, temporal entropy is subtracted from 1.0.
+        /// In addition, small background values are reduced as per filter coeeficient. 1.0 = unchanged. 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="backgroundFilterCoeff"></param>
+        /// <returns></returns>
+        public double[,] GetNormalisedSpectrogramMatrix(string key)
+        {
+            return ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
+        }
+
 
         public void BlurSpectrogramMatrix(string key)
         {
@@ -249,12 +296,12 @@ namespace AudioAnalysisTools
             spectrogramMatrices[key] = matrix;
         }
 
-        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, double backgroundFilter)
+        public void DrawGreyScaleSpectrograms(string opdir, string opFileName)
         {
-            DrawGreyScaleSpectrograms(opdir, opFileName, backgroundFilter, this.ColorMap);
+            DrawGreyScaleSpectrograms(opdir, opFileName, this.ColorMap);
         }
 
-        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, double backgroundFilter, string keyString)
+        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, string keyString)
         {
             //string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
             string warning = null;
@@ -266,7 +313,7 @@ namespace AudioAnalysisTools
                 if (this.spectrogramMatrices.ContainsKey(key))
                 {
                     string path = Path.Combine(opdir, opFileName + "." + key + ".png");
-                    Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key, backgroundFilter);
+                    Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
                     bmp.Save(path);
                 }
                 else
@@ -285,7 +332,7 @@ namespace AudioAnalysisTools
             }
         }
 
-        public Image DrawGreyscaleSpectrogramOfIndex(string key, double backgroundFilter)
+        public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
@@ -313,18 +360,18 @@ namespace AudioAnalysisTools
                 //System.Environment.Exit(666);
             }
 
-            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], backgroundFilter);
+            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], this.BackgroundFilter);
             Image bmp = ImageTools.DrawMatrix(matrix);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, this.Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
             return bmp;
         }
 
-        public void DrawFalseColourSpectrograms(string opdir, string opFileName, double backgroundFilter)
+        public void DrawFalseColourSpectrograms(string opdir, string opFileName)
         {
-            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE", backgroundFilter);
+            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
             bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEG.png"));
 
-            Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE", backgroundFilter);
+            Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
             bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOS.png"));
 
             Image bmpBgn;
@@ -336,7 +383,7 @@ namespace AudioAnalysisTools
             }
             else
             {
-                bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key, backgroundFilter);
+                bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key);
                 bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
                 bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
 
@@ -372,11 +419,11 @@ namespace AudioAnalysisTools
             }
 
             Image bmp = ImageTools.DrawMatrix(combo);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
             return bmp;
         }
 
-        public Image DrawFalseColourSpectrogram(string colorMODE, double backgroundFilter)
+        public Image DrawFalseColourSpectrogram(string colorMODE)
         {
             if (spectrogramMatrices.Count == 0)
             {
@@ -385,14 +432,14 @@ namespace AudioAnalysisTools
             }
             string[] rgbMap = this.ColorMap.Split('-');
 
-            var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], backgroundFilter);
-            var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]], backgroundFilter);
-            var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]], backgroundFilter);
+            var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], this.BackgroundFilter);
+            var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]], this.BackgroundFilter);
+            var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]], this.BackgroundFilter);
             bool doReverseColour = false;
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
 
             Image bmp = ColourSpectrogram.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, X_interval, Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
             return bmp;
         }
 
@@ -429,16 +476,16 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Image FrameSpectrogram(Image bmp1, Image titleBar, int X_interval, int Y_interval)
+        public static Image FrameSpectrogram(Image bmp1, Image titleBar, int minOffset, int X_interval, int Y_interval)
         {
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, X_interval, Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, Y_interval);
 
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
 
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            int timeScale = 60;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
+            int timeScale = 60; // assume 60 pixels per hour
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, minOffset, timeScale, imageWidth, trackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -604,9 +651,9 @@ namespace AudioAnalysisTools
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
                 var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
                 cs.ReadCSVFiles(ipdir, ipFileName);
-                double backgroundFilterCoeff = 1.0; // 1.0 = no background filtering
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName, backgroundFilterCoeff);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName, backgroundFilterCoeff);
+                cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
+                cs.DrawGreyScaleSpectrograms(opdir, opFileName);
+                cs.DrawFalseColourSpectrograms(opdir, opFileName);
             }
 
             Execute(arguments);
@@ -627,6 +674,7 @@ namespace AudioAnalysisTools
         //############################################################################################################################################################
         //# STATIC METHODS ###########################################################################################################################################
         //############################################################################################################################################################
+
 
         public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix, double backgroundFilterCoeff)
         {
@@ -779,15 +827,14 @@ namespace AudioAnalysisTools
 
         public static Image DrawDifferenceSpectrogram(ColourSpectrogram target, ColourSpectrogram reference, double colourGain)
         {
-        //public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
-            double[,] tgtRedM = target.spectrogramMatrices["ACI"]; 
-            double[,] tgtGrnM = target.spectrogramMatrices["TEN"]; 
-            double[,] tgtBluM = target.spectrogramMatrices["CVR"];
+            string[] keys = target.ColorMap.Split('-');
+            double[,] tgtRedM = target.GetNormalisedSpectrogramMatrix(keys[0]);
+            double[,] tgtGrnM = target.GetNormalisedSpectrogramMatrix(keys[1]);
+            double[,] tgtBluM = target.GetNormalisedSpectrogramMatrix(keys[2]);
 
-            double[,] refRedM = reference.spectrogramMatrices["ACI"];
-            double[,] refGrnM = reference.spectrogramMatrices["TEN"];
-            double[,] refBluM = reference.spectrogramMatrices["CVR"];
-
+            double[,] refRedM = reference.GetNormalisedSpectrogramMatrix(keys[0]);
+            double[,] refGrnM = reference.GetNormalisedSpectrogramMatrix(keys[1]);
+            double[,] refBluM = reference.GetNormalisedSpectrogramMatrix(keys[2]);
 
             // assume all matricies are normalised and of the same dimensions
             int rows = tgtRedM.GetLength(0); //number of rows
@@ -796,8 +843,6 @@ namespace AudioAnalysisTools
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
             int MaxRGBValue = 255;
-            // int MinRGBValue = 0;
-            //int v1, v2, v3;
             double d1, d2, d3;
             int i1, i2, i3;
 
@@ -834,9 +879,8 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, int N, double tStatisticMax)
+        public static Dictionary<string, double[,]> GetTStatisticMatrices(ColourSpectrogram cs1, ColourSpectrogram cs2)
         {
-
             string[] keys = cs1.ColorMap.Split('-');
 
             double[,] avg1a = cs1.spectrogramMatrices[keys[0]];
@@ -861,14 +905,28 @@ namespace AudioAnalysisTools
             double[,] std2b = cs2.spgr_StdDevMatrices[keys[1]];
             double[,] std2c = cs2.spgr_StdDevMatrices[keys[2]];
 
-            double[,] tStatA = GetTStatisticMatrix(avg1a, std1a, N, avg2a, std2a, N);
-            double[,] tStatB = GetTStatisticMatrix(avg1b, std1b, N, avg2b, std2b, N);
-            double[,] tStatC = GetTStatisticMatrix(avg1c, std1c, N, avg2c, std2c, N);
+            var dict = new Dictionary<string, double[,]>(); 
+            dict.Add(keys[0], ColourSpectrogram.GetTStatisticMatrix(avg1a, std1a, cs1.N, avg2a, std2a, cs2.N));
+            dict.Add(keys[1], ColourSpectrogram.GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N));
+            dict.Add(keys[2], ColourSpectrogram.GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N));
+            //double[,] tStatB = GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N);
+            //double[,] tStatC = GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N);
+            return dict;
+        }
 
+
+        public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
+        {
+            string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
+            Dictionary<string, double[,]> dict = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2);
+
+            double[,] tStatA = dict[keys[0]];
+            double[,] tStatB = dict[keys[1]];
+            double[,] tStatC = dict[keys[2]];
 
             // assume all matricies are normalised and of the same dimensions
-            int rows = avg1a.GetLength(0); //number of rows
-            int cols = avg1a.GetLength(1); //number
+            int rows = tStatA.GetLength(0); //number of rows
+            int cols = tStatA.GetLength(1); //number
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
@@ -876,7 +934,7 @@ namespace AudioAnalysisTools
             double halfTStat = maxTStat / 1.5;
             double qtrTStat = maxTStat / 2.0;
             double tStat;
-            int i1, i2, i3;
+            //int i1, i2, i3;
             //double av1a, av1b, av1c, av2a, av2b, av2c;
             //double sd1a, sd1b, sd1c, sd2a, sd2b, sd2c;
             double tA, tB, tC;
@@ -941,9 +999,6 @@ namespace AudioAnalysisTools
                         bmp.SetPixel(col, row, colour);
                     }
 
-
-
-
                 }//end all columns
             }//end all rows
             return bmp;
@@ -986,98 +1041,192 @@ namespace AudioAnalysisTools
             return M;
         }
 
+        public static double[,] CreateTStatisticDifferenceMatrix(ColourSpectrogram cs1, ColourSpectrogram cs2, double[,] tStatMatrix, string key, double tStatThreshold)
+        {
+            double[,] m1 = cs1.GetNormalisedSpectrogramMatrix(key);
+            double[,] m2 = cs2.GetNormalisedSpectrogramMatrix(key);
+
+            // assume all matricies are of the same dimensions
+            int rows = m1.GetLength(0); //number of rows
+            int cols = m1.GetLength(1); //number
+            var differenceM = new double[rows, cols];
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < cols; column++) 
+                {
+                    if (Math.Abs(tStatMatrix[row, column]) >= tStatThreshold)
+                        differenceM[row, column] = m1[row, column] - m2[row, column];
+                }//end all columns
+            }//end all rows
+            return differenceM;
+        }
+
+
+        public static Image[] DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
+        {
+            string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
+            Dictionary<string, double[,]> dict = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2);
+            double[,] m1 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[0]], keys[0], tStatThreshold);
+            double[,] m2 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[1]], keys[1], tStatThreshold);
+            double[,] m3 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[2]], keys[2], tStatThreshold);
+
+            int rows = m1.GetLength(0); //number of rows
+            int cols = m1.GetLength(1); //number
+            Bitmap bmp1 = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            Bitmap bmp2 = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            int MaxRGBValue = 255;
+            double d1, d2, d3;
+            int i1pos, i2pos, i3pos, value;
+            int i1neg, i2neg, i3neg;
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < cols; column++) 
+                {
+                    d1 = m1[row, column] * colourGain;
+                    d2 = m2[row, column] * colourGain;
+                    d3 = m3[row, column] * colourGain;
+                    i1pos = 0;
+                    i2pos = 0;
+                    i3pos = 0;
+                    i1neg = 0;
+                    i2neg = 0;
+                    i3neg = 0;
+
+                    value = Math.Abs(Convert.ToInt32(d1 * MaxRGBValue));
+                    if(d1 >= 0)
+                    {
+                        i1pos = Math.Max(0, value);
+                        i1pos = Math.Min(MaxRGBValue, i1pos);
+                    }
+                    else
+                    {
+                        i1neg = Math.Max(0, value);
+                        i1neg = Math.Min(MaxRGBValue, i1neg);
+                    }
+
+                    value = Math.Abs(Convert.ToInt32(d2 * MaxRGBValue));
+                    if (d2 >= 0)
+                    {
+                        i2pos = Math.Max(0, value);
+                        i2pos = Math.Min(MaxRGBValue, i2pos);
+                    }
+                    else
+                    {
+                        i2neg = Math.Min(0, value);
+                        i2neg = Math.Max(MaxRGBValue, i2neg);
+                    }
+
+                    value = Math.Abs(Convert.ToInt32(d3 * MaxRGBValue));
+                    if (d3 >= 0)
+                    {
+                        //i3pos = Convert.ToInt32(d3 * MaxRGBValue);
+                        i3pos = Math.Max(0, value);
+                        i3pos = Math.Min(MaxRGBValue, i3pos);
+                    }
+                    else
+                    {
+                        //i3neg = Math.Abs(Convert.ToInt32(d3 * MaxRGBValue));
+                        i3neg = Math.Min(0, value);
+                        i3neg = Math.Max(MaxRGBValue, i3neg);
+                    }
+                    bmp1.SetPixel(column, row, Color.FromArgb(i1pos, i2pos, i3pos));
+                    bmp2.SetPixel(column, row, Color.FromArgb(i1neg, i2neg, i3neg));
+                }//end all columns
+            }//end all rows
+            Image[] array = new Image[2];
+            array[0] = bmp1;
+            array[1] = bmp2;
+            return array;
+        }
 
         public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
         {
-            string key = "ACI";
-            double[,] aciMatrix1 = cs1.GetMatrix(key);
-            var dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(aciMatrix1);
+            string[] keys = cs1.ColorMap.Split('-');
+
+            string key = keys[0];
+            double[,] m1Red = cs1.GetNormalisedSpectrogramMatrix(key);
+            var dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m1Red);
             cs1.SetIndexStatistics(key, dict);
-            aciMatrix1 = MatrixTools.Matrix2ZScores(aciMatrix1, dict["mode"], dict["sd"]);
+            m1Red = MatrixTools.Matrix2ZScores(m1Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
-            key = "TEN";
-            double[,] tenMatrix1 = cs1.GetMatrix(key);
-            tenMatrix1 = MatrixTools.SubtractValuesFromOne(tenMatrix1);
-            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(tenMatrix1);
+            key = keys[1];
+            double[,] m1Grn = cs1.GetNormalisedSpectrogramMatrix(key);
+            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m1Grn);
             cs1.SetIndexStatistics(key, dict);
-            tenMatrix1 = MatrixTools.Matrix2ZScores(tenMatrix1, dict["mode"], dict["sd"]);
+            m1Grn = MatrixTools.Matrix2ZScores(m1Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
-            key = "CVR";
-            double[,] cvrMatrix1 = cs1.GetMatrix(key);
-            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(cvrMatrix1);
+            key = keys[2];
+            double[,] m1Blu = cs1.GetNormalisedSpectrogramMatrix(key);
+            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m1Blu);
             cs1.SetIndexStatistics(key, dict);
-            cvrMatrix1 = MatrixTools.Matrix2ZScores(cvrMatrix1, dict["mode"], dict["sd"]);
+            m1Blu = MatrixTools.Matrix2ZScores(m1Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
-            key = "ACI";
-            double[,] aciMatrix2 = cs2.GetMatrix(key);
-            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(aciMatrix2);
+            key = keys[0];
+            double[,] m2Red = cs2.GetNormalisedSpectrogramMatrix(key);
+            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m2Red);
             cs2.SetIndexStatistics(key, dict);
-            aciMatrix2 = MatrixTools.Matrix2ZScores(aciMatrix2, dict["mode"], dict["sd"]);
+            m2Red = MatrixTools.Matrix2ZScores(m2Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
-            key = "TEN";
-            double[,] tenMatrix2 = cs2.GetMatrix(key);
-            tenMatrix2 = MatrixTools.SubtractValuesFromOne(tenMatrix2);
-            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(tenMatrix2);
+            key = keys[1];
+            double[,] m2Grn = cs2.GetNormalisedSpectrogramMatrix(key);
+            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m2Grn);
             cs2.SetIndexStatistics(key, dict);
-            tenMatrix2 = MatrixTools.Matrix2ZScores(tenMatrix2, dict["mode"], dict["sd"]);
+            m2Grn = MatrixTools.Matrix2ZScores(m2Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
-            key = "CVR";
-            double[,] cvrMatrix2 = cs2.GetMatrix(key);
-            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(cvrMatrix2);
+            key = keys[2];
+            double[,] m2Blu = cs2.GetNormalisedSpectrogramMatrix(key);
+            dict = ColourSpectrogram.GetModeAndOneTailedStandardDeviation(m2Blu);
             cs2.SetIndexStatistics(key, dict);
-            cvrMatrix2 = MatrixTools.Matrix2ZScores(cvrMatrix2, dict["mode"], dict["sd"]);
+            m2Blu = MatrixTools.Matrix2ZScores(m2Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
 
             double[] v1 = new double[3];
-            double[] mode1 = { cs1.indexStats["ACI"]["mode"], cs1.indexStats["TEN"]["mode"], cs1.indexStats["CVR"]["mode"] };
-            double[] stDv1 = { cs1.indexStats["ACI"]["sd"], cs1.indexStats["TEN"]["sd"], cs1.indexStats["CVR"]["sd"] };
+            double[] mode1 = { cs1.indexStats[keys[0]]["mode"], cs1.indexStats[keys[1]]["mode"], cs1.indexStats[keys[2]]["mode"] };
+            double[] stDv1 = { cs1.indexStats[keys[0]]["sd"],   cs1.indexStats[keys[1]]["sd"],   cs1.indexStats[keys[2]]["sd"]   };
             Console.WriteLine("1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode1[0], stDv1[0],  mode1[1], stDv1[1], mode1[2], stDv1[2]);
 
             double[] v2 = new double[3];
-            double[] mode2 = { cs2.indexStats["ACI"]["mode"], cs2.indexStats["TEN"]["mode"], cs2.indexStats["CVR"]["mode"] };
-            double[] stDv2 = { cs2.indexStats["ACI"]["sd"], cs2.indexStats["TEN"]["sd"], cs2.indexStats["CVR"]["sd"] };
+            double[] mode2 = { cs2.indexStats[keys[0]]["mode"], cs2.indexStats[keys[1]]["mode"], cs2.indexStats[keys[2]]["mode"] };
+            double[] stDv2 = { cs2.indexStats[keys[0]]["sd"],   cs2.indexStats[keys[1]]["sd"],   cs2.indexStats[keys[2]]["sd"]   };
             Console.WriteLine("2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode2[0], stDv2[0], mode2[1], stDv2[1], mode2[2], stDv2[2]);
 
             // assume all matricies are normalised and of the same dimensions
-            int rows = aciMatrix1.GetLength(0); //number of rows
-            int cols = aciMatrix1.GetLength(1); //number
+            int rows = m1Red.GetLength(0); //number of rows
+            int cols = m1Red.GetLength(1); //number
             double[,] d12Matrix = new double[rows, cols];
             double[,] d11Matrix = new double[rows, cols];
             double[,] d22Matrix = new double[rows, cols];
-            double av1, av2;
 
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    v1[0] = aciMatrix1[row, col];
-                    v1[1] = tenMatrix1[row, col];
-                    v1[2] = cvrMatrix1[row, col];
-                    av1 = (v1[0] + v1[1] + v1[2]) / 3;
+                    v1[0] = m1Red[row, col];
+                    v1[1] = m1Grn[row, col];
+                    v1[2] = m1Blu[row, col];
 
-                    v2[0] = aciMatrix2[row, col];
-                    v2[1] = tenMatrix2[row, col];
-                    v2[2] = cvrMatrix2[row, col];
-                    av2 = (v2[0] + v2[1] + v2[2]) / 3;
+                    v2[0] = m2Red[row, col];
+                    v2[1] = m2Grn[row, col];
+                    v2[2] = m2Blu[row, col];
 
                     d12Matrix[row, col] = DataTools.EuclidianDistance(v1, v2);
-                    d11Matrix[row, col] = av1;
-                    d22Matrix[row, col] = av2;
-                    //d11Matrix[row, col] = DataTools.VectorEuclidianLength(v1);
-                    //d22Matrix[row, col] = DataTools.VectorEuclidianLength(v2);
+                    d11Matrix[row, col] = (v1[0] + v1[1] + v1[2]) / 3;
+                    d22Matrix[row, col] = (v2[0] + v2[1] + v2[2]) / 3;
 
-                    if ((row == 150) && (col == 1100))
-                    {
-                        Console.WriteLine("V1={0:f3}, {1:f3}, {2:f3}", v1[0], v1[1], v1[2]);
-                        Console.WriteLine("V2={0:f3}, {1:f3}, {2:f3}", v2[0], v2[1], v2[2]);
-                        Console.WriteLine("EDist12={0:f4};   ED11={1:f4};   ED22={2:f4}", d12Matrix[row, col], d11Matrix[row, col], d22Matrix[row, col]);
-                    }
+                    //following lines are for debugging purposes
+                    //if ((row == 150) && (col == 1100))
+                    //{
+                    //    Console.WriteLine("V1={0:f3}, {1:f3}, {2:f3}", v1[0], v1[1], v1[2]);
+                    //    Console.WriteLine("V2={0:f3}, {1:f3}, {2:f3}", v2[0], v2[1], v2[2]);
+                    //    Console.WriteLine("EDist12={0:f4};   ED11={1:f4};   ED22={2:f4}", d12Matrix[row, col], d11Matrix[row, col], d22Matrix[row, col]);
+                    //}
                 }
             } // rows
 
@@ -1164,6 +1313,31 @@ namespace AudioAnalysisTools
 
 
 
+        public static Image FrameTwoSpectrograms(Image spg1, Image spg2, int X_interval, int Y_interval)
+        {
+            int width = spg1.Width; // assume all images have the same width
+            int trackHeight = 20;
+            //int spgHeight = spg1.Height; // assume all images have the same width
+
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(width, X_interval, width, trackHeight, "hours");
+            int compositeHeight = spg1.Height + spg2.Height;
+
+            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            int yOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            gr.DrawImage(spg1, 0, yOffset); //draw in the top spectrogram
+            yOffset += spg1.Height;
+            gr.DrawImage(spg2, 0, yOffset); //draw in the second spectrogram
+            yOffset += spg2.Height;
+            //gr.DrawImage(timeBmp, 0, yOffset); //draw in the top time scale
+            //yOffset += timeBmp.Height;
+
+            gr.DrawImage(timeBmp, 0, yOffset); //draw in the bottom time scale
+            //yOffset += timeBmp.Height;
+
+            return (Image)compositeBmp;
+        }
         public static Image FrameThreeSpectrograms(Image spg1, Image spg2, Image distanceSpg, int X_interval, int Y_interval)
         {
             int width = spg1.Width; // assume all images have the same width
