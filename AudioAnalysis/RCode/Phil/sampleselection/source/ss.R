@@ -32,12 +32,14 @@
 cat('clearing the workspace \n flushing dev \v')
 rm(list = ls())
 dev.flush()
+options(error = recover)
 
-source('config.R')
+source('config.R')  #must be first
 source('events.R')
 source('features.R')
 source('cluster.R')
-source('samples.R')
+source('ranking.R')
+source('evaluation.R')
 source('tags.R')
 source('util.R')
 source('spectrogram.R')
@@ -58,9 +60,9 @@ SS <- function (from.step = NA, to.step = NA) {
     
     
     CheckPaths()
+    options(warn = 1)  #print warnings as they occur
     
     all.steps <- c('minute.list',
-                       'events',
                        'feature.extraction',
                        'clustering',
                        'internal.distance',
@@ -118,41 +120,35 @@ SS <- function (from.step = NA, to.step = NA) {
         function () {
             # Step 1: 
             # generate a list of minutes to use in as the target
-            CreateMinuteList()
+            CreateTargetMinutes()
         },
         function () {
             # Step 2: 
-            # merge events from several files (one for each audio file)
-            # into a single csv file
-            CreateEventList()
-        },
-        function () {
-            # Step 3: 
             # feature extraction 
             # creates a new output file parallel to the events file
             DoFeatureExtraction() 
         },
         function () {
-            # Step 4: 
+            # Step 3: 
             # creates a new output csv file, identical to the events file,
             # except for the addition of a "group" column.
             ClusterEvents() 
         },
         function () {
-            # Step 5:
+            # Step 4:
             # calculates the sum of distances between all pairs of 
             # events in each minute
             InternalMinuteDistances()
         },
         function () {
-            # Step 6:
+            # Step 5:
             # chooses samples based on cluster groups
             # outputs a list of minute samples to a csv file
             samples <- RankSamples()
             EvaluateSamples(samples) 
         },
         function () {
-            # Step 7:
+            # Step 6:
             # output a series of spectrograms of the samples
             # with the events colorcoded by cluster
             InspectSamples()

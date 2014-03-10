@@ -3,7 +3,9 @@
 
 
 DoFeatureExtraction <- function (limit = FALSE) {
-    # performs feature extraction on the events in the events file
+    # performs feature extraction on the outer target events
+    # i.e. the events which fall within the target sites/dates/times, 
+    #      but ignoring the percent of target
     # 
     # Details:
     #   reads events one at a time. For each event, generates the 
@@ -16,23 +18,19 @@ DoFeatureExtraction <- function (limit = FALSE) {
     # set this to how many files to process, 
     # false to do them all
     
-    
     library('tuneR')
-    
-    events <- ReadOutput('events')
-    
+    events <- GetOuterTargetEvents()
     # make sure it is sorted by filename 
     events <- events[with(events, order(filename)) ,]
     
+    already.extracted.features <- GetExistingFeatures()
     
-    if (limit != FALSE && limit < nrow(events)) {
-        # set a limit for faster debug
-        events <- events[1:limit,]
+    # features will be calculated and added to the already extracted features
+    # therefore, don't calculate for events which are already calculated
+    if (class(already.extracted.features) == 'data.frame') {
+        event.ids.to.process <- setdiff(events$event.id, already.extracted.features$event.id)
+        events <- events[events$event.id %in% event.ids.to.process, ]   
     }
-    
-    
-    
-
     
     cur.wav.path <- FALSE
     cur.spectro <- FALSE
@@ -44,7 +42,8 @@ DoFeatureExtraction <- function (limit = FALSE) {
     num.events.before.previous.file <- 0
     ptmt <- proc.time();
     ptm <- proc.time()
-    for (ev in 1:nrow(events)) {
+    ev <- 1;
+    while (ev <= nrow(events)) {
         Dot()
         bounds <- as.numeric(c(events$start.sec.in.file[ev], 
                              events$duration[ev],
@@ -66,14 +65,12 @@ DoFeatureExtraction <- function (limit = FALSE) {
                 ptm <- proc.time()
             }
             
-            
-            
             Report(3, 'processing features for events in', wav.path)
             Report(3, 'starting with event', ev)
             
             cur.spectro <- Sp.Create(wav.path, draw=FALSE)
             cur.wav.path <- wav.path
-            
+          
         }
         features <- as.data.frame(GetFeatures(events[ev,], cur.spectro));
         features$event.id <- events$event.id[ev]
@@ -83,15 +80,52 @@ DoFeatureExtraction <- function (limit = FALSE) {
         } else {
             features.all <- features
         }
-
+        ev <- ev + 1
     }
     Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
+    
+    # merge these features with the previously extracted
+    if (class(already.extracted.features) == 'data.frame') {
+        features.all <- rbind(features.all, already.extracted.features)  
+    }
+    
+    features.all <- OrderBy(features.all, 'event.id')
+    WriteOutputCsv(features.all, MasterOutputPath('features'))
+    
 
-    # have not escaped separator char, but shouldn't 
-    # matter with numeric values anyway
-    WriteOutput(features.all, 'features')
     
 }
+
+GetExistingFeatures <- function () {
+    # determines if any feature extraction already completed is still valid. 
+    # if not, move it to archived and start feature extraction from scratch
+    # if it is still valid (i.e. events have not chagned and feature extraction has not changed)
+    # it returns the features already extracted
+    require('digest')
+    # check if any of these files have changed
+    to.check <- c(AllEventsPath(),
+                 'features.R')
+
+    hash.name <- 'features'
+    # creates a hash of the text content of all the files appended together
+    new.content.hash <- HashFileContents(to.check)
+    old.content.hash <-  ReadHash(hash.name)
+    if (old.content.hash != new.content.hash) {
+        WriteHash(hash.name, new.content.hash)
+        return(FALSE)
+    } else {
+        path <- MasterOutputPath('features');
+        if (file.exists(path)) {
+            return(ReadOutputCsv(path))
+        } else {
+            return(FALSE)
+        }
+    } 
+}
+
+
+
+
 
 GetFeatures <- function (event, spectro) {
     # for a particular event, calculates all the features to be used

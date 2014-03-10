@@ -1,21 +1,42 @@
 # all functions to do with outputting and reporting
 
+g.output.master.dir <- file.path(g.output.parent.dir, 'master')
+g.hash.dir <- file.path(g.output.parent.dir, 'hash')
+
+# events and features are stored in "master"
+# clustering and ranking based on clusters are stored in folders for the different subsets. 
+# a copy of the subset of the master features and events is moved to the folder
+# a copy of the parameters for that subset is kept with it. 
+
+
+
+
 CheckPaths <- function () {
     # checks all global paths to make sure they exist
-    # returns: 
-    #   null
-    #
-    # if one of them doesn't exist, execution will stop
+    # missing output paths are created
+    # missing source paths cause error
+    # called at the end of this file
     
-    to.test <- c(g.output.parent.dir, 
+    warn.if.absent <- c( 
                  g.source.dir, 
                  g.audio.dir, 
                  g.events.source.dir)
-    for (t in 1:length(to.test)) {
-        if (!file.exists(to.test[t])) {
-            stop(paste(to.test[t], 'path does not exist'))
-        }
-    }
+    create.if.absent <- c(
+        g.output.parent.dir,
+        g.output.master.dir,
+        g.hash.dir
+        )
+    lapply(warn.if.absent, function (f) {
+        if (!file.exists(f)) {
+            stop(paste(f, 'path does not exist'))
+        }  
+    })
+
+    lapply(create.if.absent, function (f) {
+        if (!file.exists(f)) {
+            dir.create(f)
+        }  
+    })
     
 }
 
@@ -24,7 +45,7 @@ WriteOutput <- function (x, fn, new = FALSE, ext = 'csv') {
     # with reporting
     Report(4, 'Writing output:', fn)
     path <- OutputPath(fn, new = new, ext = ext)
-    write.csv(x, path, row.names = FALSE)
+    WriteOutputCsv(x, path)
 }
 
 ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) { 
@@ -42,8 +63,22 @@ ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
     if (false.on.missing && !file.exists(path)) {
         return(FALSE)
     }
-    data <- read.csv(path, header = TRUE, stringsAsFactors=FALSE)
+    data <- ReadOutputCsv(path)
     return(data)
+}
+
+# read/write wrappers for csv with correct options set
+ReadOutputCsv <- function (path) {
+    return(read.csv(path, header = TRUE, stringsAsFactors=FALSE))
+}
+WriteOutputCsv <- function (x, path) {
+    write.csv(x, path, row.names = FALSE)
+}
+
+
+
+MasterOutputPath <- function (fn, ext = 'csv') {
+    return(file.path(g.output.master.dir, paste(fn,ext, sep='.')))
 }
 
 
@@ -71,32 +106,33 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     #   to get the current output path, leave fn empth
     #   to create a new folder for output without a particular file, just pass new = TRUE
     
+
+    
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
     dir.name <- paste(g.start.date, g.start.min, g.end.date,
                       g.end.min, sites, g.percent.of.target, sep='.')
     dir.name <- gsub(" ","", dir.name)
     output.dir <- file.path(g.output.parent.dir,dir.name)
-    if (!file.exists(g.output.parent.dir)) {
-        dir.create(g.output.parent.dir)
-    }
+
     if (!file.exists(output.dir)) {
         dir.create(output.dir)
         dir.create(file.path(output.dir, "1"))
     }
     dirs <- list.files(path = output.dir, full.names = FALSE, 
                        recursive = FALSE)
-    if (length(dirs) > 0) {
-        v <- as.numeric(dirs[length(dirs)])
-        if (is.na(v)) {
-            warning('bad folder name')
-        }
-    } else {
-        v <- 1   
-    }
-    if (new) {
+
+    
+    v <-suppressWarnings(max(round(as.numeric(dirs)), na.rm=TRUE))
+     
+    
+    if (v < 1) {
+        v <- 1
+    } else if (new) {
         v <- v + 1
     }
+
+
     path <- file.path(output.dir,v)
     if (!file.exists(path)) {
         dir.create(path)
@@ -109,6 +145,7 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
 
     return(op)
 }
+
 
 TempDirectory <- function () {
     #creates a temporary folder within the temp directory
@@ -184,4 +221,28 @@ Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
     }
 }
 
+# hashes used to track changes are stored in a specific output directory  
+HashPath <- function (name) {
+    hash.path <- file.path(g.output.parent.dir, 'hash', paste0(name, '.txt'))
+    return(hash.path)
+}
+ReadHash <- function (name) {
+    hash.path <- HashPath(name)
+    if (file.exists(hash.path)) {
+        return(readChar(hash.path, file.info(hash.path)$size))
+    } else {
+        return("")
+    }
+}
+WriteHash <- function (name, val) {
+    hash.path <- HashPath(name)
+    writeChar(val, hash.path)
+}
+HashFileContents <- function (filepaths) {
+    hash <- digest(paste(sapply(filepaths, function (path) {
+        readChar(path, file.info(path)$size)
+    })));
+    return(hash)
+}
 
+CheckPaths()

@@ -229,8 +229,7 @@ RenameMatlabOutput <- function () {
 
 SecToTime <- function (sec, decimals = 2,  midnight.is.1st.min = FALSE) {
     #given a second number, returns a string which is the time of day
-    # eg 322 returns 5:21 because 5:21am is the 322min minute of the day
-    # eg 1 returns 00:00:00 because that is the 1st minute of the day
+
     sec <- as.numeric(sec)
     if (midnight.is.1st.min) {
         min <- min - 60

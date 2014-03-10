@@ -2,7 +2,70 @@
 
 
 
-CreateMinuteList <- function () {
+
+
+GetMinuteList <- function () {
+    # creates a list of minutes for the total of the entire study, 
+    # giving each minute an id. 
+    # for 5 days * 4 sites processing time = 0.55 seconds. 
+    start.date.time <- as.POSIXlt(g.study.start.date, tz = 'GMT') + 60 * (g.study.start.min)
+    end.date.time<- as.POSIXlt(g.study.end.date, tz = 'GMT') + 60 * (g.study.end.min + 1)
+    diff <- (as.double(end.date.time) - as.double(start.date.time)) / 60;  
+    cols <- c('site', 'date', 'min');
+    total.num.mins <- diff * length(g.study.sites);
+    min.ids <- 0:(total.num.mins-1)
+    site.num <- floor(min.ids / diff)
+    min <- (min.ids %% diff)  + g.study.start.min
+    day <- floor(min / 1440)
+    min <- min %% 1440
+    site <- g.study.sites[site.num + 1]
+    day <- format(start.date.time + 1440 * 60 * day, '%Y-%m-%d')
+    min.list <- as.data.frame(cbind(site, day,  min), rownames = FALSE, stringsAsFactors = FALSE)
+    colnames(min.list) <- cols
+    min.list$min.id <- 1:nrow(min.list)
+    return(min.list)
+    
+}
+
+
+CreateTargetMinutes <- function () { 
+    study.min.list <- GetMinuteList()
+    target.mins <- TargetSubset(study.min.list)
+    if (g.percent.of.target < 100) { 
+        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
+        target.min.ids <- target.mins$min.id[random.mins] 
+        new = TRUE
+    } else {
+        new = FALSE
+    }
+    
+    # create a new output directory if there is less than 100 % of the target
+    # being used, because the random minutes will be different
+    WriteOutput(data.frame(min.id = target.min.ids), 'target.min.ids', new = new)
+}
+
+TargetSubset <- function (df) {
+    # returns a subset of the dataframe, includes only rows that 
+    # belong within the outer target sites/times. 
+    #
+    # Args:
+    #   df: data.frame; must have the columns site, date, min
+    # 
+    # Value
+    #   data.frame
+    
+    rows <- df$site %in% g.sites & 
+        as.character(df$date) >= g.start.date & 
+        as.character(df$date) <= g.end.date & 
+        as.numeric(df$min) >= g.start.min & 
+        as.numeric(df$min) <= g.end.min
+
+    return(df[rows, ])
+    
+    
+}
+
+CreateMinuteList.old <- function () {
     # creates a list of random minutes between the target start date/time and end date/time
     # the number of minutes to create is set in config 
     #
@@ -40,9 +103,6 @@ CreateMinuteList <- function () {
     } else {
         new = TRUE
     }
-    
-
-    
     WriteOutput(min.list, 'minlist', new = new)
 
     return(min.list)
@@ -53,16 +113,13 @@ CreateMinuteList <- function () {
 
 MergeEvents <- function () {
     # merge all events into 1 file, adding extra columns
+    # this is not done again after changing target. It only needs to 
+    # be called if the original event detection is redone
     files <- list.files(path = g.events.source.dir, full.names = FALSE)
     Report(3, "Merging events")
-    
-
-    
     orig.col.names <- c('start.sec.in.file', 'duration', 'bottom.f', 'top.f')
-     
-    
-    for(f in 1:length(files)) {
 
+    for(f in 1:length(files)) {
         filepath <- file.path(g.events.source.dir, files[f])
         if (file.info(filepath)$size == 0) {
             next()
@@ -79,131 +136,69 @@ MergeEvents <- function () {
         start.sec <- events$start.sec.in.file %% 60
         min <- ((events$start.sec.in.file - start.sec) / 60) + file.startmin
         filename <- rep(filename, nrow(events))
-        
         events <- cbind(filename, date, site, start.sec, min, events)
-        
         if (f == 1) {
             all.events <- events
-            
         } else {
-            
             all.events <- rbind(all.events, events)
-        }
-        
-        
-        
+        }  
     }
-    
     # sort by site then chronological. Should be already, except that I stuffed up the naming
     all.events <- all.events[with(all.events, order(site, date, min, start.sec)), ]
-    
     event.id <- 1:nrow(all.events)
     all.events <- cbind(event.id, all.events)
     
-    WriteAllEvents(all.events);
+    min.ids <- GetMinuteList();
+    #event.min.ids <- min.ids$min.id[min.ids$site %in% all.events$site & min.ids$date %in% all.events$date & min.ids$min %in% all.events$min]
     
+    all.events.with.min.id <- merge(all.events, min.ids, c('site', 'date', 'min'))
+    all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
+    
+
+    WriteAllEvents(all.events.with.min.id);
 }
 
-CreateEventList <- function () {
-    
-    min.list <- ReadOutput('minlist')
-    
+GetOuterTargetEvents <- function () {
+    # gets a subset of the target events according to the 
+    # config targets, but ignoring the percent of target param
     all.events <- ReadAllEvents()
- 
-    
-    
+    selected.events <- TargetSubset(all.events)
+    return(selected.events)   
+}
+
+
+GetInnerTargetEvents <- function () {
+    min.list <- ReadOutput('minlist')
+    all.events <- ReadAllEvents()
     for(m in 1:nrow(min.list)) {
         Dot()
         #subset
         condition <- all.events$site == min.list$site[m] & 
         all.events$date == min.list$date[m] &
         all.events$min == min.list$min[m]
-    
         this.mins.events <- all.events[condition, ]
-    
         min.id <- rep(m, nrow(this.mins.events))
         this.mins.events <- cbind(this.mins.events, min.id)
-    
         if (m == 1) {
             all.selected.events <- this.mins.events
         } else {
             all.selected.events <- rbind(all.selected.events, this.mins.events)
         }
-        
     }
     
-    WriteOutput(all.selected.events, 'events')
-    
-    
-    
+    #WriteOutput(all.selected.events, 'events')
+    Return(all.selected.events)
 }
 
 
-MergeEventsOld <- function () {
-    # for each target minute (generated in minute list) 
-    # looks for the events and adds them to a single csv file
-    # including the site, date, start second in day and minute num in day 
-    # columns, as well as the frequency bounds and duration
-    #
-    # TODO:
-    #   - handle missing event file (currently causes error, stops)
-    
-    files <- list.files(path = g.events.source.dir, full.names = FALSE)
- 
-    min.list <- ReadOutput('minlist')
-    Report(3, "Merging events for each minute")
-    prev.fn <- ''
-    for(i in 1:nrow(min.list)) {
-        Dot()
-        site <- min.list[i, 1]
-        date <- min.list[i, 2]
-        min <- min.list[i, 3]
-        min.id <- i
-        event.file <- EventFile(site, date, min)
-        
-        fn <- file.path(g.events.source.dir, event.file$fn)
-        if (fn != prev.fn) {
-            if (!file.exists(fn)) {
-                stop(paste('missing event file',fn))
-            }
-            #todo: make more efficient by not reading the same csv file over and over again
-            if (file.info(fn)$size == 0) {
-                next()
-            }
-            events.1 <- as.data.frame(read.csv(fn, header = FALSE))
-            events.1 <- AddMinCol(events.1, as.numeric(event.file$start.min))
-            prev.fn <- fn
-        }
-        #subset the events
-        events <- events.1[events.1$min == min, ]
-        # add the date and site columns
-        min.id.col <- rep(min.id, nrow(events))
-        date.col <- rep(date, nrow(events))
-        site.col <- rep(site, nrow(events))
-        events <- cbind(min.id.col, site.col, date.col, events)
-        if (!exists('selected.events')) {
-            selected.events <- events
-        } else {
-            selected.events <- rbind(selected.events, events)
-        }
-    }
-    
-    colnames(selected.events) <- c('min.id', 'site', 'date', 'start.sec', 'start.sec.in.file', 'duration', 'bottom.frequency', 'top.frequency',  'min')
-    
-    # TODO: check that it is sorted correctly (by site, date and start second)
-    
-    WriteOutput(selected.events, 'events')
 
-}
 
 
 
 
 
 EventLabels <- function (events) {
-    
     cns <- colnames(events);
-    
     labels <- apply(events, 1, 
                                    function (r) {
                                        time <- SecToTime(r[4])
@@ -214,7 +209,6 @@ EventLabels <- function (events) {
                                    })
     
     return(labels)
-    
 }
 
 EventFile <- function (site, date, min, ext = 'wav.txt') {
@@ -262,8 +256,27 @@ WriteAllEvents <- function (events) {
 ReadAllEvents <- function () {
     return(read.csv(AllEventsPath(), header = TRUE, stringsAsFactors=FALSE))
 }
-
 AllEventsPath <- function () {
-    return(file.path(g.output.parent.dir, 'events', paste(g.all.events.version, 'csv', sep = '.')))  
+    return(file.path(g.output.master.dir, 'events', paste(g.all.events.version, 'csv', sep = '.')))  
+}
+
+ExpandMinId <- function (min.ids = NA) {
+    # given a dataframe with a min.id column
+    # add columns for site, date, min (in day)
+    
+    
+    if (class(min.ids) %in% c('numeric', 'integer')) {
+        min.ids <- data.frame(min.id = min.ids)  
+    } else if (class(min.ids) != 'data.frame') {
+        min.ids <- ReadOutput('target.min.ids')
+    }
+    row.names <- rownames(min.ids)
+    full.min.list <- GetMinuteList()
+    sub.min.list <- full.min.list[full.min.list$min.id %in% min.ids$min.id, c('site', 'date', 'min')]
+    new.df <- cbind(min.ids, sub.min.list)
+    # this should not be necessary: according to the doc
+    # it should take the rownames of the first argument. But it isn't
+    row.names(new.df) <- row.names
+    return(new.df)
 }
 

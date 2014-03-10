@@ -14,6 +14,7 @@ g.audio.dir  <- file.path(g.source.dir, 'mono')
 g.all.events.version <- 2 
 
 # events source directory, containing one csv file for each wave file
+# (the matlab output)
 g.events.source.dir  <- file.path(g.source.dir,'events',g.all.events.version)
 
 
@@ -21,16 +22,21 @@ g.events.source.dir  <- file.path(g.source.dir,'events',g.all.events.version)
 g.output.parent.dir <- file.path('..','output')
 
 
+g.study.start.date <- "2010-10-13"
+g.study.end.date <-  "2010-10-17"
+g.study.start.min <- 0
+g.study.end.min <- 1439
+g.study.sites <- c('NW', 'NE')
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
 g.start.min <- 0
-#g.start.min <- 300
+#g.start.min <- 415
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
 g.end.min <- 1439
-#g.end.min <- 400
+#g.end.min <- 430
 
 # which sites to include in sample selection
 g.sites <- c('NW')
@@ -42,7 +48,7 @@ g.sites <- c('NW')
 g.percent.of.target <- 50
 
 # how many minute samples to use when inspecting
-g.num.samples <- 2
+g.num.samples <- 12
 
 
 # evaluation is done against mysql database of tags

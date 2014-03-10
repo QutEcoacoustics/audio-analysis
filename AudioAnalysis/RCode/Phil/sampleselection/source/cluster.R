@@ -60,8 +60,19 @@ ClusterEvents <- function (num.groups = 'auto',
     if (num.groups == 'auto') {
         num.groups <- floor(sqrt(num.rows.to.use))
     }
-    groups <- as.matrix(cutree(fit, num.groups))
-    Report(2, 'num cluster groups = ',  num.groups)
+    
+    groups <- cutree(fit, num.groups)
+    
+    
+    print(length(groups))
+    print(nrow(events))
+    
+
+    
+  
+    
+    #groups <- as.matrix(cluster.result)
+    #Report(2, 'num cluster groups = ',  num.groups)
     
     events$group <- groups
 
@@ -87,30 +98,33 @@ ClusterEvents <- function (num.groups = 'auto',
 }
 
 
+# bug: sometimes returns events and features with different number of rows!
+
 GetEventsAndFeatures <- function () {
-    event.features <-  ReadOutput('features')
-    events <- ReadOutput('events')
-    
-    #todo: ensure that both are sorted by event id
+    target.min.ids <- ReadOutput('target.min.ids')
+    all.events <- ReadAllEvents()
+    events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
+    all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
+    event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]
+    #ensure that both are sorted by event id
     events <- events[with(events, order(event.id)) ,]
     event.features <- event.features[with(event.features, order(event.id)) ,]
-    
+    WriteOutput(events, 'events')
+    WriteOutput(event.features, 'features')
     # remove event.id.column from features table
     drop.cols <- names(event.features) %in% c('event.id')
     event.features <- event.features[!drop.cols]
-    
     return (list(events = events, event.features = event.features))
-    
 }
 
 
 InternalMinuteDistances <- function () {
     vals <- GetEventsAndFeatures()
-    mins <- ReadOutput('minlist')
+    mins <- ReadOutput('target.min.ids')
     vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
-    dist.scores <- sapply(1:nrow(mins), InternalMinuteDistance, vals$event.features, vals$events);
-    mins$v.score <- dist.scores
-    WriteOutput(mins, 'minlist')
+    dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
+    mins$distance.score <- dist.scores
+    WriteOutput(mins, 'distance.scores')
 }
 
 

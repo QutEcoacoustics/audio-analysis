@@ -1,6 +1,6 @@
 
 
-GetTags <- function () {
+GetTags <- function (target.only = TRUE) {
     # Calls a function to get the tags from the db, 
     # then adds the minute number for each tag and modifies the 
     # column names
@@ -14,7 +14,7 @@ GetTags <- function () {
                     'start_date', 
                     'start_time', 
                     'species_id')
-    tags <- ReadTagsFromDb(tag.fields)
+    tags <- ReadTagsFromDb(tag.fields, target.only)
     date.col <- match('start_date', colnames(tags))
     time.col <- match('start_time', colnames(tags))
     # add a column which is the minute number in the day for each tag (eg 1000 = 4:40pm)
@@ -39,24 +39,42 @@ GetTags <- function () {
 ReadTagsFromDb <- function (fields = c('start_date', 
                                 'start_time', 
                                 'site', 
-                                'species_id')) {
+                                'species_id'), target.only = TRUE) {
     # selects the tags for the appropriate sites, between the 
     # appropriate date times from the local MySql database
     
     require('RMySQL')
     
-    start.time <- MinToTime(g.start.min)
-    end.time <- MinToTime(g.end.min + 1) # target is inclusive of end min
+    if (target.only) {
+        start.min <- g.start.min
+        end.min <- g.end.min
+        start.date <- g.start.date
+        end.date <- g.end.date
+        start.min <- g.start.min
+        end.min <- g.end.min
+        sites <- g.sites
+    } else {
+        start.min <- g.study.start.min
+        end.min <- g.study.end.min
+        start.date <- g.study.start.date
+        end.date <- g.study.end.date
+        start.min <- g.study.start.min
+        end.min <- g.study.end.min
+        sites <- g.study.sites 
+    }
+    
+    start.time <- MinToTime(start.min)
+    end.time <- MinToTime(end.min + 1) # target is inclusive of end min
     
     # need to round start time down to the nearest 10 mins 
     # and end time up to the nearest 10 mins. 
     
-    start.date.time <- paste0("'",g.start.date," ",start.time,"'")
-    end.date.time <- paste0("'",g.end.date," ",end.time,"'")
+    start.date.time <- paste0("'",start.date," ",start.time,"'")
+    end.date.time <- paste0("'",end.date," ",end.time,"'")
     
     # convert vector of sites to comma separated list of 
     # quoted strings between parentheses
-    sites <- paste0("('",paste0(g.sites, collapse="','"),"')")
+    sites <- paste0("('",paste0(sites, collapse="','"),"')")
     
     # construct SQL statement
     sql.statement <- paste(

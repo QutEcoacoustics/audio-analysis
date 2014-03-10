@@ -33,6 +33,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
    #           samp.rate = samp.rate, bit = bit)
     spec <- Sp.Create(w)
     spec$rects <- rects
+    spec$label <- paste(site, start.date, SecToTime(start.sec), " - ", SecToTime(start.sec + duration))
     if (!is.na(img.path)) {
         Sp.Draw(spec, img.path)      
     }
@@ -60,60 +61,46 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     
     Report('Generating spectrogram')
     ptm <- proc.time()
-    
     #read and shape the original signal\n
     TFRAME <- frame.width
     hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:TFRAME) / (TFRAME - 1))
-    
     # wav can be a string or a tuneR wav object. 
     # If it's a string then create a tuneR wav object
     if (typeof(wav) == "character") {
         library(tuneR)
         wav <- readWave(wav)
     }
-    
     samp.rate <- wav@samp.rate
     bit <- wav@bit  # resolution of wave eg 16bit\n
     left <- wav@left  # sample values\n
     len <- length(left)  # total number of samples\n
-    
     #trim samples so that TFRAME fits exactly\n
     sig <- left[c(1:(len - len %% TFRAME))]
-    
     #normalise by the maximum signed value of 16 bit\n
     sig <- sig / (2 ^ bit / 2)
-    
     #number of frames\n
     nframe <- length(sig) / TFRAME
-    
     #split into frames. each frame is a column
     # each column contains wave signal data in time domain
     dim(sig) <- c(TFRAME, nframe)
-    
     # perform fft on each of the time frames
     # use Mod to remove imaginary part (phase), leaving only amplitude
     sig <- Mod(mvfft(sig * hamming))
-        
     # smooth the data\n
     if (smooth) {
         first.temp <- sig[1, ]
         sig <- filter(sig, rep(1 / 3, 3))
         sig[1, ] <- first.temp
     } 
-    
     # remove one of the symetrical halves
     amp <- sig[c(1:(TFRAME / 2)), ]
-    
-    
     # clear the unnecessary variables
     rm(wav)
     rm(left)
     rm(sig)
-    
     if (db) {
         amp <- ConvertToDb(amp)
     }
-    
     spectro <- list(
         vals = amp, 
         duration = len / samp.rate, 
@@ -129,11 +116,7 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     if (draw) {
         Sp.draw(spectro, filename)
     }
-    
-    
-    
     return(spectro)
-    
 }
 
 
@@ -195,9 +178,16 @@ Sp.Draw <- function (spectro, img.path = NA) {
       }
     }
     
+    if (!is.null(spectro$label) && nrow(spectro$rects) > 0) {
+        text.gp <- gpar(col = 'white', alpha = 1);
+        text.txt <- spectro$label
+        grid.text(text.txt, 0 , 0, 
+                  gp = text.gp,
+                  just = c('left', 'top')
+        )
     
     
-    #Sp.rect(spectro, rr)
+    }
     
     if (!is.na(img.path)) {
         dev.off()
