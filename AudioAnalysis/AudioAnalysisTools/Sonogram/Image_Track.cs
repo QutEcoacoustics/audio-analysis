@@ -806,24 +806,37 @@
             gr.DrawImage(timeBmp, 0, yOffset);
         }
 
-        // mark of time scale according to scale.
         public static Bitmap DrawTimeTrack(int duration, int scale, int trackWidth, int trackHeight, string title)
+        {
+            int offsetMinute = 0;
+            return DrawTimeTrack(duration, offsetMinute, scale, trackWidth, trackHeight, title);
+        }
+        
+        // mark of time scale according to scale.
+        public static Bitmap DrawTimeTrack(int duration, int offsetMinute, int scale, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
-            
-            int hour = 0;
+
+            int hour;
+            int min = offsetMinute - 1;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
 
             for (int x = 0; x < duration; x++) //for pixels in the line
             {
-                if (x % scale != 0) continue;
+                min++;
+                if (min % scale != 0) continue;
                 g.DrawLine(whitePen, x, 0, x, trackHeight);
+                hour = min / scale;
+                if (hour >= 24)
+                {
+                    min = 0;
+                    hour = 0;
+                }
                 g.DrawString(hour.ToString(), stringFont, Brushes.White, new PointF(x + 2, 1)); //draw time
-                hour++;
             }//end over all pixels
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary

@@ -495,9 +495,9 @@ namespace AnalysisPrograms
             var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
             string ipFileName = name;
             cs.LoadSpectrogramDictionary(spectrogramDictionary);
-            double backgroundFilter = 1.0;
-            cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
-            cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName, backgroundFilter);
+            cs.BackgroundFilter = 1.0;
+            cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName);
+            cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName);
         }
 
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
