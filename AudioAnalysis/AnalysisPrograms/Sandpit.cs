@@ -244,7 +244,7 @@ namespace AnalysisPrograms
                 int frameWidth = 512;   // default value - from which spectrogram was derived
                 //CHANGE RGB mapping here
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; 
-                double backgroundFilterCoeff = 0.5; //must be value <=1.0
+                double backgroundFilterCoeff = 0.1; //must be value <=1.0
 
                 string opFileName1 = ipFileName1;
                 var cs1 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);

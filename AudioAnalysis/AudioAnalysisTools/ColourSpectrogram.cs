@@ -953,6 +953,85 @@ namespace AudioAnalysisTools
         //    return dict;
         //}
 
+        /// <summary>
+        /// double tStatThreshold = 1.645; // 0.05% confidence @ df=infinity
+        /// double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
+        /// double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
+        /// double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
+        /// </summary>
+        /// <param name="tStatMatrix"></param>
+        /// <returns></returns>
+        public static Image DrawTStatisticSpectrogram(double[,] tStatMatrix)
+        {
+            double maxTStat = 20.0;
+            double halfTStat = maxTStat / 2.0;
+            double qtrTStat  = maxTStat / 4.0;
+            double tStat;
+
+            int rows = tStatMatrix.GetLength(0); //number of rows
+            int cols = tStatMatrix.GetLength(1); //number
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    //catch low values of dB used to avoid log of zero amplitude.
+                    tStat = tStatMatrix[row, col];
+                    double tStatAbsolute = Math.Abs(tStat);
+                    Dictionary<string, Color> colourChart = ColourSpectrogram.GetDifferenceColourChart();
+                    Color colour;
+
+                    if (tStat >= 0)
+                    {
+                        if (tStatAbsolute > maxTStat) { colour = colourChart["+99.9%"]; } //99.9% conf
+                        else
+                        {
+                            if (tStatAbsolute > halfTStat) { colour = colourChart["+99.0%"]; } //99.0% conf
+                            else
+                            {
+                                if (tStatAbsolute > qtrTStat) { colour = colourChart["+95.0%"]; } //95% conf
+                                else
+                                {
+                                    //if (tStatAbsolute < fifthTStat) { colour = colourChart["NoValue"]; }
+                                    //else
+                                    //{
+                                        colour = colourChart["NoValue"];
+                                    //}
+                                }
+                            }
+                        }  // if() else
+                        bmp.SetPixel(col, row, colour);
+                    }
+                    else //  if (tStat < 0)
+                    {
+                        if (tStatAbsolute > maxTStat) { colour = colourChart["-99.9%"]; } //99.9% conf
+                        else
+                        {
+                            if (tStatAbsolute > halfTStat) { colour = colourChart["-99.0%"]; } //99.0% conf
+                            else
+                            {
+                                if (tStatAbsolute > qtrTStat) { colour = colourChart["-95.0%"]; } //95% conf
+                                else
+                                {
+                                    //if (tStatAbsolute < 0.0) { colour = colourChart["NoValue"]; }
+                                    //else
+                                    //{
+                                    colour = colourChart["NoValue"];
+                                    //colour = colourChart["-NotSig"];
+                                    //}
+                                }
+                            }
+                        }  // if() else
+                        bmp.SetPixel(col, row, colour);
+                    }
+
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
+
+
+
         public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
         {
             string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
@@ -1263,23 +1342,25 @@ namespace AudioAnalysisTools
 
             double[,] tStatMatrix = ColourSpectrogram.GetTStatisticMatrix(avg1, std1, cs1.N, avg2, std2, cs2.N);
             //frame image 3
-            double tStatThreshold = 2.0; 
-            double colourGain = 1.0;
+            //double tStatThreshold = 2.0; 
+            //double colourGain = 1.0;
             Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
             title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, cs1.ColorMODE);
             titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(cs1.FileName, cs2.FileName, colorArray, image1.Width, titleHt);
+            Image image3 = ColourSpectrogram.DrawTStatisticSpectrogram(tStatMatrix);
+            image3 = ColourSpectrogram.FrameSpectrogram(image3, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+
             //Image image3 = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, tStatThreshold, colourGain);
-            //double[,] m  = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, tStatMatrix, key, tStatThreshold);
 
-            Image[] array = ColourSpectrogram.DrawTwoTStatisticSpectrograms(cs1, cs2, tStatThreshold, colourGain);
-            Image image3 = ColourSpectrogram.FrameSpectrogram(array[0], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
-            Image image4 = ColourSpectrogram.FrameSpectrogram(array[1], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            //Image[] array = ColourSpectrogram.DrawTwoTStatisticSpectrograms(cs1, cs2, tStatThreshold, colourGain);
+            //Image image3 = ColourSpectrogram.FrameSpectrogram(array[0], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            //Image image4 = ColourSpectrogram.FrameSpectrogram(array[1], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
-            Image[] opArray = new Image[4];
+            Image[] opArray = new Image[3];
             opArray[0] = image1;
             opArray[1] = image2;
             opArray[2] = image3;
-            opArray[3] = image4;
+            //opArray[3] = image4;
 
             Image combinedImage = ImageTools.CombineImagesVertically(opArray);
             return combinedImage;
