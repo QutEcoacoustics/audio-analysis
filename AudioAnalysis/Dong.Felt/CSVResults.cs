@@ -31,7 +31,6 @@
         //        nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
         //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         //}
-
         public static List<AcousticEvent> CsvToAcousticEvent(FileInfo file)
         {
             var result = new List<AcousticEvent>();
@@ -41,50 +40,22 @@
             var startTime = 0.0;
             var duration = 0.0;
             var minFreq = 0;
-            var maxFreq = 0; 
+            var maxFreq = 0;           
             foreach (var csvRow in lines1)
             {
-                if (csvRow[3] != "")
-                {
-                    startTime = double.Parse(csvRow[3]);
-                    duration = double.Parse(csvRow[4]) - startTime;
-                    minFreq = int.Parse(csvRow[1]);
-                    maxFreq = int.Parse(csvRow[2]);
-                }
                 var ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                if (csvRow[3] != "" && csvRow[6] != "")
+                {                    
+                    ae.MinFreq = int.Parse(csvRow[1]);
+                    ae.MaxFreq = int.Parse(csvRow[2]);
+                    ae.TimeStart = double.Parse(csvRow[3]);
+                    ae.TimeEnd = double.Parse(csvRow[4]);
+                    ae.Duration = double.Parse(csvRow[5]);                   
+                    ae.FreqBinCount = int.Parse(csvRow[6]);   
+                }                                                  
                 result.Add(ae);
             }
             return result;
-        }
-
-        /// <summary>
-        /// Read CSV  file into variables. 
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static List<Box> CsvFileReader(string filePath)
-        {
-            var results = new List<Box>();
-            
-            var lines = File.ReadAllLines(filePath).Select(i => i.Split(','));
-            var header = lines.Take(1).ToList();
-            var lines1 = lines.Skip(1);           
-            foreach (var csvRow in lines1)
-            {
-                if (csvRow.GetLength(0) != 0)
-                {
-                    var bottom = int.Parse(csvRow[3]);
-                    // using Parse, if the string is integer, then please use the int.Parse, if the string is double value, please use the double.Parse. 
-                    // you can't use int.Parse to parse the integer value. 
-                    var top = int.Parse(csvRow[4]);
-                    var left = double.Parse(csvRow[6]);
-                    var right = double.Parse(csvRow[7]);
-                    var tempRectangle = new Box(bottom, top, left, right);
-
-                    results.Add(tempRectangle);
-                }
-            }
-            return results;
         }
 
         public static RidgeDescriptionNeighbourhoodRepresentation CSVToNeighbourhoodRepresentation(FileInfo file)

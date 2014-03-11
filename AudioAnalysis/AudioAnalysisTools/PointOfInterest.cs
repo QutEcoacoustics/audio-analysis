@@ -297,11 +297,11 @@ namespace AudioAnalysisTools
             }
             else if (orientation == 1 * Math.PI / 12)
             {
-                color = Color.Orange;
+                color = Color.Pink;
             }
             else if (orientation == 2 * Math.PI / 12)
             {
-                color = Color.Cyan;
+                color = Color.LightGreen;
             }
             else if (orientation == 3 * Math.PI / 12)
             {
@@ -309,11 +309,11 @@ namespace AudioAnalysisTools
             }
             else if (orientation == 4 * Math.PI / 12)
             {
-                color = Color.Chocolate;
+                color = Color.LightGreen;
             }
             else if (orientation == 5 * Math.PI / 12)
             {
-                color = Color.LightBlue;
+                color = Color.LightSkyBlue;
             }
             else if (orientation == 6 * Math.PI / 12)
             {
@@ -321,23 +321,23 @@ namespace AudioAnalysisTools
             }
             else if (orientation == 7 * Math.PI / 12)
             {
-                color = Color.Magenta;
+                color = Color.LightSkyBlue;
             }
             else if (orientation == 8 * Math.PI / 12)
             {
-                color = Color.Crimson;
+                color = Color.Orange;
             }
             else if (orientation == 9 * Math.PI / 12)
             {
-                color = Color.Purple;
+                color = Color.DarkOrange;
             }
             else if (orientation == 10 * Math.PI / 12)
             {
-                color = Color.Brown;
+                color = Color.Orange;
             }
             else
             {
-                color = Color.Black;
+                color = Color.Pink;
             }
 
             bmp.SetPixel(x, y, color);
