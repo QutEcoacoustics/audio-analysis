@@ -116,7 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcousticEvents.cs" />
-    <Compile Include="Box.cs" />
     <Compile Include="Clustering.cs" />
     <Compile Include="Configuration\RidgeDetectionConfiguration.cs" />
     <Compile Include="CSVResults.cs" />
