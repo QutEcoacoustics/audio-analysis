@@ -23,6 +23,15 @@ namespace AudioAnalysisTools
 {
     public class ColourSpectrogram
     {
+        /// <summary>
+        /// File name from which spectrogram was derived.
+        /// </summary>
+        private string fileName;
+        public string FileName
+        {
+            get { return fileName; }
+            set { fileName = value; }
+        }
 
         //Define new colour schemes in class SpectorgramConstants and implement the code in the class Colourspectrogram, 
         //            method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
@@ -362,7 +371,7 @@ namespace AudioAnalysisTools
 
             double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], this.BackgroundFilter);
             Image bmp = ImageTools.DrawMatrix(matrix);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
+            //ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
             return bmp;
         }
 
@@ -509,6 +518,32 @@ namespace AudioAnalysisTools
             return compositeBmp;
         }
 
+        public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width, int height)
+        {
+            Bitmap bmp = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            //string text = title;
+            int X = 4;
+            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(title, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            string text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+        }
+
         public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width, int height)
         {
             Image colourChart = ImageTools.DrawColourScale(width, height - 2);
@@ -549,18 +584,6 @@ namespace AudioAnalysisTools
             g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
             //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
             return bmp;
-
-            
-            //Bitmap titleBmp = Image_Track.DrawTitleTrack(width, height, title);
-            //Graphics gr = Graphics.FromImage(titleBmp);
-            //int offset = 0;
-            ////gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-
-            ////draw a colour spectrum of basic colours
-            //int maxScaleLength = width / 3;
-            //int xLocation = width * 2 / 3;
-            //gr.DrawImage(scale, xLocation, 1); //dra
-            //return titleBmp;
         }
 
         public static Image DrawTitleBarOfDifferenceSpectrogram(string name1, string name2, Color[] colorArray, int width, int height)
@@ -879,50 +902,64 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Dictionary<string, double[,]> GetTStatisticMatrices(ColourSpectrogram cs1, ColourSpectrogram cs2)
+        public static double[,] GetTStatisticMatrices(ColourSpectrogram cs1, ColourSpectrogram cs2, string key)
         {
-            string[] keys = cs1.ColorMap.Split('-');
+            double[,] avg1 = cs1.spectrogramMatrices[key];
+            if (key.Equals("TEN")) 
+                avg1 = MatrixTools.SubtractValuesFromOne(avg1);
 
-            double[,] avg1a = cs1.spectrogramMatrices[keys[0]];
-            if (keys[0].Equals("TEN")) avg1a = MatrixTools.SubtractValuesFromOne(avg1a);
-            double[,] avg1b = cs1.spectrogramMatrices[keys[1]];
-            if (keys[1].Equals("TEN")) avg1b = MatrixTools.SubtractValuesFromOne(avg1b);
-            double[,] avg1c = cs1.spectrogramMatrices[keys[2]];
-            if (keys[2].Equals("TEN")) avg1c = MatrixTools.SubtractValuesFromOne(avg1c);
+            double[,] std1 = cs1.spgr_StdDevMatrices[key];
 
-            double[,] std1a = cs1.spgr_StdDevMatrices[keys[0]];
-            double[,] std1b = cs1.spgr_StdDevMatrices[keys[1]];
-            double[,] std1c = cs1.spgr_StdDevMatrices[keys[2]];
+            double[,] avg2 = cs2.spectrogramMatrices[key];
+            if (key.Equals("TEN")) 
+                avg2 = MatrixTools.SubtractValuesFromOne(avg2);
 
-            double[,] avg2a = cs2.spectrogramMatrices[keys[0]];
-            if (keys[0].Equals("TEN")) avg2a = MatrixTools.SubtractValuesFromOne(avg2a);
-            double[,] avg2b = cs2.spectrogramMatrices[keys[1]];
-            if (keys[1].Equals("TEN")) avg2b = MatrixTools.SubtractValuesFromOne(avg2b);
-            double[,] avg2c = cs2.spectrogramMatrices[keys[2]];
-            if (keys[2].Equals("TEN")) avg2c = MatrixTools.SubtractValuesFromOne(avg2c);
+            double[,] std2 = cs2.spgr_StdDevMatrices[key];
 
-            double[,] std2a = cs2.spgr_StdDevMatrices[keys[0]];
-            double[,] std2b = cs2.spgr_StdDevMatrices[keys[1]];
-            double[,] std2c = cs2.spgr_StdDevMatrices[keys[2]];
-
-            var dict = new Dictionary<string, double[,]>(); 
-            dict.Add(keys[0], ColourSpectrogram.GetTStatisticMatrix(avg1a, std1a, cs1.N, avg2a, std2a, cs2.N));
-            dict.Add(keys[1], ColourSpectrogram.GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N));
-            dict.Add(keys[2], ColourSpectrogram.GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N));
-            //double[,] tStatB = GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N);
-            //double[,] tStatC = GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N);
-            return dict;
+            double[,] tStatMatrix = ColourSpectrogram.GetTStatisticMatrix(avg1, std1, cs1.N, avg2, std2, cs2.N);
+            return tStatMatrix;
         }
 
+        //public static Dictionary<string, double[,]> GetTStatisticMatrices(ColourSpectrogram cs1, ColourSpectrogram cs2)
+        //{
+        //    string[] keys = cs1.ColorMap.Split('-');
+
+        //    double[,] avg1a = cs1.spectrogramMatrices[keys[0]];
+        //    if (keys[0].Equals("TEN")) avg1a = MatrixTools.SubtractValuesFromOne(avg1a);
+        //    double[,] avg1b = cs1.spectrogramMatrices[keys[1]];
+        //    if (keys[1].Equals("TEN")) avg1b = MatrixTools.SubtractValuesFromOne(avg1b);
+        //    double[,] avg1c = cs1.spectrogramMatrices[keys[2]];
+        //    if (keys[2].Equals("TEN")) avg1c = MatrixTools.SubtractValuesFromOne(avg1c);
+
+        //    double[,] std1a = cs1.spgr_StdDevMatrices[keys[0]];
+        //    double[,] std1b = cs1.spgr_StdDevMatrices[keys[1]];
+        //    double[,] std1c = cs1.spgr_StdDevMatrices[keys[2]];
+
+        //    double[,] avg2a = cs2.spectrogramMatrices[keys[0]];
+        //    if (keys[0].Equals("TEN")) avg2a = MatrixTools.SubtractValuesFromOne(avg2a);
+        //    double[,] avg2b = cs2.spectrogramMatrices[keys[1]];
+        //    if (keys[1].Equals("TEN")) avg2b = MatrixTools.SubtractValuesFromOne(avg2b);
+        //    double[,] avg2c = cs2.spectrogramMatrices[keys[2]];
+        //    if (keys[2].Equals("TEN")) avg2c = MatrixTools.SubtractValuesFromOne(avg2c);
+
+        //    double[,] std2a = cs2.spgr_StdDevMatrices[keys[0]];
+        //    double[,] std2b = cs2.spgr_StdDevMatrices[keys[1]];
+        //    double[,] std2c = cs2.spgr_StdDevMatrices[keys[2]];
+
+        //    var dict = new Dictionary<string, double[,]>();
+        //    dict.Add(keys[0], ColourSpectrogram.GetTStatisticMatrix(avg1a, std1a, cs1.N, avg2a, std2a, cs2.N));
+        //    dict.Add(keys[1], ColourSpectrogram.GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N));
+        //    dict.Add(keys[2], ColourSpectrogram.GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N));
+        //    return dict;
+        //}
 
         public static Image DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
         {
             string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
-            Dictionary<string, double[,]> dict = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2);
 
-            double[,] tStatA = dict[keys[0]];
-            double[,] tStatB = dict[keys[1]];
-            double[,] tStatC = dict[keys[2]];
+            double[,] tStatA = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[0]);
+            double[,] tStatB = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[1]);
+            double[,] tStatC = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[2]);
 
             // assume all matricies are normalised and of the same dimensions
             int rows = tStatA.GetLength(0); //number of rows
@@ -1062,13 +1099,16 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Image[] DrawTStatisticSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
+        public static Image[] DrawTwoTStatisticSpectrograms(ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
         {
             string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
-            Dictionary<string, double[,]> dict = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2);
-            double[,] m1 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[0]], keys[0], tStatThreshold);
-            double[,] m2 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[1]], keys[1], tStatThreshold);
-            double[,] m3 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, dict[keys[2]], keys[2], tStatThreshold);
+            double[,] tStat1 = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[0]);
+            double[,] tStat2 = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[1]);
+            double[,] tStat3 = ColourSpectrogram.GetTStatisticMatrices(cs1, cs2, keys[2]);
+
+            double[,] m1 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, tStat1, keys[0], tStatThreshold);
+            double[,] m2 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, tStat2, keys[1], tStatThreshold);
+            double[,] m3 = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, tStat3, keys[2], tStatThreshold);
 
             int rows = m1.GetLength(0); //number of rows
             int cols = m1.GetLength(1); //number
@@ -1139,6 +1179,113 @@ namespace AudioAnalysisTools
             array[1] = bmp2;
             return array;
         }
+
+
+        public static Image DrawTitleBarOfDifferenceSpectrogram(string name1, string name2, int width, int height)
+        {
+            Dictionary<string, Color> chart = ColourSpectrogram.GetDifferenceColourChart();
+            Image colourChart = ImageTools.DrawColourChart(width, height, ColourSpectrogram.ColourChart2Array(chart));
+
+            Bitmap bmp = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            string text = String.Format("EUCLIDIAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
+            int X = 4;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            text = name1 + "  +99.9%conf";
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1);
+            g.DrawImage(colourChart, X, 1);
+
+            X += colourChart.Width;
+            text = "-99.9%conf   " + name2;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1); //distance to end of string
+
+
+            text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+        }
+        
+        
+        public static Image DrawTStatisticGreyscaleSpectrogramOfIndex(ColourSpectrogram cs1, ColourSpectrogram cs2, string key)
+        {
+            Image image1 = cs1.DrawGreyscaleSpectrogramOfIndex(key);
+            Image image2 = cs2.DrawGreyscaleSpectrogramOfIndex(key);
+
+            if ((image1 == null)||(image2 == null))
+            {
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex()");
+                Console.WriteLine("         Null image returned with key: {0}", key);
+                return null;
+                //Console.WriteLine("  Press <RETURN> to exit.");
+                //Console.ReadLine();
+                //System.Environment.Exit(666);
+            }
+
+
+            int titleHt = 20;
+            int minOffset = 0;
+            //frame image 1
+            string title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
+            Image titleBar = ColourSpectrogram.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width, titleHt);
+            image1 = ColourSpectrogram.FrameSpectrogram(image1, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
+
+            //frame image 2
+            title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
+            titleBar = ColourSpectrogram.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
+            image2 = ColourSpectrogram.FrameSpectrogram(image2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+
+            //get matrices required to calculate matrix of t-statistics
+            double[,] avg1 = cs1.spectrogramMatrices[key];
+            if (key.Equals("TEN")) avg1 = MatrixTools.SubtractValuesFromOne(avg1);
+            double[,] std1 = cs1.spgr_StdDevMatrices[key];
+            double[,] avg2 = cs2.spectrogramMatrices[key];
+            if (key.Equals("TEN")) avg2 = MatrixTools.SubtractValuesFromOne(avg2);
+            double[,] std2 = cs2.spgr_StdDevMatrices[key];
+
+            double[,] tStatMatrix = ColourSpectrogram.GetTStatisticMatrix(avg1, std1, cs1.N, avg2, std2, cs2.N);
+            //frame image 3
+            double tStatThreshold = 2.0; 
+            double colourGain = 1.0;
+            Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
+            title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, cs1.ColorMODE);
+            titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(cs1.FileName, cs2.FileName, colorArray, image1.Width, titleHt);
+            //Image image3 = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, tStatThreshold, colourGain);
+            //double[,] m  = ColourSpectrogram.CreateTStatisticDifferenceMatrix(cs1, cs2, tStatMatrix, key, tStatThreshold);
+
+            Image[] array = ColourSpectrogram.DrawTwoTStatisticSpectrograms(cs1, cs2, tStatThreshold, colourGain);
+            Image image3 = ColourSpectrogram.FrameSpectrogram(array[0], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            Image image4 = ColourSpectrogram.FrameSpectrogram(array[1], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+
+            Image[] opArray = new Image[4];
+            opArray[0] = image1;
+            opArray[1] = image2;
+            opArray[2] = image3;
+            opArray[3] = image4;
+
+            Image combinedImage = ImageTools.CombineImagesVertically(opArray);
+            return combinedImage;
+        }
+
+
 
         public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
         {

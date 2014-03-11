@@ -167,7 +167,7 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March10";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March11";
 
 
             // experiments with DIFFERENCE false-colour spectrograms
@@ -244,10 +244,11 @@ namespace AnalysisPrograms
                 int frameWidth = 512;   // default value - from which spectrogram was derived
                 //CHANGE RGB mapping here
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; 
-                double backgroundFilterCoeff = 1.0; //must be value <=1.0
+                double backgroundFilterCoeff = 0.5; //must be value <=1.0
 
                 string opFileName1 = ipFileName1;
                 var cs1 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                cs1.FileName = ipFileName1;
                 cs1.ColorMODE = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
                 cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
@@ -267,8 +268,9 @@ namespace AnalysisPrograms
 
                 string opFileName2 = ipFileName2;
                 var cs2 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                cs2.FileName = ipFileName2;
                 cs2.ColorMODE = colorMap;
-                cs1.BackgroundFilter = backgroundFilterCoeff;
+                cs2.BackgroundFilter = backgroundFilterCoeff;
                 cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
                 cs2.DrawFalseColourSpectrograms(opdir, opFileName2);
@@ -285,31 +287,44 @@ namespace AnalysisPrograms
                 cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2);
                 cs2.SampleCount = N;
 
+                string key = "ACI";
+                Image tStatIndexImage = ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex(cs1, cs2, key);
+                string opFileName3 = ipFileName1 + ".tTest."+key+".png";
+                tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+
+                key = "TEN";
+                tStatIndexImage = ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex(cs1, cs2, key);
+                opFileName3 = ipFileName1 + ".tTest." + key + ".png";
+                tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+
+                key = "CVR";
+                tStatIndexImage = ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex(cs1, cs2, key);
+                opFileName3 = ipFileName1 + ".tTest." + key + ".png";
+                tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
 
                 //double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
                 //double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
                 //double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
                 double tStatThreshold = 1.645; // 0.05% confidence @ df=infinity
                 double colourGain = 2.0;
-                //Image deltaSp = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2);
-                Image[] array = ColourSpectrogram.DrawTStatisticSpectrogram(cs1, cs2, tStatThreshold, colourGain);
+                //Image[] array = ColourSpectrogram.DrawTwoTStatisticSpectrograms(cs1, cs2, tStatThreshold, colourGain);
 
-                title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-                Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
-                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, array[0].Width, titleHt);
-                array[0] = ColourSpectrogram.FrameSpectrogram(array[0], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
-                string opFileName3 = ipFileName1 + ".tTest.COLNEG.png";
-                array[0].Save(Path.Combine(opdir, opFileName3));
+                //title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+                //Color[] colorArray = ColourSpectrogram.ColourChart2Array(ColourSpectrogram.GetDifferenceColourChart());
+                //titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, array[0].Width, titleHt);
+                //array[0] = ColourSpectrogram.FrameSpectrogram(array[0], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                //opFileName3 = ipFileName1 + ".tTest.COLNEG.png";
+                //array[0].Save(Path.Combine(opdir, opFileName3));
 
-                title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-                titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, array[1].Width, titleHt);
-                array[1] = ColourSpectrogram.FrameSpectrogram(array[1], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
-                opFileName3 = ipFileName2 + ".tTest.COLNEG.png";
-                array[1].Save(Path.Combine(opdir, opFileName3));
+                //title = String.Format("t-STATISTIC SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+                //titleBar = ColourSpectrogram.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, array[1].Width, titleHt);
+                //array[1] = ColourSpectrogram.FrameSpectrogram(array[1], titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                //opFileName3 = ipFileName2 + ".tTest.COLNEG.png";
+                //array[1].Save(Path.Combine(opdir, opFileName3));
 
-                string opFileName5 = ipFileName1 + ".2tTest.COLNEG.png";
-                Image deltaSp = ColourSpectrogram.FrameTwoSpectrograms(array[0], array[1], cs2.X_interval, cs2.Y_interval);
-                deltaSp.Save(Path.Combine(opdir, opFileName5));
+                //string opFileName5 = ipFileName1 + ".2tTest.COLNEG.png";
+                //Image deltaSp = ColourSpectrogram.FrameTwoSpectrograms(array[0], array[1], cs2.X_interval, cs2.Y_interval);
+                //deltaSp.Save(Path.Combine(opdir, opFileName5));
             }
 
             // experiments with false colour images - categorising/discretising the colours
