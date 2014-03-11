@@ -2287,8 +2287,34 @@ namespace TowseyLib
             bmp.Save(pathName);
         }
 
+        /// <summary>
+        /// stacks the passed images one on top of the other. Assum that all images have the same width.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Image CombineImagesVertically(Image[] array)
+        {
+            int width = array[0].Width;   // assume all images have the same width
+            int height = array[0].Height; // assume all images have the same height
 
+            int compositeHeight = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                compositeHeight += array[i].Height;
+            }
 
+            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            int yOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                gr.DrawImage(array[i], 0, yOffset); //draw in the top spectrogram
+                yOffset += array[i].Height;
+            }
+            return (Image)compositeBmp;
+        }
 
         public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
