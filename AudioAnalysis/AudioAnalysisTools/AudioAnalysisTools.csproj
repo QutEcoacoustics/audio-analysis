@@ -183,6 +183,8 @@
     <Compile Include="Keys.cs" />
     <Compile Include="PointOfInterest.cs" />
     <Compile Include="SpectrogramConstants.cs" />
+    <Compile Include="SpectrogramDifference.cs" />
+    <Compile Include="SpectrogramDistance.cs" />
     <Compile Include="SpectrogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />

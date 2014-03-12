@@ -46,8 +46,8 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
         public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
 
-
-
+        public const int HEIGHT_OF_TITLE_BAR = 20;
+        public const int XAXIS_SCALE = 60;    // assume one minute spectra and hourly time lines
 
     }
 }
