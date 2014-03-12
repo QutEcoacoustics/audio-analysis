@@ -345,6 +345,12 @@ namespace AnalysisPrograms.Production
         public static Action<AudioCutter.Arguments> AudioCutter()
         {
             return AnalysisPrograms.AudioCutter.Execute;
+        }        
+        
+        public XiesAnalysis.Arguments XiesAnalysisArgs { get; set; }
+        public static Action<XiesAnalysis.Arguments> XiesAnalysis()
+        {
+            return AnalysisPrograms.XiesAnalysis.Execute;
         }
 
         #endregion

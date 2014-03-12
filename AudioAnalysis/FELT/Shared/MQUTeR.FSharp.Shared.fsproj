@@ -93,15 +93,15 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord">
-      <HintPath>..\..\packages\Accord.2.8.1.0\lib\Accord.dll</HintPath>
+      <HintPath>..\..\packages\Accord.2.12.0.0\lib\Accord.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Accord.Math">
-      <HintPath>..\..\packages\Accord.Math.2.8.1.0\lib\Accord.Math.dll</HintPath>
+      <HintPath>..\..\packages\Accord.Math.2.12.0.0\lib\Accord.Math.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Accord.Statistics">
-      <HintPath>..\..\packages\Accord.Statistics.2.8.1.0\lib\Accord.Statistics.dll</HintPath>
+      <HintPath>..\..\packages\Accord.Statistics.2.12.0.0\lib\Accord.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AForge">
@@ -132,7 +132,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
-      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />

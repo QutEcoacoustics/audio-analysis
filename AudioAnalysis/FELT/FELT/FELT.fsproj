@@ -101,7 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord">
-      <HintPath>..\..\packages\Accord.2.8.1.0\lib\Accord.dll</HintPath>
+      <HintPath>..\..\packages\Accord.2.12.0.0\lib\Accord.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Accord.MachineLearning">
@@ -109,11 +109,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Accord.Math">
-      <HintPath>..\..\packages\Accord.Math.2.8.1.0\lib\Accord.Math.dll</HintPath>
+      <HintPath>..\..\packages\Accord.Math.2.12.0.0\lib\Accord.Math.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Accord.Statistics">
-      <HintPath>..\..\packages\Accord.Statistics.2.8.1.0\lib\Accord.Statistics.dll</HintPath>
+      <HintPath>..\..\packages\Accord.Statistics.2.12.0.0\lib\Accord.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AForge">
@@ -214,12 +214,11 @@
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.	-->
-		   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
-		 <PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <PropertyGroup>
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
-</PropertyGroup>  
-
-<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+  </PropertyGroup>
+  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <Target Name="BeforeBuild">
     <!-- Turning this on because that lazy arsehole can't be bother doing basic diagnostics	-->
     <PropertyGroup>
@@ -240,5 +239,4 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
-
 </Project>

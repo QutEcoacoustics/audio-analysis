@@ -70,7 +70,7 @@
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="log4net">
-      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -93,7 +93,7 @@
     </ProjectReference>
     <ProjectReference Include="..\FELT\FELT.fsproj">
       <Project>{73B9C579-F539-426F-9852-1EFCBA75C0D5}</Project>
-      <Name>FELT %28FELT\FELT%29</Name>
+      <Name>FELT %28FSharp\FELT\FELT%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Project>{9A0FBE53-07FD-4DCF-97EC-7812BADD89D4}</Project>
