@@ -1,0 +1,7 @@
+--- # Configuration file for Jie Xie
+file:   "C:\\Temp\\NE_20121020_060000+10.wav"
+do_noise_reduction: 0
+image_path: C:\Temp\output1.png
+
+# you can find more help here: http://en.wikipedia.org/wiki/YAML
+...
