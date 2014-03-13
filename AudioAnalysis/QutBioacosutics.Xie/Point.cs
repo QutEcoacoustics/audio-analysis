@@ -5,13 +5,20 @@ using System.Text;
 
 namespace QutBioacosutics.Xie
 {
-    public class Point
+    public class Peak
     {
-        public int StartFrame { get; set; }
+        public int X { get; set; }
 
         public double Amplitude { get; set; }
 
-        public int LowBin { get; set; }
+        public int Y { get; set; }
+
+        // public void Peak(int x, int y, int amplitude)
+        // {
+        //     this.X = x;
+        //     this.Y = y;
+        //     this.Amplitude = amplitude;
+        // }
     }
 
 }

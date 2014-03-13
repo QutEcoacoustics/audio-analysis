@@ -28,7 +28,11 @@ namespace QutBioacosutics.Xie
              */
             string path = configuration.file;
             string imagePath = configuration.image_path;
-            bool noiseReduction = (int)configuration.do_noise_reduction == 1;
+            
+            double amplitudeThreshold = configuration.amplitude_threshold;
+            int range = configuration.range;
+            int distance = configuration.distance;
+            // bool noiseReduction = (int)configuration.do_noise_reduction == 1;
 
             //float noiseThreshold = configuration.noise_threshold;
             //Dictionary<string, string> complexSettings = configuration.complex_settings;
@@ -46,20 +50,35 @@ namespace QutBioacosutics.Xie
             // generate a spectrogram
             var recording = new AudioRecording(path);
 
-            var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD };
-            if (!noiseReduction)
-            {
-                spectrogramConfig.NoiseReductionType = NoiseReductionType.NONE;
-            }
+            var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = 512 };
+            // if (!noiseReduction)
+            // {
+            //    spectrogramConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            // }
 
             var spectrogram = new SpectralSonogram(spectrogramConfig, recording.GetWavReader());
 
-            var image = spectrogram.GetImage();
 
+            var peakmatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+            var localPeaks = new FindLocalPeaks();
+            peakmatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
+            peakmatrix = MatrixTools.MatrixRotate90Anticlockwise(peakmatrix);
+            var image = ImageTools.DrawMatrix(peakmatrix);
             image.Save(imagePath);
 
+
+           // var trackmatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+           // var multipletracks = new ExtractTracks();
+           // trackmatrix = multipletracks.GetTracks(peakmatrix);
+
+            //var image = spectrogram.GetImage();
+
+            //image.Save(imagePath);
+
             Log.Info("Analysis complete");
+           
         }
+
 
     }
 }
