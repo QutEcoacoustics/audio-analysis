@@ -10,7 +10,7 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-    public static class SpectrogramDifference
+    public static class LDSpectrogramDifference
     {
 
         //PARAMETERS
@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
         {
 
             string opFileName1 = ipFileName1;
-            var cs1 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = ipFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
@@ -48,7 +48,7 @@ namespace AudioAnalysisTools
             //cs1.DrawFalseColourSpectrograms(opdir, opFileName1);
 
             string opFileName2 = ipFileName2;
-            var cs2 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = ipFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
@@ -57,9 +57,9 @@ namespace AudioAnalysisTools
             //cs2.DrawFalseColourSpectrograms(opdir, opFileName2);
 
             string title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-            Image deltaSp = SpectrogramDifference.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
-            Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, deltaSp.Width, titleHt);
-            deltaSp = ColourSpectrogram.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            Image deltaSp = LDSpectrogramDifference.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, deltaSp.Width, titleHt);
+            deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
             string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
             deltaSp.Save(Path.Combine(opdir, opFileName3));
         }
@@ -70,7 +70,7 @@ namespace AudioAnalysisTools
         {
 
             string opFileName1 = ipFileName1;
-            var cs1 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = ipFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
@@ -78,7 +78,7 @@ namespace AudioAnalysisTools
             string imagePath = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2;
-            var cs2 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = ipFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
@@ -91,21 +91,21 @@ namespace AudioAnalysisTools
             cs2.SampleCount = N;
 
             string key = "ACI";
-            Image tStatIndexImage = SpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
+            Image tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             string opFileName3 = ipFileName1 + ".tTest." + key + ".png";
             tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
 
             key = "TEN";
-            tStatIndexImage = SpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
+            tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             opFileName3 = ipFileName1 + ".tTest." + key + ".png";
             tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
 
             key = "CVR";
-            tStatIndexImage = SpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
+            tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             opFileName3 = ipFileName1 + ".tTest." + key + ".png";
             tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
 
-            tStatIndexImage = SpectrogramDifference.DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, colourGain);
+            tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, colourGain);
             opFileName3 = ipFileName1 + ".difference.tTest.COLNEG.png";
             tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
         }
@@ -115,7 +115,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static double[,] GetTStatisticMatrix(string key, ColourSpectrogram cs1, ColourSpectrogram cs2)
+        public static double[,] GetTStatisticMatrix(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2)
         {
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
             if (key.Equals("TEN"))
@@ -129,7 +129,7 @@ namespace AudioAnalysisTools
 
             double[,] std2 = cs2.GetStandarDeviationMatrix(key);
 
-            double[,] tStatMatrix = SpectrogramDifference.GetTStatisticMatrix(avg1, std1, cs1.SampleCount, avg2, std2, cs2.SampleCount);
+            double[,] tStatMatrix = LDSpectrogramDifference.GetTStatisticMatrix(avg1, std1, cs1.SampleCount, avg2, std2, cs2.SampleCount);
             return tStatMatrix;
         }
 
@@ -207,7 +207,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static Image DrawTStatisticSpectrogramsOfSingleIndex(string key, ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold)
+        public static Image DrawTStatisticSpectrogramsOfSingleIndex(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold)
         {
             Image image1 = cs1.DrawGreyscaleSpectrogramOfIndex(key);
             Image image2 = cs2.DrawGreyscaleSpectrogramOfIndex(key);
@@ -227,13 +227,13 @@ namespace AudioAnalysisTools
             int minOffset = 0;
             //frame image 1
             string title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
-            Image titleBar = ColourSpectrogram.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width, titleHt);
-            image1 = ColourSpectrogram.FrameSpectrogram(image1, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width, titleHt);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
 
             //frame image 2
             title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
-            titleBar = ColourSpectrogram.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
-            image2 = ColourSpectrogram.FrameSpectrogram(image2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
             //get matrices required to calculate matrix of t-statistics
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
@@ -251,10 +251,10 @@ namespace AudioAnalysisTools
 
             //draw a difference spectrogram derived from by thresholding a t-statistic matrix 
             double colourGain = 2.5;
-            Image image4 = SpectrogramDifference.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
+            Image image4 = LDSpectrogramDifference.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
             title = String.Format("{0} DIFFERENCE SPECTROGRAM for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName);
-            titleBar = ColourSpectrogram.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
-            image4 = ColourSpectrogram.FrameSpectrogram(image4, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
+            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
             Image[] opArray = new Image[3];
             opArray[0] = image1;
@@ -293,7 +293,7 @@ namespace AudioAnalysisTools
                     //catch low values of dB used to avoid log of zero amplitude.
                     tStat = tStatMatrix[row, col];
                     double tStatAbsolute = Math.Abs(tStat);
-                    Dictionary<string, Color> colourChart = SpectrogramDifference.GetDifferenceColourChart();
+                    Dictionary<string, Color> colourChart = LDSpectrogramDifference.GetDifferenceColourChart();
                     Color colour;
 
                     if (tStat >= 0)
@@ -345,12 +345,12 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-        public static Image DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
+        public static Image DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold, double colourGain)
         {
             double[,] m1 = cs1.GetNormalisedSpectrogramMatrix(key); //the TEN matrix is subtracted from 1.
             double[,] m2 = cs2.GetNormalisedSpectrogramMatrix(key);
-            double[,] tStatM = SpectrogramDifference.GetTStatisticMatrix(key, cs1, cs2);
-            return SpectrogramDifference.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, m1, m2, tStatM, tStatThreshold, colourGain);
+            double[,] tStatM = LDSpectrogramDifference.GetTStatisticMatrix(key, cs1, cs2);
+            return LDSpectrogramDifference.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, m1, m2, tStatM, tStatThreshold, colourGain);
 
         }
 
@@ -394,11 +394,11 @@ namespace AudioAnalysisTools
             return image;
         }
 
-        public static double[,] GetDifferenceSpectrogramDerivedFromSingleTStatistic(string key, ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
+        public static double[,] GetDifferenceSpectrogramDerivedFromSingleTStatistic(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold, double colourGain)
         {
             double[,] m1 = cs1.GetNormalisedSpectrogramMatrix(key); //the TEN matrix is subtracted from 1.
             double[,] m2 = cs2.GetNormalisedSpectrogramMatrix(key);
-            double[,] tStatM = SpectrogramDifference.GetTStatisticMatrix(key, cs1, cs2);
+            double[,] tStatM = LDSpectrogramDifference.GetTStatisticMatrix(key, cs1, cs2);
             int rows = m1.GetLength(0); //number of rows
             int cols = m2.GetLength(1); //number
 
@@ -414,7 +414,7 @@ namespace AudioAnalysisTools
             return differenceM;
         }
 
-        public static Image DrawTStatisticSpectrogramsOfMultipleIndices(ColourSpectrogram cs1, ColourSpectrogram cs2, double tStatThreshold, double colourGain)
+        public static Image DrawTStatisticSpectrogramsOfMultipleIndices(LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold, double colourGain)
         {
             string[] keys = cs1.ColorMap.Split('-'); //assume both spectorgrams have the same acoustic indices in same order
 
@@ -487,13 +487,13 @@ namespace AudioAnalysisTools
 
             int titleHt = 20;
             string title = String.Format("t-STATISTIC DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, cs1.ColorMODE);
-            Color[] colorArray = ColourSpectrogram.ColourChart2Array(SpectrogramDifference.GetDifferenceColourChart());
-            Image titleBar = SpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(cs1.FileName, cs2.FileName, colorArray, bmp1.Width, titleHt);
+            Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDifference.GetDifferenceColourChart());
+            Image titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(cs1.FileName, cs2.FileName, colorArray, bmp1.Width, titleHt);
 
             int minOffset = 0;
             Image[] array = new Image[2];
-            array[0] = ColourSpectrogram.FrameSpectrogram(bmp1, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);;
-            array[1] = ColourSpectrogram.FrameSpectrogram(bmp2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);;
+            array[0] = LDSpectrogramRGB.FrameSpectrogram(bmp1, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);;
+            array[1] = LDSpectrogramRGB.FrameSpectrogram(bmp2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);;
 
             Image compositeImage = ImageTools.CombineImagesVertically(array);
             return compositeImage;
@@ -591,7 +591,7 @@ namespace AudioAnalysisTools
         //}
 
 
-        public static Image DrawDifferenceSpectrogram(ColourSpectrogram target, ColourSpectrogram reference, double colourGain)
+        public static Image DrawDifferenceSpectrogram(LDSpectrogramRGB target, LDSpectrogramRGB reference, double colourGain)
         {
             string[] keys = target.ColorMap.Split('-');
             double[,] tgtRedM = target.GetNormalisedSpectrogramMatrix(keys[0]);
@@ -648,8 +648,8 @@ namespace AudioAnalysisTools
 
         public static Image DrawTitleBarOfTStatisticSpectrogram(string name1, string name2, int width, int height)
         {
-            Dictionary<string, Color> chart = SpectrogramDifference.GetDifferenceColourChart();
-            Image colourChart = ImageTools.DrawColourChart(width, height, ColourSpectrogram.ColourChart2Array(chart));
+            Dictionary<string, Color> chart = LDSpectrogramDifference.GetDifferenceColourChart();
+            Image colourChart = ImageTools.DrawColourChart(width, height, LDSpectrogramRGB.ColourChart2Array(chart));
 
             Bitmap bmp = new Bitmap(width, height);
             Graphics g = Graphics.FromImage(bmp);
@@ -735,8 +735,8 @@ namespace AudioAnalysisTools
 
         public static Image DrawTitleBarOfDifferenceSpectrogram(string name1, string name2, int width, int height)
         {
-            Dictionary<string, Color> chart = SpectrogramDifference.GetDifferenceColourChart();
-            Image colourChart = ImageTools.DrawColourChart(width, height, ColourSpectrogram.ColourChart2Array(chart));
+            Dictionary<string, Color> chart = LDSpectrogramDifference.GetDifferenceColourChart();
+            Image colourChart = ImageTools.DrawColourChart(width, height, LDSpectrogramRGB.ColourChart2Array(chart));
 
             Bitmap bmp = new Bitmap(width, height);
             Graphics g = Graphics.FromImage(bmp);

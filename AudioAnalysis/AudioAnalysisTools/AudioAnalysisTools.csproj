@@ -172,7 +172,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
-    <Compile Include="ColourSpectrogram.cs" />
+    <Compile Include="LDSpectrogramRGB.cs" />
     <Compile Include="ConfigurationClasses.cs" />
     <Compile Include="DisplayIndices.cs" />
     <Compile Include="FindMatchingEvents.cs" />
@@ -182,8 +182,8 @@
     <Compile Include="Keys.cs" />
     <Compile Include="PointOfInterest.cs" />
     <Compile Include="SpectrogramConstants.cs" />
-    <Compile Include="SpectrogramDifference.cs" />
-    <Compile Include="SpectrogramDistance.cs" />
+    <Compile Include="LDSpectrogramDifference.cs" />
+    <Compile Include="LDSpectrogramDistance.cs" />
     <Compile Include="SpectrogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />

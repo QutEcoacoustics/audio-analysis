@@ -10,7 +10,7 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-    public static class SpectrogramDistance
+    public static class LDSpectrogramDistance
     {
 
         public static void DrawDistanceSpectrogram(string ipdir, string ipFileName1, string ipFileName2, string opdir)
@@ -27,7 +27,7 @@ namespace AudioAnalysisTools
 
 
                 string opFileName1 = ipFileName1;
-                var cs1 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.ColorMODE = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
                 cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
@@ -42,11 +42,11 @@ namespace AudioAnalysisTools
                     return;
                 }
                 string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
-                Image titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
-                spg1Image = ColourSpectrogram.FrameSpectrogram(spg1Image, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
+                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
+                spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
 
                 string opFileName2 = ipFileName2;
-                var cs2 = new ColourSpectrogram(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs2.ColorMODE = colorMap;
                 cs2.BackgroundFilter = backgroundFilterCoeff;
                 cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
@@ -61,14 +61,14 @@ namespace AudioAnalysisTools
                 }
 
                 title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
-                titleBar = ColourSpectrogram.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
-                spg2Image = ColourSpectrogram.FrameSpectrogram(spg2Image, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
+                spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
-                Image deltaSp = SpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
-                Color[] colorArray = ColourSpectrogram.ColourChart2Array(SpectrogramDifference.GetDifferenceColourChart());
-                titleBar = SpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, deltaSp.Width, titleHt);
-                deltaSp = ColourSpectrogram.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
+                Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDifference.GetDifferenceColourChart());
+                titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, deltaSp.Width, titleHt);
+                deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir, opFileName4));
 
                 string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";
@@ -84,48 +84,48 @@ namespace AudioAnalysisTools
 
 
 
-        public static Image DrawDistanceSpectrogram(ColourSpectrogram cs1, ColourSpectrogram cs2)
+        public static Image DrawDistanceSpectrogram(LDSpectrogramRGB cs1, LDSpectrogramRGB cs2)
         {
             string[] keys = cs1.ColorMap.Split('-');
 
             string key = keys[0];
             double[,] m1Red = cs1.GetNormalisedSpectrogramMatrix(key);
-            var dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Red);
+            var dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Red);
             cs1.SetIndexStatistics(key, dict);
             m1Red = MatrixTools.Matrix2ZScores(m1Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m1Grn = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Grn);
+            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Grn);
             cs1.SetIndexStatistics(key, dict);
             m1Grn = MatrixTools.Matrix2ZScores(m1Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m1Blu = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Blu);
+            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Blu);
             cs1.SetIndexStatistics(key, dict);
             m1Blu = MatrixTools.Matrix2ZScores(m1Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[0];
             double[,] m2Red = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Red);
+            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Red);
             cs2.SetIndexStatistics(key, dict);
             m2Red = MatrixTools.Matrix2ZScores(m2Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m2Grn = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Grn);
+            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Grn);
             cs2.SetIndexStatistics(key, dict);
             m2Grn = MatrixTools.Matrix2ZScores(m2Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m2Blu = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = SpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Blu);
+            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Blu);
             cs2.SetIndexStatistics(key, dict);
             m2Blu = MatrixTools.Matrix2ZScores(m2Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
@@ -190,7 +190,7 @@ namespace AudioAnalysisTools
             //int MaxRGBValue = 255;
             //int v;
             double zScore;
-            Dictionary<string, Color> colourChart = SpectrogramDifference.GetDifferenceColourChart();
+            Dictionary<string, Color> colourChart = LDSpectrogramDifference.GetDifferenceColourChart();
             Color colour;
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);

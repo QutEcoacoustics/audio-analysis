@@ -17,7 +17,7 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-    public class ColourSpectrogram
+    public class LDSpectrogramRGB
     {
         /// <summary>
         /// File name from which spectrogram was derived.
@@ -98,7 +98,7 @@ namespace AudioAnalysisTools
         /// <param name="Xscale"></param>
         /// <param name="sampleRate"></param>
         /// <param name="colourMap"></param>
-        public ColourSpectrogram(int Xscale, int sampleRate, string colourMap)
+        public LDSpectrogramRGB(int Xscale, int sampleRate, string colourMap)
         {
             // set the X and Y axis scales for the spectrograms 
             this.X_interval = Xscale; 
@@ -114,7 +114,7 @@ namespace AudioAnalysisTools
         /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
         /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public ColourSpectrogram(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap)
+        public LDSpectrogramRGB(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap)
         {
             // set the X-axis scale for the spectrogram 
             this.minOffset = minuteOffset;
@@ -159,7 +159,7 @@ namespace AudioAnalysisTools
                 if (File.Exists(path))
                 {
                     int freqBinCount;
-                    double[,] matrix = ColourSpectrogram.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.spectrogramMatrices.Add(keys[key], matrix);
                     this.FrameWidth = freqBinCount * 2;
@@ -199,7 +199,7 @@ namespace AudioAnalysisTools
                 if (File.Exists(path))
                 {
                     int binCount;
-                    double[,] matrix = ColourSpectrogram.ReadSpectrogram(path, out binCount);
+                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out binCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     dict.Add(keys[key], matrix);
                     freqBinCount = binCount;
@@ -305,7 +305,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double[,] GetNormalisedSpectrogramMatrix(string key)
         {
-            return ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
+            return LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
         }
 
 
@@ -379,7 +379,7 @@ namespace AudioAnalysisTools
                 //System.Environment.Exit(666);
             }
 
-            double[,] matrix = ColourSpectrogram.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], this.BackgroundFilter);
+            double[,] matrix = LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], this.BackgroundFilter);
             Image bmp = ImageTools.DrawMatrixWithoutNormalisation(matrix);
             //ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
             return bmp;
@@ -476,7 +476,7 @@ namespace AudioAnalysisTools
             bool doReverseColour = false;
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
 
-            Image bmp = ColourSpectrogram.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+            Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
             return bmp;
         }
@@ -557,7 +557,7 @@ namespace AudioAnalysisTools
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
-                var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
+                var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
                 cs.ReadCSVFiles(ipdir, ipFileName);
                 cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
                 cs.DrawGreyScaleSpectrograms(opdir, opFileName);
@@ -826,7 +826,7 @@ namespace AudioAnalysisTools
             return array;
         }
 
-        public static void BlurSpectrogram(ColourSpectrogram cs)
+        public static void BlurSpectrogram(LDSpectrogramRGB cs)
         {
             string[] rgbMap = cs.ColorMap.Split('-');
 
@@ -835,7 +835,7 @@ namespace AudioAnalysisTools
             cs.BlurSpectrogramMatrix(rgbMap[2]);
         }
 
-        public static void BlurSpectrogram(ColourSpectrogram cs, string matrixKeys)
+        public static void BlurSpectrogram(LDSpectrogramRGB cs, string matrixKeys)
         {
             string[] keys = matrixKeys.Split('-');
 

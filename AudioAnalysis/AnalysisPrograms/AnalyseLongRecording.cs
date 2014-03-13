@@ -492,7 +492,7 @@ namespace AnalysisPrograms
             // now Draw the false colour spectrogram
             int xScale = 60; // assume one minute spectra and hourly time lines
             string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-            var cs = new ColourSpectrogram(xScale, sampleRate, colorMap);
+            var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
             string ipFileName = name;
             cs.LoadSpectrogramDictionary(spectrogramDictionary);
             cs.BackgroundFilter = 1.0;
