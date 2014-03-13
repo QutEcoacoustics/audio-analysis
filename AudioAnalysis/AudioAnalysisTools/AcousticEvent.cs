@@ -6,6 +6,8 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using System.Text.RegularExpressions;
+using AudioAnalysisTools.Sonogram;
+
 
 namespace AudioAnalysisTools
 {

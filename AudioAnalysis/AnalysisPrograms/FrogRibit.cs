@@ -5,6 +5,8 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
+
 
 
 namespace AnalysisPrograms

@@ -8,6 +8,9 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using TowseyLib;
     using System.Drawing;
+    using AudioAnalysisTools.Sonogram;
+
+
 
     public class POISelection
     {

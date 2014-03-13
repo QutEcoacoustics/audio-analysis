@@ -25,6 +25,7 @@ namespace Dong.Felt
 
     using AnalysisBase;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
 
     using PowerArgs;
 

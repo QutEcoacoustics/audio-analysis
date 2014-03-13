@@ -74,6 +74,7 @@
         open Acoustics.Tools.Audio
         open Acoustics.Tools.Wav
         open AudioAnalysisTools
+        open AudioAnalysisTools.Sonogram
         open Microsoft.FSharp.Core
         open Microsoft.FSharp.Math
         open Microsoft.FSharp.Math.SI

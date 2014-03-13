@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
 using TowseyLib;
 
 namespace AnalysisPrograms

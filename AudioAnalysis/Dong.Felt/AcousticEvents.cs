@@ -10,6 +10,9 @@
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
+
+
     public class AcousticEvents
     {
         public static Color DEFAULT_BORDER_COLOR = Color.Crimson;
