@@ -166,15 +166,15 @@ namespace AnalysisPrograms
             // OUTPUT FILES
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March12";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March13";
 
 
             // experiments with DIFFERENCE, t-STATISTIC and EUCLIDIAN DISTANCE false-colour spectrograms
             if (true)
             {
-                SpectrogramDistance.DrawDistanceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
-                SpectrogramDifference.DrawDifferenceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
-                SpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(ipdir, ipFileName1, ipSdFileName1, ipFileName2, ipSdFileName2, opdir);
+                LDSpectrogramDistance.DrawDistanceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
+                LDSpectrogramDifference.DrawDifferenceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
+                LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(ipdir, ipFileName1, ipSdFileName1, ipFileName2, ipSdFileName2, opdir);
             }
 
 

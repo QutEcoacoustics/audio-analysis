@@ -335,10 +335,10 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.AudioFileCheck.Execute;
         }
 
-        public ColourSpectrogram.Arguments ColourSpectrogramArgs { get; set; }
-        public static Action<ColourSpectrogram.Arguments> ColourSpectrogram()
+        public LDSpectrogramRGB.Arguments ColourSpectrogramArgs { get; set; }
+        public static Action<LDSpectrogramRGB.Arguments> ColourSpectrogram()
         {
-            return AudioAnalysisTools.ColourSpectrogram.Dev;
+            return AudioAnalysisTools.LDSpectrogramRGB.Dev;
         }
 
         public AudioCutter.Arguments AudioCutterArgs { get; set; }
