@@ -20,6 +20,7 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
 
     using PowerArgs;
 

@@ -17,6 +17,7 @@ namespace Dong.Felt
     using System.Linq;
     using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
     using TowseyLib;
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;

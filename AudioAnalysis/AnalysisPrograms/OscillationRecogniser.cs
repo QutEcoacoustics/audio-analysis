@@ -6,6 +6,8 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
+
 
 
 //Here is link to wiki page containing info about how to write Analysis techniques

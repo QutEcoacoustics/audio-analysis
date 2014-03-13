@@ -6,6 +6,7 @@
     using System.Linq;
 
     using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.Sonogram;
 
     using MathNet.Numerics.Transformations;
 

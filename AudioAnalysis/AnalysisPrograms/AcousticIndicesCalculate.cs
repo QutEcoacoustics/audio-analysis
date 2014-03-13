@@ -20,6 +20,7 @@ namespace AnalysisPrograms
 
     using AnalysisBase;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
     using TowseyLib;
 
     using log4net;

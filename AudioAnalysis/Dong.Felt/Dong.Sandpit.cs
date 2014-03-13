@@ -8,6 +8,7 @@
     using System.Drawing;
     using TowseyLib;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
     using System.Drawing.Imaging;
     using log4net;
     using AnalysisBase;

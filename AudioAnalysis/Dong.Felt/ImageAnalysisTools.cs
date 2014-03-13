@@ -10,6 +10,8 @@ namespace Dong.Felt
     using System.Data;
     using System.Drawing;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
+
 
     class ImageAnalysisTools
     {

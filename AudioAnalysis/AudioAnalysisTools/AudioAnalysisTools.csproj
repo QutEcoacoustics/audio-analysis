@@ -181,6 +181,9 @@
     <Compile Include="HMMSettings.cs" />
     <Compile Include="Keys.cs" />
     <Compile Include="PointOfInterest.cs" />
+    <Compile Include="Sonogram\CepstralSonogram.cs" />
+    <Compile Include="Sonogram\SobelEdgeSonogram.cs" />
+    <Compile Include="Sonogram\SpectralSonogram.cs" />
     <Compile Include="SpectrogramConstants.cs" />
     <Compile Include="LDSpectrogramDifference.cs" />
     <Compile Include="LDSpectrogramDistance.cs" />

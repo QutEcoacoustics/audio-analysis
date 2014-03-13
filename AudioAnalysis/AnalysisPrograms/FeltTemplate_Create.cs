@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
-using AudioAnalysisTools;
 using System.Drawing;
+using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
+
 
 
 namespace AnalysisPrograms
@@ -211,10 +213,10 @@ namespace AnalysisPrograms
             SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(sonogram.Data, SD_COUNT); //calculate modal noise profile
             double[] modalNoise = DataTools.filterMovingAverage(profile.noiseMode, 7);    //smooth the noise profile
             //extract modal noise values of the required event
-            double[] noiseSubband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
+            double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
             
             //extract data values of the required event
-            double[,] target = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
+            double[,] target = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
             // create acoustic event with defined boundaries
@@ -225,7 +227,7 @@ namespace AnalysisPrograms
             sonogram.Data = SNR.TruncateBgNoiseFromSpectrogram(sonogram.Data, modalNoise);
             sonogram.Data = SNR.RemoveNeighbourhoodBackgroundNoise(sonogram.Data, backgroundThreshold);
 
-            double[,] targetMinusNoise = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
+            double[,] targetMinusNoise = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
             return System.Tuple.Create(sonogram, ae, target, noiseSubband, targetMinusNoise);

@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
 

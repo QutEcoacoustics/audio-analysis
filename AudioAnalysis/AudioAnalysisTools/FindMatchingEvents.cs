@@ -6,6 +6,8 @@ using System.Drawing;
 //using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
+
 
 namespace AudioAnalysisTools
 {

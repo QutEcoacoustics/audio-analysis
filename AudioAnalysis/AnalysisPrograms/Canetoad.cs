@@ -15,6 +15,8 @@ using AnalysisBase;
 
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
+
 
 namespace AnalysisPrograms
 {
