@@ -43,13 +43,15 @@
                 //CSVResults.BatchProcess(fileDirectory);
 
                 /// Read audio files into spectrogram.
-                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
-                string audioFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
+                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\10.Scarlet Honeyeater1\Recordings";
+                string audioFileName = "NEJB_NE465_20101016-054200-0542-0543-Scarlet Honeyeater1-8 second trunk.wav";
                 string wavFilePath = Path.Combine(inputDirectory, audioFileName);
-                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\10.Scarlet Honeyeater1\RepresentationResults";
                 string imageFileName = audioFileName +".png";
                 string annotatedImageFileName = audioFileName + "-annotate.png";
-                string csvFileName = "2NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
+                string csvFileName = "NEJB_NE465_20101016-054200-0542-0543-Scarlet Honeyeater1-8 second trunk.csv";
+                string imagePath = Path.Combine(outputDirectory, imageFileName);
+                string csvPath = Path.Combine(outputDirectory, csvFileName);
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
                 var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
@@ -95,9 +97,7 @@
                 List<AcousticEvent> acousticEventlist = null;
                 var poiList = new List<PointOfInterest>();
                 double eventThreshold = 0.5; // dummy variable - not used                               
-                Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                string imagePath = Path.Combine(outputDirectory, imageFileName);
-                string csvPath = Path.Combine(outputDirectory, csvFileName);
+                Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);               
                 var file = new FileInfo(csvPath);
                 /// addd this line to check the result after noise removal.
                 image.Save(imagePath, ImageFormat.Png);
@@ -157,7 +157,7 @@
                 //}
                 //File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
 
-                //var neighbourhoodLength = 13;
+                var neighbourhoodLength = 13;
                 /////// For Scarlet honeyeater 2 in a NEJB_NE465_20101013-151200-4directions
                 //////var maxFrequency = 5124.90;
                 //////var minFrequency = 3359.18;
@@ -177,7 +177,7 @@
                 //var query = new Query(2000.0, 1000.0, 26.5, 27.7, neighbourhoodLength);
                 //var duration = query.duration;  // second
 
-                /////// For Scarlet honeyeater1
+                /// For Scarlet honeyeater1
                 //var query = new Query(8200.0, 4900.0, 15.5, 16.0, neighbourhoodLength);
                 //var duration = query.endTime - query.startTime;  // second
 
@@ -197,14 +197,12 @@
                 //////var scarletHoneyeater2 = new Query(7020.0, 3575.0, 95.215, 96.348);
                 ////////var duration = scarletHoneyeater2.duration;       
                 //int neighbourhoodLength = 13;
-                //var rows = spectrogram.Data.GetLength(1);
-                //var cols = spectrogram.Data.GetLength(0);
-
-                //var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength);
+                var rows = spectrogram.Data.GetLength(1);
+                var cols = spectrogram.Data.GetLength(0);
+                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogram);
                 ////var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
-                //var outPutPath = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results\NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-NeighbourhoodRepresentation.csv";
                 //////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                //CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, outPutPath);
+                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, csvPath, spectrogram);
                 //var nhFrequencyRange = neighbourhoodLength * herzScale;
                 //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  // = 19
                 //var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength; // = 397               
@@ -213,7 +211,7 @@
                 //var csvFileName1 = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-queryRepresentation1.csv";
                 //string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
                 ////var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, ridgeArray, wavFilePath);
-                ////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);
+                //CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);
                 //var file = new FileInfo(csvPath1);
                 //var queryRegionRepresentation1 = CSVResults.CSVToNormalisedRegionRepresentation(file);
                 //var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation1, ridgeArray, wavFilePath);
@@ -279,7 +277,7 @@
 
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = false;
+            bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));

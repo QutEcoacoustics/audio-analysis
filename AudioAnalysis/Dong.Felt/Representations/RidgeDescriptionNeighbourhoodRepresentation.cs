@@ -182,29 +182,28 @@ namespace Dong.Felt.Representations
         /// <param name="pointX"></param>
         /// <param name="pointY"></param>
         /// <param name="neighbourhoodLength"></param>
-        public void SetNeighbourhoodVectorRepresentation(PointOfInterest[,] neighbourhood, int row, int col, int neighbourhoodLength)
+        public void SetNeighbourhoodVectorRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, int neighbourhoodLength, SpectralSonogram spectrogram)
         {
-            var timeScale = 11.6; // ms
-            var frequencyScale = 43.0; // hz
-            int maximumRowIndex = neighbourhood.GetLength(0);
-            int maximumColIndex = neighbourhood.GetLength(1);
+            var timeScale = spectrogram.FrameDuration; // ms
+            var frequencyScale = spectrogram.FBinWidth; // hz
+            int maximumRowIndex = pointsOfInterest.GetLength(0);
+            int maximumColIndex = pointsOfInterest.GetLength(1);
             var neighbourhoodXdirectionMagnitudeSum = 0.0;
             var neighbourhoodYdirectionMagnitudeSum = 0.0;
             for (int rowIndex = 0; rowIndex < maximumRowIndex; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < maximumColIndex; colIndex++)
                 {
-                    if (neighbourhood[rowIndex, colIndex].RidgeMagnitude != 0 )
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
-                        var radiant = neighbourhood[rowIndex, colIndex].RidgeOrientation;
-                        var magnitude = neighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        var radiant = pointsOfInterest[rowIndex, colIndex].RidgeOrientation;
+                        var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         neighbourhoodXdirectionMagnitudeSum += magnitude * Math.Cos(radiant);
                         neighbourhoodYdirectionMagnitudeSum += magnitude * Math.Sin(radiant);                       
                     }
                 }
             }
             this.magnitude = Math.Sqrt(Math.Pow(neighbourhoodXdirectionMagnitudeSum, 2) + Math.Pow(neighbourhoodYdirectionMagnitudeSum, 2));
-            //this.orientation = Math.Atan(neighbourhoodYdirectionMagnitudeSum / neighbourhoodXdirectionMagnitudeSum);
             if (neighbourhoodXdirectionMagnitudeSum == 0.0 && neighbourhoodYdirectionMagnitudeSum == 0.0)
             {
                 this.orientation = Math.PI;
@@ -223,8 +222,8 @@ namespace Dong.Felt.Representations
 
             ColIndex = (int)(col * timeScale);
             RowIndex = (int)(row * frequencyScale);
-            Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);
-            FrequencyRange = neighbourhood.GetLength(0) * frequencyScale;
+            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
         /// <summary>
@@ -264,7 +263,7 @@ namespace Dong.Felt.Representations
             }
         }
 
-        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength)
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength,SpectralSonogram spectrogram)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
@@ -276,7 +275,7 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength);
+                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }

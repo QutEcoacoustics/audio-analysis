@@ -218,7 +218,7 @@ namespace AudioAnalysisTools
 
 
 
-        // 2- Mar- 2014 - Xueyan - For some unsure reason, the default color doesn't work. So I changed it into p3.   
+         
         public void DrawEvent(Graphics g, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
             Pen p1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR); // default colour
