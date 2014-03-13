@@ -61,6 +61,5 @@ namespace QutBioacosutics.Xie
             Log.Info("Analysis complete");
         }
 
-
     }
 }
