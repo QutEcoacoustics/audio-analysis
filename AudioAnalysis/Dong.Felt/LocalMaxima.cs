@@ -12,6 +12,7 @@
 
     class LocalMaxima
     {
+        
         /// <summary>
         /// get a list of localMaxima hit 
         /// </summary>
@@ -46,6 +47,7 @@
 
             return result = finalPoi;
         }
+       
         /// <summary>
         /// The average distance score.
         /// </summary>
