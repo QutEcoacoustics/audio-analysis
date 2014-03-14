@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using AudioAnalysisTools;
+using AudioAnalysisTools.Sonogram;
 
 namespace Dong.Felt.Representations
 {

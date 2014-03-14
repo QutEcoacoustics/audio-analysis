@@ -82,9 +82,6 @@ namespace Dong.Felt
             return result; 
         }
 
-        
-        // keep the edges which haven't been clustered. And leave it out for those edges that have been grouped.  
-
         /// <summary>
         /// Traverse method is used to iteratively search edges connected each other. 
         /// </summary>

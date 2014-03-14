@@ -312,24 +312,6 @@
             return result;
         }
 
-        //public static List<double> DistanceHistogram(List<FeatureVector> distance, int neighbourhoodSize)
-        //{
-        //    var numberOfHistogramBar = neighbourhoodSize;
-        //    var histogram = new int[neighbourhoodSize];
-
-        //    foreach (var d in distance)
-        //    {
-        //        for (int histogramIndex = 0; histogramIndex < numberOfHistogramBar; histogramIndex++)
-        //        {
-        //            if ((d >= histogramIndex / neighbourhoodSize) && (d < (histogramIndex + 1) / neighbourhoodSize))
-        //            {
-        //                histogram[histogramIndex]++;
-        //            }
-        //        }
-        //    }
-        //    return histogram; 
-        //}
-
         /// <summary>
         /// 
         /// </summary>
@@ -443,7 +425,7 @@
         }
 
         /// <summary>
-        /// 
+        /// ridge neighbourhood representation list to array.
         /// </summary>
         /// <param name="ridgeNhList"></param>
         /// <param name="NhCountInRow"></param>
@@ -504,7 +486,7 @@
         }
 
         /// <summary>
-        /// 
+        /// Region presentaion to array
         /// </summary>
         /// <param name="candidatesList"></param>
         /// <param name="rowsCount"></param>
@@ -589,7 +571,7 @@
         /// </summary>
         /// <param name="radians"></param>
         /// <returns></returns>
-        public static double ConvertRadiusToDegree(double radians)
+        public static double ConvertRadiansToDegree(double radians)
         {
             var result = radians / Math.PI * 180;
             return result;

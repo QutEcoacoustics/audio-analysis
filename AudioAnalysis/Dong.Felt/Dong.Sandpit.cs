@@ -51,10 +51,9 @@
                 string annotatedImageFileName = audioFileName + "-annotate.png";
                 string csvFileName = "NEJB_NE465_20101016-054200-0542-0543-Scarlet Honeyeater1-8 second trunk.csv";
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                string csvPath = Path.Combine(outputDirectory, csvFileName);
-                var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+                string csvPath = Path.Combine(outputDirectory, csvFileName);              
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };               
+                var spectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
                 
                 /// Read Liang's spectrogram.Data
                 //string fileName = "2Liang_spectro.csv";
@@ -81,7 +80,7 @@
                 //    }
                 //}
 
-                ///// Change my spectrogram.Data into Liang's. 
+                /// Change my spectrogram.Data into Liang's. 
                 //var spectrogramDataRows = spectrogram.Data.GetLength(0);
                 //var spectrogramDataColumns = spectrogram.Data.GetLength(1);
                 //for (int row = 0; row < spectrogramDataRows; row++)

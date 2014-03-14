@@ -21,20 +21,26 @@
         [Description("This is North East. It is varied match for non-null direction.")]
         Variation = 1,
     }
+
     class SimilarityMatching
     {
+        
         #region Public Properties
+        
         /// <summary>
         /// Gets or sets the SimilarityScore, it can be derived from the calculationg of similarity score. 
         /// </summary>
         public double SimilarityScore { get; set; }
 
         #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// Calculate the distance between two featureVectors. one is from template, one is from another event
+        /// Calculate the average distance between two featureVectors. 
         /// </summary>
-        /// <param name="instance"> one of featureVectors needs to be compared.</param>
-        /// <param name="template"> a particular species featureVector needs to be compared.</param>
+        /// <param name="instance"> </param>
+        /// <param name="template"> </param>
         /// <returns>
         /// return the avgDistance.
         /// </returns>
@@ -42,20 +48,19 @@
         {
             var avgdistance = 0.0;
             var numberOfScaleCount = instance.VerticalBitVector.Count();
-            var sumV = 0.0;
-            var sumH = 0.0;
-            for (int i = 0; i < numberOfScaleCount; i++)
-            {
-                // kind of Manhattan distance calculation    
-                sumV = sumV + Math.Abs(instance.VerticalBitVector[i] - template.VerticalBitVector[i]);
-                sumH = sumH = Math.Abs(instance.HorizontalBitVector[i] - template.HorizontalBitVector[i]);
-            }
-            var sum = (sumH + sumV) / 2;
-            avgdistance = sum / numberOfScaleCount;
-
+            var sumDistance = distanceForBitFeatureVector(instance, template);
+            avgdistance = sumDistance / numberOfScaleCount;
             return avgdistance;
         }
 
+        /// <summary>
+        /// Calculate the sum distance of each bit in a neighbourhood between two featureVectors. one is from the template, one is from candidate event.
+        /// The distance rule follows the Manhattan distance funtion. 
+        /// Especially, the vector is composed mainly of "verticalBit" and "horizontalBit". 
+        /// </summary>
+        /// <param name="instance">the featureVector of the candidate needs to be compared.</param>
+        /// <param name="template">a particular species templage' featureVector needs to be compared.</param>
+        /// <returns>return the sum of distance of all feature vector bits.</returns>
         public static int distanceForBitFeatureVector(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
             var distance = 0;
@@ -74,36 +79,19 @@
             return distance;
         }
 
+        /// <summary>
+        /// According to the relationship of distance and similarityScore, the farer the distance between two feature vectors,
+        /// the less similarityScore can be obtained. 
+        /// </summary>
+        /// <param name="avgDistance"></param>
+        /// <param name="neighbourhoodSize"></param>
+        /// <returns></returns>
         public static double SimilarityScoreForAvgDistance(double avgDistance, int neighbourhoodSize)
         {
             var similarityScore = 1 - avgDistance / neighbourhoodSize;
 
             return similarityScore;
         }
-
-        ///// <summary>
-        ///// One way to calculate Similarity Score for percentage byte vector representation.
-        ///// </summary>
-        ///// <param name="instance"> the instance's feature vector to be compared. </param>
-        ///// <param name="template"> the template's feature vector to be compared. </param>
-        ///// <returns> 
-        ///// It will return a similarity score. 
-        ///// </returns>
-        //public static double SimilarityScoreOfPercentageByteVector(FeatureVector instance, FeatureVector template)
-        //{
-        //    // Initialize
-        //    double similarityScore = 0.0;
-        //    var threshold = new double[] { 0.1, 0.1, 0.1, 0.3 };
-        //    if (Math.Abs(instance.PercentageByteVector[0] - template.PercentageByteVector[0]) < threshold[0]
-        //     && Math.Abs(instance.PercentageByteVector[1] - template.PercentageByteVector[1]) < threshold[1]
-        //     && Math.Abs(instance.PercentageByteVector[2] - template.PercentageByteVector[2]) < threshold[2]
-        //     && Math.Abs(instance.PercentageByteVector[3] - template.PercentageByteVector[3]) < threshold[3])
-        //    {
-        //        similarityScore = 0.9;
-        //    }
-
-        //    return similarityScore;
-        //}
 
         // To calculate the distance between query and potentialEvent. The return value is equal to the sum of every orientation subdistance. 
         public static int SimilarSliceNumberOfFeatureVector(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
@@ -435,37 +423,43 @@
             return result;
         }
 
+        /// <summary>
+        /// To check whether a feature vector is null. 
+        /// </summary>
+        /// <param name="featureVector"></param>
+        /// <returns></returns>
         public static bool checkNullFeatureVector(RidgeNeighbourhoodFeatureVector featureVector)
         {
-            var result = 0;
+            
             var numberOfHorizontalFeatureVectorBit = featureVector.HorizontalVector.Count();
             var numberOfDiagonalFeatureVectorBit = featureVector.PositiveDiagonalVector.Count();
+            var featureVectorBitCount = 0;
             if (featureVector != null)
             {
                 for (int i = 0; i < numberOfHorizontalFeatureVectorBit; i++)
                 {
                     if (featureVector.HorizontalVector[i] != 0)
                     {
-                        result++;
+                        featureVectorBitCount++;
                     }
                     if (featureVector.HorizontalVector[i] != 0)
                     {
-                        result++;
+                        featureVectorBitCount++;
                     }
                 }
                 for (int j = 0; j < numberOfDiagonalFeatureVectorBit; j++)
                 {
                     if (featureVector.PositiveDiagonalVector[j] != 0)
                     {
-                        result++;
+                        featureVectorBitCount++;
                     }
                     if (featureVector.NegativeDiagonalVector[j] != 0)
                     {
-                        result++;
+                        featureVectorBitCount++;
                     }
                 }
             }
-            if (result == 0)
+            if (featureVectorBitCount == 0)
             {
                 return true;
             }
@@ -476,6 +470,11 @@
 
         }
 
+        /// <summary>
+        /// To check whether a list of featurevectors is null.  
+        /// </summary>
+        /// <param name="featureVectorList"></param>
+        /// <returns></returns>
         public static bool checkNullFeatureVectorList(List<RidgeNeighbourhoodFeatureVector> featureVectorList)
         {
             var result = 0;
@@ -501,6 +500,6 @@
             }
 
         }
-
+        #endregion
     }
 }

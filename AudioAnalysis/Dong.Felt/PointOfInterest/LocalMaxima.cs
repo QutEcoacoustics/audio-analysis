@@ -10,9 +10,8 @@
     using Acoustics.Shared.Extensions;
     using System.Diagnostics.Contracts;
 
-    class LocalMaxima
+    class LocalMaximaAnalysis
     {
-        
         /// <summary>
         /// get a list of localMaxima hit 
         /// </summary>
@@ -22,13 +21,12 @@
         /// <returns>
         /// return a list of points of interest 
         /// </returns>
-        public static List<PointOfInterest> HitLocalMaxima(double[,] matrix)
+        public static List<PointOfInterest> LocalMaximaHit(double[,] matrix, int neighbourhoodLength)
         {
             var result = new List<PointOfInterest>();
 
             // Find the local Maxima
-            const int NeibourhoodWindowSize = 7;
-            var localMaxima = PickLocalMaxima(matrix, NeibourhoodWindowSize);
+            var localMaxima = GetLocalMaximaFromMatrix(matrix, neighbourhoodLength);
 
             // Filter out points
             const int AmplitudeThreshold = 10;
@@ -47,9 +45,9 @@
 
             return result = finalPoi;
         }
-       
+
         /// <summary>
-        /// The average distance score.
+        /// The average distance score is calculated between the pointsofInterst in template and a local maxima in the candidate list.
         /// </summary>
         /// <param name="template">
         /// The template.
@@ -58,19 +56,19 @@
         /// The points of interest.
         /// </param>
         /// <returns>
-        /// The Average Distance Score for each poi to the template point. 
+        /// The Average Distance Score will be got for each locamima in the list. 
         /// </returns>
-        public static double[] AverageDistanceScores(List<Point> template, List<PointOfInterest> pointsOfInterest)
+        public static double[] AverageDistanceScores(List<Point> template, List<PointOfInterest> candidateList)
         {
             var numberOfVertexes = template.Count;
-            var distance = new double[pointsOfInterest.Count];
+            var distance = new double[candidateList.Count];
             var minimumDistance = new double[numberOfVertexes];
-            var avgDistanceScores = new double[pointsOfInterest.Count];
+            var avgDistanceScores = new double[candidateList.Count];
             var sum = 0.0;
 
-            for (int i = 0; i < pointsOfInterest.Count; i++)
+            for (int i = 0; i < candidateList.Count; i++)
             {
-                var poi = pointsOfInterest;
+                var poi = candidateList;
                 Point centeroid = poi[i].Point;
                 var absoluteTemplate = GetAbsoluteTemplate(centeroid, template);
 
@@ -126,7 +124,7 @@
         /// <returns>
         /// return a list of PointOfInterest.
         /// </returns>
-        public static List<PointOfInterest> PickLocalMaxima(double[,] m, int WindowSize)
+        public static List<PointOfInterest> GetLocalMaximaFromMatrix(double[,] matrix, int WindowSize)
         {
             Contract.Requires(WindowSize % 2 == 1, "Neighbourhood window size must be odd");
             Contract.Requires(WindowSize >= 1, "Neighbourhood window size must be at least 1");
@@ -135,12 +133,12 @@
 
             // scan the whole matrix, if want to scan a fixed part of matrix, the range of row and col might be changed.
             // e.g row ~ (m.GetLength(1) / 4 - 2 * m.GetLength(1) / 5), col ~ (3096 - 3180)
-            for (int row = 0; row < m.GetLength(0); row++)
+            for (int row = 0; row < matrix.GetLength(0); row++)
             {
-                for (int col = 0; col < m.GetLength(1); col++)
+                for (int col = 0; col < matrix.GetLength(1); col++)
                 {
                     // assume it's a local maxium
-                    double localMaximum = m[row, col];
+                    double localMaximum = matrix[row, col];
                     var maximum = true;
 
                     // check if it is really the local maximum in the neighbourhood
@@ -149,9 +147,9 @@
                         for (int j = centerOffset; j <= -centerOffset; j++)
                         {
                             // check if it is out of range of m
-                            if (m.PointIntersect(row + i, col + j))
+                            if (matrix.PointIntersect(row + i, col + j))
                             {
-                                var current = m[row + i, col + j];
+                                var current = matrix[row + i, col + j];
 
                                 // don't check the middle point
                                 if (i == 0 && j == 0)
@@ -178,7 +176,7 @@
                     // if it is indeed the local maximum, then add it
                     if (maximum)
                     {
-                        results.Add(new PointOfInterest(new Point(row, col)) { Intensity = m[row, col] });
+                        results.Add(new PointOfInterest(new Point(row, col)) { Intensity = matrix[row, col] });
                     }
                 }
             }
@@ -200,11 +198,11 @@
         /// The list of PointOfInterest after remove too close points.
         /// </returns>
         public static List<PointOfInterest> RemoveClosePoints(List<PointOfInterest> pointsOfInterest, int offset)
-        {           
+        {
             var maxIndex = pointsOfInterest.Count();
             var poi = new List<PointOfInterest>(pointsOfInterest);
             for (int i = 0; i < maxIndex; i++)
-            {               
+            {
                 for (int j = 0; j < maxIndex; j++)
                 {
                     if (poi[i] == poi[j])
@@ -227,7 +225,7 @@
                             {
                                 pointsOfInterest.Remove(poi[j]);
                             }
-                        }                     
+                        }
                     }
                 }
             }
@@ -297,7 +295,7 @@
         }
 
         /// <summary>
-        /// The matched points of interest.
+        /// To get the matched localMaxima in a candidate with a template. 
         /// </summary>
         /// <param name="pointsOfInterest">
         /// The points of interest.
@@ -311,15 +309,15 @@
         /// <returns>
         /// The list of PointOfInterest.
         /// </returns>
-        public static List<PointOfInterest> MatchedPointsOfInterest(
-            List<PointOfInterest> pointsOfInterest, double[] averageDistanceScores, double threshold)
+        public static List<PointOfInterest> MatchedLocalMaxima(
+            List<PointOfInterest> pointsOfInterest, double[] distance, double threshold)
         {
             var numberOfVertex = pointsOfInterest.Count;
             var result = new List<PointOfInterest>();
 
             for (int i = 0; i < numberOfVertex; i++)
             {
-                if (averageDistanceScores[i] < threshold)
+                if (distance[i] < threshold)
                 {
                     var poi = pointsOfInterest[i];
 
@@ -336,39 +334,6 @@
             }
 
             return result;
-        }
-
-        //Local Maxima
-        public static void GetLocalMaxima(double[,] matrix)
-        {
-
-            AudioRecording audioRecording;
-            //var spectrogram = PoiAnalysis.AudioToSpectrogram(lewinsRail, out audioRecording);
-            //Log.Info("AudioToSpectrogram");
-
-            // Do the noise removal
-            const int BackgroundThreshold = 5;
-            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);
-            //var noiseReduction = PoiAnalysis.NoiseReductionToBinarySpectrogram(spectrogram, BackgroundThreshold, false, true);            
-            //Log.Info("NoiseReduction");
-
-            // Find the local Maxima
-            const int NeibourhoodWindowSize = 7;
-            //var localMaxima = LocalMaxima.PickLocalMaxima(noiseReduction, NeibourhoodWindowSize);
-
-            // Filter out points
-            const int AmplitudeThreshold = 10;
-            //var filterOutPoints = LocalMaxima.FilterOutPoints(localMaxima, AmplitudeThreshold); // pink noise model threshold                
-
-            // Remove points which are too close
-            const int DistanceThreshold = 7;
-            //var finalPoi = LocalMaxima.RemoveClosePoints(filterOutPoints, DistanceThreshold);
-
-            //var imageResult = new Image_MultiTrack(spectrogram.GetImage(false, true));
-            //imageResult.AddPoints(finalPoi);
-            //imageResult.AddTrack(Image_Track.GetTimeTrack(spectrogram.Duration, spectrogram.FramesPerSecond));
-            //imageResult.Save(@"C:\Test recordings\LewinsRail\BAC2_20071008-075040-result\BAC2_20071008-075040-localMaxima.png");
-            //Log.Info("Show the result of Final PointsOfInterest");
         }
     }
 }

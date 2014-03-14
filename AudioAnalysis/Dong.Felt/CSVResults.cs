@@ -7,6 +7,7 @@
     using System.IO;
     using Representations;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Sonogram;
     using System.Drawing;
 
     public class CSVResults
