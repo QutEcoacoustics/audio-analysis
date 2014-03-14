@@ -32,6 +32,8 @@ namespace QutBioacosutics.Xie
             double amplitudeThreshold = configuration.amplitude_threshold;
             int range = configuration.range;
             int distance = configuration.distance;
+            int binToreance = configuration.binToreance;
+
             // bool noiseReduction = (int)configuration.do_noise_reduction == 1;
 
             //float noiseThreshold = configuration.noise_threshold;
@@ -59,17 +61,17 @@ namespace QutBioacosutics.Xie
             var spectrogram = new SpectralSonogram(spectrogramConfig, recording.GetWavReader());
 
 
-            var peakmatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+            var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
             var localPeaks = new FindLocalPeaks();
-            peakmatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
-            peakmatrix = MatrixTools.MatrixRotate90Anticlockwise(peakmatrix);
-            var image = ImageTools.DrawMatrix(peakmatrix);
-            image.Save(imagePath);
+            peakMatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
+            // peakMatrix = MatrixTools.MatrixRotate90Anticlockwise(peakMatrix);
+            // var image = ImageTools.DrawMatrix(peakMatrix);
+            // image.Save(imagePath);
 
 
-           // var trackmatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
-           // var multipletracks = new ExtractTracks();
-           // trackmatrix = multipletracks.GetTracks(peakmatrix);
+            var trackMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+            var multipleTracks = new ExtractTracks();
+            trackMatrix = multipleTracks.GetTracks(peakMatrix,binToreance);
 
             //var image = spectrogram.GetImage();
 
