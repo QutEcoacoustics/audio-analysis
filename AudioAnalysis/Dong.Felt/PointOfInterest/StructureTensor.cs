@@ -10,7 +10,7 @@
     using Acoustics.Shared.Extensions;
     using System.Drawing;
 
-    class StructureTensor
+    class StructureTensorAnalysis
     {
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
         public static GaussianBlur filter = new GaussianBlur(4, 1);

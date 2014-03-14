@@ -25,165 +25,9 @@ namespace Dong.Felt
     // several types of points of interest
     public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
 
-    /// <summary>
-    /// The points of interest detection.
-    /// </summary>
-    public class PoiAnalysis
+    public class PointOfInterestAnalysis
     {
-        private static readonly SonogramConfig StandardConfig = new SonogramConfig();
-
-
-        /// <summary>
-        /// AudioToSpectrogram transforms an audio to a spectrogram. 
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// get an audio file through "wavFilePath". 
-        /// </param>
-        /// <param name="recording">
-        /// The recording.
-        /// </param>
-        /// <returns>
-        /// return a spectrogram.
-        /// </returns>
-        public static SpectralSonogram AudioToSpectrogram(string wavFilePath, out AudioRecording recording)
-        {
-            recording = new AudioRecording(wavFilePath);
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-            return spectrogram;
-        }
-
-        /// <summary>
-        /// Reduce the pink noise. 
-        /// the result could be a binary spectrogram or original spectrogram.
-        /// </summary>
-        /// <param name="spectralSonogram">
-        /// The spectral sonogram.
-        /// </param>
-        /// <param name="backgroundThreshold">
-        /// The background Threshold.
-        /// </param>
-        /// <param name="makeBinary">
-        /// To make the spectrogram into a binary image.
-        /// </param>
-        /// <param name="changeOriginalData">
-        /// The change Original Data.
-        /// </param>
-        /// <returns>
-        /// return a tuple composed of each pixel's amplitude at each coordinates and  smoothArray after the noise removal.
-        /// </returns>
-        public static double[,] NoiseReductionToBinarySpectrogram(
-            SpectralSonogram spectralSonogram, double backgroundThreshold, bool makeBinary = false, bool changeOriginalData = false)
-        {
-            double[,] result = spectralSonogram.Data;
-
-            if (makeBinary)
-            {
-                return SNR.NoiseReduce(result, NoiseReductionType.BINARY, backgroundThreshold).Item1;
-            }
-            else
-            {
-                if (changeOriginalData)
-                {
-                    spectralSonogram.Data = SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
-                    return spectralSonogram.Data;
-                }
-                else
-                {
-                    return SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
-                }
-            }
-        }
-
-        ///// <summary>
-        ///// Extract a particular type of points of interest
-        ///// </summary>
-        ///// <param name="matrix">
-        ///// the original spectrogram/image data 
-        ///// </param>
-        ///// <param name="ft">
-        ///// a pariticular type of feature 
-        ///// </param>
-        ///// <returns>
-        ///// return a list of Points of Interest
-        ///// </returns>
-        //public static List<PointOfInterest> ExtractPointsOfInterest(double[,] matrix, FeatureType ft)
-        //{
-        //    var result = new List<PointOfInterest>();
-        //    if (ft == FeatureType.LOCALMAXIMA)
-        //    {
-        //        result = LocalMaxima.HitLocalMaxima(matrix);          
-        //    }
-        //    else if (ft == FeatureType.STRUCTURE_TENSOR)
-        //    {
-        //        result = HitStructureTensor(matrix);
-        //    }
-
-        //    return result;
-        //}
-
-        //public static List<PointOfInterest> FilterPoints(double[,] m)
-        //{
-        //    int MaximumXIndex = m.GetLength(0);
-        //    int MaximumYIndex = m.GetLength(1);
-        //    var result = new List<PointOfInterest>();
-
-        //    for (int row = 0; row < MaximumXIndex - 1; row++)
-        //    {
-        //        for (int col = 0; col < MaximumYIndex - 1; col++)
-        //        {
-        //            var rightPosition = m[row + 1, col];
-        //            var bottomPostion = m[row, col + 1];
-        //            var current = m[row, col];
-        //            var p1 = (current != 0.0);
-        //            //var p2 = (rightPosition != 0.0);
-        //            //var p3 = (bottomPostion != 0.0);
-        //            if (p1)
-        //            //if (p1 && p2 && p3)
-        //            {
-        //                result.Add(new PointOfInterest(new Point(row, col)) { Intensity = m[row, col] });
-        //            }
-        //        }
-        //    }
-        //    return result;
-        //}
-
-        /// <summary>
-        /// To generate a binary spectrogram, an amplitudeThreshold is required
-        /// Above the threshold, its amplitude value will be assigned to MAX (black), otherwise to MIN (white)
-        /// Side affect: An image is saved
-        /// Side affect: the original AmplitudeSonogram is modified.
-        /// </summary>
-        /// <param name="amplitudeSpectrogram">
-        /// The amplitude Spectrogram.
-        /// </param>
-        /// <param name="amplitudeThreshold">
-        /// The amplitude Threshold.
-        /// </param>
-        public static void GenerateBinarySpectrogram(AmplitudeSonogram amplitudeSpectrogram, double amplitudeThreshold)
-        {
-            var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
-
-            for (int i = 0; i < spectrogramAmplitudeMatrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < spectrogramAmplitudeMatrix.GetLength(1); j++)
-                {
-                    if (spectrogramAmplitudeMatrix[i, j] > amplitudeThreshold)
-                    {
-                        // by default it will be 0.028
-                        spectrogramAmplitudeMatrix[i, j] = 1;
-                    }
-                    else
-                    {
-                        spectrogramAmplitudeMatrix[i, j] = 0;
-                    }
-                }
-            }
-
-            var imageResult = new Image_MultiTrack(amplitudeSpectrogram.GetImage(false, true));
-            imageResult.Save("C:\\Test recordings\\Test4.png");
-        }
-
+        
         /// <summary>
         /// PeakAmplitudeDetection applies a window of n seconds, starting every n seconds, to the recording. The window detects points
         /// that have a peakAmplitude value.
@@ -206,12 +50,10 @@ namespace Dong.Felt
         public static string PeakAmplitudeDetection(AmplitudeSonogram amplitudeSpectrogram, int minFreq, int maxFreq, double slideWindowDuation = 2.0)
         {
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
-
             var numberOfWindows = (int)(amplitudeSpectrogram.Duration.Seconds / slideWindowDuation);
 
             // get the offset frame of Window
             var slideWindowFrameOffset = (int)Math.Round(slideWindowDuation * amplitudeSpectrogram.FramesPerSecond);
-
             var slideWindowminFreqBin = (int)Math.Round(minFreq / amplitudeSpectrogram.FBinWidth);
             var slideWindowmaxFreqBin = (int)Math.Round(maxFreq / amplitudeSpectrogram.FBinWidth);
 
@@ -220,7 +62,6 @@ namespace Dong.Felt
             for (int windowIndex = 0; windowIndex < numberOfWindows; windowIndex++)
             {
                 const double CurrentMaximum = double.NegativeInfinity;
-
                 // scan along frames
                 for (int i = 0; i < (windowIndex + 1) * slideWindowFrameOffset; i++)
                 {
@@ -247,7 +88,6 @@ namespace Dong.Felt
             }
 
             return outputPoints;
-            ////Log.Info("Found points: \n" + outputPoints);
         }
 
         /// <summary>
@@ -343,13 +183,13 @@ namespace Dong.Felt
         /// <param name="wavFilePath">
         /// Get the spectrogram through open a wavFilePath.
         /// </param>
-        public static void DrawBox(string wavFilePath)
+        public static void DrawBox(string wavFilePath, SonogramConfig config)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(wavFilePath));
             Contract.Requires(File.Exists(wavFilePath));
 
             var recording = new AudioRecording(wavFilePath);
-            var amplitudeSpectrogram = new AmplitudeSonogram(StandardConfig, recording.GetWavReader());
+            var amplitudeSpectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
             const int MinFreq = 2000;
             const int MaxFreq = 3500;
@@ -420,7 +260,6 @@ namespace Dong.Felt
                 }
             }
             return result;
-
         }
     }
 }
