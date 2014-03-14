@@ -13,12 +13,12 @@ namespace QutBioacosutics.Xie
 
         public int Y { get; set; }
 
-        // public void Peak(int x, int y, int amplitude)
-        // {
-        //     this.X = x;
-        //     this.Y = y;
-        //     this.Amplitude = amplitude;
-        // }
+        //public void Peak(int x, int y, int amplitude)
+        //{
+        //    this.X = x;
+        //    this.Y = y;
+        //    this.Amplitude = amplitude;
+        //}
     }
 
 }
