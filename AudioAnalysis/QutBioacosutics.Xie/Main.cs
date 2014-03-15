@@ -32,7 +32,7 @@ namespace QutBioacosutics.Xie
             double amplitudeThreshold = configuration.amplitude_threshold;
             int range = configuration.range;
             int distance = configuration.distance;
-            int binToreance = configuration.binToreance;
+            double binToreance = configuration.binToreance;
             int frameThreshold = configuration.frameThreshold;
             int duraionThreshold = configuration.duraionThreshold;
 
