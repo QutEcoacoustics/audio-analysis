@@ -1,7 +1,14 @@
 --- # Configuration file for Jie Xie
-file:   "C:\\Temp\\NE_20121020_060000+10.wav"
+file:   C:\Jie\data\160113_min140.wav
 do_noise_reduction: 0
-image_path: C:\Temp\output1.png
+image_path: C:\Jie\output\3.png
+amplitude_threshold: 3.0
+range: 2
+distance: 4
+binToreance: 3
+frameThreshold: 5
+duraionThreshold: 15
 
+ 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
