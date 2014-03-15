@@ -11,7 +11,7 @@ namespace QutBioacosutics.Xie
 
     class ExtractTracks
     {
-        public double[,] GetTracks(double[,] matrix,int binToreance)
+        public double[,] GetTracks(double[,] matrix, int binToreance, int frameThreshold, int duraionThreshold)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -35,8 +35,7 @@ namespace QutBioacosutics.Xie
                         point.Y = j;
                         point.Amplitude = matrix[i, j];
                         Points.Add(point);
-                    }
-                                       
+                    }                                      
                 }
 
                 pointList[j] = Points;
@@ -47,6 +46,7 @@ namespace QutBioacosutics.Xie
                         
             var shortTrackList = new List<Track>();
             var longTrackList = new List<Track>();
+            var closedTrackList = new List<Track>();
 
             var longTrackXList = new List<List<double>>();
             var longTrackYList = new List<List<double>>();
@@ -133,44 +133,177 @@ namespace QutBioacosutics.Xie
             int c = 2;
             while (c < column)
             {
-                // use linear regression to predict the next position of long tracks
-                for (int i = 0; i < longTrackXList.Count; i++)
+                // save the long tracks to closed track lists
+                for (int i = 0; i < longTrackList.Count; i++)
                 {
-                    var xdata = new double[longTrackXList.Count];
-                    xdata = longTrackXList[i].ToArray();
-
-                    var ydata = new double[longTrackYList.Count];
-                    ydata = longTrackYList[i].ToArray();
-
-                    var p = Fit.Line(xdata, ydata);
-                    var offset = p.Item1;
-                    var slope = p.Item2;
-
-                    var position = c * offset + slope;
-
-                    for (int j = 0; j < pointList[c].Count; j++)
+                    if ((c - longTrackList[i].EndFrame) > frameThreshold)
                     {
-
-                        if ((position - pointList[c][j].Y) < binToreance)
+                        if (longTrackList[i].Duration > duraionThreshold)
                         {
-                            // add individual peaks to long tracks
-                            longTrackList[i].EndFrame = c;
-                            longTrackList[i].LowBin = Math.Min();
-                            longTrackList[i].HighBin = Math.Max(); 
+                            closedTrackList.Add(longTrackList[i]);
+                        }
+                        else 
+                        {
+                            longTrackList.Remove(longTrackList[i]);
+                        }
+                                            
+                    }
+
+                
+                }
+
+                if (longTrackList.Count != 0)
+                {
+
+                    // use linear regression to predict the next position of long tracks
+                    for (int i = 0; i < longTrackXList.Count; i++)
+                    {
+                        var xdata = new double[longTrackXList.Count];
+                        xdata = longTrackXList[i].ToArray();
+
+                        var ydata = new double[longTrackYList.Count];
+                        ydata = longTrackYList[i].ToArray();
+
+                        var p = Fit.Line(xdata, ydata);
+                        var offset = p.Item1;
+                        var slope = p.Item2;
+
+                        var position = c * offset + slope;
+
+                        var numberA = new List<int>();
+                        for (int j = 0; j < pointList[c].Count; j++)
+                        {
+                            var longTrackX = new List<double>();
+                            var longTrackY = new List<double>();
+                            if ((position - pointList[c][j].Y) < binToreance)
+                            {
+                                // add individual peaks to long tracks
+                                longTrackList[i].EndFrame = c;
+                                longTrackList[i].LowBin = Math.Min(longTrackList[j].LowBin, pointList[c][j].Y);
+                                longTrackList[i].HighBin = Math.Max(longTrackList[j].HighBin, pointList[c][j].Y);
+
+                                numberA.Add(pointList[c][j].Y);
+
+                                longTrackXList[i].Add(c);
+                                longTrackYList[i].Add(pointList[c][j].Y);
+
+                            }
+                        }
+
+                        pointList[c].RemoveRange(numberA[0], numberA.Count);
+
+                    }
+
+                    // add points of current frame to short tracks
+                    var numberB = new List<int>();
+                    for (int i = 0; i < shortTrackList.Count; i++)
+                    {
+                        var longTrack = new Track();
+                        var longTrackX = new List<double>();
+                        var longTrackY = new List<double>();
+                        if ((shortTrackList[i].HighBin - pointList[c][i].Y) < binToreance)
+                        {
+                            longTrack.StartFrame = shortTrackList[i].StartFrame;
+                            longTrack.EndFrame = c;
+                            longTrack.LowBin = Math.Min(shortTrackList[i].LowBin, pointList[c][i].Y);
+                            longTrack.HighBin = Math.Max(shortTrackList[i].HighBin, pointList[c][i].Y);
+                            longTrackList.Add(longTrack);
+
+                            longTrackX.AddMany(shortTrackList[i].StartFrame, pointList[c][i].X);
+                            longTrackY.AddMany(shortTrackList[i].LowBin, pointList[c][i].Y);
+
+                            longTrackXList.Add(longTrackX);
+                            longTrackYList.Add(longTrackY);
+
+                            numberB.Add(pointList[c][i].Y);
 
                         }
-                    
+                    }
+
+                    pointList[c].RemoveRange(numberB[0], numberB.Count);
+
+                    for (int i = 0; i < pointList[c].Count; i++)
+                    {
+                        var shortTrack = new Track();
+                        shortTrack.StartFrame = c;
+                        shortTrack.EndFrame = c;
+                        shortTrack.LowBin = pointList[c][i].X;
+                        shortTrack.HighBin = pointList[c][i].X;
+                        shortTrackList.Add(shortTrack);
+                    }
+
+                }
+                else
+                {
+                    var numberC = new List<int>();
+                    var numberD = new List<int>();
+
+                    for (int i = 0; i < pointList[c].Count; i++)
+                    {
+
+                        for (int j = 0; j < pointList[c+1].Count; j++)
+                        {
+                            var longTrackX = new List<double>();
+                            var longTrackY = new List<double>();
+                            if ((pointList[c][i].Y - pointList[c + 1][j].Y) < binToreance)
+                            {
+
+                                numberC.Add(i);
+                                numberD.Add(j);
+                                longTrackX.AddMany(i, j);
+                                longTrackY.AddMany(pointList[0][i].X, pointList[1][j].X);
+
+                                longTrackXList.Add(longTrackX);
+                                longTrackYList.Add(longTrackY);
+                            }
+                        
+                        }
+                    }
+
+                    for (int i = 0; i < numberC.Count; i++)
+                    {
+                        var longTrack = new Track();
+                        longTrack.StartFrame = c;
+                        longTrack.EndFrame = c + 1;
+                        longTrack.LowBin = Math.Min(pointList[c][numberC[i]].Y, pointList[c + 1][numberC[i]].Y);
+                        longTrack.HighBin = Math.Max(pointList[c][numberC[i]].Y, pointList[c + 1][numberC[i]].Y);
+
+                        longTrackList.Add(longTrack);
+                        
+                    }
+
+                    pointList[c].RemoveRange(numberC[0], numberC.Count);
+                    pointList[c+1].RemoveRange(numberD[1], numberD.Count);
+
+                    for (int i = 0; i < pointList[c].Count; i++)
+                    {
+                        var shortTrack = new Track();
+                        shortTrack.StartFrame = c;
+                        shortTrack.EndFrame = c;
+                        shortTrack.LowBin = pointList[c][i].X;
+                        shortTrack.HighBin = pointList[c][i].X;
+                        shortTrackList.Add(shortTrack);
                     }
 
 
-
+                    for (int i = 0; i < pointList[c+1].Count; i++)
+                    {
+                        var shortTrack = new Track();
+                        shortTrack.StartFrame = c+1;
+                        shortTrack.EndFrame = c+1;
+                        shortTrack.LowBin = pointList[c+1][i].X;
+                        shortTrack.HighBin = pointList[c+1][i].X;
+                        shortTrackList.Add(shortTrack);
+                    }
+                
                 }
+ 
+
+                c = c + 1;
+
             }
 
-
-
-
-                return null;
+            return null;
         }
 
     }
