@@ -75,7 +75,9 @@ namespace QutBioacosutics.Xie
             var multipleTracks = new ExtractTracks();
             trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold);
 
-            
+            peakMatrix = MatrixTools.MatrixRotate90Anticlockwise(peakMatrix);
+            var image = ImageTools.DrawMatrix(peakMatrix);
+            image.Save(imagePath);
 
             // find the harmonic structure & oscillation rate based on tracks
 
