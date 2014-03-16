@@ -35,6 +35,7 @@ namespace QutBioacosutics.Xie
             double binToreance = configuration.binToreance;
             int frameThreshold = configuration.frameThreshold;
             int duraionThreshold = configuration.duraionThreshold;
+            double trackThreshold = configuration.trackThreshold;
 
             // bool noiseReduction = (int)configuration.do_noise_reduction == 1;
 
@@ -70,10 +71,13 @@ namespace QutBioacosutics.Xie
             // var image = ImageTools.DrawMatrix(peakMatrix);
             // image.Save(imagePath);
 
-
             var trackMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
             var multipleTracks = new ExtractTracks();
-            trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold);
+            trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold);
+
+            
+
+            // find the harmonic structure & oscillation rate based on tracks
 
             //var image = spectrogram.GetImage();
 
