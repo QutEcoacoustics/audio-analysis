@@ -1,0 +1,664 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AnalysisBase</name>
+    </assembly>
+    <members>
+        <member name="T:AnalysisBase.AnalysisCoordinator">
+            <summary>
+            Prepares, runs and completes analyses.
+            </summary>
+            <remarks>
+            <para>
+            The process to analyse files can be a little complex. The overall idea is 
+            to begin with an analysis type and a list of file paths and segments inside those files.
+            Then those files are segmented using default settings from the analysis and possible modifications to the defaults by a user.
+            Each segment is analysed, and the results are put into either a purpose-created folder (which might be deledt once that analysis is complete),
+            or a known location for later use.
+            </para>
+            <para>
+            temp files can also be stored in sub folders named by analysis name and files named by segment id
+            when another analysis is run, the files are overwritten.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.#ctor(AnalysisBase.ISourcePreparer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AnalysisBase.AnalysisCoordinator"/> class.
+            </summary>
+            <param name="sourcePreparer">
+            The source Preparer. The prepared files can be stored anywhere, they just need to be readable.
+            </param>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.Run(System.IO.FileInfo,AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Analyse one file using the analysis and settings.
+            </summary>
+            <param name="file">
+            The file.
+            </param>
+            <param name="analysis">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The analysis results.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.Run(AnalysisBase.FileSegment,AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Analyse one file segment using the analysis and settings.
+            </summary>
+            <param name="fileSegment">
+            The file Segment.
+            </param>
+            <param name="analysis">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The analysis results.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.Run(System.Collections.Generic.IEnumerable{AnalysisBase.FileSegment},AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Analyse one or more file segments using the same analysis and settings.
+            </summary>
+            <param name="fileSegments">
+            The file Segments.
+            </param>
+            <param name="analysis">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The analysis results.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.RunParallel(System.Collections.Generic.IEnumerable{AnalysisBase.FileSegment},AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Analyse segments of an audio file in parallel.
+            </summary>
+            <param name="analysisSegments">
+            The analysis Segments.
+            </param>
+            <param name="analysis">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The analysis results.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.RunSequential(System.Collections.Generic.IEnumerable{AnalysisBase.FileSegment},AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Analyse segments of an audio file in sequence.
+            </summary>
+            <param name="analysisSegments">
+            The analysis Segments.
+            </param>
+            <param name="analysis">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The analysis results.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.PrepareFileAndRunAnalysis(AnalysisBase.FileSegment,AnalysisBase.IAnalyser,AnalysisBase.AnalysisSettings)">
+            <summary>
+            Prepare the resources for an analysis, and the run the analysis.
+            </summary>
+            <param name="fileSegment">
+            The file Segment.
+            </param>
+            <param name="analyser">
+            The analysis.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            The results from the analysis.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.CreateUniqueRunDirectory(System.IO.DirectoryInfo,System.String)">
+            <summary>
+            Create a directory for an analysis to be run.
+            Will be in the form [analysisId][sep][token][sep][...files...].
+            </summary>
+            <param name="analysisBaseDirectory">
+            The analysis Base Directory.
+            </param>
+            <param name="analysisIdentifier">
+            Analysis Identifier.
+            </param>
+            <returns>
+            The created directory.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.CreateNamedRunDirectory(System.IO.DirectoryInfo,System.String)">
+            <summary>
+            Create a directory for an analysis to be run.
+            Will be in the form [analysisId][sep][...files...].
+            </summary>
+            <param name="analysisBaseDirectory">
+            The analysis Base Directory.
+            </param>
+            <param name="analysisIdentifier">
+            Analysis Identifier.
+            </param>
+            <returns>
+            The created directory.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.AnalysisCoordinator.GetAnalysers(System.Reflection.Assembly)">
+            <summary>
+            Get analysers using a method that is compatible with MONO environment..
+            </summary>
+            <param name="assembly">
+            The assembly.
+            </param>
+            <returns>
+            The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyser].
+            </returns>
+        </member>
+        <member name="P:AnalysisBase.AnalysisCoordinator.SourcePreparer">
+            <summary>
+            Gets SourcePreparer.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisCoordinator.DeleteFinished">
+            <summary>
+            Gets or sets a value indicating whether to delete finished runs.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisCoordinator.SubFoldersUnique">
+            <summary>
+            Gets or sets a value indicating whether to create 
+            uniquely named sub folders for each run, 
+            or reuse a single folder named using the analysis name.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisCoordinator.IsParallel">
+            <summary>
+            Gets or sets a value indicating whether to run in parallel.
+            </summary>
+        </member>
+        <member name="T:AnalysisBase.AnalysisResult">
+            <summary>
+            Analysis Results.
+            </summary>
+        </member>
+        <member name="M:AnalysisBase.AnalysisResult.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AnalysisBase.AnalysisResult"/> class.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.AnalysisIdentifierString">
+            <summary>
+            Gets AnalysisIdentifierString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.ScoreString">
+            <summary>
+            Gets ScoreString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.AdditionalInfoString">
+            <summary>
+            Gets AdditionalInfoString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.MinOffsetMsString">
+            <summary>
+            Gets MinOffsetMsString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.MaxOffsetMsString">
+            <summary>
+            Gets MaxOffsetMsString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.MinFrequencyHzString">
+            <summary>
+            Gets MinFrequencyHzString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.MaxFrequencyHzString">
+            <summary>
+            Gets MaxFrequencyHzString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.AnalysisIdentifier">
+            <summary>
+            Gets or sets Analysis Identifier.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.Data">
+            <summary>
+            Gets or sets results.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.SettingsUsed">
+            <summary>
+            Gets or sets the settings used to produce the results.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.DisplayItems">
+            <summary>
+            Gets DisplayItems which contains indexes to display and optional item names.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.OutputFiles">
+            <summary>
+            Gets or sets OutputFiles.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.EventsFile">
+            <summary>
+            Gets or sets the location of the events file for this analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.IndicesFile">
+            <summary>
+            Gets or sets the location of the indices file for this analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.ImageFile">
+            <summary>
+            Gets or sets the debug image file for this analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.AudioDuration">
+            <summary>
+            Gets or sets the duration of the analysed segment.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult.SegmentStartOffset">
+            <summary>
+            Gets or sets the offset of the segment from the original entire audio file.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisResult2.Data">
+            <summary>
+            Gets or sets results.
+            </summary>
+        </member>
+        <member name="T:AnalysisBase.AnalysisSettings">
+            <summary>
+            The analysis settings for processing one audio file.
+            </summary>
+            <remarks>
+            <para>
+            The only files and folders an analysis may access are the audio file, 
+            configuration file and any file or folder in the working directory.
+            The working directory may be deleted after the analysis is complete.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:AnalysisBase.AnalysisSettings.SetUserConfiguration(System.IO.DirectoryInfo,System.IO.FileInfo,System.Collections.Generic.Dictionary{System.String,System.String},System.IO.DirectoryInfo,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="fiConfig"></param>
+            <param name="dict"></param>
+            <param name="diOutputDir"></param>
+            <param name="key_SEGMENT_DURATION"></param>
+            <param name="key_SEGMENT_OVERLAP"></param>
+        </member>
+        <member name="M:AnalysisBase.AnalysisSettings.ShallowClone">
+            <summary>
+            Creates a clone of this AnalysisSettings object.
+            
+            </summary>
+            <returns>A clone of this AnalysisSettings object.</returns>
+            <remarks>
+            see: http://msdn.microsoft.com/en-us/library/system.icloneable.aspx
+            see: http://msdn.microsoft.com/en-us/library/system.object.memberwiseclone.aspx
+            </remarks>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisBaseDirectoryString">
+            <summary>
+            Gets RunDirectoryString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisRunDirectoryString">
+            <summary>
+            Gets BaseRunDirectoryString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AudioFileString">
+            <summary>
+            Gets AudioFileString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentOverlapDurationString">
+            <summary>
+            Gets SegmentOverlapDurationString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMinDurationString">
+            <summary>
+            Gets SegmentMinDurationString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMaxDurationString">
+            <summary>
+            Gets SegmentMaxDurationString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentTargetSampleRateString">
+            <summary>
+            Gets SegmentTargetSampleRateString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMediaTypeString">
+            <summary>
+            Gets SegmentMediaTypeString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.ConfigStringInputString">
+            <summary>
+            Gets ConfigStringInputString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.ConfigFileString">
+            <summary>
+            Gets ConfigFileString.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisBaseTempDirectory">
+            <summary>
+            Gets or sets the temp directory that is the base of the folder structure that analyses can use.
+            Anything put here will be deleted when the analysis is complete.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisBaseTempDirectoryChecked">
+            <summary>
+            Gets a base temp directory. The dir will exist.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisBaseOutputDirectory">
+            <summary>
+            Gets or sets the output directory that is the base of the folder structure that analyses can use.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisInstanceTempDirectory">
+            <summary>
+            Gets or sets the temp directory for a single analysis run.
+            Anything put here will be deleted when the analysis is complete.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisInstanceTempDirectoryChecked">
+            <summary>
+            Gets a temp directory for a single run. The dir will exist.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AnalysisInstanceOutputDirectory">
+            <summary>
+            Gets or sets the output directory for a single analysis run.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SourceFile">
+            <summary>
+            Gets or sets the original source file from which audio segments are extracted for analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.AudioFile">
+            <summary>
+            Gets or sets the audio file for the analysis.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.EventsFile">
+            <summary>
+            Gets or sets the events file for the analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.IndicesFile">
+            <summary>
+            Gets or sets the indices file for the analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.ImageFile">
+            <summary>
+            Gets or sets the audio file for the analysis.
+            Analysis implementations must not set this.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentOverlapDuration">
+            <summary>
+            Gets or sets the duration for segments to overlap.
+            This should be set to an initial value by an analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMinDuration">
+            <summary>
+            Gets or sets the minimum audio file duration the analysis can process.
+            This is the min duration without including overlap. Overlap will be added.
+            This should be set to an initial value by an analysis.
+            TODO: a chunk of audio without the overlap is a 'segmentstep'.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMaxDuration">
+            <summary>
+            Gets or sets the maximum audio file duration the analysis can process.
+            This is the max duration without including overlap. Overlap will be added. This means that a segment may be larger than this value.
+            This should be set to an initial value by an analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentTargetSampleRate">
+            <summary>
+            Gets or sets the audio sample rate the analysis expects (in hertz).
+            This should be set to an initial value by an analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SampleRateOfOriginalAudioFile">
+            <summary>
+            Gets or sets the sample rate of the original audio file from which segment was extracted.
+            THIS IS A HACK!!! IT IS A WAY OF STORING INFORMATION THAT WE WANT 
+            TO PASS DOWN INTO THE ANALYSIS LEVEL
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.SegmentMediaType">
+            <summary>
+            Gets or sets the media type the analysis expects.
+            This should be set to an initial value by an analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.ConfigFile">
+            <summary>
+            Gets or sets the configuration file to use to run the analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.AnalysisSettings.ConfigDict">
+            <summary>
+            Gets or sets the config dictionary.
+            </summary>
+        </member>
+        <member name="T:AnalysisBase.FileSegment">
+            <summary>
+            Represents a segment file. Also stores the orginal file. 
+            Be aware that the original file may also be a segment file.
+            </summary>
+        </member>
+        <member name="M:AnalysisBase.FileSegment.Validate">
+            <summary>
+            Validate the <see cref="T:AnalysisBase.FileSegment"/> properties.
+            </summary>
+            <returns>
+            True if properties are valid, otherwise false.
+            </returns>
+        </member>
+        <member name="P:AnalysisBase.FileSegment.OriginalFile">
+            <summary>
+            Gets or sets the Original File.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.FileSegment.SegmentStartOffset">
+            <summary>
+            Gets or sets SegmentStartOffset.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.FileSegment.SegmentEndOffset">
+            <summary>
+            Gets or sets SegmentEndOffset.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.FileSegment.OriginalFileDuration">
+            <summary>
+            Gets or sets the entire audio file Duration.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.FileSegment.OriginalFileSampleRate">
+            <summary>
+            Gets or sets the original audio file Sample rate.
+            May be required when doing analysis.
+            </summary>
+        </member>
+        <member name="T:AnalysisBase.IAnalyser">
+            <summary>
+            Interface a compatible analysis must implement.
+            </summary>
+        </member>
+        <member name="M:AnalysisBase.IAnalyser.Analyse(AnalysisBase.AnalysisSettings)">
+            <summary>
+            Run analysis using the given analysis settings.
+            </summary>
+            <param name="analysisSettings">
+            The analysis Settings.
+            </param>
+            <returns>
+            The results of the analysis.
+            </returns>
+        </member>
+        <member name="P:AnalysisBase.IAnalyser.DisplayName">
+            <summary>
+            Gets the name to display for the analysis.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.IAnalyser.Identifier">
+            <summary>
+            Gets Identifier. This should be a dotted uniquely identifying name. E.g. Towsey.MultiAnalyser.
+            </summary>
+        </member>
+        <member name="P:AnalysisBase.IAnalyser.DefaultSettings">
+            <summary>
+            Gets the initial (default) settings for the analysis.
+            </summary>
+        </member>
+        <member name="M:AnalysisBase.IAnalyser2.WriteEventsFile(System.IO.FileInfo,System.Collections.Generic.IEnumerable{AnalysisBase.EventBase})">
+            <summary>
+            Ensures abstract types are downcast by the analyser and written to file.
+            </summary>
+            <param name="destination"></param>
+            <param name="results"></param>
+        </member>
+        <member name="M:AnalysisBase.IAnalyser2.WriteIndicesFile(System.IO.FileInfo,System.Collections.Generic.IEnumerable{AnalysisBase.IndexBase})">
+            <summary>
+            Ensures abstract types are downcast by the analyser and written to file.
+            </summary>
+            <param name="destination"></param>
+            <param name="results"></param>
+        </member>
+        <member name="T:AnalysisBase.ISourcePreparer">
+            <summary>
+            Interface for preparing source files.
+            </summary>
+        </member>
+        <member name="M:AnalysisBase.ISourcePreparer.PrepareFile(System.IO.DirectoryInfo,System.IO.FileInfo,System.String,System.TimeSpan,System.TimeSpan,System.Int32)">
+            <summary>
+            Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
+            </summary>
+            <param name="outputDirectory">
+            The analysis Base Directory.
+            </param>
+            <param name="source">
+            The source audio file.
+            </param>
+            <param name="outputMediaType">
+            The output Media Type.
+            </param>
+            <param name="startOffset">
+            The start Offset from start of entire original file.
+            </param>
+            <param name="endOffset">
+            The end Offset from start of entire original file.
+            </param>
+            <param name="targetSampleRateHz">
+            The target Sample Rate Hz.
+            </param>
+            <returns>
+            The prepared file.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.ISourcePreparer.PrepareFile(System.IO.DirectoryInfo,System.IO.FileInfo,System.String,System.TimeSpan,System.TimeSpan,System.Int32,System.IO.DirectoryInfo)">
+            <summary>
+            Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
+            </summary>
+            <param name="outputDirectory">
+            The analysis Base Directory.
+            </param>
+            <param name="source">
+            The source audio file.
+            </param>
+            <param name="outputMediaType">
+            The output Media Type.
+            </param>
+            <param name="startOffset">
+            The start Offset from start of entire original file.
+            </param>
+            <param name="endOffset">
+            The end Offset from start of entire original file.
+            </param>
+            <param name="targetSampleRateHz">
+            The target Sample Rate Hz.
+            </param>
+            <param name="temporaryFilesDirectory">
+            The directory for temporary files.
+            </param>
+            <returns>
+            The prepared file.
+            </returns>
+        </member>
+        <member name="M:AnalysisBase.ISourcePreparer.CalculateSegments(System.Collections.Generic.IEnumerable{AnalysisBase.FileSegment},AnalysisBase.AnalysisSettings)">
+            <summary>
+            Calculate the file segments for analysis.
+            </summary>
+            <param name="fileSegments">
+            The file segments.
+            </param>
+            <param name="settings">
+            The settings.
+            </param>
+            <returns>
+            Enumerable of file segments.
+            </returns>
+        </member>
+        <member name="P:AudioBase.PluginHelper.AnalysisPlugins">
+            <summary>
+            The available analysers.
+            </summary>
+        </member>
+        <member name="P:AudioBase.PluginHelper.SourcePreparerPlugins">
+            <summary>
+            The available Source Preparers.
+            </summary>
+        </member>
+    </members>
+</doc>
