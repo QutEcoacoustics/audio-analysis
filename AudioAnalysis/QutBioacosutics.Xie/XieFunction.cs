@@ -20,5 +20,11 @@ namespace QutBioacosutics.Xie
                 list.Add(elements[i]);
             }
         }
+
+
+        //public static void RemoveMany<T>(this List<T> list, params T[] elements)
+        //{
+        //
+        //}
     }
 }

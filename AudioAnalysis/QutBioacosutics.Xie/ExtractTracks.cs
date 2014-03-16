@@ -11,7 +11,7 @@ namespace QutBioacosutics.Xie
 
     class ExtractTracks
     {
-        public double[,] GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold)
+        public double[,] GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -449,7 +449,99 @@ namespace QutBioacosutics.Xie
                 c = c + 1;
             }
 
-            return null;
+            // remove tracks with few points
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                if((longTrackXList[i].Count / closedTrackList[i].Duration) < trackThreshold)
+                {
+                    closedTrackList.RemoveAt(i);
+                    longTrackXList.RemoveAt(i);
+                    longTrackYList.RemoveAt(i);
+                    i--;
+                }
+            }
+                    
+   
+            // complement the gap among tracks 
+
+
+            var closedTrackXList = new List<List<double>>();
+            var closedTrackYList = new List<List<double>>();
+            var diffTrackXList = new List<List<double>>();
+
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                for (int j = closedTrackList[i].StartFrame; j <= closedTrackList[i].EndFrame; j++)
+                { 
+                    closedTrackXList[i].Add(j);
+                }                            
+            }
+
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                diffTrackXList[i] = closedTrackXList[i].Except(longTrackXList[i]).ToList();                                           
+            }
+
+            if (diffTrackXList.Count > 0)
+            {
+                for (int i = 0; i < diffTrackXList.Count; i++)
+                {
+                    for (int j = 0; j < diffTrackXList[i].Count; j++)
+                    {                        
+                        // save list to array
+                        var xdata = new List<double>();
+                        var ydata = new List<double>();
+                        for (int s = closedTrackList[i].StartFrame; s < (diffTrackXList[i][j] - 1); s++)
+                        {
+                            xdata.Add(s);                        
+                        }
+                    
+                        for (int t = 0; t < xdata.Count; t++)
+                        {
+                            ydata.Add(longTrackYList[i][t]);                       
+                        }
+
+                        var xdataArray = new double[xdata.Count];
+                        var ydataArray = new double[xdata.Count];
+                        xdataArray = xdata.ToArray();
+                        ydataArray = ydata.ToArray();
+                    }
+                
+                     var p = Fit.Line(xdataArray, ydataArray);
+                            var offset = p.Item1;
+                            var slope = p.Item2;
+         
+            var position = c * slope + offset;
+
+                    // change closedTrackYList to array
+
+                     closedTrackYList[diffTrackXList[i][j] - closedTrackList[i].StartFrame] = position;
+
+
+                    }               
+                }            
+            }
+
+
+
+
+
+
+
+
+            // convert closedTrackList to trackMatrix
+            // To do: convert double to int 
+            var result = new double[row, column];
+            for (int i = 0; i < closedTrackList.Count; i++)
+            { 
+                for (int j = 0; j < closedTrackList[i].Duration; j++)
+                {
+                    result[(int) Math.Ceiling(longTrackXList[i][j]),(int) Math.Ceiling(longTrackYList[i][j])] = 1;
+                                
+                }           
+            }
+
+            return result;
         }
 
     }
