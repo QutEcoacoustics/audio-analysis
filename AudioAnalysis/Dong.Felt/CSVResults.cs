@@ -173,12 +173,12 @@
             foreach (var nh in nhList)
             {
                 // Notice 
-                var RowIndex = nh.ColIndex;
-                var ColIndex = nh.RowIndex;
-                var Score = nh.score;
-                var Orientation = nh.orientationType;
-                results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
-                            Score.ToString(), Orientation.ToString() });
+                var rowIndex = nh.ColIndex;
+                var colIndex = nh.RowIndex;
+                var magnitude = nh.magnitude;
+                var orientation = nh.orientation;
+                results.Add(new List<string>() { audioFileName, rowIndex.ToString(), colIndex.ToString(),
+                            magnitude.ToString(), orientation.ToString() });
             }
             // No space in csv file.
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
