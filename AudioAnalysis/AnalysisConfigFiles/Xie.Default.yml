@@ -1,12 +1,9 @@
 --- # Configuration file for Jie Xie
 <<<<<<< .mine
-file:   D:\work\data\160113_min140.wav
-=======
 file:   C:\Jie\data\160113_min140.wav
 >>>>>>> .r3960
 do_noise_reduction: 0
 <<<<<<< .mine
-image_path: D:\work\output\1.png
 =======
 image_path: C:\Jie\output\3.png
 amplitude_threshold: 3.0
@@ -15,6 +12,7 @@ distance: 4
 binToreance: 3
 frameThreshold: 5
 duraionThreshold: 15
+trackThreshold: 0.85
 >>>>>>> .r3960
 
  
