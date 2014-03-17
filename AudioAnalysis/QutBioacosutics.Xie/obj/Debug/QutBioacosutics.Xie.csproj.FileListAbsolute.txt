@@ -41,3 +41,7 @@ C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\obj\Debug\QutBioacosutics.Xie.d
 C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\obj\Debug\QutBioacosutics.Xie.pdb
 C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.pdb
 C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.xml
+C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.dll
+C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.IO.dll
+C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.IO.pdb
+C:\Jie\sensors\AudioAnalysis\QutBioacosutics.Xie\bin\Debug\MathNet.Numerics.IO.xml
