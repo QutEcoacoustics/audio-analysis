@@ -39,13 +39,18 @@ GetTags <- function (target.only = TRUE) {
 ReadTagsFromDb <- function (fields = c('start_date', 
                                 'start_time', 
                                 'site', 
-                                'species_id'), target.only = TRUE) {
+                                'species_id'), target = TRUE) {
     # selects the tags for the appropriate sites, between the 
     # appropriate date times from the local MySql database
+    # target: mixed: if true will use the target in config
+    #                if false will get all tags from the study
+    #                TODO: if a list, will use the values in the list as the target
     
     require('RMySQL')
     
-    if (target.only) {
+    if (class(target) == 'list') {
+    
+    } else if (target == TRUE) {
         start.min <- g.start.min
         end.min <- g.end.min
         start.date <- g.start.date
@@ -90,10 +95,13 @@ ReadTagsFromDb <- function (fields = c('start_date',
         "AND site in",
         sites
     );
+    Report(5, sql.statement)
+    
     con <- ConnectToDb()
     res <- dbSendQuery(con, statement = sql.statement)
     data <- fetch(res, n = - 1)
     mysqlCloseConnection(con)
+    Report(5, 'query complete')
     return(data)
 }
 

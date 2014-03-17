@@ -65,50 +65,6 @@ TargetSubset <- function (df) {
     
 }
 
-CreateMinuteList.old <- function () {
-    # creates a list of random minutes between the target start date/time and end date/time
-    # the number of minutes to create is set in config 
-    #
-    # Details:
-    #   The list of minutes will be the target for the survey. The reason is to reduce the total
-    #   processing needed while still keeping a representative subset of the target period. 
-    #   results are written to the output path. 
-    #
-    #  TODO: update the way that output is saved
-    #   
-    start.date.time <- as.POSIXlt(g.start.date, tz = 'GMT') + 60 * (g.start.min)
-    end.date.time<- as.POSIXlt(g.end.date, tz = 'GMT') + 60 * (g.end.min + 1)
-    diff <- (as.double(end.date.time) - as.double(start.date.time)) / 60;   
-    cols <- c('site', 'date', 'min');
-    # the total number of mins in the target
-    total.num.mins <- diff * length(g.sites);
-    # the number of mins we want to include in the target
-    num.desired.mins <- floor(total.num.mins * g.percent.of.target / 100)
-    # random mins is the number of minutes to add to the start.date.time,
-    # thats why it goes from zero
-    random.mins <- sort(sample(0:(total.num.mins-1), num.desired.mins, replace = FALSE));
-    site.num <- floor(random.mins / diff)
-    min <- (random.mins %% diff)  + g.start.min
-    day <- floor(min / 1440)
-    min <- min %% 1440
-    site <- g.sites[site.num + 1]
-    day <- format(start.date.time + 1440 * 60 * day, '%Y-%m-%d')
-    min.list <- as.data.frame(cbind(site, day,  min), rownames = FALSE)
-    colnames(min.list) <- c('site', 'date', 'min')
-    
-    # create a new output directory if there is less than 100 % of the target
-    # being used, because the random minutes will be different
-    if (g.percent.of.target == 100) {
-        new = FALSE
-    } else {
-        new = TRUE
-    }
-    WriteOutput(min.list, 'minlist', new = new)
-
-    return(min.list)
-    
-    
-}
 
 
 MergeEvents <- function () {
@@ -121,6 +77,9 @@ MergeEvents <- function () {
 
     for(f in 1:length(files)) {
         filepath <- file.path(g.events.source.dir, files[f])
+        if (!file.exists(filepath)) {
+           stop('Check g.all.events.version in config') 
+        }
         if (file.info(filepath)$size == 0) {
             next()
         }
@@ -155,13 +114,79 @@ MergeEvents <- function () {
     all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
     
 
-    WriteAllEvents(all.events.with.min.id);
+    WriteMasterOutput(all.events.with.min.id, 'events');
 }
+
+
+MergeAnnotationsAsEvents <- function () {
+    # to test everything after event detection using known "good" events
+    # create an event list which uses the manually created annotations as events
+    
+    fields <- c('site', 'start_date', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency')
+    
+    all.tags <- ReadTagsFromDb(fields = fields, target = FALSE)
+    
+    
+    # temp small subset for debug
+    # all.tags <- all.tags[1:30,]
+    
+    #convert start_date_time_char and end_date_time_char to second in day
+    
+    # returns matrix with a COLUMN for each event, and date attributes in each row
+    start <- sapply(all.tags$start_date_time_char, ExplodeDatetime)
+    end <- sapply(all.tags$end_date_time_char, ExplodeDatetime)
+    
+    filename <- rep(NA, nrow(all.tags))
+    
+    for (i in 1:nrow(all.tags)) {
+        fn <- EventFile(site = all.tags$site[i], 
+                                 date = as.character(start['date', i]), 
+                                 min = as.integer(start['min.in.day', i]), 
+                                 ext = NA)
+        filename[i] <- fn$fn
+        
+    }
+    
+    start.sec.in.file <- sapply(as.numeric(start['sec.in.day', ]), function (s) {
+        file.start.sec.in.day <- floor(s/600) * 600
+        return(s - file.start.sec.in.day)
+    })
+    
+    
+    #TODO: fix for events which cross over dates
+    
+    events <- data.frame(site = all.tags$site, 
+                         date = as.character(start['date', ]),
+                         min = as.integer(start['min.in.day', ]),
+                         event.id = 1:nrow(all.tags),
+                         filename = filename,
+                         start.sec = as.numeric(start['sec', ]),
+                         start.sec.in.file = start.sec.in.file,
+                         duration = as.numeric(end['sec.in.day', ]) - as.numeric(start['sec.in.day', ]),
+                         bottom.f = all.tags$start_frequency,
+                         top.f = all.tags$end_frequency
+                         )
+    
+    
+    
+    
+    
+    min.ids <- GetMinuteList();
+    all.events.with.min.id <- merge(events, min.ids, c('site', 'date', 'min'))
+    all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
+    all.events.with.min.id$event.id <- 1:nrow(all.tags) # put event.id in the correct order too
+    
+
+    WriteMasterOutput(all.events.with.min.id, 'events');
+    
+}
+
+
 
 GetOuterTargetEvents <- function () {
     # gets a subset of the target events according to the 
     # config targets, but ignoring the percent of target param
-    all.events <- ReadAllEvents()
+    all.events <- ReadMasterOutput('events')
     selected.events <- TargetSubset(all.events)
     return(selected.events)   
 }
@@ -169,7 +194,7 @@ GetOuterTargetEvents <- function () {
 
 GetInnerTargetEvents <- function () {
     min.list <- ReadOutput('minlist')
-    all.events <- ReadAllEvents()
+    all.events <- ReadMasterOutput('events')
     for(m in 1:nrow(min.list)) {
         Dot()
         #subset
@@ -217,18 +242,14 @@ EventFile <- function (site, date, min, ext = 'wav.txt') {
     min <- sprintf('%03d',min)
     #convert to underscorem separated date
     date <- format(as.Date(date), '%Y_%m_%d')
-    fn <- paste(site, date, min, 10, ext, sep = '.')
+    fn <- paste(site, date, min, 10, sep = '.')
+    if (!is.na(ext)) {
+        fn <- paste(fn, ext, sep='.')
+    }
     return(list(fn = fn, start.min = min))
 }
 
 
-FromFn <- function (fn) {
-    
-    
-    
-    
-    
-}
 
 
 AddMinCol <- function (events, start.min) {
@@ -248,17 +269,6 @@ AddMinCol <- function (events, start.min) {
     return(events)
 }
 
-
-
-WriteAllEvents <- function (events) {
-    write.csv(events, file = AllEventsPath(), row.names = FALSE)
-}
-ReadAllEvents <- function () {
-    return(read.csv(AllEventsPath(), header = TRUE, stringsAsFactors=FALSE))
-}
-AllEventsPath <- function () {
-    return(file.path(g.output.master.dir, 'events', paste(g.all.events.version, 'csv', sep = '.')))  
-}
 
 ExpandMinId <- function (min.ids = NA) {
     # given a dataframe with a min.id column

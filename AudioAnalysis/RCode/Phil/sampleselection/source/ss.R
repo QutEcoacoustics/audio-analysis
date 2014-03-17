@@ -32,7 +32,10 @@
 cat('clearing the workspace \n flushing dev \v')
 rm(list = ls())
 dev.flush()
-options(error = recover)
+#options(error = NULL)
+options(error = traceback)
+#options(error = utils::recover)
+
 
 source('config.R')  #must be first
 source('events.R')

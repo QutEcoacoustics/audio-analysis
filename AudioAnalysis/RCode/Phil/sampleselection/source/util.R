@@ -261,38 +261,7 @@ MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     return(paste(h, m, '00', sep = ':'))
 }
 
-TimeToMin <- function (time = NULL, hour = NULL, min = NULL, 
-                       sec = 0, midnight.is.1st.min = FALSE) {
-    # given either a time string in the form hh:mm:ss or hh:mm, 
-    # or the hour and minute, finds the minute number of the day
-    #
-    # Args:
-    #   time: string; eg 14:03:22 or 04:40
-    #   hour: int;
-    #   min: int;
-    #   sec: int
-    #   midnight.is.first.min: boolean; 
-    #     If true, a value between 00:00:00 and 00:00:59 will return 1
-    #     and the maximum value in the day will be 1439 
-    #     (i.e. minute number 1440 is minute number 1 of the next day)
-    #
-    # Returns:
-    #   Int;
-    
-    if (!is.null(time)) {
-        parts <- unlist(strsplit(time, ':', fixed=TRUE))
-        hour <- as.integer(parts[1])
-        min <- as.integer(parts[2])
-        sec <- 0
-    }
-    
-    min <- hour * 60 + min + round(s / 60)
-    if (midnight.is.1st.min) {
-        min <- min + 1
-    }
-    return(min)
-    
-}
+
 FixDate <- function (date) {
     require('stringr')
     #takes a date string which may be written in a different format
@@ -338,3 +307,31 @@ Truncate <- function (v, num) {
     }
     
 }
+
+ExplodeDatetime <- function (datetime) {
+    # converts a datetime string from YYYY-MM-DD HH:mm:ss[.ms]
+    # where the seconds can optionally have milliseconds to any precision
+    # to a list with the items
+    # date, time, hour, min, sec, min.in.day, sec.in.day
+    
+    parts <- unlist(strsplit(datetime, ' ', fixed=TRUE))
+    date <-  FixDate(parts[1])
+    time <-  parts[2]
+
+    time.parts <- unlist(strsplit(time, ':', fixed=TRUE))
+    hour <- as.integer(time.parts[1])
+    min <- as.integer(time.parts[2])
+    sec <- as.numeric(time.parts[3])
+    
+    min.in.day <- hour * 60 + min
+    sec.in.day <- min.in.day * 60 + sec
+
+    return(list(
+        date = date, time = time, 
+        hour = hour, min = min, sec = sec,
+        min.in.day = min.in.day, sec.in.day = sec.in.day
+        ))
+    
+}
+
+

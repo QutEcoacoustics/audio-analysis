@@ -1,7 +1,7 @@
 # the lower the number the less reporting is done
 # when the report function is called, the priority is specified
 # lower numbers are higher priority
-g.report.level <- 5
+g.report.level <- 6
 
 # paths for input and output relative to working directory
 
@@ -12,6 +12,7 @@ g.source.dir <- file.path('..','..','..','..','..','..','SERF')
 g.audio.dir  <- file.path(g.source.dir, 'mono')
 
 g.all.events.version <- 2 
+g.all.events.version <- 'a'
 
 # events source directory, containing one csv file for each wave file
 # (the matlab output)
@@ -26,16 +27,16 @@ g.study.start.date <- "2010-10-13"
 g.study.end.date <-  "2010-10-17"
 g.study.start.min <- 0
 g.study.end.min <- 1439
-g.study.sites <- c('NW', 'NE')
+g.study.sites <- c('NW', 'NE')  # todo: include the others, eventually
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 0
+g.start.min <- 400
 #g.start.min <- 415
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 1439
+g.end.min <- 529
 #g.end.min <- 430
 
 # which sites to include in sample selection
@@ -48,7 +49,7 @@ g.sites <- c('NW')
 g.percent.of.target <- 50
 
 # how many minute samples to use when inspecting
-g.num.samples <- 12
+g.num.samples <- 4
 
 
 # evaluation is done against mysql database of tags

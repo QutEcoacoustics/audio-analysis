@@ -1,15 +1,17 @@
 TS <- function (s = NA) {
-    # if (is.na(s)) {
-    #     s <- Sp.Create('/Users/n8933464/Documents/SERF/NW/test/test.wav')
-    # }
-    
-    Sp.draw(s, '../output/test/s2.png')
+    if (is.na(s)) {
+        s <- Sp.Create('/Users/n8933464/Documents/SERF/NW/test/test.wav')
+    }
+    s$label = "test label"
+    Sp.Draw(s, 'test.png')
+    #Sp.Draw(s)
 }
 
 
 
 Sp.CreateTargeted <- function (site, start.date, start.sec, 
-                               duration, img.path = NA, rects = NA) {
+                               duration, img.path = NA, rects = NA, 
+                               audio.source.in.label = TRUE, label = NA) {
     # creates a spectrogram of audio given the start, duration and site 
     #
     # Args:
@@ -19,6 +21,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     #   duration: float; the number of seconds for the spectrogram
     #   img.path: where the spectrogram is saved
     #   rects: table of rectangles to add to the spectrogram
+    #   audio.source.in.label: boolean; whether to put the site, date, start and end time in the label
     #
     # Details:
     # this is the process:
@@ -26,18 +29,40 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     # 2. identify whether the target spans more than 1 file
     # 3. idenify the sample number for the start and end
     
-
+    cache.id <- paste(site, start.date, start.sec, duration, 'spectro', sep = '.')
     
-    w <- Audio.Targeted(site, start.date, start.sec, duration)
-   # w <- Wave(left = wav.samples, right = numeric(0), 
-   #           samp.rate = samp.rate, bit = bit)
-    spec <- Sp.Create(w)
+    spec <- ReadCache(cache.id)
+    
+    
+    # only cache the spectrogram without the rectangles
+    # because the point is to be able to change the rectanles without
+    # regenerating the spectrogram
+    if (class(spec) != 'spectrogram') {
+        
+        w <- Audio.Targeted(site, start.date, start.sec, duration)
+        # w <- Wave(left = wav.samples, right = numeric(0), 
+        #           samp.rate = samp.rate, bit = bit)
+        spec <- Sp.Create(w)
+        WriteCache(spec, cache.id) 
+    } else {
+        Report(5, 'using spectrgram retrieved from cache')
+    }
+        
+        
     spec$rects <- rects
-    spec$label <- paste(site, start.date, SecToTime(start.sec), " - ", SecToTime(start.sec + duration))
+    # add the label argument to the default label text (date time site)
+        
+    if (audio.source.in.label) {
+        spec$label <- paste(site, start.date, SecToTime(start.sec), " - ", SecToTime(start.sec + duration)) 
+    }
+    if (!is.na(label)) {
+        spec$label <- paste(spec$label, label, sep = " : ") 
+    }
     if (!is.na(img.path)) {
         Sp.Draw(spec, img.path)      
     }
-    return(spec)
+        
+     return(spec)
     
 }
 
@@ -64,21 +89,21 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     #read and shape the original signal\n
     TFRAME <- frame.width
     hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:TFRAME) / (TFRAME - 1))
-    # wav can be a string or a tuneR wav object. 
+    # wav can be a path string or a tuneR wav object. 
     # If it's a string then create a tuneR wav object
     if (typeof(wav) == "character") {
         library(tuneR)
         wav <- readWave(wav)
     }
     samp.rate <- wav@samp.rate
-    bit <- wav@bit  # resolution of wave eg 16bit\n
-    left <- wav@left  # sample values\n
-    len <- length(left)  # total number of samples\n
-    #trim samples so that TFRAME fits exactly\n
+    bit <- wav@bit  # resolution of wave eg 16bit
+    left <- wav@left  # sample values
+    len <- length(left)  # total number of samples
+    #trim samples so that TFRAME fits exactly
     sig <- left[c(1:(len - len %% TFRAME))]
-    #normalise by the maximum signed value of 16 bit\n
+    #normalise by the maximum signed value of 16 bit
     sig <- sig / (2 ^ bit / 2)
-    #number of frames\n
+    #number of frames
     nframe <- length(sig) / TFRAME
     #split into frames. each frame is a column
     # each column contains wave signal data in time domain
@@ -134,14 +159,11 @@ ConvertToDb <- function (amp, bit.resolution = 16) {
     #
     # TODO: adjust for extra energy added by hamming window
     
-    
     # replace zero values with the minimum non-zero value
     # possible with the sampled bit resolution
     # this is necessary to avoid log(0) 
     min.val <- 1 / (2 ^ (bit.resolution - 1))
     amp[amp == 0] <- min.val
-    
-    
     amp <- log10(amp ^ 2)
     amp <- amp * 10
     return(amp)
@@ -167,9 +189,29 @@ Sp.Draw <- function (spectro, img.path = NA) {
     height <- nrow(amp)
     if (!is.na(img.path)) {
         png(img.path, width = width, height = height)
+    } else {
+        
     }
     rast <- Sp.AmpToRaster(amp)
-    grid.raster(image = rast)
+
+    # create a viewport positioned with cms, so that resizing the device doesn't resize the viewport
+    # calculate the cm value of the pixel amount needed (rows, cols)
+    grid.newpage()
+    devsize.cm <- dev.size(units = "cm")
+    devsize.px <- dev.size(units = "px")
+    px.per.cm <- devsize.px[1] / devsize.cm[1]
+    vp.width.cm <- ncol(spectro$val) / px.per.cm
+    vp.height.cm <- nrow(spectro$val) / px.per.cm
+    vp <- viewport(x = 0, y = 0, just = c('left', 'bottom'), width = vp.width.cm, height = vp.height.cm, default.units = 'cm')
+    pushViewport(vp)
+    
+    
+    grid.raster(image = rast, vp = vp)
+
+    
+
+    Sp.Label(spectro)
+    
     if (!is.null(spectro$rects) && nrow(spectro$rects) > 0) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
@@ -178,16 +220,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
       }
     }
     
-    if (!is.null(spectro$label) && nrow(spectro$rects) > 0) {
-        text.gp <- gpar(col = 'white', alpha = 1);
-        text.txt <- spectro$label
-        grid.text(text.txt, 0 , 0, 
-                  gp = text.gp,
-                  just = c('left', 'top')
-        )
-    
-    
-    }
+
     
     if (!is.na(img.path)) {
         dev.off()
@@ -197,6 +230,9 @@ Sp.Draw <- function (spectro, img.path = NA) {
 }
 
 Sp.AmpToRaster <- function (amp) {
+    # normalise to {0,1}, reversing value so 
+    # current max becomes min, and current min becomes max
+    # flip upside down (high freq are low row nums i.e. near top)
     ma <- max(amp)
     mi <- min(amp)  
     #raster renders higher values as white, so lets inverse
@@ -206,6 +242,52 @@ Sp.AmpToRaster <- function (amp) {
     return(rast)
 }
 
+Sp.Label <- function (spectro) {
+    # prints a label in white on a semi-transparent bg
+    
+  #  devsize <- dev.size(units = 'px')
+  #  top.offset <- devsize[2] - nrow(spectro$val) * 0.5
+  #  left.offset <- devsize[1] - ncol(spectro$val) * 0.5
+    
+    
+    
+
+    font.size <- 12
+    bg.col <- 'black'
+    bg.alpha <- 0.5
+    text.col <- 'white'
+    text.alpha <- 0.9
+    padding <- 2
+    char.width <- 6  # depends on font
+    
+    
+    
+    
+    
+    if (!is.null(spectro$label)) {    
+        px.v <- 1 / nrow(spectro$val)  # equivalent to 1 px in the vertical 
+        px.h <- 1 / ncol(spectro$val)  # 1 px in the horizontal    
+        grid.rect(x = 0, 
+              y = 1,
+              width = (char.width * nchar(spectro$label) + (padding * 2)) * px.h, 
+              height = (font.size + padding * 2) * px.v,
+              hjust = 0, vjust = 1,
+              default.units = "npc", name = NULL,
+              gp = gpar(col = bg.col, fill = bg.col, alpha = bg.alpha), 
+              draw = TRUE, 
+              vp = NULL) 
+        text.gp <- gpar(col = text.col, alpha = text.alpha, fontsize=font.size, fontfamily = 'Arial')
+        x <- unit(padding * px.h, "npc")
+        y <- unit(1 - padding * px.v, "npc")
+        grid.text(label = spectro$label, x = x, y = y,
+                  gp = text.gp,
+                  hjust = 0, vjust = 1
+        )
+    }
+    
+    
+    
+}
 
 Sp.Rect <- function (spectro, rect.borders, labels = list()) {
     
@@ -233,15 +315,16 @@ Sp.Rect <- function (spectro, rect.borders, labels = list()) {
         rect.col <- 'green'  # default
     }
     
-   
-    
     fill.alpha <- 0.1
     line.alpha <- 0.9
     text.alpha <- 0.7
-
-
     
-
+    if (is.null(labels$top.left)) {
+        name <- labels$top.left 
+    } else {
+        name <- NULL
+    }
+    
     
     # 2 rectangles, one for fill and one for line
     # to allow the fill and lines to have different alpha 
@@ -250,7 +333,7 @@ Sp.Rect <- function (spectro, rect.borders, labels = list()) {
               width = width, 
               height = height,
               hjust = 0, vjust = 1,
-              default.units = "npc", name = NULL,
+              default.units = "npc", name = name,
               gp = gpar(col = rect.col, fill = rect.col, alpha = fill.alpha), 
               draw = TRUE, 
               vp = NULL)

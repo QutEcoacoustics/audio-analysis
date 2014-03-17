@@ -90,7 +90,7 @@ DoFeatureExtraction <- function (limit = FALSE) {
     }
     
     features.all <- OrderBy(features.all, 'event.id')
-    WriteOutputCsv(features.all, MasterOutputPath('features'))
+    WriteMasterOutput(features.all, 'features')
     
 
     
@@ -103,7 +103,7 @@ GetExistingFeatures <- function () {
     # it returns the features already extracted
     require('digest')
     # check if any of these files have changed
-    to.check <- c(AllEventsPath(),
+    to.check <- c(MasterOutputPath('events'),
                  'features.R')
 
     hash.name <- 'features'
@@ -112,14 +112,13 @@ GetExistingFeatures <- function () {
     old.content.hash <-  ReadHash(hash.name)
     if (old.content.hash != new.content.hash) {
         WriteHash(hash.name, new.content.hash)
+        p <- MasterOutputPath('features')
+        if (file.exists(p)) {
+            file.remove(p)
+        }
         return(FALSE)
     } else {
-        path <- MasterOutputPath('features');
-        if (file.exists(path)) {
-            return(ReadOutputCsv(path))
-        } else {
-            return(FALSE)
-        }
+        return(ReadMasterOutput('features'))
     } 
 }
 

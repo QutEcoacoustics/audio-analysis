@@ -102,7 +102,7 @@ ClusterEvents <- function (num.groups = 'auto',
 
 GetEventsAndFeatures <- function () {
     target.min.ids <- ReadOutput('target.min.ids')
-    all.events <- ReadAllEvents()
+    all.events <- ReadMasterOutput('events')
     events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
     all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
     event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]

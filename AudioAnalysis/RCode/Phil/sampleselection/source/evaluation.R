@@ -1,3 +1,36 @@
+EvaluateSamples <- function (samples = NA, cutoff = NA) {
+    # given a list of minutes
+    # simulates a species richness survey, noting the 
+    # total species found after each minute, and the total
+    # number of species found after each minute
+    
+    if(is.na(samples)) {
+        samples <- ReadOutput('ranked_samples')
+    }
+    
+    speciesmins <- GetTags();  # get tags within outer target 
+    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, samples$min.id)
+    
+    ranked.progressions <- list()
+    r.cols <- GetRankCols(samples)
+    i <- 1
+    while (i <= length(r.cols)) {
+        rank.col.name <- r.cols[i]
+        ordered.min.ids <- samples$min.id[order(samples[, rank.col.name])]
+        ranked.progressions[[r.cols[i]]] <- GetProgression(species.in.each.sample, ordered.min.ids)
+        WriteRichnessResults(ordered.min.ids, ranked.progressions[[r.cols[i]]], r.cols[i], species.in.each.sample)
+        i <- i + 1
+    }
+
+    optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
+    random.at.dawn <- RandomSamplesAtDawn(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
+    
+    GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions)
+    
+
+    
+}
+
 
 
 ValidateMins <- function (mins = NA) {
@@ -5,7 +38,7 @@ ValidateMins <- function (mins = NA) {
     # include [site,date,min], a dataframe of [site,date,min], or nothing in which
     # case we use all the minutes from the study
     
-    if (class(mins) == 'integer' || class(mins) == 'numeric') {
+    if (class(mins) %in% c('integer', 'numeric', 'data.frame')) {
         mins <- ExpandMinId(mins)
     } else if (class(mins) != 'data.frame') {
         mins <- GetMinuteList()
@@ -22,7 +55,7 @@ ValidateMins <- function (mins = NA) {
     
 }
 
-OptimalSamples <- function (speciesmins = NA, mins = NA, num.samples = NA) {
+OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = NA) {
     # determines the best possible selection of [numsamples] minute samples
     # to find the most species
     # 
@@ -31,67 +64,91 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, num.samples = NA) {
     #                            will retreive from database
     #   mins: dataframe; the list of minutes we can select from. If not
     #                    included then will be read from config
-    #   num.samples: int; how many samples to select. If not supplied, 
-    #                     will be read from config
+    #   species.in.each.min: list
     #
     # Value:
     #   list: containing
     #       data.frame; A list of minutes. Cols: site, date, min
     #       the progression of species found in each of those minutes
     #       the progression of total species found count after each minute
+    #
+    # Details:
+    #   either mins or species.in.each.min must be supplied. If species.in.each.min is not supplied
+    #   then the species.in.each.min will be calculated using mins
+    
+    Report(3, "Calculating optimum sampling")
     
     if (class(speciesmins) != 'data.frame') {
         speciesmins <- GetTags()
     }
     
-    mins <- ValidateMins(mins)
+    
+    if (class(species.in.each.min) != 'list') {
+        species.in.each.min <- ListSpeciesInEachMinute(speciesmins, mins = mins) 
+    }
+
 
     total.num.species <- length(unique(speciesmins$species.id))
-    # maximum number of samples is the number of species
-    selected.samples <- rep(NA, total.num.species)
-    found.species.count.progression <- rep(NA, total.num.species)
-    found.species.progression <- vector("list", total.num.species)
+    # maximum number of samples is the number of species, or number of minutes
+    initial.length <- min(c(total.num.species, length(species.in.each.min)))
+    selected.samples <- rep(NA, initial.length)
+    found.species.count.progression <- rep(NA, initial.length)
+    found.species.progression <- vector("list", initial.length)
     all.found.species <- numeric()
-    
-    # create list of the species in each minute
-    species.in.each.min <- ListSpeciesInEachMinute(speciesmins, mins = mins) 
 
-    # this could probably be done faster with a sparsematrix, whatever
+
+    if (class(mins) == 'logical') {
+        min.ids <- names(species.in.each.min)
+    } else if (class(mins) == 'data.frame') {
+        min.ids <- as.character(mins$min.id)
+    } else {
+        min.ids <- as.character(mins)
+    }
     
-    for(sp in 1:length(selected.samples)) {
+    
+    # this could probably be done faster with a sparsematrix, whatever
+    for(i in 1:initial.length) {
+        
         # find minute with most species
-        max.sp <- 0
-        max.sp.i <- -1
-        for (m in 1:length(species.in.each.min)) {
-            if (length(species.in.each.min[[m]]) > max.sp) {
-                max.sp <- length(species.in.each.min[[m]])
-                max.sp.i <- m
+        max.sp.count <- 0
+        max.sp.m.id.index <- (-1)
+        for (m in 1:length(min.ids)) {
+            m.id <- min.ids[m]
+            if (length(species.in.each.min[[m.id]]) > max.sp.count) {
+                max.sp.count <- length(species.in.each.min[[m.id]])
+                max.sp.m.id.index <- m
             } 
         }
         
-        if (max.sp == 0) {
+        if (max.sp.count == 0) {
             # all species have been included in the selected mins 
             # (or there were no species)
             break()
         }
         
+        max.sp.m.id <- min.ids[max.sp.m.id.index]
+        
+        
         #record that minute
-        selected.samples[sp] <- max.sp.i
-        last.found.species <- species.in.each.min[[max.sp.i]]
+        selected.samples[i] <- max.sp.m.id
+        last.found.species <- species.in.each.min[[max.sp.m.id]]
         all.found.species <- union(all.found.species, last.found.species)
-        found.species.progression[[sp]] <- all.found.species
-        found.species.count.progression[sp] <- length(all.found.species)
+        found.species.progression[[i]] <- all.found.species
+        found.species.count.progression[i] <- length(all.found.species)
+        Report(5, length(all.found.species), " ")
         #remove the already found species from the list
-        for (m in 1:length(species.in.each.min)) { 
-               sp <- species.in.each.min[[m]]
-               species.in.each.min[[m]] <- sp[! sp %in% last.found.species]
+       
+        for (m in 1:length(min.ids)) {
+               m.id <- min.ids[m]
+               sp <- species.in.each.min[[m.id]]
+               species.in.each.min[[m.id]] <- sp[! sp %in% last.found.species]
         }
 
     }
     
+    # optimal should complete well before the initialised length
     selected.samples <- selected.samples[! is.na(selected.samples)]
     found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
-    selected.sample.mins <- mins[selected.samples,]
     
     return(list(
         found.species.progression = found.species.progression,
@@ -101,29 +158,56 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, num.samples = NA) {
     
 }
 
-RandomSamplesAtDawn <- function (speciesmins = NA, mins = NA, num.repetitions = 100, dawn.from = 315, dawn.to = 495) {
+
+
+RandomSamplesAtDawn <- function (speciesmins = NA, species.in.each.sample
+                                 = NA, mins = NA, num.repetitions = 100, dawn.from = 315, dawn.to = 495) {
+    # repeatedly performs a sample selection from random selection of dawn minutes
+    # 
+    # Value:
+    #   list: mean: the mean species count progression (count only)
+    #   list: sd: the standard deviation minute by minute
+    
+    Report(3, 'performing random sampling at dawn (RSAD)')
     
     if (class(speciesmins) != 'data.frame') {
         speciesmins <- GetTags()
     }
     
     mins <- ValidateMins(mins)
-
     mins <- mins[mins$min >= dawn.from & mins$min <= dawn.to ,]
-    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = mins)
-    repetitions <- matrix(rep(NA, num.repetitions * length(species.in.each.sample)), ncol = num.repetitions)
+    dawn.min.ids <- mins$min.id
+    
+    Report(4, length(dawn.min.ids), 'of the target are at dawn')
+    
+    #species.in.each.min is optional. 
+    if (class(species.in.each.sample) != 'list') {
+        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = dawn.min.ids) 
+    }
+
+    repetitions <- matrix(rep(NA, num.repetitions * length(dawn.min.ids)), ncol = num.repetitions)
+    
+    Report(4, 'performing', num.repetitions, 'repetitions of RSAD')
+    
     # get the progression for random mins many times
     for (i in 1:num.repetitions) {
+        
+        if (i %% 10) {
+            Dot()
+        }
+        
         # create a jumbled version of the list of species in each min
-        sample.order <- sample(1:nrow(mins), nrow(mins), replace = FALSE)
-        species.in.each.sample.random <- species.in.each.sample[sample.order]
-        found.species.progression <- GetProgression(species.in.each.sample.random)
+        sample.order <- sample(1:length(dawn.min.ids), length(dawn.min.ids), replace = FALSE)
+        jumbled.dawn.min.ids <- dawn.min.ids[sample.order]
+        found.species.progression <- GetProgression(species.in.each.sample, jumbled.dawn.min.ids)
         repetitions[,i] <- found.species.progression$count  
     }
     #get average progression of counts 
     progression.average <- apply(repetitions, 1, mean)
     #progression.average <- round(progression.average)
     progression.sd <- apply(repetitions, 1, sd)
+    
+    Report(5, "RSAD complete")
     return(list(mean = progression.average, sd = progression.sd))
     
     
@@ -188,49 +272,14 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     #  if min.ids is supplied, this will be used for the list of mins
     #  if mins.ids is not supplied, mins must be supplied. 
     
+    Report(5, 'counting species in each minute')
     mins <- ValidateMins(mins)
-    species.in.each.min <- vector("list", nrow(mins))
+    species.in.each.min <- vector("list")
     for (i in 1:nrow(mins)) {
         sp.list <- speciesmins$species.id[speciesmins$site == mins$site[i] & speciesmins$date == mins$date[i] & speciesmins$min == mins$min[i]]
-        species.in.each.min[[mins$min.id[i]]] <- sp.list
+        species.in.each.min[[as.character(mins$min.id[i])]] <- sp.list
     }
     return(species.in.each.min)
-}
-
-EvaluateSamples <- function (samples = NA, cutoff = NA) {
-    # given a list of minutes
-    # simulates a species richness survey, noting the 
-    # total species found after each minute, and the total
-    # number of species found after each minute
-    
-    if(is.na(samples)) {
-        samples <- ReadOutput('ranked_samples')
-    }
-    
-    speciesmins <- GetTags();
-    total.num.species <- length(unique(speciesmins$species.id))
-    Report(1, 'total species count: ', total.num.species)
-    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, samples$min.id)
-    
-    ranked.progressions <- list()
-    r.cols <- GetRankCols(samples)
-    i <- 1
-    while (i <= length(r.cols)) {
-            ranked.progressions[[r.cols[i]]] <- GetProgression(species.in.each.sample, order(samples[, r.cols[i]]))
-            i <- i + 1
-    }
-    
-    
-    target.min.ids <- ReadOutput('target.min.ids')
-    optimal <- OptimalSamples(speciesmins, target.min.ids)
-    random.at.dawn <- RandomSamplesAtDawn(speciesmins = speciesmins, mins <- target.min.ids)
-    
-    GraphProgressions(optimal, random.at.dawn, ranked.progressions)
-    
-    for (i in 1:length(r.cols)) {
-        WriteRichnessResults(r.cols[i], samples, species.in.each.sample, ranked.progressions[[r.cols[i]]], r.cols[i])
-    }
-    
 }
 
 GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cutoff = 180) {
@@ -256,10 +305,14 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     
     par(col = 'black')
     heading <- "Species count progression"
-    setup.data <- rep(max(optimal$found.species.count.progression), length(ranked.progressions[['r1']]$count))
+    
+    # setup using optimal for the y axis, since it will have all the species
+    setup.data <- rep(max(optimal), length(ranked.progressions[['r1']]$count))
     setup.data[1] <- 0
     plot(setup.data, main=heading, type = 'n', xlab="after this many minutes", ylab="number of species found")
     
+    
+    # plot random at dawn, with standard deviations
     par(col = 'green')
     poly.y <- c(random.at.dawn$mean + random.at.dawn$sd, rev(random.at.dawn$mean - random.at.dawn$sd))
     poly.x <- c(1:length(random.at.dawn$mean), length(random.at.dawn$mean):1)
@@ -267,12 +320,13 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     polygon(poly.x, poly.y,  col = 'honeydew1', border = 'honeydew2')
     points(random.at.dawn$mean, type='l')
     
-    
+    # plot optimal
     par(col = 'blue')
-    points(optimal$found.species.count.progression, type='l')
+    points(optimal, type='l')
     
+    
+    # plot each of the ranking results
     ranked.colours <- c('red', 'orange', 'darkmagenta', 'cyan', 'magenta')
-
     for (i in 1:length(rank.names)) {
         par(col = ranked.colours[i])
         points(ranked.progressions[[rank.names[i]]]$count, type='l')
@@ -289,7 +343,7 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     
 }
 
-WriteRichnessResults <- function (ranking.col, samples, species.in.each.sample, found.species.progression, output.fn) {
+WriteRichnessResults <- function (min.ids, found.species.progression, output.fn, species.in.each.sample) {
     # given a list of samples with rankings, a list of species in each sample, and a species progression
     # writes is all to a csv
     # samples and species.in.each.sample are in order of minute id
@@ -297,18 +351,15 @@ WriteRichnessResults <- function (ranking.col, samples, species.in.each.sample, 
     
     # sort the samples by rank
     
-    sort.order <- order(samples[[ranking.col]])
-    samples <- samples[sort.order, ]
-    species.in.each.sample <- species.in.each.sample[sort.order]
+    mins <- ExpandMinId(min.ids)
+    sorted.species.in.each.sample <- species.in.each.sample[as.character(min.ids)]
     
     #writes the results of a sample ranking to a csv
     # create dataframe of progression for csv output
-    num.species = sapply(species.in.each.sample, length)
+    num.species = sapply(sorted.species.in.each.sample, length)
     num.new.species = found.species.progression$new.count
-    species = sapply(species.in.each.sample,  paste, collapse = ', ') 
+    species = sapply(sorted.species.in.each.sample,  paste, collapse = ', ') 
     new.species = sapply(found.species.progression$new.species, paste, collapse = ', ')
-    
-    
     
     
     output <- data.frame(num.species = num.species, 
@@ -316,21 +367,20 @@ WriteRichnessResults <- function (ranking.col, samples, species.in.each.sample, 
                          species = species,
                          new.species = new.species)
     
-    output <- cbind(samples, output)
+    output <- cbind(mins, output)
     
     WriteOutput(output, output.fn)
     
     
 }
 
-GetProgression <- function (species.in.each.sample, order = NA) {
+GetProgression <- function (species.in.each.sample, ordered.min.list) {
     # returns the count of new species given a list
     # of species vectors
     # 
     # Args: 
     #   species.in.each.sample: list
-    #   order: vector; the order in which to look at each sample. 
-    #                  must be same length as arg 1. Optional
+    #   order: vector; the minute ids in the order they should appear in the progression
     #
     # Value:
     #   list
@@ -348,20 +398,22 @@ GetProgression <- function (species.in.each.sample, order = NA) {
     
     
     
-    found.species.count.progression <- rep(NA, length(species.in.each.sample))
-    found.species.progression <- vector("list", length(species.in.each.sample))
-    new.species.count.progression <- rep(0, length(species.in.each.sample))
-    new.species.progression <- vector("list", length(species.in.each.sample))
+    found.species.count.progression <- rep(NA, length(ordered.min.list))
+    found.species.progression <- vector("list", length(ordered.min.list))
+    new.species.count.progression <- rep(0, length(ordered.min.list))
+    new.species.progression <- vector("list", length(ordered.min.list))
     all.found.species <- numeric()
     
-    if (class(order) == 'integer') {
-        species.in.each.sample <- species.in.each.sample[order]
+    
+    
+    if (class(ordered.min.list) == 'integer') {
+        ordered.min.list <- as.character(ordered.min.list)
     }
     
     
-    
-    for (i in 1:length(species.in.each.sample)) {
-        new.species <- setdiff(species.in.each.sample[[i]], all.found.species) 
+    for (i in 1:length(ordered.min.list)) {
+        min.id <- ordered.min.list[i]
+        new.species <- setdiff(species.in.each.sample[[min.id]], all.found.species) 
         all.found.species <- c(all.found.species, new.species)
         found.species.count.progression[i] <- length(all.found.species)
         new.species.count.progression[i] <- length(new.species)
@@ -369,10 +421,8 @@ GetProgression <- function (species.in.each.sample, order = NA) {
         new.species.progression[[i]] <- new.species
     }
 
+    # this might not be necessary now
     found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
-    
-    
-
     
     return(list(count = found.species.count.progression, 
                 new.count = new.species.count.progression, 
@@ -401,19 +451,158 @@ SetMinute <- function (events)  {
     
 }
 
+InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.groups = 50) {
+    #for each of the given cluster groups, will append randomly select duration.per.group
+    # worth of events from that cluster group and append the spectrograms of each event
+    # side by side, with the event box shown. 
+    # all the cluster groups will be appended one under the other. 
+    
+    
+    events <- ReadOutput('clusters')
+    
+    if (is.numeric(cluster.groups)) {
+        events <- events[events$group %in% cluster.groups  ,]
+    }
+    # just incase the argument contains non-existent groups
+    cluster.groups <- unique(events$group)  
+    # make sure max is not exceeded
+    if(length(cluster.groups) > max.groups) {
+        removed <- cluster.groups[(max.groups + 1):length(cluster.groups)]
+        cluster.groups <- cluster.groups[1:max.groups]
+        Report(3, 'Number of groups to render was greater than max.groups ... Ignoring the following groups:', paste(removed, collapse = ','))
+    }
+    # incase max was exceeded, the cluster groups will have changed
+    if (is.numeric(cluster.groups)) {
+        events <- events[events$group %in% cluster.groups  ,]
+    }
+    
+    # colours for a particular group will be different depending on which
+    # groups the user chooses to render
+    events <- AssignColourToGroup(events)
+    
+    # remove events so that the duration per group is at most duration.per.group
+    padding = 0.2  # padding each side of the event
+    
+    overLimit <- function (events) {
+        # determines whether there are more events of the 
+        ol <- (sum(events$duration) + 2*padding*nrow(events)) > duration.per.group
+        return(ol)
+    }
+    
+    
+    temp.dir <- TempDirectory()
+    group.spectro.fns <- rep(NA, length(cluster.groups))
+    
+    Report(3, "about to generate spectrograms for ", nrow(events), 'from', length(cluster.groups), 'cluster groups')
+    
+    
+    for (group in cluster.groups) {
+        
+
+        
+        group.events <- events[which(events$group == group), ]
+        num.before <- nrow(group.events)
+        
+
+        
+        while(overLimit(group.events)) {
+            # remove a random event from the group until the total number is less than the group duration
+            random.row <- sample(1:nrow(group.events), 1)
+            group.events = group.events[-random.row, ] 
+        }
+        
+        num.after <- nrow(group.events)
+        
+        Report(4, 'Generating', num.after, 'spectrograms for group', group, 'out of a total of', num.before)
+        
+        this.groups.event.spectro.fns <- rep(NA, nrow(group.events))
+        
+        for (e in 1:nrow(group.events)) {
+            temp.fn <- paste(group.events$event.id[e], 'png', sep = '.')
+            
+            img.path <- file.path(temp.dir, temp.fn)
+            this.groups.event.spectro.fns[e] <- img.path
+            
+            # the duration, top and bottom frequency and rect color
+            # can all be taken directly from the event. The start.sec of the rect
+            # needs to be from the start of the spectrogram, which in this case is the padding
+            rect.borders <- group.events[e,]
+            rect.borders$start.sec <- padding
+            
+            Sp.CreateTargeted(site = group.events$site[e], 
+                              start.date = group.events$date[e], 
+                              start.sec = group.events$min[e] * 60 + group.events$start.sec[e], 
+                              duration = group.events$duration[e] + 2*padding, 
+                              img.path = img.path, 
+                              rects = rect.borders)
+            
+        }
+        group.spectro.fns[group] <- file.path(temp.dir,paste0('g', group, '.png'))
+        
+        fns <- paste(this.groups.event.spectro.fns, collapse = " ")
+        command <- paste("/opt/local/bin/convert", 
+                         fns, "+append", group.spectro.fns[group])
+        Report(5, 'stitching events from cluster group', group)
+        Report(5, 'doing image magic command', command)
+        err <- try(system(command))  # ImageMagick's 'convert'
+        Report(5, err)
+        
+        # todo: label for group number
+        
+    }
+    
+
+    
+    final.image.path <- OutputPath(IntegerVectorAsString(cluster.groups), ext = 'png')
+    
+    fns <- paste(group.spectro.fns, collapse = " ")
+    command <- paste("/opt/local/bin/convert", 
+                     fns, "-append", final.image.path)
+    Report(5, 'stitching groups together. Output path: ', final.image.path)
+    Report(6, 'doing image magic command', command)
+    err <- try(system(command))  # ImageMagick's 'convert'
+
+    
+
+    
+    
+    
+    
+}
+
+IntegerVectorAsString <- function (ints, inner.sep = "-", outer.sep = ",") {
+    # how much each index is different from the last
+    delta <- ints[-1] - ints[-(length(ints))]
+    deltaNot1 <- which(delta != 1)
+    deltaNot1 <- c(0, deltaNot1, length(ints))
+    name.parts <- rep(NA, length(deltaNot1)-1)
+    for (i in 1:length(deltaNot1)-1) {       
+        from <- ints[deltaNot1[i]+1]
+        to <- ints[deltaNot1[i+1]]
+        name.parts[i] <- paste0(from, inner.sep, to) 
+    }
+    if (!is.null(outer.sep)) {
+        return(paste0(name.parts, collapse = outer.sep))    
+    } else {
+        return(name.parts)  
+    }
+}
+
+
 InspectSamples <- function (samples = NA) {
     # draws the ranked n samples as spectrograms
     # with events marked and colour coded by cluster group
     rankings = 'all.supplied'
     if(class(samples) == 'integer' || class(samples) == 'numeric') {
-        #minute ids have been supplied
-        minlist <- ReadOutput('minlist');
-        minlist$min.id <- 1:nrow(minlist)
-        samples <- minlist[samples,]
+        
+        #todo
+        
+        
     } else {
         if(class(samples) != 'data.frame') {
             samples <- ReadOutput('ranked_samples')
             rankings <- GetRankCols(samples)
+            # subset will have TRUE where any of the ranking cols are < g.num.samples
             subset <- rep(FALSE, nrow(samples))
             for (i in 1:length(rankings)) {
                 subset <- subset | samples[[rankings[i]]] <= g.num.samples
@@ -423,6 +612,11 @@ InspectSamples <- function (samples = NA) {
             
         }
     }
+    
+    # samples is now the rows of ranked_samples which make it to the top ranked 
+    # for any of the ranking cols. First generate the spectrograms, then stitch them
+    # for each ranking col
+    
 
     events <- ReadOutput('clusters')
     events <- AssignColourToGroup(events)
@@ -460,20 +654,25 @@ InspectSamples <- function (samples = NA) {
 #                               duration = 60,
 #                               save = TRUE)
 
+    
+
         Sp.CreateTargeted(site = samples$site[i], 
                           start.date = samples$date[i], 
                           start.sec = samples$min[i] * 60, 
                           duration = 60, 
                           img.path = img.path, 
-                          rects = minute.events)
+                          rects = minute.events,
+                          label = samples$min.id[i])
         
     }
 
 
     samples$spectro.fn <- sample.spectro.fns
-    # for each ranking, create a 
+    # rankings can either be ranking cols or custom supplied 
     for (i in 1:length(rankings)) {
         if (rankings[i] %in% colnames(samples)) {
+            # subset the samples table so it only includes the top ranked for this column,
+            # then get the filenames in teh right order
             output.fn <- paste('InspectSamples', rankings[i],  collapse = "_", sep='.')
             fns <- samples$spectro.fn[samples[[rankings[i]]] <= g.num.samples]
         } else {
@@ -484,7 +683,9 @@ InspectSamples <- function (samples = NA) {
         fns <- paste(fns, collapse = " ")
         command <- paste("/opt/local/bin/convert", 
                          fns, "-append", output.file)
+        Report(5, 'doing image magic command', command)
         err <- try(system(command))  # ImageMagick's 'convert'
+        Report(5, err)
         
     }
     

@@ -19,11 +19,11 @@ CheckPaths <- function () {
     
     warn.if.absent <- c( 
                  g.source.dir, 
-                 g.audio.dir, 
-                 g.events.source.dir)
+                 g.audio.dir)
     create.if.absent <- c(
         g.output.parent.dir,
         g.output.master.dir,
+        file.path(g.output.master.dir, g.all.events.version),
         g.hash.dir
         )
     lapply(warn.if.absent, function (f) {
@@ -75,10 +75,22 @@ WriteOutputCsv <- function (x, path) {
     write.csv(x, path, row.names = FALSE)
 }
 
+WriteMasterOutput <- function (x, fn, ext = 'csv') {
+    WriteOutputCsv(x, MasterOutputPath(fn, ext))
+}
 
+ReadMasterOutput <- function (fn, ext = 'csv') {
+    p <- MasterOutputPath(fn, ext);
+    if (file.exists(p)) {
+        return(ReadOutputCsv(p))
+    } else {
+        return(FALSE)
+    }
+
+}
 
 MasterOutputPath <- function (fn, ext = 'csv') {
-    return(file.path(g.output.master.dir, paste(fn,ext, sep='.')))
+    return(file.path(g.output.master.dir, g.all.events.version, paste(fn,ext, sep='.')))
 }
 
 
@@ -110,7 +122,7 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
-    dir.name <- paste(g.start.date, g.start.min, g.end.date,
+    dir.name <- paste(g.all.events.version, g.start.date, g.start.min, g.end.date,
                       g.end.min, sites, g.percent.of.target, sep='.')
     dir.name <- gsub(" ","", dir.name)
     output.dir <- file.path(g.output.parent.dir,dir.name)
@@ -244,5 +256,27 @@ HashFileContents <- function (filepaths) {
     })));
     return(hash)
 }
+
+CachePath <- function (cache.id) {
+    return(file.path(g.output.parent.dir, 'cache', cache.id))
+}
+
+ReadCache <- function (cache.id) {
+    
+    path <- CachePath(cache.id)
+    if (file.exists(path)) {  
+            load(path)
+            return(x) # this is the naem of the variable used when saving
+    } 
+    return(FALSE)
+    
+}
+
+WriteCache <- function (x, cache.id) {
+    # TODO: set cache limit and cleanup
+    path <- CachePath(cache.id)
+    f <- save(x, file = path)
+}
+
 
 CheckPaths()

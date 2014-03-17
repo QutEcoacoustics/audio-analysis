@@ -11,6 +11,9 @@ RankSamples <- function () {
                                  r1 = r1$rank, s1 = r1$score, 
                                  r2 = r2$rank, s2 = r2$score, 
                                  r3 = r3$rank, s3 = r3$score)
+
+
+
     # add site,date,min cols to make it easier to examin
     total.rankings <- ExpandMinId(total.rankings)
     
@@ -18,7 +21,7 @@ RankSamples <- function () {
     return(total.rankings)
 }
 
-IterateOnSparseMatrix <- function (multipliers = NA) {
+IterateOnSparseMatrix <- function (multipliers = NA,  decay.rate = 1.2) {
     # ranks all the minutes in the target in the order 
     
     # that should find the most species in the shortest number of minute
@@ -72,6 +75,8 @@ IterateOnSparseMatrix <- function (multipliers = NA) {
     
     # repeatedly select the best scoring minute until all minutes have been selected
     
+   
+    
     for (i in 1:nrow(cluster.matrix)) {
         Dot()
         unranked <- rankings$rank == -1
@@ -92,7 +97,7 @@ IterateOnSparseMatrix <- function (multipliers = NA) {
             #reduce the value of the found clusters, and 
             # remove the row for the next round
             found.clusters <- which(cluster.matrix[best, ] >0)
-            cluster.matrix[,found.clusters] <- cluster.matrix[,found.clusters] / 2
+            cluster.matrix[,found.clusters] <- cluster.matrix[,found.clusters] / decay.rate
             cluster.matrix <- cluster.matrix[-best,]
         } else {
             break()
@@ -127,11 +132,15 @@ RankSamples1 <- function () {
     # use the iterateOnSparseMatrix raking algorithm, 
     # using the distance scores as the multiplier
     
-    distance.scores <- ReadOutput('distance.scores')
-    colnames(distance.scores) <- c('min.id', 'multiplier')
-    return(IterateOnSparseMatrix(distance.scores))
+    multiplier <- ReadOutput('distance.scores')
+    colnames(multiplier) <- c('min.id', 'multiplier')
+    #multiplier$multiplier <- 1
+    return(IterateOnSparseMatrix(multiplier))
+  
     
 }
+
+
 
 RankSamples2 <- function () {
     
