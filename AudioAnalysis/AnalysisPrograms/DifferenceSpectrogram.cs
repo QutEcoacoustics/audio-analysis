@@ -83,11 +83,10 @@ namespace AnalysisPrograms
 
 
             // WRITE THE YAML CONFIG FILE
-            string configPath = Path.Combine(opdir, "differenceSpectrogramConfig.yaml");
+            string configPath = Path.Combine(opdir, "differenceSpectrogramConfig.yml");
             var cfgFile = new FileInfo(configPath);
             Yaml.Serialise(cfgFile, new
             { 
-                TestProperty = "this is a string",
                 InputDirectory = ipdir,
                 IndexFile1 = ipFileName1, 
                 StdDevFile1 = ipSdFileName1,
@@ -113,29 +112,23 @@ namespace AnalysisPrograms
             }
 
             // load YAML configuration
+            dynamic configuration = Yaml.Deserialise(arguments.Config);
+
             /*
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside of this method. Extract all params below.
              */
+            string inputDirectory = configuration.InputDirectory;
+            string indexFile1 = configuration.IndexFile1;
+            string stdDevFile1 =  configuration.StdDevFile1;
+            string indexFile2 =  configuration.IndexFile2;
+            string stdDevFile2 =  configuration.StdDevFile2;
+            string outputDirectory =  configuration.OutputDirectory;
 
-            var serializer = new YamlDotNet.Serialization.Deserializer();
-            Dictionary<object, object> dict;
-            using (var stream = arguments.Config.OpenText())
-            {
-                dict = (Dictionary<object,object>)serializer.Deserialize(stream);
-            }
-
-            //dynamic configuration = Yaml.Deserialise(arguments.Config);
-
-            string inputDirectory = dict["InputDirectory"] as string;
-            string indexFile1 = dict["IndexFile1"] as string;
-            string stdDevFile1 = dict["StdDevFile1"] as string;
-            string indexFile2 = dict["IndexFile2"] as string;
-            string stdDevFile2 = dict["StdDevFile2"] as string;
-            string outputDirectory = dict["OutputDirectory"] as string;
-
-
-            //Load arguments class with additional info in the YAML config file
+            // Load arguments class with additional info in the YAML config file
+            /* Ant: FYI the following is a bad duplication of code
+             * Either have the options in the config file or the arguments, not both...
+             */
             arguments.InputDirectory = new DirectoryInfo(inputDirectory);
             arguments.IndexFile1 = new FileInfo(indexFile1);
             arguments.StdDevFile1 = new FileInfo(stdDevFile1);
