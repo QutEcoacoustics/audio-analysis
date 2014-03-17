@@ -73,6 +73,26 @@
             return m;
         }
 
+        public static PointOfInterest[,] TransposePOIsToMatrix2(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            for (int colIndex = 0; colIndex < cols; colIndex++)
+            {
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    m[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            foreach (PointOfInterest poi in list)
+            {
+                m[256 - 1 - poi.Point.Y, poi.Point.X] = poi;
+            }
+            return m;
+        }
+
         /// <summary>
         /// It is a reverse process to TransposePOIsToMatrix.
         /// </summary>

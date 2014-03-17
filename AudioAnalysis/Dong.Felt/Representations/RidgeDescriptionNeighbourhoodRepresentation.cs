@@ -179,6 +179,7 @@ namespace Dong.Felt.Representations
 
         /// <summary>
         /// To set the neighbourhood representation using a vector which contains the maginitude and orientation. 
+        /// The result can be obtained by calculating the X and Y components. 
         /// </summary>
         /// <param name="neighbourhood"></param>
         /// <param name="pointX"></param>
@@ -229,6 +230,55 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
+        /// This one will use mask-based method to obtain the NH vector.The final result will include 12 direction possibilities. 
+        /// </summary>
+        /// <param name="pointsOfInterest">
+        /// It takes into a neighbourhood * neighbourhood size of pointOfInterest. 
+        /// </param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="spectrogram"></param>
+        public void SetNeighbourhoodVectorRepresentation2(PointOfInterest[,] pointsOfInterest, int row, int col, int neighbourhoodLength, SpectralSonogram spectrogram)
+        {
+            var timeScale = spectrogram.FrameDuration - spectrogram.FrameOffset; // ms
+            var frequencyScale = spectrogram.FBinWidth; // hz                    
+            var m = new double[neighbourhoodLength, neighbourhoodLength];
+            for (int rowIndex = 0; rowIndex < neighbourhoodLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < neighbourhoodLength; colIndex++)
+                {                                      
+                    m[rowIndex, colIndex] = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;                
+                }
+            }
+            var magnitude = 0.0;
+            var direction = 0.0;
+            var poiCountInMatrix = 0;
+            for (int i = 0; i < neighbourhoodLength; i++)
+            {
+                for (int j = 0; j < neighbourhoodLength; j++)
+                {
+                    if (m[i, j] > 0)
+                    {
+                        poiCountInMatrix++;
+                    }
+                }
+            }
+            var proportionParameter = 0.15;
+            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
+            if (poiCountInMatrix >= poiCountThreshold)
+            {
+                POISelection.RecalculateRidgeDirection(m, out magnitude, out direction);               
+            }
+            this.magnitude = magnitude;
+            this.orientation = direction;
+            ColIndex = col * timeScale;
+            RowIndex = row * frequencyScale;
+            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(0) * timeScale);
+            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+        }
+
+        /// <summary>
         /// This method is used for obtaining the general representation based on different orientations. 
         /// </summary>
         /// <param name="neighbourhood"></param>
@@ -268,16 +318,16 @@ namespace Dong.Felt.Representations
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength,SpectralSonogram spectrogram)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
-            for (int row = 0; row < rowsCount; row+= neighbourhoodLength)
+            var matrix = StatisticalAnalysis.TransposePOIsToMatrix2(poiList, rowsCount, colsCount);
+            for (int row = 0; row < rowsCount; row += neighbourhoodLength)
             {
-                for (int col = 0; col < colsCount; col+=neighbourhoodLength)
+                for (int col = 0; col < colsCount; col += neighbourhoodLength)
                 {
                     if (StatisticalAnalysis.checkBoundary(row + neighbourhoodLength, col + neighbourhoodLength, rowsCount, colsCount))
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
+                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation2(subMatrix, row, col, neighbourhoodLength, spectrogram);
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }
@@ -317,10 +367,6 @@ namespace Dong.Felt.Representations
             {
                 ColIndex = double.Parse(listLines[1]),
                 RowIndex = double.Parse(listLines[2]),
-                //dominantOrientationType = int.Parse(listLines[3]),
-                //dominantPOICount = int.Parse(listLines[4]),
-                //dominantMagnitudeSum = double.Parse(listLines[5]),
-                //score = int.Parse(listLines[6]),
                 magnitude = double.Parse(listLines[3]),
                 orientation = double.Parse(listLines[4]),               
             };
@@ -453,7 +499,7 @@ namespace Dong.Felt.Representations
                         graphics.DrawLine(greenPen, startPoint, endPoint);
                     }
                 }
-            if (orientation > 3 * Math.PI / 8 && orientation <= 1.6) 
+            if (orientation > 3 * Math.PI / 8 && orientation <= 4 * Math.PI / 8) 
                 {
                     if (score == 1)
                     {
@@ -493,7 +539,7 @@ namespace Dong.Felt.Representations
         /// <param name="startPointX"></param>
         /// <param name="startPointY"></param>
         /// <param name="neighbourhoodLength"></param>
-        public static void FillNeighbourhood(Graphics graphics, SolidBrush greyBrush, Pen pen, int orientationType, int times, int scores, int startPointX, int startPointY, int neighbourhoodLength)
+        public static void FillNeighbourhoodWithColoredLines(Graphics graphics, SolidBrush greyBrush, Pen pen, int orientationType, int times, int scores, int startPointX, int startPointY, int neighbourhoodLength)
         {
             var nhRadius = neighbourhoodLength / 2;
             var modValue = scores % neighbourhoodLength;
@@ -580,24 +626,20 @@ namespace Dong.Felt.Representations
                         {
                             //fill in the line on the left of the centroid of nh.
                             graphics.FillRectangle(blueBrush, startPointX + nhRadius - offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
-                            //graphics.FillRectangle(greyBrush, startPointX + nhRadius - offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
                         }
                         else
                         {
                             //fill in the line on the right of the centroid line of nh.
-                            graphics.FillRectangle(blueBrush, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);
-                            //graphics.FillRectangle(greyBrush, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);                         
+                            graphics.FillRectangle(blueBrush, startPointX + nhRadius + offset, startPointY - neighbourhoodLength, 1, neighbourhoodLength);                          
                         }
                     } // end for
                     if (modOffsetValue == 0)
                     {
                         graphics.FillRectangle(blueBrush, startPointX + nhRadius - modOffset, startPointY - neighbourhoodLength, 1, modValue);
-                        //graphics.FillRectangle(greyBrush, startPointX + nhRadius - modOffset, startPointY - neighbourhoodLength, 1, modValue);
                     }
                     else
                     {
                         graphics.FillRectangle(blueBrush, startPointX + nhRadius + modOffset, startPointY - neighbourhoodLength, 1, modValue);
-                        //graphics.FillRectangle(greyBrush, startPointX + nhRadius + modOffset, startPointY - neighbourhoodLength, 1, modValue);
                     }
                 } // end if orientation.               
                 if (orientationType == 6)  // fill the neighbourhood with horizontal lines. 
@@ -631,9 +673,7 @@ namespace Dong.Felt.Representations
                         var lastStartPoint1 = new Point(startPointX, startPointY - neighbourhoodLength + modOffset);
                         var lastEndPoint1 = new Point(startPointX + modValue - 1, startPointY - neighbourhoodLength + modValue + 1);
                         graphics.DrawLine(purplePen, lastStartPoint1, lastEndPoint1);
-                    }
-                    
-                    
+                    }                    
                 }//end if orientation  
             }// end if times > 0
             else
@@ -641,7 +681,6 @@ namespace Dong.Felt.Representations
                 if (orientationType == 0)  // fill the neighbourhood with horizontal lines. 
                 {
                     graphics.FillRectangle(redBrush, startPointX, startPointY - nhRadius, modValue, 1);
-                    //graphics.FillRectangle(greyBrush, startPointX, startPointY - nhRadius, modValue, 1);
                 }
                 else if (orientationType == 2)
                 {
@@ -663,7 +702,6 @@ namespace Dong.Felt.Representations
                 else if (orientationType == 4)
                 {
                     graphics.FillRectangle(blueBrush, startPointX + nhRadius, startPointY - neighbourhoodLength, 1, modValue);
-                    //graphics.FillRectangle(greyBrush, startPointX + nhRadius, startPointY - neighbourhoodLength, 1, modValue);
                 }             
                 else if (orientationType == 6)
                 {
@@ -686,6 +724,7 @@ namespace Dong.Felt.Representations
                 }
             }
         }
+
 
 
         #endregion

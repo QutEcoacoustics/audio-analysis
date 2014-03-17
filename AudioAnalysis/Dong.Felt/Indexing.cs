@@ -19,7 +19,7 @@ namespace Dong.Felt
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
             var nhStartColIndex = query.nhStartColIndex;
-            var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>(); 
+            var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             for (int rowIndex = nhStartRowIndex; rowIndex < nhStartRowIndex + nhRowsCount; rowIndex++)
             {
                 for (int colIndex = nhStartColIndex; colIndex < nhStartColIndex + nhColsCount; colIndex++)
