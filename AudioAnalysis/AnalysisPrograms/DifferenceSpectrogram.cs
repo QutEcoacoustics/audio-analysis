@@ -105,6 +105,16 @@ namespace AnalysisPrograms
                 IndexFile2 = ipFileName2,
                 StdDevFile2 = ipSdFileName2,
                 OutputDirectory = opdir
+
+                // Here are some other parameters that could eventually be included in the config file.
+                // e.g. the X and Y axis scales for the spectrograms 
+                // int minOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
+                // int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
+                // int sampleRate = 17640; // default value - after resampling
+                // int frameWidth = 512;   // default value - from which spectrogram was derived
+                // string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+                // double backgroundFilterCoeff = 0.75; //must be value <=1.0
+                // double colourGain = 1.5;
             });
 
 
