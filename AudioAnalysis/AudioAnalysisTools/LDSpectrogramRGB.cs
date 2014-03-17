@@ -142,20 +142,20 @@ namespace AudioAnalysisTools
             indexStats.Add(key, dict); // add index statistics
         }
 
-        public void ReadCSVFiles(string ipdir, string fileName)
+        public void ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {
             string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             ReadCSVFiles(ipdir, fileName, keys);
         }
 
 
-        public void ReadCSVFiles(string ipdir, string fileName, string indexKeys)
+        public void ReadCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys)
         {
             string[] keys = indexKeys.Split('-');
             string warning = null;
             for (int key = 0; key < keys.Length; key++)
             {
-                string path = Path.Combine(ipdir, fileName + "." + keys[key] + ".csv");
+                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
                 if (File.Exists(path))
                 {
                     int freqBinCount;
@@ -187,7 +187,7 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(string ipdir, string fileName, string indexKeys, out int freqBinCount)
+        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
         {
             Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
             string[] keys = indexKeys.Split('-');
@@ -195,7 +195,7 @@ namespace AudioAnalysisTools
             freqBinCount = 256; //the default
             for (int key = 0; key < keys.Length; key++)
             {
-                string path = Path.Combine(ipdir, fileName + "." + keys[key] + ".csv");
+                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
                 if (File.Exists(path))
                 {
                     int binCount;
@@ -226,7 +226,7 @@ namespace AudioAnalysisTools
             return dict;
         }
 
-        public void ReadStandardDeviationSpectrogramCSVs(string ipdir, string fileName)
+        public void ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
         {
             //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             int freqBinCount;
@@ -256,7 +256,16 @@ namespace AudioAnalysisTools
         {
             return this.spgr_StdDevMatrices[key];
         }
-        
+
+        public int GetCountOfSpectrogramMatrices()
+        {
+            return this.spectrogramMatrices.Count;
+        }
+        public int GetCountOfStandardDeviationMatrices()
+        {
+            return this.spgr_StdDevMatrices.Count;
+        }
+
 
         /// <summary>
         /// All matrices must be in spectrogram orientation before adding to list of spectrograms.
@@ -292,7 +301,15 @@ namespace AudioAnalysisTools
         /// <param name="dictionary"></param>
         public double[,] GetMatrix(string key)
         {
-            return this.spectrogramMatrices[key];
+            if (this.spectrogramMatrices.ContainsKey(key))
+            {
+                return this.spectrogramMatrices[key];
+            }
+            else
+            {
+                Console.WriteLine("SpectrogramMatrices does not contain key {0}", key);
+                return null;
+            }
         }
 
         /// <summary>
@@ -305,7 +322,16 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double[,] GetNormalisedSpectrogramMatrix(string key)
         {
-            return LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
+            if (this.spectrogramMatrices.ContainsKey(key))
+            {
+                return LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
+            }
+            else
+            {
+                Console.WriteLine("SpectrogramMatrices does not contain key {0}", key);
+                return null;
+            }
+
         }
 
 
@@ -315,12 +341,12 @@ namespace AudioAnalysisTools
             spectrogramMatrices[key] = matrix;
         }
 
-        public void DrawGreyScaleSpectrograms(string opdir, string opFileName)
+        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
             DrawGreyScaleSpectrograms(opdir, opFileName, this.ColorMap);
         }
 
-        public void DrawGreyScaleSpectrograms(string opdir, string opFileName, string keyString)
+        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string keyString)
         {
             //string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
             string warning = null;
@@ -331,7 +357,7 @@ namespace AudioAnalysisTools
                 string key = keys[i];
                 if (this.spectrogramMatrices.ContainsKey(key))
                 {
-                    string path = Path.Combine(opdir, opFileName + "." + key + ".png");
+                    string path = Path.Combine(opdir.FullName, opFileName + "." + key + ".png");
                     Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
                     bmp.Save(path);
                 }
@@ -385,16 +411,23 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-        public void DrawFalseColourSpectrograms(string opdir, string opFileName)
+        public void DrawFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
         {
             DrawNegativeFalseColourSpectrograms(opdir, opFileName);
             DrawPositiveFalseColourSpectrograms(opdir, opFileName);
         }
 
-        public void DrawNegativeFalseColourSpectrograms(string opdir, string opFileName)
+        public void DrawNegativeFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
         {
             Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
-            bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEG.png"));
+            if (bmpNeg == null)
+            {
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+                Console.WriteLine("         Null image returned");
+                return;
+            } else {
+                bmpNeg.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
+            }
 
             Image bmpBgn;
             string key = SpectrogramConstants.KEY_BackgroundNoise;
@@ -407,14 +440,23 @@ namespace AudioAnalysisTools
             {
                 bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key);
                 bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
-                bmpNeg.Save(Path.Combine(opdir, opFileName + ".COLNEGBGN.png"));
+                bmpNeg.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEGBGN.png"));
             }
         }
 
-        public void DrawPositiveFalseColourSpectrograms(string opdir, string opFileName)
+        public void DrawPositiveFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
         {
             Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
-            bmpPos.Save(Path.Combine(opdir, opFileName + ".COLNEG.png"));
+            if (bmpPos == null)
+            {
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawPositiveFalseColourSpectrograms()");
+                Console.WriteLine("         Null image returned");
+                return;
+            }
+            else
+            {
+                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
+            }
 
             //Image bmpBgn;
             //string key = SpectrogramConstants.KEY_BackgroundNoise;
@@ -558,10 +600,10 @@ namespace AudioAnalysisTools
                 int sampleRate = 17640; // default value - after resampling
                 string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
                 var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
-                cs.ReadCSVFiles(ipdir, ipFileName);
+                cs.ReadCSVFiles(new DirectoryInfo(ipdir), ipFileName);
                 cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
-                cs.DrawGreyScaleSpectrograms(opdir, opFileName);
-                cs.DrawFalseColourSpectrograms(opdir, opFileName);
+                cs.DrawGreyScaleSpectrograms(new DirectoryInfo(opdir), opFileName);
+                cs.DrawFalseColourSpectrograms(new DirectoryInfo(opdir), opFileName);
             }
 
             Execute(arguments);

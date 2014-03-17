@@ -496,8 +496,8 @@ namespace AnalysisPrograms
             string ipFileName = name;
             cs.LoadSpectrogramDictionary(spectrogramDictionary);
             cs.BackgroundFilter = 1.0;
-            cs.DrawGreyScaleSpectrograms(resultsDirectory.FullName, ipFileName);
-            cs.DrawFalseColourSpectrograms(resultsDirectory.FullName, ipFileName);
+            cs.DrawGreyScaleSpectrograms(resultsDirectory, ipFileName);
+            cs.DrawFalseColourSpectrograms(resultsDirectory, ipFileName);
         }
 
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)

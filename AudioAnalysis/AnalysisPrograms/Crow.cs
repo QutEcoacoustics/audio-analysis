@@ -73,33 +73,6 @@ namespace AnalysisPrograms
         public static string key_EVENT_TOTAL = "# events";
 
 
-
-        ////INITIALISE OUTPUT TABLE COLUMNS
-        //private const int COL_NUMBER = 7;
-        //private static Type[] COL_TYPES = new Type[COL_NUMBER];
-        //private static string[] HEADERS = new string[COL_NUMBER];
-        //private static System.Tuple<string[], Type[]> InitOutputTableColumns()
-        //{
-        //    HEADERS[0] = key_COUNT; COL_TYPES[0] = typeof(int);
-        //    HEADERS[1] = key_START_ABS;  COL_TYPES[1] = typeof(int);
-        //    HEADERS[2] = key_START_MIN;  COL_TYPES[2] = typeof(int);
-        //    HEADERS[3] = key_START_SEC;  COL_TYPES[3] = typeof(int);
-        //    HEADERS[4] = key_SEG_DUR;    COL_TYPES[4] = typeof(double);
-        //    HEADERS[5] = key_CALL_DENSITY; COL_TYPES[5] = typeof(int);
-        //    HEADERS[6] = key_CALL_SCORE; COL_TYPES[6] = typeof(double); 
-        //    return Tuple.Create(HEADERS, COL_TYPES);
-        //}
-        //public static string[] GetOutputTableHeaders()
-        //{
-        //    var  op = InitOutputTableColumns();
-        //    return op.Item1;
-        //}
-        //public static Type[] GetOutputTableTypes()
-        //{
-        //    var op = InitOutputTableColumns();
-        //    return op.Item2;
-        //}
-
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "Crow";
         public const int RESAMPLE_RATE = 17640;
@@ -244,7 +217,6 @@ namespace AnalysisPrograms
             //ADD IN ADDITIONAL INFO TO RESULTS TABLE
             AddContext2Table(dt, tsStart, result.AudioDuration);
             CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
-            //DataTableTools.WriteTable(dt);
 
         }
 

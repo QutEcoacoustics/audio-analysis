@@ -35,79 +35,106 @@ namespace AudioAnalysisTools
 
 
 
-        public static void DrawDifferenceSpectrogram(string ipdir, string ipFileName1, string ipFileName2, string opdir)
+        public static void DrawDifferenceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
 
-            string opFileName1 = ipFileName1;
             var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs1.FileName = ipFileName1;
+            cs1.FileName = ipFileName1.Name;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
-            //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1);
-            //cs1.DrawFalseColourSpectrograms(opdir, opFileName1);
+            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
+                return;
+            }
 
-            string opFileName2 = ipFileName2;
             var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs2.FileName = ipFileName2;
+            cs2.FileName = ipFileName2.Name;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
-            //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
-            //cs2.DrawFalseColourSpectrograms(opdir, opFileName2);
+            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
+            if (cs2.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("There are no spectrogram matrices in cs2.dictionary.");
+                return;
+            }
 
             string title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
             Image deltaSp = LDSpectrogramDifference.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, deltaSp.Width, titleHt);
             deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
             string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
-            deltaSp.Save(Path.Combine(opdir, opFileName3));
+            deltaSp.Save(Path.Combine(opdir.FullName, opFileName3));
         }
 
 
-        public static void DrawTStatisticThresholdedDifferenceSpectrograms(string ipdir, string ipFileName1, string ipSdFileName1,
-                                                                                         string ipFileName2, string ipSdFileName2, string opdir)
+        public static void DrawTStatisticThresholdedDifferenceSpectrograms(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipSdFileName1,
+                                                                                         FileInfo ipFileName2, FileInfo ipSdFileName2, DirectoryInfo opdir)
         {
+            //check that the standard deviation files exist before going further
+            if (ipSdFileName1 == null)
+            {
+                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName1);
+                return;
+            }
+            var fileInfo = new FileInfo(Path.Combine(ipdir.FullName, ipSdFileName1.Name));
+            if (!fileInfo.Exists)
+            {
+                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName1);
+                return;
+            }
+            if (ipSdFileName2 == null)
+            {
+                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName2);
+                return;
+            }
+            fileInfo = new FileInfo(Path.Combine(ipdir.FullName, ipSdFileName2.Name));
+            if (!fileInfo.Exists)
+            {
+                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName2);
+                return;
+            }
 
-            string opFileName1 = ipFileName1;
+            string opFileName1 = ipFileName1.Name;
             var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs1.FileName = ipFileName1;
+            cs1.FileName = opFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
-            string imagePath = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
+            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+            string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
-            string opFileName2 = ipFileName2;
+            string opFileName2 = ipFileName2.Name;
             var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs2.FileName = ipFileName2;
+            cs2.FileName = opFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
+            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
 
             int N = 30;
-            cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1);
+            cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
             cs1.SampleCount = N;
-            cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2);
+            cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
             cs2.SampleCount = N;
 
             string key = "ACI";
             Image tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             string opFileName3 = ipFileName1 + ".tTest." + key + ".png";
-            tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+            tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
             key = "TEN";
             tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             opFileName3 = ipFileName1 + ".tTest." + key + ".png";
-            tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+            tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
             key = "CVR";
             tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfSingleIndex(key, cs1, cs2, tStatThreshold);
             opFileName3 = ipFileName1 + ".tTest." + key + ".png";
-            tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+            tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
             tStatIndexImage = LDSpectrogramDifference.DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, colourGain);
             opFileName3 = ipFileName1 + ".difference.tTest.COLNEG.png";
-            tStatIndexImage.Save(Path.Combine(opdir, opFileName3));
+            tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
         }
 
 

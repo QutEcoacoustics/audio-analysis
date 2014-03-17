@@ -155,12 +155,6 @@ namespace AnalysisPrograms
             //string ipFileName = @"TEST_TUITCE_20091215_220004";
 
             string ipdir = @"C:\SensorNetworks\Output\SERF\2013MonthlyAveraged"; // SERF
-            //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            string ipFileName1 = "April.monthAv";
-            string ipFileName2 = "June.monthAv";
-            string ipSdFileName1 = "April.monthSd";
-            string ipSdFileName2 = "June.monthSd";
-
             //string ipdir = @"C:\SensorNetworks\Output\TestSpectrograms";
             //string ipFileName = @"Test24hSpectrogram";
 
@@ -169,15 +163,6 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test2\tTestResults";
             //string opdir = @"C:\SensorNetworks\Output\SERF\2014Feb";
             string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March13";
-
-
-            // experiments with DIFFERENCE, t-STATISTIC and EUCLIDIAN DISTANCE false-colour spectrograms
-            if (true)
-            {
-                LDSpectrogramDistance.DrawDistanceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
-                LDSpectrogramDifference.DrawDifferenceSpectrogram(ipdir, ipFileName1, ipFileName2, opdir);
-                LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(ipdir, ipFileName1, ipSdFileName1, ipFileName2, ipSdFileName2, opdir);
-            }
 
 
             // experiments with false colour images - categorising/discretising the colours
