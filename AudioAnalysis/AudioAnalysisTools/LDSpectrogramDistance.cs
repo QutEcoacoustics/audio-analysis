@@ -13,7 +13,7 @@ namespace AudioAnalysisTools
     public static class LDSpectrogramDistance
     {
 
-        public static void DrawDistanceSpectrogram(string ipdir, string ipFileName1, string ipFileName2, string opdir)
+        public static void DrawDistanceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
             //PARAMETERS
             // set the X and Y axis scales for the spectrograms 
@@ -26,15 +26,15 @@ namespace AudioAnalysisTools
             int titleHt = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
 
 
-                string opFileName1 = ipFileName1;
+                string opFileName1 = ipFileName1.Name;
                 var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.ColorMODE = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
-                cs1.ReadCSVFiles(ipdir, ipFileName1, colorMap);
+                cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1);
                 cs1.DrawNegativeFalseColourSpectrograms(opdir, opFileName1);
-                string imagePath = Path.Combine(opdir, opFileName1 + ".COLNEG.png");
+                string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
                 Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg1Image == null)
                 {
@@ -45,14 +45,14 @@ namespace AudioAnalysisTools
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
                 spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
 
-                string opFileName2 = ipFileName2;
+                string opFileName2 = ipFileName2.Name;
                 var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs2.ColorMODE = colorMap;
                 cs2.BackgroundFilter = backgroundFilterCoeff;
-                cs2.ReadCSVFiles(ipdir, ipFileName2, colorMap);
+                cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
                 cs2.DrawNegativeFalseColourSpectrograms(opdir, opFileName2);
-                imagePath = Path.Combine(opdir, opFileName2 + ".COLNEG.png");
+                imagePath = Path.Combine(opdir.FullName, opFileName2 + ".COLNEG.png");
                 Image spg2Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg2Image == null)
                 {
@@ -67,9 +67,9 @@ namespace AudioAnalysisTools
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
                 Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDifference.GetDifferenceColourChart());
-                titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1, ipFileName2, colorArray, deltaSp.Width, titleHt);
+                titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, titleHt);
                 deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
-                deltaSp.Save(Path.Combine(opdir, opFileName4));
+                deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
 
                 string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";
                 Image[] images = new Image[3];
@@ -77,7 +77,7 @@ namespace AudioAnalysisTools
                 images[1] = spg2Image;
                 images[2] = deltaSp;
                 Image combinedImage = ImageTools.CombineImagesVertically(images);
-                combinedImage.Save(Path.Combine(opdir, opFileName5));
+                combinedImage.Save(Path.Combine(opdir.FullName, opFileName5));
          }
 
 

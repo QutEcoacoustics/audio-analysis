@@ -353,6 +353,12 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.XiesAnalysis.Execute;
         }
 
+        public DifferenceSpectrogram.Arguments DifferenceSpectrogramArgs { get; set; }
+        public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()
+        {
+            return AnalysisPrograms.DifferenceSpectrogram.Execute;
+        }
+
         #endregion
     }
 }

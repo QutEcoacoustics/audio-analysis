@@ -195,6 +195,7 @@
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Canetoad.cs" />
+    <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="Frogs.cs" />
