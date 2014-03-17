@@ -57,6 +57,18 @@ namespace AnalysisPrograms
             [ArgPosition(6)]
             [ArgRequired]
             public FileInfo StdDevFile2 { get; set; }
+
+            public static string Description()
+            {
+                // TODO: michael edit this
+                return "An experiment in creating differential spectrograms";
+            }
+
+            public static string AdditionalNotes()
+            {
+                // add long explantory notes here if you need to
+                return "";
+            }
         }
 
 

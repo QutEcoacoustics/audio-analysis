@@ -63,7 +63,18 @@ namespace AnalysisPrograms.Production
 
             if (method == null || method.ReturnType != (typeof(string)) || method.GetParameters().Length > 0)
             {
-                throw new ArgException(method.DeclaringType.FullName + ": You cannot apply the CustomDetailedDescriptionAttribute to a class that does not have a public, callable, static, 'Description' method! This method must take no parameters and return a string!");
+                string name;
+                if (method == null)
+                {
+                    name = propertyInfoOrClassType as PropertyInfo != null
+                        ? ((PropertyInfo)propertyInfoOrClassType).DeclaringType.FullName
+                        : ((Type)propertyInfoOrClassType).FullName;
+                }
+                else
+                {
+                    name = method.DeclaringType.FullName;
+                }
+                throw new ArgException(name + ": You cannot apply the CustomDetailedDescriptionAttribute to a class that does not have a public, callable, static, 'Description' method! This method must take no parameters and return a string!");
             }
 
             // now dynamically invoke - this is madness
