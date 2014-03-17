@@ -12,7 +12,20 @@ namespace AudioAnalysisTools
 {
     public static class LDSpectrogramDistance
     {
-
+        /// <summary>
+        /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
+        /// It takes as input any number of csv files of acoustic indices in spectrogram columns.
+        /// Typically there will be at least three indices csv files for each of the original recordings to be compared.
+        /// The method produces four spectrogram image files:
+        /// 1) A negative false-colour spectrogram derived from the indices of recording 1.   
+        /// 2) A negative false-colour spectrogram derived from the indices of recording 2.
+        /// 3) A spectrogram of euclidean distances bewteen the two input files.
+        /// 4) The above three spectrograms combined in one image.
+        /// </summary>
+        /// <param name="ipdir"></param>
+        /// <param name="ipFileName1"></param>
+        /// <param name="ipFileName2"></param>
+        /// <param name="opdir"></param>
         public static void DrawDistanceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
             //PARAMETERS

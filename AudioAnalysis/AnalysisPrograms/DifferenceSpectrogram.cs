@@ -130,7 +130,7 @@ namespace AnalysisPrograms
             string inputDirectory = dict["InputDirectory"] as string;
             string indexFile1 = dict["IndexFile1"] as string;
             string stdDevFile1 = dict["StdDevFile1"] as string;
-            string IndexFile2 = dict["IndexFile2"] as string;
+            string indexFile2 = dict["IndexFile2"] as string;
             string stdDevFile2 = dict["StdDevFile2"] as string;
             string outputDirectory = dict["OutputDirectory"] as string;
 
@@ -139,12 +139,12 @@ namespace AnalysisPrograms
             arguments.InputDirectory = new DirectoryInfo(inputDirectory);
             arguments.IndexFile1 = new FileInfo(indexFile1);
             arguments.StdDevFile1 = new FileInfo(stdDevFile1);
-            arguments.IndexFile2 = new FileInfo(IndexFile2);
+            arguments.IndexFile2 = new FileInfo(indexFile2);
             arguments.StdDevFile2 = new FileInfo(stdDevFile2);
             arguments.OutputDirectory = new DirectoryInfo(outputDirectory);
-           
-           LDSpectrogramDistance.DrawDistanceSpectrogram(arguments.InputDirectory,
-                                    arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
+
+            LDSpectrogramDistance.DrawDistanceSpectrogram(arguments.InputDirectory,
+                                     arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
 
             LDSpectrogramDifference.DrawDifferenceSpectrogram(arguments.InputDirectory,
                                     arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);

@@ -142,15 +142,16 @@ namespace AudioAnalysisTools
             indexStats.Add(key, dict); // add index statistics
         }
 
-        public void ReadCSVFiles(DirectoryInfo ipdir, string fileName)
+        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {
             string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
-            ReadCSVFiles(ipdir, fileName, keys);
+            return ReadCSVFiles(ipdir, fileName, keys);
         }
 
 
-        public void ReadCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys)
+        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys)
         {
+            bool allOK = true;
             string[] keys = indexKeys.Split('-');
             string warning = null;
             for (int key = 0; key < keys.Length; key++)
@@ -172,6 +173,7 @@ namespace AudioAnalysisTools
                         warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
                     }
                     warning += String.Format("\n      {0} File does not exist: {1}", keys[key], path);
+                    allOK = false;
                 }
             } // for loop
 
@@ -183,7 +185,9 @@ namespace AudioAnalysisTools
             {
                 Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
                 Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+                allOK = false;
             }
+            return allOK;
         }
 
 
@@ -226,12 +230,16 @@ namespace AudioAnalysisTools
             return dict;
         }
 
-        public void ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
+        public bool ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
         {
             //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             int freqBinCount;
             this.spgr_StdDevMatrices = ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
+            bool allOK = true;
+            if (this.spgr_StdDevMatrices == null) return false;
+            if (this.spgr_StdDevMatrices.Count < 3) return false;
+            return allOK;
         }
 
 

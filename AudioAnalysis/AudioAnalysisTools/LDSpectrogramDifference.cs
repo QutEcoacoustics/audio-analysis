@@ -34,7 +34,16 @@ namespace AudioAnalysisTools
 
 
 
-
+        /// <summary>
+        /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
+        /// It takes as input six csv files of acoustic indices in spectrogram columns, three csv files for each of the original recordings to be compared.
+        /// The method produces one spectrogram image files:
+        /// 1) A false-colour difference spectrogram, where the difference is shown as a plus/minus departure from grey.   
+        /// </summary>
+        /// <param name="ipdir"></param>
+        /// <param name="ipFileName1"></param>
+        /// <param name="ipFileName2"></param>
+        /// <param name="opdir"></param>
         public static void DrawDifferenceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
 
@@ -69,33 +78,32 @@ namespace AudioAnalysisTools
         }
 
 
+        /// <summary>
+        /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
+        /// It takes as input six csv files of acoustic indices in spectrogram columns, three csv files for each of the original recordings to be compared.
+        /// The method produces four spectrogram image files:
+        /// 1) A triple image. Top:    The spectrogram for index 1, recording 1.
+        ///                    Middle: The spectrogram for index 1, recording 2.
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 1 (derived from recordings 1 and 2).   
+        /// 2) A triple image. Top:    The spectrogram for index 2, recording 1.
+        ///                    Middle: The spectrogram for index 2, recording 2.
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 2 (derived from recordings 1 and 2).   
+        /// 3) A triple image. Top:    The spectrogram for index 3, recording 1.
+        ///                    Middle: The spectrogram for index 3, recording 2.
+        ///                    Bottom: A t-statistic thresholded difference spectrogram for INDEX 3 (derived from recordings 1 and 2).   
+        /// 4) A double image. Top:    A t-statistic thresholded difference spectrogram (t-statistic is positive).
+        ///                    Bottom: A t-statistic thresholded difference spectrogram (t-statistic is negative).   
+        /// </summary>
+        /// <param name="ipdir"></param>
+        /// <param name="ipFileName1"></param>
+        /// <param name="ipSdFileName1"></param>
+        /// <param name="ipFileName2"></param>
+        /// <param name="ipSdFileName2"></param>
+        /// <param name="opdir"></param>
         public static void DrawTStatisticThresholdedDifferenceSpectrograms(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipSdFileName1,
-                                                                                         FileInfo ipFileName2, FileInfo ipSdFileName2, DirectoryInfo opdir)
+                                                                                                FileInfo ipFileName2, FileInfo ipSdFileName2, 
+                                                                                                DirectoryInfo opdir)
         {
-            //check that the standard deviation files exist before going further
-            if (ipSdFileName1 == null)
-            {
-                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName1);
-                return;
-            }
-            var fileInfo = new FileInfo(Path.Combine(ipdir.FullName, ipSdFileName1.Name));
-            if (!fileInfo.Exists)
-            {
-                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName1);
-                return;
-            }
-            if (ipSdFileName2 == null)
-            {
-                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName2);
-                return;
-            }
-            fileInfo = new FileInfo(Path.Combine(ipdir.FullName, ipSdFileName2.Name));
-            if (!fileInfo.Exists)
-            {
-                Console.WriteLine("Cannot do t-test comparison because standard deviation file does not exist: {0}", ipFileName2);
-                return;
-            }
-
             string opFileName1 = ipFileName1.Name;
             var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = opFileName1;
@@ -111,10 +119,23 @@ namespace AudioAnalysisTools
             cs2.BackgroundFilter = backgroundFilterCoeff;
             cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
 
+            bool allOK = true;
             int N = 30;
-            cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
+
+            allOK = cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
+            if (!allOK)
+            {
+                Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
+                return;
+            }
             cs1.SampleCount = N;
-            cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
+
+            allOK = cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
+            if (!allOK)
+            {
+                Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);
+                return;
+            }
             cs2.SampleCount = N;
 
             string key = "ACI";
