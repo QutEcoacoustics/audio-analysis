@@ -221,8 +221,8 @@ namespace QutBioacosutics.Xie
                         ydata = longTrackYList[i].ToArray();
 
                         var p = Fit.Line(xdata, ydata);
-                        var offset = p.Item1;
-                        var slope = p.Item2;
+                        var offset = p[0];
+                        var slope = p[1];
 
                         var position = c * slope + offset;
 
