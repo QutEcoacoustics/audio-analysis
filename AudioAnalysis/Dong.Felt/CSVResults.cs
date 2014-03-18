@@ -148,7 +148,7 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        neighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
+                        neighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
                         var RowIndex = col * timeScale;
                         // Changed this. 
                         var ColIndex = (256 - row) * frequencyScale;
@@ -173,8 +173,8 @@
             foreach (var nh in nhList)
             {
                 // Notice 
-                var rowIndex = nh.ColIndex;
-                var colIndex = nh.RowIndex;
+                var rowIndex = nh.FrameIndex;
+                var colIndex = nh.FrequencyIndex;
                 var magnitude = nh.magnitude;
                 var orientation = nh.orientation;
                 results.Add(new List<string>() { audioFileName, rowIndex.ToString(), colIndex.ToString(),

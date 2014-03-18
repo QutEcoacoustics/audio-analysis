@@ -69,8 +69,8 @@ namespace Dong.Felt.Representations
                 this.ridgeNeighbourhoods.Add(nh);
             }
             // left bottom corner - this is the anchor point
-            this.FrequencyIndex = neighbourhoods[0].RowIndex;
-            this.TimeIndex = neighbourhoods[0].ColIndex;
+            this.FrequencyIndex = neighbourhoods[0].FrequencyIndex;
+            this.TimeIndex = neighbourhoods[0].FrameIndex;
             this.NhCountInRow = nhCountInRow;
             this.NhCountInCol = nhCountInCol;
             this.SourceAudioFile = audioFile;
