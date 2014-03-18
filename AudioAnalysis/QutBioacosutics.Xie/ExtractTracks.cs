@@ -11,7 +11,7 @@ namespace QutBioacosutics.Xie
 
     class ExtractTracks
     {
-        public double[,] GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold)
+        public double[,] GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold, int maximumDuration, double maximumDiffBin)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -48,8 +48,11 @@ namespace QutBioacosutics.Xie
             var longTrackList = new List<Track>();
             var closedTrackList = new List<Track>();
 
+
             var longTrackXList = new List<List<double>>();
             var longTrackYList = new List<List<double>>();
+            var closedTrackXList = new List<List<double>>();
+            var closedTrackYList = new List<List<double>>();
             //var longTrackAmplitudeList = new List<double>();
 
 
@@ -86,11 +89,6 @@ namespace QutBioacosutics.Xie
                 longTrackXList.Add(longTrackX);
                 longTrackYList.Add(longTrackY);
             }
-
-
-
-
-
 
 
             for (int i = 0; i < indexI.Count; i++) 
@@ -185,15 +183,26 @@ namespace QutBioacosutics.Xie
                         if (longTrackList[i].Duration > duraionThreshold)
                         {
                             closedTrackList.Add(longTrackList[i]);
-                                                    
+                            closedTrackXList.Add(longTrackXList[i]);
+                            closedTrackYList.Add(longTrackYList[i]);
+
                             longTrackList.RemoveAt(i);
                             longTrackXList.RemoveAt(i);
                             longTrackYList.RemoveAt(i);
                             i--;
                         }
-                                            
-                    }                
+                        else 
+                        {
+                            longTrackList.RemoveAt(i);
+                            longTrackXList.RemoveAt(i);
+                            longTrackYList.RemoveAt(i);
+                            i--;
+ 
+                        }
+                    }
                 }
+
+
 
 
                 for (int i = 0; i < shortTrackList.Count; i++)
@@ -240,6 +249,8 @@ namespace QutBioacosutics.Xie
                             }
                         }
                     }
+
+
 
                     for (int i = 0; i < numberA.Count; i++)
                     {
@@ -288,6 +299,11 @@ namespace QutBioacosutics.Xie
                             }
                         }
                     }
+
+                    //.......................................//
+
+
+
 
                     for (int i = 0; i < numberE.Count; i++)
                     {
@@ -350,189 +366,317 @@ namespace QutBioacosutics.Xie
                         shortTrackList.Add(shortTrack);
                     }
 
-                    
-                }
-                else
-                {
                     c = c + 1;
-                    var numberC = new List<int>();
-                    var numberD = new List<int>();
-
-                    for (int i = 0; i < pointList[c].Count; i++)
+                }
+                else if (longTrackList.Count == 0)
+                {
+                    if (c < column) 
                     {
-                        binToreance = binToreanceStable;
-                        for (int j = 0; j < pointList[c + 1].Count; j++)
+                        c = c + 1;
+                        var numberC = new List<int>();
+                        var numberD = new List<int>();
+
+                        for (int i = 0; i < pointList[c].Count; i++)
                         {
-                            if (Math.Abs(pointList[c][i].Y - pointList[c + 1][j].Y) < binToreance)
+                            binToreance = binToreanceStable;
+                            for (int j = 0; j < pointList[c + 1].Count; j++)
                             {
-                                numberC.Add(i);
-                                numberD.Add(j);
-                                binToreance = Math.Abs(pointList[c][i].Y - pointList[c + 1][j].Y);
+                                if (Math.Abs(pointList[c][i].Y - pointList[c + 1][j].Y) < binToreance)
+                                {
+                                    numberC.Add(i);
+                                    numberD.Add(j);
+                                    binToreance = Math.Abs(pointList[c][i].Y - pointList[c + 1][j].Y);
+                                }
                             }
                         }
-                    }
 
-                    for (int i = 0; i < numberC.Count; i++)
-                    {
+                        //.............................................//
 
-                        var longTrackX = new List<double>();
-                        var longTrackY = new List<double>();
-                        longTrackX.AddMany(c, (c+1));
-                        longTrackY.AddMany(pointList[c][numberC[i]].Y, pointList[(c+1)][numberD[i]].Y);
 
-                        longTrackXList.Add(longTrackX);
-                        longTrackYList.Add(longTrackY);                  
-                    }
 
-                    for (int i = 0; i < numberC.Count; i++)
-                    {
-                        var longTrack = new Track();
-                        longTrack.StartFrame = c;
-                        longTrack.EndFrame = c + 1;
-                        longTrack.LowBin = Math.Min(pointList[c][numberC[i]].Y, pointList[c + 1][numberC[i]].Y);
-                        longTrack.HighBin = Math.Max(pointList[c][numberC[i]].Y, pointList[c + 1][numberC[i]].Y);
-
-                        longTrackList.Add(longTrack);
-                    }
-
-                    for (int i = 0; i < numberC.Count; i++)
-                    {
-                        pointList[c][numberC[i]] = null;
-                    }
-
-                    for (int i = 0; i < pointList[c].Count; i++)
-                    {
-                        if (pointList[c][i] == null)
+                        for (int i = 0; i < numberC.Count; i++)
                         {
-                            pointList[c].RemoveAt(i);
-                            i--;
+
+                            var longTrackX = new List<double>();
+                            var longTrackY = new List<double>();
+                            longTrackX.AddMany(c, (c + 1));
+                            longTrackY.AddMany(pointList[c][numberC[i]].Y, pointList[(c + 1)][numberD[i]].Y);
+
+                            longTrackXList.Add(longTrackX);
+                            longTrackYList.Add(longTrackY);
                         }
-                    }
 
-                    for (int i = 0; i < numberD.Count; i++)
-                    {
-                        pointList[c+1][numberD[i]] = null;
-                    }
-
-                    for (int i = 0; i < pointList[c+1].Count; i++)
-                    {
-                        if (pointList[c+1][i] == null)
+                        for (int i = 0; i < numberC.Count; i++)
                         {
-                            pointList[c+1].RemoveAt(i);
-                            i--;
+                            var longTrack = new Track();
+                            longTrack.StartFrame = c;
+                            longTrack.EndFrame = c + 1;
+                            longTrack.LowBin = Math.Min(pointList[c][numberC[i]].Y, pointList[c + 1][numberD[i]].Y);
+                            longTrack.HighBin = Math.Max(pointList[c][numberC[i]].Y, pointList[c + 1][numberD[i]].Y);
+
+                            longTrackList.Add(longTrack);
                         }
+
+                        for (int i = 0; i < numberC.Count; i++)
+                        {
+                            pointList[c][numberC[i]] = null;
+                        }
+
+                        for (int i = 0; i < pointList[c].Count; i++)
+                        {
+                            if (pointList[c][i] == null)
+                            {
+                                pointList[c].RemoveAt(i);
+                                i--;
+                            }
+                        }
+
+                        for (int i = 0; i < numberD.Count; i++)
+                        {
+                            pointList[c + 1][numberD[i]] = null;
+                        }
+
+                        for (int i = 0; i < pointList[c + 1].Count; i++)
+                        {
+                            if (pointList[c + 1][i] == null)
+                            {
+                                pointList[c + 1].RemoveAt(i);
+                                i--;
+                            }
+                        }
+
+                        for (int i = 0; i < pointList[c].Count; i++)
+                        {
+                            var shortTrack = new Track();
+                            shortTrack.StartFrame = c;
+                            shortTrack.EndFrame = c;
+                            shortTrack.LowBin = pointList[c][i].Y;
+                            shortTrack.HighBin = pointList[c][i].Y;
+                            shortTrackList.Add(shortTrack);
+                        }
+
+
+                        for (int i = 0; i < pointList[c + 1].Count; i++)
+                        {
+                            var shortTrack = new Track();
+                            shortTrack.StartFrame = c + 1;
+                            shortTrack.EndFrame = c + 1;
+                            shortTrack.LowBin = pointList[c + 1][i].Y;
+                            shortTrack.HighBin = pointList[c + 1][i].Y;
+                            shortTrackList.Add(shortTrack);
+                        }
+
+                        c = c + 1;
                     }
-
-                    for (int i = 0; i < pointList[c].Count; i++)
-                    {
-                        var shortTrack = new Track();
-                        shortTrack.StartFrame = c;
-                        shortTrack.EndFrame = c;
-                        shortTrack.LowBin = pointList[c][i].Y;
-                        shortTrack.HighBin = pointList[c][i].Y;
-                        shortTrackList.Add(shortTrack);
-                    }
-
-
-                    for (int i = 0; i < pointList[c + 1].Count; i++)
-                    {
-                        var shortTrack = new Track();
-                        shortTrack.StartFrame = c + 1;
-                        shortTrack.EndFrame = c + 1;
-                        shortTrack.LowBin = pointList[c + 1][i].Y;
-                        shortTrack.HighBin = pointList[c + 1][i].Y;
-                        shortTrackList.Add(shortTrack);
-                    }
-
                 }
- 
-                c = c + 1;
+         
             }
 
             // remove tracks with few points
             for (int i = 0; i < closedTrackList.Count; i++)
             {
-                if((longTrackXList[i].Count / closedTrackList[i].Duration) < trackThreshold)
+                if((closedTrackXList[i].Count / closedTrackList[i].Duration) < trackThreshold)
                 {
                     closedTrackList.RemoveAt(i);
-                    longTrackXList.RemoveAt(i);
-                    longTrackYList.RemoveAt(i);
+                    closedTrackXList.RemoveAt(i);
+                    closedTrackYList.RemoveAt(i);
                     i--;
                 }
             }
                     
    
-            // complement the gap among tracks 
 
 
-            //var closedTrackXList = new List<List<double>>();
-            //var closedTrackYList = new List<List<double>>();
-            //var diffTrackXList = new List<List<double>>();
+            // remove one track with two peaks or two tracks with one peak
+            for (int i = 0; i < closedTrackXList.Count; i++)
+            {
+                for (int j = 0; j < (closedTrackXList[i].Count - 1); j++)
+                {
+                    if ((closedTrackXList[i][j + 1] - closedTrackXList[i][j]) == 0)
+                    {                        
+                        closedTrackXList[i].RemoveAt(j+1);
+                        closedTrackYList[i].RemoveAt(j+1);
+                    } 
+                }            
+            }
 
-            //for (int i = 0; i < closedTrackList.Count; i++)
+            //for (int i = 0; i < closedTrackYList.Count; i++)
             //{
-            //    for (int j = closedTrackList[i].StartFrame; j <= closedTrackList[i].EndFrame; j++)
-            //    { 
-            //        closedTrackXList[i].Add(j);
-            //    }                            
-            //}
-
-            //for (int i = 0; i < closedTrackList.Count; i++)
-            //{
-            //    diffTrackXList[i] = closedTrackXList[i].Except(longTrackXList[i]).ToList();                                           
-            //}
-
-            //if (diffTrackXList.Count > 0)
-            //{
-            //    for (int i = 0; i < diffTrackXList.Count; i++)
+            //    for (int j = 0; j < (closedTrackYList[i].Count - 1); j++)
             //    {
-            //        for (int j = 0; j < diffTrackXList[i].Count; j++)
-            //        {                        
-            //            // save list to array
-            //            var xdata = new List<double>();
-            //            var ydata = new List<double>();
-            //            for (int s = closedTrackList[i].StartFrame; s < (diffTrackXList[i][j] - 1); s++)
-            //            {
-            //                xdata.Add(s);                        
-            //            }
-                    
-            //            for (int t = 0; t < xdata.Count; t++)
-            //            {
-            //                ydata.Add(longTrackYList[i][t]);                       
-            //            }
-
-            //            var xdataArray = new double[xdata.Count];
-            //            var ydataArray = new double[xdata.Count];
-            //            xdataArray = xdata.ToArray();
-            //            ydataArray = ydata.ToArray();
-
-            //            var p = Fit.Line(xdataArray, ydataArray);
-            //            var offset = p.Item1;
-            //            var slope = p.Item2;
-         
-            //            var position = c * slope + offset;
-
-            //            closedTrackYList[diffTrackXList[i][j] - closedTrackList[i].StartFrame] = position;
+            //        if ((closedTrackYList[i][j + 1] - closedTrackYList[i][j]) == 0)
+            //        {
+            //            closedTrackXList[i].RemoveAt(j+1);
+            //            closedTrackYList[i].RemoveAt(j+1);
             //        }
-
-            //        // change closedTrackYList to array
-
-            //        }               
-            //    }            
+            //    }
             //}
+
+
+            //// remove track with big binToreance
+            //for (int i = 0; i < closedTrackList.Count; i++)
+            //{
+            //    if ((closedTrackList[i].HighBin - closedTrackList[i].LowBin) > maximumDiffBin)
+            //    {
+            //        closedTrackList.RemoveAt(i);
+            //        closedTrackXList.RemoveAt(i);
+            //        closedTrackYList.RemoveAt(i);                
+            //    }
+            //}
+
+
+            //// remove too long track
+            //for (int i = 0; i < closedTrackList.Count; i++)
+            //{
+            //    if (closedTrackList[i].Duration > maximumDuration)
+            //    {
+            //        closedTrackList.RemoveAt(i);
+            //        closedTrackXList.RemoveAt(i);
+            //        closedTrackYList.RemoveAt(i);
+            //    }
+            //}
+
+
+
+
+            // complement the gap among tracks             
+            var finalTrackXList = new List<List<int>>();
+            var finalTrackXListD = new List<List<double>>();
+
+            var finalTrackYList = new List<List<double>>();
+
+            var addTrackXList = new List<List<double>>();
+            var addTrackYList = new List<List<double>>();
+
+
+            // get the the point of x_direction of one track
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                var finalTrackX = new List<int>();
+                for (int j = closedTrackList[i].StartFrame; j <= closedTrackList[i].EndFrame; j++)
+                {
+                    finalTrackX.Add(j);
+                }
+                finalTrackXList.Add(finalTrackX);
+            }
+
+            finalTrackXListD = finalTrackXList.Select(x => x.Select(y => (double)y).ToList()).ToList();
+
+            var diffTrackXList = new List<List<double>>();
+            for (int i = 0; i < closedTrackXList.Count; i++)
+            {
+                var diffTrackX = new List<double>();
+                diffTrackX = finalTrackXListD[i].Except(closedTrackXList[i]).ToList();
+                diffTrackXList.Add(diffTrackX);
+            }
+
+            var diffTrackXListI = new List<List<int>>();
+
+            diffTrackXListI = diffTrackXList.Select(x => x.Select(y => (int)y).ToList()).ToList();
+
+            for (int i = 0; i < diffTrackXList.Count; i++)
+            {
+                if (diffTrackXList[i].Count > 0)
+                {
+                    var tempTrackYList = new List<double>();
+                    var tempaddTrackXList = new List<double>();
+                    var tempaddTrackYList = new List<double>();
+
+
+                    for (int j = 0; j < diffTrackXList[i].Count; j++)
+                    {
+
+                        var xdata = new List<double>();
+                        var ydata = new List<double>();
+                        for (int s = closedTrackList[i].StartFrame; s < diffTrackXList[i][j]; s++)
+                        {
+                            xdata.Add(s);
+                        }
+
+                        if (xdata.Count == 1)
+                        {
+                            int index = diffTrackXListI[i][j] - closedTrackList[i].StartFrame;
+                            tempTrackYList = closedTrackYList[i];
+                            tempTrackYList.Insert(index, closedTrackYList[i][0]);
+                            closedTrackYList[i] = tempTrackYList;
+
+
+                            tempaddTrackXList.Add(diffTrackXListI[i][j]);
+                            //addTrackXList[i] = tempaddTrackXList;
+
+                            tempaddTrackYList.Add(closedTrackYList[i][0]);
+                            //addTrackYList[i] = tempaddTrackYList;
+                        }
+                        else
+                        {
+                            for (int t = 0; t < xdata.Count; t++)
+                            {
+                                ydata.Add(closedTrackYList[i][t]);
+                            }
+
+                            var xdataArray = new double[xdata.Count];
+                            var ydataArray = new double[xdata.Count];
+                            xdataArray = xdata.ToArray();
+                            ydataArray = ydata.ToArray();
+
+                            var p = Fit.Line(xdataArray, ydataArray);
+                            var offset = p[0];
+                            var slope = p[1];
+
+                            var position = (xdata[xdata.Count - 1] + 1) * slope + offset;
+
+                            //position = (int)Math.Ceiling(position);
+
+                            int index = diffTrackXListI[i][j] - closedTrackList[i].StartFrame;
+                            //var value = new List<double>();
+                            //value.Add(position);
+
+                            tempTrackYList = closedTrackYList[i];
+                            tempTrackYList.Insert(index, position);
+                            closedTrackYList[i] = tempTrackYList;
+                            
+                            tempaddTrackXList.Add(diffTrackXListI[i][j]);
+                            //addTrackXList[i] = tempaddTrackXList;
+
+                            tempaddTrackYList.Add(position);
+                            //addTrackYList[i] = tempaddTrackYList;
+                        }
+                    }
+                    finalTrackYList.Add(closedTrackYList[i]);
+
+                    addTrackXList.Add(tempaddTrackXList);
+                    addTrackYList.Add(tempaddTrackYList);
+                }
+                else
+                {
+                    finalTrackYList.Add(closedTrackYList[i]);
+                }
+            }
+
 
 
             // convert closedTrackList to trackMatrix
             // To do: convert double to int 
             var result = new double[row, column];
             for (int i = 0; i < closedTrackList.Count; i++)
-            { 
-                for (int j = 0; j < closedTrackList[i].Duration; j++)
+            {
+                for (int j = 0; j < finalTrackXList[i].Count; j++)
                 {
-                    result[(int) Math.Ceiling(longTrackXList[i][j]),(int) Math.Ceiling(longTrackYList[i][j])] = 1;
-                                
-                }           
+                    result[(int)Math.Ceiling(finalTrackYList[i][j]), finalTrackXList[i][j]] = 1;
+
+                }
             }
+
+            //var result = new double[row, column];
+            for (int i = 0; i < addTrackXList.Count; i++)
+            {
+                for (int j = 0; j < addTrackXList[i].Count; j++)
+                {
+                    result[(int)Math.Ceiling(addTrackYList[i][j]), (int)Math.Ceiling(addTrackXList[i][j])] = 2;
+
+                }
+            }
+
 
             return result;
         }
