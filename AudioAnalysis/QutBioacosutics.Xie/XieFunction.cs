@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
+using TowseyLib;
+using System.Drawing.Imaging;
+
+
 
 namespace QutBioacosutics.Xie
 {
@@ -22,9 +27,40 @@ namespace QutBioacosutics.Xie
         }
 
 
-        //public static void RemoveMany<T>(this List<T> list, params T[] elements)
+        public static int ArrayCount(double[] Array)
+        {
+            int number = 0;
+            for (int i = 0; i < Array.Length; i++)
+            {
+                if (Array[i] > 0) number++;          
+            }
+            return number;
+        }
+
+
+
+        //ArrayIndex function in R
+        public static int[] ArrayIndex(double[] Array)
+        {
+            var index = new List<int>();
+            for (int i = 0; i < Array.Length; i++)
+            {
+                if (Array[i] > 0)
+                {
+                    index.Add(i);               
+                }                           
+            }
+      
+            var result = index.ToArray();
+            return result;
+        }
+
+
+
+        // Draw tracks on the spectrogram
+        //public static void DrawSpectrogram(double[,] matrix)
         //{
-        //
+
         //}
     }
 }

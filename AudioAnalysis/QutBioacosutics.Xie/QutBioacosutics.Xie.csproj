@@ -55,7 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtractTracks.cs" />
+    <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
+    <Compile Include="FindOscillation.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -63,8 +65,12 @@
     <Compile Include="XieFunction.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">

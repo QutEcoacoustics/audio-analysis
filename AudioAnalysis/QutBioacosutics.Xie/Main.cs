@@ -14,6 +14,10 @@ namespace QutBioacosutics.Xie
 
     using TowseyLib;
 
+    using System.Drawing;
+
+    using System.Drawing.Imaging;
+
     public static class Main
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Main));
@@ -27,8 +31,8 @@ namespace QutBioacosutics.Xie
              * Do not use it outside of this method. Extract all params below.
              */
             string path = configuration.file;
-            string imagePath = configuration.image_path;
-            
+            // string path = @"C:\Jie\data\160113_min140.wav";
+            string imagePath = configuration.image_path;            
             double amplitudeThreshold = configuration.amplitude_threshold;
             int range = configuration.range;
             int distance = configuration.distance;
@@ -36,7 +40,11 @@ namespace QutBioacosutics.Xie
             int frameThreshold = configuration.frameThreshold;
             int duraionThreshold = configuration.duraionThreshold;
             double trackThreshold = configuration.trackThreshold;
+            int maximumDuration = configuration.maximumDuration;
+            double maximumDiffBin = configuration.maximumDiffBin;
 
+            int colThreshold = configuration.colThreshold;
+            int zeroBinIndex = configuration.zeroBinIndex;
             // bool noiseReduction = (int)configuration.do_noise_reduction == 1;
 
             //float noiseThreshold = configuration.noise_threshold;
@@ -73,17 +81,87 @@ namespace QutBioacosutics.Xie
 
             var trackMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
             var multipleTracks = new ExtractTracks();
-            trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold);
+            trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, maximumDiffBin);
 
-            peakMatrix = MatrixTools.MatrixRotate90Anticlockwise(peakMatrix);
-            var image = ImageTools.DrawMatrix(peakMatrix);
-            image.Save(imagePath);
 
-            // find the harmonic structure & oscillation rate based on tracks
+            // find the harmonic structure based on tracks
+            var Harmonic = new FindHarmonics();
+            var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
 
-            //var image = spectrogram.GetImage();
-
+            //var image = ImageTools.DrawMatrix(harmonicMatrix);
             //image.Save(imagePath);
+
+
+            // find the oscillation through all the recordings
+
+            var Oscillation = new FindOscillation();
+            var oscillationMarix = Oscillation.getOscillation(spectrogram.Data, zeroBinIndex);
+
+
+
+
+
+
+
+
+
+            // trackMatrix = MatrixTools.MatrixRotate90Anticlockwise(trackMatrix);
+            //double[,] spectrogramMatrix = DataTools.normalise(spectrogram.Data);
+            //spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrix);
+
+
+            //int rows = spectrogramMatrix.GetLength(0);
+            //int cols = spectrogramMatrix.GetLength(1);
+
+            //Color[] grayScale = ImageTools.GrayScale();
+            //Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            //for (int r = 0; r < rows; r++)
+            //{
+            //    for (int c = 0; c < cols; c++)
+            //    {
+            //        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
+            //        if (greyId < 0) greyId = 0;
+            //        else
+            //            if (greyId > 255) greyId = 255;
+
+            //        greyId = 255 - greyId; 
+            //        bmp.SetPixel(c, r, grayScale[greyId]);
+            //    }
+            //}
+
+            //for (int i = 0; i < rows; i++)
+            //{
+            //    for (int j = 0; j < cols; j++)
+            //    {
+            //        if (trackMatrix[i, j] == 1)
+            //        {
+            //            bmp.SetPixel(j, i, Color.Blue);
+            //        }
+
+            //    }
+            //}
+
+            //for (int i = 0; i < rows; i++)
+            //{
+            //    for (int j = 0; j < cols; j++)
+            //    {
+            //        if (trackMatrix[i, j] == 2)
+            //        {
+            //            bmp.SetPixel(j, i, Color.Red);
+            //        }
+
+            //    }
+            //}
+
+
+
+
+
+            //bmp.Save(imagePath);
+
+            
+          
 
             Log.Info("Analysis complete");
            

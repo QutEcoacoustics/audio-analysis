@@ -8,14 +8,13 @@ range: 2
 distance: 4
 binToreance: 3
 frameThreshold: 5
-duraionThreshold: 18
 trackThreshold: 0.70
 maximumDuration: 45
 maximumDiffBin: 25
 colThreshold: 6
 zeroBinIndex: 5
 duraionThreshold: 15
-trackThreshold: 0.85
+
 
   
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
