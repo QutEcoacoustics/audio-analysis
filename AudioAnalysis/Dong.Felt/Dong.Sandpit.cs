@@ -49,7 +49,7 @@
                 string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\RepresentationResults";
                 string imageFileName = audioFileName +".png";
                 string annotatedImageFileName = audioFileName + "-annotate.png";
-                string csvFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
+                string csvFileName = "2014-03-18-NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
                 string csvPath = Path.Combine(outputDirectory, csvFileName);              
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };               
@@ -166,7 +166,7 @@
                 var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogram);
                 ////var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
                 //////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                //CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, csvPath, spectrogram);
+                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, csvPath, spectrogram);
                 var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth; 
                 var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  
                 var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength;
@@ -174,7 +174,7 @@
                 
                 var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, ridgeArray, wavFilePath);
                 var CSVResultDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results";
-                var csvFileName1 = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav-queryRepresentation.csv";
+                var csvFileName1 = "2014-03-18-NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav-queryRepresentation.csv";
                 string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
                 var queryRepresentationfile = new FileInfo(csvPath1);
                 CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);             

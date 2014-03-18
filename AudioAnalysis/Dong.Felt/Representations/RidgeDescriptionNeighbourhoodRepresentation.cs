@@ -18,11 +18,11 @@ namespace Dong.Felt.Representations
         // the column starts from bottom of spectrogram (0 hz)
 
         // gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
-        public double RowIndex { get; set; }
+        public double FrequencyIndex { get; set; }
 
-        // gets or sets the colIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
-        public double ColIndex { get; set; }
-
+        // gets or sets the FrameIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
+        public double FrameIndex { get; set; }
+    
         // gets or sets the widthPx of a neighbourhood in pixels. 
         public int WidthPx { get; set; }
 
@@ -44,7 +44,7 @@ namespace Dong.Felt.Representations
 
         public double orientation { get; set; }
 
-        //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.ColIndex * this.Duration.TotalMilliseconds); } }
+        //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.FrameIndex * this.Duration.TotalMilliseconds); } }
 
         //public double FrequencyOffsetFromBottom { get { return this.RowIndex * this.FrequencyRange; } }
 
@@ -169,8 +169,8 @@ namespace Dong.Felt.Representations
             }
             score = StatisticalAnalysis.NormaliseNeighbourhoodScore(neighbourhood, neighbourhoodLength);
             // baseclass properties
-            RowIndex = (int)(pointY * timeScale);
-            ColIndex = (int)(pointX * frequencyScale);
+            FrameIndex = (int)(pointY * timeScale);
+            FrequencyIndex = (int)(pointX * frequencyScale);
             WidthPx = ridgeNeighbourhoodFeatureVector.neighbourhoodWidth;
             HeightPx = ridgeNeighbourhoodFeatureVector.neighbourhoodHeight;
             Duration = TimeSpan.FromMilliseconds(neighbourhood.GetLength(1) * timeScale);
@@ -223,8 +223,80 @@ namespace Dong.Felt.Representations
                 }
             }
 
-            ColIndex = (int)(col * timeScale);
-            RowIndex = (int)(row * frequencyScale);
+            FrameIndex = (int)(col * timeScale);
+            FrequencyIndex = (int)(row * frequencyScale);
+            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+        }
+
+        public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, int neighbourhoodLength, SpectralSonogram spectrogram)
+        {
+            var timeScale = spectrogram.FrameDuration - spectrogram.FrameOffset; // ms
+            var frequencyScale = spectrogram.FBinWidth; // hz  
+            var sumXInNh = 0.0;
+            var sumYInNh = 0.0;
+            var sumSquareX = 0.0;
+            var sumXYInNh = 0.0;
+            var poiMatrixLength = pointsOfInterest.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var tempColIndex = 0.0;
+            var tempRowIndex = 0.0;
+            var pointsCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (colIndex < matrixRadius)
+                        { 
+                            tempColIndex = matrixRadius - colIndex; 
+                        }
+                        else
+                        {
+                            tempColIndex = colIndex - matrixRadius;
+                        }
+                        if (rowIndex < matrixRadius)
+                        { 
+                            tempRowIndex = rowIndex - matrixRadius; 
+                        }
+                        else
+                        {
+                            tempRowIndex = matrixRadius - rowIndex;
+                        }
+                        sumXInNh += tempColIndex;
+                        sumYInNh += tempRowIndex;
+                        sumXYInNh += tempRowIndex * tempColIndex;
+                        sumSquareX += Math.Pow(tempColIndex, 2.0);
+                        pointsCount++;
+                    }
+                }                              
+            }
+            var slope = 100.0;
+            var yIntersect = 100.0;
+            var proportionParameter = 0.15;
+            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
+            if (pointsCount >= poiCountThreshold)
+            {
+                var meanX = sumXInNh / pointsCount;
+                var meanY = sumYInNh / pointsCount;
+                if ((sumSquareX - Math.Pow(sumXInNh, 2.0) / pointsCount) != 0)
+                {
+                    slope = (sumXYInNh - sumXInNh * sumYInNh / pointsCount) /
+                            (sumSquareX - Math.Pow(sumXInNh, 2.0) / pointsCount);
+                    yIntersect = meanY - slope * meanX;
+                }
+                else   // if the slope is 90 degree. 
+                {
+                    slope = 4.0;
+                    yIntersect = 0.0;
+                }
+                
+            }
+            this.magnitude = yIntersect;
+            this.orientation = slope;
+            FrameIndex = col * timeScale;
+            FrequencyIndex = row * frequencyScale;
             Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
@@ -272,8 +344,8 @@ namespace Dong.Felt.Representations
             }
             this.magnitude = magnitude;
             this.orientation = direction;
-            ColIndex = col * timeScale;
-            RowIndex = row * frequencyScale;
+            FrameIndex = col * timeScale;
+            FrequencyIndex = row * frequencyScale;
             Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(0) * timeScale);
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
@@ -327,7 +399,7 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        ridgeNeighbourhoodRepresentation.SetNeighbourhoodVectorRepresentation2(subMatrix, row, col, neighbourhoodLength, spectrogram);
+                        ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }
@@ -346,8 +418,8 @@ namespace Dong.Felt.Representations
             var listLines = lines.ToList();
             var nh = new RidgeDescriptionNeighbourhoodRepresentation()
             {
-                ColIndex = int.Parse(listLines[0]),
-                RowIndex = int.Parse(listLines[1]),
+                FrameIndex = int.Parse(listLines[0]),
+                FrequencyIndex = int.Parse(listLines[1]),
                 WidthPx = int.Parse(listLines[2]),
                 HeightPx = int.Parse(listLines[3]),
                 Duration = TimeSpan.FromMilliseconds(double.Parse(listLines[4])),
@@ -365,8 +437,8 @@ namespace Dong.Felt.Representations
 
             var nh = new RidgeDescriptionNeighbourhoodRepresentation()
             {
-                ColIndex = double.Parse(listLines[1]),
-                RowIndex = double.Parse(listLines[2]),
+                FrameIndex = double.Parse(listLines[1]),
+                FrequencyIndex = double.Parse(listLines[2]),
                 magnitude = double.Parse(listLines[3]),
                 orientation = double.Parse(listLines[4]),               
             };
@@ -380,8 +452,8 @@ namespace Dong.Felt.Representations
 
             var nh = new RidgeDescriptionNeighbourhoodRepresentation()
             {
-                ColIndex = double.Parse(listLines[1]),
-                RowIndex = double.Parse(listLines[2]),
+                FrameIndex = double.Parse(listLines[1]),
+                FrequencyIndex = double.Parse(listLines[2]),
                 score = int.Parse(listLines[3]),
                 orientationType = int.Parse(listLines[4]),              
             };
@@ -428,8 +500,8 @@ namespace Dong.Felt.Representations
                 }
                 var nh1 = new RidgeDescriptionNeighbourhoodRepresentation()
                 {
-                    ColIndex = nh.ColIndex,
-                    RowIndex = nh.RowIndex,
+                    FrameIndex = nh.FrameIndex,
+                    FrequencyIndex = nh.FrequencyIndex,
                     score = normalisedMagnitude,
                     orientationType = nh.orientationType,
                 };
@@ -448,8 +520,8 @@ namespace Dong.Felt.Representations
             int neighbourhoodLength = 13;
             int nhRadius = neighbourhoodLength / 2;
             int maxFrequencyBand = 257;
-            int x = StatisticalAnalysis.MilliSecondsToFrameIndex(nhRepresentation.ColIndex);
-            int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFruencyBandIndex(nhRepresentation.RowIndex);
+            int x = StatisticalAnalysis.MilliSecondsToFrameIndex(nhRepresentation.FrameIndex);
+            int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFruencyBandIndex(nhRepresentation.FrequencyIndex);
             //int dominantOrientationCategory = nhRepresentation.dominantOrientationType;
             //int dominantPOICount = nhRepresentation.dominantPOICount;
             double orientation = nhRepresentation.orientation; 
