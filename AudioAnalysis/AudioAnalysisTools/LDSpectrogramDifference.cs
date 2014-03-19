@@ -12,10 +12,9 @@ namespace AudioAnalysisTools
 {
     public static class LDSpectrogramDifference
     {
-
         //PARAMETERS
         // set the X and Y axis scales for the spectrograms 
-        private static int minOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
+        private static int minuteOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
         private static int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
         private static int sampleRate = 17640; // default value - after resampling
         private static int frameWidth = 512;   // default value - from which spectrogram was derived
@@ -31,6 +30,30 @@ namespace AudioAnalysisTools
         private static int titleHt = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
 
 
+        public static void DrawDifferenceSpectrogram(dynamic configuration)
+        {
+            string ipdir = configuration.InputDirectory;
+            string ipFileName1 = configuration.IndexFile1;
+            string ipFileName2 = configuration.IndexFile2;
+            string opdir = configuration.OutputDirectory;
+
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            //if(configuration.ContainsKey())
+            //{
+            //    colorMap = (string)configuration.ColorMap;                // assigns indices to RGB
+            //}
+            colorMap = (string)configuration.ColorMap;                // assigns indices to RGB
+            backgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff;   // must be value <=1.0
+            colourGain            = (double)configuration.ColourGain;              // determines colour saturation of the difference spectrogram
+
+            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+            minuteOffset = (Int32)configuration.MinuteOffset;        // default is recording starts at zero minute of day i.e. midnight
+            xScale     = (Int32)configuration.X_Scale;             // default is one minute spectra and hourly time lines
+            sampleRate = (Int32)configuration.SampleRate;          // default value - after resampling
+            frameWidth = (Int32)configuration.FrameWidth;          // frame width from which spectrogram was derived. Assume no frame overlap.
+
+            DrawDifferenceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
+        }
 
 
 
@@ -47,7 +70,7 @@ namespace AudioAnalysisTools
         public static void DrawDifferenceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
 
-            var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = ipFileName1.Name;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
@@ -58,7 +81,7 @@ namespace AudioAnalysisTools
                 return;
             }
 
-            var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = ipFileName2.Name;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
@@ -72,9 +95,35 @@ namespace AudioAnalysisTools
             string title = String.Format("DIFFERENCE SPECTROGRAM ({0} - {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
             Image deltaSp = LDSpectrogramDifference.DrawDifferenceSpectrogram(cs2, cs1, colourGain);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, deltaSp.Width, titleHt);
-            deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
             string opFileName3 = ipFileName1 + ".Difference.COLNEG.png";
             deltaSp.Save(Path.Combine(opdir.FullName, opFileName3));
+        }
+
+        public static void DrawTStatisticThresholdedDifferenceSpectrograms(dynamic configuration)
+        {
+            string ipdir = configuration.InputDirectory;
+            string ipFileName1 = configuration.IndexFile1;
+            string ipSdFileName1 = configuration.StdDevFile1;
+            string ipFileName2 = configuration.IndexFile2;
+            string ipSdFileName2 = configuration.StdDevFile2;
+            string opdir = configuration.OutputDirectory;
+
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            colorMap = (string)configuration.ColorMap;                // assigns indices to RGB
+            backgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff;   // must be value <=1.0
+            colourGain = (double)configuration.ColourGain;              // determines colour saturation of the difference spectrogram
+
+            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+            minuteOffset = (Int32)configuration.MinuteOffset;        // default is recording starts at zero minute of day i.e. midnight
+            xScale = (Int32)configuration.X_Scale;             // default is one minute spectra and hourly time lines
+            sampleRate = (Int32)configuration.SampleRate;          // default value - after resampling
+            frameWidth = (Int32)configuration.FrameWidth;          // frame width from which spectrogram was derived. Assume no frame overlap.
+
+            DrawTStatisticThresholdedDifferenceSpectrograms(new DirectoryInfo(ipdir),
+                                                            new FileInfo(ipFileName1), new FileInfo(ipSdFileName1),
+                                                            new FileInfo(ipFileName2), new FileInfo(ipSdFileName2), 
+                                                            new DirectoryInfo(opdir));
         }
 
 
@@ -105,7 +154,7 @@ namespace AudioAnalysisTools
                                                                                                 DirectoryInfo opdir)
         {
             string opFileName1 = ipFileName1.Name;
-            var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = opFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
@@ -113,7 +162,7 @@ namespace AudioAnalysisTools
             string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2.Name;
-            var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = opFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
@@ -189,7 +238,7 @@ namespace AudioAnalysisTools
             double avg1, avg2, std1, std2;
             double[,] M = new double[rows, cols];
             int expectedMinAvg = 0; // expected minimum average  of spectral dB above background
-            int expectedMinVar = 1; // expected minimum variance of spectral dB above background
+            int expectedMinVar = 0; // expected minimum variance of spectral dB above background
 
             for (int row = 0; row < rows; row++)
             {
@@ -219,40 +268,6 @@ namespace AudioAnalysisTools
             return M;
         }
 
-        //public static Dictionary<string, double[,]> GetTStatisticMatrices(ColourSpectrogram cs1, ColourSpectrogram cs2)
-        //{
-        //    string[] keys = cs1.ColorMap.Split('-');
-
-        //    double[,] avg1a = cs1.spectrogramMatrices[keys[0]];
-        //    if (keys[0].Equals("TEN")) avg1a = MatrixTools.SubtractValuesFromOne(avg1a);
-        //    double[,] avg1b = cs1.spectrogramMatrices[keys[1]];
-        //    if (keys[1].Equals("TEN")) avg1b = MatrixTools.SubtractValuesFromOne(avg1b);
-        //    double[,] avg1c = cs1.spectrogramMatrices[keys[2]];
-        //    if (keys[2].Equals("TEN")) avg1c = MatrixTools.SubtractValuesFromOne(avg1c);
-
-        //    double[,] std1a = cs1.spgr_StdDevMatrices[keys[0]];
-        //    double[,] std1b = cs1.spgr_StdDevMatrices[keys[1]];
-        //    double[,] std1c = cs1.spgr_StdDevMatrices[keys[2]];
-
-        //    double[,] avg2a = cs2.spectrogramMatrices[keys[0]];
-        //    if (keys[0].Equals("TEN")) avg2a = MatrixTools.SubtractValuesFromOne(avg2a);
-        //    double[,] avg2b = cs2.spectrogramMatrices[keys[1]];
-        //    if (keys[1].Equals("TEN")) avg2b = MatrixTools.SubtractValuesFromOne(avg2b);
-        //    double[,] avg2c = cs2.spectrogramMatrices[keys[2]];
-        //    if (keys[2].Equals("TEN")) avg2c = MatrixTools.SubtractValuesFromOne(avg2c);
-
-        //    double[,] std2a = cs2.spgr_StdDevMatrices[keys[0]];
-        //    double[,] std2b = cs2.spgr_StdDevMatrices[keys[1]];
-        //    double[,] std2c = cs2.spgr_StdDevMatrices[keys[2]];
-
-        //    var dict = new Dictionary<string, double[,]>();
-        //    dict.Add(keys[0], ColourSpectrogram.GetTStatisticMatrix(avg1a, std1a, cs1.N, avg2a, std2a, cs2.N));
-        //    dict.Add(keys[1], ColourSpectrogram.GetTStatisticMatrix(avg1b, std1b, cs1.N, avg2b, std2b, cs2.N));
-        //    dict.Add(keys[2], ColourSpectrogram.GetTStatisticMatrix(avg1c, std1c, cs1.N, avg2c, std2c, cs2.N));
-        //    return dict;
-        //}
-
-
 
 
         public static Image DrawTStatisticSpectrogramsOfSingleIndex(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold)
@@ -271,17 +286,15 @@ namespace AudioAnalysisTools
             }
 
 
-            int titleHt = 20;
-            int minOffset = 0;
             //frame image 1
             string title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width, titleHt);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
 
             //frame image 2
             title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
 
             //get matrices required to calculate matrix of t-statistics
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
@@ -302,7 +315,7 @@ namespace AudioAnalysisTools
             Image image4 = LDSpectrogramDifference.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
             title = String.Format("{0} DIFFERENCE SPECTROGRAM for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width, titleHt);
-            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
 
             Image[] opArray = new Image[3];
             opArray[0] = image1;
