@@ -12,6 +12,41 @@ namespace AudioAnalysisTools
 {
     public static class LDSpectrogramDistance
     {
+        // set the X and Y axis scales for the spectrograms 
+        private static int minuteOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
+        private static int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
+        private static int sampleRate = 17640; // default value - after resampling
+        private static int frameWidth = 512;   // default value - from which spectrogram was derived
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+        private static double backgroundFilterCoeff = 0.75; //must be value <=1.0
+        private static double colourGain = 1.5;
+
+
+        public static void DrawDistanceSpectrogram(dynamic configuration)
+        {
+            string ipdir = configuration.InputDirectory;
+            string ipFileName1 = configuration.IndexFile1;
+            string ipFileName2 = configuration.IndexFile2;
+            string opdir = configuration.OutputDirectory;
+
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            colorMap = (string)configuration.ColorMap;                // assigns indices to RGB
+            backgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff;   // must be value <=1.0
+            colourGain = (double)configuration.ColourGain;            // determines colour saturation of the difference spectrogram
+
+            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+            minuteOffset = (Int32)configuration.MinuteOffset;      // default is recording starts at zero minute of day i.e. midnight
+            xScale = (Int32)configuration.X_Scale;                 // default is one minute spectra and hourly time lines
+            sampleRate = (Int32)configuration.SampleRate;          // default value - after resampling
+            frameWidth = (Int32)configuration.FrameWidth;          // frame width from which spectrogram was derived. Assume no frame overlap.
+
+            DrawDistanceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
+        }
+
+
+
+
+
         /// <summary>
         /// This method compares the acoustic indices derived from two different long duration recordings of the same length. 
         /// It takes as input any number of csv files of acoustic indices in spectrogram columns.
@@ -29,18 +64,11 @@ namespace AudioAnalysisTools
         public static void DrawDistanceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
             //PARAMETERS
-            // set the X and Y axis scales for the spectrograms 
-            int minOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
-            int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
-            int sampleRate = 17640; // default value - after resampling
-            int frameWidth = 512;   // default value - from which spectrogram was derived
-            string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-            double backgroundFilterCoeff = 0.75; //must be value <=1.0
             int titleHt = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
 
 
                 string opFileName1 = ipFileName1.Name;
-                var cs1 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.ColorMODE = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
                 cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
@@ -56,10 +84,10 @@ namespace AudioAnalysisTools
                 }
                 string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
-                spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minOffset, cs1.X_interval, cs1.Y_interval);
+                spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
 
                 string opFileName2 = ipFileName2.Name;
-                var cs2 = new LDSpectrogramRGB(minOffset, xScale, sampleRate, frameWidth, colorMap);
+                var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs2.ColorMODE = colorMap;
                 cs2.BackgroundFilter = backgroundFilterCoeff;
                 cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
@@ -75,13 +103,13 @@ namespace AudioAnalysisTools
 
                 title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
-                spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
 
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
                 Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDifference.GetDifferenceColourChart());
                 titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, titleHt);
-                deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
+                deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
 
                 string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";

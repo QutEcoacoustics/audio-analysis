@@ -91,7 +91,7 @@ namespace AnalysisPrograms
 
 
             // OUTPUT FILES
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March17";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March19";
 
 
             // WRITE THE YAML CONFIG FILE
@@ -99,22 +99,25 @@ namespace AnalysisPrograms
             var cfgFile = new FileInfo(configPath);
             Yaml.Serialise(cfgFile, new
             { 
+                //paths to required directories and files
                 InputDirectory = ipdir,
                 IndexFile1 = ipFileName1, 
                 StdDevFile1 = ipSdFileName1,
+
                 IndexFile2 = ipFileName2,
                 StdDevFile2 = ipSdFileName2,
-                OutputDirectory = opdir
+                OutputDirectory = opdir,
 
-                // Here are some other parameters that could eventually be included in the config file.
-                // e.g. the X and Y axis scales for the spectrograms 
-                // int minOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
-                // int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
-                // int sampleRate = 17640; // default value - after resampling
-                // int frameWidth = 512;   // default value - from which spectrogram was derived
-                // string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-                // double backgroundFilterCoeff = 0.75; //must be value <=1.0
-                // double colourGain = 1.5;
+                //these parameters manipulate the colour map and appearance of the false-colour spectrogram
+                ColorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR, // CHANGE RGB mapping here.
+                BackgroundFilterCoeff = 0.75,                       // must be value <=1.0
+                ColourGain = 1.5,                                   // determines colour saturation of the difference spectrogram
+
+                // These parameters describe the freancy and times scales for drawing X and Y axes on the spectrograms
+                SampleRate = 17640,                                 // default value - after resampling
+                FrameWidth = 512,                                   // frame width from which spectrogram was derived. Assume no frame overlap.
+                MinuteOffset = 1,                                   // default is recording starts at zero minute of day i.e. midnight
+                X_Scale = SpectrogramConstants.XAXIS_SCALE,         // default is one minute spectra and hourly time lines
             });
 
 
@@ -140,33 +143,31 @@ namespace AnalysisPrograms
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside of this method. Extract all params below.
              */
-            string inputDirectory = configuration.InputDirectory;
-            string indexFile1 = configuration.IndexFile1;
-            string stdDevFile1 =  configuration.StdDevFile1;
-            string indexFile2 =  configuration.IndexFile2;
-            string stdDevFile2 =  configuration.StdDevFile2;
-            string outputDirectory =  configuration.OutputDirectory;
+            //string inputDirectory = configuration.InputDirectory;
+            //string indexFile1 = configuration.IndexFile1;
+            //string stdDevFile1 =  configuration.StdDevFile1;
+            //string indexFile2 =  configuration.IndexFile2;
+            //string stdDevFile2 =  configuration.StdDevFile2;
+            //string outputDirectory =  configuration.OutputDirectory;
 
-            // Load arguments class with additional info in the YAML config file
-            /* Ant: FYI the following is a bad duplication of code
-             * Either have the options in the config file or the arguments, not both...
-             */
-            arguments.InputDirectory = new DirectoryInfo(inputDirectory);
-            arguments.IndexFile1 = new FileInfo(indexFile1);
-            arguments.StdDevFile1 = new FileInfo(stdDevFile1);
-            arguments.IndexFile2 = new FileInfo(indexFile2);
-            arguments.StdDevFile2 = new FileInfo(stdDevFile2);
-            arguments.OutputDirectory = new DirectoryInfo(outputDirectory);
 
-            LDSpectrogramDistance.DrawDistanceSpectrogram(arguments.InputDirectory,
-                                     arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
+            //LDSpectrogramDistance.DrawDistanceSpectrogram(arguments.InputDirectory,
+            //                         arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
 
-            LDSpectrogramDifference.DrawDifferenceSpectrogram(arguments.InputDirectory,
-                                    arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
+            //LDSpectrogramDifference.DrawDifferenceSpectrogram(arguments.InputDirectory,
+            //                        arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
 
-            LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(arguments.InputDirectory,
-                                    arguments.IndexFile1, arguments.StdDevFile1, arguments.IndexFile2, arguments.StdDevFile2,
-                                    arguments.OutputDirectory);
+            //LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(arguments.InputDirectory,
+            //                        arguments.IndexFile1, arguments.StdDevFile1, arguments.IndexFile2, arguments.StdDevFile2,
+            //                        arguments.OutputDirectory);
+
+
+            LDSpectrogramDistance.DrawDistanceSpectrogram(configuration);
+
+            LDSpectrogramDifference.DrawDifferenceSpectrogram(configuration);
+
+            LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(configuration);
+
 
         }
     }

@@ -148,6 +148,7 @@
     <Reference Include="MathNet.Iridium">
       <HintPath>..\..\Extra Assemblies\MathNet\MathNet.Iridium.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
