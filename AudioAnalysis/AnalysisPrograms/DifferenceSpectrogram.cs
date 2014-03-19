@@ -116,7 +116,7 @@ namespace AnalysisPrograms
                 // These parameters describe the freancy and times scales for drawing X and Y axes on the spectrograms
                 SampleRate = 17640,                                 // default value - after resampling
                 FrameWidth = 512,                                   // frame width from which spectrogram was derived. Assume no frame overlap.
-                MinuteOffset = 1,                                   // default is recording starts at zero minute of day i.e. midnight
+                MinuteOffset = 0,                                   // default is recording starts at zero minute of day i.e. midnight
                 X_Scale = SpectrogramConstants.XAXIS_SCALE,         // default is one minute spectra and hourly time lines
             });
 
@@ -138,29 +138,10 @@ namespace AnalysisPrograms
 
             // load YAML configuration
             dynamic configuration = Yaml.Deserialise(arguments.Config);
-
             /*
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside of this method. Extract all params below.
              */
-            //string inputDirectory = configuration.InputDirectory;
-            //string indexFile1 = configuration.IndexFile1;
-            //string stdDevFile1 =  configuration.StdDevFile1;
-            //string indexFile2 =  configuration.IndexFile2;
-            //string stdDevFile2 =  configuration.StdDevFile2;
-            //string outputDirectory =  configuration.OutputDirectory;
-
-
-            //LDSpectrogramDistance.DrawDistanceSpectrogram(arguments.InputDirectory,
-            //                         arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
-
-            //LDSpectrogramDifference.DrawDifferenceSpectrogram(arguments.InputDirectory,
-            //                        arguments.IndexFile1, arguments.IndexFile2, arguments.OutputDirectory);
-
-            //LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(arguments.InputDirectory,
-            //                        arguments.IndexFile1, arguments.StdDevFile1, arguments.IndexFile2, arguments.StdDevFile2,
-            //                        arguments.OutputDirectory);
-
 
             LDSpectrogramDistance.DrawDistanceSpectrogram(configuration);
 

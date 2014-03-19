@@ -29,16 +29,30 @@ namespace AudioAnalysisTools
             string ipFileName2 = configuration.IndexFile2;
             string opdir = configuration.OutputDirectory;
 
-            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            colorMap = (string)configuration.ColorMap;                // assigns indices to RGB
-            backgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff;   // must be value <=1.0
-            colourGain = (double)configuration.ColourGain;            // determines colour saturation of the difference spectrogram
+//          First, need to make an optional cast:
+//          int? minuteOffset = confirguration.MinuteOffset;
 
-            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-            minuteOffset = (Int32)configuration.MinuteOffset;      // default is recording starts at zero minute of day i.e. midnight
-            xScale = (Int32)configuration.X_Scale;                 // default is one minute spectra and hourly time lines
-            sampleRate = (Int32)configuration.SampleRate;          // default value - after resampling
-            frameWidth = (Int32)configuration.FrameWidth;          // frame width from which spectrogram was derived. Assume no frame overlap.
+//          Second,  have a few options:
+//          if (!minuteOffset.HasValue) {
+//               minuteOffset = 0;
+//          }
+//OR       minuteOffset = minuteOffset == null ? 0 : minuteoffset.Value;
+
+//ORRR - all in one line!
+            //int minuteOffset = (int?)configuration.MinuteOffset ?? 0;
+
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            string map = configuration.ColorMap;
+            colorMap = map!=null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
+
+            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? backgroundFilterCoeff;   // must be value <=1.0
+            colourGain = (double?)configuration.ColourGain ?? colourGain;          // determines colour saturation of the difference spectrogram
+
+            // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
+            minuteOffset = (int?)configuration.MinuteOffset ?? 0;         // default recording starts at zero minute of day i.e. midnight
+            xScale = (int?)configuration.X_Scale ?? SpectrogramConstants.XAXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            sampleRate = (int?)configuration.SampleRate ?? sampleRate;    // default value - after resampling
+            frameWidth = (int?)configuration.FrameWidth ?? frameWidth;    // frame width from which spectrogram was derived. Assume no frame overlap.
 
             DrawDistanceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
         }
