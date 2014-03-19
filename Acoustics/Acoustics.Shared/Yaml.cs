@@ -41,7 +41,7 @@ namespace Acoustics.Shared
         {
             using (var stream = file.CreateText())
             {
-                var serialiser = new Serializer();
+                var serialiser = new Serializer(SerializationOptions.EmitDefaults);
                 serialiser.Serialize(stream, obj);
             }   
         }
