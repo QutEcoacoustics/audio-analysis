@@ -32,6 +32,21 @@ namespace Dong.Felt
 
            return result;
         }
+        
+        public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionRepresentationList(RegionRerepresentation query, List<RegionRerepresentation> candidates)
+        {
+            // to get the distance and frequency band index
+            var result = new List<Tuple<double, double, double>>();
+            foreach (var c in candidates)
+            {
+                if (Math.Abs(c.FrequencyIndex - query.FrequencyIndex) < 1)                 
+                {
+                    var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c);                         
+                    result.Add(Tuple.Create(distance, c.FrameIndex, c.FrequencyIndex)); 
+                }
+            }
+            return result;
+        }
 
         /// <summary>
         /// This similarity tuple records the distance, timePosition, frequencyband. 
@@ -63,7 +78,8 @@ namespace Dong.Felt
                         miniDistance = minDistance;
                     }                   
                 }
-                result.Add(Tuple.Create(miniDistance, j * 150.8, c[regionIndicator].FrequencyIndex));
+                var neighbourhoodDuration = 5 * 11.6;
+                result.Add(Tuple.Create(miniDistance, j * neighbourhoodDuration, c[regionIndicator].FrequencyIndex));
                 j++;
             }
             return result;
@@ -149,9 +165,31 @@ namespace Dong.Felt
                             }
                         }
                         var region = new RegionRerepresentation(nhList, nhCountInRow, nhCountInColumn, audioFile);
+                        // ????
+                        region.FrameIndex = colIndex * 5 * 11.6;
+                        region.FrequencyIndex = rowIndex * 5 * 43;
                         result.Add(region);
                     }
                 }
+            }
+            return result;
+        }
+
+        public static List<RegionRerepresentation> FixedFrequencyRegionRepresentationList2(List<RegionRerepresentation> candidatesList, int rowsCount1, int colsCount1)
+        {
+            var result = new List<RegionRerepresentation>();
+            var listCount = candidatesList.Count;
+            var nhCountInRow = candidatesList[0].NhCountInRow;
+            var nhCountInCol = candidatesList[0].NhCountInCol;
+            var rowsCount = rowsCount1 - nhCountInRow + 1;
+            var colsCount = colsCount1 - nhCountInCol + 1;
+            var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
+            var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
+            var nhFrequencyIndexInRow = (int)candidatesList[0].FrequencyIndex;
+            var nhRowIndex = (int)(nhFrequencyIndexInRow / 5 * 43);
+            for (int colIndex = 0; colIndex < colsCount; colIndex++)
+            {               
+                result.Add(candidatesArray[nhRowIndex, colIndex]);
             }
             return result;
         }
@@ -169,14 +207,8 @@ namespace Dong.Felt
 
             var nhCountInRow = candidatesList[0].NhCountInRow;
             var nhCountInCol = candidatesList[0].NhCountInCol;
-            //var nhHeightInHerz = 559.0;
-            //var nhWidthInMillisecond = 150.8;
-            //var lastCandidate = candidatesList[listCount - 1];
-            //var rowsCount = (int)(lastCandidate.FrequencyIndex / nhHeightInHerz) + 1;
-            //var colsCount = (int)(lastCandidate.TimeIndex / nhWidthInMillisecond) + 1;
             var rowsCount = rowsCount1 - nhCountInRow + 1;
             var colsCount = colsCount1 - nhCountInCol + 1; 
-            //var colsCount = listCount / rowsCount;
             var candidatesArray = StatisticalAnalysis.RegionRepresentationListToArray(candidatesList, rowsCount, colsCount);
             var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
             for (int colIndex = 0; colIndex < colsCount; colIndex++)

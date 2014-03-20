@@ -247,7 +247,7 @@ namespace AudioAnalysisTools
             }
 
             // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
-            g.DrawRectangle(p1, t1, y, tWidth, height);
+            g.DrawRectangle(p2, t1, y, tWidth, height);
            
 
             //draw the score bar to indicate relative score
