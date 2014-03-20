@@ -90,7 +90,7 @@ namespace AnalysisPrograms
 
 
             // OUTPUT FILES
-            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March19";
+            string opdir = @"C:\SensorNetworks\Output\DifferenceSpectrograms\2014March20";
 
 
             // WRITE THE YAML CONFIG FILE

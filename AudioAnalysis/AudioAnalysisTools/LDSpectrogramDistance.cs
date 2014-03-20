@@ -20,7 +20,6 @@ namespace AudioAnalysisTools
 
         private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
-        private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
 
         public static void DrawDistanceSpectrogram(dynamic configuration)
@@ -45,9 +44,7 @@ namespace AudioAnalysisTools
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
             colorMap = map!=null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
-
             backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? backgroundFilterCoeff;   // must be value <=1.0
-            colourGain = (double?)configuration.ColourGain ?? colourGain;          // determines colour saturation of the difference spectrogram
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             minuteOffset = (int?)configuration.MinuteOffset ?? 0;         // default recording starts at zero minute of day i.e. midnight
@@ -79,9 +76,6 @@ namespace AudioAnalysisTools
         public static void DrawDistanceSpectrogram(DirectoryInfo ipdir, FileInfo ipFileName1, FileInfo ipFileName2, DirectoryInfo opdir)
         {
             //PARAMETERS
-            int titleHt = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
-
-
                 string opFileName1 = ipFileName1.Name;
                 var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.ColorMODE = colorMap;
@@ -98,7 +92,7 @@ namespace AudioAnalysisTools
                     return;
                 }
                 string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width, titleHt);
+                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
                 spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
 
                 string opFileName2 = ipFileName2.Name;
@@ -117,17 +111,17 @@ namespace AudioAnalysisTools
                 }
 
                 title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width, titleHt);
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
                 spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
 
-                string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
+                string opFileName4 = ipFileName1 + ".EuclidianDistance.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
                 Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(SpectrogramConstants.GetDifferenceColourChart());
-                titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, titleHt);
+                titleBar = LDSpectrogramDistance.DrawTitleBarOfEuclidianDistanceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
                 deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
 
-                string opFileName5 = ipFileName1 + ".THREEDist.COLNEG.png";
+                string opFileName5 = ipFileName1 + ".2SpectrogramsAndDistance.png";
                 Image[] images = new Image[3];
                 images[0] = spg1Image;
                 images[1] = spg2Image;
@@ -324,7 +318,50 @@ namespace AudioAnalysisTools
             dict["sd"] = SD;
             return dict;
         }
-   
-    
-    } //    class SpectrogramDistance
+
+
+        public static Image DrawTitleBarOfEuclidianDistanceSpectrogram(string name1, string name2, Color[] colorArray, int width, int height)
+        {
+            Image colourChart = ImageTools.DrawColourChart(width, height, colorArray);
+
+            Bitmap bmp = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            string text = String.Format("EUCLIDIAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
+            int X = 4;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            text = name1 + "  +99.9%conf";
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1);
+            g.DrawImage(colourChart, X, 1);
+
+            X += colourChart.Width;
+            text = "-99.9%conf   " + name2;
+            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
+            stringSize = g.MeasureString(text, stringFont);
+            X += (stringSize.ToSize().Width + 1); //distance to end of string
+
+
+            text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+        }
+
+
+    } //    class LDSpectrogramDistance
 }

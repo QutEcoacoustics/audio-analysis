@@ -23,13 +23,6 @@ namespace AudioAnalysisTools
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
         private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
-        //double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
-        //double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
-        //double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
-
-
-
-
 
         public static void DrawDifferenceSpectrogram(dynamic configuration)
         {
@@ -54,14 +47,14 @@ namespace AudioAnalysisTools
             string map = configuration.ColorMap;
             colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
 
-            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? backgroundFilterCoeff;   // must be value <=1.0
-            colourGain = (double?)configuration.ColourGain ?? colourGain;          // determines colour saturation of the difference spectrogram
+            backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF; 
+            colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            minuteOffset = (int?)configuration.MinuteOffset ?? 0;         // default recording starts at zero minute of day i.e. midnight
+            minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
             xScale = (int?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
-            sampleRate = (int?)configuration.SampleRate ?? sampleRate;    // default value - after resampling
-            frameWidth = (int?)configuration.FrameWidth ?? frameWidth;    // frame width from which spectrogram was derived. Assume no frame overlap.
+            sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE; 
+            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH; 
 
             DrawDifferenceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
         }
@@ -111,16 +104,17 @@ namespace AudioAnalysisTools
             //deltaSp1.Save(Path.Combine(opdir.FullName, opFileName1));
 
             //Draw positive difference spectrograms in one image.
-            Image[] images = LDSpectrogramDifference.DrawPositiveDifferenceSpectrograms(cs1, cs2, (colourGain * 1.33));
-            string title = String.Format("POSITIVE DIFFERENCE SPECTROGRAM ({0} > {1})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            Image[] images = LDSpectrogramDifference.DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
+
+            string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);
             images[0] = LDSpectrogramRGB.FrameSpectrogram(images[0], titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
 
-            title = String.Format("POSITIVE DIFFERENCE SPECTROGRAM ({1} > {0})      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
-            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width);
             images[1] = LDSpectrogramRGB.FrameSpectrogram(images[1], titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
             Image combinedImage = ImageTools.CombineImagesVertically(images);
-            string opFileName = ipFileName1 + ".PositiveDifference.COLNEG.png";
+            string opFileName = ipFileName1 +"-"+ ipFileName2 + ".Difference.png";
             combinedImage.Save(Path.Combine(opdir.FullName, opFileName));
         }
 
@@ -174,6 +168,7 @@ namespace AudioAnalysisTools
         public static Image[] DrawPositiveDifferenceSpectrograms(LDSpectrogramRGB target, LDSpectrogramRGB reference, double colourGain)
         {
             string[] keys = target.ColorMap.Split('-');
+
             double[,] tgtRedM = target.GetNormalisedSpectrogramMatrix(keys[0]);
             double[,] tgtGrnM = target.GetNormalisedSpectrogramMatrix(keys[1]);
             double[,] tgtBluM = target.GetNormalisedSpectrogramMatrix(keys[2]);
@@ -230,51 +225,6 @@ namespace AudioAnalysisTools
             images[0] = spg1Image;
             images[1] = spg2Image;
             return images;
-        }
-
-
-
-
-        public static Image DrawTitleBarOfDifferenceSpectrogram(string name1, string name2, Color[] colorArray, int width, int height)
-        {
-            Image colourChart = ImageTools.DrawColourChart(width, height, colorArray);
-
-            Bitmap bmp = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            Pen pen = new Pen(Color.White);
-            Font stringFont = new Font("Arial", 9);
-            //Font stringFont = new Font("Tahoma", 9);
-            SizeF stringSize = new SizeF();
-
-            string text = String.Format("EUCLIDIAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
-            int X = 4;
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            stringSize = g.MeasureString(text, stringFont);
-            X += (stringSize.ToSize().Width + 70);
-            text = name1 + "  +99.9%conf";
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            stringSize = g.MeasureString(text, stringFont);
-            X += (stringSize.ToSize().Width + 1);
-            g.DrawImage(colourChart, X, 1);
-
-            X += colourChart.Width;
-            text = "-99.9%conf   " + name2;
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-            stringSize = g.MeasureString(text, stringFont);
-            X += (stringSize.ToSize().Width + 1); //distance to end of string
-
-
-            text = String.Format("(c) QUT.EDU.AU");
-            stringSize = g.MeasureString(text, stringFont);
-            int X2 = width - stringSize.ToSize().Width - 2;
-            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
-
-            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
-            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
-            return bmp;
         }
 
     } // class SpectrogramDifference
