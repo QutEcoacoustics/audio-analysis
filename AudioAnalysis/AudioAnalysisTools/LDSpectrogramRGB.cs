@@ -557,7 +557,7 @@ namespace AudioAnalysisTools
 
             //draw a colour spectrum of basic colours
             int maxScaleLength = imageWidth / 3;
-            Image scale = ImageTools.DrawColourScale(maxScaleLength, trackHeight - 2);
+            Image scale = SpectrogramConstants.DrawColourScale(maxScaleLength, trackHeight - 2);
             int xLocation = imageWidth * 2 / 3;
             gr.DrawImage(scale, xLocation, 1); //dra
             return compositeBmp;
@@ -707,9 +707,9 @@ namespace AudioAnalysisTools
             return compositeBmp;
         }
 
-        public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width, int height)
+        public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
         {
-            Bitmap bmp = new Bitmap(width, height);
+            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             Pen pen = new Pen(Color.White);
@@ -733,11 +733,11 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-        public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width, int height)
+        public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width)
         {
-            Image colourChart = ImageTools.DrawColourScale(width, height - 2);
+            Image colourChart = SpectrogramConstants.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
 
-            Bitmap bmp = new Bitmap(width, height);
+            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             Pen pen = new Pen(Color.White);
@@ -745,25 +745,16 @@ namespace AudioAnalysisTools
             //Font stringFont = new Font("Tahoma", 9);
             SizeF stringSize = new SizeF();
 
-            //string text = title;
             int X = 4;
             g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
 
             stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
-            //text = name1 + "  +99.9%conf";
             //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
 
             //stringSize = g.MeasureString(text, stringFont);
             //X += (stringSize.ToSize().Width + 1);
             g.DrawImage(colourChart, X, 1);
-
-            //X += colourChart.Width;
-            //text = "-99.9%conf   " + name2;
-            //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-            //stringSize = g.MeasureString(text, stringFont);
-            //X += (stringSize.ToSize().Width + 1); //distance to end of string
-
 
             string text = String.Format("(c) QUT.EDU.AU");
             stringSize = g.MeasureString(text, stringFont);

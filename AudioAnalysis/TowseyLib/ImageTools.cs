@@ -1949,60 +1949,6 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// Returns an image of an array of colour patches.
-        /// It shows the three primary colours and pairwise combinations.
-        /// </summary>
-        /// <param name="ht"></param>
-        /// <returns></returns>
-        public static Image DrawColourScale(int maxScaleLength, int ht)
-        {
-            int width = maxScaleLength / 7;
-            if (width > ht) width = ht;
-            else if (width < 3) width = 3;
-            Bitmap colorScale = new Bitmap(8 * width, ht);
-            Graphics gr = Graphics.FromImage(colorScale);
-            int offset = width + 1;
-            if (width < 5) offset = width;
-
-            Bitmap colorBmp = new Bitmap(width - 1, ht);
-            Graphics gr2 = Graphics.FromImage(colorBmp);
-            Color c = Color.FromArgb(250, 15, 250);
-            gr2.Clear(c);
-            int x = 0;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            c = Color.FromArgb(250, 15, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            //yellow
-            c = Color.FromArgb(250, 250, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            //green
-            c = Color.FromArgb(15, 250, 15);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // pale blue
-            c = Color.FromArgb(15, 250, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // blue
-            c = Color.FromArgb(15, 15, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            // purple
-            c = Color.FromArgb(250, 15, 250);
-            gr2.Clear(c);
-            x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
-            return (Image)colorScale;
-        }
-
-        /// <summary>
         /// Returns an image of an array of the passed colour patches.
         /// </summary>
         /// <param name="ht"></param>
