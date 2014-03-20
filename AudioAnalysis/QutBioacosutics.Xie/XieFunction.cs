@@ -56,7 +56,17 @@ namespace QutBioacosutics.Xie
         }
 
 
+        public static double Sum(params double[] customerssalary)
+        {
+            double result = 0;
 
+            for (int i = 0; i < customerssalary.Length; i++)
+            {
+                result += customerssalary[i];
+            }
+
+            return result;
+        }
         // Draw tracks on the spectrogram
         //public static void DrawSpectrogram(double[,] matrix)
         //{

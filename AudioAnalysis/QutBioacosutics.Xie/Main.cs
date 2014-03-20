@@ -71,6 +71,10 @@ namespace QutBioacosutics.Xie
 
             var spectrogram = new SpectralSonogram(spectrogramConfig, recording.GetWavReader());
 
+            // find the oscillation through all the recordings
+
+            var Oscillation = new FindOscillation();
+            var oscillationArray = Oscillation.getOscillation(spectrogram.Data, zeroBinIndex);
 
             var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
             var localPeaks = new FindLocalPeaks();
@@ -80,35 +84,39 @@ namespace QutBioacosutics.Xie
             // image.Save(imagePath);
 
             var trackMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+            var trackArray = new double[spectrogram.Data.GetLength(1)];
             var multipleTracks = new ExtractTracks();
-            trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, maximumDiffBin);
+            //trackMatrix = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, maximumDiffBin);
 
+            
+            var results = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, maximumDiffBin);
+
+            trackArray = results.Item1;
+            trackMatrix = results.Item2;
 
             // find the harmonic structure based on tracks
             var Harmonic = new FindHarmonics();
             var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
 
+            // change harmonicMarix to array
+
+            var harmonicArray = new double[harmonicMatrix.GetLength(0)];
+            for (int i = 0; i < harmonicMatrix.GetLength(0); i++)
+            {
+                var temp = 0.0;
+                for (int j = 0; j < harmonicMatrix.GetLength(1); j++)
+                {
+                    temp = temp + harmonicMatrix[i, j];                
+                }
+                harmonicArray[i] = temp;
+            }
+
             //var image = ImageTools.DrawMatrix(harmonicMatrix);
             //image.Save(imagePath);
 
-
-            // find the oscillation through all the recordings
-
-            var Oscillation = new FindOscillation();
-            var oscillationMarix = Oscillation.getOscillation(spectrogram.Data, zeroBinIndex);
-
-
-
-
-
-
-
-
-
-            // trackMatrix = MatrixTools.MatrixRotate90Anticlockwise(trackMatrix);
+            //trackMatrix = MatrixTools.MatrixRotate90Anticlockwise(trackMatrix);
             //double[,] spectrogramMatrix = DataTools.normalise(spectrogram.Data);
             //spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrix);
-
 
             //int rows = spectrogramMatrix.GetLength(0);
             //int cols = spectrogramMatrix.GetLength(1);
@@ -125,7 +133,7 @@ namespace QutBioacosutics.Xie
             //        else
             //            if (greyId > 255) greyId = 255;
 
-            //        greyId = 255 - greyId; 
+            //        greyId = 255 - greyId;
             //        bmp.SetPixel(c, r, grayScale[greyId]);
             //    }
             //}
@@ -154,14 +162,8 @@ namespace QutBioacosutics.Xie
             //    }
             //}
 
-
-
-
-
             //bmp.Save(imagePath);
 
-            
-          
 
             Log.Info("Analysis complete");
            
