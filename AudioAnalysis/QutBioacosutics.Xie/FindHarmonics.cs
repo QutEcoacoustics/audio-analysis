@@ -18,47 +18,48 @@ namespace QutBioacosutics.Xie
             var intensity = new double[cols];
             var periodicity = new double[cols];
 
-            var trackMatrix = new double[rows,cols];
+            //var trackMatrix = new double[(rows - 1),cols];
 
-            for (int i = 0; i < (rows - 1); i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    if(matrix[i,j] > 0)
-                    {
-                        trackMatrix[i,j] = 1;                     
-                    }                                  
-                }            
-            }
-
-            for (int i = 0; i < cols; i++)
-            {
-
-                double[] prevColumn = MatrixTools.GetColumn(matrix, i);
-                double[] thiscolumn = MatrixTools.GetColumn(matrix, (i + 1));
+            //for (int i = 0; i < (rows - 1); i++)
+            //{
+            //    for (int j = 0; j < cols; j++)
+            //    {
+            //        if(matrix[i,j] > 0)
+            //        {
+            //            trackMatrix[i,j] = 1;                     
+            //        }                                  
+            //    }            
+            //}
 
 
-                if ((XieFunction.ArrayCount(prevColumn) > colThreshold) & (XieFunction.ArrayCount(thiscolumn) > colThreshold))
-                {
-                    var spectrum = CrossCorrelation.CrossCorr(prevColumn, thiscolumn);
+            //for (int i = 0; i < (cols - 1); i++)
+            //{
 
-                    for (int n = 0; n < zeroBinIndex; n++) spectrum[n] = 0.0;
-                    spectrum = DataTools.NormaliseArea(spectrum);
-                    int maxIndex = DataTools.GetMaxIndex(spectrum);
-                    double intensityValue = spectrum[maxIndex];
-                    intensity[i] = intensityValue;
+            //    double[] prevColumn = MatrixTools.GetColumn(trackMatrix, i);
+            //    double[] thiscolumn = MatrixTools.GetColumn(trackMatrix, (i + 1));
 
-                    double period = 0.0;
-                    if (maxIndex != 0)
-                    {
-                        period = 2 * rows / maxIndex;
-                    }
 
-                    periodicity[i] = period;
+            //    if ((XieFunction.ArrayCount(prevColumn) > colThreshold) & (XieFunction.ArrayCount(thiscolumn) > colThreshold))
+            //    {
+            //        var spectrum = CrossCorrelation.CrossCorr(prevColumn, thiscolumn);
 
-                    i++;
-                }
-            }
+            //        for (int n = 0; n < zeroBinIndex; n++) spectrum[n] = 0.0;
+            //        spectrum = DataTools.NormaliseArea(spectrum);
+            //        int maxIndex = DataTools.GetMaxIndex(spectrum);
+            //        double intensityValue = spectrum[maxIndex];
+            //        intensity[i] = intensityValue;
+
+            //        double period = 0.0;
+            //        if (maxIndex != 0)
+            //        {
+            //            period = 2 * rows / maxIndex;
+            //        }
+
+            //        periodicity[i] = period;
+
+            //        i++;
+            //    }
+            //}
 
             //var result = new List<int>[cols];
             var result = new double[rows, cols];

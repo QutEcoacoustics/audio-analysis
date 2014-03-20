@@ -11,7 +11,7 @@ namespace QutBioacosutics.Xie
 
     class ExtractTracks
     {
-        public double[,] GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold, int maximumDuration, double maximumDiffBin)
+        public System.Tuple<double[], double[,]> GetTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold, int maximumDuration, double maximumDiffBin)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -537,8 +537,6 @@ namespace QutBioacosutics.Xie
             //}
 
 
-
-
             // complement the gap among tracks             
             var finalTrackXList = new List<List<int>>();
             var finalTrackXListD = new List<List<double>>();
@@ -678,7 +676,15 @@ namespace QutBioacosutics.Xie
             }
 
 
-            return result;
+            // count the number of tracks in each frequency band
+
+            var arrayResult = new double[row];
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                arrayResult[((closedTrackList[i].HighBin - closedTrackList[i].LowBin) / 2 + closedTrackList[i].LowBin)]++;            
+            }
+
+            return Tuple.Create(arrayResult, result);
         }
 
     }
