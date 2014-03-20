@@ -18,50 +18,49 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments
         {
-            [ArgDescription("The path to the config file")]
+            [ArgDescription("Path to configuration file in YAML format")]
             [Production.ArgExistingFile]
             [ArgRequired]
             public FileInfo Config { get; set; }
 
-            [ArgDescription("The directory containing the input files.")]
-            [Production.ArgExistingDirectory]
-            [ArgPosition(1)]
-            [ArgRequired]
-            public DirectoryInfo InputDirectory { get; set; }
+            //[ArgDescription("The directory containing the input files.")]
+            //[Production.ArgExistingDirectory]
+            //[ArgPosition(1)]
+            //[ArgRequired]
+            //public DirectoryInfo InputDirectory { get; set; }
 
-            [ArgDescription("The directory to place output files.")]
-            [ArgPosition(2)]
-            [ArgRequired]
-            public DirectoryInfo OutputDirectory { get; set; }
+            //[ArgDescription("The directory to place output files.")]
+            //[ArgPosition(2)]
+            //[ArgRequired]
+            //public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("The first input csv file containing acosutic index data 1.")]
-            [Production.ArgExistingFile]
-            [ArgPosition(3)]
-            [ArgRequired]
-            public FileInfo IndexFile1 { get; set; }
+            //[ArgDescription("The first input csv file containing acosutic index data 1.")]
+            //[Production.ArgExistingFile]
+            //[ArgPosition(3)]
+            //[ArgRequired]
+            //public FileInfo IndexFile1 { get; set; }
 
-            [ArgDescription("The third input csv file containing standard deviations of index data 1.")]
-            [Production.ArgExistingFile]
-            [ArgPosition(4)]
-            [ArgRequired]
-            public FileInfo StdDevFile1 { get; set; }
+            //[ArgDescription("The third input csv file containing standard deviations of index data 1.")]
+            //[Production.ArgExistingFile]
+            //[ArgPosition(4)]
+            //[ArgRequired]
+            //public FileInfo StdDevFile1 { get; set; }
 
-            [ArgDescription("The fourth input csv file containing acosutic index data 2.")]
-            [Production.ArgExistingFile]
-            [ArgPosition(5)]
-            [ArgRequired]
-            public FileInfo IndexFile2 { get; set; }
+            //[ArgDescription("The fourth input csv file containing acosutic index data 2.")]
+            //[Production.ArgExistingFile]
+            //[ArgPosition(5)]
+            //[ArgRequired]
+            //public FileInfo IndexFile2 { get; set; }
 
-            [ArgDescription("The fifth input csv file containing standard deviations of index data 2.")]
-            [Production.ArgExistingFile]
-            [ArgPosition(6)]
-            [ArgRequired]
-            public FileInfo StdDevFile2 { get; set; }
+            //[ArgDescription("The fifth input csv file containing standard deviations of index data 2.")]
+            //[Production.ArgExistingFile]
+            //[ArgPosition(6)]
+            //[ArgRequired]
+            //public FileInfo StdDevFile2 { get; set; }
 
             public static string Description()
             {
-                // TODO: michael edit this
-                return "An experiment in creating differential spectrograms";
+                return "Long duration difference spectrograms";
             }
 
             public static string AdditionalNotes()
@@ -109,15 +108,15 @@ namespace AnalysisPrograms
                 OutputDirectory = opdir,
 
                 //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-                ColorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR, // CHANGE RGB mapping here.
-                BackgroundFilterCoeff = 0.75,                       // must be value <=1.0
-                ColourGain = 1.5,                                   // determines colour saturation of the difference spectrogram
+                ColorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR,                   // CHANGE RGB mapping here.
+                BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF, // must be value <=1.0
+                ColourGain = SpectrogramConstants.COLOUR_GAIN,                        // determines colour saturation of the difference spectrogram
 
-                // These parameters describe the freancy and times scales for drawing X and Y axes on the spectrograms
-                SampleRate = 17640,                                 // default value - after resampling
-                FrameWidth = 512,                                   // frame width from which spectrogram was derived. Assume no frame overlap.
-                MinuteOffset = 0,                                   // default is recording starts at zero minute of day i.e. midnight
-                X_Scale = SpectrogramConstants.XAXIS_SCALE,         // default is one minute spectra and hourly time lines
+                // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+                SampleRate = SpectrogramConstants.SAMPLE_RATE,       // default value - after resampling
+                FrameWidth = SpectrogramConstants.FRAME_WIDTH,       // frame width from which spectrogram was derived. Assume no frame overlap.
+                MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,   // default is recording starts at zero minute of day i.e. midnight
+                X_Scale = SpectrogramConstants.X_AXIS_SCALE,         // default is one minute spectra and hourly time lines
             });
 
 
@@ -147,8 +146,7 @@ namespace AnalysisPrograms
 
             LDSpectrogramDifference.DrawDifferenceSpectrogram(configuration);
 
-            LDSpectrogramDifference.DrawTStatisticThresholdedDifferenceSpectrograms(configuration);
-
+            LDSpectrogramTStatistic.DrawTStatisticThresholdedDifferenceSpectrograms(configuration);
 
         }
     }

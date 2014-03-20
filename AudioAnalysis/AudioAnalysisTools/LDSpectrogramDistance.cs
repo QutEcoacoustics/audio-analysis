@@ -12,14 +12,15 @@ namespace AudioAnalysisTools
 {
     public static class LDSpectrogramDistance
     {
-        // set the X and Y axis scales for the spectrograms 
-        private static int minuteOffset = 0;  // assume recording starts at zero minute of day i.e. midnight
-        private static int xScale = SpectrogramConstants.XAXIS_SCALE;    // assume one minute spectra and hourly time lines
-        private static int sampleRate = 17640; // default value - after resampling
-        private static int frameWidth = 512;   // default value - from which spectrogram was derived
-        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-        private static double backgroundFilterCoeff = 0.75; //must be value <=1.0
-        private static double colourGain = 1.5;
+        // set DEFAULT values for parameters
+        private static int minuteOffset = SpectrogramConstants.MINUTE_OFFSET;  // assume recording starts at zero minute of day i.e. midnight
+        private static int xScale = SpectrogramConstants.X_AXIS_SCALE;         // assume one minute spectra and hourly time lines
+        private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
+        private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
+
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE default RGB mapping here.
+        private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
+        private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
 
         public static void DrawDistanceSpectrogram(dynamic configuration)
@@ -50,7 +51,7 @@ namespace AudioAnalysisTools
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             minuteOffset = (int?)configuration.MinuteOffset ?? 0;         // default recording starts at zero minute of day i.e. midnight
-            xScale = (int?)configuration.X_Scale ?? SpectrogramConstants.XAXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            xScale = (int?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
             sampleRate = (int?)configuration.SampleRate ?? sampleRate;    // default value - after resampling
             frameWidth = (int?)configuration.FrameWidth ?? frameWidth;    // frame width from which spectrogram was derived. Assume no frame overlap.
 
@@ -121,7 +122,7 @@ namespace AudioAnalysisTools
 
                 string opFileName4 = ipFileName1 + ".EuclidianDist.COLNEG.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
-                Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDifference.GetDifferenceColourChart());
+                Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(SpectrogramConstants.GetDifferenceColourChart());
                 titleBar = LDSpectrogramDifference.DrawTitleBarOfDifferenceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, titleHt);
                 deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
@@ -245,7 +246,7 @@ namespace AudioAnalysisTools
             //int MaxRGBValue = 255;
             //int v;
             double zScore;
-            Dictionary<string, Color> colourChart = LDSpectrogramDifference.GetDifferenceColourChart();
+            Dictionary<string, Color> colourChart = SpectrogramConstants.GetDifferenceColourChart();
             Color colour;
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
