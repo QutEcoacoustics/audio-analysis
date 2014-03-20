@@ -7,7 +7,8 @@
     using System.ComponentModel;
     using Representations;
 
-    public enum MatchIndex
+    
+    enum MatchIndex//public enum MatchIndex
     {
         /// <summary>
         /// This is North. Also known as vertical.
@@ -345,13 +346,15 @@
             for (int index = 0; index < nhCount; index++)
             {
                 var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
-                var queryScore = ridgeNeighbourhoods[index].score;
+                // change score into orientation.
+                var queryScore = Math.Abs(ridgeNeighbourhoods[index].orientation);
                 var queryOrientationType =  ridgeNeighbourhoods[index].orientationType;
-                var candidateScore = candidate.ridgeNeighbourhoods[index].score;
+                var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].orientation);
                 var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
                 var orientationDifference = Math.Abs(queryOrientationType - candidateOrientationType);
-                var magnitudeDifference = Math.Sqrt(Math.Pow((queryScore - candidateScore), 2.0));
-                result += (orientationDifference + 1) * magnitudeDifference;
+                //var magnitudeDifference = Math.Sqrt(Math.Pow((queryScore - candidateScore), 2.0));
+                //result += (orientationDifference + 1) * magnitudeDifference;
+                result += Math.Abs(queryScore - candidateScore);
             }
             return result; 
         }
