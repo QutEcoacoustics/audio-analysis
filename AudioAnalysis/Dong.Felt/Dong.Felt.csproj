@@ -119,6 +119,7 @@
     <Compile Include="Clustering.cs" />
     <Compile Include="Configuration\LocalMaximaConfiguration.cs" />
     <Compile Include="Configuration\RidgeDetectionConfiguration.cs" />
+    <Compile Include="Configuration\SpectrogramConfiguation.cs" />
     <Compile Include="CSVResults.cs" />
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />

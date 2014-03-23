@@ -9,6 +9,7 @@
     using AudioAnalysisTools;
     using AudioAnalysisTools.Sonogram;
     using System.Drawing;
+    using Dong.Felt.Configuration;
 
     public class CSVResults
     {
@@ -32,29 +33,28 @@
         //        nh.FrequencyRange.ToString(), nh.dominantOrientationType.ToString(), nh.dominantPOICount.ToString() });
         //    File.WriteAllLines(filePath, results.Select((IEnumerable<string> i) => { return string.Join(", ", i); }));
         //}
-        public static List<AcousticEvent> CsvToAcousticEvent(FileInfo file)
-        {
-            var result = new List<AcousticEvent>();
+        public static AcousticEvent CsvToAcousticEvent(FileInfo file)
+        {           
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
             var header = lines.Take(1).ToList();
             var lines1 = lines.Skip(1);
             var startTime = 0.0;
             var duration = 0.0;
             var minFreq = 0;
-            var maxFreq = 0;           
+            var maxFreq = 0;
+            var result = new AcousticEvent(startTime, duration, minFreq, maxFreq);
             foreach (var csvRow in lines1)
             {
-                var ae = new AcousticEvent(startTime, duration, minFreq, maxFreq);
                 if (csvRow[3] != "" && csvRow[6] != "")
-                {                    
-                    ae.MinFreq = int.Parse(csvRow[1]);
-                    ae.MaxFreq = int.Parse(csvRow[2]);
-                    ae.TimeStart = double.Parse(csvRow[3]);
-                    ae.TimeEnd = double.Parse(csvRow[4]);
-                    ae.Duration = double.Parse(csvRow[5]);                   
-                    ae.FreqBinCount = int.Parse(csvRow[6]);   
-                }                                                  
-                result.Add(ae);
+                {
+                    result.MinFreq = int.Parse(csvRow[1]);
+                    result.MaxFreq = int.Parse(csvRow[2]);
+                    result.TimeStart = double.Parse(csvRow[3]);
+                    result.TimeEnd = double.Parse(csvRow[4]);
+                    result.Duration = double.Parse(csvRow[5]);
+                    result.FreqBinCount = int.Parse(csvRow[6]);   
+                }
+                
             }
             return result;
         }
@@ -128,10 +128,15 @@
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
-        public static void NeighbourhoodRepresentationToCSV(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, string audioFileName, string outputFilePath, SpectralSonogram spectrogram)
+        public static void NHRepresentationListToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentation, int neighbourhoodLength, string audioFileName, string outputFilePath, SpectralSonogram spectrogram)
         {
-            var timeScale = 11.6; // ms
-            var frequencyScale = 43.0; // hz
+            
+        }
+
+        public static void NeighbourhoodRepresentationToCSV(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, string audioFileName, string outputFilePath, SpectrogramConfiguration spectrogramConfig)
+        {
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
             var results = new List<List<string>>();
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
                 "NeighbourhoodMagnitude", "NeighbourhoodOrientation" });
@@ -148,7 +153,7 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        neighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogram);
+                        neighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogramConfig);
                         var RowIndex = col * timeScale;
                         // Changed this. 
                         var ColIndex = (256 - row) * frequencyScale;
@@ -245,7 +250,7 @@
             return results;
         }
 
-        public static void BatchProcess(string fileDirectoryPath, SpectralSonogram spectrogram)
+        public static void BatchProcess(string fileDirectoryPath, SpectrogramConfiguration spectrogramConfig)
         {
             string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
 
@@ -259,7 +264,7 @@
                 poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
                 var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);
                 var neighbourhoodLength = 13;
-                CSVResults.NeighbourhoodRepresentationToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv", spectrogram);
+                CSVResults.NeighbourhoodRepresentationToCSV(filterPoi, poiList.RowsCount, poiList.ColsCount, neighbourhoodLength, fileEntries[fileIndex], fileEntries[fileIndex] + "fileIndex.csv", spectrogramConfig);
             }
         }
 

@@ -13,6 +13,7 @@
     using log4net;
     using AnalysisBase;
     using Representations;
+    using Dong.Felt.Configuration;
 
     public class DongSandpit
     {
@@ -30,28 +31,24 @@
             {
                 /// Read a bunch of recordings  
                 //string[] files = Directory.GetFiles(analysisSettings.SourceFile.FullName);
-                /// Read one specific file name/path 
-                // with human beings
-                //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\Test\TestImage2\TestImage2.png")); 
-                // real spectrogram
-                //var testImage = (Bitmap)(Image.FromFile(@"C:\Test recordings\Crows\DM4420036_min430Crows-result\DM420036_min430Crows-1minute.wav-noiseReduction-1Klines.png"));               
-                //string outputPath = @"C:\Test recordings\Crows\Test\TestImage3\TestImage3-GaussianBlur-thre-7-sigma-1.0-SobelEdgeDetector-thre-0.15.png";
-                //string outputFilePath = @"C:\Test recordings\Crows\DM4420036_min430Crows-result";
-                //string imageFileName = "CannyEdgeDetector1.png";
-
+               
+                /// real spectrogram
                 //var fileDirectory = @"C:\Test recordings\input";
                 //CSVResults.BatchProcess(fileDirectory);
 
-                /// Read audio files into spectrogram.
-                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Recordings";
-                string audioFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav";
-                string wavFilePath = Path.Combine(inputDirectory, audioFileName);
-                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\RepresentationResults";
-                string imageFileName = audioFileName +".png";
-                string annotatedImageFileName = audioFileName + "-annotate.png";
-                string csvFileName = "2014-03-18-NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
+                /// FilePathSetting
+                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\Recordings";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\RepresentationResults";
+                string audioFileName = "SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1.wav";
+                string wavFilePath = Path.Combine(inputDirectory, audioFileName);              
+                string imageFileName = Path.ChangeExtension(audioFileName, "-NH-9.png");
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
-                string csvPath = Path.Combine(outputDirectory, csvFileName);              
+                string annotatedImageFileName = Path.ChangeExtension(audioFileName, "-annotate.png");
+                string annotatedImagePath = Path.Combine(outputDirectory, annotatedImageFileName);
+                string csvFileName = Path.ChangeExtension(audioFileName, ".csv");             
+                string csvPath = Path.Combine(outputDirectory, csvFileName);
+
+                /// Read audio files into spectrogram.
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };               
                 var spectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
                 
@@ -90,16 +87,18 @@
                 //        spectrogram.Data[row, col] = 0.0;
                 //    }
                 //}
-                
+                                
+                /// drawingspectrogram  setting
                 var scores = new List<double>();
                 scores.Add(1.0);
-                List<AcousticEvent> acousticEventlist = null;
+                var acousticEventlist = new List<AcousticEvent>();
                 var poiList = new List<PointOfInterest>();
                 double eventThreshold = 0.5; // dummy variable - not used                               
                 Image image = DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);               
                 //var file = new FileInfo(csvPath);
                 /// addd this line to check the result after noise removal.
                 image.Save(imagePath, ImageFormat.Png);
+
                 ///Ridge detection experiment
                 var ridgeConfig = new RidgeDetectionConfiguration
                 {
@@ -109,10 +108,10 @@
                     MinimumNumberInRidgeInMatrix = 3
                 };
                 var poiList1 = new List<PointOfInterest>();
-                var poiTemperObject = new POISelection(poiList1);
-                poiTemperObject.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
+                var poiTempObject = new POISelection(poiList1);
+                poiTempObject.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
                 //poiTemperObject.ImprovedRidgeDetection(spectrogram, ridgeConfig);
-                var ridges = poiTemperObject.poiList;
+                var ridges = poiTempObject.poiList;
                 Bitmap bmp = (Bitmap)image;
                 foreach (PointOfInterest poi in ridges)
                 {
@@ -120,6 +119,7 @@
                     poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     //poi.DrawRefinedOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                 }
+
                 ///Output poiList to CSV
                 //string fileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1-before refine direction.csv";
                 //string csvPath = Path.Combine(outputDirectory, fileName);
@@ -153,37 +153,54 @@
                 //}
                 //File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
 
-                var neighbourhoodLength = 5;
-                /// Read query 
-                var queryCSVDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";                
-                var queryCsvFileName = "NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.csv";
-                var queryCsvFilePath = Path.Combine(queryCSVDirectory, queryCsvFileName);
+                var secondToMillionSecondUnit = 1000; 
+                var spectrogramConfig = new SpectrogramConfiguration
+                {
+                    FrequencyScale = spectrogram.FBinWidth,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                    NyquistFrequency = spectrogram.NyquistFrequency
+                };
+
+                var neighbourhoodLength = 9;
+                /// Read query          
+                var queryCsvFilePath = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\Query\SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1.csv"; ;
                 var csvfile = new FileInfo(queryCsvFilePath);
                 var queryInfo = CSVResults.CsvToAcousticEvent(csvfile);
-                var query = new Query(queryInfo[0].MaxFreq, queryInfo[0].MinFreq, queryInfo[0].TimeStart, queryInfo[0].TimeEnd, neighbourhoodLength);    
-                var rows = spectrogram.Data.GetLength(1) - 1;
+                var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
+                var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
+                if (spectrogram.NyquistFrequency / nhFrequencyRange == 0)
+                {
+                    nhCountInRow--;
+                }
+                var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
+                if (spectrogram.FrameCount % neighbourhoodLength == 0)
+                {
+                    nhCountInColumn--;
+                }
+                var query = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd, neighbourhoodLength, nhCountInRow, spectrogramConfig);    
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogram);
+
+                var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
                 ////var normalisedNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.NormaliseRidgeNeighbourhoodScore(nhRepresentationList, neighbourhoodLength);
                 //////CSVResults.NormalisedNeighbourhoodRepresentationToCSV(normalisedNhRepresentationList, wavFilePath,outPutPath);
-                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, csvPath, spectrogram);
-                var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth; 
-                var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);  
-                var nhCountInColumn = (int)spectrogram.FrameCount / neighbourhoodLength;
+                CSVResults.NeighbourhoodRepresentationToCSV(ridges, rows, cols, neighbourhoodLength, wavFilePath, csvPath, spectrogramConfig);
+                            
                 var ridgeArray = StatisticalAnalysis.RidgeNhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);                
                 
                 var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, ridgeArray, wavFilePath);
-                //var CSVResultDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query\CSV Results";
-                //var csvFileName1 = "2014-03-18-NW_NW273_20101013-051200-0513-0514-Brown Cuckoo-dove1.wav-queryRepresentation.csv";
-                //string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
-                //var queryRepresentationfile = new FileInfo(csvPath1);
-                //CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);             
-                //var queryRegionRepresentationCsv = CSVResults.CSVToNormalisedRegionRepresentation(queryRepresentationfile);
-                var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation, ridgeArray, wavFilePath);
-                //var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
-                //var csvFileName2 = "NW_NW273_20101014-074800-0752-0753-Brown Cuckoo-dove1-regionRepresentation1.csv";
-                //string csvPath2 = Path.Combine(CSVResultDirectory, csvFileName2);                
-                //CSVResults.RegionRepresentationListToCSV(candidatesVector, csvPath2);
+                var CSVResultDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\Query\CSV Results";
+                var csvFileName1 = "SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1-Neighbourhood-9.csv";
+                string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
+                var queryRepresentationfile = new FileInfo(csvPath1);
+                CSVResults.NormalisedNeighbourhoodRepresentationToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);             
+                //var queryRegionRepresentationCsv = CSVResults.CSVToNormalisedRegionRepresentation(queryRepresentationfile, queryRegionRepresentation);
+                // There is magic number in candidatesRepresentationFromAudioNhRepresentation
+                var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation, ridgeArray, wavFilePath, neighbourhoodLength);
+                var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
+                var csvFileName2 = "SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1.csv";
+                string csvPath2 = Path.Combine(CSVResultDirectory, csvFileName2);
+                CSVResults.RegionRepresentationListToCSV(candidatesVector, csvPath2);
                 var distanceList = Indexing.SimilairtyScoreFromAudioRegionRepresentationList(queryRegionRepresentation, candidatesRepresentation);
                 //var similarityScoreList = Indexing.DistanceListToSimilarityScoreList(distanceList);
                 ///// write the similarity score into csv file. 
@@ -211,15 +228,18 @@
                 //var times = queryFeatureVector.Count();
                 //var filterfinalListOfPositions = FilterOutOverlappedEvents(finalListOfPositions, searchFrameStep, times);   
                 //var similarityScoreVector = StatisticalAnalysis.SimilarityScoreListToVector(similarityScoreList);
-                var rank = 30;
+                var rank = 100;
                 distanceList.Sort();
                 var finalAcousticEvents = new List<AcousticEvent>();
                 for (int i = 0; i < rank; i++)
                 {
-                    var frequencyRange = query.nhCountInRow * spectrogram.FBinWidth * neighbourhoodLength;
-                    var maxFrequency = distanceList[i].Item3 + frequencyRange;
-                    var millisecondToSecondTransUnit = 1000;
-                    finalAcousticEvents.Add(new AcousticEvent(distanceList[i].Item2 / millisecondToSecondTransUnit, query.duration / millisecondToSecondTransUnit, distanceList[i].Item3, maxFrequency));
+                    if (distanceList.Count != 0)
+                    {
+                        var frequencyRange = query.nhCountInRow * spectrogram.FBinWidth * neighbourhoodLength;
+                        var maxFrequency = distanceList[i].Item3 + frequencyRange;
+                        var millisecondToSecondTransUnit = 1000;
+                        finalAcousticEvents.Add(new AcousticEvent(distanceList[i].Item2 / millisecondToSecondTransUnit, query.duration / millisecondToSecondTransUnit, distanceList[i].Item3, maxFrequency));
+                    }
                 }
                     //foreach (var p in similarityScoreList)
                     //{
@@ -228,7 +248,7 @@
                     //    var millisecondToSecondTransUnit = 1000;
                     //    finalAcousticEvents.Add(new AcousticEvent(p.Item2 / millisecondToSecondTransUnit, query.duration / millisecondToSecondTransUnit, p.Item3, maxFrequency));
                     //}
-                var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, neighbourhoodLength, query.nhCountInColumn);
+               // var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents, neighbourhoodLength, query.nhCountInColumn);
                 //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation, candidatesVector));
                 
                 ///Read the acoustic events from csv files.  
@@ -238,7 +258,7 @@
 
                 /// to save the original spectrogram. 
                 //image = (Image)bmp;
-                //bmp.Save(imagePath);
+                //image.Save(annotatedImagePath);
 
                 /// to save the annotated spectrogram. 
                 image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
