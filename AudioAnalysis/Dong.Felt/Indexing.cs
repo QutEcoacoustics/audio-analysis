@@ -12,8 +12,7 @@ namespace Dong.Felt
 
         /// function to extract the query from a audio file which contains the query.
         public static RegionRerepresentation ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName)
-        {            
-            var startTime = StatisticalAnalysis.SecondsToMillionSeconds(query.startTime);
+        {          
             var audioFile = new FileInfo(audioFileName);
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
@@ -39,7 +38,8 @@ namespace Dong.Felt
             var result = new List<Tuple<double, double, double>>();
             foreach (var c in candidates)
             {
-                if (Math.Abs(c.FrequencyIndex - query.FrequencyIndex) < 1)                 
+                // The frequencyDifference is a problem. 
+                if (Math.Abs(c.FrequencyIndex - query.FrequencyIndex) < 100)                 
                 {
                     var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c);                         
                     result.Add(Tuple.Create(distance, c.FrameIndex, c.FrequencyIndex)); 
@@ -141,7 +141,7 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <returns></returns>
-        public static List<RegionRerepresentation> CandidatesRepresentationFromAudioNhRepresentations(RegionRerepresentation queryRepresentation, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName)
+        public static List<RegionRerepresentation> CandidatesRepresentationFromAudioNhRepresentations(RegionRerepresentation queryRepresentation, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName, int neighbourhoodLength)
         {
             var result = new List<RegionRerepresentation>();
             var audioFile = new FileInfo(audioFileName);
@@ -166,8 +166,8 @@ namespace Dong.Felt
                         }
                         var region = new RegionRerepresentation(nhList, nhCountInRow, nhCountInColumn, audioFile);
                         // ????
-                        region.FrameIndex = colIndex * 5 * 11.6;
-                        region.FrequencyIndex = rowIndex * 5 * 43;
+                        region.FrameIndex = colIndex * neighbourhoodLength * 11.6;
+                        region.FrequencyIndex = rowIndex * neighbourhoodLength * 43.0;
                         result.Add(region);
                     }
                 }
