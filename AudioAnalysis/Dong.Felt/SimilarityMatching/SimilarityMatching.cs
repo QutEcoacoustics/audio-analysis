@@ -359,6 +359,62 @@
             return result; 
         }
 
+        /// <summary>
+        /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
+        /// based on the sum of sub-region in the process of calculation.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <returns></returns>
+        public static double WeightedDistanceScoreRegionRepresentation2(RegionRerepresentation query, RegionRerepresentation candidate, double weight1, double weight2)
+        {
+            var result = 0.0;
+            var nhCount = query.ridgeNeighbourhoods.Count;
+            var nhSum = 0.0;
+            for (int index = 0; index < nhCount; index++)
+            {
+                var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
+                var queryScore = Math.Abs(ridgeNeighbourhoods[index].magnitude);
+                var queryOrientation = ridgeNeighbourhoods[index].orientation;
+                var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].magnitude);
+                var candidateOrientation = candidate.ridgeNeighbourhoods[index].orientation;
+                var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+                nhSum += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
+            }
+            result = Math.Sqrt(nhSum);
+            return result;
+        }
+
+        /// <summary>
+        /// Weighted Euclidean distance measurement is based on a bunch of neighbourhoods calculation. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <returns>
+        /// The final out is sum of subdistance for each sub-region(neighbourhood) in candidate or query. 
+        /// </returns>
+        public static double WeightedDistanceScoreRegionRepresentation(RegionRerepresentation query, RegionRerepresentation candidate, double weight1, double weight2)
+        {
+            var result = 0.0;
+            var nhCount = query.ridgeNeighbourhoods.Count;
+            for (int index = 0; index < nhCount; index++)
+            {
+                var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
+                // change score into orientation.
+                var queryScore = Math.Abs(ridgeNeighbourhoods[index].magnitude);
+                var queryOrientation = ridgeNeighbourhoods[index].orientation;
+                var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].magnitude);
+                var candidateOrientation = candidate.ridgeNeighbourhoods[index].orientation;
+                var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+                result += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
+            }
+            return result;
+        }
+
         public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0.0;

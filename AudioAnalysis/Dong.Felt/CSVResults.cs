@@ -10,6 +10,8 @@
     using AudioAnalysisTools.Sonogram;
     using System.Drawing;
     using Dong.Felt.Configuration;
+    using TowseyLib;
+    using AnalysisBase;
 
     public class CSVResults
     {
@@ -128,11 +130,16 @@
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
-        public static void NHRepresentationListToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentation, int neighbourhoodLength, string audioFileName, string outputFilePath, SpectralSonogram spectrogram)
-        {
-            
-        }
-
+        /// <summary>
+        /// This method tries to write neighbourhoodRepresentation into a CSV file by taking into a bunch of poiList obtained from a spectrogram. 
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="audioFileName"></param>
+        /// <param name="outputFilePath"></param>
+        /// <param name="spectrogramConfig"></param>
         public static void NeighbourhoodRepresentationToCSV(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, string audioFileName, string outputFilePath, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
@@ -153,10 +160,10 @@
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + rowOffset, col + colOffset);
                         var neighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        neighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogramConfig);
+                        neighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         var RowIndex = col * timeScale;
                         // Changed this. 
-                        var ColIndex = (256 - row) * frequencyScale;
+                        var ColIndex = (rowsCount - row - 1) * frequencyScale;
                         var Magnitude = neighbourhoodRepresentation.magnitude;
                         var Orientation = neighbourhoodRepresentation.orientation;
                         results.Add(new List<string>() { audioFileName, RowIndex.ToString(), ColIndex.ToString(),
@@ -168,8 +175,23 @@
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
-        //
-        public static void NormalisedNeighbourhoodRepresentationToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> nhList, string audioFileName, string outputFilePath)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="results"></param>
+        public static void NhRepresentationListToCSV(FileInfo file, List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            CsvTools.WriteResultsToCsv(file, nhList);
+        }
+        
+        /// <summary>
+        /// This method tries to write nhRepresentation list into a csv file. 
+        /// </summary>
+        /// <param name="nhList"></param>
+        /// <param name="audioFileName"></param>
+        /// <param name="outputFilePath"></param>
+        public static void NeighbourhoodRepresentationListToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> nhList, string audioFileName, string outputFilePath)
         {
             var results = new List<List<string>>();
             results.Add(new List<string>() {"FileName","NeighbourhoodTimePosition-ms","NeighbourhoodFrequencyPosition-hz",
