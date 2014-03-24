@@ -97,6 +97,9 @@
     <Reference Include="AForge.Math">
       <HintPath>..\..\AudioAnalysis\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
+    <Reference Include="CsvHelper">
+      <HintPath>..\..\AudioAnalysis\packages\CsvHelper.2.5.0\lib\net40-client\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
