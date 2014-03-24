@@ -10,6 +10,9 @@ using ServiceStack.Text.Jsv;
 
 namespace TowseyLib
 {
+    using CsvHelper;
+    using CsvHelper.Configuration;
+
     public static class CsvTools
     {
 
@@ -451,6 +454,18 @@ namespace TowseyLib
 
         #region newCsvMethods
 
+        private static CsvConfiguration DefaultConfiguration
+        {
+            get
+            {
+                var settings = new CsvConfiguration();
+
+                // change the defaults here if you want
+
+                return settings;
+            }
+        }
+
         /// <summary>
         /// Serialise results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
         /// </summary>
@@ -459,22 +474,43 @@ namespace TowseyLib
         /// <param name="results"></param>
         public static void WriteResultsToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
+            /* // USING ServiceStack - write works, read does not
             using (var stream =  destination.CreateText())
             {
-//              JsvStringSerializer s = new JsvStringSerializer();
-//              var o = s.SerializeToString(results);
-//              stream.Write(o);
-
                 CsvSerializer.SerializeToWriter(results, stream);
+            }*/
+
+            // using CSV Helper
+            using (var stream = destination.CreateText())
+            {
+                var writer = new CsvWriter(stream, DefaultConfiguration);
+                writer.WriteRecords(results);
             }
         }
 
+        /// <summary>
+        /// This has not been tested yet! Contact anthony if you have problems.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static IEnumerable<T> ReadResultsFromCsv<T>(FileInfo source)
         {
+            /* // Using ServiceStack - this read does not work!!!!!!!!
             using (var stream = source.Open(FileMode.Open, FileAccess.Read))
             {
                 return CsvSerializer.DeserializeFromStream<IEnumerable<T>>(stream);
+            }*/
+
+            // using CSV Helper
+            IEnumerable<T> results;
+            using (var stream = source.OpenText())
+            {
+                var reader = new CsvReader(stream, DefaultConfiguration);
+                results = reader.GetRecords<T>();
             }
+
+            return results;
         }
 
         #endregion
