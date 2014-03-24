@@ -1,8 +1,9 @@
 --- # Configuration file for Jie Xie
 
-file:  C:\Jie\data\160113_min140.wav
+file:  C:\Jie\data\020313_min248.wav
+#file:  C:\Jie\data\Segment_JCU_01
 do_noise_reduction: 0
-image_path: C:\Jie\output\3.png
+image_path: C:\Jie\output
 amplitude_threshold: 3.0
 range: 2
 distance: 4

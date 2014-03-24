@@ -655,12 +655,18 @@ namespace QutBioacosutics.Xie
 
             // convert closedTrackList to trackMatrix
             // To do: convert double to int 
+
+
             var result = new double[row, column];
             for (int i = 0; i < closedTrackList.Count; i++)
             {
                 for (int j = 0; j < finalTrackXList[i].Count; j++)
                 {
-                    result[(int)Math.Ceiling(finalTrackYList[i][j]), finalTrackXList[i][j]] = 1;
+                    if (finalTrackYList[i][j] < 0)
+                    {
+                        finalTrackYList[i][j] = 0;
+                    }
+                    result[(int)Math.Floor(finalTrackYList[i][j]), finalTrackXList[i][j]] = 1;
 
                 }
             }
@@ -670,7 +676,11 @@ namespace QutBioacosutics.Xie
             {
                 for (int j = 0; j < addTrackXList[i].Count; j++)
                 {
-                    result[(int)Math.Ceiling(addTrackYList[i][j]), (int)Math.Ceiling(addTrackXList[i][j])] = 2;
+                    if (addTrackYList[i][j] < 0)
+                    {
+                        addTrackYList[i][j] = 0;
+                    }
+                    result[(int)Math.Floor(addTrackYList[i][j]), (int)Math.Floor(addTrackXList[i][j])] = 2;
 
                 }
             }
