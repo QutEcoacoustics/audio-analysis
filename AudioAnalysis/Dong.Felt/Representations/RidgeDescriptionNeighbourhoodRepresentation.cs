@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using AudioAnalysisTools;
 using AudioAnalysisTools.Sonogram;
 using Dong.Felt.Configuration;
 
@@ -18,24 +17,54 @@ namespace Dong.Felt.Representations
         // the row starts from start of file (left, 0ms)
         // the column starts from bottom of spectrogram (0 hz)
 
-        // gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
+        /// <summary>
+        /// To get or set the the pointsOfinterest count in a neighbourhood. 
+        /// </summary>
+        public int POICount { get; set; }
+
+        /// <summary>
+        /// If the neighbourhood is a square, it could be odd numbers. 
+        /// </summary>
+        public int neighbourhoodSize { get; set; }
+
+        /// <summary>
+        /// A feature vector could contain any double values for subsequent matching. 
+        /// </summary>
+        public List<double> FeatureVector { get; set; }
+
+        /// <summary>
+        /// gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
+        /// </summary>
         public double FrequencyIndex { get; set; }
 
-        // gets or sets the FrameIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
+        /// <summary>
+        /// gets or sets the FrameIndex of a neighbourhood, which indicates the frame, its unit is milliseconds. 
+        /// </summary>
         public double FrameIndex { get; set; }
     
-        // gets or sets the widthPx of a neighbourhood in pixels. 
+        /// <summary>
+        /// gets or sets the widthPx of a neighbourhood in pixels. 
+        /// </summary>
         public int WidthPx { get; set; }
 
-        // gets or sets the HeightPx of a neighbourhood in pixels.
+        /// <summary>
+        /// gets or sets the HeightPx of a neighbourhood in pixels.
+        /// </summary>
         public int HeightPx { get; set; }
 
-        // gets or sets the Duration of a neighbourhood in millisecond, notice here the unit is millisecond. 
+        /// <summary>
+        /// gets or sets the Duration of a neighbourhood in millisecond, notice here the unit is millisecond. 
+        /// </summary>
         public TimeSpan Duration { get; set; }
 
-        // gets or sets the FrequencyRange of a neighbourhood in hZ.
+        /// <summary>
+        /// gets or sets the FrequencyRange of a neighbourhood in hZ.
+        /// </summary>
         public double FrequencyRange { get; set; }
 
+        /// <summary>
+        /// gets or sets the FrequencyRange of a neighbourhood in hZ.
+        /// </summary>
         public bool IsSquare { get { return this.WidthPx == this.HeightPx; } }
 
         /// <summary>
@@ -69,67 +98,46 @@ namespace Dong.Felt.Representations
         public int score { get; set; }
 
         public int orientationType { get; set; }
+       
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
+        /// </summary>
+        public int HOrientationPOICount { get; set; }
 
         /// <summary>
-        /// <summary>
-        /// Gets or sets the orientation type 1 of the neighbourhood.
+        /// Gets or sets the count of points of interest (pois) with positive diagonal orientation in the neighbourhood.
         /// </summary>
-        public int orientationType1 { get; set; }
+        public int PDOrientationPOICount { get; set; }
 
         /// <summary>
-        /// Gets or sets the orientation type 2 of the neighbourhood.
+        /// Gets or sets the count of points of interest (pois) with vertical orientation in the neighbourhood.
         /// </summary>
-        public int orientationType2 { get; set; }
+        public int VOrientationPOICount { get; set; }
 
         /// <summary>
-        /// Gets or sets the orientation type 3 of the neighbourhood.
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
         /// </summary>
-        public int orientationType3 { get; set; }
+        public int NDOrientationPOICount { get; set; }
 
         /// <summary>
-        /// Gets or sets the orientation type 4 of the neighbourhood.
+        /// Gets or sets the sum of the magnitude of pois with the horizontal orentation in the neighbourhood.
         /// </summary>
-        public int orientationType4 { get; set; }
+        public double HOrientationPOIMagnitudeSum { get; set; }
 
         /// <summary>
-        /// Gets or sets the count of points of interest (pois) with orentation type 1 in the neighbourhood.
+        /// Gets or sets the sum of the magnitude of pois with the positive diagonal orientation in the neighbourhood.
         /// </summary>
-        public int orientationType1POICount { get; set; }
+        public double PDOrientationPOIMagnitudeSum { get; set; }
 
         /// <summary>
-        /// Gets or sets the count of points of interest (pois) with orentation type 2 in the neighbourhood.
+        /// Gets or sets the sum of the magnitude of pois with the vertical orientation in the neighbourhood.
         /// </summary>
-        public int orientationType2POICount { get; set; }
+        public double VOrientationPOIMagnitudeSum { get; set; }
 
         /// <summary>
-        /// Gets or sets the count of points of interest (pois) with orentation type 3 in the neighbourhood.
+        /// Gets or sets the sum of the magnitude of pois with the negative diagonal orientation in the neighbourhood.
         /// </summary>
-        public int orientationType3POICount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the count of points of interest (pois) with orentation type 4 in the neighbourhood.
-        /// </summary>
-        public int orientationType4POICount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sum of the magnitude of pois with the orientation type 1 in the neighbourhood.
-        /// </summary>
-        public double orentationType1MagnitudeSum { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sum of the magnitude of pois with the orientation type 2 in the neighbourhood.
-        /// </summary>
-        public double orentationType2MagnitudeSum { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sum of the magnitude of pois with the orientation type 3 in the neighbourhood.
-        /// </summary>
-        public double orentationType3MagnitudeSum { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sum of the magnitude of pois with the orientation type 4 in the neighbourhood.
-        /// </summary>
-        public double orentationType4MagnitudeSum { get; set; }
+        public double NDOrientationPOIMagnitudeSum { get; set; }
 
         #endregion
 
@@ -230,7 +238,14 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
-        public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
+        /// <summary>
+        /// This method uses the line of best fit to calculate the orientation of a Nh. In particular, the slope is regarded as orientation.  
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
@@ -238,45 +253,33 @@ namespace Dong.Felt.Representations
             var sumYInNh = 0.0;
             var sumSquareX = 0.0;
             var sumXYInNh = 0.0;
-            var poiMatrixLength = pointsOfInterest.GetLength(0);
+            var poiMatrixLength = pointsOfInterest.GetLength(0);  // we assume poiMatrix is odd number * odd number.
             var matrixRadius = poiMatrixLength / 2;
-            var tempColIndex = 0.0;
-            var tempRowIndex = 0.0;
+            var tempColIndex = 0;
+            var tempRowIndex = 0;
             var pointsCount = 0;
+            var averageMagnitude = 0.0;
             for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
-                    {
-                        if (colIndex < matrixRadius)
-                        { 
-                            tempColIndex = matrixRadius - colIndex; 
-                        }
-                        else
-                        {
-                            tempColIndex = colIndex - matrixRadius;
-                        }
-                        if (rowIndex < matrixRadius)
-                        { 
-                            tempRowIndex = rowIndex - matrixRadius; 
-                        }
-                        else
-                        {
-                            tempRowIndex = matrixRadius - rowIndex;
-                        }
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0.0)
+                    {                      
+                        tempColIndex = colIndex - matrixRadius;                     
+                        tempRowIndex = rowIndex - matrixRadius;                       
                         sumXInNh += tempColIndex;
                         sumYInNh += tempRowIndex;
                         sumXYInNh += tempRowIndex * tempColIndex;
                         sumSquareX += Math.Pow(tempColIndex, 2.0);
                         pointsCount++;
+                        averageMagnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                     }
                 }                              
             }
             var slope = 100.0;
             var yIntersect = 100.0;
-            var proportionParameter = 0.15;
-            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
+            var proportionParameter = 0.4;
+            var poiCountThreshold = (int)(poiMatrixLength * proportionParameter);
             if (pointsCount >= poiCountThreshold)
             {
                 var meanX = sumXInNh / pointsCount;
@@ -291,17 +294,19 @@ namespace Dong.Felt.Representations
                 {
                     slope = 4.0;
                     yIntersect = 0.0;
-                }
-                
+                }         
             }
-            this.magnitude = yIntersect;
+            averageMagnitude = averageMagnitude / pointsCount;
+            this.magnitude = averageMagnitude;
             this.orientation = slope;
-            FrameIndex = col * timeScale;
-            // for some reason the row has to be plus one
+            this.FrameIndex = col * timeScale;
             var maxFrequency = spectrogramConfig.NyquistFrequency;
-            FrequencyIndex = maxFrequency - (row + 1) * frequencyScale;
-            Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyIndex = maxFrequency - row  * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.POICount = pointsCount;
+            this.neighbourhoodSize = neighbourhoodSize;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
         /// <summary>
@@ -357,34 +362,37 @@ namespace Dong.Felt.Representations
         /// This method is used for obtaining the general representation based on different orientations. 
         /// </summary>
         /// <param name="neighbourhood"></param>
-        public void SetGeneralNeighbourhoodRepresentation(PointOfInterest[,] neighbourhood)
+        public void GetNeighbourhoodRepresentationPOIProperty(PointOfInterest[,] poiNeighbourhood)
         {
-            int maximumRowIndex = neighbourhood.GetLength(1);
-            int maximumColIndex = neighbourhood.GetLength(2);
+            int maximumRowIndex = poiNeighbourhood.GetLength(0);
+            int maximumColIndex = poiNeighbourhood.GetLength(1);
 
             for (int rowIndex = 0; rowIndex < maximumColIndex; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < maximumColIndex; colIndex++)
                 {
-                    if (neighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    if (poiNeighbourhood[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
-                        orientationType1POICount++;
-                        orentationType1MagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
-                    }
-                    if (neighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
-                    {
-                        orientationType2POICount++;
-                        orentationType2MagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
-                    }
-                    if (neighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
-                    {
-                        orientationType3POICount++;
-                        orentationType3MagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
-                    }
-                    if (neighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
-                    {
-                        orientationType4POICount++;
-                        orentationType4MagnitudeSum += neighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        if (poiNeighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        {
+                            this.HOrientationPOICount++;
+                            this.HOrientationPOIMagnitudeSum += poiNeighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (poiNeighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
+                        {
+                            this.PDOrientationPOICount++;
+                            this.PDOrientationPOIMagnitudeSum += poiNeighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (poiNeighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                        {
+                            this.VOrientationPOICount++;
+                            this.VOrientationPOIMagnitudeSum += poiNeighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (poiNeighbourhood[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
+                        {
+                            this.NDOrientationPOICount++;
+                            this.NDOrientationPOIMagnitudeSum += poiNeighbourhood[rowIndex, colIndex].RidgeMagnitude;
+                        }
                     }
                 }
             }
@@ -402,7 +410,7 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, neighbourhoodLength, spectrogramConfig);
+                        ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }
@@ -799,8 +807,6 @@ namespace Dong.Felt.Representations
                 }
             }
         }
-
-
 
         #endregion
     }

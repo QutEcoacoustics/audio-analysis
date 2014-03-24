@@ -41,7 +41,7 @@
             }
             return sm;
         }
-
+       
         /// <summary>
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         /// </summary>
@@ -433,7 +433,7 @@
         /// <param name="NhCountInRow"></param>
         /// <param name="NhCountInColumn"></param>
         /// <returns></returns>
-        public static RidgeDescriptionNeighbourhoodRepresentation[,] RidgeNhListToArray(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhList, int NhCountInRow, int NhCountInColumn)
+        public static RidgeDescriptionNeighbourhoodRepresentation[,] NhListToArray(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhList, int NhCountInRow, int NhCountInColumn)
         {
             var listCount = ridgeNhList.Count;
             var result = new RidgeDescriptionNeighbourhoodRepresentation[NhCountInRow, NhCountInColumn];
