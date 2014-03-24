@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AudioAnalysisTools.Sonogram;
+using System.IO;
 
 
 namespace QutBioacosutics.Xie
@@ -32,6 +33,10 @@ namespace QutBioacosutics.Xie
              */
             string path = configuration.file;
             // string path = @"C:\Jie\data\160113_min140.wav";
+            //FileInfo fileInfo = new FileInfo(path);
+            //var fileName = fileInfo.Name;
+            var fileName = Path.GetFileNameWithoutExtension(path);
+
             string imagePath = configuration.image_path;            
             double amplitudeThreshold = configuration.amplitude_threshold;
             int range = configuration.range;
@@ -58,7 +63,14 @@ namespace QutBioacosutics.Xie
             //int missingValue2 = configuration.i_also_dont_exist;
 
             // Execute analysis
-            
+
+            //var fileEntries = Directory.GetFiles(path);
+            //fileEntries = fileEntries.OrderBy(f=> f.FileName).ToList();
+            //var fileCount = fileEntries.Count();
+            //for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+            //{
+
+            //}
 
             // generate a spectrogram
             var recording = new AudioRecording(path);
@@ -71,10 +83,27 @@ namespace QutBioacosutics.Xie
 
             var spectrogram = new SpectralSonogram(spectrogramConfig, recording.GetWavReader());
 
+
+            var spectrogramConfigOscillation = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.1, WindowSize = 512 };
+
+            var spectrogramOscillation = new SpectralSonogram(spectrogramConfigOscillation, recording.GetWavReader());
             // find the oscillation through all the recordings
 
             var Oscillation = new FindOscillation();
-            var oscillationArray = Oscillation.getOscillation(spectrogram.Data, zeroBinIndex);
+            var oscillationArray = Oscillation.getOscillation(spectrogramOscillation.Data, zeroBinIndex);
+
+            //var image = ImageTools.DrawMatrix(oscillationArray);
+            //image.Save(imagePath);
+
+            // normalization
+            var norOscArray = new double[oscillationArray.Length];
+            var oscSum = XieFunction.Sum(oscillationArray);
+            for (int i = 0; i < oscillationArray.Length; i++)
+            {
+                norOscArray[i] = oscillationArray[i] / oscSum;
+            
+            }
+
 
             var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
             var localPeaks = new FindLocalPeaks();
@@ -92,11 +121,25 @@ namespace QutBioacosutics.Xie
             var results = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, maximumDiffBin);
 
             trackArray = results.Item1;
+
+            // normalization
+            var norTArray = new double[trackArray.Length];
+            var TSum = XieFunction.Sum(trackArray);
+            for (int i = 0; i < trackArray.Length; i++)
+            {
+                norTArray[i] = trackArray[i] / TSum;
+
+            }
+
+
             trackMatrix = results.Item2;
 
             // find the harmonic structure based on tracks
             var Harmonic = new FindHarmonics();
             var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
+
+            //var image = ImageTools.DrawMatrix(harmonicMatrix);
+            //image.Save(imagePath);
 
             // change harmonicMarix to array
 
@@ -111,8 +154,15 @@ namespace QutBioacosutics.Xie
                 harmonicArray[i] = temp;
             }
 
-            //var image = ImageTools.DrawMatrix(harmonicMatrix);
-            //image.Save(imagePath);
+            // normalization
+
+            var norHArray = new double[harmonicArray.Length];
+            var HarSum = XieFunction.Sum(harmonicArray);
+            for (int i = 0; i < harmonicArray.Length; i++)
+            {
+                norHArray[i] = harmonicArray[i] / HarSum;
+
+            }
 
             //trackMatrix = MatrixTools.MatrixRotate90Anticlockwise(trackMatrix);
             //double[,] spectrogramMatrix = DataTools.normalise(spectrogram.Data);
@@ -163,6 +213,15 @@ namespace QutBioacosutics.Xie
             //}
 
             //bmp.Save(imagePath);
+
+            // save the arrays (1-trackArray,2-oscillationArray,3-harmonicArray) to CSV file.
+
+            var FrogIndex = new List<List<string>>();
+            FrogIndex.Add(new List<string> {path,norTArray.ToString(), norOscArray.ToString(), norHArray.ToString()});
+
+            FileInfo fileInfo = new FileInfo(imagePath);
+
+            CsvTools.WriteResultsToCsv(fileInfo, FrogIndex);
 
 
             Log.Info("Analysis complete");
