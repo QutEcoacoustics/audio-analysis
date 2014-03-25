@@ -41,7 +41,8 @@ CreateTargetMinutes <- function () {
     
     # create a new output directory if there is less than 100 % of the target
     # being used, because the random minutes will be different
-    WriteOutput(data.frame(min.id = target.min.ids), 'target.min.ids', new = new)
+
+    WriteOutput(target.mins, 'target.min.ids', new = new)
 }
 
 TargetSubset <- function (df) {

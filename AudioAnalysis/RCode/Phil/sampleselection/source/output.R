@@ -75,18 +75,33 @@ WriteOutputCsv <- function (x, path) {
     write.csv(x, path, row.names = FALSE)
 }
 
+SaveObject <- function (x, fn) {
+    path <- OutputPath(fn, ext = 'object')
+    f <- save(x, file = path)
+    
+}
+ReadObject <- function (fn) {
+    path <- OutputPath(fn, ext = 'object')
+    if (file.exists(path)) {  
+        load(path)
+        return(x) # this is the name of the variable used when saving
+    } 
+    return(FALSE) 
+}
+
 WriteMasterOutput <- function (x, fn, ext = 'csv') {
     WriteOutputCsv(x, MasterOutputPath(fn, ext))
 }
 
-ReadMasterOutput <- function (fn, ext = 'csv') {
+ReadMasterOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
     p <- MasterOutputPath(fn, ext);
     if (file.exists(p)) {
         return(ReadOutputCsv(p))
-    } else {
+    } else if (false.on.missing) {
         return(FALSE)
+    } else {
+        stop(paste("file doesn't exist: ", p))
     }
-
 }
 
 MasterOutputPath <- function (fn, ext = 'csv') {
@@ -118,8 +133,6 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     #   to get the current output path, leave fn empth
     #   to create a new folder for output without a particular file, just pass new = TRUE
     
-
-    
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
     dir.name <- paste(g.all.events.version, g.start.date, g.start.min, g.end.date,
@@ -133,7 +146,6 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     }
     dirs <- list.files(path = output.dir, full.names = FALSE, 
                        recursive = FALSE)
-
     
     v <-suppressWarnings(max(round(as.numeric(dirs)), na.rm=TRUE))
      
@@ -143,7 +155,6 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     } else if (new) {
         v <- v + 1
     }
-
 
     path <- file.path(output.dir,v)
     if (!file.exists(path)) {
@@ -262,20 +273,51 @@ CachePath <- function (cache.id) {
 }
 
 ReadCache <- function (cache.id) {
-    
     path <- CachePath(cache.id)
     if (file.exists(path)) {  
             load(path)
-            return(x) # this is the naem of the variable used when saving
+            return(x)  # this is the name of the variable used when saving
     } 
-    return(FALSE)
-    
+    return(FALSE) 
 }
 
 WriteCache <- function (x, cache.id) {
     # TODO: set cache limit and cleanup
     path <- CachePath(cache.id)
     f <- save(x, file = path)
+}
+
+
+
+GetUserChoice <- function (choices, choosing.what = "one of the following") {
+    #todo recursive validation like http://www.rexamples.com/4/Reading%20user%20input
+    
+    cat(paste0("choose ", choosing.what, ":\n"))
+    cat(paste0(1:length(choices), ") ", choices, collapse = '\n'))
+    
+    msg <- paste0("enter int 1 to ",length(choices),": ")
+
+    choice <- GetValidatedUserChoice(msg, length(choices))
+    
+    return(choice)
+}
+
+GetValidatedUserChoice <- function (msg, num.choices, num.attempts = 0) { 
+    max <- 8
+    choice <- readline(msg)
+    if (grepl("^[0-9]+$",choice)) {
+        choice <- as.integer(choice)
+    }
+    if (num.attempts > max) {
+        stop("you kept entering an invalid choice, idiot")
+    } else if (class(choice) != 'integer' || choice > num.choices || choice <= 0) {
+        if (num.attempts == 0) {
+            msg <- paste("Invalid choice.", msg)
+        }
+        GetValidatedUserChoice(msg,num.choices, num.attempts + 1)
+    } else {
+        return(choice)
+    }
 }
 
 

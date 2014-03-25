@@ -12,7 +12,7 @@ g.source.dir <- file.path('..','..','..','..','..','..','SERF')
 g.audio.dir  <- file.path(g.source.dir, 'mono')
 
 g.all.events.version <- 2 
-g.all.events.version <- 'a'
+#g.all.events.version <- 'a'
 
 # events source directory, containing one csv file for each wave file
 # (the matlab output)
@@ -31,12 +31,12 @@ g.study.sites <- c('NW', 'NE')  # todo: include the others, eventually
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 400
+g.start.min <- 250
 #g.start.min <- 415
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 529
+g.end.min <- 650
 #g.end.min <- 430
 
 # which sites to include in sample selection
@@ -46,7 +46,7 @@ g.sites <- c('NW')
 # to use as target. Reason for this is to have a 
 # representative sample of a long recording without
 # needing to process all the long recording
-g.percent.of.target <- 50
+g.percent.of.target <- 100
 
 # how many minute samples to use when inspecting
 g.num.samples <- 4

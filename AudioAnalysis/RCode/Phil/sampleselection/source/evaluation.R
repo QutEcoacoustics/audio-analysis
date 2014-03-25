@@ -27,11 +27,43 @@ EvaluateSamples <- function (samples = NA, cutoff = NA) {
     
     GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions)
     
+}
+
+EvaluateSamples2 <- function () {
+    
+    ranks <- ReadObject('ranked_samples')
+    min.ids <- ReadOutput('target.min.ids')
+    speciesmins <- GetTags();  # get tags within outer target 
+    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
+    
+    ranked.progressions <- ranks
+    
+    dn <- dimnames(ranks)
+    methods <- dn$methods
+    cluster.nums <- dn$num.clusters
+    
+    for (m in 1:length(ranks[,1,1])) {
+        # for each ranking method
+        for (cn in 1:length(ranks[1,,1])) {
+            # for each num cluster groups
+            
+            ordered.min.ids <- min.ids$min.id[order(ranks[m,cn,])]
+            progression <- GetProgression(species.in.each.sample, ordered.min.ids)
+            #todo: output as a csv
+            ranked.progressions[m,cn, ] <- progression$count
+            
+        }
+    }
+    
+   # optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
+   # random.at.dawn <- RandomSamplesAtDawn(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
+    
+   for (i in 1:length(ranked.progressions[,1,1])) {
+       GraphProgressions3d(ranked.progressions[i,,])   
+   }
 
     
 }
-
-
 
 ValidateMins <- function (mins = NA) {
     # mins can either be a vector of minute ids, in which case we expand it to 
@@ -157,8 +189,6 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = N
         ))
     
 }
-
-
 
 RandomSamplesAtDawn <- function (speciesmins = NA, species.in.each.sample
                                  = NA, mins = NA, num.repetitions = 100, dawn.from = 315, dawn.to = 495) {
@@ -343,6 +373,76 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     
 }
 
+GraphProgressions3d.1 <- function (progressions, cutoff = 180) {
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+    #x <- rep(sample.num, length(num.clusters))
+    #z <- rep(num.clusters, times = 1, each = length(sample.num))
+    #x <- rep(sample.num, times = 1, each = length(num.clusters))
+    #z <- rep(num.clusters, times = length(sample.num), each = 1)
+    #y <- as.vector(progressions)
+    
+    persp(z = t(progressions), 
+          xlab = 'sample num', ylab = 'num groups', zlab = 'species found',
+          main = 'sample progressions for different number of cluster groups', sub = NULL,
+          theta = -35, phi = 25, r = sqrt(3), d = 1,
+          scale = TRUE, expand = 1,
+          col = "white", border = NULL, ltheta = -135, lphi = 0,
+          shade = NA, box = TRUE, axes = TRUE, nticks = 5,
+          ticktype = "simple")
+    
+}
+
+GraphProgressions3d <- function (progressions, cutoff = 120) {
+    
+    require('rgl')
+    
+    if (ncol(progressions) > cutoff) {
+        progressions <- progressions[,1:cutoff]
+    }
+    
+
+    
+    
+    image(progressions)
+    View(progressions)
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+   # x <- rep(sample.num, length(num.clusters))
+   # z <- rep(num.clusters, times = 1, each = length(sample.num))
+   # x <- rep(sample.num, times = 1, each = length(num.clusters))
+   # z <- rep(num.clusters, times = length(sample.num), each = 1)
+   # y <- as.vector(t(progressions))
+
+    z <- 1:length(num.clusters) * 4
+    x <- sample.num
+    y <- t(progressions)
+
+    ylim <- range(y)
+    ylen <- ylim[2] - ylim[1] + 1
+    colorlut <- terrain.colors(ylen,alpha=0) # height color lookup table
+    col <- colorlut[ y-ylim[1]+1 ] # assign colors to heights for each point
+    open3d(mouseMode = c('trackball', 'polar', 'xAxis'))
+    rgl.surface(x, z, y, color=col, alpha=0.9, back="lines")
+   
+   
+    #axes3d()
+    bbox3d(zlen = length(z),
+           zlab = as.character(num.clusters),
+           zunit="pretty", 
+           expand=1.03,
+          draw_front=FALSE)  
+
+    rgl.surface(x, z, matrix(0, length(x), length(z)), color=c('black'), back="fill")
+   
+
+    
+}
+
 WriteRichnessResults <- function (min.ids, found.species.progression, output.fn, species.in.each.sample) {
     # given a list of samples with rankings, a list of species in each sample, and a species progression
     # writes is all to a csv
@@ -457,7 +557,6 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
     # side by side, with the event box shown. 
     # all the cluster groups will be appended one under the other. 
     
-    
     events <- ReadOutput('clusters')
     
     if (is.numeric(cluster.groups)) {
@@ -489,21 +588,15 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
         return(ol)
     }
     
-    
     temp.dir <- TempDirectory()
     group.spectro.fns <- rep(NA, length(cluster.groups))
     
     Report(3, "about to generate spectrograms for ", nrow(events), 'from', length(cluster.groups), 'cluster groups')
     
-    
     for (group in cluster.groups) {
-        
-
         
         group.events <- events[which(events$group == group), ]
         num.before <- nrow(group.events)
-        
-
         
         while(overLimit(group.events)) {
             # remove a random event from the group until the total number is less than the group duration
@@ -589,47 +682,17 @@ IntegerVectorAsString <- function (ints, inner.sep = "-", outer.sep = ",") {
 }
 
 
-InspectSamples <- function (samples = NA) {
-    # draws the ranked n samples as spectrograms
-    # with events marked and colour coded by cluster group
-    rankings = 'all.supplied'
-    if(class(samples) == 'integer' || class(samples) == 'numeric') {
-        
-        #todo
-        
-        
-    } else {
-        if(class(samples) != 'data.frame') {
-            samples <- ReadOutput('ranked_samples')
-            rankings <- GetRankCols(samples)
-            # subset will have TRUE where any of the ranking cols are < g.num.samples
-            subset <- rep(FALSE, nrow(samples))
-            for (i in 1:length(rankings)) {
-                subset <- subset | samples[[rankings[i]]] <= g.num.samples
-            }
-            
-            samples <- samples[subset,]
-            
-        }
-    }
-    
-    # samples is now the rows of ranked_samples which make it to the top ranked 
-    # for any of the ranking cols. First generate the spectrograms, then stitch them
-    # for each ranking col
-    
 
-    events <- ReadOutput('clusters')
-    events <- AssignColourToGroup(events)
-    #event.col <- as.data.frame(rep(NA, nrow(samples)))
-    #colnames(event.col) <- c('events')
-    #samples <- cbind(samples, event.col)
+
+
+CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
+    # for a given set of minutes, creates minute spectrograms for each of them,
+    # including events color coded by group
     
-#    w <- 1000
-    # todo: fix this so that it the height of each spectrogram
-    # is what it actually is, instead of hardcoded 256
-#    h <- nrow(samples) * 256
-    
-    temp.dir <- TempDirectory()
+    events <- ReadOutput('events')
+    groups <- ReadOutput('clusters')
+    group.col.name <- paste0('group.', num.clusters)
+    events <- AssignColourToGroup(events, groups[, group.col.name])
     
     # file names for later use in imagemagick command to append together
     sample.spectro.fns <- c()
@@ -647,15 +710,15 @@ InspectSamples <- function (samples = NA) {
         Report(4, 'inspecting min id ', min.id)
         Report(4, 'num events = ', nrow(minute.events))
         
-    # TODO: get this to work    
-#         wav <- Audio.Targeted(site = as.character(samples$site[i]),
-#                               start.date = as.character(samples$date[i]), 
-#                               start.sec = as.numeric(samples$min[i] * 60), 
-#                               duration = 60,
-#                               save = TRUE)
-
-    
-
+        # TODO: get this to work    
+        #         wav <- Audio.Targeted(site = as.character(samples$site[i]),
+        #                               start.date = as.character(samples$date[i]), 
+        #                               start.sec = as.numeric(samples$min[i] * 60), 
+        #                               duration = 60,
+        #                               save = TRUE)
+        
+        
+        
         Sp.CreateTargeted(site = samples$site[i], 
                           start.date = samples$date[i], 
                           start.sec = samples$min[i] * 60, 
@@ -665,11 +728,59 @@ InspectSamples <- function (samples = NA) {
                           label = samples$min.id[i])
         
     }
+    
+    return(sample.spectro.fns)
+    
+    
+}
 
+
+InspectSamples <- function (samples = NA) {
+    # draws the ranked n samples as spectrograms
+    # with events marked and colour coded by cluster group
+
+    rankings <- ReadObject('ranked_samples')
+    min.ids <- ReadOutput('target.min.ids')
+    d.names <- dimnames(rankings)
+    num.clusters.choices <- d.names$num.clusters
+    #num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters')
+    num.clusters.choice <- 2
+    num.clusters <- num.clusters.choices[num.clusters.choice]
+
+    if(class(samples) != 'data.frame') {
+#         ranking.method.choices <- d.names$ranking.method
+#         ranking.method.choices <- c(ranking.method.choices, 'exit')
+#      
+#         last.choice <- -1;
+#         ranking.methods <- c()
+#         while(last.choice != length(ranking.method.choices)) {
+#             last.choice <- GetUserChoice(ranking.method.choices, 'ranking method')
+#             if (last.choice != length(ranking.method.choices)) {
+#                 ranking.methods <- c(ranking.methods, last.choice)   
+#             } else {
+#                 break()
+#             }
+#         }
+        ranking.methods <- c(2,3)
+        
+        
+        subset <- rep(FALSE, nrow(min.ids))
+        for (i in 1:length(ranking.methods)) {
+            subset <- subset | rankings[ranking.methods, num.clusters.choice, ] <= g.num.samples
+        }
+        
+        samples <- min.ids[subset,]
+        
+
+    }
+    
+    temp.dir <- TempDirectory()
+    
+    sample.spectro.fns <- CreateSampleSpectrograms(samples, num.clusters, temp.dir)
 
     samples$spectro.fn <- sample.spectro.fns
     # rankings can either be ranking cols or custom supplied 
-    for (i in 1:length(rankings)) {
+    for (i in 1:length(ranking.methods)) {
         if (rankings[i] %in% colnames(samples)) {
             # subset the samples table so it only includes the top ranked for this column,
             # then get the filenames in teh right order
@@ -698,7 +809,7 @@ GetRankCols <- function (data.frame) {
     return(intersect(paste0(rep('r',l), 1:l), colnames(data.frame)))  
 }
 
-AssignColourToGroup <- function (events) {
+AssignColourToGroup <- function (events, group) {
     # adds a "color" column to the events with a hex color
     # for each cluster group
     #
@@ -708,17 +819,15 @@ AssignColourToGroup <- function (events) {
     # Returns: 
     #   data.frame; same as input but with an extra column
     
-    groups <- unique(events$group)   
+    groups <- unique(group)   
     num.groups <- length(groups)
     colors <- rainbow(num.groups)
     Report(6, 'Cluster group colors', colors)
-    event.colors <- events$group
+    event.colors <- group
     for (i in 1:num.groups) {
         event.colors[event.colors == groups[i]] <- colors[i]
     }
-    event.colors <- as.data.frame(event.colors)
-    colnames(event.colors) <- "rect.color"
-    events <- cbind(events, event.colors)
+    events$rect.color <- event.colors
     return(events)
     
 }

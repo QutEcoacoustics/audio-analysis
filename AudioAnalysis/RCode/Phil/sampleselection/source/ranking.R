@@ -1,27 +1,66 @@
 RankSamples <- function () {
     #r1 <- RankSamples.1()
+    events <- ReadOutput('events')
+    mins <- ReadOutput('target.min.ids')
+    ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
     
-    r1 <- RankSamples1()
-    r2 <- RankSamples2()
-    r3 <- RankSamples3()
-    r1 <- OrderBy(r1, 'min.id')
-    r2 <- OrderBy(r2, 'min.id')
-    r3 <- OrderBy(r3, 'min.id')
-    total.rankings <- data.frame(min.id = r3$min.id, 
-                                 r1 = r1$rank, s1 = r1$score, 
-                                 r2 = r2$rank, s2 = r2$score, 
-                                 r3 = r3$rank, s3 = r3$score)
+    # the different number of clusters to perform ranking for
+    num.num.clusters <- 20  # this many different numbers of clusters
+    num.clusters.start <- 5 # lowest number of clusters
+    num.clusters.multiplier <- 1.5 # each number of clusters is this many times the last
+    num.clusters <- round(num.clusters.start * 1.33^(1:num.num.clusters))
+    
+    # make sure we are not trying to use more clusters than events
+    num.clusters <- num.clusters[num.clusters < nrow(events)]
+    
+    output <- array(data = NA, dim = c(length(ranking.methods), length(num.clusters), nrow(mins)), dimnames = list(ranking.method = 1:length(ranking.methods), num.clusters = num.clusters, min.id = mins$min.id))
 
-
+    groups <- as.data.frame(matrix(rep(NA, length(num.clusters) * nrow(events)), nrow = nrow(events)))
+    groups.col.names <- paste0('group.', num.clusters)
+    colnames(groups) <- groups.col.names
+    groups <- cbind(events, groups)
+    
+    fit <- ReadObject('clustering')
+    for (n in 1:length(num.clusters)) {
+        group <- cutree(fit, num.clusters[n])
+        events$group <- group #temporarily add the group to the events for ranking
+        groups[, groups.col.names[n]] <- group  # also add it here so it gets saved
+        for (m in 1:length(ranking.methods)) {
+            r <- do.call(ranking.methods[m], list(events = events))   
+            r <- r[order(r$min.id), ]
+            output[m, n, ] <- r$rank
+        }
+    }
+    SaveObject(output, 'ranked_samples')
+    
+    WriteOutput(groups, 'clusters')
+    
+    
+    #WriteOutput(as.matrix(output[1,,]), 'ranked_samples2')
+   # r2 <- RankSamples2()
+   #  r3 <- RankSamples3()
+   # r1 <- OrderBy(r1, 'min.id')
+   # r2 <- OrderBy(r2, 'min.id')
+   # r3 <- OrderBy(r3, 'min.id')
+   # total.rankings <- data.frame(min.id = r3$min.id, 
+   #                              r1 = r1$rank, s1 = r1$score, 
+   #                              r2 = r2$rank, s2 = r2$score, 
+   #                              r3 = r3$rank, s3 = r3$score)
 
     # add site,date,min cols to make it easier to examin
-    total.rankings <- ExpandMinId(total.rankings)
+    # total.rankings <- ExpandMinId(total.rankings)
     
-    WriteOutput(total.rankings, 'ranked_samples')
-    return(total.rankings)
+    # WriteOutput(total.rankings, 'ranked_samples')
+    # return(total.rankings)
 }
 
-IterateOnSparseMatrix <- function (multipliers = NA,  decay.rate = 1.2) {
+
+
+
+
+
+
+IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) {
     # ranks all the minutes in the target in the order 
     
     # that should find the most species in the shortest number of minute
@@ -44,8 +83,8 @@ IterateOnSparseMatrix <- function (multipliers = NA,  decay.rate = 1.2) {
     require('plyr')
     require('Matrix')
     
-    Report(1, 'Ranking samples: method 1')
-    events <- ReadOutput('clusters')
+
+    #events <- ReadOutput('clusters')
     
     # list of unique group-minute pairs 
     # (i.e. remove duplicate groups from the same minute)
@@ -128,52 +167,49 @@ IterateOnSparseMatrix <- function (multipliers = NA,  decay.rate = 1.2) {
     
 }
 
-RankSamples1 <- function () {
+RankSamples1 <- function (events) {
     # use the iterateOnSparseMatrix raking algorithm, 
     # using the distance scores as the multiplier
     
-    multiplier <- ReadOutput('distance.scores')
-    colnames(multiplier) <- c('min.id', 'multiplier')
+    distance.scores <- ReadOutput('distance.scores')
+    multiplier <- data.frame(min.id = distance.scores$min.id, multiplier = distance.scores$distance.score)
     #multiplier$multiplier <- 1
-    return(IterateOnSparseMatrix(multiplier))
+    return(IterateOnSparseMatrix(events, multiplier))
   
     
 }
 
 
 
-RankSamples2 <- function () {
+RankSamples2 <- function (events) {
     
-    events <- ReadOutput('clusters')
+    #events <- ReadOutput('clusters')
     
     Report(5, 'calculating number of events in each minute')
     # count removes duplicates and adds a 'freq' column which is the number 
     # of occurances of that row (i.e. the number of duplicates removed plus 1)
-    multipliers <- count(as.data.frame(events$min.id))
-    colnames(multipliers) <- c('min.id', 'multiplier')
-    #Report(4, nrow(mins), 'minutes have at least one event')
-    
-    #unique.cluster.minutes <- unique(events[, c('min.id', 'group')])
-    #num.clusters.per.min <- count(unique.cluster.minutes, vars = 'min.id')
-    
-    #initial.weight = mins$num.events
-    
+    multiplier <- count(as.data.frame(events$min.id))
+    colnames(multiplier) <- c('min.id', 'multiplier')
     # multipliers <- data.frame(min.id = num.clusters.per.min$min.id, rep(initial.weight, nrow(num.clusters.per.min)))
     
-    return(IterateOnSparseMatrix(multipliers))
+    return(IterateOnSparseMatrix(events, multiplier))
     
 }
 
-RankSamples3 <- function () {
+RankSamples3 <- function (events) {
     # ranks samples based purely on v.score
     # which is the internal distance only, influenced by the number and
     # diversity of events in each minute, but not the difference between minutes
-    # i.e. similar minutes will can both score high  
+    # i.e. similar minutes will can both score high 
+    # input argument is just so that it fits with the conventions of ranking methods
+    
+    
     Report(1, 'Ranking samples: method 4')
     mins <- ReadOutput('distance.scores')
     
     mins.ranked <- mins[order(mins$distance.score, decreasing = TRUE),]
     mins.ranked$rank <- 1:nrow(mins)
+    
     return(data.frame(min.id = as.vector(mins.ranked$min.id), rank = (mins.ranked$rank), score = as.vector(mins.ranked$distance.score)))
 }
 

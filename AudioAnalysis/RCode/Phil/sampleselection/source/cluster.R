@@ -61,15 +61,12 @@ ClusterEvents <- function (num.groups = 'auto',
         num.groups <- floor(sqrt(num.rows.to.use))
     }
     
-    groups <- cutree(fit, num.groups)
+    SaveObject(fit, 'clustering')
     
+    groups <- cutree(fit, num.groups)
     
     print(length(groups))
     print(nrow(events))
-    
-
-    
-  
     
     #groups <- as.matrix(cluster.result)
     #Report(2, 'num cluster groups = ',  num.groups)
@@ -96,6 +93,11 @@ ClusterEvents <- function (num.groups = 'auto',
         dev.off()
     }
 }
+
+
+
+
+
 
 
 # bug: sometimes returns events and features with different number of rows!

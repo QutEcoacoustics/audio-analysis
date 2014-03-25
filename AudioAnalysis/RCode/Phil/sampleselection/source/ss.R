@@ -147,8 +147,8 @@ SS <- function (from.step = NA, to.step = NA) {
             # Step 5:
             # chooses samples based on cluster groups
             # outputs a list of minute samples to a csv file
-            samples <- RankSamples()
-            EvaluateSamples(samples) 
+            RankSamples()
+            EvaluateSamples2() 
         },
         function () {
             # Step 6:
