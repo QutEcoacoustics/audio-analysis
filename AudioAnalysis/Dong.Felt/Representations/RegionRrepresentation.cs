@@ -12,41 +12,43 @@ namespace Dong.Felt.Representations
     public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
         #region public properties.
+        
         /// <summary>
-        /// Index (0-based) for this region's lowest frequency in the source audio file, its unit is .
+        /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
-        public double FrequencyIndex { get; set; }
+        public double MaxFrequencyIndex { get; set; }
 
         /// <summary>
-        /// Index (0-based) for the time where this region starts located in the source audio file.
+        /// Index (0-based) for the start time where this region starts located in the source audio file, its unit is ms.
         /// </summary>
         public double TimeIndex { get; set; }
 
+        /// <summary>
+        /// For each nh in a region, NhRowIndex will indicate its row index. 
+        /// </summary>
+        public int NhRowIndex { get; set; }
+
+        /// <summary>
+        /// For each nh in a region, NhColIndex will indicate its col index. 
+        /// </summary>
+        public int NhColIndex { get; set; }
+
+        /// <summary>
+        /// A region matrix contains NhCountInRow rows. 
+        /// </summary>
         public int NhCountInRow { get; set; }
 
+        /// <summary>
+        /// A region matrix contains NhCountInCol cols. 
+        /// </summary>
         public int NhCountInCol { get; set; }
-
-        //// frequency range, total duration
-        //public double maxFrequency { get; private set; }
-
-        //public double minFrequency { get; private set; }
-
-        //public double startTime { get; private set; }
-
-        //public double endTime { get; private set; }
-
-        //public double frequencyRange { get; private set; }
-
-        //public double duration { get; private set; }
 
         /// <summary>
         /// Gets or sets the sourceAudioFile which contains the region.  
         /// </summary>
         public FileInfo SourceAudioFile { get; private set; }
 
-        public FileInfo SourceTextFile { get; private set; }
-
-        public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods {get; set;}
+        //public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods {get; set;}
 
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
@@ -60,22 +62,59 @@ namespace Dong.Felt.Representations
 
         #region  public constructor
 
-        public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> neighbourhoods,
-            int nhCountInRow, int nhCountInCol, FileInfo audioFile)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nh"></param>
+        /// <param name="frequencyIndex"></param>
+        /// <param name="frameIndex"></param>
+        /// <param name="nhCountInRow"></param>
+        /// <param name="nhCountInCol"></param>
+        /// <param name="rowIndex"></param>
+        /// <param name="colIndex"></param>
+        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex)
         {
-            this.ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            foreach (var nh in neighbourhoods)
-            {
-                this.ridgeNeighbourhoods.Add(nh);
-            }
-            // left bottom corner - this is the anchor point
-            this.FrequencyIndex = neighbourhoods[0].FrequencyIndex;
-            this.TimeIndex = neighbourhoods[0].FrameIndex;
+            this.MaxFrequencyIndex = frequencyIndex;
+            this.TimeIndex = frameIndex;
             this.NhCountInRow = nhCountInRow;
             this.NhCountInCol = nhCountInCol;
-            this.SourceAudioFile = audioFile;
+            this.NhRowIndex = rowIndex;
+            this.NhColIndex = colIndex;
+            this.magnitude = nh.magnitude;
+            this.orientation = nh.orientation;
+            this.POICount = nh.POICount;
+            this.FrameIndex = nh.FrameIndex;
+            this.FrequencyIndex = nh.FrequencyIndex;
+            this.Duration = nh.Duration;
+            this.neighbourhoodSize = nh.neighbourhoodSize;
+            this.HOrientationPOICount = nh.HOrientationPOICount;
+            this.HOrientationPOIMagnitudeSum = nh.HOrientationPOIMagnitudeSum;
+            this.VOrientationPOICount = nh.VOrientationPOICount;
+            this.VOrientationPOIMagnitudeSum = nh.VOrientationPOIMagnitudeSum;
+            this.PDOrientationPOICount = nh.PDOrientationPOICount;
+            this.PDOrientationPOIMagnitudeSum = nh.PDOrientationPOIMagnitudeSum;
+            this.NDOrientationPOICount = nh.NDOrientationPOICount;
+            this.NDOrientationPOIMagnitudeSum = nh.NDOrientationPOIMagnitudeSum;
         }
 
+        //public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
+        //    int nhCountInRow, int nhCountInCol, FileInfo audioFile)
+        //{
+        //    this.ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+        //    foreach (var nh in ridgeNeighbourhoods)
+        //    {
+        //        this.ridgeNeighbourhoods.Add(nh);
+        //    }
+        //    // top left corner - this is the anchor point
+        //    this.FrequencyIndex = ridgeNeighbourhoods[0].FrequencyIndex;
+        //    this.TimeIndex = ridgeNeighbourhoods[0].FrameIndex;
+        //    this.NhCountInRow = nhCountInRow;
+        //    this.NhCountInCol = nhCountInCol;
+
+        //    this.SourceAudioFile = audioFile;
+        //}
+
+        
         #endregion
     }
 }

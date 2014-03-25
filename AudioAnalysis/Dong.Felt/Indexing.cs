@@ -12,9 +12,10 @@ namespace Dong.Felt
     {
 
         /// function to extract the query from a audio file which contains the query.
-        public static RegionRerepresentation ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName)
+        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName)
         {          
             var audioFile = new FileInfo(audioFileName);
+            var results = new List<RegionRerepresentation>();
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
@@ -27,10 +28,20 @@ namespace Dong.Felt
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);                    
                 }
             }
-           var result = new RegionRerepresentation(tempResult,
-               nhRowsCount, nhColsCount, audioFile);           
-
-           return result;
+           //var result = new RegionRerepresentation(tempResult,
+           //    nhRowsCount, nhColsCount, audioFile);
+           
+           // The top left nh frequency and frame index will be the index of a region representation. 
+            for (int i = 0; i < tempResult.Count; i++)
+            {
+                var frequencyIndex = tempResult[0].FrequencyIndex;
+                var frameIndex = tempResult[0].FrameIndex;
+                var rowIndexInRegion = i / nhColsCount;
+                var colIndexInRegion = i % nhColsCount;
+                var regionItem = new RegionRerepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount, rowIndexInRegion, colIndexInRegion);
+                results.Add(regionItem);
+            }                     
+           return results;
         }
         
         /// <summary>
@@ -49,8 +60,8 @@ namespace Dong.Felt
                 // The frequencyDifference is a problem. 
                 if (Math.Abs(c.FrequencyIndex - query.FrequencyIndex) < 1)              
                 {
-                    var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation2(query, c, weight1, weight2);                    
-                    result.Add(Tuple.Create(distance, c.FrameIndex, c.FrequencyIndex)); 
+                    //var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation2(query, c, weight1, weight2);                    
+                    //result.Add(Tuple.Create(distance, c.FrameIndex, c.FrequencyIndex)); 
                 }
             }
             return result;
@@ -62,36 +73,36 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
-        {
-            // to get the distance and frequency band index
-            var result = new List<Tuple<double, double, double>>();
-            var vectorCount = candidates.Count;
-            // each sublist has the same count, so here we want to get its length from the first value. 
-            var regionCountINVector = candidates[0].Count;
-            var regionIndicator = 0;
-            var j = 0; 
-            foreach (var c in candidates)
-            {
-                var miniDistance = 60000000.0;
-                var distanceListForOneVector = new List<double>();
-                for (int i = 0; i < regionCountINVector; i++)
-                {
-                    var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
-                    distanceListForOneVector.Add(distance); 
-                    var minDistance = distanceListForOneVector.Min();
-                    if (minDistance < miniDistance)
-                    {
-                        regionIndicator = i;
-                        miniDistance = minDistance;
-                    }                   
-                }
-                var neighbourhoodDuration = 5 * 11.6;
-                result.Add(Tuple.Create(miniDistance, j * neighbourhoodDuration, c[regionIndicator].FrequencyIndex));
-                j++;
-            }
-            return result;
-        }
+        //public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+        //{
+        //    // to get the distance and frequency band index
+        //    var result = new List<Tuple<double, double, double>>();
+        //    var vectorCount = candidates.Count;
+        //    // each sublist has the same count, so here we want to get its length from the first value. 
+        //    var regionCountINVector = candidates[0].Count;
+        //    var regionIndicator = 0;
+        //    var j = 0; 
+        //    foreach (var c in candidates)
+        //    {
+        //        var miniDistance = 60000000.0;
+        //        var distanceListForOneVector = new List<double>();
+        //        for (int i = 0; i < regionCountINVector; i++)
+        //        {
+        //            var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
+        //            distanceListForOneVector.Add(distance); 
+        //            var minDistance = distanceListForOneVector.Min();
+        //            if (minDistance < miniDistance)
+        //            {
+        //                regionIndicator = i;
+        //                miniDistance = minDistance;
+        //            }                   
+        //        }
+        //        var neighbourhoodDuration = 5 * 11.6;
+        //        result.Add(Tuple.Create(miniDistance, j * neighbourhoodDuration, c[regionIndicator].FrequencyIndex));
+        //        j++;
+        //    }
+        //    return result;
+        //}
 
         public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
         {
@@ -108,8 +119,8 @@ namespace Dong.Felt
                 var distanceListForOneVector = new List<double>();
                 for (int i = 0; i < regionCountINVector; i++)
                 {
-                    var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
-                    distanceListForOneVector.Add(distance);
+                    //var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
+                    //distanceListForOneVector.Add(distance);
                     var minDistance = distanceListForOneVector.Min();
                     if (minDistance < miniDistance)
                     {
@@ -149,44 +160,44 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <returns></returns>
-        public static List<RegionRerepresentation> CandidatesRepresentationFromAudioNhRepresentations(RegionRerepresentation queryRepresentation, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
-        {
-            var result = new List<RegionRerepresentation>();
+        //public static List<RegionRerepresentation> CandidatesRepresentationFromAudioNhRepresentations(RegionRerepresentation queryRepresentation, RidgeDescriptionNeighbourhoodRepresentation[,] ridgeNeighbourhood, string audioFileName, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
+        //{
+        //    var result = new List<RegionRerepresentation>();
 
-            var frequencyScale = spectrogramConfig.FrequencyScale;
-            var timeScale = spectrogramConfig.TimeScale; // millisecond
+        //    var frequencyScale = spectrogramConfig.FrequencyScale;
+        //    var timeScale = spectrogramConfig.TimeScale; // millisecond
 
-            var audioFile = new FileInfo(audioFileName);
-            var rowsCount = ridgeNeighbourhood.GetLength(0);
-            var colsCount = ridgeNeighbourhood.GetLength(1);
-            var nhCountInRow = queryRepresentation.NhCountInRow;
-            var nhCountInColumn = queryRepresentation.NhCountInCol;
+        //    var audioFile = new FileInfo(audioFileName);
+        //    var rowsCount = ridgeNeighbourhood.GetLength(0);
+        //    var colsCount = ridgeNeighbourhood.GetLength(1);
+        //    var nhCountInRow = queryRepresentation.NhCountInRow;
+        //    var nhCountInColumn = queryRepresentation.NhCountInCol;
 
-            for (var rowIndex = 0; rowIndex < rowsCount; rowIndex++)
-            {
-                for (var colIndex = 0; colIndex < colsCount; colIndex++)
-                {
-                    if (StatisticalAnalysis.checkBoundary(rowIndex + nhCountInRow - 1, colIndex + nhCountInColumn - 1, rowsCount, colsCount))
-                    {
-                        var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(ridgeNeighbourhood, rowIndex, colIndex, rowIndex + nhCountInRow, colIndex + nhCountInColumn);
-                        var nhList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-                        for (int i = 0; i < nhCountInRow; i++)
-                        {
-                            for (int j = 0; j < nhCountInColumn; j++)
-                            {
-                                nhList.Add(subRegionMatrix[i, j]);
-                            }
-                        }
-                        var region = new RegionRerepresentation(nhList, nhCountInRow, nhCountInColumn, audioFile);
+        //    for (var rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+        //    {
+        //        for (var colIndex = 0; colIndex < colsCount; colIndex++)
+        //        {
+        //            if (StatisticalAnalysis.checkBoundary(rowIndex + nhCountInRow - 1, colIndex + nhCountInColumn - 1, rowsCount, colsCount))
+        //            {
+        //                var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(ridgeNeighbourhood, rowIndex, colIndex, rowIndex + nhCountInRow, colIndex + nhCountInColumn);
+        //                var nhList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+        //                for (int i = 0; i < nhCountInRow; i++)
+        //                {
+        //                    for (int j = 0; j < nhCountInColumn; j++)
+        //                    {
+        //                        nhList.Add(subRegionMatrix[i, j]);
+        //                    }
+        //                }
+        //                var region = new RegionRerepresentation(nhList, nhCountInRow, nhCountInColumn, audioFile);
 
-                        region.FrameIndex = colIndex * neighbourhoodLength * timeScale;
-                        region.FrequencyIndex = spectrogramConfig.NyquistFrequency - rowIndex * neighbourhoodLength * frequencyScale;
-                        result.Add(region);
-                    }
-                }
-            }
-            return result;
-        }
+        //                region.FrameIndex = colIndex * neighbourhoodLength * timeScale;
+        //                region.FrequencyIndex = spectrogramConfig.NyquistFrequency - rowIndex * neighbourhoodLength * frequencyScale;
+        //                result.Add(region);
+        //            }
+        //        }
+        //    }
+        //    return result;
+        //}
 
         public static List<RegionRerepresentation> FixedFrequencyRegionRepresentationList2(List<RegionRerepresentation> candidatesList, int rowsCount1, int colsCount1)
         {

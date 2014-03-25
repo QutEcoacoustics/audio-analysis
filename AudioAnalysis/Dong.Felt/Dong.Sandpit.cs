@@ -45,8 +45,10 @@
                 string imagePath = Path.Combine(outputDirectory, imageFileName);
                 string annotatedImageFileName = Path.ChangeExtension(audioFileName, "-annotate.png");
                 string annotatedImagePath = Path.Combine(outputDirectory, annotatedImageFileName);
-                string csvFileName = Path.ChangeExtension(audioFileName, "nh-9-nhRepresentation.csv");             
-                string csvPath = Path.Combine(outputDirectory, csvFileName);
+                string nhRepresentationCsvFileName = Path.ChangeExtension(audioFileName, "nh-7-nhRepresentation.csv");
+                string nhRepresentationCsvPath = Path.Combine(outputDirectory, nhRepresentationCsvFileName);
+                string nhRegionCsvFileName = Path.ChangeExtension(audioFileName, "nh-9-regionRepresentation.csv");
+                string nhRegionCsvPath = Path.Combine(outputDirectory, nhRegionCsvFileName);
 
                 /// Read audio files into spectrogram.
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };               
@@ -151,7 +153,7 @@
                 //}
                 //File.WriteAllLines(csvPath, result.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
 
-                var secondToMillionSecondUnit = 1000; 
+                var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
                     FrequencyScale = spectrogram.FBinWidth,
@@ -163,34 +165,36 @@
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
                 var nhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
-                var file = new FileInfo(csvPath);
-                CSVResults.NhRepresentationListToCSV(file, nhRepresentationList);               
-                
-                /// Read query          
-                //var queryCsvFilePath = @"C:\XUEYAN\PHD research work\New Datasets\19.Torresian Crow\Query\SE_SE727_20101016-055700-055800-Torresian Crow.csv"; ;
-                //var csvfile = new FileInfo(queryCsvFilePath);
-                //var queryInfo = CSVResults.CsvToAcousticEvent(csvfile);
-                //var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-                //var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-                //if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-                //{
-                //    nhCountInRow--;
-                //}
-                //var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
-                //if (spectrogram.FrameCount % neighbourhoodLength == 0)
-                //{
-                //    nhCountInColumn--;
-                //}
-                //var query = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd, neighbourhoodLength, nhCountInRow, spectrogramConfig);
-                //var nhMatrix = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
-                ///// get query representation
-                //var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, nhMatrix, wavFilePath);
+                var file = new FileInfo(nhRepresentationCsvFileName);
+                CSVResults.NhRepresentationListToCSV(file, nhRepresentationList);
 
-                //var CSVResultDirectory = @"C:\XUEYAN\PHD research work\New Datasets\19.Torresian Crow\Query\CSV Results";
-                //var csvFileName1 = "SE_SE727_20101016-055700-055800-Torresian Crow-Neighbourhood-9.csv";
-                //string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
-                //var queryRepresentationfile = new FileInfo(csvPath1);
-                //CSVResults.NeighbourhoodRepresentationListToCSV(queryRegionRepresentation.ridgeNeighbourhoods, wavFilePath, csvPath1);             
+                /// Read query          
+                var queryCsvFilePath = @"C:\XUEYAN\PHD research work\New Datasets\19.Torresian Crow\Query\SE_SE727_20101016-055700-055800-Torresian Crow.csv"; ;
+                var csvfile = new FileInfo(queryCsvFilePath);
+                var queryInfo = CSVResults.CsvToAcousticEvent(csvfile);
+                var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
+                var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
+                if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
+                {
+                    nhCountInRow--;
+                }
+                var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
+                if (spectrogram.FrameCount % neighbourhoodLength == 0)
+                {
+                    nhCountInColumn--;
+                }
+                var query = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd, neighbourhoodLength, nhCountInRow, spectrogramConfig);
+                var nhMatrix = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
+                /// get query representation
+                var queryRegionRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, nhMatrix, wavFilePath);
+
+                var CSVResultDirectory = @"C:\XUEYAN\PHD research work\New Datasets\19.Torresian Crow\Query\CSV Results";
+                var csvFileName1 = "SE_SE727_20101016-055700-055800-Torresian Crow-RegionRepresentation-neighbourhood-9.csv";
+                string csvPath1 = Path.Combine(CSVResultDirectory, csvFileName1);
+                var queryRegionRepresentationfile = new FileInfo(csvPath1);
+                var file1 = new FileInfo(csvPath1);
+                CSVResults.RegionRepresentationToCSV(file1, queryRegionRepresentation);
+
                 
                 //var candidatesRepresentation = Indexing.CandidatesRepresentationFromAudioNhRepresentations(queryRegionRepresentation, nhMatrix, wavFilePath, neighbourhoodLength, spectrogramConfig);
                 ////var candidatesVector = Indexing.RegionRepresentationListToVectors(candidatesRepresentation, ridgeArray.GetLength(0), ridgeArray.GetLength(1));
@@ -255,13 +259,13 @@
                 /// output events image
                 //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
 
-                /// to save the original spectrogram. 
+                /// to save the ridge detection spectrogram. 
                 //image = (Image)bmp;
                 //image.Save(annotatedImagePath);
 
                 /// to save the annotated spectrogram. 
-                image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
-                image.Save(imagePath, ImageFormat.Png);
+                //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
+                //image.Save(imagePath, ImageFormat.Png);
             }
         } // Dev()
 

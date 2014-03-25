@@ -110,21 +110,21 @@
             {
                 foreach (var sr in r)
                 {
-                    var regionMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(sr);
-                    var rowsCount = regionMatrix.GetLength(0);
-                    var colsCount = regionMatrix.GetLength(1);
-                    for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
-                    {
-                        for (int colIndex = 0; colIndex < colsCount; colIndex++)
-                        {
-                            var score = regionMatrix[rowIndex, colIndex].score;
-                            var orientationType = regionMatrix[rowIndex, colIndex].orientationType;
-                            var audioFilePath = sr.SourceAudioFile.ToString();
-                            results.Add(new List<string>() { audioFilePath, sr.TimeIndex.ToString(), sr.FrequencyIndex.ToString(),
-                        rowIndex.ToString(), colIndex.ToString(), score.ToString(), orientationType.ToString(),
-                        });
-                        }
-                    }
+                    //var regionMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(sr);
+                    //var rowsCount = regionMatrix.GetLength(0);
+                    //var colsCount = regionMatrix.GetLength(1);
+                    //for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+                    //{
+                    //    for (int colIndex = 0; colIndex < colsCount; colIndex++)
+                    //    {
+                    //        var score = regionMatrix[rowIndex, colIndex].score;
+                    //        var orientationType = regionMatrix[rowIndex, colIndex].orientationType;
+                    //        var audioFilePath = sr.SourceAudioFile.ToString();
+                    //        results.Add(new List<string>() { audioFilePath, sr.TimeIndex.ToString(), sr.FrequencyIndex.ToString(),
+                    //    rowIndex.ToString(), colIndex.ToString(), score.ToString(), orientationType.ToString(),
+                    //    });
+                    //    }
+                    //}
                 }
             }
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
@@ -184,7 +184,12 @@
         {
             CsvTools.WriteResultsToCsv(file, nhList);
         }
-        
+
+        public static void RegionRepresentationToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
+        {
+            CsvTools.WriteResultsToCsv(file, ridgeRegion);
+        }
+
         /// <summary>
         /// This method tries to write nhRepresentation list into a csv file. 
         /// </summary>
@@ -224,23 +229,25 @@
             }
             return results;
         }
+        
         // here need to be improved
-        public static RegionRerepresentation CSVToNormalisedRegionRepresentation(FileInfo file)
-        {
-            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
-            var header = lines.Take(1).ToList();
-            var lines1 = lines.Skip(1);
-            var ridgheNhRepresentation = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            foreach (var csvRow in lines1)
-            {
-                var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
-                ridgheNhRepresentation.Add(nh);
-            }
-            var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 2, 4, file);
-            regionRepresentation.NhCountInCol = 4;
-            regionRepresentation.NhCountInRow = 2;
-            return regionRepresentation;
-        }
+        //public static RegionRerepresentation CSVToNormalisedRegionRepresentation(FileInfo file)
+        //{
+        //    var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+        //    var header = lines.Take(1).ToList();
+        //    var lines1 = lines.Skip(1);
+        //    var ridgheNhRepresentation = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+        //    foreach (var csvRow in lines1)
+        //    {
+        //        var nh = RidgeDescriptionNeighbourhoodRepresentation.FromNormalisedRidgeNhReprsentationCsv(csvRow);
+        //        ridgheNhRepresentation.Add(nh);
+        //    }
+        //    // todo: remove the magic number here. 
+        //    var regionRepresentation = new RegionRerepresentation(ridgheNhRepresentation, 2, 4, file);
+        //    regionRepresentation.NhCountInCol = 4;
+        //    regionRepresentation.NhCountInRow = 2;
+        //    return regionRepresentation;
+        //}
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToNormalisedRidgeNhRepresentation(FileInfo file)
         {

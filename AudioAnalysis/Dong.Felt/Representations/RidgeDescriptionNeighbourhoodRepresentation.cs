@@ -30,7 +30,7 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// A feature vector could contain any double values for subsequent matching. 
         /// </summary>
-        public List<double> FeatureVector { get; set; }
+        internal List<double> FeatureVector { get; set; }
 
         /// <summary>
         /// gets or sets the rowIndex of a neighbourhood, which indicates the frequency value, its unit is herz. 
@@ -142,6 +142,54 @@ namespace Dong.Felt.Representations
         #endregion
 
         #region public method
+
+        public RidgeDescriptionNeighbourhoodRepresentation()
+        {
+
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="magnitude"></param>
+        /// <param name="orientation"></param>
+        /// <param name="poiCount"></param>
+        /// <param name="frameIndex"></param>
+        /// <param name="frequencyIndex"></param>
+        /// <param name="duration"></param>
+        /// <param name="neighbourhoodSize"></param>
+        /// <param name="hOrientationPoiCount"></param>
+        /// <param name="hOrientationPoiMagSum"></param>
+        /// <param name="vOrientationPoiCount"></param>
+        /// <param name="vOrientationPoiMagSum"></param>
+        /// <param name="pdOrientationPoiCount"></param>
+        /// <param name="pdOrientationPoiMagSum"></param>
+        /// <param name="ndOrientationPoiCount"></param>
+        /// <param name="ndOrientationPoiMagSum"></param>
+        public RidgeDescriptionNeighbourhoodRepresentation(double magnitude, double orientation, int poiCount,
+            double frameIndex, double frequencyIndex, TimeSpan duration, int neighbourhoodSize,
+            int hOrientationPoiCount, double hOrientationPoiMagSum, 
+            int vOrientationPoiCount, double vOrientationPoiMagSum,
+            int pdOrientationPoiCount, double pdOrientationPoiMagSum,
+            int ndOrientationPoiCount, double ndOrientationPoiMagSum)
+        {
+            this.magnitude = magnitude;
+            this.orientation = orientation;
+            this.POICount = poiCount;
+            this.FrameIndex = frameIndex;
+            this.FrequencyIndex = frequencyIndex;
+            this.Duration = duration;
+            this.HOrientationPOICount = hOrientationPoiCount;
+            this.HOrientationPOIMagnitudeSum = hOrientationPoiMagSum;
+            this.VOrientationPOICount = vOrientationPoiCount;
+            this.VOrientationPOIMagnitudeSum = vOrientationPoiMagSum;
+            this.PDOrientationPOICount = pdOrientationPoiCount;
+            this.PDOrientationPOIMagnitudeSum = pdOrientationPoiMagSum;
+            this.NDOrientationPOICount = ndOrientationPoiCount;
+            this.NDOrientationPOIMagnitudeSum = ndOrientationPoiMagSum;
+            this.neighbourhoodSize = neighbourhoodSize;
+
+        }
 
         /// <summary>
         /// This method is used to get the dominantOrientationType, dominantPOICount, and  dominantMagnitudeSum of the neighbourhood, the neighbourhood is composed
@@ -272,7 +320,7 @@ namespace Dong.Felt.Representations
                         sumXYInNh += tempRowIndex * tempColIndex;
                         sumSquareX += Math.Pow(tempColIndex, 2.0);
                         pointsCount++;
-                        averageMagnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        averageMagnitude += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                     }
                 }                              
             }
@@ -296,7 +344,10 @@ namespace Dong.Felt.Representations
                     yIntersect = 0.0;
                 }         
             }
-            averageMagnitude = averageMagnitude / pointsCount;
+            if (pointsCount != 0)
+            {
+                averageMagnitude = averageMagnitude / pointsCount;
+            }
             this.magnitude = averageMagnitude;
             this.orientation = slope;
             this.FrameIndex = col * timeScale;
@@ -305,7 +356,7 @@ namespace Dong.Felt.Representations
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.POICount = pointsCount;
-            this.neighbourhoodSize = neighbourhoodSize;
+            this.neighbourhoodSize = poiMatrixLength;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
