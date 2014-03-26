@@ -13,6 +13,17 @@
     class StatisticalAnalysis
     {
 
+        public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
+        {
+            var result = new List<RegionRerepresentation>();
+            var endIndex = startIndex + count;
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                result.Add(regionList[i]);
+            }
+            return result;
+        }
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.

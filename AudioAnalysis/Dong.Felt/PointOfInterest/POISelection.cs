@@ -34,6 +34,13 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
+        public static List<PointOfInterest> PostRidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfig)
+        {
+            var instance = new POISelection(new List<PointOfInterest>());
+            instance.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
+            return instance.poiList;
+        }
+
         public POISelection(List<PointOfInterest> list)
         {
             poiList = list;

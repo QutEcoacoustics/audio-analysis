@@ -23,7 +23,7 @@
         Variation = 1,
     }
 
-    class SimilarityMatching
+    public class SimilarityMatching
     {
         
         #region Public Properties
@@ -342,13 +342,13 @@
         //public static double DistanceScoreRegionRepresentation(RegionRerepresentation query, RegionRerepresentation candidate)
         //{
         //    var result = 0.0;
-        //    var nhCount = query.ridgeNeighbourhoods.Count;
+        //    var nhCount = query.NhCountInCol * query.NhCountInRow;
         //    for (int index = 0; index < nhCount; index++)
         //    {
         //        var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
         //        // change score into orientation.
         //        var queryScore = Math.Abs(ridgeNeighbourhoods[index].orientation);
-        //        var queryOrientationType =  ridgeNeighbourhoods[index].orientationType;
+        //        var queryOrientationType = ridgeNeighbourhoods[index].orientationType;
         //        var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].orientation);
         //        var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
         //        var orientationDifference = Math.Abs(queryOrientationType - candidateOrientationType);
@@ -356,7 +356,7 @@
         //        //result += (orientationDifference + 1) * magnitudeDifference;
         //        result += Math.Abs(queryScore - candidateScore);
         //    }
-        //    return result; 
+        //    return result;
         //}
 
         /// <summary>
@@ -368,25 +368,27 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        //public static double WeightedDistanceScoreRegionRepresentation2(RegionRerepresentation query, RegionRerepresentation candidate, double weight1, double weight2)
-        //{
-        //    var result = 0.0;
-        //    var nhCount = query.ridgeNeighbourhoods.Count;
-        //    var nhSum = 0.0;
-        //    for (int index = 0; index < nhCount; index++)
-        //    {
-        //        var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
-        //        var queryScore = Math.Abs(ridgeNeighbourhoods[index].magnitude);
-        //        var queryOrientation = ridgeNeighbourhoods[index].orientation;
-        //        var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].magnitude);
-        //        var candidateOrientation = candidate.ridgeNeighbourhoods[index].orientation;
-        //        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-        //        var magnitudeDifference = Math.Abs(queryScore - candidateScore);
-        //        nhSum += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
-        //    }
-        //    result = Math.Sqrt(nhSum);
-        //    return result;
-        //}
+        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, double weight1, double weight2)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var nhSum = 0.0;
+                for (int index = 0; index < nhCount; index++)
+                {
+                    var queryScore = Math.Abs(query[index].magnitude);
+                    var queryOrientation = query[index].orientation;
+                    var candidateScore = Math.Abs(candidate[index].magnitude);
+                    var candidateOrientation = candidate[index].orientation;
+                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                    var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+                    nhSum += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
+                }
+                result = Math.Sqrt(nhSum);
+            }
+            return result;
+        }
 
         /// <summary>
         /// Weighted Euclidean distance measurement is based on a bunch of neighbourhoods calculation. 

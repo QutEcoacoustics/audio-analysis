@@ -4,6 +4,7 @@
     using Dong.Felt.Configuration;
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using TowseyLib;
@@ -123,6 +124,23 @@
             
         }
         
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, SpectralSonogram spectrogram, SpectrogramConfiguration spectrogramConfig)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
+            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
+            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
+            {
+                nhCountInRow--;
+            }
+            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
+            if (spectrogram.FrameCount % neighbourhoodLength == 0)
+            {
+                nhCountInColumn--;
+            }
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd, neighbourhoodLength, nhCountInRow, spectrogramConfig);
+            return result;
+        }
         #endregion
 
     }
