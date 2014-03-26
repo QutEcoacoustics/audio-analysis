@@ -421,11 +421,11 @@ namespace AudioAnalysisTools
 
         public void DrawFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            DrawNegativeFalseColourSpectrograms(opdir, opFileName);
-            DrawPositiveFalseColourSpectrograms(opdir, opFileName);
+            DrawNegativeFalseColourSpectrogram(opdir, opFileName);
+            DrawPositiveFalseColourSpectrogram(opdir, opFileName);
         }
 
-        public void DrawNegativeFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
+        public void DrawNegativeFalseColourSpectrogram(DirectoryInfo opdir, string opFileName)
         {
             Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
             if (bmpNeg == null)
@@ -452,7 +452,22 @@ namespace AudioAnalysisTools
             }
         }
 
-        public void DrawPositiveFalseColourSpectrograms(DirectoryInfo opdir, string opFileName)
+        public void DrawNegativeFalseColourSpectrogram(DirectoryInfo opdir, string opFileName, string colorMap)
+        {
+            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
+            if (bmpNeg == null)
+            {
+                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+                Console.WriteLine("         Null image returned");
+                return;
+            }
+            else
+            {
+                bmpNeg.Save(Path.Combine(opdir.FullName, opFileName + "." + colorMap + ".png"));
+            }
+        }
+
+        public void DrawPositiveFalseColourSpectrogram(DirectoryInfo opdir, string opFileName)
         {
             Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
             if (bmpPos == null)
@@ -465,20 +480,6 @@ namespace AudioAnalysisTools
             {
                 bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
             }
-
-            //Image bmpBgn;
-            //string key = SpectrogramConstants.KEY_BackgroundNoise;
-            //if (!this.spectrogramMatrices.ContainsKey(key))
-            //{
-            //    Console.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
-            //    //return;
-            //}
-            //else
-            //{
-            //    bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key);
-            //    bmpPos = this.DrawDoubleSpectrogram(bmpPos, bmpBgn, "POSITIVE");
-            //    bmpPos.Save(Path.Combine(opdir, opFileName + ".COLPOSBGN.png"));
-            //}
         }
 
         /// <summary>
@@ -513,12 +514,18 @@ namespace AudioAnalysisTools
 
         public Image DrawFalseColourSpectrogram(string colorMODE)
         {
-            if (spectrogramMatrices.Count == 0)
+            Image bmp = DrawFalseColourSpectrogram(colorMODE, this.ColorMap);
+            return bmp;
+        }
+
+        public Image DrawFalseColourSpectrogram(string colorMODE, string colorMap)
+        {
+            if (! this.ContainsMatrixForKeys(colorMap))
             {
-                Console.WriteLine("ERROR! ERROR! ERROR! - There are no indices with which to construct a false-colour spectrogram!");
                 return null;
             }
-            string[] rgbMap = this.ColorMap.Split('-');
+
+            string[] rgbMap = colorMap.Split('-');
 
             var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], this.BackgroundFilter);
             var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]], this.BackgroundFilter);
@@ -530,6 +537,35 @@ namespace AudioAnalysisTools
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
             return bmp;
         }
+
+        public bool ContainsMatrixForKeys(string keys)
+        {
+            if (spectrogramMatrices.Count == 0)
+            {
+                Console.WriteLine("ERROR! ERROR! ERROR! - There are no indices with which to construct a spectrogram!");
+                return false;
+            }
+            bool containsKey = true;
+            string[] rgbMap = keys.Split('-');
+            foreach (string key in rgbMap)
+            {
+                if(! this.ContainsMatrixForKey(key)) containsKey = false;
+            }
+            return containsKey;
+        }
+
+
+        public bool ContainsMatrixForKey(string key)
+        {
+            if (spectrogramMatrices.ContainsKey(key)) return true;
+            else
+            {
+                Console.WriteLine("ERROR! - spectrogramMatrices does not contain key: <{0}> !", key);
+                return false;
+            }
+        }
+
+
 
         public Image DrawDoubleSpectrogram(Image bmp1, Image bmp2, string colorMODE)
         {

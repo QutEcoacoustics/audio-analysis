@@ -33,6 +33,112 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+            // code to merge all files of acoustic indeces derived from 24 hours of recording,
+            // problem is that Jason cuts them up into 6 hour blocks.
+            if (true)
+            {
+                //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+                //string fileStem = "SERF_20130401";
+                //string[] names = {"SERF_20130401_000025_000",
+                //                  "SERF_20130401_064604_000",
+                //                  "SERF_20130401_133143_000",
+                //                  "SERF_20130401_201721_000",
+                //                      };
+
+
+                string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
+                string fileStem = "SERF_20130619";
+                string[] names = {"SERF_20130619_000038_000",
+                                  "SERF_20130619_064615_000",
+                                  "SERF_20130619_133153_000",
+                                  "SERF_20130619_201730_000",
+                                      };
+
+
+
+
+                string[] level2Dirs = {names[0]+".wav",
+                                       names[1]+".wav",
+                                       names[2]+".wav",
+                                       names[3]+".wav",
+                                      };
+                string level3Dir = "Towsey.Acoustic";
+                string[] dirNames = {topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
+                                    };
+                string[] fileExtentions = { ".ACI.csv",
+                                            ".AVG.csv",
+                                            ".BGN.csv",
+                                            ".CVR.csv",
+                                            ".TEN.csv",
+                                            ".VAR.csv",
+                                            "_Towsey.Acoustic.Indices.csv"
+                                          };
+
+                foreach (string extention in fileExtentions)
+                {
+                    Console.WriteLine("\n\nFILE TYPE: "+extention);
+
+                    List<string> lines = new List<string>();
+
+                    for(int i = 0; i < dirNames.Length; i++)
+                    {
+                        string fName = names[i] + extention;
+                        string path = Path.Combine(dirNames[i], fName);
+                        var fileInfo = new FileInfo(path);
+                        Console.WriteLine(path);
+                        if(! fileInfo.Exists)
+                            Console.WriteLine("ABOVE FILE DOES NOT EXIST");
+
+                        var ipLines = FileTools.ReadTextFile(path);
+                        if (i != 0)
+                        {
+                            ipLines.RemoveAt(0); //remove the first line
+                        }
+                        lines.AddRange(ipLines);
+                    }
+                    string opFileName = fileStem + extention;
+                    string opPath = Path.Combine(topLevelDirectory, opFileName);
+                    FileTools.WriteTextFile(opPath, lines, false);
+
+
+
+                } //end of all file extentions
+
+                int minuteOffset = 0;
+                int xScale = 60;
+                int sampleRate = 17640;
+                int frameWidth = 256;
+                double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
+                var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+                cs1.FileName = fileStem;
+                cs1.ColorMODE = colorMap;
+                cs1.BackgroundFilter = backgroundFilterCoeff;
+                var dirInfo = new DirectoryInfo(topLevelDirectory);
+                cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
+                if (cs1.GetCountOfSpectrogramMatrices() == 0)
+                {
+                    Console.WriteLine("There are no spectrogram matrices in the dictionary.");
+                    return;
+                }
+                string possibleIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
+                cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem, possibleIndices);
+
+                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
+                Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                image.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+
+                colorMap = "BGN-AVG-VAR";
+                image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                image.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+
+            } // end if (true)
+
+
+
             // experiments with clustering the spectra within spectrograms
             if (false)
             {

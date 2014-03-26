@@ -83,7 +83,7 @@ namespace AudioAnalysisTools
                 cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1);
-                cs1.DrawNegativeFalseColourSpectrograms(opdir, opFileName1);
+                cs1.DrawNegativeFalseColourSpectrogram(opdir, opFileName1);
                 string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
                 Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg1Image == null)
@@ -101,7 +101,7 @@ namespace AudioAnalysisTools
                 cs2.BackgroundFilter = backgroundFilterCoeff;
                 cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
-                cs2.DrawNegativeFalseColourSpectrograms(opdir, opFileName2);
+                cs2.DrawNegativeFalseColourSpectrogram(opdir, opFileName2);
                 imagePath = Path.Combine(opdir.FullName, opFileName2 + ".COLNEG.png");
                 Image spg2Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg2Image == null)
