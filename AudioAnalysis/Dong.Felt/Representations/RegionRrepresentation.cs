@@ -46,7 +46,7 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// Gets or sets the sourceAudioFile which contains the region.  
         /// </summary>
-        public FileInfo SourceAudioFile { get; private set; }
+        public string SourceAudioFile { get; set; }
 
         //public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods {get; set;}
 
@@ -63,6 +63,13 @@ namespace Dong.Felt.Representations
         #region  public constructor
 
         /// <summary>
+        /// Default constructor
+        /// </summary>
+        public RegionRerepresentation()
+        {
+        }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="nh"></param>
@@ -72,7 +79,7 @@ namespace Dong.Felt.Representations
         /// <param name="nhCountInCol"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colIndex"></param>
-        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex)
+        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
         {
             this.MaxFrequencyIndex = frequencyIndex;
             this.TimeIndex = frameIndex;
@@ -95,6 +102,7 @@ namespace Dong.Felt.Representations
             this.PDOrientationPOIMagnitudeSum = nh.PDOrientationPOIMagnitudeSum;
             this.NDOrientationPOICount = nh.NDOrientationPOICount;
             this.NDOrientationPOIMagnitudeSum = nh.NDOrientationPOIMagnitudeSum;
+            this.SourceAudioFile = file;
         }
 
         //public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,

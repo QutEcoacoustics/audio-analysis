@@ -54,9 +54,8 @@
                     result.TimeStart = double.Parse(csvRow[3]);
                     result.TimeEnd = double.Parse(csvRow[4]);
                     result.Duration = double.Parse(csvRow[5]);
-                    result.FreqBinCount = int.Parse(csvRow[6]);   
-                }
-                
+                    //result.FreqBinCount = int.Parse(csvRow[6]);   
+                }               
             }
             return result;
         }
@@ -98,36 +97,6 @@
                 }); 
             }
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));          
-        }
-
-        public static void RegionRepresentationListToCSV(List<List<RegionRerepresentation>> region, string outputFilePath)
-        {
-            var results = new List<List<string>>();
-            // each region should have same nhCount, here we just get it from the first region item.          
-            results.Add(new List<string>() { "FileName", "RegionTimePosition-ms", "RegionFrequencyPosition-hz", 
-                "Sub-RegionRowIndex","Sub-RegionColIndex","Sub-RegionScore","Sub-RegionOrientationType" });
-            foreach (var r in region)
-            {
-                foreach (var sr in r)
-                {
-                    //var regionMatrix = StatisticalAnalysis.RegionRepresentationToNHArray(sr);
-                    //var rowsCount = regionMatrix.GetLength(0);
-                    //var colsCount = regionMatrix.GetLength(1);
-                    //for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
-                    //{
-                    //    for (int colIndex = 0; colIndex < colsCount; colIndex++)
-                    //    {
-                    //        var score = regionMatrix[rowIndex, colIndex].score;
-                    //        var orientationType = regionMatrix[rowIndex, colIndex].orientationType;
-                    //        var audioFilePath = sr.SourceAudioFile.ToString();
-                    //        results.Add(new List<string>() { audioFilePath, sr.TimeIndex.ToString(), sr.FrequencyIndex.ToString(),
-                    //    rowIndex.ToString(), colIndex.ToString(), score.ToString(), orientationType.ToString(),
-                    //    });
-                    //    }
-                    //}
-                }
-            }
-            File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
         }
 
         /// <summary>
@@ -176,7 +145,8 @@
         }
 
         /// <summary>
-        /// 
+        /// Write ridgeNeighbourhoodRepresentation list into csv file by using CsvTools.WriteResultsToCsv. 
+        /// Notice, this method can only write the public properties in the class and it should have get and set.  
         /// </summary>
         /// <param name="file"></param>
         /// <param name="results"></param>
@@ -185,9 +155,24 @@
             CsvTools.WriteResultsToCsv(file, nhList);
         }
 
-        public static void RegionRepresentationToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
+        /// <summary>
+        /// Write ridgeRegionRepresentation list into csv file.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="ridgeRegion"></param>
+        public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
         {
             CsvTools.WriteResultsToCsv(file, ridgeRegion);
+        }
+
+        /// <summary>
+        /// Write candidate list into csv file.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="candidates"></param>
+        public static void CandidateListToCSV(FileInfo file, List<Candidates> candidates)
+        {
+            CsvTools.WriteResultsToCsv(file, candidates);
         }
 
         /// <summary>

@@ -85,6 +85,7 @@
 
             return Math.Sqrt(deltaX + deltaY);
         }
+        
         /// <summary>
         /// The manhanton distance.
         /// </summary>

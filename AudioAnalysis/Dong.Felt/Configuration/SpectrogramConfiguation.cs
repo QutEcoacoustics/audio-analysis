@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TowseyLib;
 
 namespace Dong.Felt.Configuration
 {
     public class SpectrogramConfiguration
     {
+        public NoiseReductionType NoiseReductionType { get; set; }
+
+        public double WindowOverlap { get; set; }
+        
         /// <summary>
         /// It represents the duration of each point along the frame axis in the spectram. 
         /// </summary>
