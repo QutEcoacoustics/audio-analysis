@@ -37,22 +37,22 @@ namespace AnalysisPrograms
             // problem is that Jason cuts them up into 6 hour blocks.
             if (true)
             {
-                //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
-                //string fileStem = "SERF_20130401";
-                //string[] names = {"SERF_20130401_000025_000",
-                //                  "SERF_20130401_064604_000",
-                //                  "SERF_20130401_133143_000",
-                //                  "SERF_20130401_201721_000",
-                //                      };
-
-
-                string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
-                string fileStem = "SERF_20130619";
-                string[] names = {"SERF_20130619_000038_000",
-                                  "SERF_20130619_064615_000",
-                                  "SERF_20130619_133153_000",
-                                  "SERF_20130619_201730_000",
+                string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+                string fileStem = "SERF_20130401";
+                string[] names = {"SERF_20130401_000025_000",
+                                  "SERF_20130401_064604_000",
+                                  "SERF_20130401_133143_000",
+                                  "SERF_20130401_201721_000",
                                       };
+
+
+                //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
+                //string fileStem = "SERF_20130619";
+                //string[] names = {"SERF_20130619_000038_000",
+                //                  "SERF_20130619_064615_000",
+                //                  "SERF_20130619_133153_000",
+                //                  "SERF_20130619_201730_000",
+                //                      };
 
 
 
@@ -128,12 +128,23 @@ namespace AnalysisPrograms
                 cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem, possibleIndices);
 
                 colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
-                Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-                image.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+                Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+                image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+                image1.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
 
                 colorMap = "BGN-AVG-VAR";
-                image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-                image.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+                Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+                image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+                image2.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+                Image[] array = new Image[2];
+                array[0] = image1;
+                array[1] = image2;
+                Image image3 = ImageTools.CombineImagesVertically(array);
+                image3.Save(Path.Combine(dirInfo.FullName, fileStem + ".2MAPS.png"));
 
             } // end if (true)
 
