@@ -507,7 +507,8 @@ namespace TowseyLib
             using (var stream = source.OpenText())
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
-                results = reader.GetRecords<T>();
+                // should upgrade to yield return.
+                results = reader.GetRecords<T>().ToArray();
             }
 
             return results;

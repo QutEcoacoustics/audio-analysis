@@ -175,6 +175,11 @@
             CsvTools.WriteResultsToCsv(file, candidates);
         }
 
+        public static List<Candidates> CsvToCandidatesList(FileInfo candidatesCsvfile)
+        {
+            return CsvTools.ReadResultsFromCsv<Candidates>(candidatesCsvfile).ToList();
+        }
+
         /// <summary>
         /// This method tries to write nhRepresentation list into a csv file. 
         /// </summary>

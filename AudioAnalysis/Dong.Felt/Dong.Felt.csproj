@@ -118,6 +118,8 @@
     <Compile Include="AcousticEvents.cs" />
     <Compile Include="Candidates.cs" />
     <Compile Include="Clustering.cs" />
+    <Compile Include="Configuration\DistanceFuncConfiguration.cs" />
+    <Compile Include="Configuration\DrawSpectrogramConfiguration.cs" />
     <Compile Include="Configuration\LocalMaximaConfiguration.cs" />
     <Compile Include="Configuration\RidgeDetectionConfiguration.cs" />
     <Compile Include="Configuration\SpectrogramConfiguation.cs" />
@@ -138,6 +140,7 @@
     <Compile Include="Query.cs" />
     <Compile Include="Representations\RectangularRepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionNeighbourhoodRepresentation.cs" />
+    <Compile Include="ResultsOutput\OutputResults.cs" />
     <Compile Include="SimilarityMatching\SimilarityMatching.cs" />
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="PointOfInterest\StructureTensor.cs" />
@@ -156,6 +159,10 @@
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>
       <Name>AnalysisBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AnalysisRunner\AnalysisRunner.csproj">
+      <Project>{eeb8ae89-a07b-4974-8685-88bdcff22c78}</Project>
+      <Name>AnalysisRunner</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855cbc-7243-492a-a500-2de36cc7c825}</Project>

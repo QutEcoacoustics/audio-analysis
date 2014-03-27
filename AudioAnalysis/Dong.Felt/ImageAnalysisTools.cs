@@ -11,6 +11,7 @@ namespace Dong.Felt
     using System.Drawing;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Sonogram;
+    using System.Drawing.Imaging;
 
 
     class ImageAnalysisTools
@@ -117,6 +118,36 @@ namespace Dong.Felt
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
 
         #region Public Methods
+
+        /// <summary>
+        /// stacks the passed images one on top of the other. Assum that all images have the same width.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Image CombineImagesHorizontally(Image[] array)
+        {
+            int width = array[0].Width;   // assume all images have the same width
+            int height = array[0].Height; // assume all images have the same height
+
+            int compositeWidth = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                compositeWidth += array[i].Width;
+            }
+
+            Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            int xOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
+                xOffset += array[i].Width;
+            }
+            return (Image)compositeBmp;
+        }
+
         // Generate the gaussian kernel automatically
         public static double[,] GenerateGaussianKernel(int sizeOfKernel, double sigma)
         {
@@ -1183,6 +1214,7 @@ namespace Dong.Felt
             }
             return spectrogram.Data;
         }
+
 
         #endregion
     }
