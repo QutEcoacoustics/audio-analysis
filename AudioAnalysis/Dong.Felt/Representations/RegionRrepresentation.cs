@@ -92,7 +92,7 @@ namespace Dong.Felt.Representations
             this.POICount = nh.POICount;
             this.FrameIndex = nh.FrameIndex;
             this.FrequencyIndex = nh.FrequencyIndex;
-            this.Duration = nh.Duration;
+            this.Duration = TimeSpan.FromMilliseconds(nh.Duration.TotalMilliseconds * nhCountInCol);
             this.neighbourhoodSize = nh.neighbourhoodSize;
             this.HOrientationPOICount = nh.HOrientationPOICount;
             this.HOrientationPOIMagnitudeSum = nh.HOrientationPOIMagnitudeSum;

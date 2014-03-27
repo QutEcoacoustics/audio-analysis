@@ -22,6 +22,14 @@ namespace Dong.Felt
         /// </summary>
         public double StartTime  {get; set;}
 
+        /// <summary>
+        /// It indicates the end time of a candidate.
+        /// </summary>
+        public double EndTime { get; set; }
+
+        /// <summary>
+        /// It indidates the audio file where the candidate come from. 
+        /// </summary>
         public string SourceFilePath { get; set; }
         
         /// <summary>
@@ -30,12 +38,17 @@ namespace Dong.Felt
         /// <param name="score"></param>
         /// <param name="startTime"></param>
         /// <param name="maxFreq"></param>
-        public Candidates(double score, double startTime, double maxFreq, string sourceFile)
+        public Candidates(double score, double startTime, double duration, double maxFreq, string sourceFile)
         {
             this.Score = score;
             this.StartTime = startTime;
+            this.EndTime = startTime + duration;
             this.MaxFrequency = maxFreq;
             this.SourceFilePath = sourceFile;
+        }
+
+        public Candidates()
+        {
         }
 
     }

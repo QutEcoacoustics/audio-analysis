@@ -83,7 +83,7 @@ namespace Dong.Felt
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static List<Candidates> DistanceCalculation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, double weight1, double weight2)
+        public static List<Candidates> WeightedEuclideanDistCalculation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
             var tempRegionList = new List<RegionRerepresentation>();
@@ -93,8 +93,11 @@ namespace Dong.Felt
             {
                 // The frequencyDifference is a problem. 
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;
                 var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation2(query, tempRegionList, weight1, weight2);
-                var item = new Candidates(distance, tempRegionList[0].FrameIndex, tempRegionList[0].FrequencyIndex, query[0].SourceAudioFile);
+                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                    duration, tempRegionList[0].FrequencyIndex,
+                    tempRegionList[0].SourceAudioFile);
                 result.Add(item);               
             }           
             return result;

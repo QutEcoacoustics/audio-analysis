@@ -167,7 +167,7 @@ namespace Dong.Felt.Representations
         /// <param name="ndOrientationPoiCount"></param>
         /// <param name="ndOrientationPoiMagSum"></param>
         public RidgeDescriptionNeighbourhoodRepresentation(double magnitude, double orientation, int poiCount,
-            double frameIndex, double frequencyIndex, TimeSpan duration, int neighbourhoodSize,
+            double frameIndex, double frequencyIndex, double duration, int neighbourhoodSize,
             int hOrientationPoiCount, double hOrientationPoiMagSum, 
             int vOrientationPoiCount, double vOrientationPoiMagSum,
             int pdOrientationPoiCount, double pdOrientationPoiMagSum,
@@ -178,7 +178,7 @@ namespace Dong.Felt.Representations
             this.POICount = poiCount;
             this.FrameIndex = frameIndex;
             this.FrequencyIndex = frequencyIndex;
-            this.Duration = duration;
+            this.Duration = TimeSpan.FromMilliseconds(duration);
             this.HOrientationPOICount = hOrientationPoiCount;
             this.HOrientationPOIMagnitudeSum = hOrientationPoiMagSum;
             this.VOrientationPOICount = vOrientationPoiCount;
