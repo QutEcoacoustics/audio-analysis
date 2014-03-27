@@ -454,7 +454,7 @@ namespace TowseyLib
 
         #region newCsvMethods
 
-        private static CsvConfiguration DefaultConfiguration
+        public static CsvConfiguration DefaultConfiguration
         {
             get
             {
