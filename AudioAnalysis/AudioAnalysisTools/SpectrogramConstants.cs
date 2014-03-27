@@ -27,7 +27,7 @@ namespace AudioAnalysisTools
         public const double ACI_MIN = 0.35;
         public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 40.0;
+        public const double AVG_MAX = 30.0;
         public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
         public const double BGN_MAX = -20.0;
         public const double CVR_MIN = 0.0;
