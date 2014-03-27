@@ -244,6 +244,26 @@ Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
     }
 }
 
+GetExistingMasterOutput <- function (output.name, not.if.changed) {
+    # checks if any of the not.if.changed files have changed since this was last retrieved
+    # and if not, returns the master output
+    # if so, deletes the master output and returns FALSE
+    require('digest')
+    hash.name <- output.name
+    new.content.hash <- HashFileContents(not.if.changed)
+    old.content.hash <-  ReadHash(hash.name)
+    if (old.content.hash != new.content.hash) {
+        WriteHash(hash.name, new.content.hash)
+        p <- MasterOutputPath(output.name)
+        if (file.exists(p)) {
+            file.remove(p)
+        }
+        return(FALSE)
+    } else {
+        return(ReadMasterOutput(output.name))
+    }  
+}
+
 # hashes used to track changes are stored in a specific output directory  
 HashPath <- function (name) {
     hash.path <- file.path(g.output.parent.dir, 'hash', paste0(name, '.txt'))

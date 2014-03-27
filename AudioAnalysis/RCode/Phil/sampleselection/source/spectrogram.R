@@ -219,7 +219,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
         rect <- spectro$rects[i, ]
-        Sp.Rect(spectro, rect, labels = list(top.left = 'event.id', bottom.right = 'group'))
+        Sp.Rect(spectro, rect)
       }
     }
     
@@ -292,7 +292,7 @@ Sp.Label <- function (spectro) {
     
 }
 
-Sp.Rect <- function (spectro, rect.borders, labels = list()) {
+Sp.Rect <- function (spectro, rect) {
     
     #  top.pix <- ft * spectro[['hz.per.bin']]
     #  bottom.pix <- fb * spectro[['hz.per.bin']]
@@ -306,14 +306,14 @@ Sp.Rect <- function (spectro, rect.borders, labels = list()) {
     #    hz.per.bin = (samp.rate/(2 * nrow(amp))), 
     #    frames.per.sec = (ncol(amp))/(len/samp.rate))
     
-    x <-  unit(rect.borders$start.sec / spectro$duration, "npc")
-    width <- unit(rect.borders$duration / spectro$duration, "npc")
-    y <- unit(rect.borders$top.f / spectro$frequency.range, "npc")
-    height <- unit(((rect.borders$top.f - rect.borders$bottom.f) / 
+    x <-  unit(rect$start.sec / spectro$duration, "npc")
+    width <- unit(rect$duration / spectro$duration, "npc")
+    y <- unit(rect$top.f / spectro$frequency.range, "npc")
+    height <- unit(((rect$top.f - rect$bottom.f) / 
                    spectro$frequency.range), "npc")
     
-    if (!is.null(rect.borders$rect.color)) {
-        rect.col <- as.character(rect.borders$rect.color)
+    if (!is.null(rect$rect.color)) {
+        rect.col <- as.character(rect$rect.color)
     } else {
         rect.col <- 'green'  # default
     }
@@ -322,8 +322,8 @@ Sp.Rect <- function (spectro, rect.borders, labels = list()) {
     line.alpha <- 0.9
     text.alpha <- 0.7
     
-    if (is.null(labels$top.left)) {
-        name <- labels$top.left 
+    if (!is.null(rect$label.tl)) {
+        name <- rect$label.tl 
     } else {
         name <- NULL
     }
@@ -354,16 +354,16 @@ Sp.Rect <- function (spectro, rect.borders, labels = list()) {
 
     text.gp <- gpar(col = rect.col, alpha = text.alpha);
     
-    if (!is.null(labels$top.left)) {
-        text.txt <- rect.borders[[labels$top.left]]
+    if (!is.null(rect$label.tl)) {
+        text.txt <- rect$label.tl
         grid.text(text.txt, x , y, 
                   gp = text.gp,
                   just = c('left', 'top')
                   )
     }
     
-    if (!is.null(labels$bottom.right)) {
-        text.txt <- rect.borders[[labels$bottom.right]]
+    if (!is.null(rect$label.br)) {
+        text.txt <- rect$label.br
         grid.text(text.txt, x + width , y - height, 
                   gp = text.gp,
                   just = c('right', 'bottom')

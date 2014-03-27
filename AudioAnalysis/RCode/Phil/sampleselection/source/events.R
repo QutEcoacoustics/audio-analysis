@@ -1,73 +1,3 @@
-
-
-
-
-
-
-GetMinuteList <- function () {
-    # creates a list of minutes for the total of the entire study, 
-    # giving each minute an id. 
-    # for 5 days * 4 sites processing time = 0.55 seconds. 
-    start.date.time <- as.POSIXlt(g.study.start.date, tz = 'GMT') + 60 * (g.study.start.min)
-    end.date.time<- as.POSIXlt(g.study.end.date, tz = 'GMT') + 60 * (g.study.end.min + 1)
-    diff <- (as.double(end.date.time) - as.double(start.date.time)) / 60;  
-    cols <- c('site', 'date', 'min');
-    total.num.mins <- diff * length(g.study.sites);
-    min.ids <- 0:(total.num.mins-1)
-    site.num <- floor(min.ids / diff)
-    min <- (min.ids %% diff)  + g.study.start.min
-    day <- floor(min / 1440)
-    min <- min %% 1440
-    site <- g.study.sites[site.num + 1]
-    day <- format(start.date.time + 1440 * 60 * day, '%Y-%m-%d')
-    min.list <- as.data.frame(cbind(site, day,  min), rownames = FALSE, stringsAsFactors = FALSE)
-    colnames(min.list) <- cols
-    min.list$min.id <- 1:nrow(min.list)
-    return(min.list)
-    
-}
-
-
-CreateTargetMinutes <- function () { 
-    study.min.list <- GetMinuteList()
-    target.mins <- TargetSubset(study.min.list)
-    if (g.percent.of.target < 100) { 
-        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
-        target.min.ids <- target.mins$min.id[random.mins] 
-        new = TRUE
-    } else {
-        new = FALSE
-    }
-    
-    # create a new output directory if there is less than 100 % of the target
-    # being used, because the random minutes will be different
-
-    WriteOutput(target.mins, 'target.min.ids', new = new)
-}
-
-TargetSubset <- function (df) {
-    # returns a subset of the dataframe, includes only rows that 
-    # belong within the outer target sites/times. 
-    #
-    # Args:
-    #   df: data.frame; must have the columns site, date, min
-    # 
-    # Value
-    #   data.frame
-    
-    rows <- df$site %in% g.sites & 
-        as.character(df$date) >= g.start.date & 
-        as.character(df$date) <= g.end.date & 
-        as.numeric(df$min) >= g.start.min & 
-        as.numeric(df$min) <= g.end.min
-
-    return(df[rows, ])
-    
-    
-}
-
-
-
 MergeEvents <- function () {
     # merge all events into 1 file, adding extra columns
     # this is not done again after changing target. It only needs to 
@@ -117,7 +47,6 @@ MergeEvents <- function () {
 
     WriteMasterOutput(all.events.with.min.id, 'events');
 }
-
 
 MergeAnnotationsAsEvents <- function () {
     # to test everything after event detection using known "good" events
@@ -182,8 +111,6 @@ MergeAnnotationsAsEvents <- function () {
     
 }
 
-
-
 GetOuterTargetEvents <- function () {
     # gets a subset of the target events according to the 
     # config targets, but ignoring the percent of target param
@@ -191,7 +118,6 @@ GetOuterTargetEvents <- function () {
     selected.events <- TargetSubset(all.events)
     return(selected.events)   
 }
-
 
 GetInnerTargetEvents <- function () {
     min.list <- ReadOutput('minlist')
@@ -215,12 +141,6 @@ GetInnerTargetEvents <- function () {
     #WriteOutput(all.selected.events, 'events')
     Return(all.selected.events)
 }
-
-
-
-
-
-
 
 
 EventLabels <- function (events) {
@@ -250,9 +170,6 @@ EventFile <- function (site, date, min, ext = 'wav.txt') {
     return(list(fn = fn, start.min = min))
 }
 
-
-
-
 AddMinCol <- function (events, start.min) {
     # given a list of events where column 1 is start second in file
     # adds a column which is the minute that the event occurs in
@@ -270,24 +187,4 @@ AddMinCol <- function (events, start.min) {
     return(events)
 }
 
-
-ExpandMinId <- function (min.ids = NA) {
-    # given a dataframe with a min.id column
-    # add columns for site, date, min (in day)
-    
-    
-    if (class(min.ids) %in% c('numeric', 'integer')) {
-        min.ids <- data.frame(min.id = min.ids)  
-    } else if (class(min.ids) != 'data.frame') {
-        min.ids <- ReadOutput('target.min.ids')
-    }
-    row.names <- rownames(min.ids)
-    full.min.list <- GetMinuteList()
-    sub.min.list <- full.min.list[full.min.list$min.id %in% min.ids$min.id, c('site', 'date', 'min')]
-    new.df <- cbind(min.ids, sub.min.list)
-    # this should not be necessary: according to the doc
-    # it should take the rownames of the first argument. But it isn't
-    row.names(new.df) <- row.names
-    return(new.df)
-}
 

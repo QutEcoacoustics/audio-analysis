@@ -24,6 +24,7 @@ DoFeatureExtraction <- function (limit = FALSE) {
     events <- events[with(events, order(filename)) ,]
     
     already.extracted.features <- GetExistingFeatures()
+    already.rated.events <- GetExistingEventRatings()
     
     # features will be calculated and added to the already extracted features
     # therefore, don't calculate for events which are already calculated
@@ -70,6 +71,13 @@ DoFeatureExtraction <- function (limit = FALSE) {
             
             cur.spectro <- Sp.Create(wav.path, draw=FALSE)
             cur.wav.path <- wav.path
+            
+            # calculate the mean and standard deviation for each frequency band,
+            # to pass to the event filter scorer
+            mean.amp <- apply(cur.spectro, 1, mean)
+            sd.amp <- apply(cur.spectro, 1, sd)
+            
+            
           
         }
         features <- as.data.frame(GetFeatures(events[ev,], cur.spectro));
@@ -101,25 +109,23 @@ GetExistingFeatures <- function () {
     # if not, move it to archived and start feature extraction from scratch
     # if it is still valid (i.e. events have not chagned and feature extraction has not changed)
     # it returns the features already extracted
-    require('digest')
+    
     # check if any of these files have changed
     to.check <- c(MasterOutputPath('events'),
-                 'features.R')
+                  'features.R')
+    return(GetExistingMasterOutput('features', to.check))
+}
 
-    hash.name <- 'features'
-    # creates a hash of the text content of all the files appended together
-    new.content.hash <- HashFileContents(to.check)
-    old.content.hash <-  ReadHash(hash.name)
-    if (old.content.hash != new.content.hash) {
-        WriteHash(hash.name, new.content.hash)
-        p <- MasterOutputPath('features')
-        if (file.exists(p)) {
-            file.remove(p)
-        }
-        return(FALSE)
-    } else {
-        return(ReadMasterOutput('features'))
-    } 
+GetExistingEventRatings <- function () {
+    # determines if any feature extraction already completed is still valid. 
+    # if not, move it to archived and start feature extraction from scratch
+    # if it is still valid (i.e. events have not chagned and feature extraction has not changed)
+    # it returns the features already extracted
+
+    # check if any of these files have changed
+    to.check <- c(MasterOutputPath('events'),
+                  'features.R')
+    return(GetExistingMasterOutput('events', to.check))
 }
 
 

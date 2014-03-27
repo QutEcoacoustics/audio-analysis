@@ -688,24 +688,36 @@ IntegerVectorAsString <- function (ints, inner.sep = "-", outer.sep = ",") {
 CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
     # for a given set of minutes, creates minute spectrograms for each of them,
     # including events color coded by group
+    # 
+    # Args:
+    #   samples: matrix. minute ids of the samples. columns can be used to separate
+    #                    different ranking methods
+    
+    
     
     events <- ReadOutput('events')
     groups <- ReadOutput('clusters')
     group.col.name <- paste0('group.', num.clusters)
-    events <- AssignColourToGroup(events, groups[, group.col.name])
     
+    # need to filter events by the selected minutes
+    # if we want to use the full range of colours on a smaller number of groups
+    rects <- CreateRects(events, groups[, group.col.name])
     # file names for later use in imagemagick command to append together
-    sample.spectro.fns <- c()
+    sample.spectro.fns <- matrix(NA, nrow = nrow(samples), ncol=ncol(samples))
     
-    for (i in 1:nrow(samples)) {
-        
+    mins.ids <- unique(as.vector(samples))
+    mins <- ExpandMinId(mins.ids)
+    mins$fn <- rep(NA, nrow(mins))
+    
+    for (i in 1:nrow(mins)) {
         #add events that belong in this sample
-        min.id <- as.character(samples$min.id[i])
-        minute.events <- events[which(events$min.id == min.id),]
-        
+        min.id <- as.character(mins$min.id[i])
+        which.events <- which(events$min.id == min.id)
+        minute.events <- events[which.events, ]
+        minute.rects <- rects[which.events, ]
         temp.fn <- paste(min.id, 'png', sep = '.')
         img.path <- file.path(temp.dir, temp.fn)
-        sample.spectro.fns <- c(sample.spectro.fns, img.path)
+        mins$fn[i] <- img.path
         
         Report(4, 'inspecting min id ', min.id)
         Report(4, 'num events = ', nrow(minute.events))
@@ -717,25 +729,25 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
         #                               duration = 60,
         #                               save = TRUE)
         
-        
-        
-        Sp.CreateTargeted(site = samples$site[i], 
-                          start.date = samples$date[i], 
-                          start.sec = samples$min[i] * 60, 
+        Sp.CreateTargeted(site = mins$site[i], 
+                          start.date = mins$date[i], 
+                          start.sec = mins$min[i] * 60, 
                           duration = 60, 
                           img.path = img.path, 
-                          rects = minute.events,
-                          label = samples$min.id[i])
+                          rects = minute.rects,
+                          label = mins$min.id[i])
+        
+        
+        sample.spectro.fns[which(samples == min.id)] <- img.path
         
     }
     
     return(sample.spectro.fns)
     
-    
 }
 
 
-InspectSamples <- function (samples = NA) {
+InspectSamples <- function (samples = NA, output.fns = NA) {
     # draws the ranked n samples as spectrograms
     # with events marked and colour coded by cluster group
 
@@ -746,8 +758,11 @@ InspectSamples <- function (samples = NA) {
     #num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters')
     num.clusters.choice <- 2
     num.clusters <- num.clusters.choices[num.clusters.choice]
+    
+    rankings <- rankings[,num.clusters.choice,]
+    
 
-    if(class(samples) != 'data.frame') {
+    if(class(samples) == 'logical') {
 #         ranking.method.choices <- d.names$ranking.method
 #         ranking.method.choices <- c(ranking.method.choices, 'exit')
 #      
@@ -763,35 +778,26 @@ InspectSamples <- function (samples = NA) {
 #         }
         ranking.methods <- c(2,3)
         
-        
-        subset <- rep(FALSE, nrow(min.ids))
+        ordered.samples <- matrix(NA, ncol = length(ranking.methods), nrow = g.num.samples)
         for (i in 1:length(ranking.methods)) {
-            subset <- subset | rankings[ranking.methods, num.clusters.choice, ] <= g.num.samples
-        }
-        
-        samples <- min.ids[subset,]
-        
-
+            ordered.samples[,i] <- min.ids$min.id[order(rankings[ranking.methods[i], ])[1:g.num.samples]]
+        } 
+    } else {
+        ordered.samples <- as.matrix(samples)
     }
-    
     temp.dir <- TempDirectory()
-    
-    sample.spectro.fns <- CreateSampleSpectrograms(samples, num.clusters, temp.dir)
+    sample.spectro.fns <- CreateSampleSpectrograms(ordered.samples, num.clusters, temp.dir)
 
-    samples$spectro.fn <- sample.spectro.fns
-    # rankings can either be ranking cols or custom supplied 
-    for (i in 1:length(ranking.methods)) {
-        if (rankings[i] %in% colnames(samples)) {
-            # subset the samples table so it only includes the top ranked for this column,
-            # then get the filenames in teh right order
-            output.fn <- paste('InspectSamples', rankings[i],  collapse = "_", sep='.')
-            fns <- samples$spectro.fn[samples[[rankings[i]]] <= g.num.samples]
-        } else {
-            output.fn <- paste('InspectSamples', samples$min.id,  collapse = "_", sep='.') 
-            fns <- samples$spectro.fn 
-        }
+    if (class(output.fns) == 'logical') {
+        output.fns <- 1:ncol(ordered.samples)
+    }
+    # if samples are chosen using rankings
+    for (i in 1:ncol(ordered.samples)) {
+
+        output.fn <- paste('InspectSamples', output.fns[i],  collapse = "_", sep='.')
         output.file <- OutputPath(output.fn, ext = 'png')
-        fns <- paste(fns, collapse = " ")
+        spectro.fns <- sample.spectro.fns[,i]
+        fns <- paste(spectro.fns, collapse = " ")
         command <- paste("/opt/local/bin/convert", 
                          fns, "-append", output.file)
         Report(5, 'doing image magic command', command)
@@ -809,7 +815,7 @@ GetRankCols <- function (data.frame) {
     return(intersect(paste0(rep('r',l), 1:l), colnames(data.frame)))  
 }
 
-AssignColourToGroup <- function (events, group) {
+CreateRects <- function (events, group) {
     # adds a "color" column to the events with a hex color
     # for each cluster group
     #
@@ -819,17 +825,23 @@ AssignColourToGroup <- function (events, group) {
     # Returns: 
     #   data.frame; same as input but with an extra column
     
-    groups <- unique(group)   
-    num.groups <- length(groups)
-    colors <- rainbow(num.groups)
-    Report(6, 'Cluster group colors', colors)
-    event.colors <- group
-    for (i in 1:num.groups) {
-        event.colors[event.colors == groups[i]] <- colors[i]
-    }
-    events$rect.color <- event.colors
-    return(events)
+    rects <- events[, c('start.sec', 'duration', 'bottom.f', 'top.f')]
+    rects$label.br <- group
+    rects$label.tl <- events$event.id
+    rects$rect.color <- GetClusterGroupColors(group)
+    return(rects)
     
+}
+
+GetClusterGroupColors <- function (groups) {
+    unique.groups <- unique(groups)
+    num.unique.groups <- length(unique.groups)
+    unique.colors <- rainbow(num.unique.groups)
+    group.colors <- rep(NA, length(groups))
+    for (i in 1:num.unique.groups) {
+        group.colors[groups == unique.groups[i]] <- unique.colors[i]
+    } 
+    return(group.colors)
 }
 
 AddMinuteIdCol <- function (data) {

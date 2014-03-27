@@ -38,6 +38,7 @@ options(error = traceback)
 
 
 source('config.R')  #must be first
+source('minutes.R')
 source('events.R')
 source('features.R')
 source('cluster.R')
