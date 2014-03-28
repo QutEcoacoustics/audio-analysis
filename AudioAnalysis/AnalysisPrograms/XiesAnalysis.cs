@@ -24,6 +24,11 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments
         {
+
+            [ArgDescription("The source audio file to operate on")]
+            [Production.ArgExistingFile()]
+            public FileInfo Source { get; set; }
+
             [ArgDescription("The path to the config file")]
             [Production.ArgExistingFile()]
             [ArgRequired]
@@ -38,6 +43,7 @@ namespace AnalysisPrograms
             {
                 return "The majority of the options for this analysis are in the config file or are build constants";
             }
+
         }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(XiesAnalysis));
@@ -59,7 +65,7 @@ namespace AnalysisPrograms
             // load configuration
             dynamic configuration = Yaml.Deserialise(arguments.Config);
 
-            Main.Entry(configuration);
+            Main.Entry(configuration, arguments.Source);
         }
     }
 }

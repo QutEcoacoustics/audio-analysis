@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TowseyLib;
 using AudioAnalysisTools;
+using Accord.Math;
 
 
 namespace QutBioacosutics.Xie
@@ -68,6 +69,25 @@ namespace QutBioacosutics.Xie
 
             return result;
         
+        }
+
+
+
+
+
+        public double[,] dctHarmonic(double[,] matrix, int colThreshold, int zeroBinIndex)
+        {
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            for (int c = 0; c < cols; c++)
+            { 
+                
+            
+            }
+
+            return null;
         }
 
     }
