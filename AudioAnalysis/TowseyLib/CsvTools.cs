@@ -503,15 +503,17 @@ namespace TowseyLib
             }*/
 
             // using CSV Helper
-            IEnumerable<T> results;
+            
             using (var stream = source.OpenText())
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
-                // should upgrade to yield return.
-                results = reader.GetRecords<T>().ToArray();
-            }
 
-            return results;
+                IEnumerable<T> results = reader.GetRecords<T>().ToArray();
+                foreach (var result in results)
+                {
+                    yield return result;
+                }
+            }
         }
 
         #endregion
