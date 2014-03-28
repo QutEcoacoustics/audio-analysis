@@ -65,8 +65,9 @@ namespace AudioAnalysisTools
             public int[] clusterHits2;
             public double triGramRepeatRate;
             public int triGramUniqueCount;
-            public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames,
-                               int[] _ClusterHits2, int _triGramUniqueCount, double _triGramRepeatRate)
+            public double[] clusterSpectrum;
+            public ClusterInfo(List<double[]> _PrunedClusterWts, double _av2, bool[] _SelectedFrames, double[] _clusterSpectrum,
+                               int[] _clusterHits2, int _triGramUniqueCount, double _triGramRepeatRate)
             {
                 clusterCount = 0;
                 if (_PrunedClusterWts != null)
@@ -76,11 +77,12 @@ namespace AudioAnalysisTools
                         clusterCount = _PrunedClusterWts.Count - 1; // because a null at the zero position implies not belonging to a cluster.
                 }
                 av2 = _av2;
-                selectedFrames = _SelectedFrames;
-                prunedClusterWts = _PrunedClusterWts;
-                clusterHits2 = _ClusterHits2;
+                selectedFrames     = _SelectedFrames;
+                prunedClusterWts   = _PrunedClusterWts;
+                clusterSpectrum    = _clusterSpectrum;
+                clusterHits2       = _clusterHits2;
                 triGramUniqueCount = _triGramUniqueCount;
-                triGramRepeatRate = _triGramRepeatRate;
+                triGramRepeatRate  = _triGramRepeatRate;
             }
         }
 
@@ -149,7 +151,6 @@ namespace AudioAnalysisTools
 
             //DO CLUSTERING - if have suitable data
             BinaryCluster.Verbose = false;
-            //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
             int initialClusterCount = 2;
             double vigilance = 0.15;    //vigilance parameter - increasing this proliferates categories. A vigilance=0.1 requires (AND/OR) similarity > 10%
@@ -162,6 +163,7 @@ namespace AudioAnalysisTools
             var tuple_output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
             int[] prunedClusterHits = tuple_output2.Item1;
             List<double[]> prunedClusterWts = tuple_output2.Item2;
+            double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
             if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
@@ -213,7 +215,7 @@ namespace AudioAnalysisTools
             double triGramRepeatRate = 0.0;
             if (triGramUniqueCount != 0) triGramRepeatRate = repeats / (double)triGramUniqueCount;
 
-            return new ClusterInfo(prunedClusterWts, av2, selectedFrames, clusterHits2, triGramUniqueCount, triGramRepeatRate);
+            return new ClusterInfo(prunedClusterWts, av2, selectedFrames, clusterSpectrum, clusterHits2, triGramUniqueCount, triGramRepeatRate);
         }
 
 

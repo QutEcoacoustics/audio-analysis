@@ -124,7 +124,7 @@ namespace AnalysisPrograms
                 Source = recordingPath.ToFileInfo(),
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test2".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_01April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -490,14 +490,17 @@ namespace AnalysisPrograms
             } // foreach spectrumKey
 
             // now Draw the false colour spectrogram
-            int xScale = 60; // assume one minute spectra and hourly time lines
-            string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-            var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
-            string ipFileName = name;
-            cs.LoadSpectrogramDictionary(spectrogramDictionary);
-            cs.BackgroundFilter = 1.0;
-            cs.DrawGreyScaleSpectrograms(resultsDirectory, ipFileName);
-            cs.DrawFalseColourSpectrograms(resultsDirectory, ipFileName);
+            //int xScale = 60; // assume one minute spectra and hourly time lines
+            //string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
+            //var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
+            //string ipFileName = name;
+            //cs.LoadSpectrogramDictionary(spectrogramDictionary);
+            //cs.BackgroundFilter = 1.0;
+            //cs.DrawGreyScaleSpectrograms(resultsDirectory, ipFileName);
+            //cs.DrawFalseColourSpectrograms(resultsDirectory, ipFileName);
+
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(name, resultsDirectory);
+
         }
 
         public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)

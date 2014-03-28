@@ -32,8 +32,9 @@ namespace AnalysisPrograms
         public int trackCount, trackDuration_percent;
         public double tracksPerSec;
 
-        // the following are vector spectra 
-        public double[] backgroundSpectrum, ACIspectrum, averageSpectrum, varianceSpectrum, coverSpectrum, HtSpectrum;
+        // the following are spectra as vectors of indices  
+        // NB: if you create a new spectrum of indices you need to put reference for saving it in AcousticIndices.Analyse() method, line 379
+        public double[] spectrum_BGN, spectrum_ACI, spectrum_AVG, spectrum_VAR, spectrum_CVR, spectrum_ENT, spectrum_CLS;
 
         public Features(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                         double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
@@ -42,7 +43,7 @@ namespace AnalysisPrograms
                         int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
                         TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore,
                         double[] _bgNoiseSpectrum, double[] _ACIspectrum, double[] _averageSpectrum, double[] _varianceSpectrum,
-                        double[] _coverSpectrum, double[] _HtSpectrum)
+                        double[] _coverSpectrum, double[] _HtSpectrum, double[] _clusterSpectrum)
         {
             recordingDuration = _recordingDuration;
             snr = _snr;
@@ -75,12 +76,13 @@ namespace AnalysisPrograms
             cicadaScore = _cicadaScore;
 
             // assign spectra
-            backgroundSpectrum = _bgNoiseSpectrum;
-            ACIspectrum = _ACIspectrum;
-            averageSpectrum = _averageSpectrum;
-            varianceSpectrum = _varianceSpectrum;
-            coverSpectrum = _coverSpectrum;
-            HtSpectrum = _HtSpectrum;
+            spectrum_ACI = _ACIspectrum;
+            spectrum_AVG = _averageSpectrum;
+            spectrum_BGN = _bgNoiseSpectrum;
+            spectrum_CLS = _clusterSpectrum;
+            spectrum_CVR = _coverSpectrum;
+            spectrum_ENT = _HtSpectrum;
+            spectrum_VAR = _varianceSpectrum;
         }
     } // struct Features
 
@@ -192,17 +194,21 @@ namespace AnalysisPrograms
             indices.midFreqCover = 0.0;
             indices.hiFreqCover = 0.0;
 
-            indices.backgroundSpectrum = new double[freqBinCount];
-            indices.ACIspectrum = new double[freqBinCount];
-            indices.coverSpectrum = new double[freqBinCount];
-            indices.HtSpectrum = new double[freqBinCount];
-            indices.averageSpectrum = new double[freqBinCount];
-            indices.varianceSpectrum = new double[freqBinCount];
-
             indices.trackDuration_total = TimeSpan.Zero;
             indices.trackDuration_percent = 0;
             indices.trackCount = 0;
             indices.tracksPerSec = 0.0;
+
+            // spectral of indices for construction of false-colour spectrograms
+            indices.spectrum_ACI = new double[freqBinCount];
+            indices.spectrum_AVG = new double[freqBinCount];
+            indices.spectrum_BGN = new double[freqBinCount];
+            for (int i = 0; i < freqBinCount; i++) indices.spectrum_BGN[i] = -150; // set rock bottom BGN level in decibels
+            indices.spectrum_CLS = new double[freqBinCount];
+            indices.spectrum_CVR = new double[freqBinCount];
+            indices.spectrum_ENT = new double[freqBinCount];
+            for (int i = 0; i < freqBinCount; i++ ) indices.spectrum_ENT[i] = 1.0; // tmporal entropy values are reversed
+            indices.spectrum_VAR = new double[freqBinCount];
 
             return indices;
         }

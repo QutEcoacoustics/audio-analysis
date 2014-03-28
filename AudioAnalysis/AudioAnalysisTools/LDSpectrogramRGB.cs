@@ -144,8 +144,7 @@ namespace AudioAnalysisTools
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {
-            string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
-            return ReadCSVFiles(ipdir, fileName, keys);
+            return ReadCSVFiles(ipdir, fileName, SpectrogramConstants.ALL_KNOWN_KEYS);
         }
 
 
@@ -698,13 +697,17 @@ namespace AudioAnalysisTools
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.BGN_MIN, SpectrogramConstants.BGN_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_Variance)//.Equals("VAR"))
+            else if (key == SpectrogramConstants.KEY_Cluster)//.Equals("CLS"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.VAR_MIN, SpectrogramConstants.VAR_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.CLS_MIN, SpectrogramConstants.CLS_MAX);
             }
             else if (key == SpectrogramConstants.KEY_BinCover)//.Equals("CVR"))
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.CVR_MIN, SpectrogramConstants.CVR_MAX);
+            }
+            else if (key == SpectrogramConstants.KEY_Variance)//.Equals("VAR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.VAR_MIN, SpectrogramConstants.VAR_MAX);
             }
             else
             {
@@ -922,6 +925,46 @@ namespace AudioAnalysisTools
             }
         }
 
+
+        public static void DrawFalseColourSpectrograms(string fileStem, DirectoryInfo ipDir)
+        {
+             int minuteOffset = 0;
+                int xScale = 60;
+                int sampleRate = 17640;
+                int frameWidth = 256;
+                double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+                string colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
+                var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+                cs1.FileName = fileStem;
+                //cs1.ColorMODE = colorMap;
+                cs1.BackgroundFilter = backgroundFilterCoeff;
+                cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
+                if (cs1.GetCountOfSpectrogramMatrices() == 0)
+                {
+                    Console.WriteLine("There are no spectrogram matrices in the dictionary.");
+                    return;
+                }
+                cs1.DrawGreyScaleSpectrograms(ipDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+
+                Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+                image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+                image1.Save(Path.Combine(ipDir.FullName, fileStem + "." + colorMap + ".png"));
+
+                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CLS;
+                Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+                image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+                image2.Save(Path.Combine(ipDir.FullName, fileStem + "." + colorMap + ".png"));
+                Image[] array = new Image[2];
+                array[0] = image1;
+                array[1] = image2;
+                Image image3 = ImageTools.CombineImagesVertically(array);
+                image3.Save(Path.Combine(ipDir.FullName, fileStem + ".2MAPS.png"));
+
+    }
 
     } //ColourSpectrogram
 }

@@ -16,6 +16,7 @@ namespace AudioAnalysisTools
         public const string KEY_Average = "AVG";
         public const string KEY_BackgroundNoise = "BGN";
         public const string KEY_Combined = "CMB";
+        public const string KEY_Cluster  = "CLS";
         public const string KEY_Colour = "COL";
         public const string KEY_BinCover = "CVR";
         public const string KEY_TemporalEntropy = "TEN";
@@ -30,6 +31,8 @@ namespace AudioAnalysisTools
         public const double AVG_MAX = 30.0;
         public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
         public const double BGN_MAX = -20.0;
+        public const double CLS_MIN = 0.0;
+        public const double CLS_MAX = 20.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.3;
         public const double TEN_MIN = 0.5;
@@ -45,9 +48,13 @@ namespace AudioAnalysisTools
         public const string RGBMap_DEFAULT     = "ACI-TEN-CVR"; //R-G-B
         public const string RGBMap_ACI_TEN_AVG = "ACI-TEN-AVG"; //R-G-B
         public const string RGBMap_ACI_TEN_CVR = "ACI-TEN-CVR"; //R-G-B
+        public const string RGBMap_ACI_TEN_CLS = "ACI-TEN-CLS"; //R-G-B
         public const string RGBMap_ACI_TEN_BGN = "ACI-TEN-BGN"; //R-G-B
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
         public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
+        public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
+        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-TEN-VAR";
+
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
         public const double BACKGROUND_FILTER_COEFF = 0.75; //must be value <=1.0

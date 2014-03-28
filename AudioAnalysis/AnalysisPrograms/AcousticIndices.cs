@@ -370,12 +370,13 @@ namespace AnalysisPrograms
             analysisResults.AudioDuration = results.Item2;
 
             // Accumulate spectra in Dictionary
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.backgroundSpectrum);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.ACIspectrum);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.averageSpectrum);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.varianceSpectrum);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.coverSpectrum);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.HtSpectrum);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.spectrum_BGN);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.spectrum_ACI);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.spectrum_AVG);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.spectrum_VAR);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.spectrum_CVR);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.spectrum_ENT);
+            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Cluster, indices.spectrum_CLS);
 
             var sonogram = results.Item3;
             var hits = results.Item4;
