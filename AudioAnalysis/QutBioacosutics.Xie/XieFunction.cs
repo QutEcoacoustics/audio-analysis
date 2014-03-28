@@ -6,6 +6,8 @@ using System.Drawing;
 using TowseyLib;
 using System.Drawing.Imaging;
 using System.IO;
+using AForge.Math;
+using Accord.Math;
 
 
 
@@ -128,6 +130,77 @@ namespace QutBioacosutics.Xie
                 }
             }
         }
+
+        // DCT
+        public static double[] DCT(double[] data)
+        {
+            double[] result = new double[data.Length];
+            double c = Math.PI / (2.0 * data.Length);
+            double scale = Math.Sqrt(2.0 / data.Length);
+
+            for (int k = 0; k < data.Length; k++)
+            {
+                double sum = 0;
+                for (int n = 0; n < data.Length; n++)
+                    sum += data[n] * Math.Cos((2.0 * n + 1.0) * k * c);
+                result[k] = scale * sum;
+            }
+
+            data[0] = result[0] / Constants.Sqrt2;
+            for (int i = 1; i < data.Length; i++)
+                data[i] = result[i];
+
+            return data;
+        }
+
+        //IDCT
+        public static double[] IDCT(double[] data)
+        {
+            double[] result = new double[data.Length];
+            double c = Math.PI / (2.0 * data.Length);
+            double scale = Math.Sqrt(2.0 / data.Length);
+
+            for (int k = 0; k < data.Length; k++)
+            {
+                double sum = data[0] / Constants.Sqrt2;
+                for (int n = 1; n < data.Length; n++)
+                    sum += data[n] * Math.Cos((2 * k + 1) * n * c);
+
+                result[k] = scale * sum;
+            }
+
+            for (int i = 0; i < data.Length; i++)
+                data[i] = result[i];
+
+            return data;
+        }
+
+        // SD
+        public static double StandarDeviation(double[] data)
+        {
+            double average = data.Average();
+            double sumOfSquaresOfDifferences = data.Select(val => (val - average) * (val - average)).Sum();
+            double sd = Math.Sqrt(sumOfSquaresOfDifferences / data.Length);
+
+            return sd;      
+        }
+
+
+
+        public static double[] CrossCorrelation(double[] v1, double[] v2)
+        {
+            int n = v1.Length;
+            double[] r;
+            alglib.corrr1d(v1, n, v2, n, out r);
+
+            int xcorrLength = 2 * n;
+            double[] xCorr = new double[xcorrLength];
+            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  
+            for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
+
+            return xCorr;
+        }
+
 
 
     }

@@ -1,16 +1,18 @@
 --- # Configuration file for Jie Xie
 
 file:  C:\Jie\data\020313_min248.wav
+#file: C:\Jie\data\NoiseRecordings\dp2_20080415-124000.wav.silenceAndClicks.wav
 #file:  C:\Jie\data\Segment_JCU_01
 do_noise_reduction: 0
-image_path: C:\Jie\output
-amplitude_threshold: 3.0
+image_path: C:\Jie\output\b.png
+amplitude_threshold: 4
 range: 2
-distance: 4
+distance: 5
 binToreance: 3
 frameThreshold: 5
-trackThreshold: 0.70
+trackThreshold: 0.75
 maximumDuration: 45
+minimumDuration: 18
 maximumDiffBin: 25
 colThreshold: 6
 zeroBinIndex: 5
