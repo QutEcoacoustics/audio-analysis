@@ -153,22 +153,17 @@
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
 
-        // different spectra for displaying spectrograms of long duration recordings
-        // These spectra typically calculated from one minute of recording
-        // background noise spectrum
-        // acoutic complexity index spectrum
-        // average spectrum
-        // variance spectrum
-        // bin coverage spectrum
-        // temporal entropy spectrum
-        // combination of indices
-        public readonly Dictionary<string, double[]> spectrumsDict = new Dictionary<string, double[]>();
-
+        /// <summary>
+        /// Different spectra for displaying spectrograms of long duration recordings
+        /// These spectra typically calculated from one minute of recording
+        /// </summary>
+        private Dictionary<string, double[]> spectrumDict = new Dictionary<string, double[]>();
         public Dictionary<string, double[]> Spectra
         {
+            set { this.spectrumDict = value; }
             get
             {
-                return this.spectrumsDict;
+                return this.spectrumDict;
             }
         }
     }

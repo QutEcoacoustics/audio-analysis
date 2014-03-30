@@ -83,13 +83,14 @@ namespace AnalysisPrograms
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static Tuple<Features, TimeSpan, BaseSonogram, double[,], List<Plot>, List<SpectralTrack>> Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
+        public static AcousticIndicesStore Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
             // get parameters for the analysis
             int frameSize = AcousticIndicesCalculate.DEFAULT_WINDOW_SIZE;
             frameSize = config.ContainsKey(Keys.FRAME_LENGTH) ? ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config) : frameSize;
+            int freqBinCount = frameSize / 2;
             lowFreqBound = config.ContainsKey(Keys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(Keys.LOW_FREQ_BOUND, config) : lowFreqBound;
             midFreqBound = config.ContainsKey(Keys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(Keys.MID_FREQ_BOUND, config) : midFreqBound;
             double windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
@@ -110,34 +111,25 @@ namespace AnalysisPrograms
             double[] signalEnvelope = dspOutput.Envelope;
             double avSignalEnvelope = signalEnvelope.Average();
 
+            // set up DATA STORAGE struct and class in which to return all the indices and other data.
             AnalysisPrograms.Features indices; // struct in which to store all indices
-            int freqBinCount = frameSize / 2;
+            AcousticIndicesStore indicesStore = new AcousticIndicesStore(freqBinCount, wavDuration);
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
             if (avSignalEnvelope < 0.001) // although signal appears zero, this condition is required
             {
-                indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
-                BaseSonogram sg = null;
-                double[,] hitsDummy = null;
-                var dummyScores = new List<Plot>();
-                List<SpectralTrack> list = null;
-
-                return Tuple.Create(indices, wavDuration, sg, hitsDummy, dummyScores, list);
+                indicesStore.Indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
+                return indicesStore;
             }
 
             // following deals with case where the signal waveform is clipped 
             //  i.e. where maximum value = 1.0 in more than 5% of frames!! 
-            int clipCount = signalEnvelope.Count(val => val > 0.9999);
+            int clipCount = signalEnvelope.Count(val => val == 1.0);
             int clipPercent = clipCount * 100 / signalEnvelope.Length;
             if (clipPercent > 5) 
             {
-                indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
-                BaseSonogram sg = null;
-                double[,] hitsDummy = null;
-                var dummyScores = new List<Plot>();
-                List<SpectralTrack> list = null;
-
-                return Tuple.Create(indices, wavDuration, sg, hitsDummy, dummyScores, list);
+                indicesStore.Indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
+                return indicesStore;
             }
 
             
@@ -183,12 +175,12 @@ namespace AnalysisPrograms
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             double[] aciArray = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
-            indices.spectrum_ACI = aciArray; //store ACI spectrum
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_AcousticComplexityIndex, aciArray); //store ACI spectrum
             double[] reducedSpectrum = DataTools.Subarray(aciArray, lowerBinBound, reducedFreqBinCount);  // remove low freq band
             indices.ACI = reducedSpectrum.Average(); // average of ACI spectrum with low freq bins removed
 
             // ii: CALCULATE H(t) or Temporal ENTROPY Spectrum 
-            indices.spectrum_ENT = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_TemporalEntropy, AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram));
 
             // iii: remove background noise from the amplitude spectrogram
             double SD_COUNT = 0.0;
@@ -234,7 +226,7 @@ namespace AnalysisPrograms
             // ii: Calculate background noise spectrum in decibels
             SD_COUNT = 0.0; // number of SDs above the mean for noise removal
             SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
-            indices.spectrum_BGN = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);   // smooth the modal profile
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BackgroundNoise, DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7)); // smooth modal profile
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
@@ -243,8 +235,9 @@ namespace AnalysisPrograms
 
             // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
-            indices.spectrum_AVG  = tuple2.Item1;
-            indices.spectrum_VAR = tuple2.Item2;
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_Average,  tuple2.Item1);
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_Variance, tuple2.Item2);
+
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
@@ -252,17 +245,20 @@ namespace AnalysisPrograms
             indices.lowFreqCover = tuple_Cover.Item1;
             indices.midFreqCover = tuple_Cover.Item2;
             indices.hiFreqCover = tuple_Cover.Item3;
-            indices.spectrum_CVR = tuple_Cover.Item4;
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinCover, tuple_Cover.Item4);
 
-            // vii: Get Spectral tracks
+
+            // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
-            var midBandDecibelSpectrogram = MatrixTools.Submatrix(deciBelSpectrogram, 0, lowerBinBound, deciBelSpectrogram.GetLength(0) - 1, nyquistBin - 1);
-            dBThreshold = 3.0;
-            TrackInfo trackInfo = SpectralTracks.GetTrackIndices(midBandDecibelSpectrogram, framesPerSecond, dspOutput.FreqBinWidth, lowFreqBound, dBThreshold);
-            indices.trackDuration_total = trackInfo.totalTrackDuration;
-            indices.trackDuration_percent = trackInfo.percentDuration;
-            indices.trackCount = trackInfo.tracks.Count;
-            indices.tracksPerSec = trackInfo.tracks.Count / wavDuration.TotalSeconds;
+            dBThreshold = 5.0;
+            // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
+            SPTrackInfo sptInfo = SpectralTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_SpPeakTracks, sptInfo.spSpectrum);
+            indices.trackDuration_total = sptInfo.totalTrackDuration;
+            indices.trackDuration_percent = sptInfo.percentDuration;
+            indices.trackCount = 0;
+            if (sptInfo.listOfSPTracks != null) indices.trackCount = sptInfo.listOfSPTracks.Count;
+            indices.tracksPerSec = indices.trackCount / wavDuration.TotalSeconds;
 
 
             // #V#####################################################################################################################################################
@@ -315,8 +311,13 @@ namespace AnalysisPrograms
                 indices.avClusterDuration = TimeSpan.Zero; //av cluster durtaion in milliseconds
                 indices.triGramUniqueCount = 0;
                 indices.triGramRepeatRate = 0.0;
-                indices.spectrum_CLS = new double[freqBinCount];
-                return Tuple.Create(indices, wavDuration, sonogram, hits, scores, trackInfo.tracks);
+                //indices.spectrum_CLS = new double[freqBinCount];
+                indicesStore.Indices = indices;
+                indicesStore.Sg = sonogram;
+                indicesStore.Hits = hits;
+                indicesStore.TrackScores = scores;
+                //indicesStore.Tracks = trackInfo.listOfSPTracks;
+                return indicesStore;
             }
             //#V#####################################################################################################################################################
 
@@ -339,7 +340,7 @@ namespace AnalysisPrograms
                 indices.avClusterDuration  = TimeSpan.Zero;
                 indices.triGramUniqueCount = 0;
                 indices.triGramRepeatRate  = 0;
-                indices.spectrum_CLS = new double[freqBinCount];
+                //indices.spectrum_CLS = new double[freqBinCount];
             }
             else
             {
@@ -350,7 +351,8 @@ namespace AnalysisPrograms
                 indices.triGramUniqueCount = clusterInfo.triGramUniqueCount;
                 indices.triGramRepeatRate = clusterInfo.triGramRepeatRate;
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
-                indices.spectrum_CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor);
+                indicesStore.AddSpectrum(SpectrogramConstants.KEY_Cluster, 
+                                         SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor));
             }
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration
@@ -370,7 +372,12 @@ namespace AnalysisPrograms
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
             }
 
-            return Tuple.Create(indices, wavDuration, sonogram, hits, scores, trackInfo.tracks);
+            indicesStore.Indices = indices;
+            indicesStore.Sg = sonogram;
+            indicesStore.Hits = hits;
+            indicesStore.TrackScores = scores;
+            indicesStore.Tracks = sptInfo.listOfSPTracks;
+            return indicesStore;
         } //Analysis()
 
 

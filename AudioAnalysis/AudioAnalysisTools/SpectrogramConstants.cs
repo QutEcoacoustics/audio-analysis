@@ -19,13 +19,14 @@ namespace AudioAnalysisTools
         public const string KEY_Cluster  = "CLS";
         public const string KEY_Colour = "COL";
         public const string KEY_BinCover = "CVR";
+        public const string KEY_SpPeakTracks = "SPT";
         public const string KEY_TemporalEntropy = "TEN";
         public const string KEY_Variance = "VAR";
 
         // NORMALISING CONSTANTS FOR INDICES
         //public const double ACI_MIN = 0.0;
         //public const double ACI_MAX = 1.0;
-        public const double ACI_MIN = 0.35;
+        public const double ACI_MIN = 0.40;
         public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;
         public const double AVG_MAX = 30.0;
@@ -49,11 +50,12 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_TEN_AVG = "ACI-TEN-AVG"; //R-G-B
         public const string RGBMap_ACI_TEN_CVR = "ACI-TEN-CVR"; //R-G-B
         public const string RGBMap_ACI_TEN_CLS = "ACI-TEN-CLS"; //R-G-B
+        public const string RGBMap_ACI_TEN_SPT = "ACI-TEN-SPT"; //R-G-B
         public const string RGBMap_ACI_TEN_BGN = "ACI-TEN-BGN"; //R-G-B
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
         public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
         public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
-        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-TEN-VAR";
+        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR";
 
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram

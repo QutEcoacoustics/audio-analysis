@@ -34,16 +34,17 @@ namespace AnalysisPrograms
 
         // the following are spectra as vectors of indices  
         // NB: if you create a new spectrum of indices you need to put reference for saving it in AcousticIndices.Analyse() method, line 379
-        public double[] spectrum_BGN, spectrum_ACI, spectrum_AVG, spectrum_VAR, spectrum_CVR, spectrum_ENT, spectrum_CLS;
+        //public double[] spectrum_BGN, spectrum_ACI, spectrum_AVG, spectrum_VAR, spectrum_CVR, spectrum_ENT, spectrum_CLS;
 
         public Features(TimeSpan _recordingDuration, double _snr, double _activeSnr, double _bgNoise, double _activity, TimeSpan _avSegmentDuration, int _segmentCount, double _avSig_dB,
                         double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                         double _peakFreqEntropy,
                         double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, double _ACI,
                         int _clusterCount, TimeSpan _avClusterDuration, int _triGramUniqueCount, double _triGramRepeatRate,
-                        TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore,
-                        double[] _bgNoiseSpectrum, double[] _ACIspectrum, double[] _averageSpectrum, double[] _varianceSpectrum,
-                        double[] _coverSpectrum, double[] _HtSpectrum, double[] _clusterSpectrum)
+                        TimeSpan _trackDuration_total, int _trackDuration_percent, int _trackCount, double _rainScore, double _cicadaScore
+                        //double[] _bgNoiseSpectrum, double[] _ACIspectrum, double[] _averageSpectrum, double[] _varianceSpectrum,
+                        //double[] _coverSpectrum, double[] _HtSpectrum, double[] _clusterSpectrum
+                       )
         {
             recordingDuration = _recordingDuration;
             snr = _snr;
@@ -76,13 +77,13 @@ namespace AnalysisPrograms
             cicadaScore = _cicadaScore;
 
             // assign spectra
-            spectrum_ACI = _ACIspectrum;
-            spectrum_AVG = _averageSpectrum;
-            spectrum_BGN = _bgNoiseSpectrum;
-            spectrum_CLS = _clusterSpectrum;
-            spectrum_CVR = _coverSpectrum;
-            spectrum_ENT = _HtSpectrum;
-            spectrum_VAR = _varianceSpectrum;
+            //spectrum_ACI = _ACIspectrum;
+            //spectrum_AVG = _averageSpectrum;
+            //spectrum_BGN = _bgNoiseSpectrum;
+            //spectrum_CLS = _clusterSpectrum;
+            //spectrum_CVR = _coverSpectrum;
+            //spectrum_ENT = _HtSpectrum;
+            //spectrum_VAR = _varianceSpectrum;
         }
     } // struct Features
 
@@ -166,6 +167,112 @@ namespace AnalysisPrograms
         public const double max_SPTracksPerSec = 10.0;
         public const double max_SPTracksDur = 10.0;
 
+        private TimeSpan recordingDuration;
+        public TimeSpan RecordingDuration
+        {
+            get { return recordingDuration; }
+            set { recordingDuration = value; }
+        }
+
+        private Features indices;
+        public Features Indices
+        {
+            get { return indices; }
+            set { indices = value; }
+        }
+
+        private BaseSonogram sg = null;
+        public BaseSonogram Sg
+        {
+            get { return sg; }
+            set { sg = value; }
+        }
+
+        private double[,] hits = null;
+        public double[,] Hits
+        {
+            get { return hits; }
+            set { hits = value; }
+        }
+
+        private new List<Plot> trackScores = new List<Plot>();
+        public List<Plot> TrackScores
+        {
+            get { return trackScores; }
+            set { trackScores = value; }
+        }
+
+        private List<SpectralTrack> tracks = null;
+        public List<SpectralTrack> Tracks
+        {
+            get { return tracks; }
+            set { tracks = value; }
+        }
+
+        /// <summary>
+        /// for storing spectral indices in a dictionary
+        /// </summary>
+        private Dictionary<string, double[]> spectra;
+        public Dictionary<string, double[]> Spectra
+        {
+            get { return spectra; }
+            set { spectra = value; }
+        }
+
+        public double[] GetSpectrum(string key)
+        {
+            return spectra[key];
+        }
+        public void AddSpectrum(string key, double[] spectrum)
+        {
+            if(this.spectra.ContainsKey(key))
+            {
+                this.spectra[key] = spectrum;
+            }
+            else
+            this.spectra.Add(key, spectrum);
+        }
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        public AcousticIndicesStore(int freqBinCount, TimeSpan wavDuration)
+        {
+            this.RecordingDuration = wavDuration;
+            this.Spectra = InitialiseSpectra(freqBinCount);
+        }
+
+        
+        /// <summary>
+        /// The following are vectors of spectral indices  
+        /// NB: if you create a new spectrum of indices you need to put reference for saving it in AcousticIndices.Analyse() method, line 379
+        /// double[] spectrum_BGN, spectrum_ACI, spectrum_AVG, spectrum_VAR, spectrum_CVR, spectrum_ENT, spectrum_CLS;
+        /// </summary>
+        /// <param name="size"></param>
+        public static Dictionary<string, double[]> InitialiseSpectra(int size)
+        {
+            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+
+            Dictionary<string, double[]> spectra = new Dictionary<string, double[]>();
+            foreach (string key in keys)
+            {
+                var spectrum = new double[size];
+                if (key == SpectrogramConstants.KEY_BackgroundNoise)
+                {
+                    for (int i = 0; i < size; i++) spectrum[i] = -150; // set rock bottom BGN level in decibels
+                } else
+                if (key == SpectrogramConstants.KEY_TemporalEntropy)
+                {
+                    for (int i = 0; i < size; i++) spectrum[i] = 1.0; // this is default for temporal entropy
+                }
+
+                spectra.Add(key, spectrum);
+            }
+            return spectra;
+        }
+
+       
+
         public static AnalysisPrograms.Features GetBaselineIndices(int freqBinCount, TimeSpan wavDuration)
         {
 
@@ -200,15 +307,15 @@ namespace AnalysisPrograms
             indices.tracksPerSec = 0.0;
 
             // spectral of indices for construction of false-colour spectrograms
-            indices.spectrum_ACI = new double[freqBinCount];
-            indices.spectrum_AVG = new double[freqBinCount];
-            indices.spectrum_BGN = new double[freqBinCount];
-            for (int i = 0; i < freqBinCount; i++) indices.spectrum_BGN[i] = -150; // set rock bottom BGN level in decibels
-            indices.spectrum_CLS = new double[freqBinCount];
-            indices.spectrum_CVR = new double[freqBinCount];
-            indices.spectrum_ENT = new double[freqBinCount];
-            for (int i = 0; i < freqBinCount; i++ ) indices.spectrum_ENT[i] = 1.0; // tmporal entropy values are reversed
-            indices.spectrum_VAR = new double[freqBinCount];
+            //indices.spectrum_ACI = new double[freqBinCount];
+            //indices.spectrum_AVG = new double[freqBinCount];
+            //indices.spectrum_BGN = new double[freqBinCount];
+            //for (int i = 0; i < freqBinCount; i++) indices.spectrum_BGN[i] = -150; // set rock bottom BGN level in decibels
+            //indices.spectrum_CLS = new double[freqBinCount];
+            //indices.spectrum_CVR = new double[freqBinCount];
+            //indices.spectrum_ENT = new double[freqBinCount];
+            //for (int i = 0; i < freqBinCount; i++ ) indices.spectrum_ENT[i] = 1.0; // tmporal entropy values are reversed
+            //indices.spectrum_VAR = new double[freqBinCount];
 
             return indices;
         }

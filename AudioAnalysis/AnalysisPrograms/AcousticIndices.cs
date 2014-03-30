@@ -356,37 +356,33 @@ namespace AnalysisPrograms
             analysisResults.Data = null;
 
             // ######################################################################
-            var results = AcousticIndicesCalculate.Analysis(fiAudioF, analysisSettings);
+            var indicesStore = AcousticIndicesCalculate.Analysis(fiAudioF, analysisSettings);
 
             // ######################################################################
-            if (results == null)
+            if (indicesStore == null)
             {
                 return analysisResults; // nothing to process 
             }
 
-            Features indices = results.Item1;
+            Features indices = indicesStore.Indices;
             DataTable dt = AcousticIndicesStore.Indices2DataTable(indices);
             analysisResults.Data = dt;
-            analysisResults.AudioDuration = results.Item2;
+            analysisResults.AudioDuration = indicesStore.RecordingDuration;
 
             // Accumulate spectra in Dictionary
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.spectrum_BGN);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.spectrum_ACI);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.spectrum_AVG);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.spectrum_VAR);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.spectrum_CVR);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.spectrum_ENT);
-            analysisResults.Spectra.Add(SpectrogramConstants.KEY_Cluster, indices.spectrum_CLS);
+            analysisResults.Spectra = indicesStore.Spectra;
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.spectrum_BGN);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.spectrum_ACI);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.spectrum_AVG);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.spectrum_VAR);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.spectrum_CVR);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.spectrum_ENT);
+            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Cluster, indices.spectrum_CLS);
 
-            var sonogram = results.Item3;
-            var hits = results.Item4;
-            var plots = results.Item5;
-            var tracks = results.Item6;
-
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            if ((indicesStore.Sg != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(sonogram, hits, plots, tracks);
+                var image = DrawSonogram(indicesStore.Sg, indicesStore.Hits, indicesStore.TrackScores, indicesStore.Tracks);
                 //var fiImage = new FileInfo(imagePath);
                 //if (fiImage.Exists) fiImage.Delete();
                 image.Save(imagePath, ImageFormat.Png);

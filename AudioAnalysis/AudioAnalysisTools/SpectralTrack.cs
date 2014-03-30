@@ -217,7 +217,7 @@ namespace AudioAnalysisTools
 
 
         //#########################################################################################################################################################
-        //#########################################################################################################################################################
+        //######## STATIC METHODS ########################################################################################################################################
         //#########################################################################################################################################################
 
 
@@ -227,6 +227,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
+        /// THIS METHOD CALLED FROM ULTIMATELY UP LINE FROM AcousticIndicesCalculate class.
         /// returns an array showing which freq bin in each frame has the maximum amplitude
         /// </summary>
         /// <param name="spectrogram"></param>
@@ -255,6 +256,7 @@ namespace AudioAnalysisTools
         } // GetSpectralMaxima()
 
         /// <summary>
+        /// THIS METHOD CALLED ONLY FROM THE Frogs.CS class.
         /// returns an array showing which freq bin in each frame has the maximum amplitude.
         /// However only returns values for those frames in the neighbourhood of an envelope peak.
         /// </summary>
@@ -292,10 +294,23 @@ namespace AudioAnalysisTools
             return System.Tuple.Create(maxFreqArray, hitsMatrix);
         } // GetSpectralMaxima()
 
+
+        /// <summary>
+        /// This method is invoked from the class AcousticIndicesCalculate.cs.
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="framesPerSecond"></param>
+        /// <param name="herzPerBin"></param>
+        /// <param name="herzOffset"></param>
+        /// <param name="threshold"></param>
+        /// <param name="minDuration"></param>
+        /// <param name="permittedGap"></param>
+        /// <param name="maxFreq"></param>
+        /// <returns>A list of spectral peak tracks</returns>
         public static List<SpectralTrack> GetSpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double herzPerBin, int herzOffset, double threshold, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
         {
-            int[] spectralPeakArray = GetSpectralMaxima(spectrogram, threshold);
-            var tracks = GetSpectraltracks(spectralPeakArray, framesPerSecond, herzPerBin, herzOffset, minDuration, permittedGap, maxFreq);
+            int[] spectralPeakArray = SpectralTrack.GetSpectralMaxima(spectrogram, threshold);
+            var tracks = SpectralTrack.GetSpectralTracks(spectralPeakArray, framesPerSecond, herzPerBin, herzOffset, minDuration, permittedGap, maxFreq);
             // WriteHistogramOftrackLengths(tracks);
             return tracks;
         }
@@ -307,7 +322,7 @@ namespace AudioAnalysisTools
         /// <param name="_framesPerSecond">time scale</param>
         /// <param name="_herzPerBin">freq scale</param>
         /// <returns></returns>
-        public static List<SpectralTrack> GetSpectraltracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin, int _herzOffset, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
+        public static List<SpectralTrack> GetSpectralTracks(int[] spectralPeakArray, double _framesPerSecond, double _herzPerBin, int _herzOffset, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
         {
             double binTolerance = SpectralTrack.herzTolerance / _herzPerBin;
             var tracks = new List<SpectralTrack>();

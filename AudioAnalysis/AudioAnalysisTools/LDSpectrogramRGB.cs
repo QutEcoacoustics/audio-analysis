@@ -952,7 +952,7 @@ namespace AudioAnalysisTools
                 image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
                 image1.Save(Path.Combine(ipDir.FullName, fileStem + "." + colorMap + ".png"));
 
-                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CLS;
+                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
                 Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
                 title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);

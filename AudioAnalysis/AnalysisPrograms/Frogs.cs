@@ -362,7 +362,7 @@ namespace AnalysisPrograms
             var hitsMatrix   = tuple.Item2;
             int herzOffset = 0;
             int maxFreq = 6000;
-            var tracks = SpectralTrack.GetSpectraltracks(maxFreqArray, framesPerSecond, freqBinWidth, herzOffset, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP, maxFreq);
+            var tracks = SpectralTrack.GetSpectralTracks(maxFreqArray, framesPerSecond, freqBinWidth, herzOffset, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP, maxFreq);
 
             double severity = 0.5;
             double dynamicRange = 60; // deciBels above background noise. BG noise has already been removed from each bin.
