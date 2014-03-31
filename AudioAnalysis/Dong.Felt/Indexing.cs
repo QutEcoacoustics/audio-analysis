@@ -93,12 +93,12 @@ namespace Dong.Felt
             {
                 // The frequencyDifference is a problem. 
                 tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;               
                 var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation2(query, tempRegionList, weight1, weight2);
                 var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                    duration, tempRegionList[0].FrequencyIndex,
-                    tempRegionList[0].SourceAudioFile);
-                result.Add(item);               
+                        duration, tempRegionList[0].FrequencyIndex,
+                        tempRegionList[0].SourceAudioFile);
+                result.Add(item);
             }           
             return result;
         }

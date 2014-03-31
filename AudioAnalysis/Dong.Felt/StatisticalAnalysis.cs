@@ -12,6 +12,69 @@
 
     class StatisticalAnalysis
     {
+        public static RegionRerepresentation[,] RegionRepreListToMatrix(List<RegionRerepresentation> region)
+        {
+            var rowsCount = region[0].NhCountInRow;
+            var colsCount = region[0].NhCountInCol;
+            var result = new RegionRerepresentation[rowsCount, colsCount];
+
+            for (int i = 0; i < rowsCount; i++)
+            {
+                for (int j = 0; j < colsCount; j++)
+                {
+                    result[i, j] = region[j + i * colsCount];
+                }
+            }
+            return result;
+        }
+
+        public static List<Candidates> NormalizeCandidateDistance(List<Candidates> candidates)
+        {           
+            var distanceList = new List<double>();
+            foreach (var c in candidates)
+            {
+                distanceList.Add(c.Score);
+            }
+            var miniDistance = distanceList.Min();
+            var maxDistance = distanceList.Max();
+            foreach (var c in candidates)
+            {
+                c.Score = (c.Score - miniDistance) / (maxDistance - miniDistance);
+            }
+            return candidates;
+        }
+
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeProperties(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+
+            var magnitudeList = new List<double>();
+            var orientationList = new List<double>();
+            foreach (var nh in nhList)
+            {
+                // Typically, magnitude should be greater than 0 and less than 20.
+                // otherwise, it is assigned to a default value, 100
+                if (nh.magnitude != 0)
+                {
+                    magnitudeList.Add(nh.magnitude);
+                    orientationList.Add(nh.orientation);
+                }
+            }
+            var minimagnitude = magnitudeList.Min();
+            var maxmagnitude = magnitudeList.Max();
+            var miniOrientation = orientationList.Min();
+            var maxOrientation = orientationList.Max();
+            foreach (var nh in nhList)
+            {
+                if (nh.magnitude != 0)
+                {
+                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);                    
+                }
+                result.Add(nh);               
+            }
+            return result;
+        }
 
         public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
         {
@@ -52,7 +115,7 @@
             }
             return sm;
         }
-       
+
         /// <summary>
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         /// </summary>
@@ -73,14 +136,14 @@
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
-                foreach (PointOfInterest poi in list)
-                {
-                    // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                    // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                    // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
-                    // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                    m[poi.Point.Y, poi.Point.X] = poi;
-                }
+            foreach (PointOfInterest poi in list)
+            {
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
+                m[poi.Point.Y, poi.Point.X] = poi;
+            }
             return m;
         }
 
@@ -448,9 +511,9 @@
         {
             var listCount = ridgeNhList.Count;
             var result = new RidgeDescriptionNeighbourhoodRepresentation[NhCountInRow, NhCountInColumn];
-            
+
             for (int i = 0; i < listCount; i++)
-            {                
+            {
                 result[i / NhCountInColumn, i % NhCountInColumn] = ridgeNhList[i];
             }
             return result;
@@ -491,7 +554,7 @@
             {
                 maxMagnitude = dominantMagnitude.Max();
                 magnitudeRelativeFraction = dominantMagnitudeSum / (dominantPOICount * maxMagnitude);
-            }            
+            }
             var dominantPoiFraction = dominantPOICount / (double)nhSize;
             var fraction = magnitudeRelativeFraction * dominantPoiFraction;
             var normaliseScore = (int)(nhSize * fraction);
@@ -512,7 +575,7 @@
             var listCount = candidatesList.Count;
             for (int i = 0; i < listCount; i++)
             {
-                result[i / colsCount, i % colsCount] = candidatesList[i];              
+                result[i / colsCount, i % colsCount] = candidatesList[i];
             }
             return result;
         }
@@ -530,7 +593,7 @@
             {
                 frameCount = scoreVectorList[0].Count;
             }
-            
+
             for (int rowIndex = 0; rowIndex < frequencyBandCount; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < frameCount; colIndex++)
@@ -539,7 +602,7 @@
 
                 }
             }
-                return 0.0;
+            return 0.0;
         }
 
         /// <summary>
@@ -619,6 +682,24 @@
             return result;
         }
 
+        public static List<Candidates> ConvertDistanceToSimilarityScore(List<Candidates> candidates)
+        {
+            var result = new List<Candidates>();
+            var distanceList = new List<double>();
+            foreach (var c in candidates)
+            {
+                distanceList.Add(c.Score);
+            }
+            var max = distanceList.Max();
+            foreach (var c in candidates)
+            {
+                var similarityScore = 1 - c.Score / max;
+                var item = new Candidates(similarityScore, c.StartTime, c.EndTime - c.StartTime, c.MaxFrequency, c.SourceFilePath);
+                result.Add(item);
+            }
+            return result;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -627,15 +708,15 @@
         public static List<List<Tuple<double, double, double>>> SimilarityScoreListToVector(List<Tuple<double, double, double>> similarityScoreList)
         {
             var result = new List<List<Tuple<double, double, double>>>();
-            similarityScoreList.Sort();           
+            similarityScoreList.Sort();
             var scoreCount = similarityScoreList.Count;
             var tempResult = new List<Tuple<double, double, double>>();
             if (similarityScoreList != null)
             {
-            tempResult.Add(similarityScoreList[0]);
+                tempResult.Add(similarityScoreList[0]);
             }
             for (int index = 1; index < scoreCount; index++)
-            {                
+            {
                 if ((similarityScoreList[index].Item1 == similarityScoreList[index - 1].Item1))
                 {
                     tempResult.Add(similarityScoreList[index]);
@@ -655,10 +736,10 @@
                     }
                     else
                     {
-                    result.Add(tempResult);
-                    var tempResult1 = new List<Tuple<double, double, double>>();
-                    tempResult = tempResult1;
-                    tempResult.Add(similarityScoreList[index]);
+                        result.Add(tempResult);
+                        var tempResult1 = new List<Tuple<double, double, double>>();
+                        tempResult = tempResult1;
+                        tempResult.Add(similarityScoreList[index]);
                     }
                 }
             }

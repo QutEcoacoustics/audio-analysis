@@ -26,13 +26,18 @@ namespace Dong.Felt.ResultsOutput
             var startTime = TimeSpan.FromMilliseconds(candidate.StartTime - buffer.TotalMilliseconds);
             var endTime = TimeSpan.FromMilliseconds(candidate.EndTime + buffer.TotalMilliseconds);           
             var sampleRate = 22050;
+            if (startTime.TotalMilliseconds < 0)
+            {
+                startTime = TimeSpan.FromMilliseconds(candidate.StartTime);
+                endTime = TimeSpan.FromMilliseconds(candidate.EndTime + 2 * buffer.TotalMilliseconds); 
+            }
             var request = new AudioUtilityRequest
                     {
                         TargetSampleRate = sampleRate,
                         OffsetStart = startTime,
                         OffsetEnd = endTime
                     };
-
+            
             var result = AudioFilePreparer.PrepareFile(candidate.SourceFilePath.ToFileInfo(), fiOutputSegment, request, TempFileHelper.TempDir());       
         }
 

@@ -313,8 +313,8 @@ namespace Dong.Felt.Representations
                 {
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0.0)
                     {                      
-                        tempColIndex = colIndex - matrixRadius;                     
-                        tempRowIndex = rowIndex - matrixRadius;                       
+                        tempColIndex = colIndex - matrixRadius;                       
+                        tempRowIndex = matrixRadius - rowIndex;                     
                         sumXInNh += tempColIndex;
                         sumYInNh += tempRowIndex;
                         sumXYInNh += tempRowIndex * tempColIndex;
@@ -324,30 +324,34 @@ namespace Dong.Felt.Representations
                     }
                 }                              
             }
-            var slope = 100.0;
-            var yIntersect = 100.0;
+            var slope = 0.0;
+            var yIntersect = 0.0;
             var proportionParameter = 0.4;
-            var poiCountThreshold = (int)(poiMatrixLength * proportionParameter);
+            var poiCountThreshold = (int)(poiMatrixLength * proportionParameter);            
             if (pointsCount >= poiCountThreshold)
             {
                 var meanX = sumXInNh / pointsCount;
                 var meanY = sumYInNh / pointsCount;
+                averageMagnitude = averageMagnitude / pointsCount;
                 if ((sumSquareX - Math.Pow(sumXInNh, 2.0) / pointsCount) != 0)
                 {
-                    slope = (sumXYInNh - sumXInNh * sumYInNh / pointsCount) /
+                    var slopeTemp = (sumXYInNh - sumXInNh * sumYInNh / pointsCount) /
                             (sumSquareX - Math.Pow(sumXInNh, 2.0) / pointsCount);
+                    slope = Math.Atan(slopeTemp);
                     yIntersect = meanY - slope * meanX;
+
                 }
                 else   // if the slope is 90 degree. 
                 {
-                    slope = 4.0;
+                    slope = Math.PI / 2;
                     yIntersect = 0.0;
-                }         
+                }
             }
-            if (pointsCount != 0)
+            else
             {
-                averageMagnitude = averageMagnitude / pointsCount;
+                averageMagnitude = 0;
             }
+               
             this.magnitude = averageMagnitude;
             this.orientation = slope;
             this.FrameIndex = col * timeScale;
