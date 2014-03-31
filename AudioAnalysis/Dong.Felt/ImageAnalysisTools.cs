@@ -119,6 +119,87 @@ namespace Dong.Felt
 
         #region Public Methods
 
+        public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
+            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //if ((acousticEvent != null) && (acousticEvent.Count > 0))
+            //{
+            //    image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            //}
+            return image.GetImage();
+        } //DrawSonogram()
+
+        public static Image DrawRankingSonogram(BaseSonogram sonogram, List<double> scores, string s, string outputFilePath)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));           
+            //image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            
+            return image.GetImage();
+        } //DrawSonogram()
+
+        public static Image DrawImageLeftIndicator(Image image, string s)
+        {
+            var bmp = new Bitmap(image);
+            RectangleF rectf = new RectangleF(50, 8, 50, 50);
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(s, new Font("Tahoma", 10), Brushes.Black, rectf);
+            g.Flush();
+            return bmp;
+        }
+
+        public static Image DrawFileName(Image image, Candidates candidate)
+       {
+           double similarityScore = candidate.Score;
+           var audioFileName = candidate.SourceFilePath;
+            var bmp = new Bitmap(image);
+            var height = image.Height;
+            RectangleF rectf1 = new RectangleF(10, height - 18, 50, 50);
+            RectangleF rectf2 = new RectangleF(10, height - 10, 250, 50);
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 5), Brushes.Black, rectf1);
+            g.DrawString(audioFileName, new Font("Tahoma", 5), Brushes.Black, rectf2);
+            g.Flush();
+            return bmp;
+       }
+        public static Bitmap DrawFrequencyIndicator(Bitmap bitmap, List<double> frequencyBands, double herzScale, double nyquistFrequency, int frameOffset)
+        {
+            var i = 0;
+            foreach (var f in frequencyBands)
+            {
+                var y = (int)((nyquistFrequency - f) / herzScale);
+                int x = i * frameOffset;
+                bitmap.SetPixel(x, y, Color.Red);
+                i++;
+            }
+            return bitmap;
+        }
+
+        public static Image DrawNullSonogram(BaseSonogram sonogram)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            var intensityData = sonogram.Data;
+            var rowsCount = intensityData.GetLength(0);
+            var colsCount = intensityData.GetLength(1);
+            for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < colsCount; colIndex++)
+                {
+                    sonogram.Data[rowIndex, colIndex] = 0.0;
+                }
+            }
+            return image.GetImage();
+        } //DrawSonogram()
+        
         /// <summary>
         /// stacks the passed images one on top of the other. Assum that all images have the same width.
         /// </summary>

@@ -152,7 +152,16 @@
         /// <param name="results"></param>
         public static void NhRepresentationListToCSV(FileInfo file, List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
-            CsvTools.WriteResultsToCsv(file, nhList);
+            var filteredReselt = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+ 
+            foreach (var nh in nhList)
+            {
+                if (nh.magnitude != -1)
+                {
+                    filteredReselt.Add(nh);
+                }
+            }
+            CsvTools.WriteResultsToCsv(file, filteredReselt);
         }
 
         /// <summary>

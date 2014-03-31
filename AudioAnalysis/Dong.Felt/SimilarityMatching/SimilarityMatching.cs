@@ -371,21 +371,64 @@
         public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, double weight1, double weight2)
         {
             var result = 0.0;
+            //var queryMatrix = StatisticalAnalysis.RegionRepreListToMatrix(query);
+            //var candidateMatrix = StatisticalAnalysis.RegionRepreListToMatrix(candidate);
+            //for (int i = 0; i < query[0].NhCountInRow; i++ )
+            //{
+            //    for (int j = 0; j < query[0].NhCountInCol; j++)
+            //    {
+            //        if (queryMatrix[i,j].magnitude != 0)
+            //        {
+            //            var queryScore = Math.Abs(queryMatrix[i,j].magnitude);
+            //            var queryOrientation = queryMatrix[i,j].orientation;
+            //            var candidateScore = Math.Abs(candidateMatrix[i,j].magnitude);
+            //            var candidateOrientation = candidateMatrix[i,j].orientation;
+            //            var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+            //            var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+            //            nhSum1 += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
+            //        }
+            //    }
+            //}
             if (query != null && candidate != null)
             {
                 var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
-                var nhSum = 0.0;
+                //var nhSum1 = 0.0;
+                var nhSum2 = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
-                    var queryScore = Math.Abs(query[index].magnitude);
-                    var queryOrientation = query[index].orientation;
-                    var candidateScore = Math.Abs(candidate[index].magnitude);
-                    var candidateOrientation = candidate[index].orientation;
-                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-                    var magnitudeDifference = Math.Abs(queryScore - candidateScore);
-                    nhSum += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
+                    //if (query[index].magnitude != 0)
+                    //{
+                        
+                    //    var queryScore = Math.Abs(query[index].magnitude);
+                    //    var queryOrientation = query[index].orientation;                       
+                    //    var candidateScore = Math.Abs(candidate[index].magnitude);
+                    //    var candidateOrientation = candidate[index].orientation;
+                    //    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                    //    var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+                    //    if (candidate[index].magnitude == 0)
+                    //    {
+                    //        var improvedW1 = 0.5;
+                    //        var improvedW2 = 0.5;
+                    //        nhSum1 += improvedW1 * Math.Pow(magnitudeDifference, 2) + improvedW2 * Math.Pow(orientationDifference, 2);
+                    //    }
+                    //    else
+                    //    {
+                    //        nhSum1 += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
+                    //    }
+                    //}
+                    //else
+                    //{
+                        var queryScore = Math.Abs(query[index].magnitude);
+                        var queryOrientation = query[index].orientation;
+                        var candidateScore = Math.Abs(candidate[index].magnitude);
+                        var candidateOrientation = candidate[index].orientation;
+                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                        var magnitudeDifference = Math.Abs(queryScore - candidateScore);
+                        nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
+                    //}
                 }
-                result = Math.Sqrt(nhSum);
+                //result = Math.Sqrt(0.1 * nhSum1 + 0.9 * nhSum2);
+                result = nhSum2;
             }
             return result;
         }

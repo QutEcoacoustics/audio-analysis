@@ -108,12 +108,14 @@
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             var nhFrequencyLength = neighbourhoodLength * frequencyScale;
             var nhFrameLength = neighbourhoodLength * timeScale;
-            // get a greater value than the parameter for enlarging the later used NH boundary.
-            var nhCountInRow = (int)Math.Ceiling(frequencyRange / nhFrequencyLength);
-            var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength);
+            // get a greater value than the parameter for enlarging the later used NH boundary- enlarge.
+            var enlargedOffset = 0;
+            var nhCountInRow = (int)Math.Floor(frequencyRange / nhFrequencyLength) + enlargedOffset;
+            var nhCountInCol = (int)Math.Floor(this.duration / nhFrameLength) + enlargedOffset;
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
-            this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);         
-            this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength);
+            /// Try to enlarge the original region, the startColIndex and startRowIndex should plus or minus one. 
+            this.nhStartColIndex = (int)Math.Ceiling(this.startTime / nhFrameLength) - 1;
+            this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Ceiling(this.maxFrequency / nhFrequencyLength) - 1;
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
             if (nhendTime < this.endTime)
             {
