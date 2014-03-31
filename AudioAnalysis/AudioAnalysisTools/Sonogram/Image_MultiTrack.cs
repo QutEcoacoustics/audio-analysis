@@ -153,6 +153,15 @@ namespace AudioAnalysisTools
             //set up a new image having the correct dimensions
             var image2return = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format24bppRgb);
 
+            //need to do this before get Graphics because cannot PutPixels into Graphics object.
+            if (this.SuperimposedRedTransparency != null)
+            {
+                this.sonogramImage = this.OverlayRedTransparency((Bitmap)this.sonogramImage);
+            }
+            if (this.SuperimposedMatrix != null) 
+                this.sonogramImage = this.OverlayMatrix((Bitmap)this.sonogramImage);
+
+
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
             {
@@ -187,9 +196,6 @@ namespace AudioAnalysisTools
 
                 if (this.FreqHits != null) this.DrawFreqHits(g);
 
-                //if (this.SuperimposedMatrix != null) OverlayMatrix(g);
-                if (this.SuperimposedMatrix != null) this.OverlayMatrix(g, (Bitmap)this.sonogramImage);
-                if (this.SuperimposedRedTransparency != null) this.OverlayRedTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedRainbowTransparency != null) this.OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
                 if (this.SuperimposedDiscreteColorMatrix != null) this.OverlayDiscreteColorMatrix(g, (Bitmap)this.sonogramImage);
             }
@@ -203,6 +209,7 @@ namespace AudioAnalysisTools
                 track.DrawTrack(image2return);
                 offset += track.Height;
             }
+
             return image2return;
         }
 
@@ -263,15 +270,15 @@ namespace AudioAnalysisTools
         /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
         /// <param name="g"></param>
-        void OverlayMatrix(Graphics g, Bitmap bmp)
+        public Bitmap OverlayMatrix(Bitmap bmp)
         {
+            Bitmap newBmp = (Bitmap)bmp.Clone();
             //int paletteSize = 256;
             var pens = ImageTools.GetRedGradientPalette(); //size = 256
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
             int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
-            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
             {
@@ -283,22 +290,24 @@ namespace AudioAnalysisTools
                     //if (penID >= paletteSize) penID = paletteSize - 1;
                     //g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
                     //g.DrawLine(new Pen(Color.Red), r, imageHt - c, r + 1, imageHt - c);
-                    bmp.SetPixel(r, imageHt - c, Color.Red);
+                    newBmp.SetPixel(r, imageHt - c, Color.Red);
                 }
             }
+            return newBmp;
         } //OverlayMatrix()
+
 
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
         /// </summary>
         /// <param name="g"></param>
-        void OverlayRedTransparency(Graphics g, Bitmap bmp)
+        public Bitmap OverlayRedTransparency(Bitmap bmp)
         {
+            Bitmap newBmp = (Bitmap)bmp.Clone();
             int rows = this.SuperimposedRedTransparency.GetLength(0);
             int cols = this.SuperimposedRedTransparency.GetLength(1);
             int imageHt = this.sonogramImage.Height - 1; //subtract 1 because indices start at zero
-            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedRedTransparency), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
             {
@@ -306,10 +315,11 @@ namespace AudioAnalysisTools
                 {
                     if (this.SuperimposedRedTransparency[r, c] == 0.0) continue;
                     Color pixel = bmp.GetPixel(r, imageHt - c);
-                    if(pixel.R == 255) continue; //white
-                    g.DrawLine(new Pen(Color.FromArgb(255, pixel.G, pixel.B)), r, imageHt - c, r + 1, imageHt - c);
+                    if (pixel.R == 255) continue; //white
+                    newBmp.SetPixel(r, imageHt - c, Color.FromArgb(255, pixel.G, pixel.B));
                 }
             }
+            return newBmp;
         } //OverlayRedTransparency()
 
         /// <summary>
