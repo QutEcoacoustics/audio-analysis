@@ -14,17 +14,21 @@ namespace AudioAnalysisTools
     /// </summary>
     public struct SPTrackInfo
     {
+        public double[,] peaks;
         public List<SpectralTrack> listOfSPTracks;
         public TimeSpan totalTrackDuration;
+        public int trackCount;
         public int percentDuration; // percent of recording length
         public double[] spSpectrum;
 
-        public SPTrackInfo(List<SpectralTrack> _tracks, TimeSpan _totalTrackDuration, int _percentDuration, double[] _spSpectrum)
+        public SPTrackInfo(double[,] _peaks, List<SpectralTrack> _tracks, TimeSpan _totalTrackDuration, int _percentDuration, double[] _spSpectrum)
         {
+            peaks = _peaks;
             listOfSPTracks = _tracks;
             totalTrackDuration = _totalTrackDuration;
             percentDuration = _percentDuration;
             spSpectrum = _spSpectrum;
+            trackCount = 0; // set value elsewhere
         }
 
     } // SPTrackInfo()
@@ -51,7 +55,8 @@ namespace AudioAnalysisTools
             var rowCount = spectrogram.GetLength(0);
             var colCount = spectrogram.GetLength(1);
 
-            //int framesPerHalfSecond = (int)(framesPerSecond / 2);
+            int framesPerHalfSecond = (int)(framesPerSecond / 2);
+            int framesPerQuaterSecond = (int)(framesPerSecond / 4);
             //int numberOfHalfSeconds = (int)(rowCount / framesPerHalfSecond);
             int numberOfSeconds = (int)(rowCount / framesPerSecond);
             int numberOfSegments = numberOfSeconds;
@@ -62,7 +67,7 @@ namespace AudioAnalysisTools
             double[] spectrum = new double[colCount];
             double[] fBin;
             double peakThreshold = threshold * 2;
-            //double bonusThreshold = threshold * 4;
+            int totalTrackCount = 0;
             for (int col = 0; col < colCount; col++)
             {
                 fBin = MatrixTools.GetColumn(peaks, col);
@@ -72,21 +77,29 @@ namespace AudioAnalysisTools
                 for (int hs = 0; hs < numberOfSegments; hs++)
                 {
                     double[] segment = DataTools.Subarray(fBin, start, framesPerSegment);
-                    double sum = segment.Sum();
-                    if (sum > threshold) count++;
-                    if (sum > peakThreshold) count++; //effectively give extra weight to segments with greater amplitude
+                    int peakCount = segment.Count(value => (value > 0.0));
+                    if (peakCount > framesPerQuaterSecond) count++;
+                    if (peakCount > framesPerHalfSecond) 
+                        count++; // give extra weight to segments with longer tracks
+                    if (peakCount >= framesPerSegment-3)
+                        count++; // give extra weight to segments with longer tracks
+                    //double sum = segment.Sum();
+                    //if (sum > threshold) count++;
+                    //if (sum > peakThreshold) count++; //effectively give extra weight to segments with greater amplitude
                     start += framesPerSegment;
                 }
+                totalTrackCount += count; //accumulate counts over all frequency bins
                 spectrum[col] = count / (double)numberOfSegments;
                 //spectrum[col] = fBin.Sum() / numberOfSegments;
                 if (spectrum[col] > 1.0) spectrum[col] = 1.0; // normalise
             }
 
             List<SpectralTrack> tracks = null;
-            TimeSpan totalTrackDuration = TimeSpan.Zero; 
-            int percentDuration = 0;
+            TimeSpan totalTrackDuration = TimeSpan.FromSeconds((double)totalTrackCount);
+            int percentDuration = (int)(totalTrackDuration.TotalSeconds * 100 / numberOfSeconds);
 
-            var info = new SPTrackInfo(tracks, totalTrackDuration, percentDuration, spectrum);
+            var info = new SPTrackInfo(peaks, tracks, totalTrackDuration, percentDuration, spectrum);
+            info.trackCount = totalTrackCount;
             return info;
         }
 
@@ -124,18 +137,27 @@ namespace AudioAnalysisTools
             var colCount = dBSpectrogram.GetLength(1);
 
             double[,] localpeaks = new double[rowCount, colCount];
-
+            int columnBuffer = 1;
             for (int row = 0; row < rowCount; row++)
             {
-                for (int col = 3; col < (colCount - 3); col++)
+                for (int col = columnBuffer; col < (colCount - columnBuffer); col++)
                 {
-                    if (  (dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.5
-                        & (dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.5
-                        & (dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold
-                        & (dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold
-                        & (dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold
-                        & (dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold
+                    if (dBSpectrogram[row, col] <= dBThreshold) continue; // skip small values
+
+                    if (   (dBSpectrogram[row, col] > dBSpectrogram[row, col + 1])
+                        && (dBSpectrogram[row, col] > dBSpectrogram[row, col - 1])
+                        //&& (dBSpectrogram[row, col] > dBSpectrogram[row, col + 2])
+                        //&& (dBSpectrogram[row, col] > dBSpectrogram[row, col - 2])
+                        // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3])
+                        // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3])
                         )
+                       // if (((dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.0)
+                       // && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.0)
+                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold)
+                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold)
+                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold)
+                       //// && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold)
+                       // )
                     {
                         localpeaks[row, col] = dBSpectrogram[row, col];
                     }

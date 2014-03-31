@@ -274,7 +274,7 @@ namespace AnalysisPrograms
         public static void ExecuteAnalysis(Arguments args)
         {
             // Check arguments and that paths are valid
-            AnalysisSettings analysisSettings= GetAndCheckAllArguments(args);
+            AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
             analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
             analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
 
@@ -371,13 +371,6 @@ namespace AnalysisPrograms
 
             // Accumulate spectra in Dictionary
             analysisResults.Spectra = indicesStore.Spectra;
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_BackgroundNoise, indices.spectrum_BGN);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_AcousticComplexityIndex, indices.spectrum_ACI);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Average, indices.spectrum_AVG);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Variance, indices.spectrum_VAR);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_BinCover, indices.spectrum_CVR);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_TemporalEntropy, indices.spectrum_ENT);
-            //analysisResults.Spectra.Add(SpectrogramConstants.KEY_Cluster, indices.spectrum_CLS);
 
             if ((indicesStore.Sg != null) && (analysisSettings.ImageFile != null))
             {
@@ -413,7 +406,7 @@ namespace AnalysisPrograms
                     image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
             if (tracks != null) image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+            if (hits != null) image.OverlayRedMatrix(hits, 1.0);
             return image.GetImage();
         } //DrawSonogram()
 

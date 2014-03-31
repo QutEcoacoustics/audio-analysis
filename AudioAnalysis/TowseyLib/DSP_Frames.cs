@@ -24,13 +24,19 @@ namespace TowseyLib
             public int NyquistFreq { get; set; } 
             public double FreqBinWidth { get; set; }
             public int NyquistBin { get; set; }
+            public bool[] EnvelopeClipping { get; set; }
+            public int ClippingPercent { get; set; }
 
-            public EnvelopeAndFFT(double[] average, double[] envelope, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, int nyquistBin)
+
+            public EnvelopeAndFFT(double[] average, double[] envelope, bool[] envelopeClipping, int clipping, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
+                                  int nyquistBin)
             {
+                this.Average = average;
                 this.Envelope = envelope;
+                this.EnvelopeClipping = envelopeClipping;
+                this.ClippingPercent = clipping;
                 this.amplitudeSpectrogram = amplSpectrogram;
                 this.WindowPower = windowPower;
-                this.Average = average;
                 this.NyquistFreq = nyquistFreq; 
                 this.FreqBinWidth = binWidth;
                 this.NyquistBin = nyquistBin;
@@ -138,6 +144,7 @@ namespace TowseyLib
 
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
+            bool[] envelopeClipping = new bool[frameCount];
 
             // set up the FFT parameters
             TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(FFT.Key_HammingWindow);
@@ -166,6 +173,7 @@ namespace TowseyLib
                 frameDC /= windowSize;
                 average[i] = total / windowSize;
                 envelope[i] = maxValue;
+                if(maxValue > 0.9999) envelopeClipping[i] = true;
 
                 // remove DC value from signal values
                 double[] signalMinusAv = new double[windowSize];
@@ -183,6 +191,14 @@ namespace TowseyLib
                 
             } // end frames
 
+            // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
+            int clipCount = 0;
+            for (int i = 1; i < frameCount; i++)
+            {
+                if(envelopeClipping[i-1] && envelopeClipping[i]) clipCount ++;            
+            }
+            int clipPercent = clipCount * 100 / frameCount;
+
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
@@ -191,7 +207,7 @@ namespace TowseyLib
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
 
-            return new EnvelopeAndFFT(average, envelope, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT(average, envelope, envelopeClipping, clipPercent, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
 
