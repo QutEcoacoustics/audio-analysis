@@ -124,12 +124,12 @@ namespace Dong.Felt
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
+            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 30));
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            //if ((acousticEvent != null) && (acousticEvent.Count > 0))
-            //{
-            //    image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            //}
+            if ((acousticEvent != null) && (acousticEvent.Count > 0))
+            {
+                image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
             return image.GetImage();
         } //DrawSonogram()
 
@@ -137,37 +137,60 @@ namespace Dong.Felt
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));           
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             //image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            
+
             return image.GetImage();
         } //DrawSonogram()
 
         public static Image DrawImageLeftIndicator(Image image, string s)
         {
             var bmp = new Bitmap(image);
-            RectangleF rectf = new RectangleF(50, 8, 50, 50);
+            RectangleF rectf = new RectangleF(50, 8, 100, 100);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(s, new Font("Tahoma", 10), Brushes.Black, rectf);
+            g.DrawString(s, new Font("Tahoma", 20, FontStyle.Bold), Brushes.Black, rectf);
+            g.Flush();
+            return bmp;
+        }
+
+        public static Image DrawQueryBoundary(Image image)
+        {
+            var bmp = new Bitmap(image);
+            var rect = new Rectangle(0,0,5,5);
+            Graphics g = Graphics.FromImage(bmp);
+            var pen = new Pen(Color.Cyan);
+            g.DrawRectangle(pen, rect);
+            g.Flush();
+            return bmp; 
+        }
+
+        public static Image DrawVerticalLine(Image image)
+        {
+            var bmp = new Bitmap(image);
+            Graphics g = Graphics.FromImage(bmp);
+            var brush = new SolidBrush(Color.Black);           
+            var rect = new Rectangle(0, 0, 3, image.Height);
+            g.FillRectangle(brush, rect);
             g.Flush();
             return bmp;
         }
 
         public static Image DrawFileName(Image image, Candidates candidate)
-       {
-           double similarityScore = candidate.Score;
-           var audioFileName = candidate.SourceFilePath;
+        {
+            double similarityScore = candidate.Score;
+            var audioFilePath = new FileInfo(candidate.SourceFilePath);
+            var audioFileName = audioFilePath.Name;
             var bmp = new Bitmap(image);
             var height = image.Height;
-            RectangleF rectf1 = new RectangleF(10, height - 18, 50, 50);
-            RectangleF rectf2 = new RectangleF(10, height - 10, 250, 50);
+            RectangleF rectf1 = new RectangleF(10, height - 23, 70, 30);
+            RectangleF rectf2 = new RectangleF(10, height - 12, 260, 50);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 5), Brushes.Black, rectf1);
-            g.DrawString(audioFileName, new Font("Tahoma", 5), Brushes.Black, rectf2);
+            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7,FontStyle.Bold), Brushes.Black, rectf1);
+            g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf2);
             g.Flush();
             return bmp;
-       }
+        }
         public static Bitmap DrawFrequencyIndicator(Bitmap bitmap, List<double> frequencyBands, double herzScale, double nyquistFrequency, int frameOffset)
         {
             var i = 0;
@@ -199,7 +222,7 @@ namespace Dong.Felt
             }
             return image.GetImage();
         } //DrawSonogram()
-        
+
         /// <summary>
         /// stacks the passed images one on top of the other. Assum that all images have the same width.
         /// </summary>
@@ -780,34 +803,34 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
                                       };
-           
+
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         { 0.4,-0.1,-0.1,-0.1,-0.1}
                                       };
-            
+
             double[,] ridgeDir2Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
                                       };
-            
+
             double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
-           
+
             double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-            
+
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
@@ -816,7 +839,7 @@ namespace Dong.Felt
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
             /// four directions
-            direction = indexMax * Math.PI / (double)4;          
+            direction = indexMax * Math.PI / (double)4;
         }
 
         /// <summary>
@@ -845,7 +868,7 @@ namespace Dong.Felt
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1}
-                                      };          
+                                      };
             double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
@@ -875,7 +898,7 @@ namespace Dong.Felt
 
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
-            magnitude = diffMax / 2;            
+            magnitude = diffMax / 2;
             direction = indexMax * Math.PI / 4.0;
             // For the diagonal direction at mask[1] and mask[3], it needs to do another condion check. 
             double[,] dir1FurtherMask1 =  { {  0,  0, 0.1, 0.1, 0.1},
@@ -1207,7 +1230,7 @@ namespace Dong.Felt
             } // for r loop
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
-        
+
         /// <summary>
         /// This function aims to remove isolated points of interest for filtering out the poi. 
         /// The principle is that there are less than the threshold of the count of poi detected in a neighbourhood (it could be 7 * 7, 9 * 9, 11 * 11, 13 * 13). 
@@ -1256,9 +1279,9 @@ namespace Dong.Felt
                             }
                         }
                         c += sizeOfNeighbourhood - 1;
-                    }                    
-                } 
-                r += sizeOfNeighbourhood - 1;              
+                    }
+                }
+                r += sizeOfNeighbourhood - 1;
             }
             return PointOfInterest.TransferPOIMatrix2List(M);
         }
@@ -1272,7 +1295,7 @@ namespace Dong.Felt
         /// <param name="cols"></param>
         /// <returns></returns>
         public static double[,] ShowPOIOnSpectrogram(SpectralSonogram spectrogram, List<PointOfInterest> poiList, int rows, int cols)
-        {          
+        {
             foreach (var poi in poiList)
             {
                 var xCoordinate = poi.Point.Y;

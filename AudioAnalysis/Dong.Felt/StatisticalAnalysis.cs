@@ -9,6 +9,7 @@
     using System.IO;
     using System.Reflection;
     using Representations;
+    using System.Globalization;
 
     class StatisticalAnalysis
     {
@@ -54,7 +55,7 @@
             {
                 // Typically, magnitude should be greater than 0 and less than 20.
                 // otherwise, it is assigned to a default value, 100
-                if (nh.magnitude != 0)
+                if (nh.magnitude != 100)
                 {
                     magnitudeList.Add(nh.magnitude);
                     orientationList.Add(nh.orientation);
@@ -66,7 +67,7 @@
             var maxOrientation = orientationList.Max();
             foreach (var nh in nhList)
             {
-                if (nh.magnitude != 0)
+                if (nh.magnitude != 100)
                 {
                     nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
                     nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);                    
@@ -694,10 +695,59 @@
             foreach (var c in candidates)
             {
                 var similarityScore = 1 - c.Score / max;
-                var item = new Candidates(similarityScore, c.StartTime, c.EndTime - c.StartTime, c.MaxFrequency, c.SourceFilePath);
+                var score = Convert.ToDouble(similarityScore.ToString("F03", CultureInfo.InvariantCulture));
+                var item = new Candidates(score, c.StartTime, c.EndTime - c.StartTime, c.MaxFrequency, c.MinFrequency, c.SourceFilePath);
                 result.Add(item);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Autiomatic gray coding is an cyclic way to represent a closed sequence. And the radians is a cyclic case.  
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns></returns>
+        public static List<double> ConvertRadiansToGrayCoding(List<double> radians, int bitCount)
+        {
+            var result = new List<double>();
+            var stateCount = Math.Pow(2, bitCount);
+            // by default or ideally, max = pi/2, min = -pi/2.
+            //var valueRange = radians.Max() - radians.Min();
+            var valueRange = Math.PI;
+            //var mini = -Math.PI / 2;
+            var increasement = valueRange / stateCount;
+            // the radians will be round to stateCount values.
+            for (int i = 0; i < radians.Count; i++)
+            {
+                var incresementCount = (int)(radians[i] / increasement);
+                if (radians[i] >= incresementCount * increasement && radians[i] < (incresementCount + 1) * increasement)
+                {
+                    radians[i] = increasement;
+                }
+            }
+            var binary = new Byte[bitCount];
+            var prefixForOldset = 0;
+            var prefixForNewset = 1;
+            var initialBinary = new Byte[2] { 0, 1 };           
+            for (int j = 0; j < bitCount; j++)
+            {
+                var possibilityCount = Math.Pow(2, j);
+                if ((j + 1) == 1)
+                {
+                    binary[0] = initialBinary[0];
+                    binary[1] = initialBinary[0];
+                }
+                else
+                {                   
+                    binary[0] = initialBinary[0] >>= bitCount - 1;
+                    binary[1] = initialBinary[1] >>= bitCount - 1;
+                    for (int k = 0; k < stateCount; k++)
+                    {
+
+                    }
+                }
+            }
+                return result; 
         }
 
         /// <summary>

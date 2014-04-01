@@ -60,11 +60,19 @@
                 var file = new FileInfo(csvfile);
                 var candidates = CSVResults.CsvToCandidatesList(file);
                 string segmentOutputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\SegmentOutput";
+                var queryCsvFile = new FileInfo(querycsvFilePath);
+                var queryInfo = CSVResults.CsvToQuery(queryCsvFile);
+                var query = new Candidates(1, queryInfo.startTime * 1000,
+                    queryInfo.duration * 1000, 
+                    queryInfo.maxFrequency,
+                    queryInfo.minFrequency,
+                    queryaudioFilePath);
+                candidates.Insert(0, query);
                 if (candidates != null)
                 {
                     for (int i = 0; i < candidates.Count(); i++)
                     {
-                        var outPutFileName = i + 1 + ".wav";
+                        var outPutFileName = i + ".wav";
                         var outPutFilePath = Path.Combine(segmentOutputDirectory, outPutFileName);
                         OutputResults.AudioSegmentBasedCandidates(candidates[i], outPutFilePath.ToFileInfo());
                     }
@@ -76,8 +84,7 @@
                     int temp = i + 1;
                     listString.Add(temp.ToString());
                 }
-                var query = new Candidates();
-                candidates.Insert(0, query);
+                
                 var imageArray = DrawingSpectrogramsFromAudios(segmentOutputDirectory, config, listString, candidates).ToArray();
                 var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
                 var imageOutputName = "Combined image.png";
@@ -456,12 +463,12 @@
                 CSVResults.RegionRepresentationListToCSV(outputFile, candidatesRegionList);
 
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                var weight1 = 1;
-                var weight2 = 1;
+                var weight1 = 0.1;
+                var weight2 = 0.9;
                 /// To calculate the distance
                 var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
-                var normalizedCanList = StatisticalAnalysis.NormalizeCandidateDistance(candidateDistanceList);
-                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(normalizedCanList);
+                //var normalizedCanList = StatisticalAnalysis.NormalizeCandidateDistance(candidateDistanceList);
+                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
                 var candidateLocationFile = new FileInfo(candidateLocationOutputFile);
                 /// To save all matched acoustic events
                 //var acousticEventList = new List<AcousticEvent>();
@@ -495,16 +502,33 @@
                 var audioFilesCount = audioFiles.Count();
                 for (int i = 0; i < audioFilesCount; i++)
                 {
+                    /// because the query always come from first place.
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     var scores = new List<double>();
-                    scores.Add(1.0);
+                    scores.Add(0.0);
                     var acousticEventlist = new List<AcousticEvent>();
-                    var poiList = new List<PointOfInterest>();
-                    double eventThreshold = 0.5; // dummy variable - not used                               
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(image, s[i]);                   
-                    var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
-                    result.Add(finalImage);        
+                    double eventThreshold = 0.5; // dummy variable - not used    
+                    if (i == 0)
+                    {
+                        var acousticEventlistForQuery = new List<AcousticEvent>();
+                        var queryAcousticEvent = new AcousticEvent(1, (candidates[i].EndTime - candidates[i].StartTime)/1000,
+                            candidates[i].MinFrequency,candidates[i].MaxFrequency);
+                        queryAcousticEvent.BorderColour = Color.Crimson;
+                        acousticEventlistForQuery.Add(queryAcousticEvent);
+                        Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery, eventThreshold, null);                  
+                        var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                        var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                        var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                        result.Add(finalImage);
+                    }
+                    else
+                    {
+                        Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                        var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                        var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                        var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                        result.Add(finalImage);        
+                    }                    
                 }
             }
             return result;

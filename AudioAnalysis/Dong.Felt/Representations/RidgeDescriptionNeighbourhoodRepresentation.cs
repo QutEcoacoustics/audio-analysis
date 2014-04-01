@@ -324,8 +324,8 @@ namespace Dong.Felt.Representations
                     }
                 }                              
             }
-            var slope = 0.0;
-            var yIntersect = 0.0;
+            var slope = 100.0;
+            var yIntersect = 100.0;
             var proportionParameter = 0.4;
             var poiCountThreshold = (int)(poiMatrixLength * proportionParameter);            
             if (pointsCount >= poiCountThreshold)
@@ -349,7 +349,7 @@ namespace Dong.Felt.Representations
             }
             else
             {
-                averageMagnitude = 0;
+                averageMagnitude = 100;
             }
                
             this.magnitude = averageMagnitude;
