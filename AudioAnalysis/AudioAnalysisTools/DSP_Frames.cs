@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 //using MathNet.Numerics;
 using MathNet.Numerics.Transformations;
+using TowseyLib;
 
 
-namespace TowseyLib
+namespace AudioAnalysisTools
 {
     /// <summary>
     /// digital signal processing methods
@@ -123,6 +124,13 @@ namespace TowseyLib
             return frames;
         }
 
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioAnalysisTools.AudioRecording recording, int windowSize, double overlap)
+        {
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            return ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, windowSize, overlap);
+        }
+
+
         /// <summary>
         /// returns a Tuple containing four items:
         /// 1) the average of absolute amplitudes for each frame
@@ -135,7 +143,7 @@ namespace TowseyLib
         /// <param name="windowSize"></param>
         /// <param name="overlap"></param>
         /// <returns></returns>
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int windowSize, double overlap)
         {
             int frameOffset = (int)(windowSize * (1 - overlap));
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
@@ -151,6 +159,7 @@ namespace TowseyLib
             var fft = new TowseyLib.FFT(windowSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
             double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
             double[] f1; // the fft
+            double clippingMaximum = 1.0 - epsilon; // used to detect clipping
 
             // cycle through the frames
             for (int i = 0; i < frameCount; i++)
@@ -173,7 +182,7 @@ namespace TowseyLib
                 frameDC /= windowSize;
                 average[i] = total / windowSize;
                 envelope[i] = maxValue;
-                if(maxValue > 0.9999) envelopeClipping[i] = true;
+                if (maxValue > clippingMaximum) envelopeClipping[i] = true;
 
                 // remove DC value from signal values
                 double[] signalMinusAv = new double[windowSize];

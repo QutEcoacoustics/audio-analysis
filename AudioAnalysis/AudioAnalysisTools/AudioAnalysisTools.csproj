@@ -173,6 +173,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
+    <Compile Include="DSP_Frames.cs" />
     <Compile Include="LDSpectrogramTStatistic.cs" />
     <Compile Include="LDSpectrogramRGB.cs" />
     <Compile Include="ConfigurationClasses.cs" />

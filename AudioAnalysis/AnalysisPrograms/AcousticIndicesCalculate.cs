@@ -104,7 +104,8 @@ namespace AnalysisPrograms
 
 
             // EXTRACT ENVELOPE and SPECTROGRAM
-            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, windowOverlap);
+            //var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             //double[] avAbsolute = dspOutput.Average; //average absolute value over the minute recording
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################

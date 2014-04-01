@@ -332,7 +332,8 @@ namespace AnalysisPrograms
 
 
             //i: EXTRACT ENVELOPE and FFTs
-            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             double[]  envelope    = signalextract.Envelope;
             double[,] spectrogram = signalextract.amplitudeSpectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);
