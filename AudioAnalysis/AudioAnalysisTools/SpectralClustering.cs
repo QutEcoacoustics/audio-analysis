@@ -415,9 +415,9 @@ namespace AudioAnalysisTools
 
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, _windowOverlap);
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, frameSize, _windowOverlap);
             double[,] spectrogramData = results2.amplitudeSpectrogram;
-            double epsilon = Math.Pow(0.5, 16 - 1);
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 
             //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);

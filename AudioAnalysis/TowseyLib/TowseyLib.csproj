@@ -243,7 +243,6 @@
     <Compile Include="DSP_IIRFilter.cs" />
     <Compile Include="DSP_Filters.cs" />
     <Compile Include="Distribution.cs" />
-    <Compile Include="DSP_Frames.cs" />
     <Compile Include="FFT.cs" />
     <Compile Include="Gratings.cs" />
     <Compile Include="Histogram.cs" />
