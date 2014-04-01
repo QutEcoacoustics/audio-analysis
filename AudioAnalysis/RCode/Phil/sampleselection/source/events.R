@@ -114,7 +114,7 @@ MergeAnnotationsAsEvents <- function () {
 GetOuterTargetEvents <- function () {
     # gets a subset of the target events according to the 
     # config targets, but ignoring the percent of target param
-    all.events <- ReadMasterOutput('events')
+    all.events <- ReadMasterOutput('events', false.if.missing = FALSE)
     selected.events <- TargetSubset(all.events)
     return(selected.events)   
 }

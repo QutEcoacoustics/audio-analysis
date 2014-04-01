@@ -48,7 +48,7 @@ WriteOutput <- function (x, fn, new = FALSE, ext = 'csv') {
     WriteOutputCsv(x, path)
 }
 
-ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) { 
+ReadOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) { 
     # reads output files in a consistent way, 
     # with reporting
     #
@@ -60,7 +60,7 @@ ReadOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
     #     if missing
     Report(4, 'Reading:', fn)
     path <- OutputPath(fn, ext = ext)
-    if (false.on.missing && !file.exists(path)) {
+    if (false.if.missing && !file.exists(path)) {
         return(FALSE)
     }
     data <- ReadOutputCsv(path)
@@ -93,11 +93,11 @@ WriteMasterOutput <- function (x, fn, ext = 'csv') {
     WriteOutputCsv(x, MasterOutputPath(fn, ext))
 }
 
-ReadMasterOutput <- function (fn, ext = 'csv', false.on.missing = FALSE) {
+ReadMasterOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) {
     p <- MasterOutputPath(fn, ext);
     if (file.exists(p)) {
         return(ReadOutputCsv(p))
-    } else if (false.on.missing) {
+    } else if (false.if.missing) {
         return(FALSE)
     } else {
         stop(paste("file doesn't exist: ", p))
@@ -260,7 +260,7 @@ GetExistingMasterOutput <- function (output.name, not.if.changed) {
         }
         return(FALSE)
     } else {
-        return(ReadMasterOutput(output.name))
+        return(ReadMasterOutput(output.name, false.if.missing = TRUE))
     }  
 }
 
@@ -320,6 +320,25 @@ GetUserChoice <- function (choices, choosing.what = "one of the following") {
     choice <- GetValidatedUserChoice(msg, length(choices))
     
     return(choice)
+}
+
+GetMultiUserchoice <- function (options, choosing.what = 'one of the following') {
+    # allows the user to select 1 or more of the choices, returning a vector 
+    # of the choice numbers
+
+    options <- c(options, 'exit')
+    last.choice <- -1;
+    chosen <- c()
+    while(last.choice != length(options)) {
+        last.choice <- GetUserChoice(options, 'ranking method')
+        if (last.choice != length(options)) {
+            chosen <- c(chosen, last.choice)   
+        } else {
+            break()
+        }
+    }
+    
+    return(unique(chosen))
 }
 
 GetValidatedUserChoice <- function (msg, num.choices, num.attempts = 0) { 

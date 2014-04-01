@@ -31,9 +31,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     # 3. idenify the sample number for the start and end
     
     cache.id <- paste(site, start.date, start.sec, duration, 'spectro', sep = '.')
-    
     spec <- ReadCache(cache.id)
-    
     
     # only cache the spectrogram without the rectangles
     # because the point is to be able to change the rectanles without
@@ -66,6 +64,21 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
      return(spec)
     
 }
+
+Sp.CreateFromFile <- function (path, draw = FALSE) {
+    cache.id <- gsub(.Platform$file.sep, "_", path)
+    spectro <- ReadCache(cache.id)
+    if (class(spectro) != 'spectrogram') {
+        spectro <- Sp.Create(path, draw = draw)
+        WriteCache(spectro, cache.id) 
+    } else {
+        Report(5, 'using spectrgram retrieved from cache')
+    }
+    return(spectro)
+}
+
+
+
 
 Sp.Create <- function(wav, frame.width = 512, draw = FALSE, 
                       smooth = TRUE, db = TRUE, filename = FALSE) {

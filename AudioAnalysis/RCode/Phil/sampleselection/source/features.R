@@ -65,28 +65,25 @@ DoFeatureExtraction <- function (limit = FALSE) {
                 num.events.before.previous.file <- ev - 1
                 ptm <- proc.time()
             }
-            
             Report(3, 'processing features for events in', wav.path)
             Report(3, 'starting with event', ev)
-            
-            cur.spectro <- Sp.Create(wav.path, draw=FALSE)
+            cur.spectro <- Sp.CreateFromFile(wav.path)
             cur.wav.path <- wav.path
-            
             # calculate the mean and standard deviation for each frequency band,
             # to pass to the event filter scorer
-            mean.amp <- apply(cur.spectro, 1, mean)
-            sd.amp <- apply(cur.spectro, 1, sd)
-            
-            
-          
+            mean.amp <- apply(cur.spectro$vals, 1, mean)
+            sd.amp <- apply(cur.spectro$vals, 1, sd)
         }
-        features <- as.data.frame(GetFeatures(events[ev,], cur.spectro));
+        rating.features <- as.data.frame(CalculateRatingFeatures(events[ev,], cur.spectro, mean.amp, sd.amp));
+        features <- as.data.frame(CalculateFeatures(events[ev,], cur.spectro));
         features$event.id <- events$event.id[ev]
-        
+        rating.features$event.id <- events$event.id[ev]
         if (ev > 1) {
             features.all <- rbind(features.all, features)
+            rating.features.all <- rbind(rating.features.all, rating.features)
         } else {
             features.all <- features
+            rating.features.all <- rating.features
         }
         ev <- ev + 1
     }
@@ -97,10 +94,18 @@ DoFeatureExtraction <- function (limit = FALSE) {
         features.all <- rbind(features.all, already.extracted.features)  
     }
     
-    features.all <- OrderBy(features.all, 'event.id')
-    WriteMasterOutput(features.all, 'features')
+    if (class(already.rated.events) == 'data.frame') {
+        rating.features.all <- rbind(rating.features.all, already.rated.events)  
+    }
     
-
+    
+    
+    features.all <- OrderBy(features.all, 'event.id')
+    rating.features.all <- OrderBy(rating.features.all, 'event.id')
+    WriteMasterOutput(features.all, 'features')
+    WriteMasterOutput(rating.features.all, 'rating.features')
+    
+ 
     
 }
 
@@ -125,14 +130,14 @@ GetExistingEventRatings <- function () {
     # check if any of these files have changed
     to.check <- c(MasterOutputPath('events'),
                   'features.R')
-    return(GetExistingMasterOutput('events', to.check))
+    return(GetExistingMasterOutput('rating.features', to.check))
 }
 
 
 
 
 
-GetFeatures <- function (event, spectro) {
+CalculateFeatures <- function (event, spectro) {
     # for a particular event, calculates all the features to be used
     #
     # Args:
@@ -181,6 +186,50 @@ GetFeatures <- function (event, spectro) {
     
     return(features)
 }
+
+
+CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp) {
+    # calculates a different set of features for the purpose of assessing the 
+    # likelyhood that this event is not rubbish
+    
+    top.f.row <- FrequencyToRowNum(event$top.f, spectro$hz.per.bin)
+    bottom.f.row <- FrequencyToRowNum(event$bottom.f, spectro$hz.per.bin)
+    
+    # get the mean and standard deviation for the entire file
+    # within the frequency range of this event
+    file.mean.amp <- file.mean.amp[bottom.f.row:top.f.row]
+    file.sd.amp <- file.sd.amp[bottom.f.row:top.f.row]
+
+    # get the mean and standard deviation of each row of this event
+    event.amp <- SliceStft(c(event$start.sec.in.file, event$duration, event$bottom.f, event$top.f), spectro)
+    event.mean.amp <- apply(event.amp, 1, mean)
+    event.sd.amp <- apply(event.amp, 1, sd)
+    
+    diff.mean.amp. <- event.mean.amp - file.mean.amp
+    diff.sd.amp <- event.sd.amp - file.sd.amp
+    
+    rating.features <- list()
+    
+    # the average difference in amplitude of each frequency bin
+    # from the file average
+    rating.features$mean.diff.mean.amp <- mean(diff.mean.amp.)
+    
+    # the sd of the above mean (how much further from the 
+    # average were some frequency bins than others) 
+    rating.features$sd.diff.mean.amp <- sd(diff.mean.amp.)
+    
+    # the mean of the difference between the sd each frequency band of this event from the 
+    # sd of the file for those frequency bands 
+    rating.features$mean.diff.sd.amp <- mean(diff.sd.amp)
+    
+
+    rating.features$sd.diff.sd.amp <- sd(diff.sd.amp)
+    
+    return(rating.features)
+    
+    
+}
+
 
 
 ColumnSDs <- function (m) {
