@@ -110,16 +110,22 @@
             var nhFrameLength = neighbourhoodLength * timeScale;
             // get a greater value than the parameter for enlarging the later used NH boundary- enlarge.
             var enlargedOffset = 0;
-            var nhCountInRow = (int)Math.Floor(frequencyRange / nhFrequencyLength) + enlargedOffset;
-            var nhCountInCol = (int)Math.Floor(this.duration / nhFrameLength) + enlargedOffset;
+            // ceiling is try to increase the value.
+            var nhCountInRow = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
+            var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
             /// Try to enlarge the original region, the startColIndex and startRowIndex should plus or minus one. 
-            this.nhStartColIndex = (int)Math.Ceiling(this.startTime / nhFrameLength) - 1;
-            this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Ceiling(this.maxFrequency / nhFrequencyLength) - 1;
+            this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength) - enlargedOffset;
+            this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength) - enlargedOffset;
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
             if (nhendTime < this.endTime)
             {
                 nhCountInCol++;
+            }
+            var nhlowFrequency = (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
+            if (nhlowFrequency > this.minFrequency)
+            {
+                nhCountInRow++;
             }
             this.nhCountInRow = nhCountInRow;
             this.nhCountInColumn = nhCountInCol;

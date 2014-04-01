@@ -18,6 +18,27 @@
 
         #region  Public Methods
 
+        public static Query CsvToQuery(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);           
+            var result = new Query();
+            foreach (var csvRow in lines1)
+            {
+                if (csvRow[3] != "" && csvRow[6] != "")
+                {
+                    result.minFrequency = int.Parse(csvRow[1]);
+                    result.maxFrequency = int.Parse(csvRow[2]);
+                    result.startTime = double.Parse(csvRow[3]);
+                    result.endTime= double.Parse(csvRow[4]);
+                    result.duration= double.Parse(csvRow[5]);
+                    //result.FreqBinCount = int.Parse(csvRow[6]);   
+                }
+            }
+            return result;
+        }
+
         //public static string Test(IEnumerable<string> i)
         //{ 
         //    return string.Join(", ", i); 

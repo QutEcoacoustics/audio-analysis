@@ -22,7 +22,7 @@ namespace Dong.Felt.ResultsOutput
         public static void AudioSegmentBasedCandidates(Candidates candidate, FileInfo fiOutputSegment)
         {
             // to cut out 2 sec either side, here buffer means the time offset.
-            var buffer = new TimeSpan(0, 0, 2);
+            var buffer = new TimeSpan(0, 0, 1);
             var startTime = TimeSpan.FromMilliseconds(candidate.StartTime - buffer.TotalMilliseconds);
             var endTime = TimeSpan.FromMilliseconds(candidate.EndTime + buffer.TotalMilliseconds);           
             var sampleRate = 22050;

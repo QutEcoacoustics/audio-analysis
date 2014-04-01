@@ -18,6 +18,11 @@ namespace Dong.Felt
         public double MaxFrequency {get; set;}
 
         /// <summary>
+        /// It indicates the max frequency of a candidate.
+        /// </summary>
+        public double MinFrequency { get; set; }
+
+        /// <summary>
         /// It indicates the start time of a candidate.
         /// </summary>
         public double StartTime  {get; set;}
@@ -38,12 +43,13 @@ namespace Dong.Felt
         /// <param name="score"></param>
         /// <param name="startTime"></param>
         /// <param name="maxFreq"></param>
-        public Candidates(double score, double startTime, double duration, double maxFreq, string sourceFile)
+        public Candidates(double score, double startTime, double duration, double maxFreq, double minFreq, string sourceFile)
         {
             this.Score = score;
             this.StartTime = startTime;
             this.EndTime = startTime + duration;
             this.MaxFrequency = maxFreq;
+            this.MinFrequency = minFreq;
             this.SourceFilePath = sourceFile;
         }
 
