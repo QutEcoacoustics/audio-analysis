@@ -127,6 +127,7 @@
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="Indexing.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
     <Compile Include="Representations\RegionRrepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionRegionRepresentation.cs" />

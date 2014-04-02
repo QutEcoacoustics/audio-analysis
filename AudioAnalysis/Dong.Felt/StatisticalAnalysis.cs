@@ -67,12 +67,40 @@
             var maxOrientation = orientationList.Max();
             foreach (var nh in nhList)
             {
+                var enlargeTimes = 10;
                 if (nh.magnitude != 100)
                 {
-                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);                    
+                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude) * enlargeTimes;
+                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation) * enlargeTimes;                    
                 }
                 result.Add(nh);               
+            }
+            return result;
+        }
+
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeNhProperties(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+
+            var magnitudeList = new List<double>();
+            foreach (var nh in nhList)
+            {
+                // Typically, magnitude should be greater than 0 and less than 20.
+                // otherwise, it is assigned to a default value, 100
+                if (nh.magnitude != 100)
+                {
+                    magnitudeList.Add(nh.magnitude);                    
+                }
+            }
+            var minimagnitude = magnitudeList.Min();
+            var maxmagnitude = magnitudeList.Max();           
+            foreach (var nh in nhList)
+            {
+                if (nh.magnitude != 100)
+                {
+                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);                   
+                }
+                result.Add(nh);
             }
             return result;
         }
@@ -707,9 +735,9 @@
         /// </summary>
         /// <param name="radians"></param>
         /// <returns></returns>
-        public static List<double> ConvertRadiansToGrayCoding(List<double> radians, int bitCount)
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> ConvertRadiansToRoundedValues(List<RidgeDescriptionNeighbourhoodRepresentation> radians, int bitCount)
         {
-            var result = new List<double>();
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var stateCount = Math.Pow(2, bitCount);
             // by default or ideally, max = pi/2, min = -pi/2.
             //var valueRange = radians.Max() - radians.Min();
@@ -719,35 +747,58 @@
             // the radians will be round to stateCount values.
             for (int i = 0; i < radians.Count; i++)
             {
-                var incresementCount = (int)(radians[i] / increasement);
-                if (radians[i] >= incresementCount * increasement && radians[i] < (incresementCount + 1) * increasement)
+                var incresementCount = (int)(radians[i].orientation / increasement);
+                if (radians[i].orientation >= incresementCount * increasement && radians[i].orientation < (incresementCount + 1) * increasement)
                 {
-                    radians[i] = increasement;
+                    radians[i].orientation = incresementCount;
+                    result.Add(radians[i]);
                 }
-            }
-            var binary = new Byte[bitCount];
-            var prefixForOldset = 0;
-            var prefixForNewset = 1;
-            var initialBinary = new Byte[2] { 0, 1 };           
-            for (int j = 0; j < bitCount; j++)
-            {
-                var possibilityCount = Math.Pow(2, j);
-                if ((j + 1) == 1)
-                {
-                    binary[0] = initialBinary[0];
-                    binary[1] = initialBinary[0];
-                }
-                else
-                {                   
-                    binary[0] = initialBinary[0] >>= bitCount - 1;
-                    binary[1] = initialBinary[1] >>= bitCount - 1;
-                    for (int k = 0; k < stateCount; k++)
-                    {
+            }          
+            return result; 
+        }
 
-                    }
+        // todo : to finish the cursive part
+        void GrayCode(int numBits)
+        {
+            
+            var initialBits = new char[2];
+            if (numBits == 1)
+            {
+                initialBits[0] = '0';
+                initialBits[1] = '1';
+            }
+            else
+            {
+                if (numBits > 1)
+                {
+                    GrayCode(numBits - 1);
+                }
+                char[] mirroredBits = Reverse(initialBits);
+                initialBits.Concat(mirroredBits);
+                // for the first n bits, append 0
+                char[] prefix1 = new char[1] { '0'};
+                char[] prefix2 = new char[1] { '1' }; 
+                for (int i = 0; i < numBits; i++)
+                {
+                    char[] tempBit = new char[] { initialBits[i] };
+                    //initialBits[i] = prefix1.Concat(tempBit);
+                }
+                // for the last n bits, append 1
+                for (int i = numBits; i < numBits * 2; i++)
+                {
+                    //initialBits[i] = prefix1.Concat(tempBit); ;
                 }
             }
-                return result; 
+        }
+
+        public char[] Reverse(char[] bits)
+        {
+            var result = new char[bits.Count()];
+            for (int i = 0; i < bits.Count(); i++)
+            {
+                result[i] = bits[bits.Count() - 1 - i];
+            }
+            return result;
         }
 
         /// <summary>

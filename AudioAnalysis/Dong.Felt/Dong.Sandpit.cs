@@ -40,15 +40,15 @@
                     FilterRidgeMatrixLength = 7,
                     MinimumNumberInRidgeInMatrix = 3
                 };
-                var neighbourhoodLength = 9;
+                var neighbourhoodLength = 5;
 
-                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\Grey Fantail1-Training";
-                string queryInputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\Query";
-                string querycsvFileName = "SE_SE727_20101014-051200-0515-0516-Grey Fantail1.csv";
+                string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\Shining Bronze-cuckoo1-Training";
+                string queryInputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\Query";
+                string querycsvFileName = "SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1.csv";
                 string querycsvFilePath = Path.Combine(queryInputDirectory, querycsvFileName);
-                string queryaudioFileName = "SE_SE727_20101014-051200-0515-0516-Grey Fantail1.wav";
+                string queryaudioFileName = "SE_SE727_20101013-051800-051900-Shining Bronze-cuckoo1.wav";
                 string queryaudioFilePath = Path.Combine(queryInputDirectory, queryaudioFileName);
-                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\RepresentationResults";
+                string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\RepresentationResults";
                 string csvOutputFileName = "candidates region representation.csv";
                 string csvOutputPath = Path.Combine(outputDirectory, csvOutputFileName);
                 string matchedCandidateFileName = "matched candidates.csv";
@@ -56,17 +56,29 @@
                 var rank = 10;
                 MatchingBatchProcess(querycsvFilePath, queryaudioFilePath, inputDirectory, neighbourhoodLength,
                     ridgeConfig, config, csvOutputPath, matchedCandidateOutputPath, rank);
-                var csvfile = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\RepresentationResults\matched candidates.csv";
+                var csvfile = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\RepresentationResults\matched candidates.csv";
                 var file = new FileInfo(csvfile);
                 var candidates = CSVResults.CsvToCandidatesList(file);
-                string segmentOutputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\6.Grey Fantail1\SegmentOutput";
+                string segmentOutputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\12.Shining Bronze-cuckoo1\SegmentOutput";
                 var queryCsvFile = new FileInfo(querycsvFilePath);
+                var query = new Candidates();
                 var queryInfo = CSVResults.CsvToQuery(queryCsvFile);
-                var query = new Candidates(1, queryInfo.startTime * 1000,
-                    queryInfo.duration * 1000, 
-                    queryInfo.maxFrequency,
-                    queryInfo.minFrequency,
-                    queryaudioFilePath);
+                if (queryInfo.startTime > 1)
+                {
+                    query.StartTime = 1;
+                    query.EndTime = queryInfo.duration * 1000;
+                    query.MaxFrequency = queryInfo.maxFrequency;
+                    query.MinFrequency = queryInfo.minFrequency;
+                    query.SourceFilePath = queryaudioFilePath;
+                }
+                else
+                {
+                    query.StartTime = queryInfo.startTime;
+                    query.EndTime = queryInfo.duration * 1000;
+                    query.MaxFrequency = queryInfo.maxFrequency;
+                    query.MinFrequency = queryInfo.minFrequency;
+                    query.SourceFilePath = queryaudioFilePath;
+                }
                 candidates.Insert(0, query);
                 if (candidates != null)
                 {
@@ -84,7 +96,7 @@
                     int temp = i + 1;
                     listString.Add(temp.ToString());
                 }
-                
+
                 var imageArray = DrawingSpectrogramsFromAudios(segmentOutputDirectory, config, listString, candidates).ToArray();
                 var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
                 var imageOutputName = "Combined image.png";
@@ -93,9 +105,9 @@
                 
                 /// Single experiment. 
                 /// FilePathSetting
-                //string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\13.Silvereye3\Silvereye3-Training";
-                //string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\13.Silvereye3\RepresentationResults";
-                //string audioFileName = "NEJB_NE465_20101017-050500-050600-Silvereye3.wav";
+                //string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
+                //string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\1.Brown Cuckoo-dove1\Query";
+                //string audioFileName = "NW_NW273_20101013-051200-0515-0516-Brown Cuckoo-dove1.wav";
                 //string wavFilePath = Path.Combine(inputDirectory, audioFileName);
                 //string imageFileName = Path.ChangeExtension(audioFileName, "-NH-9.png");
                 //string imagePath = Path.Combine(outputDirectory, imageFileName);
@@ -107,7 +119,7 @@
                 //string nhRegionCsvPath = Path.Combine(outputDirectory, nhRegionCsvFileName);
 
                 ///// Read audio files into spectrogram.
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.6 };
                 //var spectrogram = Preprocessing.AudioPreprosessing.AudioToSpectrogram(config, wavFilePath);
 
                 ///// spectrogramConfiguration setting
@@ -436,11 +448,13 @@
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
                 var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties(ridgeNhRepresentationList);
+                //var normalizedNhRepresentationList1 = StatisticalAnalysis.ConvertRadiansToRoundedValues(ridgeNhRepresentationList, 4);
+                //var normalizedNhRepresentationList2 = StatisticalAnalysis.NormalizeNhProperties(ridgeNhRepresentationList);       
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFilePath);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
-                var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength, NormalizedNhRepresentationList,
-                    queryAudioFilePath, spectrogram);
+                var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
+                    NormalizedNhRepresentationList, queryAudioFilePath, spectrogram);
                 // regionRepresentation 
                 for (int i = 0; i < audioFilesCount; i++)
                 {
@@ -467,11 +481,9 @@
                 var weight2 = 0.9;
                 /// To calculate the distance
                 var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
-                //var normalizedCanList = StatisticalAnalysis.NormalizeCandidateDistance(candidateDistanceList);
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
                 var candidateLocationFile = new FileInfo(candidateLocationOutputFile);
                 /// To save all matched acoustic events
-                //var acousticEventList = new List<AcousticEvent>();
                 var candidateList = new List<Candidates>();
                 simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();
                 if (simiScoreCandidatesList.Count != 0)
@@ -511,6 +523,7 @@
                     if (i == 0)
                     {
                         var acousticEventlistForQuery = new List<AcousticEvent>();
+
                         var queryAcousticEvent = new AcousticEvent(1, (candidates[i].EndTime - candidates[i].StartTime)/1000,
                             candidates[i].MinFrequency,candidates[i].MaxFrequency);
                         queryAcousticEvent.BorderColour = Color.Crimson;
