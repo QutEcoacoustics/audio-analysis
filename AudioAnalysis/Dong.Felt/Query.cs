@@ -89,13 +89,14 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, double starttime, double endtime, int neighbourhoodLength, int maxFrequencyIndex, SpectrogramConfiguration spectrogramConfig)
+        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength, int maxFrequencyIndex, SpectrogramConfiguration spectrogramConfig)
         {
+            // the unit is confusing
             var secondToMillisecond = 1000;
             maxFrequency = maximumFrequency;
             minFrequency = minimumFrequency;
-            startTime = starttime * secondToMillisecond; // millisecond
-            endTime = endtime * secondToMillisecond; // millisecond
+            startTime = startTime * secondToMillisecond; // millisecond
+            endTime = endTime * secondToMillisecond; // millisecond
             duration = endTime - startTime; 
             frequencyRange = maximumFrequency - minimumFrequency;
             GetNhProperties(neighbourhoodLength, maxFrequencyIndex, spectrogramConfig);

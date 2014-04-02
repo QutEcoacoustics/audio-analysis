@@ -421,8 +421,19 @@
                         var queryScore = Math.Abs(query[index].magnitude);
                         var queryOrientation = query[index].orientation;
                         var candidateScore = Math.Abs(candidate[index].magnitude);
-                        var candidateOrientation = candidate[index].orientation;
-                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                        var candidateOrientation = candidate[index].orientation;                        
+                        var orientationDifferenceClockwise = Math.Abs(queryOrientation - candidateOrientation);
+                        var maxOrientationDifference = 0.5;
+                        var orientationDifferenceUnClockwise = maxOrientationDifference - Math.Abs(queryOrientation - candidateOrientation);
+                        var orientationDifference = 0.0;
+                        if (orientationDifferenceClockwise <= orientationDifferenceUnClockwise)
+                        {
+                            orientationDifference = orientationDifferenceClockwise;
+                        }
+                        else
+                        {
+                            orientationDifference = orientationDifferenceUnClockwise;
+                        }
                         var magnitudeDifference = Math.Abs(queryScore - candidateScore);
                         nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
                     //}
