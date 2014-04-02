@@ -8,7 +8,8 @@ using System.IO;
 
 //using AnalysisBase;
 //using log4net;
-
+//using AnalysisPrograms.Production;
+using Acoustics.Shared;
 using TowseyLib;
 
 
@@ -31,7 +32,7 @@ namespace AudioAnalysisTools
 
         //Define new colour schemes in class SpectorgramConstants and implement the code in the class Colourspectrogram, 
         //            method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
-        public string colorSchemeID = SpectrogramConstants.RGBMap_DEFAULT; //R-G-B
+        //public string colorSchemeID = SpectrogramConstants.RGBMap_DEFAULT; //R-G-B
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -49,13 +50,13 @@ namespace AudioAnalysisTools
             get { return x_interval; }
             set { x_interval = value; }
         }
-        private int frameWidth = 512;   // default value - from which spectrogram was derived
+        private int frameWidth = SpectrogramConstants.FRAME_WIDTH;   // default value - from which spectrogram was derived
         public int FrameWidth           // used only to calculate scale of Y-axis to draw grid lines
         {
             get { return frameWidth; }
             set { frameWidth = value; }
         }
-        private int sampleRate = 17640; // default value - after resampling
+        private int sampleRate = SpectrogramConstants.SAMPLE_RATE; // default value - after resampling
         public int SampleRate
         {
             get { return sampleRate; }
@@ -925,46 +926,168 @@ namespace AudioAnalysisTools
             }
         }
 
-
-        public static void DrawFalseColourSpectrograms(string fileStem, DirectoryInfo ipDir)
+        public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
         {
-             int minuteOffset = 0;
-                int xScale = 60;
-                int sampleRate = 17640;
-                int frameWidth = 256;
-                double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-                string colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
-                var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-                cs1.FileName = fileStem;
-                //cs1.ColorMODE = colorMap;
-                cs1.BackgroundFilter = backgroundFilterCoeff;
-                cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
-                if (cs1.GetCountOfSpectrogramMatrices() == 0)
-                {
-                    Console.WriteLine("There are no spectrogram matrices in the dictionary.");
-                    return;
-                }
-                cs1.DrawGreyScaleSpectrograms(ipDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+            string ipdir = configuration.InputDirectory.FullName;
+            DirectoryInfo ipDir = new DirectoryInfo(ipdir);
+            string fileStem = configuration.FileName;
+            string opdir = configuration.OutputDirectory.FullName;
+            DirectoryInfo opDir = new DirectoryInfo(opdir);
 
-                Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-                string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-                image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
-                image1.Save(Path.Combine(ipDir.FullName, fileStem + "." + colorMap + ".png"));
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            string map = configuration.ColourMap;
+            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
 
-                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
-                Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-                title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-                image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
-                image2.Save(Path.Combine(ipDir.FullName, fileStem + "." + colorMap + ".png"));
-                Image[] array = new Image[2];
-                array[0] = image1;
-                array[1] = image2;
-                Image image3 = ImageTools.CombineImagesVertically(array);
-                image3.Save(Path.Combine(ipDir.FullName, fileStem + ".2MAPS.png"));
+            double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-    }
+            // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
+            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
+            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
 
-    } //ColourSpectrogram
+            
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilterCoeff;
+            cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return;
+            }
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+
+            colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
+            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+
+            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
+            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image2.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+            Image[] array = new Image[2];
+            array[0] = image1;
+            array[1] = image2;
+            Image image3 = ImageTools.CombineImagesVertically(array);
+            image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
+        }
+
+    } //LDSpectrogramRGB
+
+
+
+    public class LDSpectrogramConfig
+    {
+        private string fileName;  // File name from which spectrogram was derived.
+        public string FileName
+        {
+            get { return fileName; }
+            set { fileName = value; }
+        }
+        private DirectoryInfo ipDir;
+        public DirectoryInfo InputDirectory
+        {
+            get { return ipDir; }
+            set { ipDir = value; }
+        }
+        private DirectoryInfo opDir;
+        public DirectoryInfo OutputDirectory
+        {
+            get { return opDir; }
+            set { opDir = value; }
+        }
+
+        //these parameters manipulate the colour map and appearance of the false-colour spectrogram
+        private string colourmap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;  // CHANGE default RGB mapping here.
+        public string ColourMap
+        {
+            get { return colourmap; }
+            set { colourmap = value; }
+        }
+        private double backgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF; // must be value <=1.0
+        public double BackgroundFilterCoeff 
+        {
+            get { return backgroundFilter; }
+            set { backgroundFilter = value; }
+        }
+
+        // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+        private int minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at zero minute of day i.e. midnight
+        public int MinuteOffset
+        {
+            get { return minOffset; }
+            set { minOffset = value; }
+        }
+        private int x_interval = SpectrogramConstants.X_AXIS_SCALE;    // assume one minute spectra and hourly time lines
+        public int X_interval
+        {
+            get { return x_interval; }
+            set { x_interval = value; }
+        }
+        private int frameWidth = SpectrogramConstants.FRAME_WIDTH; // default value for frame width from which spectrogram was derived. Assume no frame overlap.
+        public int FrameWidth           // used only to calculate scale of Y-axis to draw grid lines
+        {
+            get { return frameWidth; }
+            set { frameWidth = value; }
+        }
+        private int sampleRate = SpectrogramConstants.SAMPLE_RATE; // default value - after resampling
+        public int SampleRate
+        {
+            get { return sampleRate; }
+            set { sampleRate = value; }
+        }
+        private int hz_grid_interval = 1000;
+        public int Y_interval // mark 1 kHz intervals
+        {
+            get
+            {
+                double freqBinWidth = sampleRate / (double)frameWidth;
+                return (int)Math.Round(hz_grid_interval / freqBinWidth);
+            }
+        }
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="_fileName"></param>
+        /// <param name="_ipDir"></param>
+        /// <param name="_opDir"></param>
+        public LDSpectrogramConfig(string _fileName, DirectoryInfo _ipDir, DirectoryInfo _opDir)
+        {
+            fileName = _fileName;
+            ipDir = _ipDir;
+            opDir = _opDir;
+        }
+
+        public void WritConfigToYAML(FileInfo path)
+        {
+            // WRITE THE YAML CONFIG FILE
+            Yaml.Serialise(path, new
+            {
+                //paths to required directories and files
+                FileOfIndices = this.FileName,
+                InputDirectory = this.InputDirectory.FullName,
+                OutputDirectory = this.OutputDirectory.FullName,
+
+                //these parameters manipulate the colour map and appearance of the false-colour spectrogram
+                ColorMap = this.ColourMap,
+                BackgroundFilterCoeff = this.BackgroundFilterCoeff, // must be value <=1.0
+
+                // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+                SampleRate = this.SampleRate,    
+                FrameWidth = this.FrameWidth,       // frame width from which spectrogram was derived. Assume no frame overlap.
+                MinuteOffset = this.MinuteOffset,   // default is recording starts at zero minute of day i.e. midnight
+                X_Scale = this.X_interval           // default is one minute spectra and hourly time lines
+            });
+        } // WritConfigToYAML()
+
+    } // class LDSpectrogramConfig
+
 }
