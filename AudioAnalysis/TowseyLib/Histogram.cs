@@ -150,6 +150,31 @@ namespace TowseyLib
             return histo;
         }
 
+        /// <summary>
+        ///  make histogram of integers where each bin has unit width 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        static public int[] Histo(int[] data, out int min, out int max)
+        {
+            int length = data.Length;
+            min = Int32.MaxValue;
+            max = -Int32.MaxValue;
+            DataTools.MinMax(data, out min, out max);
+            int binCount = max - min + 1;
+            int[] histo = new int[binCount];
+
+            for (int i = 0; i < length; i++)
+            {
+                int bin = data[i] - min; // min values go in bin zero
+                histo[bin]++;
+            }
+
+            return histo;
+        }
+
 
         /// <summary>
         /// HISTOGRAM from a matrix of double

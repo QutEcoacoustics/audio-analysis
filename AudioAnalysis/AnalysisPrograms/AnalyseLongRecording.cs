@@ -124,7 +124,7 @@ namespace AnalysisPrograms
                 Source = recordingPath.ToFileInfo(),
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_01April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_02April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -445,7 +445,7 @@ namespace AnalysisPrograms
         {
             // ensure results are sorted in order
             var results = analyserResults.ToArray();
-            string name = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+            string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
 
             int frameWidth = 512; // default value
@@ -479,7 +479,7 @@ namespace AnalysisPrograms
                 }
 
                 // write spectrogram to disk as CSV file
-                var saveCsvPath = Path.Combine(resultsDirectory.FullName, name + "." + spectrumKey + ".csv");
+                var saveCsvPath = Path.Combine(resultsDirectory.FullName, fName + "." + spectrumKey + ".csv");
                 lines[0] = Spectrum.GetHeader(numbers[0].Length); // add in header
                 FileTools.WriteTextFile(saveCsvPath, lines);
 
@@ -489,17 +489,10 @@ namespace AnalysisPrograms
                 spectrogramDictionary.Add(spectrumKey, matrix);
             } // foreach spectrumKey
 
-            // now Draw the false colour spectrogram
-            //int xScale = 60; // assume one minute spectra and hourly time lines
-            //string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE RGB mapping here.
-            //var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
-            //string ipFileName = name;
-            //cs.LoadSpectrogramDictionary(spectrogramDictionary);
-            //cs.BackgroundFilter = 1.0;
-            //cs.DrawGreyScaleSpectrograms(resultsDirectory, ipFileName);
-            //cs.DrawFalseColourSpectrograms(resultsDirectory, ipFileName);
-
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(name, resultsDirectory);
+            var config = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
+            FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
+            config.WritConfigToYAML(path);
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(config);
 
         }
 
