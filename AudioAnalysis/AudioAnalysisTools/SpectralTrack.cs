@@ -473,4 +473,136 @@ namespace AudioAnalysisTools
         }
 
     } //class SpectralTrack
+
+
+    public class TracksInOneFrequencyBin
+    {
+        public  TimeSpan minimumTrackDuration = TimeSpan.FromMilliseconds(333); // milliseconds
+        private TimeSpan binDuration; //duration of the freq bin in seconds
+
+        private int binNumber;
+        public int BinNumber
+        {
+            set { binNumber = value; }
+            get { return binNumber; }
+        }
+
+        private int frameCount;
+        private double framesPerSecond;
+        private int framesPerHalfSecond;
+        private int framesPerQuaterSecond; 
+        private int trackCount;
+        public int TrackCount
+        {
+            set { trackCount = value; }
+            get { return trackCount; }
+        }
+
+        public int TracksPerSec
+        {
+            //set { trackCount = value; }
+            get { return trackCount; }
+        }
+
+        private int totalFrameLength;
+        public int TotalFrameLength
+        {
+            set { totalFrameLength = value; }
+            get { return totalFrameLength; }
+        }
+        public double FractionOfFramesContainingTracks
+        {
+            get { return totalFrameLength / frameCount; }
+        }
+
+        private int totalSecondsContainingTracks;
+        public double FractionOfSecondsContainingTracks
+        {
+            get { return totalSecondsContainingTracks / binDuration.TotalSeconds; }
+        }
+    
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="_binNumber"></param>
+        /// <param name="freqBin"></param>
+        /// <param name="_framesPerSecond"></param>
+        public TracksInOneFrequencyBin(int _binNumber, double[] freqBin, double _framesPerSecond)
+        {
+            binNumber = _binNumber;
+            framesPerSecond = _framesPerSecond;
+            this.frameCount = freqBin.Length;
+            this.framesPerHalfSecond = (int)(this.framesPerSecond / 2);
+            this.framesPerQuaterSecond = (int)(this.framesPerSecond / 4);
+            binDuration = TimeSpan.FromSeconds(freqBin.Length / framesPerSecond);
+
+            freqBin = DataTools.filterMovingAverage(freqBin, 3); // to join up gaps of 1 - 2
+            ProcessFrequencyBinForTracks1(freqBin);
+            ProcessFrequencyBinForTracks2(freqBin);
+        }
+
+        private void ProcessFrequencyBinForTracks1(double[] freqBin)
+        {
+            int framesPerSegment = (int)framesPerSecond;
+            int numberOfSeconds = this.binDuration.Seconds;
+            int count = 0;
+            int start = 0;
+            for (int hs = 0; hs < numberOfSeconds; hs++) // step through in seconds
+            {
+                double[] segment = DataTools.Subarray(freqBin, start, framesPerSegment);
+                int peakCount = segment.Count(value => (value > 0.1)); //decibel threshold = 0.1
+                if (peakCount > this.framesPerQuaterSecond) count++;
+                if (peakCount > this.framesPerHalfSecond)   count++; // give extra weight to segments with longer tracks
+                if (peakCount >= framesPerSegment - 3)      count++; // give extra weight to segments with longer tracks
+                start += framesPerSegment;
+            }
+            this.totalSecondsContainingTracks = count;
+        }
+
+        public void ProcessFrequencyBinForTracks2(double[] freqBin)
+        {
+            int minimumFrameLength = (int)(minimumTrackDuration.TotalSeconds * this.framesPerSecond);
+
+            List<int> trackLengths = new List<int>();
+            bool inTrack = false;
+            int trackLength = 0;
+            double threshold = 0.0;
+            for (int i = 0; i < freqBin.Length; i++)
+            {
+                if ((!inTrack) && (freqBin[i] > threshold)) // start a track
+                {
+                    inTrack = true;
+                    trackLength = 1;
+                }
+                else
+                    if (inTrack && (freqBin[i] > threshold)) // extend a track
+                    {
+                        inTrack = true;
+                        trackLength++;
+                    }
+                    else
+                        if (inTrack && (freqBin[i] <= threshold)) // end a track
+                        {
+                            inTrack = false;
+                            if (trackLength > minimumFrameLength) trackLengths.Add(trackLength);
+                            trackLength = 0;
+                        }
+            }
+
+            this.trackCount = trackLengths.Count;
+            this.totalFrameLength = trackLengths.Sum();
+        }
+
+        public double CompositeTrackScore()
+        {
+            double score = this.FractionOfSecondsContainingTracks + this.FractionOfFramesContainingTracks;
+            if (score > 1.0) score = 1.0; // normalise
+            return score;
+        }
+
+    } // TracksInOneFrequencyBin
+
+
+
 }
