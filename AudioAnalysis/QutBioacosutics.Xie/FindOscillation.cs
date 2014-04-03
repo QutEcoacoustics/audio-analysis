@@ -5,6 +5,10 @@ using System.Text;
 using TowseyLib;
 using MathNet.Numerics;
 
+using System.Drawing;
+
+using System.Drawing.Imaging;
+
 namespace QutBioacosutics.Xie
 {
     class FindOscillation
@@ -19,11 +23,59 @@ namespace QutBioacosutics.Xie
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
+            int numSubRows = rows / 5;
+            int subRows = rows % 5;
+
+            var tempMatrix = new double[rows, cols];
+
+            for (int j = 0; j < cols; j++)
+            {
+                for (int r = 0; r < numSubRows; r++)
+                {
+                    double temp = 0;
+                    for (int i = r * 5; i < (r + 1) * 5; i++)
+                    {
+                        temp = matrix[i, j] + temp;
+                    }
+
+                    for (int i = r * 5; i < (r + 1) * 5; i++)
+                    {
+                        tempMatrix[i, j] = temp;                    
+                    }
+                }
+            }
+
+            matrix = tempMatrix;
+
+
+            //double[,] spectrogramMatrix = DataTools.normalise(matrix);
+            //spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrix);
+
+            //int rows1 = spectrogramMatrix.GetLength(0);
+            //int cols1 = spectrogramMatrix.GetLength(1);
+
+            //Color[] grayScale = ImageTools.GrayScale();
+            //Bitmap bmp = new Bitmap(cols1, rows1, PixelFormat.Format24bppRgb);
+
+            //for (int r = 0; r < rows1; r++)
+            //{
+            //    for (int c = 0; c < cols1; c++)
+            //    {
+            //        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
+            //        if (greyId < 0) greyId = 0;
+            //        else
+            //            if (greyId > 255) greyId = 255;
+
+            //        greyId = 255 - greyId;
+            //        bmp.SetPixel(c, r, grayScale[greyId]);
+            //    }
+            //}
+            //bmp.Save(@"C:\Jie\output\3.png");
+
+       
+
             int numSubCols = cols / 128;
             int subCols = cols % 128;
-            
-            //var intensityList = new List<double[]>();
-            //var periodicityList = new List<double[]>();
 
             //var intensityArray = new double[rows];
             var score = new double[rows];
@@ -31,16 +83,13 @@ namespace QutBioacosutics.Xie
 
             // find peaks in the frequency direction
 
-            matrix = XieFunction.MedianFilter(matrix, 6);
-
-            //var image = ImageTools.DrawMatrix(matrix);
-            //image.Save(@"C:\Jie\output\3.png");
-
+            //matrix = XieFunction.MedianFilter(matrix, 6);
+        
             var peakMatrix = new double[rows, cols];
-
             var freqlocalPeaks = new FindLocalPeaks();
+            peakMatrix = freqlocalPeaks.LocalPeaksOscillation(matrix, 6, 4, 3);
+            //peakMatrix = freqlocalPeaks.LocalPeaksOscillationNew(matrix);
 
-            peakMatrix = freqlocalPeaks.LocalPeaksOscillation(matrix,6,4,3);
 
             //peakMatrix = XieFunction.MedianFilter(peakMatrix, 3);
 
@@ -185,16 +234,14 @@ namespace QutBioacosutics.Xie
             return norArray;
         }
 
-
-
-
-
         // A method for extracting oscillation structure
         public double[,] BardeliFindOscillation(double[,] matrix)
         {
             // 5 bins are used to calculate the energy
 
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+
+            matrix = XieFunction.MedianFilter(matrix, 5);
 
             // get oscillation of the whole duration of one recording
             int rows = matrix.GetLength(0);
@@ -203,40 +250,47 @@ namespace QutBioacosutics.Xie
             var rowsIndex = rows / 5;
             var rowsResidual = rows % 5;
 
-            var diffArray = new double[cols - 1];
+            var colsIndex = cols / 128;
+            var colsResidual = cols % 128;
 
-            var diffMatrix = new double[rows, (cols - 1)];
+            //var diffArray = new double[cols - 1];
+            //var diffMatrix = new double[rows, (cols - 1)];
 
             for (int i = 0; i < rowsIndex; i++)
             {
-                
-                for (int c = 0; c < (cols - 1); c++) 
+                for (int j = 0; j < colsIndex; j++)
                 {
-                    double Energy = 0;
-                    for (int j = i * 5; j < (i + 1) * 5; j++)
+                    for (int c = j * 128; c < (j + 1) * 128; c++)
                     {
-                        Energy = Energy + Math.Pow(matrix[j, c] - matrix[j, (c + 1)], 2) * matrix[j,c];
-                    }
+                        var tempArray = new double[128];
+                        for (int r = i * 5; r < (i + 1) * 5; r++)
+                        {
+                            tempArray[c] = matrix[r, c] + tempArray[c];
+                                                   
+                        }
+                        // find loacal peaks
 
-                    diffArray[c] = Energy;
-                }
+                        //double[] signal2 = { 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1 };
+                        //tempArray = signal2;
+                        //var crossArray = XieFunction.CrossCorrelation(tempArray, tempArray);
+                        //var xiecorrelation =  MathNet.Numerics.Statistics.Correlation[tempArray];
+                        //var result = (tempArray.Length, tempArray.Length);
 
-                for (int k = i * 5; k < (i + 1) * 5; k++)
-                { 
-                    for(int c = 0; c <(cols - 1); c++)
-                    {
-                        diffMatrix[k, c] = diffArray[c];
+
+
+
+
+
+
+
+
                     }
-                    
-                }
-         
+                
+                }         
             }
 
             return null;
         }
-
-
-
 
         public double[,] DctFindOscillation(double[,] matrix, int zeroBinIndex)
         {
@@ -250,63 +304,13 @@ namespace QutBioacosutics.Xie
             var colsIndex = cols / 128;
             var colsResidual = cols % 128;
 
-            int numSubCols = cols / 128;
-            int subCols = cols % 128;
-
-            //var intensityList = new List<double[]>();
-            //var periodicityList = new List<double[]>();
-
-            //var intensityArray = new double[rows];
             var score = new double[rows];
             var result = new double[rows, cols];
 
             // find peaks in the frequency direction
 
-            matrix = XieFunction.MedianFilter(matrix, 6);
+            matrix = XieFunction.MedianFilter(matrix, 5);
 
-
-
-            var peakMatrix = new double[rows, cols];
-
-            var freqlocalPeaks = new FindLocalPeaks();
-
-            peakMatrix = freqlocalPeaks.LocalPeaksOscillation(matrix, 6, 4, 3);
-
-            
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    if (peakMatrix[i, j] < 0)
-                    {
-                        peakMatrix[i, j] = 0;
-                    }
-                    if (peakMatrix[i, j] >= 1)
-                    {
-                        peakMatrix[i, j] = 1;
-                    }
-
-                }
-            }
-
-            for (int i = 1; i < (rows - 1); i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    if ((peakMatrix[i, j] > 0) & (peakMatrix[(i + 1), j] == 0) & (peakMatrix[(i - 1), j] == 0))
-                    {
-                        peakMatrix[i, j] = 0;
-                        peakMatrix[(i + 1), j] = 0;
-                        peakMatrix[(i - 1), j] = 0;
-                    }
-                }
-            }
-
-            //var image = ImageTools.DrawMatrix(peakMatrix);
-            //image.Save(@"C:\Jie\output\3.png");
-
-            // get oscillation of the whole duration of one recording
 
             for (int i = 0; i < rows; i++)
             {
@@ -315,168 +319,86 @@ namespace QutBioacosutics.Xie
                     var tempList = new List<double>();
                     var tempArray = new double[128];
                     var tempDct = new double[128];
-                    var arrayF = new double[128];
+                    var arrayF = new double[128]; 
                     for (int k = n * 128; k < (n + 1) * 128; k++)
                     {
-                        tempList.Add(peakMatrix[i, k]);
+                        tempList.Add(matrix[i, k]);
 
                     }
 
-                    tempArray = tempList.ToArray();
+                    var array = tempList.ToArray();
+                    //DataTools.writeBarGraph(array);
 
-                    //double[] signal2 = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
-                    //double[] signal2 = { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
-
-                    var crossArray = XieFunction.CrossCorrelation(tempArray, tempArray);
                     
-                    //tempDct = XieFunction.DCT(tempArray);
-                    //calculate stand deviation of tempDct
+                    var A = DataTools.AutoCorrelation(array, 0, (array.Length - 1));
 
-                    var sd = XieFunction.StandarDeviation(tempDct);
-                    var seaLevel = sd; 
+                    int L = A.Length;
+                    double[] smooth = DataTools.filterMovingAverage(A, 3);
 
-                    for (int t = 0; t < tempArray.Length; t++)
+
+                    var peakLocation = new List<int>();
+                    for (int s = 2; s < (smooth.Length - 2); s++)
                     {
-                        if (tempArray[t] > seaLevel)
+                        if (smooth[s] - smooth[s - 1] > 0 & smooth[s] - smooth[s + 1] > 0
+                            & smooth[s] - smooth[s - 2] > 0 & smooth[s] - smooth[s - 2] > 0)
                         {
-                            arrayF[t] = tempArray[t];
-                        }
-                        else
-                        {
-                            arrayF[t] = 0;
+                            peakLocation.Add(s);
+                            s = s + 2;
                         }
                     }
 
-                    //find the start point and end point
-                    var segmentList = new List<int[]>();
-                    
-                    //int h = 1;
-                    //while(h < arrayF.Length)
-                    //{
-                        
-                    //    if (arrayF[h] != 0 & arrayF[h - 1] == 0)
-                    //    {
-                    //        var segment = new int[2];
-                    //        segment[0] = h;
-
-                    //        var s = h + 1;
-                    //        for (int j = s; j < (arrayF.Length - 3); j++)
-                    //        {
-                    //            if (arrayF[j] == 0 & ((arrayF[j + 1] != 0 & arrayF[j + 2] != 0) || (arrayF[j + 1] != 0 & arrayF[j + 3] != 0)))   //& arrayF[j + 3] != 0 & arrayF[j + 4] != 0
-                    //            {
-                    //                segment[1] = j;
-                    //                segmentList.Add(segment);
-                    //                break;
-                    //            }
-                    //            h = j + 2;
-                    //        }
-                    //        h++;
-                    //        if (h == (arrayF.Length - 1))
-                    //            break;
-                    //    }
-                    //    else
-                    //    {
-                    //        h++;
-                    //    }
-                    //}
-
-
-                    var segment = new int[2];
-                    for (int s3 = 0; s3 < arrayF.Length; s3++)
+                    //find the interval
+                    var peakArray = peakLocation.ToArray();
+                    var intervalList = new List<int>();
+                    for (int s = 1; s < peakArray.Length; s++)
                     {
-                        if (arrayF[s3] != 0 & arrayF[s3 + 1] == 0)
-                        {
-                            segment[0] = s3;
-                            break;
-                        }
-
+                        intervalList.Add(peakArray[s] - peakArray[s - 1]);
                     }
 
-                    for (int s4 = arrayF.Length; s4 > 2; s4--)
-                    {
-                        if (arrayF[s4 - 1] == 0 & arrayF[s4 - 2] != 0)
-                        {
-                            segment[1] = s4;
-                            break;
-                        }
+                    var intervalArray = intervalList.ToArray();
 
+                    var doubleArray = new double[intervalArray.Length];
+                    for (int s = 0; s < intervalArray.Length; s++)
+                    {
+                        doubleArray[s] = (double)intervalArray[s];
                     }
 
-                    segmentList.Add(segment);
-                    
-                    for (int s1 = 0; s1 < segmentList.Count; s1++)
+
+
+                    if (doubleArray.Length > 3)
                     {
-                        int start = segmentList[s1][0];
-                        int end = segmentList[s1][1];
-                        var array = new double[arrayF.Length];
-                        var position = new List<int>();
-                        var interval = new List<int>();
-                        for (int index = 0; index < arrayF.Length; index++)
+                        for (int s = 0; s < (doubleArray.Length - 3); s++)
                         {
-                            if (index >= start & index <= end)
+                            var arrayList = new List<double>();
+                            for (int t = s; t < s + 2; t++)
                             {
-                                array[index] = arrayF[index];
+                                arrayList.Add(doubleArray[t]);                            
                             }
-                            else
+                            double average;
+                            double sd;
+                            NormalDist.AverageAndSD(arrayList.ToArray(), out average, out sd);
+                            if (sd * 3 < average)
                             {
-                                array[index] = 0;
+                                for (int c1 = n * 128; c1 < (n + 1) * 128; c1++)
+                                {
+                                    result[i, c1] = 1;
+
+                                }
+                            
                             }
-                                                    
+                            
                         }
-
-
-                        var Iarray = XieFunction.IDCT(array);
-
-                        for (int num = 0; num < (Iarray.Length - 1); num++)
-                        {
-                            if ((Iarray[num] > 0 & Iarray[num + 1] < 0) || (Iarray[num] < 0 & Iarray[num + 1] > 0))
-                            {
-                                position.Add(num);                           
-                            }                        
-                        }
-
-
-                        for (int p = 1; p < position.Count; p++)
-                        {
-                            var temp = 2 * (position[p] - position[p - 1]);
-                            interval.Add(temp);
-                        }
-
-                       var intervalArray = interval.ToArray();
-
-                       if (intervalArray.Length > 4)
-                       {
-                           var intervalList = new List<double>();
-                           for (int a = 0; a < intervalArray.Length; a++)
-                           {
-                               intervalList.Add((double)intervalArray[a]);
-
-                           }
-
-
-                           var average = intervalList.ToArray().Average();
-                           var standard = XieFunction.StandarDeviation(intervalList.ToArray());
-
-
-                           if (3 * standard < average)
-                           {
-                               for (int k = (n * 128 + start); k < (n * 128 + end); k++)
-                               {
-                                   result[i, k] = 1;
-
-                               }
-                           }
-                       
-                       }
-
 
                     }
 
-                }            
+                }
+
             }
-
             return result;
         }
+
+            
+        
 
 
         public double[,] CrossCorrelationFindOscillation(double[,] matrix, int zeroBinIndex)

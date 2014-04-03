@@ -16,8 +16,8 @@ namespace QutBioacosutics.Xie
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
-            var intensity = new double[cols];
-            var periodicity = new double[cols];
+            //var intensity = new double[cols];
+            //var periodicity = new double[cols];
 
        
             var result = new double[rows, cols];

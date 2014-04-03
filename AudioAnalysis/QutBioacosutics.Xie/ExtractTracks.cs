@@ -302,9 +302,6 @@ namespace QutBioacosutics.Xie
 
                     //.......................................//
 
-
-
-
                     for (int i = 0; i < numberE.Count; i++)
                     {
                         var longTrack = new Track();
@@ -370,7 +367,7 @@ namespace QutBioacosutics.Xie
                 }
                 else if (longTrackList.Count == 0)
                 {
-                    if (c < column) 
+                    if (c < (column - 2))
                     {
                         c = c + 1;
                         var numberC = new List<int>();
@@ -468,6 +465,10 @@ namespace QutBioacosutics.Xie
 
                         c = c + 1;
                     }
+                    else
+                    {
+                        break;
+                    }
                 }
          
             }
@@ -506,10 +507,10 @@ namespace QutBioacosutics.Xie
                         closedTrackXList[i].RemoveAt(j+1);
                         closedTrackYList[i].RemoveAt(j+1);
                         j--;
-                        if (j == 0)
-                        {
-                            j = 1;
-                        }
+                        //if (j == 0)
+                        //{
+                        //    j = 1;
+                        //}
                     } 
                 }            
             }
@@ -536,10 +537,10 @@ namespace QutBioacosutics.Xie
                     closedTrackXList.RemoveAt(i);
                     closedTrackYList.RemoveAt(i);
                     i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //if (i == 0)
+                    //{
+                    //    i = 1;
+                    //}
                 }
             }
 
@@ -553,10 +554,10 @@ namespace QutBioacosutics.Xie
                     closedTrackXList.RemoveAt(i);
                     closedTrackYList.RemoveAt(i);
                     i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //if (i == 0)
+                    //{
+                    //    i = 1;
+                    //}
                 }
             }
 
@@ -570,10 +571,10 @@ namespace QutBioacosutics.Xie
                     closedTrackXList.RemoveAt(i);
                     closedTrackYList.RemoveAt(i);
                     i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //if (i == 0)
+                    //{
+                    //    i = 1;
+                    //}
                 }
             }
 
@@ -1130,7 +1131,7 @@ namespace QutBioacosutics.Xie
                 }
                 else if (longTrackList.Count == 0)
                 {
-                    if (c < column)
+                    if (c < (column - 2))
                     {
                         c = c + 1;
                         var numberC = new List<int>();
@@ -1228,6 +1229,10 @@ namespace QutBioacosutics.Xie
 
                         c = c + 1;
                     }
+                    else
+                    {
+                        break;
+                    }
                 }
 
             }
@@ -1244,17 +1249,17 @@ namespace QutBioacosutics.Xie
             // remove tracks with few points
             for (int i = 0; i < closedTrackList.Count; i++)
             {
-                if ((closedTrackXList[i].Count / closedTrackList[i].Duration) < trackThreshold)
+                if ( (double) (closedTrackXList[i].Count / closedTrackList[i].Duration) < trackThreshold)
                 {
                     closedTrackList.RemoveAt(i);
                     closedTrackXList.RemoveAt(i);
                     closedTrackYList.RemoveAt(i);
                     i--;
-                    i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //i--;
+                    //if (i <= 0)
+                    //{
+                    //    i = 0;
+                    //}
                 }
             }
 
@@ -1269,10 +1274,10 @@ namespace QutBioacosutics.Xie
                         closedTrackYList[i].RemoveAt(j + 1);
 
                         j--;
-                        if (j == 0)
-                        {
-                            j = 1;
-                        }
+                        //if (j <= 0)
+                        //{
+                        //    j = 0;
+                        //}
                     }
                 }
             }
@@ -1300,10 +1305,10 @@ namespace QutBioacosutics.Xie
                     closedTrackYList.RemoveAt(i);
 
                     i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //if (i <= 0)
+                    //{
+                    //    i = 0;
+                    //}
                 }
             }
 
@@ -1329,10 +1334,10 @@ namespace QutBioacosutics.Xie
                     closedTrackXList.RemoveAt(i);
                     closedTrackYList.RemoveAt(i);
                     i--;
-                    if (i == 0)
-                    {
-                        i = 1;
-                    }
+                    //if (i == 0)
+                    //{
+                    //    i = 1;
+                    //}
                 }
             }
 
