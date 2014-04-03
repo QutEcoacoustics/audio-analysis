@@ -1,10 +1,10 @@
 --- # Configuration file for Jie Xie
 
-file:  C:\Jie\data\020313_min248.wav
+#file:  C:\Jie\data\Frogspecies\Litoria nasuta---traning---5min.wav
 #file: C:\Jie\data\NoiseRecordings\dp2_20080415-124000.wav.silenceAndClicks.wav
-#file:  C:\Jie\data\Segment_JCU_01
+file:  C:\Jie\data\New folder\Litoria fellax1.wav
 do_noise_reduction: 0
-image_path: C:\Jie\output\b.png
+image_path: C:\Jie\output\a.png
 amplitude_threshold: 4
 range: 2
 distance: 5

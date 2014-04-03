@@ -192,7 +192,7 @@ namespace QutBioacosutics.Xie
             int n = v1.Length;
             double[] r;
             alglib.corrr1d(v1, n, v2, n, out r);
-
+            
             int xcorrLength = 2 * n;
             double[] xCorr = new double[xcorrLength];
             for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  
@@ -201,6 +201,17 @@ namespace QutBioacosutics.Xie
             return xCorr;
         }
 
+
+
+        public static double[] XieCrossCorrelation(double[] v1, double[] v2)
+        {
+            int n1 = v1.Length;
+            int n2 = v2.Length;
+
+            
+
+            return null;
+        }
 
 
     }

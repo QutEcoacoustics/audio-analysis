@@ -163,9 +163,7 @@ namespace QutBioacosutics.Xie
 
             }
 
-
             return localpeaks;
-
         }
 
 
@@ -242,6 +240,53 @@ namespace QutBioacosutics.Xie
             return localpeaks;
 
         }
+
+
+
+        public double[,] LocalPeaksOscillationNew(double[,] amplitude)
+        {
+
+            var row = amplitude.GetLength(1);
+            var column = amplitude.GetLength(0);
+
+            // var rotatedMatrix = MatrixTools.MatrixRotate90Anticlockwise(amplitude);
+            // temp_amp is a matrix used to save local peaks
+            double[,] localpeaks = new double[column, row];
+
+            int numSubCols = column / 128;
+            int subCols = column % 128;
+
+            for (int i = 0; i < row; i++)
+            {
+                for (int c = 0; c < numSubCols; c++)
+                {
+
+                    var tempList = new List<double>();
+                    for (int j = c * 128; j < (c + 1) * 128; j++)
+                    {
+                        tempList.Add(amplitude[i, j]);
+                    }
+
+                    var tempArray = tempList.ToArray();
+
+                    tempArray = DataTools.filterMovingAverage(tempArray,5);
+
+                    tempArray = DataTools.AutoCorrelation(tempArray,0,127);
+
+
+
+
+
+
+                }            
+            }
+
+
+
+                return null;
+        }
+
+
 
     }
 }
