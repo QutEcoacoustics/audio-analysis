@@ -93,12 +93,12 @@
         {
             // the unit is confusing
             var secondToMillisecond = 1000;
-            maxFrequency = maximumFrequency;
-            minFrequency = minimumFrequency;
-            startTime = startTime * secondToMillisecond; // millisecond
-            endTime = endTime * secondToMillisecond; // millisecond
-            duration = endTime - startTime; 
-            frequencyRange = maximumFrequency - minimumFrequency;
+            this.maxFrequency = maximumFrequency;
+            this.minFrequency = minimumFrequency;
+            this.startTime = startTime * secondToMillisecond; // millisecond
+            this.endTime = endTime * secondToMillisecond; // millisecond
+            this.duration = this.endTime - this.startTime;
+            this.frequencyRange = this.maxFrequency - this.minFrequency;
             GetNhProperties(neighbourhoodLength, maxFrequencyIndex, spectrogramConfig);
         }
 
@@ -123,7 +123,7 @@
             {
                 nhCountInCol++;
             }
-            var nhlowFrequency = (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
+            var nhlowFrequency = spectrogramConfig.NyquistFrequency - (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
             if (nhlowFrequency > this.minFrequency)
             {
                 nhCountInRow++;

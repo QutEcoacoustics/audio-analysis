@@ -68,7 +68,7 @@
             var result = new AcousticEvent(startTime, duration, minFreq, maxFreq);
             foreach (var csvRow in lines1)
             {
-                if (csvRow[3] != "" && csvRow[6] != "")
+                if (csvRow[3] != "")
                 {
                     result.MinFreq = int.Parse(csvRow[1]);
                     result.MaxFreq = int.Parse(csvRow[2]);
