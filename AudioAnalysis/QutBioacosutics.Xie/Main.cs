@@ -327,10 +327,10 @@ namespace QutBioacosutics.Xie
             //var NormaliseOscillationArray = norOscArray.Reverse();
             //var NormaliseTrackArray = norTArray.Reverse();
 
-            var FrogIndexList = new List<FrogFeatures>();
+            var FrogIndexList = new List<FrogFeature>();
             for (int i = (norHArray.Length - 1); i > 0; i--)
             {
-                var FrogIndex = new FrogFeatures();
+                var FrogIndex = new FrogFeature();
                 FrogIndex.Track = norTArray[i];
                 FrogIndex.LongTrack = norLongTArray[i];
                 FrogIndex.Oscillation = norOscArray[i];
