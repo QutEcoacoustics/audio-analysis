@@ -63,15 +63,17 @@
             }
             var minimagnitude = magnitudeList.Min();
             var maxmagnitude = magnitudeList.Max();
-            var miniOrientation = orientationList.Min();
-            var maxOrientation = orientationList.Max();
+            //var miniOrientation = orientationList.Min();
+            //var maxOrientation = orientationList.Max();
+            var miniOrientation = -Math.PI / 2;
+            var maxOrientation = Math.PI / 2;
             foreach (var nh in nhList)
             {
-                var enlargeTimes = 10;
+                //var enlargeTimes = 10;
                 if (nh.magnitude != 100)
                 {
-                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude) * enlargeTimes;
-                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation) * enlargeTimes;                    
+                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);                    
                 }
                 result.Add(nh);               
             }

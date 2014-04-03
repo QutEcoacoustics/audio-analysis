@@ -27,9 +27,16 @@ namespace Dong.Felt.ResultsOutput
             var endTime = TimeSpan.FromMilliseconds(candidate.EndTime + buffer.TotalMilliseconds);           
             var sampleRate = 22050;
             if (startTime.TotalMilliseconds < 0)
-            {
-                startTime = TimeSpan.FromMilliseconds(candidate.StartTime);
+            {               
+                startTime = TimeSpan.FromMilliseconds(0);  // if startTime is 0 second
                 endTime = TimeSpan.FromMilliseconds(candidate.EndTime + 2 * buffer.TotalMilliseconds); 
+            }
+            // To check whether endTime is greater 60 seconds 
+            if (endTime.TotalMilliseconds > 60000)
+            {
+                startTime = TimeSpan.FromMilliseconds(candidate.EndTime - 2 * buffer.TotalMilliseconds);
+                var tempEndTime = new TimeSpan(0, 1, 0);
+                endTime = tempEndTime; 
             }
             var request = new AudioUtilityRequest
                     {
