@@ -364,8 +364,7 @@ namespace AnalysisPrograms
                 return analysisResults; // nothing to process 
             }
 
-            Features indices = indicesStore.Indices;
-            DataTable dt = AcousticIndicesStore.Indices2DataTable(indices);
+            DataTable dt = AcousticIndicesStore.Indices2DataTable(indicesStore);
             analysisResults.Data = dt;
             analysisResults.AudioDuration = indicesStore.RecordingDuration;
 

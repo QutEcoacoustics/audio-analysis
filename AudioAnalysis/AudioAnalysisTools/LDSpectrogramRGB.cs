@@ -126,28 +126,10 @@ namespace AudioAnalysisTools
             this.ColorMap = colourMap;
         }
 
-
-
-        public Dictionary<string, double> GetIndexStatistics(string key)
-        {
-            return indexStats[key]; // used to return a dictionary of index statistics
-        }
-        public double GetIndexStatistics(string key, string stat)
-        {
-            return indexStats[key][stat]; // used to return index statistics
-        }
-
-
-        public void SetIndexStatistics(string key, Dictionary<string, double> dict)
-        {
-            indexStats.Add(key, dict); // add index statistics
-        }
-
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {
             return ReadCSVFiles(ipdir, fileName, SpectrogramConstants.ALL_KNOWN_KEYS);
         }
-
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys)
         {
@@ -274,6 +256,57 @@ namespace AudioAnalysisTools
             return this.spgr_StdDevMatrices.Count;
         }
 
+        public Dictionary<string, double> GetIndexStatistics(string key)
+        {
+            return indexStats[key]; // used to return a dictionary of index statistics
+        }
+        public double GetIndexStatistics(string key, string stat)
+        {
+            return indexStats[key][stat]; // used to return index statistics
+        }
+
+
+        public void SetIndexStatistics(string key, Dictionary<string, double> dict)
+        {
+            indexStats.Add(key, dict); // add index statistics
+        }
+
+
+        public void CalculateStatisticsForAllIndices()
+        {
+            double[,] matrix;
+            bool allOK = true;
+            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+            foreach(string key in keys)
+            {
+                if(this.spectrogramMatrices.ContainsKey(key)) 
+                {
+                    matrix = this.spectrogramMatrices[key];
+                    var dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(matrix);
+                    indexStats.Add(key, dict); // add index statistics
+                }
+            }
+        }
+
+        public List<string> WriteStatisticsForAllIndices()
+        {
+            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+            List<string> lines = new List<string>();
+            foreach (string key in keys)
+            {
+                if (this.spectrogramMatrices.ContainsKey(key))
+                {
+                    string outString = "STATS for "+key+":   ";
+                    Dictionary<string, double> stats = this.GetIndexStatistics(key);
+                    foreach (string stat in stats.Keys)
+                    {
+                        outString = String.Format("{0}  {1}={2:f3} ", outString, stat, stats[stat]);
+                    }
+                    lines.Add(outString);
+                }
+            }
+            return lines;
+        }
 
         /// <summary>
         /// All matrices must be in spectrogram orientation before adding to list of spectrograms.
@@ -722,6 +755,21 @@ namespace AudioAnalysisTools
         } //NormaliseSpectrogramMatrix()
 
 
+
+        public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
+        {
+            double[] values = DataTools.Matrix2Array(M);
+            double min, max, mode, SD;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, out min, out max, out mode, out SD);
+            var dict = new Dictionary<string, double>();
+            dict["min"] = min;
+            dict["max"] = max;
+            dict["mode"] = mode;
+            dict["sd"] = SD;
+            return dict;
+        }
+
+
         public static Image FrameSpectrogram(Image bmp1, Image titleBar, int minOffset, int X_interval, int Y_interval)
         {
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, Y_interval);
@@ -958,6 +1006,10 @@ namespace AudioAnalysisTools
                 return;
             }
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+
+            cs1.CalculateStatisticsForAllIndices();
+            List<string> lines = cs1.WriteStatisticsForAllIndices();
+            FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
 
             colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);

@@ -115,25 +115,16 @@ namespace AnalysisPrograms
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             AnalysisPrograms.Features indices; // struct in which to store all indices
             AcousticIndicesStore indicesStore = new AcousticIndicesStore(freqBinCount, wavDuration);
+            indicesStore.ClippingIndex_T = dspOutput.ClippingIndex_T;
+            indicesStore.ClippingIndex_H = dspOutput.ClippingIndex_H;
+
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
-            if (avSignalEnvelope < 0.001) // although signal appears zero, this condition is required
+            if (avSignalEnvelope < AcousticIndicesStore.ZERO_SIGNAL_THRESHOLD)
             {
                 indicesStore.Indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
                 return indicesStore;
             }
-
-            // following deals with case where the signal waveform is clipped 
-            //  i.e. where maximum value = 1.0 in more than 5% of consecutive pairs frames!! 
-            //if (dspOutput.ClippingPercent > 0) 
-            //{
-            //    Console.WriteLine("dspOutput.ClippingPercent = {0}", dspOutput.ClippingPercent);
-            //    int frameCount = signalEnvelope.Length;
-            //    indicesStore.Indices = AcousticIndicesStore.GetBaselineIndices(freqBinCount, wavDuration);
-            //    MarkClippedSpectra(indicesStore.Spectra); 
-            //    return indicesStore;
-            //}
-
             
             // i: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
@@ -324,8 +315,8 @@ namespace AnalysisPrograms
                 indicesStore.Hits = hits;
                 indicesStore.TrackScores = scores;
                 //indicesStore.Tracks = trackInfo.listOfSPTracks;
-                if (dspOutput.ClippingPercent > 0)  MarkClippedSpectra(indicesStore.Spectra); 
-
+                if (dspOutput.ClippingIndex_T > AcousticIndicesStore.CLIPPING_THRESHOLD) 
+                    MarkClippedSpectra(indicesStore.Spectra);
                 return indicesStore;
             }
             //#V#####################################################################################################################################################
@@ -380,7 +371,8 @@ namespace AnalysisPrograms
             indicesStore.Hits = hits;
             indicesStore.TrackScores = scores;
             indicesStore.Tracks = sptInfo.listOfSPTracks;
-            if (dspOutput.ClippingPercent > 0) MarkClippedSpectra(indicesStore.Spectra); 
+            if (dspOutput.ClippingIndex_T > AcousticIndicesStore.CLIPPING_THRESHOLD)
+                MarkClippedSpectra(indicesStore.Spectra); 
 
             return indicesStore;
         } //Analysis()
