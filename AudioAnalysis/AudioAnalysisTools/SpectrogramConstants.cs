@@ -26,19 +26,19 @@ namespace AudioAnalysisTools
         // NORMALISING CONSTANTS FOR INDICES
         //public const double ACI_MIN = 0.0;
         //public const double ACI_MAX = 1.0;
-        public const double ACI_MIN = 0.40;
+        public const double ACI_MIN = 0.4;
         public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 30.0;
+        public const double AVG_MAX = 50.0;
         public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
         public const double BGN_MAX = -20.0;
         public const double CLS_MIN = 0.0;
-        public const double CLS_MAX = 20.0;
+        public const double CLS_MAX = 30.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.3;
-        public const double TEN_MIN = 0.5;
+        public const double TEN_MIN = 0.4;
         public const double TEN_MAX = 0.95;
-        public const double SDV_MIN = 0.0;
+        public const double SDV_MIN = 0.0; // for the variance bounds
         public const double SDV_MAX = 100.0;
         public const double VAR_MIN = SDV_MIN * SDV_MIN;
         public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0

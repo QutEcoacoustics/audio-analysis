@@ -140,42 +140,42 @@ namespace AudioAnalysisTools
 
             string key = keys[0];
             double[,] m1Red = cs1.GetNormalisedSpectrogramMatrix(key);
-            var dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Red);
+            var dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
             cs1.SetIndexStatistics(key, dict);
             m1Red = MatrixTools.Matrix2ZScores(m1Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m1Grn = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Grn);
+            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Grn);
             cs1.SetIndexStatistics(key, dict);
             m1Grn = MatrixTools.Matrix2ZScores(m1Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m1Blu = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m1Blu);
+            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Blu);
             cs1.SetIndexStatistics(key, dict);
             m1Blu = MatrixTools.Matrix2ZScores(m1Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[0];
             double[,] m2Red = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Red);
+            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Red);
             cs2.SetIndexStatistics(key, dict);
             m2Red = MatrixTools.Matrix2ZScores(m2Red, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m2Grn = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Grn);
+            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Grn);
             cs2.SetIndexStatistics(key, dict);
             m2Grn = MatrixTools.Matrix2ZScores(m2Grn, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m2Blu = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramDistance.GetModeAndOneTailedStandardDeviation(m2Blu);
+            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Blu);
             cs2.SetIndexStatistics(key, dict);
             m2Blu = MatrixTools.Matrix2ZScores(m2Blu, dict["mode"], dict["sd"]);
             //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
@@ -304,21 +304,6 @@ namespace AudioAnalysisTools
 
             return bmp;
         } // DrawDistanceSpectrogram()
-
-        public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
-        {
-            double[] values = DataTools.Matrix2Array(M);
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, out min, out max, out mode, out SD);
-            //Console.WriteLine("{0}: Min={1:f3}   Max={2:f3}    Mode={3:f3}+/-{4:f3} (SD=One-tailed)", key, min, max, mode, SD);
-            var dict = new Dictionary<string, double>();
-            dict["min"] = min;
-            dict["max"] = max;
-            dict["mode"] = mode;
-            dict["sd"] = SD;
-            return dict;
-        }
-
 
         public static Image DrawTitleBarOfEuclidianDistanceSpectrogram(string name1, string name2, Color[] colorArray, int width, int height)
         {

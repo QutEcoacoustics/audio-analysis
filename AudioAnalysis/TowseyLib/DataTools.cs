@@ -2889,17 +2889,18 @@ namespace TowseyLib
       /// <param name="SD"></param>
       public static void GetModeAndOneTailedStandardDeviation(double[] values, out double min, out double max, out double mode, out double SD)
       {
-          int binCount = 100;
+          int binCount = 300;
           double binWidth;
           int[] histo = Histogram.Histo(values, binCount, out binWidth, out min, out max);
-          //DataTools.writeBarGraph(histo);
-          //Console.WriteLine("Above bar graph is distribution of {0} index values.", key);
+          DataTools.writeBarGraph(histo);
 
           //Calculate the SD on longest tail. Assume that the tail is Gaussian.
           int indexOfMode, indexOfOneSD;
           DataTools.GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
           mode = min + (indexOfMode * binWidth);
-          SD = Math.Abs(indexOfOneSD - indexOfMode) * binWidth;
+          int delta = Math.Abs(indexOfOneSD - indexOfMode);
+          if (delta < 1) delta = 1;
+          SD = delta * binWidth;
 
 
           // the below av and sd are just a check on the one-tailed calcualtion.

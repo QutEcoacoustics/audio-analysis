@@ -95,7 +95,7 @@ namespace AnalysisPrograms
     public class AcousticIndicesStore
     {
 
-        private const int COL_NUMBER = 26;
+        private const int COL_NUMBER = 27;
 
         public static string header_count = Keys.INDICES_COUNT;
         public const string header_startMin = "start-min";
@@ -167,6 +167,10 @@ namespace AnalysisPrograms
         public const double max_SPTracksPerSec = 10.0;
         public const double max_SPTracksDur = 10.0;
 
+        public const double CLIPPING_THRESHOLD = 0.01; // estimate of fraction of clipped values in wave form
+        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
+
+
         private TimeSpan recordingDuration;
         public TimeSpan RecordingDuration
         {
@@ -174,6 +178,20 @@ namespace AnalysisPrograms
             set { recordingDuration = value; }
         }
 
+        private double clippingIndex_H = 0.0;
+        public double ClippingIndex_H
+        {
+            get { return clippingIndex_H; }
+            set { clippingIndex_H = value; }
+        }
+
+        private double clippingIndex_T = 0.0;
+        public double ClippingIndex_T
+        {
+            get { return clippingIndex_T; }
+            set { clippingIndex_T = value; }
+        }
+        
         private Features indices;
         public Features Indices
         {
@@ -353,14 +371,16 @@ namespace AnalysisPrograms
             HEADERS[23] = header_SPTracksDur; COL_TYPES[23] = typeof(double); DISPLAY_COLUMN[23] = true; COMBO_WEIGHTS[23] = 0.0;
             HEADERS[24] = Rain.header_rain; COL_TYPES[24] = typeof(double); DISPLAY_COLUMN[24] = true; COMBO_WEIGHTS[24] = 0.0;
             HEADERS[25] = Rain.header_cicada; COL_TYPES[25] = typeof(double); DISPLAY_COLUMN[25] = true; COMBO_WEIGHTS[25] = 0.0;
+            HEADERS[26] = "Clipping"; COL_TYPES[26] = typeof(double); DISPLAY_COLUMN[26] = true; COMBO_WEIGHTS[26] = 0.0;
             //HEADERS[26] = "Weighted index"; COL_TYPES[26] = typeof(double); DISPLAY_COLUMN[26] = false; COMBO_WEIGHTS[26] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN, COMBO_WEIGHTS);
         }
 
 
-        public static DataTable Indices2DataTable(Features indices)
+        public static DataTable Indices2DataTable(AcousticIndicesStore indicesStore)
         {
-            var parameters = InitOutputTableColumns();
+            Features indices = indicesStore.Indices;
+            var parameters = AcousticIndicesStore.InitOutputTableColumns();
             var headers = parameters.Item1;
             var types = parameters.Item2;
             var dt = DataTableTools.CreateTable(headers, types);
@@ -372,7 +392,8 @@ namespace AnalysisPrograms
                         indices.ACI,
                         indices.clusterCount, indices.avClusterDuration.TotalMilliseconds, indices.triGramUniqueCount, indices.triGramRepeatRate,
                         indices.tracksPerSec, indices.trackDuration_percent,
-                        indices.rainScore, indices.cicadaScore);
+                        indices.rainScore, indices.cicadaScore,
+                        indicesStore.ClippingIndex_T);
 
             //foreach (DataRow row in dt.Rows) { }
             return dt;

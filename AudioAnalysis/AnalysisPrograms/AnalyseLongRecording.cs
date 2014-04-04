@@ -124,7 +124,7 @@ namespace AnalysisPrograms
                 Source = recordingPath.ToFileInfo(),
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_02April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_04April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004

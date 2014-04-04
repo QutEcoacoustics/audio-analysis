@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 //using MathNet.Numerics;
 using MathNet.Numerics.Transformations;
@@ -25,17 +26,17 @@ namespace AudioAnalysisTools
             public int NyquistFreq { get; set; } 
             public double FreqBinWidth { get; set; }
             public int NyquistBin { get; set; }
-            public bool[] EnvelopeClipping { get; set; }
-            public int ClippingPercent { get; set; }
+            public double ClippingIndex_H { get; set; }
+            public double ClippingIndex_T { get; set; }
 
 
-            public EnvelopeAndFFT(double[] average, double[] envelope, bool[] envelopeClipping, int clipping, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
+            public EnvelopeAndFFT(double[] average, double[] envelope, double clippingT, double clippingH, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
                                   int nyquistBin)
             {
                 this.Average = average;
                 this.Envelope = envelope;
-                this.EnvelopeClipping = envelopeClipping;
-                this.ClippingPercent = clipping;
+                this.ClippingIndex_H  = clippingH;
+                this.ClippingIndex_T = clippingT;
                 this.amplitudeSpectrogram = amplSpectrogram;
                 this.WindowPower = windowPower;
                 this.NyquistFreq = nyquistFreq; 
@@ -132,7 +133,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// returns a Tuple containing four items:
+        /// returns four items:
         /// 1) the average of absolute amplitudes for each frame
         /// 2) the maximum of absolute amplitudes for each frame i.e. the signal envelope.
         /// 3) the signal amplitude spectrogram
@@ -145,6 +146,11 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int windowSize, double overlap)
         {
+            // check the envelope for clipping. Use two methods
+            double amplitudeThreshold = 66 / (double)UInt16.MaxValue; // ~= 0.1% of the maximum amplitude
+            double clipping_T = DSP_Frames.EstimateClippingUsingThreshold(signal, amplitudeThreshold);
+            double clipping_H = 0.0; // EstimateClipping();
+
             int frameOffset = (int)(windowSize * (1 - overlap));
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
             if (frameIDs == null) return null;
@@ -200,14 +206,6 @@ namespace AudioAnalysisTools
                 
             } // end frames
 
-            // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
-            int clipCount = 0;
-            for (int i = 1; i < frameCount; i++)
-            {
-                if(envelopeClipping[i-1] && envelopeClipping[i]) clipCount ++;            
-            }
-            int clipPercent = clipCount * 100 / frameCount;
-
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
@@ -216,7 +214,7 @@ namespace AudioAnalysisTools
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
 
-            return new EnvelopeAndFFT(average, envelope, envelopeClipping, clipPercent, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT(average, envelope, clipping_H, clipping_T, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
 
@@ -281,6 +279,40 @@ namespace AudioAnalysisTools
             return System.Tuple.Create(average, envelope, zeroCrossings, zcPeriod, sdPeriod);
         }
 
+
+        public static double EstimateClippingUsingThreshold(double[] signal, double AmplitudeThreshold)
+        {
+            const int ConsecutiveSampleThreshold = 3;    //  3 samples, ~0.17ms
+            //const int ConsecutiveSampleThreshold = 22; // 22 samples, ~1.0ms
+            var maximumAmplitude = signal.Max();
+
+            int clippedSamples = 0;
+            int clipLength = 0;
+
+            for (int index = 0; index < signal.Length; index++)
+            {
+                double sample = Math.Abs(signal[index]);
+
+                // check if sample reached clipping ceiling (max - threshold) 
+                if (maximumAmplitude - sample - AmplitudeThreshold <= 0)
+                {
+                    // a clip has occurred
+                    clipLength++;
+                }
+                // clipping has now stopped
+                else if (clipLength >= ConsecutiveSampleThreshold)
+                {
+                    clippedSamples += clipLength;
+                    clipLength = 0;
+                }
+            }
+
+            // clean up a clipping surge at the end
+            clippedSamples += clipLength;
+
+            double clipRatio = (double)clippedSamples / signal.Length;
+            return clipRatio;
+        }
 
         public static int[] ConvertZeroCrossings2Hz(double[] zeroCrossings, int frameWidth, int sampleRate)
         {
