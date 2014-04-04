@@ -13,6 +13,47 @@
 
     class StatisticalAnalysis
     {
+        public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.5;
+            var Stot = 0.5;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex; 
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);   
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0)
+                    {                      
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);                     
+                    }
+                }
+            }
+            r = 1 - Sreg / Stot;
+            return r;
+        }
+
         public static RegionRerepresentation[,] RegionRepreListToMatrix(List<RegionRerepresentation> region)
         {
             var rowsCount = region[0].NhCountInRow;
@@ -61,21 +102,89 @@
                     orientationList.Add(nh.orientation);
                 }
             }
-            var minimagnitude = magnitudeList.Min();
-            var maxmagnitude = magnitudeList.Max();
+            var averageMagnitude = magnitudeList.Average();
+            var averageOrientation = orientationList.Average();
+            var squareDiffMagnitude = 0.0;
+            var squareDiffOrientation = 0.0;
+            foreach (var nh in nhList)
+            {
+                squareDiffMagnitude += Math.Pow(nh.magnitude - averageMagnitude, 2);
+                squareDiffOrientation += Math.Pow(nh.orientation - averageOrientation, 2);
+            }
+            var standDevMagnitude = Math.Sqrt(squareDiffMagnitude / nhList.Count);
+            var standDevOrientation = Math.Sqrt(squareDiffOrientation / nhList.Count);
+            //var minimagnitude = magnitudeList.Min();
+            //var maxmagnitude = magnitudeList.Max();
             //var miniOrientation = orientationList.Min();
             //var maxOrientation = orientationList.Max();
-            var miniOrientation = -Math.PI / 2;
-            var maxOrientation = Math.PI / 2;
+            //var miniOrientation = -Math.PI / 2;
+            //var maxOrientation = Math.PI / 2;
             foreach (var nh in nhList)
             {
                 //var enlargeTimes = 10;
                 if (nh.magnitude != 100)
                 {
-                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);                    
+                    nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
+                    //nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    //nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);   
+                    nh.orientation = (nh.orientation - averageOrientation) / standDevOrientation;
                 }
                 result.Add(nh);               
+            }
+            return result;
+        }
+
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeProperties2(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+
+            var magnitudeList = new List<double>();
+            var orientationList = new List<double>();
+            var dominantOrientationList = new List<double>();
+            var dominantPoiCountList = new List<double>();
+            foreach (var nh in nhList)
+            {
+                // Typically, magnitude should be greater than 0 and less than 20.
+                // otherwise, it is assigned to a default value, 100
+                if (nh.magnitude != 100)
+                {
+                    magnitudeList.Add(nh.magnitude);
+                    orientationList.Add(nh.orientation);
+                    dominantOrientationList.Add(nh.dominantOrientationType);
+                    dominantPoiCountList.Add(nh.dominantPOICount);
+                }
+            }
+            var averageMagnitude = magnitudeList.Average();
+            var averageOrientation = orientationList.Average();
+            var averageDominantOrientation = dominantOrientationList.Average();
+            var averageDominantPoiCount = dominantPoiCountList.Average();
+            var squareDiffMagnitude = 0.0;
+            var squareDiffOrientation = 0.0;
+            var squareDiffDominantOrien = 0.0;
+            var squareDiffDominantPoiCount = 0.0;
+            foreach (var nh in nhList)
+            {
+                squareDiffMagnitude += Math.Pow(nh.magnitude - averageMagnitude, 2);
+                squareDiffOrientation += Math.Pow(nh.orientation - averageOrientation, 2);
+                squareDiffDominantOrien += Math.Pow(nh.dominantOrientationType - averageDominantOrientation, 2);
+                squareDiffDominantPoiCount += Math.Pow(nh.dominantPOICount - averageDominantPoiCount, 2);
+            }
+            var standDevMagnitude = Math.Sqrt(squareDiffMagnitude / nhList.Count);
+            var standDevOrientation = Math.Sqrt(squareDiffOrientation / nhList.Count);
+            var standDevDominant = Math.Sqrt(squareDiffDominantOrien / nhList.Count);
+            var standDevDominantPoiCount = Math.Sqrt(squareDiffDominantPoiCount / nhList.Count);
+            
+            foreach (var nh in nhList)
+            {
+                //var enlargeTimes = 10;
+                if (nh.magnitude != 100)
+                {
+                    nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;                   
+                    nh.orientation = (nh.orientation - averageOrientation) / standDevOrientation;
+                    nh.dominantOrientationType = (nh.dominantOrientationType - averageDominantOrientation) / standDevDominant;
+                    nh.dominantPOICount = (nh.dominantPOICount - averageDominantPoiCount) / standDevDominantPoiCount;
+                }
+                result.Add(nh);
             }
             return result;
         }

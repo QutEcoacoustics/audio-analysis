@@ -80,12 +80,12 @@ namespace Dong.Felt.Representations
 
         /// Gets or sets the dominant orientation type of the neighbourhood.
         /// </summary>
-        public int dominantOrientationType { get; set; }
+        public double dominantOrientationType { get; set; }
 
         /// <summary>
         /// Gets or sets the count of points of interest (pois) in the neighbourhood.
         /// </summary>
-        public int dominantPOICount { get; set; }
+        public double dominantPOICount { get; set; }
 
         /// <summary>
         /// Gets or sets the sum of the magnitude of pois with dominant orientation in the neighbourhood.
@@ -138,6 +138,11 @@ namespace Dong.Felt.Representations
         /// Gets or sets the sum of the magnitude of pois with the negative diagonal orientation in the neighbourhood.
         /// </summary>
         public double NDOrientationPOIMagnitudeSum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the measure of line of best fit, it ranges (0, 1).
+        /// </summary>
+        public double LineOfBestlineMeasure { get; set; }
 
         #endregion
 
@@ -361,6 +366,7 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.POICount = pointsCount;
             this.neighbourhoodSize = poiMatrixLength;
+            this.LineOfBestlineMeasure = StatisticalAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
@@ -422,6 +428,11 @@ namespace Dong.Felt.Representations
             int maximumRowIndex = poiNeighbourhood.GetLength(0);
             int maximumColIndex = poiNeighbourhood.GetLength(1);
 
+
+            var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(poiNeighbourhood, 0, 0);
+            var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);
+            this.dominantOrientationType = ridgeDominantOrientationRepresentation.Item1;
+            this.dominantPOICount = ridgeDominantOrientationRepresentation.Item2;
             for (int rowIndex = 0; rowIndex < maximumColIndex; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < maximumColIndex; colIndex++)

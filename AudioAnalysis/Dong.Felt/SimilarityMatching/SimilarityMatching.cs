@@ -418,28 +418,69 @@
                     //}
                     //else
                     //{
-                        var queryScore = Math.Abs(query[index].magnitude);
-                        var queryOrientation = query[index].orientation;
-                        var candidateScore = Math.Abs(candidate[index].magnitude);
+                        var queryMagnitude = Math.Abs(query[index].magnitude);
+                        var queryOrientation = query[index].orientation;                       
+                        var candidateMagnitude = Math.Abs(candidate[index].magnitude);
                         var candidateOrientation = candidate[index].orientation;                        
-                        var orientationDifferenceClockwise = Math.Abs(queryOrientation - candidateOrientation);
-                        var maxOrientationDifference = 0.5;
-                        var orientationDifferenceUnClockwise = maxOrientationDifference - Math.Abs(queryOrientation - candidateOrientation);
-                        var orientationDifference = 0.0;
-                        if (orientationDifferenceClockwise <= orientationDifferenceUnClockwise)
-                        {
-                            orientationDifference = orientationDifferenceClockwise;
-                        }
-                        else
-                        {
-                            orientationDifference = orientationDifferenceUnClockwise;
-                        }
-                        var magnitudeDifference = Math.Abs(queryScore - candidateScore);
-                        nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
+                        //var orientationDifferenceClockwise = Math.Abs(queryOrientation - candidateOrientation);
+                        //var maxOrientationDifference = 0.5;
+                        //var orientationDifferenceUnClockwise = maxOrientationDifference - Math.Abs(queryOrientation - candidateOrientation);
+                        //var orientationDifference = 0.0;
+                        //if (orientationDifferenceClockwise <= orientationDifferenceUnClockwise)
+                        //{
+                        //    orientationDifference = orientationDifferenceClockwise;
+                        //}
+                        //else
+                        //{
+                        //    orientationDifference = orientationDifferenceUnClockwise;
+                        //}
+                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                        var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);                      
+                       nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
                     //}
                 }
                 //result = Math.Sqrt(0.1 * nhSum1 + 0.9 * nhSum2);
                 result = nhSum2;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
+        /// based on the sum of sub-region in the process of calculation. There are four properties as feature vector. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <returns></returns>
+        public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+            double weight1, double weight2, double weight3, double weight4)
+        {
+            var result = 0.0;        
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;                
+                var nhSum = 0.0;
+                for (int index = 0; index < nhCount; index++)
+                {
+                    
+                    var queryMagnitude = Math.Abs(query[index].magnitude);
+                    var queryOrientation = query[index].orientation;
+                    var queryDominantOrientationType = query[index].dominantOrientationType;
+                    var queryDominantPoiCount = query[index].dominantPOICount;
+                    var candidateMagnitude = Math.Abs(candidate[index].magnitude);
+                    var candidateOrientation = candidate[index].orientation;
+                    var candidateDominantOrientationType = candidate[index].dominantOrientationType;
+                    var candidateDominantPoiCount = candidate[index].dominantPOICount;
+                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                    var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
+                    var orientationTypeDiff = Math.Abs(queryDominantOrientationType - candidateDominantOrientationType);
+                    var dominantPoiCountDiff = Math.Abs(queryDominantPoiCount - candidateDominantPoiCount);
+                    nhSum += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2)
+                        + weight3 * Math.Pow(orientationTypeDiff, 2) + weight4 * Math.Pow(dominantPoiCountDiff, 2));
+                }
+                result = nhSum;
             }
             return result;
         }

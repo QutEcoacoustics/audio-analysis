@@ -284,6 +284,11 @@ namespace Dong.Felt
             return orientationCount;
         }
 
+        /// <summary>
+        /// Get the dominant orientation type and poiWith dominant orientation in a nh. 
+        /// </summary>
+        /// <param name="slice"></param>
+        /// <returns></returns>
         public static Tuple<int, int> SliceMainSlopeRepresentation(RidgeNeighbourhoodFeatureVector slice)
         {
             var horizontalCount = OrientationValueCount(slice.HorizontalVector);
