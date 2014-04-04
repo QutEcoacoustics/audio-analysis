@@ -93,7 +93,7 @@ namespace QutBioacosutics.Xie
             // generate a spectrogram
             var recording = new AudioRecording(path.FullName);
 
-            var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 512 };
+            var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 256 };
             var spectrogramLongTrack = new SpectralSonogram(spectrogramConfigLongTrack,recording.GetWavReader());
 
             //var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramLongTrack.Data);
@@ -123,9 +123,7 @@ namespace QutBioacosutics.Xie
 
             //DataTools.writeBarGraph(tempArray);
 
-            
-
-
+           
 
             double[,] spectrogramMatrix = DataTools.normalise(spectrogramLongTrack.Data);
             spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrix);
