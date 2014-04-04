@@ -167,7 +167,6 @@ namespace QutBioacosutics.Xie
         }
 
 
-
         public double[,] LocalLongPeaks(double[,] amplitude, double ampthreshold, int range, int distance)
         {
 
@@ -242,7 +241,6 @@ namespace QutBioacosutics.Xie
         }
 
 
-
         public double[,] LocalPeaksOscillationNew(double[,] amplitude)
         {
 
@@ -284,6 +282,30 @@ namespace QutBioacosutics.Xie
 
 
                 return null;
+        }
+
+
+        /// <summary>
+        /// Find maximum value in each frequency band according to the frog's dominant frequency.
+        /// 9 frog species and canetoad will be analysed, they are Litoria rothii (1800Hz) , Litoria caerulea (500Hz), Litoria fellax (4750Hz), 
+        /// Litoria gracillenta (2700Hz), Litoria latopalmata (3000Hz), Litoria nasuta (2800Hz), Canetoad, Mixophyes fasiolatus (1200Hz), 
+        /// Litoria verreauxii(3100Hz), Rheobatrachus silus (1500Hz)
+        /// 
+        /// Thus the frequency band is divided into 300 - 800Hz, 1100Hz - 1400Hz, 1400Hz - 1600Hz, 1600 - 2000Hz, 2500Hz - 3200Hz, 4500Hz - 5000Hz.
+        /// Among them, the frequency band, 2500 - 3200Hz, contains three frog species. If there are frog chorus, a mismatch is unavoidable.
+        /// 
+        /// Ampthreshold is a experimental value, here it is 4 dB
+        /// </summary>
+         
+        public double[,] LocalPeaksDifferentBands(double[,] matrix, double ampthreshold)
+        {
+            // According to the frequency bands, calculate the bin range.
+
+
+            // Find the maximum of the specify bin range.
+
+
+            return null;
         }
 
 
