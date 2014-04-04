@@ -79,6 +79,7 @@
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
     <Compile Include="FindOscillation.cs" />
+    <Compile Include="FrogIndex.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
