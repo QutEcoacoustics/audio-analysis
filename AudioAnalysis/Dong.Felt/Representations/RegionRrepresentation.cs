@@ -103,6 +103,12 @@ namespace Dong.Felt.Representations
             this.PDOrientationPOIMagnitudeSum = nh.PDOrientationPOIMagnitudeSum;
             this.NDOrientationPOICount = nh.NDOrientationPOICount;
             this.NDOrientationPOIMagnitudeSum = nh.NDOrientationPOIMagnitudeSum;
+            this.LinearHOrientation = nh.LinearHOrientation;
+            this.LinearVOrientation = nh.LinearVOrientation;
+            this.HOrientationPOIMagnitude = nh.HOrientationPOIMagnitude;
+            this.VOrientationPOIMagnitude = nh.VOrientationPOIMagnitude;
+            this.HLineOfBestfitMeasure = nh.HLineOfBestfitMeasure;
+            this.VLineOfBestfitMeasure = nh.VLineOfBestfitMeasure;
             this.SourceAudioFile = file;
         }
 

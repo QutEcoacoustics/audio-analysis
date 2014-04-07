@@ -13,11 +13,118 @@
 
     class StatisticalAnalysis
     {
+        public static double MeasureHLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.0;
+            var Stot = 0.0;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 && 
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    {
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);
+                    }
+                }
+            }
+            if (Stot != 0)
+            {
+                r = 1 - Sreg / Stot;
+            }
+            else
+            {
+                r = 1;
+            }
+            return r;
+        }
+
+        public static double MeasureVLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.0;
+            var Stot = 0.0;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    {
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);
+                    }
+                }
+            }
+            if (lineOfSlope == Math.PI / 2)
+            {
+                r = 1;
+            }
+            else
+            {
+                if (Stot != 0)
+                {
+                    r = 1 - Sreg / Stot;
+                }
+                else
+                {
+                    r = 1;
+                }
+            }           
+            return r;
+        }
+
         public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
         {
             var r = 0.0;
-            var Sreg = 0.5;
-            var Stot = 0.5;
+            var Sreg = 0.0;
+            var Stot = 0.0;
             var poiMatrixLength = poiMatrix.GetLength(0);
             var matrixRadius = poiMatrixLength / 2;
             var improvedRowIndex = 0.0;
@@ -50,7 +157,15 @@
                     }
                 }
             }
-            r = 1 - Sreg / Stot;
+           
+            if (Stot != 0)
+            {
+                r = 1 - Sreg / Stot;
+            }
+            else
+            {               
+                r = 1;              
+            }
             return r;
         }
 
@@ -134,6 +249,12 @@
             return result;
         }
 
+        /// <summary>
+        /// This method will involve 4 values in a feature vector for a nh. They are magnitude, orientation, dominantOrientation, 
+        /// dominantPOICount.
+        /// </summary>
+        /// <param name="nhList"></param>
+        /// <returns></returns>
         public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeProperties2(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -144,8 +265,6 @@
             var dominantPoiCountList = new List<double>();
             foreach (var nh in nhList)
             {
-                // Typically, magnitude should be greater than 0 and less than 20.
-                // otherwise, it is assigned to a default value, 100
                 if (nh.magnitude != 100)
                 {
                     magnitudeList.Add(nh.magnitude);
@@ -176,7 +295,6 @@
             
             foreach (var nh in nhList)
             {
-                //var enlargeTimes = 10;
                 if (nh.magnitude != 100)
                 {
                     nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;                   
@@ -185,6 +303,113 @@
                     nh.dominantPOICount = (nh.dominantPOICount - averageDominantPoiCount) / standDevDominantPoiCount;
                 }
                 result.Add(nh);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This method will invlove six values as a feature vector for a neighbourhood. They are hMagnitude, hOrientation, vMagnitude,
+        /// vOrientation, hRmeasure, vRmeasure. 
+        /// </summary>
+        /// <param name="nhList"></param>
+        /// <returns></returns>
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeProperties3(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+
+            var hMagnitudeList = new List<double>();
+            var hOrientationList = new List<double>();
+            var vMagnitudeList = new List<double>();
+            var vOrientationList = new List<double>();
+            var hRmeasureList = new List<double>();
+            var vRmeasureList = new List<double>();
+            foreach (var nh in nhList)
+            {
+                if (nh.HOrientationPOIMagnitude != 100)
+                {
+                    hMagnitudeList.Add(nh.HOrientationPOIMagnitude);
+                    hOrientationList.Add(nh.LinearHOrientation);                                
+                }
+                if (nh.HLineOfBestfitMeasure != 100)
+                {
+                    hRmeasureList.Add(nh.HLineOfBestfitMeasure);
+                }
+                if (nh.VOrientationPOIMagnitude != 100)
+                {
+                    vMagnitudeList.Add(nh.VOrientationPOIMagnitude);
+                    vOrientationList.Add(nh.LinearVOrientation);
+                    
+                }
+                if (nh.VLineOfBestfitMeasure != 100)
+                {
+                    vRmeasureList.Add(nh.VLineOfBestfitMeasure);
+                }
+            }
+
+            var averageHMagnitude = hMagnitudeList.Average();
+            var averageHOrientation = hOrientationList.Average();
+            var averageVMagnitude = vMagnitudeList.Average();
+            var averageVOrientation = vOrientationList.Average();
+            var averageHRmeasure = hRmeasureList.Average();
+            var averageVRmeasure = vRmeasureList.Average();
+
+            var squareDiffHMagnitude = 0.0;
+            var squareDiffHOrientation = 0.0;
+            var squareDiffVMagnitude = 0.0;
+            var squareDiffVOrientation = 0.0;
+            var squareDiffHRmeasure = 0.0;
+            var squareDiffVRmeasure = 0.0;
+            foreach (var nh in nhList)
+            {
+                if (nh.HOrientationPOIMagnitude != 100)
+                {
+                    squareDiffHMagnitude += Math.Pow(nh.HOrientationPOIMagnitude - averageHMagnitude, 2);
+                    squareDiffHOrientation += Math.Pow(nh.LinearHOrientation - averageHOrientation, 2);                    
+                }
+                if (nh.HLineOfBestfitMeasure != 100)
+                {
+                    squareDiffHRmeasure += Math.Pow(nh.HLineOfBestfitMeasure - averageHRmeasure, 2);
+                }
+                if (nh.VOrientationPOIMagnitude != 100)
+                {
+                    squareDiffVMagnitude += Math.Pow(nh.VOrientationPOIMagnitude - averageVMagnitude, 2);
+                    squareDiffVOrientation += Math.Pow(nh.LinearVOrientation - averageVOrientation, 2);                   
+                }
+                if (nh.VLineOfBestfitMeasure != 100)
+                {
+                    squareDiffVRmeasure += Math.Pow(nh.VLineOfBestfitMeasure - averageVRmeasure, 2);
+                }
+            }
+            var standDevHMagnitude = Math.Sqrt(squareDiffHMagnitude / nhList.Count);
+            var standDevHOrientation = Math.Sqrt(squareDiffHOrientation / nhList.Count);
+            var standDevVMagnitude = Math.Sqrt(squareDiffVMagnitude / nhList.Count);
+            var standDevVOrientation = Math.Sqrt(squareDiffVOrientation / nhList.Count);
+            var standDevHRmeasure = Math.Sqrt(squareDiffHRmeasure / nhList.Count);
+            var standDevVRmeasure = Math.Sqrt(squareDiffVRmeasure / nhList.Count);
+
+            foreach (var nh in nhList)
+            {
+                
+                if (nh.POICount == 0)
+                {
+                    result.Add(nh);
+                }
+                else
+                {
+                    if (nh.HOrientationPOIMagnitude != 100)
+                    {
+                        nh.HOrientationPOIMagnitude = (nh.HOrientationPOIMagnitude - averageHMagnitude) / standDevHMagnitude;
+                        nh.LinearHOrientation = (nh.LinearHOrientation - averageHOrientation) / standDevHOrientation;
+                        nh.HLineOfBestfitMeasure = (nh.HLineOfBestfitMeasure - averageHRmeasure) / standDevHRmeasure;
+                    }
+                    if (nh.VOrientationPOIMagnitude != 100)
+                    {
+                        nh.VOrientationPOIMagnitude = (nh.VOrientationPOIMagnitude - averageVMagnitude) / standDevVMagnitude;
+                        nh.LinearVOrientation = (nh.LinearVOrientation - averageVOrientation) / standDevVOrientation;
+                        nh.VLineOfBestfitMeasure = (nh.VLineOfBestfitMeasure - averageVRmeasure) / standDevVRmeasure;
+                    }
+                    result.Add(nh);
+                }               
             }
             return result;
         }
