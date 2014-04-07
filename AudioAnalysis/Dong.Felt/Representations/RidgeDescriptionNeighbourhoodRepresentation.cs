@@ -120,6 +120,26 @@ namespace Dong.Felt.Representations
         public int NDOrientationPOICount { get; set; }
 
         /// <summary>
+        /// Linear regression slope calculation based on Horizontal POI
+        /// </summary>
+        public double LinearHOrientation { get; set; }
+
+        /// <summary>
+        /// Linear regression slope calculation based on Vertical POI
+        /// </summary>
+        public double LinearVOrientation { get; set; }
+
+        /// <summary>
+        /// It gets and sets the average magnitude for POI with horizontal orientation in a nh.
+        /// </summary>
+        public double HOrientationPOIMagnitude { get; set; }
+
+        /// <summary>
+        /// It gets and sets the average magnitude for POI with vertical orientation in a nh.
+        /// </summary>
+        public double VOrientationPOIMagnitude { get; set; }
+
+        /// <summary>
         /// Gets or sets the sum of the magnitude of pois with the horizontal orentation in the neighbourhood.
         /// </summary>
         public double HOrientationPOIMagnitudeSum { get; set; }
@@ -139,10 +159,14 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double NDOrientationPOIMagnitudeSum { get; set; }
 
+        public double LineOfBestfitMeasure { get; set; }
+       
         /// <summary>
         /// Gets or sets the measure of line of best fit, it ranges (0, 1).
         /// </summary>
-        public double LineOfBestlineMeasure { get; set; }
+        public double HLineOfBestfitMeasure { get; set; }
+
+        public double VLineOfBestfitMeasure { get; set; }
 
         #endregion
 
@@ -291,14 +315,7 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
-        /// <summary>
-        /// This method uses the line of best fit to calculate the orientation of a Nh. In particular, the slope is regarded as orientation.  
-        /// </summary>
-        /// <param name="pointsOfInterest"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="spectrogramConfig"></param>
-        public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        public void SplittedBestLineFitNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
@@ -310,8 +327,152 @@ namespace Dong.Felt.Representations
             var matrixRadius = poiMatrixLength / 2;
             var tempColIndex = 0;
             var tempRowIndex = 0;
+            var hPointsCount = 0;
+            var vPointsCount = 0;
+            var hAverageMagnitude = 0.0;
+            var vAverageMagnitude = 0.0;
+
+            /// For horizontal
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0.0
+                        && pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    {
+                        tempColIndex = colIndex - matrixRadius;
+                        tempRowIndex = matrixRadius - rowIndex;
+                        sumXInNh += tempColIndex;
+                        sumYInNh += tempRowIndex;
+                        sumXYInNh += tempRowIndex * tempColIndex;
+                        sumSquareX += Math.Pow(tempColIndex, 2.0);
+                        hPointsCount++;
+                        hAverageMagnitude += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                    }
+                }
+            }
+            
+            var hSlope = 100.0;
+            var hYIntersect = 100.0;
+            var proportionParameter = 0.3;
+            var poiCountThreshold = (int)(poiMatrixLength * proportionParameter);
+            if (hPointsCount >= poiCountThreshold)
+            {
+                var meanX = sumXInNh / hPointsCount;
+                var meanY = sumYInNh / hPointsCount;
+                hAverageMagnitude = hAverageMagnitude / hPointsCount;
+                if ((sumSquareX - Math.Pow(sumXInNh, 2.0) / hPointsCount) != 0)
+                {
+                    var slopeTemp = (sumXYInNh - sumXInNh * sumYInNh / hPointsCount) /
+                            (sumSquareX - Math.Pow(sumXInNh, 2.0) / hPointsCount);
+                    hSlope = Math.Atan(slopeTemp);
+                    hYIntersect = meanY - hSlope * meanX;
+                }
+                else   // if the slope is 90 degree. 
+                {
+                    hSlope = Math.PI / 2;
+                    hYIntersect = 0.0;
+                }
+            }
+            else
+            {
+                hAverageMagnitude = 100;
+            }
+            /// these variables have to be cleared to 0.
+            sumXInNh = 0.0;
+            sumYInNh = 0.0;
+            sumSquareX = 0.0;
+            sumXYInNh = 0.0;
+            /// For vertical
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0.0
+                        && pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    {
+                        tempColIndex = colIndex - matrixRadius;
+                        tempRowIndex = matrixRadius - rowIndex;
+                        sumXInNh += tempColIndex;
+                        sumYInNh += tempRowIndex;
+                        sumXYInNh += tempRowIndex * tempColIndex;
+                        sumSquareX += Math.Pow(tempColIndex, 2.0);
+                        vPointsCount++;
+                        vAverageMagnitude += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                    }
+                }
+            }
+            var vSlope = 100.0;
+            var vYIntersect = 100.0;
+            if (vPointsCount >= poiCountThreshold)
+            {
+                var meanX = sumXInNh / vPointsCount;
+                var meanY = sumYInNh / vPointsCount;
+                vAverageMagnitude = vAverageMagnitude / vPointsCount;
+                if ((sumSquareX - Math.Pow(sumXInNh, 2.0) / vPointsCount) != 0)
+                {
+                    var slopeTemp = (sumXYInNh - sumXInNh * sumYInNh / vPointsCount) /
+                            (sumSquareX - Math.Pow(sumXInNh, 2.0) / vPointsCount);
+                    vSlope = Math.Atan(slopeTemp);
+                    vYIntersect = meanY - vSlope * meanX;
+                }
+                else   // if the slope is 90 degree. 
+                {
+                    vSlope = Math.PI / 2;
+                    vYIntersect = 0.0;
+                }
+            }
+            else
+            {
+                vAverageMagnitude = 100;
+            }
+            this.HOrientationPOIMagnitude = hAverageMagnitude;
+            this.VOrientationPOIMagnitude = vAverageMagnitude;
+            this.LinearHOrientation = hSlope;
+            this.LinearVOrientation = vSlope;
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            this.neighbourhoodSize = poiMatrixLength;
+            var hLineOfBestfit = 100.0;
+            var vLineOfBestfit = 100.0;
+            if (hSlope != 100)
+            {
+                hLineOfBestfit = StatisticalAnalysis.MeasureHLineOfBestfit(pointsOfInterest, hSlope, hYIntersect);
+            }
+            if (vSlope != 100)
+            {
+                vLineOfBestfit = StatisticalAnalysis.MeasureVLineOfBestfit(pointsOfInterest, vSlope, vYIntersect);
+            }
+            this.HLineOfBestfitMeasure = hLineOfBestfit;
+            this.VLineOfBestfitMeasure = vLineOfBestfit;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+        }
+
+        /// <summary>
+        /// This method uses the line of best fit to calculate the orientation of a Nh. In particular, the slope is regarded as orientation.  
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void BestFitLineNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond           
+            var sumXInNh = 0.0;
+            var sumYInNh = 0.0;
+            var sumSquareX = 0.0;
+            var sumXYInNh = 0.0;
+            var poiMatrixLength = pointsOfInterest.GetLength(0);  // we assume poiMatrix is odd number * odd number.
+            var matrixRadius = poiMatrixLength / 2;
+            var tempColIndex = 0;
+            var tempRowIndex = 0;
             var pointsCount = 0;
             var averageMagnitude = 0.0;
+
             for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
@@ -366,7 +527,7 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.POICount = pointsCount;
             this.neighbourhoodSize = poiMatrixLength;
-            this.LineOfBestlineMeasure = StatisticalAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
+            this.LineOfBestfitMeasure = StatisticalAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
@@ -462,6 +623,7 @@ namespace Dong.Felt.Representations
                     }
                 }
             }
+            this.POICount = this.HOrientationPOICount + this.VOrientationPOICount + this.PDOrientationPOICount + this.NDOrientationPOICount;
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
@@ -476,7 +638,8 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
+                        //ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
+                        ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }

@@ -445,6 +445,8 @@
             return result;
         }
 
+
+
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
         /// based on the sum of sub-region in the process of calculation. There are four properties as feature vector. 
@@ -485,6 +487,55 @@
             return result;
         }
 
+        /// <summary>
+        /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
+        /// based on the sum of sub-region in the process of calculation. There are four properties as feature vector. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <returns></returns>
+        public static double WeightedDistanceScoreRegionRepresentation4(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+            double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var nhSum = 0.0;
+                for (int index = 0; index < nhCount; index++)
+                {
+
+                    var queryHMagnitude = query[index].HOrientationPOIMagnitude;
+                    var queryHOrientation = query[index].LinearHOrientation;
+                    var queryVMagnitude = query[index].VOrientationPOIMagnitude;
+                    var queryVOrientation = query[index].LinearVOrientation;
+                    var queryHRmeasure = query[index].HLineOfBestfitMeasure;
+                    var queryVRmeasure = query[index].VLineOfBestfitMeasure;
+
+                    var candidateHMagnitude = candidate[index].HOrientationPOIMagnitude;
+                    var candidateHOrientation = candidate[index].LinearHOrientation;
+                    var candidateVMagnitude = candidate[index].VOrientationPOIMagnitude;
+                    var candidateVOrientation = candidate[index].LinearVOrientation;
+                    var candidateHRmeasure = candidate[index].HLineOfBestfitMeasure;
+                    var candidateVRmeasure = candidate[index].VLineOfBestfitMeasure;
+
+                    var hMagnitudeDiff = Math.Abs(queryHMagnitude - candidateHMagnitude);
+                    var hOrientationDiff = Math.Abs(queryHOrientation - candidateHOrientation);
+                    var vMagnitudeDiff = Math.Abs(queryVMagnitude - candidateVMagnitude);
+                    var vOrientationDiff = Math.Abs(queryVOrientation - candidateVOrientation);
+                    var hRmeasureDiff = Math.Abs(queryHRmeasure - candidateHRmeasure); 
+                    var vRmeasureDiff = Math.Abs(queryVRmeasure - candidateVRmeasure);
+
+                    nhSum += Math.Sqrt(weight1 * Math.Pow(hMagnitudeDiff, 2) + weight2 * Math.Pow(hOrientationDiff, 2)
+                        + weight3 * Math.Pow(vMagnitudeDiff, 2) + weight4 * Math.Pow(vOrientationDiff, 2)
+                        + weight4 * Math.Pow(hRmeasureDiff, 2) + weight5 * Math.Pow(vRmeasureDiff, 2));                   
+                }
+                result = nhSum;
+            }
+            return result;
+        }
         /// <summary>
         /// Weighted Euclidean distance measurement is based on a bunch of neighbourhoods calculation. 
         /// </summary>

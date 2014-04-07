@@ -103,6 +103,16 @@ namespace Dong.Felt
             return result;
         }
 
+        /// <summary>
+        /// This distance calculation method will be based on 4 values feature vector. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <param name="weight3"></param>
+        /// <param name="weight4"></param>
+        /// <returns></returns>
         public static List<Candidates> WeightedEuclideanDistCalculation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, 
             double weight1, double weight2, double weight3, double weight4)
         {
@@ -125,7 +135,37 @@ namespace Dong.Felt
             return result;
         }
 
-
+        /// <summary>
+        /// This distance calculation method will be based on 6 values feature vector. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <param name="weight3"></param>
+        /// <param name="weight4"></param>
+        /// <returns></returns>
+        public static List<Candidates> WeightedEuclideanDistCalculation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates,
+            double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation4(query, tempRegionList, weight1, weight2,
+                    weight3, weight4, weight5, weight6);
+                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                        tempRegionList[0].SourceAudioFile);
+                result.Add(item);
+            }
+            return result;
+        }
         /// <summary>
         /// This similarity tuple records the distance, timePosition, frequencyband. 
         /// </summary>
