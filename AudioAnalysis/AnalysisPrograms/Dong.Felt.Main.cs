@@ -34,6 +34,7 @@ namespace Dong.Felt
     using TowseyLib;
     using log4net;
     using QutSensors.Shared;
+    using AnalysisPrograms.Production;
     
     /// <summary>
     /// The felt analysis.
@@ -86,17 +87,20 @@ namespace Dong.Felt
         /// </returns>
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            // XUEYAN　－　You should start writing your analysis in here
-            // read the config file
-            // object settings;
-            // using (var reader = new StringReader(analysisSettings.ConfigFile.FullName)) {
-            //    //var yaml = new YamlStream();
-            //    //yaml.Load(reader);
-            //    var serializer = new YamlSerializer();
-            //    settings = serializer.Deserialize(reader, new DeserializationOptions() { });
-            // } 
+            // these are command line arguments
+            var args = EntryArguments;
+
+            // these are configuration settings
+            dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
+
+            // if command line arguments are given, then overwrite the configuration
+            if (args != null)
+            {
+                configuration.InputDirectory = args.Input == null ? configuration.InputDirectory : args.Input.FullName;
+                configuration.OutputDirectory = args.Output == null ? configuration.OutputDirectory : args.Output.FullName;
+            }
  
-            DongSandpit.Play();
+            DongSandpit.Play(configuration);
             // Batch Process
             //foreach (string path in Files)
             //{
@@ -188,23 +192,34 @@ namespace Dong.Felt
             throw new NotImplementedException();
         }
 
+        [CustomDetailedDescription]
+        [CustomDescription]
         public class Arguments
         {
-            [ArgDescription("The directory to operate on")]
-            [ArgExistingDirectory()]
-            [ArgPosition(1)]
-            [ArgRequired]
-            public DirectoryInfo TargetDirectory { get; set; }
+
+            [ArgDescription("The source directory to analyse")]
+            [AnalysisPrograms.Production.ArgExistingFile()]
+            public DirectoryInfo Input { get; set; }
 
             [ArgDescription("The path to the config file")]
-            [ArgExistingFile()]
+            [AnalysisPrograms.Production.ArgExistingFile()]
             [ArgRequired]
             public FileInfo Config { get; set; }
 
-            //[ArgDescription("A directory to write output to")]
-            //[ArgExistingDirectory()]
-            //[ArgRequired]
-            //public DirectoryInfo Output { get; set; }
+            [ArgDescription("The ouput directory")]
+            [AnalysisPrograms.Production.ArgExistingFile()]
+            public DirectoryInfo Output { get; set; }
+
+            public static string Description()
+            {
+                return "Xueyan's workspace for her research. FELT related stuff.";
+            }
+
+            public static string AdditionalNotes()
+            {
+                return "The majority of the options for this analysis are in the config file or are build constants.";
+            }
+
         }
 
         /// <summary>
@@ -218,22 +233,13 @@ namespace Dong.Felt
         {
             if (arguments == null)
             {
-                arguments = new Arguments();
-                const string TempDirectory = @"C:\Test recordings\Test1";
-
-                var testDirectory = @"C:\XUEYAN\targetDirectory";
-                string testConfig = @"C:\XUEYAN\config.yml";
-
-                arguments.TargetDirectory = TempDirectory.ToDirectoryInfo();
-                arguments.Config = testConfig.ToFileInfo();
-
-                string date = "# Date and Time:" + DateTime.Now;
-                Log.Info("Read the wav. file path");
-                Log.Info(date);
+                // Xueyan is not using this functionality
             }
 
             Execute(arguments);
         }
+
+        private static Arguments EntryArguments;
 
         /// <summary>
         /// This is the (second) main entry point, that my code will use when it is run on a super computer. 
@@ -246,7 +252,8 @@ namespace Dong.Felt
         {
             if (arguments == null)
             {
-                throw new InvalidOperationException();
+                // Xueyan is not using the Dev functionality
+                //throw new InvalidOperationException();
             }
 
             // create a new "analysis"
@@ -255,11 +262,14 @@ namespace Dong.Felt
             // merge config settings with analysis settings
             var analysisSettings = felt.GetDefaultSettings;
 
-            //analysisSettings.SourceFile = new FileInfo(recordingPath);
-            analysisSettings.ConfigDict = new Dictionary<string, string>();
-            analysisSettings.ConfigDict["my_custom_setting"] = "hello xueyan";
+            analysisSettings.ConfigFile = arguments.Config;
 
-            var result = felt.Analyse(analysisSettings);
+            // ultra dodgy - future Anthony/Mark please don't hate me
+            EntryArguments = arguments;
+
+            // not used
+            /*var result = */felt.Analyse(analysisSettings);
+
             string date = "# Date and Time:" + DateTime.Now;
             Log.Info("Finished, yay!");
         }
