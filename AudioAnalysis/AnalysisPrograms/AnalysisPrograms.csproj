@@ -189,8 +189,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IndexCalculate.cs" />
-    <Compile Include="IndexStore.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
@@ -203,7 +201,6 @@
     <Compile Include="EPR.cs" />
     <Compile Include="Frogs.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
-    <Compile Include="IndexProperties.cs" />
     <Compile Include="Production\Actions.cs" />
     <Compile Include="Production\CustomArgumentParsing.cs" />
     <Compile Include="Production\CustomArgUsageHooks.cs" />

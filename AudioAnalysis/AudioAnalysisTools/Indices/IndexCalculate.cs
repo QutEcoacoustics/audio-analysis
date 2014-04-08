@@ -20,6 +20,7 @@ namespace AnalysisPrograms
 
     using AnalysisBase;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.Sonogram;
     using TowseyLib;
 
@@ -200,12 +201,12 @@ namespace AnalysisPrograms
             // viii: calculate RAIN and CICADA indices.
             indicesStore.StoreIndex(IndexProperties.keyRAIN, 0.0);
             indicesStore.StoreIndex(IndexProperties.keyCICADA, 0.0);
-            DataTable dt = Rain.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            DataTable dt = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
             if (dt != null)
             {
                 DataRow row = dt.Rows[0];
-                indicesStore.StoreIndex(IndexProperties.keyRAIN, (double)row[Rain.header_rain]);
-                indicesStore.StoreIndex(IndexProperties.keyCICADA, (double)row[Rain.header_cicada]);
+                indicesStore.StoreIndex(IndexProperties.keyRAIN, (double)row[IndexProperties.header_rain]);
+                indicesStore.StoreIndex(IndexProperties.keyCICADA, (double)row[IndexProperties.header_cicada]);
             }
 
 
