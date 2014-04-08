@@ -490,7 +490,8 @@ namespace AudioBrowser
 
             if (!File.Exists(this.IndicesImageFile.FullName))
             {
-                Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, imageTitle, doNormalisation, this.IndicesImageFile);
+                Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, imageTitle/*, doNormalisation*/);
+                tracksImage.Save(this.IndicesImageFile.FullName);
                 this.IndicesImage = tracksImage;
             }
             else

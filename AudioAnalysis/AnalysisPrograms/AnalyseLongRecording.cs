@@ -362,12 +362,12 @@ namespace AnalysisPrograms
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
             int eventsCount;
-            int indicesCount;
+            int numberOfRowsOfIndices;
             if (isStrongTypedAnalyser)
             {
                 ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
                 eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
-                indicesCount = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
+                numberOfRowsOfIndices = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
             }
             else
             {
@@ -375,7 +375,7 @@ namespace AnalysisPrograms
                     .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
                     .Decompose(out eventsDatatable, out indicesDatatable);
                 eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
-                indicesCount = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
+                numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
             }
 
             // 10. SAVE THE RESULTS
@@ -396,8 +396,8 @@ namespace AnalysisPrograms
             }
 
             LoggedConsole.WriteLine("\n###################################################");
-            LoggedConsole.WriteLine("Finished processing " + sourceAudio.Name + ".");
-            //LoggedConsole.WriteLine("Output  to  directory: " + diOP.FullName);
+            LoggedConsole.WriteLine("Finished processing audio file: " + sourceAudio.Name + ".");
+            LoggedConsole.WriteLine("Output  to  directory: " + resultsDirectory.FullName);
             LoggedConsole.WriteLine("\n");
 
             if (eventsFile == null)
@@ -410,6 +410,8 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
             LoggedConsole.WriteLine("\n");
+
+
             if (indicesFile == null)
             {
                 LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
@@ -417,31 +419,38 @@ namespace AnalysisPrograms
             else
             {
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
-                LoggedConsole.WriteLine("\tNumber of indices = " + indicesCount);
+                LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
                 LoggedConsole.WriteLine("");
 
-                if (isStrongTypedAnalyser)
+                // Convert datatable to image
+                if (displayCSVImage)
                 {
-                    Log.Warn(
-                        "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
-                }
-                else
-                {
-                    // TODO: optimise this so it does read the csv file off disk
-                    SaveImageOfIndices(indicesFile, configPath, displayCSVImage);
+                    if (isStrongTypedAnalyser)
+                    {
+                        Log.Warn(
+                            "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
+                    }
+                    else
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                        string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                        Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(indicesDatatable, title);
+                        var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+                        tracksImage.Save(imagePath);
+                    }
                 }
             }
 
-            // if doing ACOUSTIC INDICES then write meta-SPECTROGRAMS to CSV files and draw their images
+            // if doing ACOUSTIC INDICES then write SPECTROGRAMS of Spectral Indices to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))
             {
-                ProcessSpectrums(analyserResults, sourceAudio, analysisSettings, fileSegment, resultsDirectory);
+                ProcessSpectralIndices(analyserResults, sourceAudio, analysisSettings, fileSegment, resultsDirectory);
             } // if doing acoustic indices
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
 
-        private static void ProcessSpectrums(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
+        private static void ProcessSpectralIndices(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
             AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
         {
             // ensure results are sorted in order
@@ -497,26 +506,6 @@ namespace AnalysisPrograms
 
         }
 
-        public static void SaveImageOfIndices(FileInfo csvPath, FileInfo configPath, bool doDisplay)
-        {
-            string outputDir = csvPath.DirectoryName;
-            string fName = Path.GetFileNameWithoutExtension(csvPath.Name);
-            var imagePath = Path.Combine(outputDir, fName + ImagefileExt).ToFileInfo();
-
-            var args = new IndicesCsv2Display.Arguments()
-                       {
-                           InputCsv = csvPath,
-                           Config = configPath,
-                           Output = imagePath,
-                       };
-            // create and write the indices image to file
-            IndicesCsv2Display.Main(args);
-
-            if ((doDisplay) && (imagePath.Exists))
-            {
-                ImageTools.DisplayImageWithPaint(imagePath);
-            }
-        }
     } //class AnalyseLongRecording
 }
 

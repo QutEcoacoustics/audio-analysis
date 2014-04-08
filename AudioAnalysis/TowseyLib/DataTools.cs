@@ -2887,12 +2887,12 @@ namespace TowseyLib
       /// <param name="max"></param>
       /// <param name="mode"></param>
       /// <param name="SD"></param>
-      public static void GetModeAndOneTailedStandardDeviation(double[] values, out double min, out double max, out double mode, out double SD)
+      public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out double mode, out double SD)
       {
           int binCount = 300;
           double binWidth;
           int[] histo = Histogram.Histo(values, binCount, out binWidth, out min, out max);
-          DataTools.writeBarGraph(histo);
+          if (writeHistogram) DataTools.writeBarGraph(histo);
 
           //Calculate the SD on longest tail. Assume that the tail is Gaussian.
           int indexOfMode, indexOfOneSD;
@@ -2901,7 +2901,6 @@ namespace TowseyLib
           int delta = Math.Abs(indexOfOneSD - indexOfMode);
           if (delta < 1) delta = 1;
           SD = delta * binWidth;
-
 
           // the below av and sd are just a check on the one-tailed calcualtion.
           //double avDist, sdDist;
