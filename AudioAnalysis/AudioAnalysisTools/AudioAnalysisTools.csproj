@@ -182,6 +182,10 @@
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="DSP_Frames.cs" />
+    <Compile Include="Indices\IndexCalculate.cs" />
+    <Compile Include="Indices\IndexProperties.cs" />
+    <Compile Include="Indices\IndexStore.cs" />
+    <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LDSpectrogramTStatistic.cs" />
     <Compile Include="LDSpectrogramRGB.cs" />
     <Compile Include="ConfigurationClasses.cs" />
