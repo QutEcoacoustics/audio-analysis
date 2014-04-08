@@ -668,9 +668,10 @@
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawGrayScaleScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        public static Bitmap DrawGrayScaleScoreTrack(double[] array, double minVal, double maxVal, double threshold, string title)
         {
 
+            int trackHeight = DisplayIndices.DEFAULT_TRACK_HEIGHT;
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;
             Bitmap bmp = new Bitmap(imageWidth, trackHeight);
@@ -704,8 +705,10 @@
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
+        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, double threshold, string title)
         {
+            int trackHeight = DisplayIndices.DEFAULT_TRACK_HEIGHT;
+
             Color[] grayScale = ImageTools.GrayScale();
             //int imageWidth = array.Length;
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -778,7 +781,7 @@
             double minVal;
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
-            Bitmap bitmap = DrawGrayScaleScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            Bitmap bitmap = DrawGrayScaleScoreTrack(array, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
