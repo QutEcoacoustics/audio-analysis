@@ -745,8 +745,8 @@ namespace AudioAnalysisTools
             }
             else
             {
-                //Logger.Warn("DrawSpectrogramsOfIndicies is rendering an INDEX that is not specially normalised");
-                Console.WriteLine("DrawSpectrogramsOfIndicies is rendering an UNKNOWN INDEX or one not normalised");
+                //Logger.Warn("NormaliseSpectrogramMatrix() is rendering an INDEX that is not specially normalised");
+                Console.WriteLine("NormaliseSpectrogramMatrix() is rendering an UNKNOWN INDEX or one not normalised");
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
 
@@ -759,8 +759,9 @@ namespace AudioAnalysisTools
         public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
         {
             double[] values = DataTools.Matrix2Array(M);
+            bool displayHistogram = false;
             double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, out min, out max, out mode, out SD);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out SD);
             var dict = new Dictionary<string, double>();
             dict["min"] = min;
             dict["max"] = max;

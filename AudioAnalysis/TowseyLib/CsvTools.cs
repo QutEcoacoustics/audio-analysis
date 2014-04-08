@@ -209,7 +209,7 @@ namespace TowseyLib
         //#######################################################################################
         //WRITE A CSV FILE FROM A TABLE
          public static void DataTable2CSV(DataTable dt, string strFilePath)
-        {
+         {
             if (dt == null) return;
             Type[] types = DataTableTools.GetColumnTypes(dt);
 
@@ -237,11 +237,18 @@ namespace TowseyLib
                     {
                         if (types[i] == typeof(double))
                         {
-                            string str = String.Format("{0:f5}", dr[i]);
+                            string str = String.Format("{0:f4}", dr[i]);
                             sw.Write(str);
                         }
                         else
-                            sw.Write(dr[i].ToString());
+                            if (types[i] == typeof(TimeSpan))
+                            {
+                                TimeSpan ts = (TimeSpan)dr[i];
+                                string str = String.Format("{0:f4}", ts.TotalSeconds);
+                                sw.Write(str);
+                            }
+                            else
+                                sw.Write(dr[i].ToString());
                     }
                     if (i < iColCount - 1)
                     {

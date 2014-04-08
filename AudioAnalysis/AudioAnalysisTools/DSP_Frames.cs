@@ -245,9 +245,7 @@ namespace AudioAnalysisTools
 
         private static int GetClippingCount(double[] signal, double maximumAmplitude, double epsilon)
         {
-            //int bitsPerSample = 16;
-            //double epsilon = Math.Pow(0.5, bitsPerSample - 1);
-            epsilon *= 10;
+            epsilon *= 1000; // down sampling very much reduces the clipping - hence increase the epsilon 1000 times!!! Typically only need epsilon*4
 
             int clipCount = 0;
             double previousSample = signal[0];

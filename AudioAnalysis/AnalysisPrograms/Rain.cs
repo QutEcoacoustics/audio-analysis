@@ -247,9 +247,9 @@ namespace AnalysisPrograms
                 int startMinute = (int)tsStart.TotalMinutes;
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[IndexStore.header_count] = iter;
-                    row[IndexStore.header_startMin] = startMinute;
-                    row[IndexStore.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
+                    row[IndexProperties.header_count] = iter;
+                    row[IndexProperties.header_startMin] = startMinute;
+                    row[IndexProperties.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
                 }
 
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
@@ -863,70 +863,70 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (headers[i].Equals(IndexStore.header_avAmpdB))
+                if (headers[i].Equals(IndexProperties.header_avAmpdB))
                 {
                     min = -50;
                     max = -5;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else if (headers[i].Equals(IndexStore.header_snrdB))
+                else if (headers[i].Equals(IndexProperties.header_snr))
                 {
                     min = 5;
                     max = 50;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (5..50dB)";
                 }
-                else if (headers[i].Equals(IndexStore.header_avSegDur))
+                else if (headers[i].Equals(IndexProperties.header_avSegDur))
                 {
                     min = 0.0;
                     max = 500.0; //av segment duration in milliseconds
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0..500ms)";
                 }
-                else if (headers[i].Equals(IndexStore.header_bgdB))
+                else if (headers[i].Equals(IndexProperties.header_bgdB))
                 {
                     min = -50;
                     max = -5;
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (-50..-5dB)";
                 }
-                else if (headers[i].Equals(IndexStore.header_avClustDur))
+                else if (headers[i].Equals(IndexProperties.header_avClustDuration))
                 {
                     min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
                     max = 200.0; //av segment duration in milliseconds
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (50..200ms)";
                 }
-                else if (headers[i].Equals(IndexStore.header_lfCover))
+                else if (headers[i].Equals(IndexProperties.header_lfCover))
                 {
                     min = 0.1; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (10..100%)";
                 }
-                else if (headers[i].Equals(IndexStore.header_mfCover))
+                else if (headers[i].Equals(IndexProperties.header_mfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0..90%)";
                 }
-                else if (headers[i].Equals(IndexStore.header_hfCover))
+                else if (headers[i].Equals(IndexProperties.header_hfCover))
                 {
                     min = 0.0; //
                     max = 0.9; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0..90%)";
                 }
-                else if (headers[i].Equals(IndexStore.header_HAmpl))
+                else if (headers[i].Equals(IndexProperties.header_HAmpl))
                 {
                     min = 0.5; //
                     max = 1.0; //
                     newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
                     newHeaders[i] = headers[i] + "  (0.5..1.0)";
                 }
-                else if (headers[i].Equals(IndexStore.header_HAvSpectrum))
+                else if (headers[i].Equals(IndexProperties.header_HAvSpectrum))
                 {
                     min = 0.2; //
                     max = 1.0; //

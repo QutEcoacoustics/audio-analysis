@@ -23,17 +23,14 @@ namespace AudioAnalysisTools
         /// <param name="doNormalisation"></param>
         /// <param name="imagePath"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, bool doNormalisation, FileInfo imagePath)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title)
         {
             int timeScale = 60; //put a tik every 60 pixels = 1 hour
             //construct an order array - this assumes that the table is already properly ordered.
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt, title, timeScale, order, doNormalisation);
-
-            //SAVE THE IMAGE
-            tracksImage.Save(imagePath.FullName);
+            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt, title, timeScale, order);
             return tracksImage;
         }
 
@@ -47,8 +44,9 @@ namespace AudioAnalysisTools
         /// <param name="trackHeight"></param>
         /// <param name="doNormalise"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order)
         {
+            bool doNormalise = false;
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
             int trackHeight = DisplayIndices.DEFAULT_TRACK_HEIGHT;
@@ -58,7 +56,7 @@ namespace AudioAnalysisTools
             int endPanelwidth = 200;            // this is where name of index goes
             int imageWidth = duration + endPanelwidth;
 
-            var bitmaps = new List<Bitmap>();
+            var listOfBitmaps = new List<Bitmap>();
             double threshold = 0.0;
             double[] array;
             for (int i = 0; i < values.Count - 1; i++) // for each column of values in data table (except last) create a display track
@@ -66,7 +64,7 @@ namespace AudioAnalysisTools
                 if (values[i].Length == 0) continue;
                 array = values[i];
                 if (doNormalise) array = DataTools.normalise(values[i]);
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
+                listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
             }
 
             // last track is weighted index
@@ -76,10 +74,10 @@ namespace AudioAnalysisTools
             //if (values[x].Length > 0)
             //    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
             if (values[x].Length > 0)
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+                listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
-            int imageHt = trackHeight * (bitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+            int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
             Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, timeScale, imageWidth, trackHeight, "Time (hours)");
 
@@ -94,9 +92,9 @@ namespace AudioAnalysisTools
                 offset += trackHeight;
                 gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
                 offset += trackHeight;
-                for (int i = 0; i < bitmaps.Count; i++)
+                for (int i = 0; i < listOfBitmaps.Count; i++)
                 {
-                    gr.DrawImage(bitmaps[i], 0, offset);
+                    gr.DrawImage(listOfBitmaps[i], 0, offset);
                     offset += trackHeight;
                 }
                 gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale

@@ -137,7 +137,6 @@ namespace AnalysisPrograms
 
             // #########################################################################################################
             // Convert datatable to image
-            bool normalisedDisplay = false;
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
             string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
 
@@ -147,7 +146,9 @@ namespace AnalysisPrograms
                 throw new NotImplementedException();
             }
 
-            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, arguments.Output);
+            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title);
+            tracksImage.Save(arguments.Output.FullName);
+
             // #########################################################################################################
 
             if (tracksImage == null)

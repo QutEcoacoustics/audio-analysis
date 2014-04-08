@@ -42,7 +42,7 @@ namespace AudioAnalysisTools
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
         public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
-        public static string SEGMENT_DURATION = "SEGMENT_DURATION";
+        public const string SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
         public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
         public static string THRESHOLD        = "THRESHOLD";
@@ -75,7 +75,7 @@ namespace AudioAnalysisTools
         public static string INDICES_COUNT    = "IndicesCount";
         public static string SEGMENT_TIMESPAN = "SegTimeSpan";
         public static string AV_AMPLITUDE     = "avAmp-dB";
-        public static string START_MIN        = "start-min";
+        public const string START_MIN        = "start-min";
         public static string CALL_DENSITY     = "CallDensity";
         public static string SNR_SCORE        = "SNRscore";
 
