@@ -432,6 +432,7 @@ namespace AnalysisPrograms
                     }
                     else
                     {
+                        Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices(); 
                         string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                         string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
                         Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(indicesDatatable, title);

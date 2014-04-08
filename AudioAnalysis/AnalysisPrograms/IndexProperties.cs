@@ -25,6 +25,7 @@ namespace AnalysisPrograms
         public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
         public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
 
+
         public const string keyCOUNT = "COUNT";
         public const string keySTART_MIN = "START-MIN";
         public const string keySEC_DUR = "SEC-DUR";
@@ -206,16 +207,14 @@ namespace AnalysisPrograms
         {
             string annotation = GetPlotAnnotation();
             double[] values = this.NormaliseValues(array);
-            int endPanelwidth = 200;            // this is where name of index goes
-            int trackWidth = array.Length + endPanelwidth;
-            int trackHeight = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
             double threshold = 0.0;
 
             //construct an order array - this assumes that the table is already properly ordered.
             double[] order = new double[array.Length];
             for (int i = 0; i < array.Length; i++) order[i] = i;
 
-            Image image = Image_Track.DrawBarScoreTrack(order, array, trackWidth, trackHeight, threshold, annotation);
+            int imageWidth = array.Length + DisplayIndices.TRACK_END_PANEL_WIDTH;
+            Image image = Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, annotation);
             return image;
         }
 
