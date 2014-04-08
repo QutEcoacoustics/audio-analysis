@@ -271,11 +271,6 @@ namespace QutBioacosutics.Xie
 
                     tempArray = DataTools.AutoCorrelation(tempArray,0,127);
 
-
-
-
-
-
                 }            
             }
 
@@ -297,18 +292,35 @@ namespace QutBioacosutics.Xie
         /// Ampthreshold is a experimental value, here it is 4 dB
         /// </summary>
          
-        public double[,] LocalPeaksDifferentBands(double[,] matrix, double ampthreshold)
+        public double[,] MaximumOfBand(double[,] matrix, double ampthreshold, int highbin, int lowbin)
         {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             // According to the frequency bands, calculate the bin range.
-
+            var hits = new double[rows, cols];
+            for (int c = 0; c < cols; c++)
+            {
+                double max = matrix[lowbin,c];
+                int temprow = 0;
+                for (int r = (lowbin + 1); r < highbin; r++)
+                {
+                    if (matrix[r,c] > max & matrix[r,c] > ampthreshold)
+                    {
+                        max = matrix[r,c];
+                        temprow = r;
+                    }
+                }
+                if (temprow != 0)
+                {
+                    hits[temprow, c] = matrix[temprow, c];               
+                }
+           
+            }
 
             // Find the maximum of the specify bin range.
 
-
-            return null;
+            return hits;
         }
-
-
 
     }
 }

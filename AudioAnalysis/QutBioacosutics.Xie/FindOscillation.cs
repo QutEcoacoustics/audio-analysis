@@ -46,34 +46,7 @@ namespace QutBioacosutics.Xie
             }
 
             matrix = tempMatrix;
-
-
-            //double[,] spectrogramMatrix = DataTools.normalise(matrix);
-            //spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramMatrix);
-
-            //int rows1 = spectrogramMatrix.GetLength(0);
-            //int cols1 = spectrogramMatrix.GetLength(1);
-
-            //Color[] grayScale = ImageTools.GrayScale();
-            //Bitmap bmp = new Bitmap(cols1, rows1, PixelFormat.Format24bppRgb);
-
-            //for (int r = 0; r < rows1; r++)
-            //{
-            //    for (int c = 0; c < cols1; c++)
-            //    {
-            //        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
-            //        if (greyId < 0) greyId = 0;
-            //        else
-            //            if (greyId > 255) greyId = 255;
-
-            //        greyId = 255 - greyId;
-            //        bmp.SetPixel(c, r, grayScale[greyId]);
-            //    }
-            //}
-            //bmp.Save(@"C:\Jie\output\3.png");
-
        
-
             int numSubCols = cols / 128;
             int subCols = cols % 128;
 
@@ -173,7 +146,6 @@ namespace QutBioacosutics.Xie
                         }                        
                     }                          
                 }
-
             }
 
             // calculate the last part
@@ -229,7 +201,6 @@ namespace QutBioacosutics.Xie
             {
                 norArray[i] = score[i] / (numSubCols + 1);
             }
-
 
             return norArray;
         }
@@ -396,9 +367,6 @@ namespace QutBioacosutics.Xie
             }
             return result;
         }
-
-            
-        
 
 
         public double[,] CrossCorrelationFindOscillation(double[,] matrix, int zeroBinIndex)

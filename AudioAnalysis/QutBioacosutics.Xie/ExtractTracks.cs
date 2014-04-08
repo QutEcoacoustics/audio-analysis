@@ -704,42 +704,51 @@ namespace QutBioacosutics.Xie
             var result = new double[row, column];
             for (int i = 0; i < closedTrackList.Count; i++)
             {
-                for (int j = 0; j < finalTrackXList[i].Count; j++)
-                {
-                    if (finalTrackYList[i][j] < 0)
-                    {
-                        finalTrackYList[i][j] = 0;
-                    }
-                    if (finalTrackYList[i][j] > 256)
-                    {
-                        finalTrackYList[i][j] = 256;
-                    }
+                //for (int j = 0; j < finalTrackXList[i].Count; j++)
+                //{
+                //    if (finalTrackYList[i][j] < 0)
+                //    {
+                //        finalTrackYList[i][j] = 0;
+                //    }
+                //    if (finalTrackYList[i][j] > 256)
+                //    {
+                //        finalTrackYList[i][j] = 256;
+                //    }
 
                     
-                    result[(int)Math.Floor(finalTrackYList[i][j]), finalTrackXList[i][j]] = 1;
+                //    result[(int)Math.Floor(finalTrackYList[i][j]), finalTrackXList[i][j]] = 1;
 
+                //}
+
+                for (int col = closedTrackList[i].StartFrame; col < closedTrackList[i].EndFrame; col++)
+                {
+                    for (int r = closedTrackList[i].LowBin; r < closedTrackList[i].HighBin; r++)
+                    {
+                        result[r, col] = 1;                    
+                    }                    
                 }
+                    
             }
 
             //var result = new double[row, column];
-            for (int i = 0; i < addTrackXList.Count; i++)
-            {
-                for (int j = 0; j < addTrackXList[i].Count; j++)
-                {
-                    if (addTrackYList[i][j] < 0)
-                    {
-                        addTrackYList[i][j] = 0;
-                    }
+            //for (int i = 0; i < addTrackXList.Count; i++)
+            //{
+            //    for (int j = 0; j < addTrackXList[i].Count; j++)
+            //    {
+            //        if (addTrackYList[i][j] < 0)
+            //        {
+            //            addTrackYList[i][j] = 0;
+            //        }
 
-                    if (addTrackYList[i][j] > 256)
-                    {
-                        addTrackYList[i][j] = 256;
-                    }
-                    // if the result is 2 which is used for get different color
-                    result[(int)Math.Floor(addTrackYList[i][j]), (int)Math.Floor(addTrackXList[i][j])] = 2; 
+            //        if (addTrackYList[i][j] > 256)
+            //        {
+            //            addTrackYList[i][j] = 256;
+            //        }
+            //        // if the result is 2 which is used for get different color
+            //        result[(int)Math.Floor(addTrackYList[i][j]), (int)Math.Floor(addTrackXList[i][j])] = 2; 
 
-                }
-            }
+            //    }
+            //}
 
 
             // count the number of tracks in each frequency band

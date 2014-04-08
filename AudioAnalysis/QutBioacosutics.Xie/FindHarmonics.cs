@@ -50,13 +50,17 @@ namespace QutBioacosutics.Xie
 
                             if ((Math.Abs(tempA) < 3) & (Math.Abs(tempB) < 3) & (Math.Abs(tempC) < 3))
                             {
-                                result[index[j], c] = 1;
 
-                                result[index[j + 1], c] = 1;
+                                for (int n = index[j]; n < index[j + 1]; n++)
+                                {
+                                    result[n, c] = 1;
+                                                                
+                                }
 
-                                result[index[j + 2], c] = 1;
-
-                                result[index[j + 3], c] = 1;
+                                //result[index[j], c] = 1;
+                                //result[index[j + 1], c] = 1;
+                                //result[index[j + 2], c] = 1;
+                                //result[index[j + 3], c] = 1;
 
                             }                       
                         }
@@ -66,9 +70,7 @@ namespace QutBioacosutics.Xie
    
             }
 
-
-            return result;
-        
+            return result;        
         }
 
 
