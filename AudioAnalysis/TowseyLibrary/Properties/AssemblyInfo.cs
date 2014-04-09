@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Queensland University of Technology")]
-[assembly: AssemblyProduct("TowseyLib")]
+[assembly: AssemblyProduct("TowseyLibrary")]
 [assembly: AssemblyCopyright("Copyright © Queensland University of Technology 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
