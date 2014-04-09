@@ -26,14 +26,16 @@ namespace AudioAnalysisTools.DSP
             public int NyquistFreq { get; set; } 
             public double FreqBinWidth { get; set; }
             public int NyquistBin { get; set; }
+            public int MaxAmplitudeCount { get; set; }
             public int ClipCount { get; set; }
 
 
-            public EnvelopeAndFFT(double[] average, double[] envelope, int clipping, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
+            public EnvelopeAndFFT(double[] average, double[] envelope, int maxAmpCount, int clipping, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
                                   int nyquistBin)
             {
                 this.Average = average;
                 this.Envelope = envelope;
+                this.MaxAmplitudeCount = maxAmpCount;
                 this.ClipCount = clipping;
                 this.amplitudeSpectrogram = amplSpectrogram;
                 this.WindowPower = windowPower;
@@ -197,8 +199,9 @@ namespace AudioAnalysisTools.DSP
             } // end frames
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
-            //int clipCount = GetClippingCount(signal, envelope, frameStepSize);
-            int clipCount = GetClippingCount(signal, envelope.Max(), epsilon);
+            int maxAmplitudeCount, clipCount;
+            Clipping.GetClippingCount(signal, envelope, frameStepSize, epsilon, out maxAmplitudeCount, out clipCount);
+            //int clipCount = Clipping.GetClippingCount(signal, envelope.Max(), epsilon);
 
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
@@ -207,64 +210,9 @@ namespace AudioAnalysisTools.DSP
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
-            return new EnvelopeAndFFT(average, envelope, clipCount, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT(average, envelope, maxAmplitudeCount, clipCount, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
-        public static int GetClippingCount(double[] signal, double[] envelope, int frameStepSize)
-        {
-            int bitsPerSample = 16;
-            double epsilon = Math.Pow(0.5, bitsPerSample - 1);
-            epsilon *= 100;
-
-            double maximumAmplitude = envelope.Max();
-            int frameCount = envelope.Length;
-
-            int clipCount = 0;
-            for (int i = 0; i < frameCount; i++)
-            {
-                if ((maximumAmplitude - envelope[i]) > epsilon) continue; // skip frames where max is not near global max - no clipping there
-
-                int startFrame = i * frameStepSize; 
-                double previousSample = signal[startFrame];
-
-                for (int index = startFrame + 1; index < startFrame + frameStepSize; index++)
-                {
-                    double sample = Math.Abs(signal[index]);
-                    double delta = Math.Abs(sample - previousSample);
-                    // check if sample reached clipping ceiling (max - threshold) 
-                    if (((maximumAmplitude - sample) < epsilon) && (delta < epsilon))
-                    {
-                        // a clip has occurred
-                        clipCount++;
-                    }
-                    previousSample = sample;
-                }
-            }
-            return clipCount;
-        }
-
-        private static int GetClippingCount(double[] signal, double maximumAmplitude, double epsilon)
-        {
-            epsilon *= 1000; // down sampling very much reduces the clipping - hence increase the epsilon 1000 times!!! Typically only need epsilon*4
-
-            int clipCount = 0;
-            double previousSample = signal[0];
-
-            for (int index = 1; index < signal.Length; index++)
-            {
-                double sample = Math.Abs(signal[index]);
-                double delta  = Math.Abs(sample - previousSample);
-                // check if sample reached clipping ceiling (max - threshold) 
-                //if (((maximumAmplitude - sample) < epsilon))
-                if (((maximumAmplitude - sample) < epsilon) && (delta < epsilon))
-                {
-                    // a clip has occurred
-                    clipCount++;
-                }
-                previousSample = sample;
-            }
-            return clipCount;
-        }
 
         public static System.Tuple<double[], double[], double[], double[], double[]> ExtractEnvelopeAndZeroCrossings(double[] signal, int sr, int windowSize, double overlap)
         {

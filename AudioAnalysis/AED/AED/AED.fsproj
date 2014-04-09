@@ -96,9 +96,9 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TowseyLib\TowseyLibrary.csproj">
+    <ProjectReference Include="..\..\TowseyLibrary\TowseyLibrary.csproj">
       <Name>TowseyLibrary</Name>
-      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
+      <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
       <Private>True</Private>
     </ProjectReference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -131,6 +131,9 @@
       <Private>True</Private>
     </ProjectReference>
     <Reference Include="System.Numerics" />
+    <Reference Include="TowseyLib">
+      <HintPath>..\..\TowseyLibrary\bin\Debug\TowseyLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.

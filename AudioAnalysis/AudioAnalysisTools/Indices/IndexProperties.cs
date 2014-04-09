@@ -29,7 +29,8 @@ namespace AudioAnalysisTools
         public const string keyCOUNT = "COUNT";
         public const string keySTART_MIN = "START-MIN";
         public const string keySEC_DUR = "SEC-DUR";
-        public const string keyCLIP = "CLIPPING";
+        public const string keyCLIP1 = "CLIPPING1";
+        public const string keyCLIP2 = "CLIPPING2";
         public const string keyAV_AMP = "AV-AMP";
         public const string keyBGN = "BGN";
         public const string keySNR = "SNR";
@@ -58,7 +59,8 @@ namespace AudioAnalysisTools
         public static string header_count = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT;
         public const string header_startMin = AudioAnalysisTools.AnalysisKeys.START_MIN;
         public const string header_SecondsDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
-        public const string header_Clipping = "Clipping";
+        public const string header_Clipping1 = "Clipping1";
+        public const string header_Clipping2 = "Clipping2";
         public const string header_avAmpdB = "avAmp-dB";
         public const string header_snr = "SNR";
         public const string header_activeSnr = "ActiveSNR";
@@ -245,8 +247,10 @@ namespace AudioAnalysisTools
                 new IndexProperties(keySTART_MIN, header_startMin, typeof(double)));
             properties.Add(keySEC_DUR, 
                 new IndexProperties(keySEC_DUR, header_SecondsDuration, typeof(TimeSpan)));
-            properties.Add(keyCLIP, 
-                new IndexProperties(keyCLIP, header_Clipping, typeof(double), doDisplay, 0.0, 1.0, ""));
+            properties.Add(keyCLIP1, 
+                new IndexProperties(keyCLIP1, header_Clipping1, typeof(double), doDisplay, 0.0, 100.0, ""));
+            properties.Add(keyCLIP2,
+                new IndexProperties(keyCLIP2, header_Clipping2, typeof(double), doDisplay, 0.0, 1.0, ""));
             properties.Add(keyAV_AMP, 
                 new IndexProperties(keyAV_AMP, header_avAmpdB, typeof(double), doDisplay, -50.0, -5.0, "dB"));
             properties.Add(keyBGN, 

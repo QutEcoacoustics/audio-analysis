@@ -115,7 +115,8 @@ namespace AudioAnalysisTools.Indices
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             IndexStore indicesStore = new IndexStore(freqBinCount, wavDuration);  // total duration of recording
             indicesStore.StoreIndex(IndexProperties.keySEC_DUR, wavDuration);     // duration of recording in seconds
-            indicesStore.StoreIndex(IndexProperties.keyCLIP, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
+            indicesStore.StoreIndex(IndexProperties.keyCLIP1, dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds); //average high ampl rate per second
+            indicesStore.StoreIndex(IndexProperties.keyCLIP2, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
 
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
