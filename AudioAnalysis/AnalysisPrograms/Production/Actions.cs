@@ -321,7 +321,6 @@ namespace AnalysisPrograms.Production
             return SammonProgram.Dev;
         }
 
-        [ArgDescription("Testing")]
         public Sandpit.Arguments SandpitArgs { get; set; }
         public static Action<Sandpit.Arguments> Sandpit()
         {
