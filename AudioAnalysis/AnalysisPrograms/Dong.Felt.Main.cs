@@ -93,15 +93,8 @@ namespace Dong.Felt
 
             // these are configuration settings
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
-
-            // if command line arguments are given, then overwrite the configuration
-            if (args != null)
-            {
-                configuration.InputDirectory = args.Input == null ? configuration.InputDirectory : args.Input.FullName;
-                configuration.OutputDirectory = args.Output == null ? configuration.OutputDirectory : args.Output.FullName;
-            }
  
-            DongSandpit.Play(configuration);
+            DongSandpit.Play(configuration, args.Input, args.Output);
             // Batch Process
             //foreach (string path in Files)
             //{

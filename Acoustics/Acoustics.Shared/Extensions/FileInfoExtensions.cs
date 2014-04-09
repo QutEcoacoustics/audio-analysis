@@ -48,14 +48,20 @@ namespace System
 
         public static FileInfo ToFileInfo(this string str)
         {
-            Contract.Requires(str != null);
+            if (String.IsNullOrWhiteSpace(str))
+            {
+                return null;
+            }
 
             return new FileInfo(str);
         }        
 
         public static DirectoryInfo ToDirectoryInfo(this string str)
         {
-            Contract.Requires(str != null);
+            if (String.IsNullOrWhiteSpace(str))
+            {
+                return null;
+            }
 
             return new DirectoryInfo(str);
         }
