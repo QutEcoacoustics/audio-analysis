@@ -8,7 +8,7 @@ namespace Dong.Felt
     using Representations;
     using System.IO;
     using Dong.Felt.Configuration;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
     public class Indexing
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace Dong.Felt
         /// <returns>
         /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
-        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,string audioFileName, SpectralSonogram spectrogram)
+        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,string audioFileName, SpectrogramStandard spectrogram)
         {
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
             var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
@@ -260,7 +260,7 @@ namespace Dong.Felt
         /// <param name="ridgeNeighbourhood"></param>
         /// <returns></returns>
         public static List<RegionRerepresentation> RegionRepresentationFromAudioNhRepresentations(List<RegionRerepresentation> queryRepresentation, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
-            int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig, SpectralSonogram spectrogram)
+            int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig, SpectrogramStandard spectrogram)
         {
             var result = new List<RegionRerepresentation>();
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;

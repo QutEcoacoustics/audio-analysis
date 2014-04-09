@@ -7,10 +7,10 @@
     using System.IO;
     using Representations;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
     using System.Drawing;
     using Dong.Felt.Configuration;
-    using TowseyLib;
+    using TowseyLibrary;
     using AnalysisBase;
 
     public class CSVResults

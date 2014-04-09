@@ -4,7 +4,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 
 
 namespace AudioAnalysisTools
@@ -14,7 +15,7 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools;
     using NeuralNets;
     using System.IO;
-    using TowseyLib;
+    using TowseyLibrary;
     //using log4net;
 
     public static class SpectralClustering
@@ -406,7 +407,7 @@ namespace AudioAnalysisTools
             var recording = new AudioRecording(wavFilePath); // get recording segment
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = _windowOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
             Plot scores = null;
             double eventThreshold = 0.5; // dummy variable - not used
             List<AcousticEvent> list = null;
@@ -448,7 +449,7 @@ namespace AudioAnalysisTools
             FileInfo fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
                 process.Run(imagePath, outputDir);
             }
 
@@ -473,7 +474,7 @@ namespace AudioAnalysisTools
                 fiImage = new FileInfo(imagePath);
                 if (fiImage.Exists)
                 {
-                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
                     process.Run(imagePath, outputDir);
                 }
             }

@@ -151,7 +151,7 @@ namespace AudioBrowser
             }
             else
             {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.TextEditorExe.FullName);
+                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(this.helper.TextEditorExe.FullName);
                 process.Run(this.AnalysisConfigFile.FullName, this.helper.DefaultOutputDir.FullName, false);
             }
         }

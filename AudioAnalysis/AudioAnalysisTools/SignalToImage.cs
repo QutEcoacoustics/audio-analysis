@@ -6,7 +6,7 @@
     using System.Linq;
 
     using Acoustics.Tools.Wav;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using MathNet.Numerics.Transformations;
 
@@ -117,7 +117,7 @@
                     throw new NotSupportedException(msg);
                 }
 
-                using (var sonogram = new SpectralSonogram(sonogramConfig, audiorecording.GetWavReader()))
+                using (var sonogram = new SpectrogramStandard(sonogramConfig, audiorecording.GetWavReader()))
                 using (var img = sonogram.GetImage())
                 {
                     image = new Bitmap(img);

@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 
 
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     public enum Kernal
     {
@@ -192,7 +192,7 @@ namespace TowseyLib
                 return;
             }
             string outputDir = imagePath.DirectoryName;
-            var process = new TowseyLib.ProcessRunner(paintPath);
+            var process = new TowseyLibrary.ProcessRunner(paintPath);
             process.Run(imagePath.FullName, outputDir);
         }
 

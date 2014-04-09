@@ -410,13 +410,13 @@ namespace AudioAnalysisTools
         public static void PruneSingletons(List<PointOfInterest> poiList, int rows, int cols)
         {
             double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
-            TowseyLib.MatrixTools.SetSingletonsToZero(m);
+            TowseyLibrary.MatrixTools.SetSingletonsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
         public static void PruneDoublets(List<PointOfInterest> poiList, int rows, int cols)
         {
             double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
-            TowseyLib.MatrixTools.SetDoubletsToZero(m);
+            TowseyLibrary.MatrixTools.SetDoubletsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
 

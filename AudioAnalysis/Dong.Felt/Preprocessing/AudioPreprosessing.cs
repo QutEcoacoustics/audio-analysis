@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
-using TowseyLib;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+using TowseyLibrary;
 
 namespace Dong.Felt.Preprocessing
 {
@@ -17,10 +18,10 @@ namespace Dong.Felt.Preprocessing
         /// <param name="config"></param>
         /// <param name="audioFilePath"></param>
         /// <returns></returns>
-        public static SpectralSonogram AudioToSpectrogram(SonogramConfig config, string audioFilePath)
+        public static SpectrogramStandard AudioToSpectrogram(SonogramConfig config, string audioFilePath)
         {          
             var recording = new AudioRecording(audioFilePath);
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
             return spectrogram;
         }
 
@@ -44,7 +45,7 @@ namespace Dong.Felt.Preprocessing
         /// return a tuple composed of each pixel's amplitude at each coordinates and  smoothArray after the noise removal.
         /// </returns>
         public static double[,] NoiseReductionToBinarySpectrogram(
-            SpectralSonogram spectralSonogram, double backgroundThreshold, bool makeBinary = false, bool changeOriginalData = false)
+            SpectrogramStandard spectralSonogram, double backgroundThreshold, bool makeBinary = false, bool changeOriginalData = false)
         {
             double[,] result = spectralSonogram.Data;
 
@@ -78,7 +79,7 @@ namespace Dong.Felt.Preprocessing
         /// <param name="amplitudeThreshold">
         /// The amplitude Threshold.
         /// </param>
-        public static void GenerateBinarySpectrogram(SpectralSonogram amplitudeSpectrogram, double amplitudeThreshold)
+        public static void GenerateBinarySpectrogram(SpectrogramStandard amplitudeSpectrogram, double amplitudeThreshold)
         {
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
 

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TowseyLib;
-using AudioAnalysisTools.Sonogram;
+using TowseyLibrary;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 
 
 namespace AudioAnalysisTools
@@ -24,7 +25,7 @@ namespace AudioAnalysisTools
         /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB</param>
         /// <param name="minDuration">look for events of this duration</param>
         /// <param name="maxDuration">look for events of this duration</param>
-        public static System.Tuple<double[], double[,]> Execute(SpectralSonogram sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
+        public static System.Tuple<double[], double[,]> Execute(SpectrogramStandard sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -240,7 +241,7 @@ namespace AudioAnalysisTools
             int cols = matrix.GetLength(1);
             Double[,] hits = new Double[rows, cols];
 
-            double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
 
             for (int r = 0; r < rows - dctLength; r++)
             {
@@ -254,7 +255,7 @@ namespace AudioAnalysisTools
                 array = DataTools.SubtractMean(array);
                 //     DataTools.writeBarGraph(array);
 
-                double[] dct = Speech.DCT(array, cosines);
+                double[] dct = MFCCStuff.DCT(array, cosines);
                 for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]); //convert to absolute values
                 for (int i = 0; i < 5; i++) dct[i] = 0.0;  //remove low freq values from consideration
                 if (normaliseDCT) dct = DataTools.normalise2UnitLength(dct);

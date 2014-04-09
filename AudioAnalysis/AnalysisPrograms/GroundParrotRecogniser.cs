@@ -17,7 +17,7 @@ namespace AnalysisPrograms
 
     using QutSensors.AudioAnalysis.AED;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     /// <summary>
     /// The ground parrot recogniser.

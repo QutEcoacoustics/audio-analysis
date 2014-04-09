@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
 
 
 namespace AnalysisPrograms
@@ -167,12 +167,12 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
             recording.Dispose();
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, minHz, maxHz, smoothWindow, 
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, minHz, maxHz, smoothWindow, 
                                                                       thresholdSD, minDuration, maxDuration);
             var tuple2 = System.Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;

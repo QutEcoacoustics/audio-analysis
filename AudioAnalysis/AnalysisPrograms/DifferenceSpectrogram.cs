@@ -8,7 +8,7 @@ using System.Text;
 using Acoustics.Shared;
 using AudioAnalysisTools;
 using PowerArgs;
-using TowseyLib;
+using TowseyLibrary;
 
 namespace AnalysisPrograms
 {

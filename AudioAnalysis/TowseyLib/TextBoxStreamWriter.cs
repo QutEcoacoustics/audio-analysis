@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     public class TextBoxStreamWriter : TextWriter
     {

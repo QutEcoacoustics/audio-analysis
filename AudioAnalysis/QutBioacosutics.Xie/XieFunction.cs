@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
-using TowseyLib;
+using TowseyLibrary;
 using System.Drawing.Imaging;
 using System.IO;
 using AForge.Math;

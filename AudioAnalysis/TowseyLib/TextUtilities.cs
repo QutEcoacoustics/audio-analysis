@@ -13,7 +13,7 @@ using System.Text;
 //import qut.tools.datatools.DataUtilities;
 //import qut.tools.datatools.EasyRegex;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
 
 

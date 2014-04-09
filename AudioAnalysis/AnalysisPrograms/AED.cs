@@ -20,7 +20,8 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
 
     using PowerArgs;
 
@@ -28,7 +29,7 @@ namespace AnalysisPrograms
 
     using QutSensors.AudioAnalysis.AED;
 
-    using TowseyLib;
+    using TowseyLibrary;
     using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -126,7 +127,7 @@ namespace AnalysisPrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
             LoggedConsole.WriteLine(date);
-            TowseyLib.Log.Verbosity = 1;
+            TowseyLibrary.Log.Verbosity = 1;
 
             ////CheckArguments(args);
 
@@ -181,14 +182,14 @@ namespace AnalysisPrograms
 
             File.WriteAllText(destPath + ".csv", csvEvents);
 
-            TowseyLib.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
+            TowseyLibrary.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
             ////foreach (AcousticEvent ae in events)
             ////{
             ////    LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             ////}
 
             GenerateImage(destPath + ".png", result.Item1, events);
-            TowseyLib.Log.WriteLine("Finished");
+            TowseyLibrary.Log.WriteLine("Finished");
         }
 
 
@@ -247,7 +248,7 @@ namespace AnalysisPrograms
 
             if ((predictedEvents != null) && (predictedEvents.Count != 0))
             {
-                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.Keys.ANALYSIS_NAME];
+                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.AnalysisKeys.ANALYSIS_NAME];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
@@ -257,7 +258,7 @@ namespace AnalysisPrograms
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = Keys.EVENT_START_ABS + " ASC";
+                string sortString = AnalysisKeys.EVENT_START_ABS + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
@@ -321,8 +322,8 @@ namespace AnalysisPrograms
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
-                    displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
+                    displayHeaders = configDict[AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
             }
             //if config file does not exist or does not contain display headers then use the original headers
             if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
@@ -350,21 +351,21 @@ namespace AnalysisPrograms
             }
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
             }
 
             table2Display = NormaliseColumnsOfDataTable(table2Display);
@@ -390,7 +391,7 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (headers[i].Equals(Keys.AV_AMPLITUDE))
+                if (headers[i].Equals(AnalysisKeys.AV_AMPLITUDE))
                 {
                     min = -50;
                     max = -5;
@@ -422,14 +423,14 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
-                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS];
+                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.START_MIN, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -503,10 +504,10 @@ namespace AnalysisPrograms
             double bandPassMinimum,
             double bandPassMaximum)
         {
-            TowseyLib.Log.WriteLine("AED start");
+            TowseyLibrary.Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
                 intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum, sonogram.Data);
-            TowseyLib.Log.WriteLine("AED finished");
+            TowseyLibrary.Log.WriteLine("AED finished");
 
             SonogramConfig config = sonogram.Configuration;
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
@@ -517,7 +518,7 @@ namespace AnalysisPrograms
                     ae.BorderColour = aedEventColor;
                     return ae;
                 }).ToList();
-            TowseyLib.Log.WriteIfVerbose("AED # events: " + events.Count);
+            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Count);
             return events;
         }
 
@@ -582,7 +583,7 @@ namespace AnalysisPrograms
 
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
 
-            return new SpectralSonogram(config, recording.GetWavReader());
+            return new SpectrogramStandard(config, recording.GetWavReader());
         }
 
         /// <summary>
@@ -598,7 +599,7 @@ namespace AnalysisPrograms
         public static void GenerateImage(
             string imagePath, BaseSonogram sonogram, List<AcousticEvent> events)
         {
-            TowseyLib.Log.WriteIfVerbose("imagePath = " + imagePath);
+            TowseyLibrary.Log.WriteIfVerbose("imagePath = " + imagePath);
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
 
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
@@ -700,26 +701,26 @@ namespace AnalysisPrograms
                 propertyUsageCount++;
             }
 
-            TowseyLib.Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
+            TowseyLibrary.Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
         }
 
         public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
         {
             if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,        //1
-                                 AudioAnalysisTools.Keys.EVENT_START_MIN,    //2
-                                 AudioAnalysisTools.Keys.EVENT_START_SEC,    //3
-                                 AudioAnalysisTools.Keys.EVENT_START_ABS,    //4
-                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,   //5
-                                 AudioAnalysisTools.Keys.EVENT_DURATION,     //6
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.EVENT_COUNT,        //1
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_MIN,    //2
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC,    //3
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS,    //4
+                                 AudioAnalysisTools.AnalysisKeys.SEGMENT_TIMESPAN,   //5
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_DURATION,     //6
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.Keys.EVENT_NAME,         //7
-                                 AudioAnalysisTools.Keys.DOMINANT_FREQUENCY,
-                                 AudioAnalysisTools.Keys.OSCILLATION_RATE,
-                                 AudioAnalysisTools.Keys.EVENT_SCORE,
-                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE,
-                                 AudioAnalysisTools.Keys.MAX_HZ,
-                                 AudioAnalysisTools.Keys.MIN_HZ
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_NAME,         //7
+                                 AudioAnalysisTools.AnalysisKeys.DOMINANT_FREQUENCY,
+                                 AudioAnalysisTools.AnalysisKeys.OSCILLATION_RATE,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_SCORE,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE,
+                                 AudioAnalysisTools.AnalysisKeys.MAX_HZ,
+                                 AudioAnalysisTools.AnalysisKeys.MIN_HZ
                                };
             //                   1                2               3              4                5              6               7              8
             Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), 
@@ -731,18 +732,18 @@ namespace AnalysisPrograms
             foreach (var ev in predictedEvents)
             {
                 DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
-                row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duration in seconds
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS] = (double)ev.TimeStart;  //Set now - will overwrite later
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_DURATION] = (double)ev.Duration;   //duration in seconds
                 //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
-                row[AudioAnalysisTools.Keys.DOMINANT_FREQUENCY] = (double)ev.DominantFreq;
-                row[AudioAnalysisTools.Keys.OSCILLATION_RATE] = 1 / (double)ev.Periodicity;
-                row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
-                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_NAME] = (string)ev.Name;   //
+                row[AudioAnalysisTools.AnalysisKeys.DOMINANT_FREQUENCY] = (double)ev.DominantFreq;
+                row[AudioAnalysisTools.AnalysisKeys.OSCILLATION_RATE] = 1 / (double)ev.Periodicity;
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_SCORE] = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
 
-                row[AudioAnalysisTools.Keys.MAX_HZ] = (double)ev.MaxFreq;
-                row[AudioAnalysisTools.Keys.MIN_HZ] = (double)ev.MinFreq;
+                row[AudioAnalysisTools.AnalysisKeys.MAX_HZ] = (double)ev.MaxFreq;
+                row[AudioAnalysisTools.AnalysisKeys.MIN_HZ] = (double)ev.MinFreq;
 
                 dataTable.Rows.Add(row);
             }

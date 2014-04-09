@@ -12,7 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using TowseyLib;
+using TowseyLibrary;
 
 namespace AudioBrowser
 {
@@ -282,22 +282,22 @@ namespace AudioBrowser
             var config = ConfigDictionary.ReadPropertiesFile(configFile.FullName);
 
             //Set following key/value pairs from radio buttons.
-            SetConfigValue(config, AudioAnalysisTools.Keys.ANNOTATE_SONOGRAM, annotated.ToString().ToLowerInvariant());
-            SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_DO_REDUCTION, noiseReduced.ToString().ToLowerInvariant());
+            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.ANNOTATE_SONOGRAM, annotated.ToString().ToLowerInvariant());
+            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NOISE_DO_REDUCTION, noiseReduced.ToString().ToLowerInvariant());
 
             //If any of following config key/value pairs are missing, then add in the defaults.
-            if (!config.ContainsKey(AudioAnalysisTools.Keys.FRAME_LENGTH))
+            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.FRAME_LENGTH))
             {
                 var defaultFrameLength = 1024; // do not want long spectrogram
-                SetConfigValue(config, AudioAnalysisTools.Keys.FRAME_LENGTH, defaultFrameLength.ToString().ToLowerInvariant());
+                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.FRAME_LENGTH, defaultFrameLength.ToString().ToLowerInvariant());
             }
 
-            if (!config.ContainsKey(AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD))
+            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.NOISE_BG_THRESHOLD))
             {
-                SetConfigValue(config, AudioAnalysisTools.Keys.NOISE_BG_THRESHOLD, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
+                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NOISE_BG_THRESHOLD, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
             }
 
-            config[AudioAnalysisTools.Keys.ANALYSIS_NAME] = analysisId;
+            config[AudioAnalysisTools.AnalysisKeys.ANALYSIS_NAME] = analysisId;
             var fiTempConfig = TempFileHelper.NewTempFile(outputDir, configFileExt);
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
@@ -490,7 +490,7 @@ namespace AudioBrowser
 
             if (!File.Exists(this.IndicesImageFile.FullName))
             {
-                Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, imageTitle/*, doNormalisation*/);
+                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(dt2Display, imageTitle/*, doNormalisation*/);
                 tracksImage.Save(this.IndicesImageFile.FullName);
                 this.IndicesImage = tracksImage;
             }

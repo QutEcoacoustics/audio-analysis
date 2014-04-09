@@ -74,7 +74,8 @@
         open Acoustics.Tools.Audio
         open Acoustics.Tools.Wav
         open AudioAnalysisTools
-        open AudioAnalysisTools.Sonogram
+        open AudioAnalysisTools.DSP
+        open AudioAnalysisTools.StandardSpectrograms
         open Microsoft.FSharp.Core
         open Microsoft.FSharp.Math
         open Microsoft.FSharp.Math.SI
@@ -83,7 +84,7 @@
         open MQUTeR.FSharp.Shared
         open System.IO
         open Microsoft.FSharp.Collections
-        open TowseyLib
+        open TowseyLibrary
 
         type Point<'a, 'b> = { x : 'a; y: 'b}
         type SpectrogramPoint = Point<float<s>, float<Hz>>
@@ -200,13 +201,13 @@
             // can enable noise reduction here
             let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.NONE )
 
-            let sp = new SpectralSonogram(config, wavSource.GetWavReader());
+            let sp = new SpectrogramStandard(config, wavSource.GetWavReader());
             sp
 
-        let spectrogramToMatrix (sonogram:SpectralSonogram) =
+        let spectrogramToMatrix (sonogram:SpectrogramStandard) =
             Math.Matrix.ofArray2D sonogram.Data |> mTranspose
 
-        let spectrogramBandpass (sonogram:SpectralSonogram) (low:int<px>) (high:int<px>) =
+        let spectrogramBandpass (sonogram:SpectrogramStandard) (low:int<px>) (high:int<px>) =
             let spm = spectrogramToMatrix sonogram
         
             let l, h = int low, int high
@@ -219,7 +220,7 @@
             //  - time-domain (needs raw pcm signals) -> needs cut files
             //  - spectral (needs spectrogram) -> needs cut spectrograms (of cut files)
         type FeatureAction = 
-            | Spectral of (AudioRecording -> SpectralSonogram -> Value)
+            | Spectral of (AudioRecording -> SpectrogramStandard -> Value)
             | Sample of (AudioRecording -> Value)
             | Statistical of  (unit -> Value)
 
@@ -344,7 +345,7 @@
 
         let classifier : ClassifierBase = upcast new EuclideanClassifier(true)
 
-        let compareTemplatesToEvent (templateData:Data)  testAudioRecording (testSpectrogram: SpectralSonogram) (event: Rectangle2<float<px>>) =
+        let compareTemplatesToEvent (templateData:Data)  testAudioRecording (testSpectrogram: SpectrogramStandard) (event: Rectangle2<float<px>>) =
             // import boundaries            
             let bounds = 
                 let getBound headers = 

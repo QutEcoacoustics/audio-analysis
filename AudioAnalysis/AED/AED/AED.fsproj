@@ -96,6 +96,11 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TowseyLib\TowseyLibrary.csproj">
+      <Name>TowseyLibrary</Name>
+      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
@@ -123,11 +128,6 @@
     <ProjectReference Include="..\..\FELT\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Name>MQUTeR.FSharp.Shared</Name>
       <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
-      <Name>TowseyLib</Name>
-      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
       <Private>True</Private>
     </ProjectReference>
     <Reference Include="System.Numerics" />

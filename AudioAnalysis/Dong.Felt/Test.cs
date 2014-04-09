@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Text;
     using System.Drawing;
-    using TowseyLib;
+    using TowseyLibrary;
     using AudioAnalysisTools;
     using System.IO;
 

@@ -15,7 +15,7 @@ namespace AnalysisPrograms
 
     using PowerArgs;
 
-    using TowseyLib;
+    using TowseyLibrary;
     using QutBioacosutics.Xie;
 
     public static class XiesAnalysis

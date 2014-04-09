@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms
+namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
@@ -19,10 +19,9 @@ namespace AnalysisPrograms
     using System.Text;
 
     using AnalysisBase;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.Sonogram;
-    using TowseyLib;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using TowseyLibrary;
 
     using log4net;
 
@@ -90,11 +89,11 @@ namespace AnalysisPrograms
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DEFAULT_WINDOW_SIZE;
-            frameSize = config.ContainsKey(Keys.FRAME_LENGTH) ? ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config) : frameSize;
+            frameSize = config.ContainsKey(AnalysisKeys.FRAME_LENGTH) ? ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config) : frameSize;
             int freqBinCount = frameSize / 2;
-            lowFreqBound = config.ContainsKey(Keys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(Keys.LOW_FREQ_BOUND, config) : lowFreqBound;
-            midFreqBound = config.ContainsKey(Keys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(Keys.MID_FREQ_BOUND, config) : midFreqBound;
-            double windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
+            lowFreqBound = config.ContainsKey(AnalysisKeys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.LOW_FREQ_BOUND, config) : lowFreqBound;
+            midFreqBound = config.ContainsKey(AnalysisKeys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.MID_FREQ_BOUND, config) : midFreqBound;
+            double windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
 
             // get recording segment
             AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
@@ -214,7 +213,7 @@ namespace AnalysisPrograms
                         
             // i: generate deciBel spectrogram from amplitude spectrogram
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            double[,] deciBelSpectrogram = Speech.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
 
             // ii: Calculate background noise spectrum in decibels
             SD_COUNT = 0.0; // number of SDs above the mean for noise removal
@@ -268,27 +267,27 @@ namespace AnalysisPrograms
             var scores = new List<Plot>();
 
             bool returnSonogramInfo = false;
-            if (config.ContainsKey(Keys.SAVE_SONOGRAMS)) returnSonogramInfo = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, config);
+            if (config.ContainsKey(AnalysisKeys.SAVE_SONOGRAMS)) returnSonogramInfo = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_SONOGRAMS, config);
 
             if (returnSonogramInfo)
             {
                 SonogramConfig sonoConfig = new SonogramConfig(); //default values config
                 sonoConfig.SourceFName = recording.FileName;
                 sonoConfig.WindowSize = 1024; //the default
-                if (config.ContainsKey(Keys.FRAME_LENGTH)) 
-                    sonoConfig.WindowSize =  ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
+                if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH)) 
+                    sonoConfig.WindowSize =  ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config);
                 sonoConfig.WindowOverlap = 0.0; // the default
-                if (config.ContainsKey(Keys.FRAME_OVERLAP))
-                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
+                if (config.ContainsKey(AnalysisKeys.FRAME_OVERLAP))
+                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
                 sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
                 bool doNoiseReduction = false;  // the default
-                if (config.ContainsKey(Keys.NOISE_DO_REDUCTION)) 
-                    doNoiseReduction = ConfigDictionary.GetBoolean(Keys.NOISE_DO_REDUCTION, config);
+                if (config.ContainsKey(AnalysisKeys.NOISE_DO_REDUCTION)) 
+                    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NOISE_DO_REDUCTION, config);
                 if (doNoiseReduction) 
                     sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
 
                 //init sonogram
-                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+                sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
                 scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), ActivityAndCover.DEFAULT_activityThreshold_dB));

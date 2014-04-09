@@ -1,4 +1,4 @@
-﻿namespace TowseyLib
+﻿namespace TowseyLibrary
 {
     using System.Diagnostics;
     using System.IO;

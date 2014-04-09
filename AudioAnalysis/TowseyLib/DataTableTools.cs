@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     public static class DataTableTools
     {

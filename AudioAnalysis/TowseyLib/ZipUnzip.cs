@@ -4,7 +4,7 @@ using System.Text;
 using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     public class ZipUnzip
     {

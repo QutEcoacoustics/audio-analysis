@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
-using TowseyLib;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
+using TowseyLibrary;
 
 namespace AnalysisPrograms
 {
@@ -112,7 +114,7 @@ namespace AnalysisPrograms
                     //NoiseReductionType = NoiseReductionType.STANDARD,
                     WindowOverlap = frameOverlap
                 };
-                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+                sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
             }
 
             List<AcousticEvent> predictedEvents = null;

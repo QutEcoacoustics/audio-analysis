@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 using AudioAnalysisTools;
-using TowseyLib;
+using TowseyLibrary;
 
 namespace AnalysisPrograms
 {
@@ -20,10 +20,10 @@ namespace AnalysisPrograms
         public static string key_FILTER_EVENTS = "DO_FILTER_EVENTS";
 
         //HEADER KEYS
-        public static string key_EVENT_NAME = AudioAnalysisTools.Keys.EVENT_NAME;
-        public static string key_INTENSITY_SCORE = AudioAnalysisTools.Keys.EVENT_INTENSITY;
-        public static string key_EVENT_NORMSCORE = AudioAnalysisTools.Keys.EVENT_NORMSCORE;
-        public static string key_SNR_SCORE = AudioAnalysisTools.Keys.SNR_SCORE;
+        public static string key_EVENT_NAME = AudioAnalysisTools.AnalysisKeys.EVENT_NAME;
+        public static string key_INTENSITY_SCORE = AudioAnalysisTools.AnalysisKeys.EVENT_INTENSITY;
+        public static string key_EVENT_NORMSCORE = AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE;
+        public static string key_SNR_SCORE = AudioAnalysisTools.AnalysisKeys.SNR_SCORE;
 
         public static string key_CHIRP_SCORE     = "ChirpScore";
         public static string key_DELTA_SCORE     = "DeltaPeriodScore";
@@ -150,15 +150,15 @@ namespace AnalysisPrograms
        public static DataTable MergeAdjacentPredictions(DataTable dt)
        {
            //DataTable newTable = DataTableTools.CreateTable(dt);
-           string sortString = Keys.EVENT_START_ABS + " ASC";
+           string sortString = AnalysisKeys.EVENT_START_ABS + " ASC";
            dt = DataTableTools.SortTable(dt, sortString);
            int rowCount = dt.Rows.Count;
            for (int i = rowCount-2; i >=0; i--) //work from end to beginning
            {
                DataRow row1 = dt.Rows[i];
                DataRow row2 = dt.Rows[i+1];
-               string name1 = (string)row1[Keys.EVENT_NAME];
-               string name2 = (string)row2[Keys.EVENT_NAME];
+               string name1 = (string)row1[AnalysisKeys.EVENT_NAME];
+               string name2 = (string)row2[AnalysisKeys.EVENT_NAME];
                string predictedSex1;
                if (name1.EndsWith("(m)"))      predictedSex1 = "M";
                else if (name1.EndsWith("(f)")) predictedSex1 = "F";
@@ -167,8 +167,8 @@ namespace AnalysisPrograms
                if (name2.EndsWith("(m)"))      predictedSex2 = "M";
                else if (name2.EndsWith("(f)")) predictedSex2 = "F";
                else predictedSex2 = null;
-               double start1 = (double)row1[Keys.EVENT_START_ABS];
-               double start2 = (double)row2[Keys.EVENT_START_ABS];
+               double start1 = (double)row1[AnalysisKeys.EVENT_START_ABS];
+               double start2 = (double)row2[AnalysisKeys.EVENT_START_ABS];
 
                if (((start2 - start1) < 15.0) && (predictedSex1 == predictedSex2)) dt.Rows.Remove(row2);
            }

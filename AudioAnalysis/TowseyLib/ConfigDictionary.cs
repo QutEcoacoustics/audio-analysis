@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;

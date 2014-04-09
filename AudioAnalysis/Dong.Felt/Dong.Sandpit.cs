@@ -6,9 +6,10 @@
     using System.Text;
     using System.IO;
     using System.Drawing;
-    using TowseyLib;
+    using TowseyLibrary;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
     using System.Drawing.Imaging;
     using log4net;
     using AnalysisBase;

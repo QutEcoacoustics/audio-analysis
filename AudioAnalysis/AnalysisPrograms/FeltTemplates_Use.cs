@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 
 
 
@@ -110,7 +111,7 @@ namespace AnalysisPrograms
             sonoConfig.DoMelScale = false;
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
             recording.Dispose(); //DO NOT DISPOSE BECAUSE REQUIRE AGAIN
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
@@ -121,7 +122,7 @@ namespace AnalysisPrograms
 
             //iii: Get zip paths and the results Tuple
             List<string> zipList = FileTools.ReadTextFile(arguments.Config.FullName);
-            System.Tuple<SpectralSonogram, List<AcousticEvent>, double[]> results = null; //set up the results Tuple
+            System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> results = null; //set up the results Tuple
 
             foreach (string zipPath in zipList)
             {
@@ -241,7 +242,7 @@ namespace AnalysisPrograms
         /// <param name="dict"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectralSonogram sonogram, Dictionary<string, string> dict, double[,] templateMatrix)
+        public static System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithBinaryTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, double[,] templateMatrix)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
@@ -262,7 +263,7 @@ namespace AnalysisPrograms
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;     // Standard deviations above backgorund noise
             double maxDuration = Double.MaxValue;   // Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template
@@ -301,7 +302,7 @@ namespace AnalysisPrograms
         /// <param name="dict"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectralSonogram sonogram, Dictionary<string, string> dict, char[,] templateMatrix)
+        public static System.Tuple<SpectrogramStandard, List<AcousticEvent>, double[]> FELTWithSprTemplate(SpectrogramStandard sonogram, Dictionary<string, string> dict, char[,] templateMatrix)
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
@@ -323,7 +324,7 @@ namespace AnalysisPrograms
             //iii: DO SEGMENTATION
             double segmentationThreshold = 2.0;      // Standard deviations above backgorund noise
             double maxDuration = Double.MaxValue;    // Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template

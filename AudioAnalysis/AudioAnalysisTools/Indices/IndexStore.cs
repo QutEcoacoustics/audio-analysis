@@ -4,13 +4,13 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-using TowseyLib;
+using TowseyLibrary;
 using AnalysisBase;
 using AudioAnalysisTools;
 
 
 
-namespace AnalysisPrograms
+namespace AudioAnalysisTools
 {
 
     public class IndexStore

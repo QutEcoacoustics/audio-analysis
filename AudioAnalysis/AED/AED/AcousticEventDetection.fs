@@ -2,7 +2,7 @@
 
 open GetAcousticEvents
 open Matlab
-open TowseyLib
+open TowseyLibrary
 open Util
 open Option
 

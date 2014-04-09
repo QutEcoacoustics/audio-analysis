@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using AudioAnalysisTools;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioBase;
 using AnalysisRunner;
 using Acoustics.Tools;

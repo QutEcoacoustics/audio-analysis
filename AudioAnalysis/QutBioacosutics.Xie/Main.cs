@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 using System.IO;
 using MathNet.Numerics;
 
@@ -15,7 +16,7 @@ namespace QutBioacosutics.Xie
 
     using log4net;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     using System.Drawing;
 
@@ -205,7 +206,7 @@ namespace QutBioacosutics.Xie
                 // Generate a spectrogram
                 //var recording = new AudioRecording(path);
                 var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = 512 };
-                var spectrogram = new SpectralSonogram(spectrogramConfig, recording.GetWavReader());
+                var spectrogram = new SpectrogramStandard(spectrogramConfig, recording.GetWavReader());
 
                 // Rotate the spectrogram to make it more suitable for me
                 var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -240,7 +241,7 @@ namespace QutBioacosutics.Xie
                 // Find long tracks
 
                 var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 512 };
-                var spectrogramLongTrack = new SpectralSonogram(spectrogramConfigLongTrack, recording.GetWavReader());
+                var spectrogramLongTrack = new SpectrogramStandard(spectrogramConfigLongTrack, recording.GetWavReader());
 
                 // Smooth the spectrogram for extracting long tracks
                 var LongTrackSmoothMatrix = ImageTools.GaussianBlur_5cell(spectrogramLongTrack.Data);
@@ -273,7 +274,7 @@ namespace QutBioacosutics.Xie
                 // Find oscillation 
 
                 var spectrogramConfigOscillation = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.1, WindowSize = 512 };
-                var spectrogramOscillation = new SpectralSonogram(spectrogramConfigOscillation, recording.GetWavReader());
+                var spectrogramOscillation = new SpectrogramStandard(spectrogramConfigOscillation, recording.GetWavReader());
 
                 var Oscillation = new FindOscillation();
                 var oscillationArray = Oscillation.getOscillation(spectrogramOscillation.Data, zeroBinIndex);

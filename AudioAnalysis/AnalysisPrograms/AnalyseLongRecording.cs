@@ -35,7 +35,7 @@ namespace AnalysisPrograms
 
     using PowerArgs;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     public class AnalyseLongRecording
     {
@@ -109,9 +109,9 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST3_TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
 
             // DEV CONFIG OPTIONS
             string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
@@ -125,7 +125,8 @@ namespace AnalysisPrograms
                 Source = recordingPath.ToFileInfo(),
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
+                //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_09April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -213,20 +214,20 @@ namespace AnalysisPrograms
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
             bool saveIntermediateWavFiles = false;
-            if (configDict.ContainsKey(Keys.SAVE_INTERMEDIATE_WAV_FILES))
-                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(Keys.SAVE_INTERMEDIATE_WAV_FILES, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES, configDict);
 
             bool saveSonograms;
-            if (configDict.ContainsKey(Keys.SAVE_SONOGRAMS))
-                saveSonograms = ConfigDictionary.GetBoolean(Keys.SAVE_SONOGRAMS, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.SAVE_SONOGRAMS))
+                saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_SONOGRAMS, configDict);
 
             bool displayCSVImage = false;
-            if (configDict.ContainsKey(Keys.DISPLAY_CSV_IMAGE))
-                displayCSVImage = ConfigDictionary.GetBoolean(Keys.DISPLAY_CSV_IMAGE, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.DISPLAY_CSV_IMAGE))
+                displayCSVImage = ConfigDictionary.GetBoolean(AnalysisKeys.DISPLAY_CSV_IMAGE, configDict);
 
             bool doParallelProcessing = false;
-            if (configDict.ContainsKey(Keys.PARALLEL_PROCESSING))
-                doParallelProcessing = ConfigDictionary.GetBoolean(Keys.PARALLEL_PROCESSING, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.PARALLEL_PROCESSING))
+                doParallelProcessing = ConfigDictionary.GetBoolean(AnalysisKeys.PARALLEL_PROCESSING, configDict);
 
             AnalysisCoordinator analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
             {
@@ -245,7 +246,7 @@ namespace AnalysisPrograms
             }
 
             // 5. initialise the analyser
-            string analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
+            string analysisIdentifier = configDict[AnalysisKeys.ANALYSIS_NAME];
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly);
             IAnalyser analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
             if (analyser == null)
@@ -282,7 +283,7 @@ namespace AnalysisPrograms
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory, Keys.SEGMENT_DURATION, Keys.SEGMENT_OVERLAP);
+            analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory, AnalysisKeys.SEGMENT_DURATION, AnalysisKeys.SEGMENT_OVERLAP);
             analysisSettings.SourceFile = sourceAudio;
 
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
@@ -346,9 +347,9 @@ namespace AnalysisPrograms
             var sourceInfo = audioUtility.Info(sourceAudio);
 
             double scoreThreshold = 0.2;                 // min score for an acceptable event
-            if (analysisSettings.ConfigDict.ContainsKey(Keys.EVENT_THRESHOLD))
+            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.EVENT_THRESHOLD))
             {
-                scoreThreshold = double.Parse(analysisSettings.ConfigDict[Keys.EVENT_THRESHOLD]);
+                scoreThreshold = double.Parse(analysisSettings.ConfigDict[AnalysisKeys.EVENT_THRESHOLD]);
             }
 
             // increase the threshold - used to display number of high scoring events
@@ -435,7 +436,7 @@ namespace AnalysisPrograms
                         Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices(); 
                         string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                         string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                        Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(indicesDatatable, title);
+                        Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
                         var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                         tracksImage.Save(imagePath);
                     }
@@ -460,12 +461,12 @@ namespace AnalysisPrograms
 
 
             int frameWidth = 512; // default value
-            if (analysisSettings.ConfigDict.ContainsKey(Keys.FRAME_LENGTH))
-                frameWidth = Int32.Parse(analysisSettings.ConfigDict[Keys.FRAME_LENGTH]);
+            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.FRAME_LENGTH))
+                frameWidth = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.FRAME_LENGTH]);
 
             int sampleRate = 17640; // default value
-            if (analysisSettings.ConfigDict.ContainsKey(Keys.RESAMPLE_RATE))
-                sampleRate = Int32.Parse(analysisSettings.ConfigDict[Keys.RESAMPLE_RATE]);
+            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.RESAMPLE_RATE))
+                sampleRate = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.RESAMPLE_RATE]);
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyser results
             // this is the most effcient way to do this

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TowseyLib;
-using AudioAnalysisTools.Sonogram;
+using TowseyLibrary;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 
 
 
@@ -30,7 +31,7 @@ namespace AudioAnalysisTools
         /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
         /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
         /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
-        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
+        public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude, double scoreThreshold,
                                    double minDuration, double maxDuration, out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
@@ -72,7 +73,7 @@ namespace AudioAnalysisTools
         /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
         /// <param name="minAmplitude">threshold - do not accept a DCT value if its amplitude is less than this threshold</param>
         /// <returns></returns>
-        public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz,
+        public static Double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,
                                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -89,7 +90,7 @@ namespace AudioAnalysisTools
             Double[,] hits = new Double[rows, cols];
             Double[,] matrix = sonogram.Data;
 
-            double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
             //string txtPath = @"C:\SensorNetworks\Output\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
@@ -112,7 +113,7 @@ namespace AudioAnalysisTools
                     array = DataTools.SubtractMean(array);
                     //     DataTools.writeBarGraph(array);
 
-                    double[] dct = Speech.DCT(array, cosines);
+                    double[] dct = MFCCStuff.DCT(array, cosines);
                     for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                     dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);

@@ -283,9 +283,9 @@
       <Project>{adcab854-897b-4604-94ba-aafcb4fb81a6}</Project>
       <Name>SammonProjection</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
+    <ProjectReference Include="..\TowseyLib\TowseyLibrary.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
+      <Name>TowseyLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
