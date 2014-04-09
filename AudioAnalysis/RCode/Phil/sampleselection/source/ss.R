@@ -71,7 +71,8 @@ SS <- function (from.step = NA, to.step = NA) {
                        'feature.extraction',
                        'clustering',
                        'internal.distance',
-                       'sample.selection',
+                       'ranking',
+                       'evaluation',
                        'inspect.samples')
     
     if (is.na(from.step)) {
@@ -150,10 +151,14 @@ SS <- function (from.step = NA, to.step = NA) {
             # chooses samples based on cluster groups
             # outputs a list of minute samples to a csv file
             RankSamples()
-            EvaluateSamples2() 
         },
         function () {
             # Step 6:
+            # Evaluates the Richness survey from ranked samples
+            EvaluateSamples() 
+        },
+        function () {
+            # Step 7:
             # output a series of spectrograms of the samples
             # with the events colorcoded by cluster
             InspectSamples()
@@ -171,40 +176,6 @@ SS <- function (from.step = NA, to.step = NA) {
 }
 
 
-
-IsWithinTargetTimes <- function (date, min, site) {
-    # determines whether the given date, startmin and site are within
-    # the start and end date and min and list of sites to process
-    #
-    #  Args:
-    #    date: String; 
-    #    min: Int;
-    #    site: String
-    #
-    #  Returns:
-    #    Boolean
-    # 
-    # Details:
-    #   first tests for site, then
-    #   constructs date-time strings and compares the strings
-    require('stringr')
-    
-    
-    if (!site %in% g.sites) {
-        return(FALSE)
-    }
-    date <- FixDate(date)
-    start.date <- FixDate(g.start.date)
-    end.date <- FixDate(g.end.date)
-    start.date.time <- paste(start.date, MinToTime(g.start.min))
-    end.date.time <- paste(end.date, MinToTime(g.end.min))
-    date.time <- paste(date, MinToTime(min))
-    if (date.time >=  start.date.time && date.time <= end.date.time) {
-        return(TRUE)
-    } else  {
-        return(FALSE)
-    }
-}
 
 
 

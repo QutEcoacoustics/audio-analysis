@@ -1,37 +1,56 @@
-EvaluateSamples <- function (samples = NA, cutoff = NA) {
+EvaluateSamples <- function () {
+    
+    ranks <- ReadObject('ranked_samples')
+    d.names <- dimnames(ranks)
+    num.clusters.options <- d.names$num.clusters
+    default <- length(num.clusters.options) / 2
+    num.clusters.choices <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
+    
+    ranks <- ranks[,num.clusters.choices,]
+    
+    if (length(num.clusters.choices) > 1) {
+        # more than 2 dimensions to graph, so make 3d plot
+        EvaluateSamples3d(ranks)
+    } else {
+        EvaluateSamples2d(ranks)  
+    }
+    
+    
+}
+
+EvaluateSamples2d <- function (ranks, cutoff = NA) {
     # given a list of minutes
     # simulates a species richness survey, noting the 
     # total species found after each minute, and the total
     # number of species found after each minute
     
-    if(is.na(samples)) {
-        samples <- ReadOutput('ranked_samples')
-    }
     
     speciesmins <- GetTags();  # get tags within outer target 
-    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, samples$min.id)
+    min.ids <- ReadOutput('target.min.ids')
+    species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
     
     ranked.progressions <- list()
-    r.cols <- GetRankCols(samples)
+    dn <- dimnames(ranks)
+    methods <- dn$ranking.method
     i <- 1
-    while (i <= length(r.cols)) {
-        rank.col.name <- r.cols[i]
-        ordered.min.ids <- samples$min.id[order(samples[, rank.col.name])]
-        ranked.progressions[[r.cols[i]]] <- GetProgression(species.in.each.sample, ordered.min.ids)
-        WriteRichnessResults(ordered.min.ids, ranked.progressions[[r.cols[i]]], r.cols[i], species.in.each.sample)
+    while (i <= length(methods)) {
+        method <- methods[i]
+        ordered.min.ids <- min.ids$min.id[order(ranks[i,])]
+        ranked.progressions[[method]] <- GetProgression(species.in.each.sample, ordered.min.ids)
+        WriteRichnessResults(ordered.min.ids, ranked.progressions[[method]], method, species.in.each.sample)
         i <- i + 1
     }
 
     optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
-    random.at.dawn <- RandomSamplesAtDawn(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
+    random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, min.ids$min.id, dawn.first = FALSE)
     
     GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions)
     
 }
 
-EvaluateSamples2 <- function () {
+EvaluateSamples3d <- function (ranks) {
     
-    ranks <- ReadObject('ranked_samples')
+
     min.ids <- ReadOutput('target.min.ids')
     speciesmins <- GetTags();  # get tags within outer target 
     species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
@@ -56,7 +75,7 @@ EvaluateSamples2 <- function () {
     }
     
    # optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
-   # random.at.dawn <- RandomSamplesAtDawn(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
+   # random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, samples$min.id)
     
    for (i in 1:length(ranked.progressions[,1,1])) {
        GraphProgressions3d(ranked.progressions[i,,])   
@@ -190,8 +209,8 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = N
     
 }
 
-RandomSamplesAtDawn <- function (speciesmins = NA, species.in.each.sample
-                                 = NA, mins = NA, num.repetitions = 100, dawn.from = 315, dawn.to = 495) {
+RandomSamples <- function (speciesmins = NA, species.in.each.sample
+                                 = NA, mins = NA, num.repetitions = 100, dawn.first = TRUE, dawn.from = 315, dawn.to = 495) {
     # repeatedly performs a sample selection from random selection of dawn minutes
     # 
     # Value:
@@ -205,17 +224,21 @@ RandomSamplesAtDawn <- function (speciesmins = NA, species.in.each.sample
     }
     
     mins <- ValidateMins(mins)
-    mins <- mins[mins$min >= dawn.from & mins$min <= dawn.to ,]
-    dawn.min.ids <- mins$min.id
+    which.dawn <- mins$min >= dawn.from & mins$min <= dawn.to
+    mins.dawn <- mins[which.dawn, ]
+    mins.notdawn <- mins[!which.dawn, ]
     
-    Report(4, length(dawn.min.ids), 'of the target are at dawn')
+    min.ids.dawn <- mins.dawn$min.id
+    min.ids.notdawn <- mins.notdawn$min.id
+    
+    Report(4, length(min.ids.dawn), 'of the target are at dawn')
     
     #species.in.each.min is optional. 
     if (class(species.in.each.sample) != 'list') {
-        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = dawn.min.ids) 
+        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = mins$min.id) 
     }
 
-    repetitions <- matrix(rep(NA, num.repetitions * length(dawn.min.ids)), ncol = num.repetitions)
+    repetitions <- matrix(rep(NA, num.repetitions * nrow(mins)), ncol = num.repetitions)
     
     Report(4, 'performing', num.repetitions, 'repetitions of RSAD')
     
@@ -226,10 +249,17 @@ RandomSamplesAtDawn <- function (speciesmins = NA, species.in.each.sample
             Dot()
         }
         
-        # create a jumbled version of the list of species in each min
-        sample.order <- sample(1:length(dawn.min.ids), length(dawn.min.ids), replace = FALSE)
-        jumbled.dawn.min.ids <- dawn.min.ids[sample.order]
-        found.species.progression <- GetProgression(species.in.each.sample, jumbled.dawn.min.ids)
+        if (dawn.first) {
+            # create a jumbled version of the list of species in each min
+            # putting the dawn part always at the start
+            sample.order.dawn <- sample(1:length(min.ids.dawn), length(min.ids.dawn), replace = FALSE)
+            sample.order.notdawn <- sample(1:length(min.ids.notdawn), length(min.ids.notdawn), replace = FALSE)
+            jumbled.min.ids <- c(min.ids.dawn[sample.order.dawn], min.ids.notdawn[sample.order.notdawn])
+        } else {
+            sample.order <- sample(1:nrow(mins), nrow(mins), replace = FALSE)
+            jumbled.min.ids <- mins$min.id[sample.order]
+        }
+        found.species.progression <- GetProgression(species.in.each.sample, jumbled.min.ids)
         repetitions[,i] <- found.species.progression$count  
     }
     #get average progression of counts 
@@ -300,7 +330,7 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     #
     # Details:
     #  if min.ids is supplied, this will be used for the list of mins
-    #  if mins.ids is not supplied, mins must be supplied. 
+    #  if min.ids is not supplied, mins must be supplied. 
     
     Report(5, 'counting species in each minute')
     mins <- ValidateMins(mins)
@@ -321,7 +351,6 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
         optimal <- Truncate(optimal, cutoff)
         random.at.dawn$mean  <- Truncate(random.at.dawn$mean, cutoff)
         random.at.dawn$sd  <- Truncate(random.at.dawn$sd, cutoff)
-        random.at.dawn$sd  <- Truncate(random.at.dawn$sd, cutoff)
         for (i in 1:length(rank.names)) {
             ranked.progressions[[rank.names[i]]]$count <- Truncate(ranked.progressions[[rank.names[i]]]$count, cutoff)
         }
@@ -337,18 +366,20 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     heading <- "Species count progression"
     
     # setup using optimal for the y axis, since it will have all the species
-    setup.data <- rep(max(optimal), length(ranked.progressions[['r1']]$count))
+    setup.data <- rep(max(optimal), length(ranked.progressions[[rank.names[1]]]$count))
     setup.data[1] <- 0
     plot(setup.data, main=heading, type = 'n', xlab="after this many minutes", ylab="number of species found")
     
     
     # plot random at dawn, with standard deviations
-    par(col = 'green')
-    poly.y <- c(random.at.dawn$mean + random.at.dawn$sd, rev(random.at.dawn$mean - random.at.dawn$sd))
-    poly.x <- c(1:length(random.at.dawn$mean), length(random.at.dawn$mean):1)
-    
-    polygon(poly.x, poly.y,  col = 'honeydew1', border = 'honeydew2')
-    points(random.at.dawn$mean, type='l')
+    if (length(random.at.dawn$mean) > 0) {
+        par(col = 'green')
+        poly.y <- c(random.at.dawn$mean + random.at.dawn$sd, rev(random.at.dawn$mean - random.at.dawn$sd))
+        poly.x <- c(1:length(random.at.dawn$mean), length(random.at.dawn$mean):1)
+        
+        polygon(poly.x, poly.y,  col = 'honeydew1', border = 'honeydew2')
+        points(random.at.dawn$mean, type='l')
+    }
     
     # plot optimal
     par(col = 'blue')

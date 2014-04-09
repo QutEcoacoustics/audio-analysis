@@ -11,7 +11,7 @@ g.source.dir <- file.path('..','..','..','..','..','..','SERF')
 # audio source directory, containing wav files
 g.audio.dir  <- file.path(g.source.dir, 'mono')
 
-g.all.events.version <- 2 
+g.all.events.version <- 3
 #g.all.events.version <- 'a'
 
 # events source directory, containing one csv file for each wave file
@@ -31,12 +31,12 @@ g.study.sites <- c('NW', 'NE')  # todo: include the others, eventually
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 600
+g.start.min <- 0
 #g.start.min <- 415
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 700
+g.end.min <- 1439
 #g.end.min <- 430
 
 # which sites to include in sample selection
@@ -49,7 +49,7 @@ g.sites <- c('NW')
 g.percent.of.target <- 100
 
 # how many minute samples to use when inspecting
-g.num.samples <- 20
+g.num.samples <- 5
 
 
 # evaluation is done against mysql database of tags

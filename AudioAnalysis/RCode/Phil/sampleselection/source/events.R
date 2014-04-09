@@ -48,6 +48,85 @@ MergeEvents <- function () {
     WriteMasterOutput(all.events.with.min.id, 'events');
 }
 
+
+
+MergeEventsF2 <- function () {
+    # Reads events produced from the F# AED and converts the format
+    # of the csv to be compatible with this system. 
+    # this is not done again after changing target. It only needs to 
+    # be called if the original event detection is redone
+    files <- list.files(path = g.events.source.dir, full.names = FALSE)
+    Report(3, "Merging events")
+    orig.col.names <- c('start.sec.in.file', 'duration', 'bottom.f', 'top.f')
+    
+    for(f in 1:length(files)) {
+        filepath <- file.path(g.events.source.dir, files[f])
+        if (!file.exists(filepath)) {
+            stop('Check g.all.events.version in config') 
+        }
+        if (file.info(filepath)$size == 0) {
+            next()
+        }
+        events <- as.data.frame(read.csv(filepath, header = TRUE));
+        file.info <- ParseEventFileName(files[f])
+
+        date <- rep(file.info$date, nrow(events))
+        site <- rep(file.info$site, nrow(events))
+        
+        start.sec <- events$EvStartSec  # seconds from teh start of the minute the event is in
+        min <- as.integer(events$EvStartMin)  # minute of the day (midnight is minute number 0)
+        
+        #filename and start.sec.in.file are needed when finding the audio which 
+        # matches the events. Because these events were detected from audio which was segmented differently,
+        # we don't know these yet
+        NAs <- rep(NA, nrow(events))
+        
+        events <- data.frame(site = site, 
+                             date = date, 
+                             min = min, 
+                             filename = NAs, 
+                             start.sec = start.sec, 
+                             start.sec.in.file = NAs,   
+                             duration = events$EvDuration,
+                             bottom.f = events$MIN_HZ,
+                             top.f = events$MAX_HZ)
+        if (f == 1) {
+            all.events <- events
+        } else {
+            all.events <- rbind(all.events, events)
+        }  
+    }
+    # sort by site then chronological (should be already but to be sure)
+    all.events <- all.events[with(all.events, order(site, date, min, start.sec)), ]
+    event.id <- 1:nrow(all.events)
+    all.events <- cbind(event.id, all.events)
+    
+    min.ids <- GetMinuteList();
+    #event.min.ids <- min.ids$min.id[min.ids$site %in% all.events$site & min.ids$date %in% all.events$date & min.ids$min %in% all.events$min]
+    
+    all.events.with.min.id <- merge(all.events, min.ids, c('site', 'date', 'min'))
+    all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
+    
+    all.events.with.min.id <- AddFileInfo(all.events.with.min.id)
+    
+    WriteMasterOutput(all.events.with.min.id, 'events');
+}
+
+AddFileInfo <- function (events) {
+    # given a dataframe of events which is missing the filename and start second in file
+    # determines which audio file each event is in, and adds these columns
+    # assumes audio files are segmented every 10 minutes
+    
+
+    finfo  <- EventFile(events$site, events$date, events$min, ext = NA)
+    events$filename <- finfo$fn
+    events$start.sec.in.file <-  60 * (events$min - finfo$start.min) + events$start.sec
+    
+    return(events)
+    
+}
+
+
 MergeAnnotationsAsEvents <- function () {
     # to test everything after event detection using known "good" events
     # create an event list which uses the manually created annotations as events
@@ -160,14 +239,29 @@ EventLabels <- function (events) {
 EventFile <- function (site, date, min, ext = 'wav.txt') {
     # original event files are for 10 mins of audio
     min <- floor(min/10) * 10
-    min <- sprintf('%03d',min)
+    min.char <- sprintf('%03d',min)
     #convert to underscorem separated date
     date <- format(as.Date(date), '%Y_%m_%d')
-    fn <- paste(site, date, min, 10, sep = '.')
+    fn <- paste(site, date, min.char, 10, sep = '.')
     if (!is.na(ext)) {
         fn <- paste(fn, ext, sep='.')
     }
     return(list(fn = fn, start.min = min))
+}
+
+ParseEventFileName <- function (fn) {
+    # given an filename named according to the convention for output of AED
+    # will return the meta data encoded in the filename as a list
+    # site, date, start min, duraion
+
+    filename.parts <- unlist(strsplit(fn, '.', fixed=TRUE));
+    file.info <- list()
+    file.info$site <- filename.parts[1];
+    file.info$date <- FixDate(filename.parts[2]);
+    file.info$startmin <- as.numeric(filename.parts[3]);
+    file.info$duration <- as.numeric(filename.parts[4]);
+    return(file.info)
+    
 }
 
 AddMinCol <- function (events, start.min) {
@@ -187,4 +281,76 @@ AddMinCol <- function (events, start.min) {
     return(events)
 }
 
+FilterEvents <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0, db6 = 0) {
+        e.and.f <- GetEventsAndFeatures()
+        events <- e.and.f$events
+        features <- e.and.f$rating.features
+        # remove the "event id" from features and add a column of 1s to the start
+        f2 <- cbind(rep(1, nrow(features)), features[,1:(length(features))])
+        #decision boundary
+        db <- c(db1, db2, db3, db4, db5, db6)
+        # todo, train this classifier with simoid cost function or something like that
+        events$is.good <- as.vector(crossprod(db, t(f2))) >= 0
+        WriteOutput(events, 'events')
+}
 
+# bug: sometimes returns events and features with different number of rows!
+GetEventsAndFeatures <- function (reextract = TRUE, limit = 4000) {
+    
+    if (reextract || !OutputExists('events') || !OutputExists('features') || !OutputExists('rating.features')) {
+        
+        target.min.ids <- ReadOutput('target.min.ids')
+        all.events <- ReadMasterOutput('events')
+        events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
+        all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
+        all.rating.feature.rows <- ReadOutputCsv(MasterOutputPath('rating.features'))
+        event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]
+        rating.features <- all.rating.feature.rows[all.rating.feature.rows$event.id %in% events$event.id, ]
+        #ensure that both are sorted by event id
+        events <- events[with(events, order(event.id)) ,]
+        event.features <- event.features[with(event.features, order(event.id)) ,]
+        rating.features <- rating.features[with(rating.features, order(event.id)) ,]
+        
+        # limit the number
+        if (limit < nrow(events)) {
+            include <- GetIncluded(nrow(events), limit)
+            events <- events[include, ]
+            event.features <- event.features[include, ]
+            rating.features <- rating.features[include, ]
+        }
+        
+        
+        WriteOutput(events, 'events')
+        WriteOutput(event.features, 'features')
+        WriteOutput(rating.features, 'rating.features')
+        
+        
+    } else {
+        
+        events <- ReadOutput('events')
+        event.features <- ReadOutput('features')
+        rating.features <- ReadOutput('rating.features')
+        
+        
+    }
+    
+    # remove event.id.column from features table
+    drop.cols <- names(event.features) %in% c('event.id')
+    event.features <- event.features[!drop.cols]
+    drop.cols <- names(rating.features) %in% c('event.id')
+    rating.features <- rating.features[!drop.cols]
+    return (list(events = events, event.features = event.features, rating.features = rating.features))
+}
+
+
+GetIncluded <- function (total.num, num.included) {
+    # returns a vector of 1s and 0s 
+    # vecor is the same length as total.num, and has num.included 1s in it
+    # (fairly) evenly spaced
+    num.excluded <- max(c(total.num - num.included, 0))
+    ratio <- total.num / num.excluded
+    excluded <- round(((1:num.excluded) * ratio) - ratio / 2)
+    include <- rep(TRUE, total.num)
+    include[excluded] <- FALSE
+    return(include)
+}

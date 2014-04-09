@@ -1,5 +1,5 @@
 RankSamples <- function () {
-    #r1 <- RankSamples.1()
+ 
     events <- ReadOutput('events')
     mins <- ReadOutput('target.min.ids')
     ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
@@ -26,6 +26,10 @@ RankSamples <- function () {
         events$group <- group #temporarily add the group to the events for ranking
         groups[, groups.col.names[n]] <- group  # also add it here so it gets saved
         for (m in 1:length(ranking.methods)) {
+            
+            Report(1, 'Ranking samples:', ranking.methods[m], ' num.clusters:', num.clusters[n])
+            
+            
             r <- do.call(ranking.methods[m], list(events = events))   
             r <- r[order(r$min.id), ]
             output[m, n, ] <- r$rank
@@ -204,7 +208,7 @@ RankSamples3 <- function (events) {
     # input argument is just so that it fits with the conventions of ranking methods
     
     
-    Report(1, 'Ranking samples: method 4')
+
     mins <- ReadOutput('distance.scores')
     
     mins.ranked <- mins[order(mins$distance.score, decreasing = TRUE),]

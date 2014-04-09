@@ -2,7 +2,7 @@
 
 
 
-DoFeatureExtraction <- function (limit = FALSE) {
+DoFeatureExtraction <- function (min.id = FALSE) {
     # performs feature extraction on the outer target events
     # i.e. the events which fall within the target sites/dates/times, 
     #      but ignoring the percent of target
@@ -19,7 +19,13 @@ DoFeatureExtraction <- function (limit = FALSE) {
     # false to do them all
     
     library('tuneR')
-    events <- GetOuterTargetEvents()
+    if (min.id == FALSE) {
+        events <- GetOuterTargetEvents()  
+    } else {
+        all.events <- ReadMasterOutput('events', false.if.missing = FALSE)
+        events <- all.events[all.events$min.id == min.id, ]
+    }
+
     # make sure it is sorted by filename 
     events <- events[with(events, order(filename)) ,]
     
@@ -33,9 +39,12 @@ DoFeatureExtraction <- function (limit = FALSE) {
         events <- events[events$event.id %in% event.ids.to.process, ]   
     }
     
+     
+
+ 
     cur.wav.path <- FALSE
     cur.spectro <- FALSE
-    features.all <- c()
+ 
     
     Report(2, 'Extracting features for events', OutputPath('events'), '...')
     Report(2, nrow(events), 'events in total')
@@ -45,7 +54,7 @@ DoFeatureExtraction <- function (limit = FALSE) {
     ptm <- proc.time()
     ev <- 1;
     while (ev <= nrow(events)) {
-        Dot()
+        Dot() 
         bounds <- as.numeric(c(events$start.sec.in.file[ev], 
                              events$duration[ev],
                              events$top.f[ev],
@@ -64,6 +73,11 @@ DoFeatureExtraction <- function (limit = FALSE) {
                 Timer(ptm, timer.msg, num.events.in.prev.file, 'event')
                 num.events.before.previous.file <- ev - 1
                 ptm <- proc.time()
+                percent.complete <- round(100 * ev / nrow(events))
+                time.so.far <- (proc.time() - ptmt)[3]
+                estimated.total.time <- nrow(events) * time.so.far / ev
+                remaining.time <- estimated.total.time - time.so.far
+                Report(3, percent.complete, "% complete. Time remaining: ", round(remaining.time), 'secs')
             }
             Report(3, 'processing features for events in', wav.path)
             Report(3, 'starting with event', ev)
@@ -74,11 +88,13 @@ DoFeatureExtraction <- function (limit = FALSE) {
             mean.amp <- apply(cur.spectro$vals, 1, mean)
             sd.amp <- apply(cur.spectro$vals, 1, sd)
         }
+
         rating.features <- as.data.frame(CalculateRatingFeatures(events[ev,], cur.spectro, mean.amp, sd.amp));
+        
         features <- as.data.frame(CalculateFeatures(events[ev,], cur.spectro));
         features$event.id <- events$event.id[ev]
         rating.features$event.id <- events$event.id[ev]
-        if (ev > 1) {
+        if (exists('features.all')) {
             features.all <- rbind(features.all, features)
             rating.features.all <- rbind(rating.features.all, rating.features)
         } else {
@@ -86,24 +102,36 @@ DoFeatureExtraction <- function (limit = FALSE) {
             rating.features.all <- rating.features
         }
         ev <- ev + 1
+        
+
+        
+        
     }
     Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
     
-    # merge these features with the previously extracted
-    if (class(already.extracted.features) == 'data.frame') {
-        features.all <- rbind(features.all, already.extracted.features)  
+    if (nrow(events) > 0) {
+    
+        # merge these features with the previously extracted
+        if (class(already.extracted.features) == 'data.frame') {
+            features.all <- rbind(features.all, already.extracted.features)  
+        }
+        
+        if (class(already.rated.events) == 'data.frame') {
+            rating.features.all <- rbind(rating.features.all, already.rated.events)  
+        }
+        
+        
+        
+        features.all <- OrderBy(features.all, 'event.id')
+        rating.features.all <- OrderBy(rating.features.all, 'event.id')
+        WriteMasterOutput(features.all, 'features')
+        WriteMasterOutput(rating.features.all, 'rating.features')
+        
+    } else {
+        
+        Report(3, "No feature extraction was done. Not writing anything")
+        
     }
-    
-    if (class(already.rated.events) == 'data.frame') {
-        rating.features.all <- rbind(rating.features.all, already.rated.events)  
-    }
-    
-    
-    
-    features.all <- OrderBy(features.all, 'event.id')
-    rating.features.all <- OrderBy(rating.features.all, 'event.id')
-    WriteMasterOutput(features.all, 'features')
-    WriteMasterOutput(rating.features.all, 'rating.features')
     
  
     
@@ -149,6 +177,9 @@ CalculateFeatures <- function (event, spectro) {
     
     #start.time, duration, bottom.f, top.f
     
+
+    
+    
     features <- list(
         duration = event$duration,
         mid.f = (event$bottom.f + event$top.f) / 2,
@@ -192,6 +223,10 @@ CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp)
     # calculates a different set of features for the purpose of assessing the 
     # likelyhood that this event is not rubbish
     
+    if (event$event.id == 26619) {
+        print(event)
+    }
+    
     top.f.row <- FrequencyToRowNum(event$top.f, spectro$hz.per.bin)
     bottom.f.row <- FrequencyToRowNum(event$bottom.f, spectro$hz.per.bin)
     
@@ -205,18 +240,21 @@ CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp)
     event.mean.amp <- apply(event.amp, 1, mean)
     event.sd.amp <- apply(event.amp, 1, sd)
     
-    diff.mean.amp. <- event.mean.amp - file.mean.amp
+    diff.mean.amp <- event.mean.amp - file.mean.amp
     diff.sd.amp <- event.sd.amp - file.sd.amp
+    
+    ratio.mean.amp <- event.mean.amp / file.mean.amp
+    ratio.sd.amp <- event.sd.amp / file.sd.amp
     
     rating.features <- list()
     
     # the average difference in amplitude of each frequency bin
     # from the file average
-    rating.features$mean.diff.mean.amp <- mean(diff.mean.amp.)
+    rating.features$mean.diff.mean.amp <- mean(diff.mean.amp)
     
     # the sd of the above mean (how much further from the 
     # average were some frequency bins than others) 
-    rating.features$sd.diff.mean.amp <- sd(diff.mean.amp.)
+    rating.features$sd.diff.mean.amp <- sd(diff.mean.amp)
     
     # the mean of the difference between the sd each frequency band of this event from the 
     # sd of the file for those frequency bands 
@@ -224,6 +262,9 @@ CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp)
     
 
     rating.features$sd.diff.sd.amp <- sd(diff.sd.amp)
+    
+    rating.features$mean.ratio.mean.amp <- mean(ratio.mean.amp)
+    rating.features$mean.ratio.sd.amp <- mean(ratio.sd.amp)
     
     return(rating.features)
     
@@ -309,6 +350,16 @@ GetPureness <- function (m) {
     return(scores)
     
 }
+
+GetDurationAboveBg <- function () {
+    # because AED is buggy, some event 'duration' are longer than the actual event within it
+    
+    
+    
+    
+}
+
+
 
 
 GetLineOfBestFit <- function (m) {

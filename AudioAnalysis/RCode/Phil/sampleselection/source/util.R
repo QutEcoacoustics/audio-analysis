@@ -54,6 +54,8 @@ SliceStft <- function (bounds, spectro, get.bounds = FALSE) {
     } else {
         # slice the part out and return the sub-matrix
         sub <- spectro$vals[bottom.row:top.row, left.col:right.col]
+        # makes sure that it is a matrix even if there is only 1 row or column
+        sub <- matrix(sub, ncol = (right.col - left.col + 1))
 
         return(sub)	
     }
@@ -188,7 +190,12 @@ FrequencyToRowNum <- function (f, hz.per.bin) {
     #      int; the row number
     
     
-    row.num <- round(f / hz.per.bin)
+    # ceil is used because the first row is number 1
+    row.num <- ceiling(f / hz.per.bin)
+    if (row.num == 0) {
+        # if Hz is exactly zero, row number should still be 1
+        row.num <- 1
+    }
     return(row.num)
 }
 
@@ -204,7 +211,12 @@ TimeToColNum <- function (t, frames.per.second) {
     # Returns:
     #   Int
     
-    col.num <- round(frames.per.second * t)
+    # ceil is used because column 1 is the 1st (left most) column. anything 
+    col.num <- ceiling(frames.per.second * t)
+    if (col.num == 0) {
+        # if time is exactly zero, column number should still be 1
+        col.num <- 1
+    }
     return(col.num)
 }
 
@@ -276,21 +288,17 @@ is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
 } 
 
 Between <- function (x, l, u, inclusive = TRUE, ignore.order = TRUE) {
-    # returns whether x is between l (lower) and u (upper)
-    
+    # returns whether x is between l (lower) and u (upper)  
     if (ignore.order && u < l) {
         t <- l
         l <- u
         u <- t
     }
-    
     if (inclusive) {
         return(x >= l & x <= u)
     } else {
         return(x > l & x < u)
-    } 
-    
-    
+    }  
 }
 
 OrderBy <- function (df, col, decreasing = FALSE) {

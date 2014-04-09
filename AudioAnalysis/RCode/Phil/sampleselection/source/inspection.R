@@ -1,4 +1,5 @@
 
+# todo: this is broken since the multicluster group stuff
 InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.groups = 50) {
     #for each of the given cluster groups, will append randomly select duration.per.group
     # worth of events from that cluster group and append the spectrograms of each event
@@ -27,7 +28,7 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
     # groups the user chooses to render
     events <- AssignColourToGroup(events)
     
-    CreateRects
+    
     
     # remove events so that the duration per group is at most duration.per.group
     padding = 0.2  # padding each side of the event
@@ -113,6 +114,9 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
     # Args:
     #   samples: matrix. minute ids of the samples. columns can be used to separate
     #                    different ranking methods
+    #
+    # Value: a matrix parallel to samples, where each cell has the filename of the 
+    #        saved spectrogram which corresponds to the min id in the same cell of the samples matrix
     
     
     
@@ -126,15 +130,15 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
     # file names for later use in imagemagick command to append together
     sample.spectro.fns <- matrix(NA, nrow = nrow(samples), ncol=ncol(samples))
     
-    mins.ids <- unique(as.vector(samples))
+    min.ids <- unique(as.vector(samples))
 
 
     
     fns <- SaveMinuteSpectroImages(min.ids, rects, events, temp.dir)
     
-    for (i in 1:nrow(mins)) {
+    for (i in 1:length(min.ids)) {
         # TODO: test this, it is completely untested. check that everything is working properly
-        sample.spectro.fns[which(samples == mins.ids[i])] <- fns[i]
+        sample.spectro.fns[which(samples == min.ids[i])] <- fns[i]
     }
     
     return(sample.spectro.fns)
@@ -143,25 +147,57 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
 
 
 
-InspectFeatures <- function () {
+InspectFeatures <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0) {
     
-    min.ids <- c(405, 640)
+    min.ids <- c(405)
+    #min.ids <- c(640)
     features <- ReadMasterOutput('rating.features')
     all.events <- ReadMasterOutput('events')
     events <- all.events[all.events$min.id %in% min.ids, ]
     features <- features[features$event.id %in% events$event.id, ]
     #check <- sum((events$event.id == features$event.id) * 1) == length(events$event.id)
     rects <- events[, c('start.sec', 'duration', 'bottom.f', 'top.f')]
-    rects$label.tl <- features[,1]
-    rects$label.tr <- features[,2]
-    rects$label.br <- features[,3]
-    rects$label.bl <- features[,4]
-    rects$rect.color <- rep('#00ffff', nrow(rects))
-    temp.dir <- TempDirectory()
-    fns <- SaveMinuteSpectroImages(min.ids, rects, events, temp.dir)
+    rects$label.tl <- features$event.id
+    #rects$label.tr <- features[,2]
+    #rects$label.br <- features[,3]
+    #rects$label.bl <- features[,4]
+
+    # remove the "event id" from features and add a column of 1s to the start
+    f2 <- cbind(rep(1, nrow(features)), features[,1:4])
+    
+    #decision boundary
+    db <- c(db1, db2, db3, db4, db5)
+
+    # this should be replaced by sigmoid or something 
+    is.bird <- as.vector(crossprod(db, t(f2))) >= 0
+    
+    rects$rect.color <- rep('#ff0000', nrow(rects))
+    rects$rect.color[is.bird] <- '#00ff00'
+    
+    if (length(min.ids) == 1) {
+    
+        mins <- ExpandMinId(min.ids)
+        which.events <- which(events$min.id == min.ids[1])
+        minute.events <- events[which.events, ]
+        minute.rects <- rects[which.events, ]
+    
+        spectro <- Sp.CreateTargeted(site = mins$site[1], 
+                      start.date = mins$date[1], 
+                      start.sec = mins$min[1] * 60 , 
+                      duration = 60, 
+                      rects = minute.rects,
+                      label = mins$min.id[1])
+    
+        Sp.Draw(spectro)
+    
+    } else {
+        temp.dir <- TempDirectory()
+        fns <- SaveMinuteSpectroImages(min.ids, rects, events, temp.dir)
+        StitchImages(fns, OutputPath('InspectFeatures', ext = 'png'))
+    }
+
     
 
-    StitchImages(fns, OutputPath('InspectFeatures', ext = 'png'))   
     
     return(TRUE)    
 }
@@ -220,7 +256,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     min.ids <- ReadOutput('target.min.ids')
     d.names <- dimnames(rankings)
     num.clusters.choices <- d.names$num.clusters
-    num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters')
+    num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters', default = floor(length(num.clusters.choices)/2))
     num.clusters <- num.clusters.choices[num.clusters.choice]
     
     rankings <- rankings[,num.clusters.choice,]
@@ -228,7 +264,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     
     if(class(samples) == 'logical') {
         ranking.method.choices <- d.names$ranking.method
-        ranking.methods <- GetMultiUserchoice(ranking.method.choices)
+        ranking.methods <- GetMultiUserchoice(ranking.method.choices, default = 1)
         
         ordered.samples <- matrix(NA, ncol = length(ranking.methods), nrow = g.num.samples)
         for (i in 1:length(ranking.methods)) {

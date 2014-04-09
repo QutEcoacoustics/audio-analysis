@@ -30,10 +30,19 @@ ClusterEvents <- function (num.groups = 'auto',
     if (num.rows.to.use != FALSE && num.rows.to.use < nrow(event.features)) {
         Report(4, 'subsetting features')
         event.features <- event.features[1:num.rows.to.use, ]
-        events <- num.rows.to.use
+        events <- events[1:num.rows.to.use, ]
     } else {
         num.rows.to.use <- nrow(event.features)
     }
+    
+    # get user input for which features to use in clustering. 
+    # replace the 'event.id' column (which is not a feature), with 'all'
+    # to use all features
+    feature.options <- colnames(event.features)
+    feature.choices <- GetMultiUserchoice(feature.options, 'features to use', default = 'all', all = TRUE)
+    
+    # use only the chosen features
+    event.features <- event.features[, feature.choices]
     
     
     Report(2, 'scaling features (m = ',  num.rows.to.use, ')')
@@ -61,7 +70,7 @@ ClusterEvents <- function (num.groups = 'auto',
         num.groups <- floor(sqrt(num.rows.to.use))
     }
     
-    SaveObject(fit, 'clustering')
+    SaveObject(fit, 'clustering', level = 2)
     
     groups <- cutree(fit, num.groups)
     
@@ -75,14 +84,14 @@ ClusterEvents <- function (num.groups = 'auto',
 
     
     if (save) {
-        WriteOutput(events, 'clusters')
+        WriteOutput(events, 'clusters', level = 2)
     }
     
     
     if (save.dendrogram) {
         library('pvclust')
         # display dendogram
-        img.path <- OutputPath('cluster_dendrogram', ext = 'png');
+        img.path <- OutputPath('cluster_dendrogram', ext = 'png', level = 2);
         Report(5, 'saving dendrogram')
         png(img.path, width = 30000, height = 20000)
         Dot()
@@ -100,24 +109,6 @@ ClusterEvents <- function (num.groups = 'auto',
 
 
 
-# bug: sometimes returns events and features with different number of rows!
-
-GetEventsAndFeatures <- function () {
-    target.min.ids <- ReadOutput('target.min.ids')
-    all.events <- ReadMasterOutput('events')
-    events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
-    all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
-    event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]
-    #ensure that both are sorted by event id
-    events <- events[with(events, order(event.id)) ,]
-    event.features <- event.features[with(event.features, order(event.id)) ,]
-    WriteOutput(events, 'events')
-    WriteOutput(event.features, 'features')
-    # remove event.id.column from features table
-    drop.cols <- names(event.features) %in% c('event.id')
-    event.features <- event.features[!drop.cols]
-    return (list(events = events, event.features = event.features))
-}
 
 
 InternalMinuteDistances <- function () {

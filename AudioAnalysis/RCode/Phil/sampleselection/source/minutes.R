@@ -57,7 +57,6 @@ TargetSubset <- function (df) {
     
     return(df[rows, ])
     
-    
 }
 
 
@@ -82,3 +81,39 @@ ExpandMinId <- function (min.ids = NA) {
     row.names(new.df) <- row.names
     return(new.df)
 }
+
+
+IsWithinTargetTimes <- function (date, min, site) {
+    # determines whether the given date, startmin and site are within
+    # the start and end date and min and list of sites to process
+    #
+    #  Args:
+    #    date: String; 
+    #    min: Int;
+    #    site: String
+    #
+    #  Returns:
+    #    Boolean
+    # 
+    # Details:
+    #   first tests for site, then
+    #   constructs date-time strings and compares the strings
+    require('stringr')
+    
+    
+    if (!site %in% g.sites) {
+        return(FALSE)
+    }
+    date <- FixDate(date)
+    start.date <- FixDate(g.start.date)
+    end.date <- FixDate(g.end.date)
+    start.date.time <- paste(start.date, MinToTime(g.start.min))
+    end.date.time <- paste(end.date, MinToTime(g.end.min))
+    date.time <- paste(date, MinToTime(min))
+    if (date.time >=  start.date.time && date.time <= end.date.time) {
+        return(TRUE)
+    } else  {
+        return(FALSE)
+    }
+}
+

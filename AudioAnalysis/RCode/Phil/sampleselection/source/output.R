@@ -40,15 +40,15 @@ CheckPaths <- function () {
     
 }
 
-WriteOutput <- function (x, fn, new = FALSE, ext = 'csv') {
+WriteOutput <- function (x, fn, new = FALSE, ext = 'csv', level = 1) {
     # writes output files in a consistent way, 
     # with reporting
     Report(4, 'Writing output:', fn)
-    path <- OutputPath(fn, new = new, ext = ext)
+    path <- OutputPath(fn, new = new, ext = ext, level = level, allow.new = TRUE)
     WriteOutputCsv(x, path)
 }
 
-ReadOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) { 
+ReadOutput <- function (fn, ext = 'csv', false.if.missing = FALSE, level = 1) { 
     # reads output files in a consistent way, 
     # with reporting
     #
@@ -59,7 +59,7 @@ ReadOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) {
     #     return false if it is missing. If true, will cause an error
     #     if missing
     Report(4, 'Reading:', fn)
-    path <- OutputPath(fn, ext = ext)
+    path <- OutputPath(fn, ext = ext, level = level, allow.new = FALSE)
     if (false.if.missing && !file.exists(path)) {
         return(FALSE)
     }
@@ -75,13 +75,13 @@ WriteOutputCsv <- function (x, path) {
     write.csv(x, path, row.names = FALSE)
 }
 
-SaveObject <- function (x, fn) {
-    path <- OutputPath(fn, ext = 'object')
+SaveObject <- function (x, fn, level = 1) {
+    path <- OutputPath(fn, ext = 'object', level = level, allow.new = TRUE)
     f <- save(x, file = path)
     
 }
-ReadObject <- function (fn) {
-    path <- OutputPath(fn, ext = 'object')
+ReadObject <- function (fn, level = 1) {
+    path <- OutputPath(fn, ext = 'object', level = level)
     if (file.exists(path)) {  
         load(path)
         return(x) # this is the name of the variable used when saving
@@ -89,27 +89,58 @@ ReadObject <- function (fn) {
     return(FALSE) 
 }
 
-WriteMasterOutput <- function (x, fn, ext = 'csv') {
-    WriteOutputCsv(x, MasterOutputPath(fn, ext))
+OutputExists <- function (fn, ext = 'csv') {
+    path <- OutputPath(fn, ext = ext)
+    return(file.exists(path))
 }
 
-ReadMasterOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) {
-    p <- MasterOutputPath(fn, ext);
-    if (file.exists(p)) {
-        return(ReadOutputCsv(p))
-    } else if (false.if.missing) {
-        return(FALSE)
+# output is heirachincal, like a tree, because for each step there are some choices and output can be different
+# depending on the choice. Output on later steps depends on output of earlier steps. 
+# So, output can be of different nested levels
+
+
+OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv', level = 1, allow.new = FALSE) {
+    path <- OutputPathL1(new, ext)  
+    if (level > 1) {
+        for (i in 2:level) {   
+            dirs <- list.dirs(path, full.names = TRUE, recursive = FALSE)  # full.names is broken (bug) ATM
+            options <- dirs
+            if (allow.new && level == i) {
+                new.dir <- file.path(path, as.character(length(dirs) + 1))
+                dirs <- c(dirs, new.dir)
+                options <- c(options, paste(new.dir, "(new)"))
+            }   
+            if (length(dirs) == 0) {
+                stop(paste("Maybe you are trying to access level", i, "output which doesn't exist"))
+            } else if (length(dirs) > 1) {
+                choice <- GetUserChoice(options, paste('level',i,'output directory'), default = length(dirs))  
+            } else {
+                choice <- 1
+            }
+            path <- dirs[choice]
+            
+            if (!file.exists(path)) {
+                dir.create(path) 
+            }
+            
+        }
+
+    } 
+    if (fn != FALSE) {
+        op <- OutputFile(path, fn, ext)
     } else {
-        stop(paste("file doesn't exist: ", p))
+        op <- path
     }
+    return(op)
 }
 
-MasterOutputPath <- function (fn, ext = 'csv') {
-    return(file.path(g.output.master.dir, g.all.events.version, paste(fn,ext, sep='.')))
+OutputFile <- function (path, fn, ext = 'csv') {
+    op <- file.path(path, paste(fn,ext, sep='.'))
 }
 
 
-OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
+
+OutputPathL1 <- function (new = FALSE, ext = 'csv') {
     # Returns the correct path for output of a particular type
     #
     # Args:
@@ -160,13 +191,29 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv') {
     if (!file.exists(path)) {
         dir.create(path)
     }
-    if (fn != FALSE) {
-        op <- file.path(path, paste(fn,ext, sep='.'))
-    } else {
-        op <- path
-    }
 
-    return(op)
+
+    return(path)
+}
+
+
+WriteMasterOutput <- function (x, fn, ext = 'csv') {
+    WriteOutputCsv(x, MasterOutputPath(fn, ext))
+}
+
+ReadMasterOutput <- function (fn, ext = 'csv', false.if.missing = FALSE) {
+    p <- MasterOutputPath(fn, ext);
+    if (file.exists(p)) {
+        return(ReadOutputCsv(p))
+    } else if (false.if.missing) {
+        return(FALSE)
+    } else {
+        stop(paste("file doesn't exist: ", p))
+    }
+}
+
+MasterOutputPath <- function (fn, ext = 'csv') {
+    return(file.path(g.output.master.dir, g.all.events.version, paste(fn,ext, sep='.')))
 }
 
 
@@ -227,7 +274,9 @@ Report <- function (level, ..., nl = TRUE) {
 
 Dot <- function(level = 5) {
     #outputs a dot, used for feedback during long loops
-    Report(level, " .", nl = FALSE)
+    if (level <= g.report.level) {
+        cat(".")
+    }
 }
 
 Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
@@ -254,14 +303,22 @@ GetExistingMasterOutput <- function (output.name, not.if.changed) {
     old.content.hash <-  ReadHash(hash.name)
     if (old.content.hash != new.content.hash) {
         WriteHash(hash.name, new.content.hash)
-        p <- MasterOutputPath(output.name)
-        if (file.exists(p)) {
-            file.remove(p)
+        should.delete <- Confirm(paste("the following files have changed",
+                                 not.if.changed,
+                                 "Replace existing master output",
+                                 output.name,
+                                 "?"))
+        if (should.delete) {
+            p <- MasterOutputPath(output.name)
+            if (file.exists(p)) {
+                file.remove(p)
+            }
+            return(FALSE)
         }
-        return(FALSE)
-    } else {
-        return(ReadMasterOutput(output.name, false.if.missing = TRUE))
-    }  
+
+    } 
+    return(ReadMasterOutput(output.name, false.if.missing = TRUE))
+      
 }
 
 # hashes used to track changes are stored in a specific output directory  
@@ -307,53 +364,94 @@ WriteCache <- function (x, cache.id) {
     f <- save(x, file = path)
 }
 
+Confirm <- function (msg, default = FALSE) {
+    options <- c('Yes', 'No')
+    choice <- GetUserChoice(options, msg, default)
+    if (choice == 1) {
+        return(TRUE)
+    } else {
+        return(FALSE)
+    }  
+}
 
 
-GetUserChoice <- function (choices, choosing.what = "one of the following") {
+GetUserChoice <- function (choices, choosing.what = "one of the following", default = 1, allow.range = FALSE) {
     #todo recursive validation like http://www.rexamples.com/4/Reading%20user%20input
-    
     cat(paste0("choose ", choosing.what, ":\n"))
     cat(paste0(1:length(choices), ") ", choices, collapse = '\n'))
-    
+    if (default %in% 1:length(choices)) {
+        cat(paste('\ndefault: ', default))
+    } else {
+        default = NA
+    }
     msg <- paste0("enter int 1 to ",length(choices),": ")
-
-    choice <- GetValidatedUserChoice(msg, length(choices))
-    
+    choice <- GetValidatedUserChoice(msg, length(choices), default, parse.range = allow.range)  
     return(choice)
 }
 
-GetMultiUserchoice <- function (options, choosing.what = 'one of the following') {
+GetMultiUserchoice <- function (options, choosing.what = 'one of the following', default = 1, all = FALSE) {
     # allows the user to select 1 or more of the choices, returning a vector 
     # of the choice numbers
-
-    options <- c(options, 'exit')
-    last.choice <- -1;
-    chosen <- c()
-    while(last.choice != length(options)) {
-        last.choice <- GetUserChoice(options, 'ranking method')
-        if (last.choice != length(options)) {
-            chosen <- c(chosen, last.choice)   
-        } else {
-            break()
-        }
+    
+    if (default == 'all') {
+        all <- TRUE
     }
     
+    if (all) {
+        options <- c(options, 'all')
+        all.choice <- length(options)
+        if (default == 'all') {
+            default <- all.choice
+        }
+    } else {
+        all.choice <- -99  # can't choose all
+    }
+
+    options <- c(options, 'exit')
+    exit.choice <- length(options)
+    last.choice <- -1;
+    chosen <- c()
+    while(TRUE) {
+        if (max(last.choice) > 0) {
+            # if something has been chosen, change the default to exit
+            default = exit.choice
+        }
+        last.choice <- GetUserChoice(options, choosing.what, default = default, allow.range = TRUE)
+        should.exit <- exit.choice %in% last.choice
+        should.use.all <- all.choice %in% last.choice
+        if (should.use.all) {
+            chosen <- 1:length(options)
+            break()
+        }
+        if (should.exit) {
+            break()
+        } else  {
+            chosen <- union(chosen, last.choice)    
+        }
+    }
+    last.choice <- setdiff(chosen, c(exit.choice, all.choice))
     return(unique(chosen))
 }
 
-GetValidatedUserChoice <- function (msg, num.choices, num.attempts = 0) { 
+GetValidatedUserChoice <- function (msg, num.choices, default = 1, num.attempts = 0, parse.range = FALSE) { 
     max <- 8
     choice <- readline(msg)
-    if (grepl("^[0-9]+$",choice)) {
+    if (choice == '' && !is.na(default)) {
+        choice <- as.integer(default)
+    } else if (grepl("^[0-9]+$",choice)) {
         choice <- as.integer(choice)
+    } else if (parse.range && grepl("^[0-9]+[ ]*[:-][ ]*[0-9]+$",choice)) {
+        # split by hyphen and parse range
+        values <- regmatches(choice, gregexpr("[0-9]+", choice))
+        choice <- as.integer(values[[1]][1]):as.integer(values[[1]][2])
     }
     if (num.attempts > max) {
         stop("you kept entering an invalid choice, idiot")
-    } else if (class(choice) != 'integer' || choice > num.choices || choice <= 0) {
+    } else if (class(choice) != 'integer' || max(choice) > num.choices || min(choice) <= 0) {
         if (num.attempts == 0) {
             msg <- paste("Invalid choice.", msg)
         }
-        GetValidatedUserChoice(msg,num.choices, num.attempts + 1)
+        GetValidatedUserChoice(msg, num.choices, default = default, num.attempts = num.attempts + 1, parse.range = parse.range)
     } else {
         return(choice)
     }
