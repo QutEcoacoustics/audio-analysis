@@ -10,8 +10,12 @@ using ServiceStack.Text.Jsv;
 
 namespace TowseyLibrary
 {
+    using Acoustics.Shared.Extensions;
+
     using CsvHelper;
     using CsvHelper.Configuration;
+
+    using TowseyLibrary;
 
     public static class CsvTools
     {
@@ -481,12 +485,6 @@ namespace TowseyLibrary
         /// <param name="results"></param>
         public static void WriteResultsToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
-            /* // USING ServiceStack - write works, read does not
-            using (var stream =  destination.CreateText())
-            {
-                CsvSerializer.SerializeToWriter(results, stream);
-            }*/
-
             // using CSV Helper
             using (var stream = destination.CreateText())
             {
@@ -494,6 +492,7 @@ namespace TowseyLibrary
                 writer.WriteRecords(results);
             }
         }
+
 
         /// <summary>
         /// This has not been tested yet! Contact anthony if you have problems.
@@ -503,12 +502,6 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static IEnumerable<T> ReadResultsFromCsv<T>(FileInfo source)
         {
-            /* // Using ServiceStack - this read does not work!!!!!!!!
-            using (var stream = source.Open(FileMode.Open, FileAccess.Read))
-            {
-                return CsvSerializer.DeserializeFromStream<IEnumerable<T>>(stream);
-            }*/
-
             // using CSV Helper
             
             using (var stream = source.OpenText())
@@ -523,8 +516,100 @@ namespace TowseyLibrary
             }
         }
 
+        private class CsvMatrix<T>
+        {
+            private readonly T[,] matrix;
+
+            public CsvMatrix(T[,] matrix, CsvConfiguration configuration)
+            {
+                this.matrix = matrix;
+
+                int columnLength = matrix.ColumnLength();
+
+                configuration.UnregisterClassMap<MatrixClassMap<CsvMatrixRow<T>, T>>();
+
+                this.ClassMap = new MatrixClassMap<CsvMatrixRow<T>, T>(columnLength, true);
+
+                configuration.RegisterClassMap(this.ClassMap);
+            }
+
+            private MatrixClassMap<CsvMatrixRow<T>, T> ClassMap { get; set; }
+
+            public IEnumerable<CsvMatrixRow<T>> GetRows()
+            {
+                for (int i = 0; i < this.matrix.RowLength(); i++)
+                {
+                    yield return new CsvMatrixRow<T>(this.matrix, i);
+                }
+            }
+
+            public sealed class MatrixClassMap<TRow, TCell> : CsvClassMap<TRow> where TRow : CsvMatrixRow<TCell>
+            {
+                public MatrixClassMap(int columnCount, bool includeColumnIndex)
+                {
+                    if (includeColumnIndex)
+                    {
+                        this.Map(m => m.Row).Name("Index");
+                    }
+
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        int closureI = i;
+                        this.Map(m => m[closureI]).Name("c" + i.ToString("000000"));
+                    }
+                }
+            }
+
+            public class CsvMatrixRow<TRow>
+            {
+                private readonly TRow[,] matrix;
+
+                private readonly int row;
+
+                public CsvMatrixRow(TRow[,] matrix, int row)
+                {
+                    this.matrix = matrix;
+                    this.row = row;
+                }
+
+                public int Row
+                {
+                    get
+                    {
+                        return row;
+                    }
+                }
+
+                public TRow this[int index]
+                {
+                    get
+                    {
+                        return this.matrix[this.row, index];
+                    }
+                    set
+                    {
+                        this.matrix[this.row, index] = value;
+                    }
+                }
+            }
+        }
+
+        
+
+        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix)
+        {
+            throw new NotSupportedException("This implementation is fundementally flawed, do not use it.");
+
+            using (var stream = destination.CreateText())
+            {
+                var writer = new CsvWriter(stream, DefaultConfiguration);
+
+                var csvMatrix = new CsvMatrix<T>(matrix, writer.Configuration);
+
+                writer.WriteRecords(csvMatrix.GetRows());
+            }
+        }
+
         #endregion
-
-
     } //class
 }//namespace
