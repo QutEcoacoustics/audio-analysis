@@ -65,6 +65,17 @@ namespace Acoustics.Shared.Extensions
             return x >= array.GetLowerBound(0) && x < dimX && y >= array.GetLowerBound(1) && y < dimY;
         }
 
+        public static int RowLength<T>(this T[,] matrix)
+        {
+            return matrix.GetLength(0);
+        }
+
+        public static int ColumnLength<T>(this T[,] matrix)
+        {
+            return matrix.GetLength(1);
+        }
+
+
         #endregion
     }
 }
