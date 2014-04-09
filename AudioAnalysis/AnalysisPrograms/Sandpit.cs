@@ -6,10 +6,10 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
-
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
 
 namespace AnalysisPrograms
 {
@@ -175,7 +175,7 @@ namespace AnalysisPrograms
                 //var testImage = (Bitmap)(Image.FromFile(imagePath));
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+                var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
                 Plot scores = null; 
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;
@@ -202,7 +202,7 @@ namespace AnalysisPrograms
                         var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                         double magnitude, direction;
                         bool isRidge = false;
-                        TowseyLib.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
+                        TowseyLibrary.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
                         //TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
                         //TowseyLib.ImageTools.Sobel5X5CornerDetection(subM, out isRidge, out magnitude, out direction);
                         if (isRidge && (magnitude > magnitudeThreshold)) 
@@ -261,7 +261,7 @@ namespace AnalysisPrograms
                 FileInfo fiImage = new FileInfo(imagePath);
                 if (fiImage.Exists)
                 {
-                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
                     process.Run(imagePath, outputDir);
                 }
 

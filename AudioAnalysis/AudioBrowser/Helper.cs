@@ -18,7 +18,7 @@
     using System.Text;
     using System.Threading;
     using System.Windows.Forms;
-    using TowseyLib;
+    using TowseyLibrary;
 
     public class Helper
     {
@@ -133,12 +133,12 @@
             //Contract.Requires(file != null, "Source file must not be null.");
 
             bool saveIntermediateWavFiles = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_WAV_FILES))
-                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
 
             bool doParallelProcessing = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.Keys.PARALLEL_PROCESSING))
-                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.Keys.PARALLEL_PROCESSING, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING))
+                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING, settings.ConfigDict);
 
             //initilise classes that will do the analysis
             this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
@@ -167,7 +167,7 @@
             var mimeType = MediaTypes.GetMediaType(audioFile.Extension);
             var sourceInfo = audioUtility.Info(audioFile);
 
-            double scoreThreshold = double.Parse(settings.ConfigDict[AudioAnalysisTools.Keys.EVENT_THRESHOLD]);  //min score for an acceptable event
+            double scoreThreshold = double.Parse(settings.ConfigDict[AudioAnalysisTools.AnalysisKeys.EVENT_THRESHOLD]);  //min score for an acceptable event
             scoreThreshold *= 3; // triple the threshold - used to filter high scoring events
             if (scoreThreshold > 1.0) scoreThreshold = 1.0;
 

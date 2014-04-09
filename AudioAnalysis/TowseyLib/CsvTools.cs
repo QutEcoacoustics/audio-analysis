@@ -8,7 +8,7 @@ using ServiceStack.Text;
 using ServiceStack.Text.Jsv;
 
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     using CsvHelper;
     using CsvHelper.Configuration;

@@ -13,7 +13,7 @@ using Acoustics.Tools;
 using Acoustics.Tools.Audio;
 using AnalysisBase;
 
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
 
 
@@ -170,7 +170,7 @@ namespace AnalysisPrograms
                 var image = arguments.Output.CombineFile(arguments.Sgram);
                 if (image.Exists)
                 {
-                    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(LSKiwiHelper.imageViewer);
+                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(LSKiwiHelper.imageViewer);
                     process.Run(image.FullName, arguments.Output.FullName);
                 }
 
@@ -233,8 +233,8 @@ namespace AnalysisPrograms
             analysisSettings.ConfigDict = configDict;
 
             string frameLength = null;
-            if (configDict.ContainsKey(Keys.FRAME_LENGTH))
-                frameLength = (int.Parse(configDict[Keys.FRAME_LENGTH]).ToString());
+            if (configDict.ContainsKey(AnalysisKeys.FRAME_LENGTH))
+                frameLength = (int.Parse(configDict[AnalysisKeys.FRAME_LENGTH]).ToString());
 
             var fiAudioF = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
@@ -264,9 +264,9 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(6);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, Human1.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Human1.ANALYSIS_NAME);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+                newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
             var results1 = Human1.Analysis(fiAudioF, newDict);
             if (results1 != null)
@@ -296,9 +296,9 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(5);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, Crow.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Crow.ANALYSIS_NAME);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+                newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
             var results2 = Crow.Analysis(fiAudioF, newDict);
             if (results2 != null)
@@ -328,9 +328,9 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(8);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.AnalysisName);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.AnalysisName);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+                newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
             var results3 = PlanesTrainsAndAutomobiles.Analysis(fiAudioF, newDict);
             if (results3 != null)
@@ -360,9 +360,9 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(9);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+                newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
             var results4 = Canetoad.Analysis(fiAudioF, newDict);
             if (results4 != null)
@@ -391,9 +391,9 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(10);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(Keys.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME);
             if (frameLength != null)
-                newDict.Add(Keys.FRAME_LENGTH, frameLength);
+                newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
             var results5 = KoalaMale.Analysis(fiAudioF, newDict);
             if (results5 != null)
@@ -417,7 +417,7 @@ namespace AnalysisPrograms
 
             // returning a null datattable for no detected events, is not appropriate.
             // always return a datatable, even if has zero events
-            string analysisName = configDict[Keys.ANALYSIS_NAME];
+            string analysisName = configDict[AnalysisKeys.ANALYSIS_NAME];
             string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
             foreach (AcousticEvent ev in events)
             {
@@ -428,7 +428,7 @@ namespace AnalysisPrograms
 
             // write events to a data table to return.
             dataTable = WriteEvents2DataTable(events);
-            string sortString = Keys.EVENT_START_SEC + " ASC";
+            string sortString = AnalysisKeys.EVENT_START_SEC + " ASC";
             dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
 
 
@@ -500,16 +500,16 @@ namespace AnalysisPrograms
                 return null;
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.EVENT_COUNT,
-                                 AudioAnalysisTools.Keys.EVENT_START_MIN,
-                                 AudioAnalysisTools.Keys.EVENT_START_SEC, 
-                                 AudioAnalysisTools.Keys.EVENT_START_ABS,
-                                 AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,
-                                 AudioAnalysisTools.Keys.EVENT_DURATION, 
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.EVENT_COUNT,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_MIN,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC, 
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS,
+                                 AudioAnalysisTools.AnalysisKeys.SEGMENT_TIMESPAN,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_DURATION, 
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.Keys.EVENT_NAME,
-                                 AudioAnalysisTools.Keys.EVENT_SCORE,
-                                 AudioAnalysisTools.Keys.EVENT_NORMSCORE 
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_NAME,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_SCORE,
+                                 AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE 
 
                                };
             //                   1                2               3              4                5              6               7              8
@@ -524,12 +524,12 @@ namespace AnalysisPrograms
             foreach (var ev in predictedEvents)
             {
                 DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.Keys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartAbs - OVER-WRITE LATER
-                row[AudioAnalysisTools.Keys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
-                row[AudioAnalysisTools.Keys.EVENT_NAME] = (string)ev.Name;   //
-                row[AudioAnalysisTools.Keys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
-                row[AudioAnalysisTools.Keys.EVENT_SCORE] = (double)ev.Score;      //Score
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC] = (double)ev.TimeStart;  //EvStartSec
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS] = (double)ev.TimeStart;  //EvStartAbs - OVER-WRITE LATER
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_DURATION] = (double)ev.Duration;   //duratio in seconds
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_NAME] = (string)ev.Name;   //
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE] = (double)ev.ScoreNormalised;
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_SCORE] = (double)ev.Score;      //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -559,11 +559,11 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
-                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS];
+                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
-                string eventName = (string)ev[AudioAnalysisTools.Keys.EVENT_NAME];
+                string eventName = (string)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NAME];
                 if (eventName == Human1.ANALYSIS_NAME)
                 {
                     if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
@@ -586,7 +586,7 @@ namespace AnalysisPrograms
                 }
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.START_MIN, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.START_MIN, "HumanEvents", "CrowEvents", "MachineEvents", "KoalaEvents", "CanetoadEvents" };
             Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -603,24 +603,24 @@ namespace AnalysisPrograms
         {
             if (dt == null) return;
 
-            if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_ABS, typeof(double));
-            if (!dt.Columns.Contains(Keys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.Keys.EVENT_START_MIN, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.SEGMENT_TIMESPAN, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EVENT_START_ABS)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS, typeof(double));
+            if (!dt.Columns.Contains(AnalysisKeys.EVENT_START_MIN)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EVENT_START_MIN, typeof(double));
             double start = segmentStartMinute.TotalSeconds;
             int count = 0;
             foreach (DataRow row in dt.Rows)
             {
-                row[AudioAnalysisTools.Keys.EVENT_COUNT] = (double)(count++);
-                row[AudioAnalysisTools.Keys.SEGMENT_TIMESPAN] = (double)recordingTimeSpan.TotalSeconds;
-                row[AudioAnalysisTools.Keys.EVENT_START_ABS] = start + (double)row[AudioAnalysisTools.Keys.EVENT_START_SEC];
-                row[AudioAnalysisTools.Keys.EVENT_START_MIN] = (double)start;
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_COUNT] = (double)(count++);
+                row[AudioAnalysisTools.AnalysisKeys.SEGMENT_TIMESPAN] = (double)recordingTimeSpan.TotalSeconds;
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS] = start + (double)row[AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC];
+                row[AudioAnalysisTools.AnalysisKeys.EVENT_START_MIN] = (double)start;
             }
         } //AddContext2Table()
 
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            return DisplayIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
+            return IndexDisplay.ProcessCsvFile(fiCsvFile, fiConfigFile);
         } // ProcessCsvFile()
 
 

@@ -6,11 +6,11 @@ namespace Dong.Felt
     using System.Linq;
     using System.IO;
     using System.Text;
-    using TowseyLib;
+    using TowseyLibrary;
     using System.Data;
     using System.Drawing;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
     using System.Drawing.Imaging;
 
 
@@ -1045,7 +1045,7 @@ namespace Dong.Felt
                     double magnitude, direction;
                     bool isRidge = false;
 
-                    TowseyLib.ImageTools.Sobel5X5RidgeDetection(subMatrix, out isRidge, out magnitude, out direction);
+                    TowseyLibrary.ImageTools.Sobel5X5RidgeDetection(subMatrix, out isRidge, out magnitude, out direction);
                     if (isRidge && (magnitude > magnitudeThreshold))
                     {
                         result1[row, col] = 1.0;
@@ -1294,7 +1294,7 @@ namespace Dong.Felt
         /// <param name="rows"></param>
         /// <param name="cols"></param>
         /// <returns></returns>
-        public static double[,] ShowPOIOnSpectrogram(SpectralSonogram spectrogram, List<PointOfInterest> poiList, int rows, int cols)
+        public static double[,] ShowPOIOnSpectrogram(SpectrogramStandard spectrogram, List<PointOfInterest> poiList, int rows, int cols)
         {
             foreach (var poi in poiList)
             {

@@ -17,7 +17,7 @@ using Acoustics.Shared;
 using AnalysisBase;
 using AnalysisRunner;
 using AudioAnalysisTools;
-using TowseyLib;
+using TowseyLibrary;
 
 
 namespace AnalysisPrograms
@@ -149,7 +149,7 @@ namespace AnalysisPrograms
             }
 
             //###### get sonogram image ##############################################################################################
-            if ((configDict.ContainsKey(Keys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(Keys.MAKE_SOX_SONOGRAM, configDict)))
+            if ((configDict.ContainsKey(AnalysisKeys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(AnalysisKeys.MAKE_SOX_SONOGRAM, configDict)))
             {
                 SpectrogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
             }

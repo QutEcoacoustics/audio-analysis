@@ -3,9 +3,11 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 
 
 namespace AnalysisPrograms
@@ -50,7 +52,7 @@ namespace AnalysisPrograms
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
             config.NoiseReductionType = NoiseReductionType.NONE;
-            BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(config, recording.GetWavReader());
             LoggedConsole.WriteLine("SampleRate=" + sonogram.SampleRate);
 
 

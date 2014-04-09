@@ -6,9 +6,11 @@ namespace Dong.Felt
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
-    using TowseyLib;
+    using TowseyLibrary;
     using System.Drawing;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+
 
 
 
@@ -24,7 +26,7 @@ namespace Dong.Felt
 
         #region Public Methods
 
-        public static List<PointOfInterest> RidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        public static List<PointOfInterest> RidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             // list size based on avg result size
             var instance = new POISelection(new List<PointOfInterest>(9000));
@@ -34,7 +36,7 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> PostRidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfig)
+        public static List<PointOfInterest> PostRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
             instance.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
@@ -46,7 +48,7 @@ namespace Dong.Felt
             poiList = list;
         }
 
-        internal void RidgeDetectionInternal(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        internal void RidgeDetectionInternal(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
@@ -90,7 +92,7 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges
         }
 
-        public void FourDirectionsRidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        public void FourDirectionsRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
@@ -145,7 +147,7 @@ namespace Dong.Felt
             poiList = filteredPoiList;
         }
 
-        public void ImprovedRidgeDetection(SpectralSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        public void ImprovedRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             // This step tries to convert spectrogram data into image matrix. The spectrogram data has the dimension of totalFrameCount * totalFreCount and the matrix is totalFreCount * totalFrameCount. 
             // Notice that the matrix is a normal matrix. RowIndex and ColumnIndex all follow the matrix definition. The data is first stored in rows
@@ -556,7 +558,7 @@ namespace Dong.Felt
             //var spectrogram = SpectrogramGeneration(wavFilePath);
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
             double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
             double herzScale = spectrogram.FBinWidth;
@@ -581,16 +583,16 @@ namespace Dong.Felt
             return filterPoiList;
         }
 
-        public SpectralSonogram SpectrogramGeneration(string wavFilePath)
+        public SpectrogramStandard SpectrogramGeneration(string wavFilePath)
         {
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-            var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
 
             return spectrogram;
         }
 
-        public double[,] SpectrogramIntensityToArray(SpectralSonogram spectrogram)
+        public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             return matrix;

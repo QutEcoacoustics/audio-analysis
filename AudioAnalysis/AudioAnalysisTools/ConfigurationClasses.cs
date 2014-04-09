@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TowseyLib;
+using TowseyLibrary;
 using System.IO;
+using AudioAnalysisTools.DSP;
+
 
 namespace AudioAnalysisTools
 {
@@ -261,7 +263,7 @@ namespace AudioAnalysisTools
             var frameGap   = (int)(VocalGap / frameOffset);  //=10 frames delay required to separate vocalisations 
             var minPulse   = (int)(MinPulseDuration / frameOffset); //=2  frames is min vocal length
             //LoggedConsole.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
-            return Speech.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
+            return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
         }
 
 

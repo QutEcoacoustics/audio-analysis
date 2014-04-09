@@ -17,8 +17,8 @@ namespace Dong.Felt
     using System.Linq;
     using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
-    using TowseyLib;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
 
@@ -155,7 +155,7 @@ namespace Dong.Felt
         {
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig();
-            var amplitudeSpectrogram = new SpectralSonogram(config, recording.GetWavReader());
+            var amplitudeSpectrogram = new SpectrogramStandard(config, recording.GetWavReader());
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
 
             var minFrame = (int)Math.Round(startTime * amplitudeSpectrogram.FramesPerSecond);

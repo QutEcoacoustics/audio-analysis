@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.DSP;
+using AudioAnalysisTools.StandardSpectrograms;
 
 
 namespace AnalysisPrograms
@@ -218,7 +219,7 @@ namespace AnalysisPrograms
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
             //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
 
             //CALCULATE SNR DATA ABOUT SUB BAND.
             sonogram.CalculateSubbandSNR(recording.GetWavReader(), minHz, maxHz);

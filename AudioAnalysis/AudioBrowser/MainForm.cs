@@ -20,7 +20,7 @@
     using AnalysisPrograms;
     using AnalysisRunner;
     using AudioAnalysisTools;
-    using TowseyLib;
+    using TowseyLibrary;
 
     using LINQtoCSV;
     using log4net;
@@ -537,7 +537,7 @@
                 {
                     audioSegmentPath = audioSegmentFile.FullName;
                 }
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.AudacityExe.FullName);
+                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(this.helper.AudacityExe.FullName);
                 process.Run(audioSegmentPath, this.helper.DefaultOutputDir.FullName, false);
             }                            
         }
@@ -746,7 +746,7 @@
             }
             else
             {
-                TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(this.helper.TextEditorExe.FullName);
+                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(this.helper.TextEditorExe.FullName);
                 process.Run(this.AnalyserConfigFile.FullName, this.helper.DefaultOutputDir.FullName, false);
             }
         }
@@ -809,7 +809,7 @@
             var analysisParams = config.GetDictionary();
 
             settings.SetUserConfiguration(this.helper.DefaultTempFilesDir, this.AnalyserConfigFile, config.GetTable(), this.AnalyserOutputDir,
-                                            AudioAnalysisTools.Keys.SEGMENT_DURATION, AudioAnalysisTools.Keys.SEGMENT_OVERLAP);
+                                            AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION, AudioAnalysisTools.AnalysisKeys.SEGMENT_OVERLAP);
 
             // record run information
             Log.Debug("Parameters for selected analysis: " + analyserId);
@@ -818,7 +818,7 @@
                 Log.DebugFormat("\t{0} = {1}", kvp.Key, kvp.Value);
             }
 
-            string analysisName = analysisParams[AudioAnalysisTools.Keys.ANALYSIS_NAME];
+            string analysisName = analysisParams[AudioAnalysisTools.AnalysisKeys.ANALYSIS_NAME];
             if (analyserId != analysisName)
             {
                 Log.WarnFormat("Analysis type selected in browser ({0}) not same as that in config file ({1})", analyserId, analysisName);

@@ -4,9 +4,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using System.Text.RegularExpressions;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 
 
 namespace AudioAnalysisTools
@@ -359,11 +361,11 @@ namespace AudioAnalysisTools
         public static void Freq2MelsBinIDs(int minFreq, int maxFreq, double binWidth, int nyquistFrequency, out int leftCol, out int rightCol)
         {
             int binCount = (int)(nyquistFrequency / binWidth) + 1;
-            double maxMel = Speech.Mel(nyquistFrequency);
+            double maxMel = MFCCStuff.Mel(nyquistFrequency);
             int melRange = (int)(maxMel - 0 + 1);
             double binsPerMel = binCount / (double)melRange;
-            leftCol = (int)Math.Round((double)Speech.Mel(minFreq) * binsPerMel);
-            rightCol = (int)Math.Round((double)Speech.Mel(maxFreq) * binsPerMel);
+            leftCol = (int)Math.Round((double)MFCCStuff.Mel(minFreq) * binsPerMel);
+            rightCol = (int)Math.Round((double)MFCCStuff.Mel(maxFreq) * binsPerMel);
         }
 
         /// <summary>
@@ -496,7 +498,7 @@ namespace AudioAnalysisTools
         /// <param name="minDuration">minimum duration of an event</param>
         /// <param name="maxDuration">maximum duration of an event</param>
         /// <returns></returns>
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram,
+        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram,
                             bool doSegmentation, int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
@@ -515,7 +517,7 @@ namespace AudioAnalysisTools
             return tuple; 
         }
 
-        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectralSonogram sonogram, 
+        public static System.Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram, 
                                     int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;

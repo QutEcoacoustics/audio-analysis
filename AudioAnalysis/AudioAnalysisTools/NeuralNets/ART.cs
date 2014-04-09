@@ -3,7 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 
 //USES
 //  Crt, Dos, Printer, Graph,

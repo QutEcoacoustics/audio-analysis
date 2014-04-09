@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 
 
 
@@ -138,7 +140,7 @@ namespace AnalysisPrograms
 
             //AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.GetWavReader());
-            SpectralSonogram  sonogram = new SpectralSonogram(basegram);         //spectrogram has dim[N,257]
+            SpectrogramStandard  sonogram = new SpectrogramStandard(basegram);         //spectrogram has dim[N,257]
              
             //viii WRITE FILTERED SIGNAL IF NEED TO DEBUG
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768

@@ -1,13 +1,13 @@
 ﻿namespace Dong.Felt
 {
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
     using Dong.Felt.Configuration;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
-    using TowseyLib;
+    using TowseyLibrary;
 
     // The query is defined by a region bounded with a fixed frequency range and duration range. 
     public class Query
@@ -133,7 +133,7 @@
             
         }
         
-        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, SpectralSonogram spectrogram, SpectrogramConfiguration spectrogramConfig)
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;

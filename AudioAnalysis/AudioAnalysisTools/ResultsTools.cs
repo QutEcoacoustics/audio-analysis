@@ -8,7 +8,7 @@ using Acoustics.Shared.Extensions;
 using AnalysisBase;
 //using AudioAnalysisTools;
 using log4net;
-using TowseyLib;
+using TowseyLibrary;
 //using Acoustics.Shared;
 //using Acoustics.Tools.Audio;
 //using AnalysisRunner;
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools
                 headers.Add(col.ColumnName);
             }
 
-            if (headers.Contains(Keys.EVENT_COUNT)) //this is a file of events
+            if (headers.Contains(AnalysisKeys.EVENT_COUNT)) //this is a file of events
             {
                 //these columns should already be in the datatable.
                 //if (!dt.Columns.Contains(Keys.SEGMENT_TIMESPAN)) dt.Columns.Add(AudioAnalysisTools.Keys.SEGMENT_TIMESPAN, typeof(double));
@@ -91,17 +91,17 @@ namespace AudioAnalysisTools
                 int count = 0;
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[Keys.EVENT_COUNT] = (double)count++;
-                    if (headers.Contains(Keys.SEGMENT_TIMESPAN))
-                        row[Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
-                    if (headers.Contains(Keys.EVENT_START_SEC))
+                    row[AnalysisKeys.EVENT_COUNT] = (double)count++;
+                    if (headers.Contains(AnalysisKeys.SEGMENT_TIMESPAN))
+                        row[AnalysisKeys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
+                    if (headers.Contains(AnalysisKeys.EVENT_START_SEC))
                     {
-                        double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
-                        if (headers.Contains(Keys.EVENT_START_ABS))
-                            row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
-                        if (headers.Contains(Keys.EVENT_START_MIN))
-                            row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
-                        row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
+                        double secondsOffsetInCurrentAudioSegment = (double)row[AnalysisKeys.EVENT_START_SEC];
+                        if (headers.Contains(AnalysisKeys.EVENT_START_ABS))
+                            row[AnalysisKeys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
+                        if (headers.Contains(AnalysisKeys.EVENT_START_MIN))
+                            row[AnalysisKeys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
+                        row[AnalysisKeys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
                     }
                 }
             }
@@ -109,10 +109,10 @@ namespace AudioAnalysisTools
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[Keys.INDICES_COUNT] = (double)result.SegmentStartOffset.Minutes;
-                    row[Keys.START_MIN]     = (double)result.SegmentStartOffset.Minutes;
-                    if (headers.Contains(Keys.SEGMENT_TIMESPAN)) 
-                        row[Keys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
+                    row[AnalysisKeys.INDICES_COUNT] = (double)result.SegmentStartOffset.Minutes;
+                    row[AnalysisKeys.START_MIN]     = (double)result.SegmentStartOffset.Minutes;
+                    if (headers.Contains(AnalysisKeys.SEGMENT_TIMESPAN)) 
+                        row[AnalysisKeys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
                 }
             }
 
@@ -219,7 +219,7 @@ namespace AudioAnalysisTools
         {
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
-            if (masterDataTable.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
+            if (masterDataTable.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
             {
                 // in this case masterDataTable is the indicies table and there is no table of events.
                 eventsDatatable = null;
@@ -291,7 +291,7 @@ namespace AudioAnalysisTools
 
             if (eventsDatatable != null) //outputdata consists of rows of acoustic events 
             {
-                string sortString = (AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                string sortString = (AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
                 eventsDatatable = DataTableTools.SortTable(eventsDatatable, sortString);    //sort by start time
                 string reportfilePath = Path.Combine(opDir, fName + ".Events" + ReportFileExt);
                 CsvTools.DataTable2CSV(eventsDatatable, reportfilePath);

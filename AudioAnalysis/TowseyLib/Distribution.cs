@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
 /*
  * Created on 15/03/2005

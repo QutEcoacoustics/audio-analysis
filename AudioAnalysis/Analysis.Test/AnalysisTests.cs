@@ -10,7 +10,7 @@ namespace Ecosounds.Test.AnalysisPrograms
 
     using EcoSounds.Mvc.Tests;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     using global::AnalysisPrograms;
     using Acoustics.Shared;

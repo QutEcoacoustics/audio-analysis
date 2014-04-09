@@ -196,14 +196,14 @@
       <Project>{86855cbc-7243-492a-a500-2de36cc7c825}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
-      <Name>TowseyLib</Name>
-      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\AED\AED\AED.fsproj">
       <Name>AED</Name>
       <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\TowseyLib\TowseyLibrary.csproj">
+      <Name>TowseyLibrary</Name>
+      <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">

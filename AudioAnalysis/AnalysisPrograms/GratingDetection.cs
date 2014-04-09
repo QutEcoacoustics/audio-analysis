@@ -8,9 +8,11 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
 
@@ -352,7 +354,7 @@ namespace AnalysisPrograms
             int bitsPerSample = recording.GetWavReader().BitsPerSample;
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
-            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
+            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
             sonogram.DecibelsNormalised = new double[sonogram.FrameCount];
             for (int i = 0; i < sonogram.FrameCount; i++) //foreach frame or time step
             {
@@ -481,14 +483,14 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.Keys.EVENT_START_SEC];
-                double eventScore = (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC];
+                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.Keys.START_MIN, AudioAnalysisTools.Keys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.START_MIN, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 

@@ -7,7 +7,7 @@ using MathNet.Numerics;
 namespace QutBioacosutics.Xie
 {
     using MathNet.Numerics.LinearAlgebra.Single;
-    using TowseyLib;
+    using TowseyLibrary;
 
     class ExtractTracks
     {

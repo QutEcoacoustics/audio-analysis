@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     /// <summary>
     /// Represents a single array of data with Xand Y scales and other info useful for pltting a graph.

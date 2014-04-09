@@ -7,7 +7,7 @@ using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
     using System.Diagnostics.Contracts;
 

@@ -21,7 +21,7 @@ namespace AnalysisPrograms
 
     using QutSensors.AudioAnalysis.AED;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     public class SPT
     {

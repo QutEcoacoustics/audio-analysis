@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using TowseyLib;
+using TowseyLibrary;
 
 
 /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC SUMMARY INDEX, DO THE FOLLOWING:
@@ -16,7 +16,7 @@ using TowseyLib;
 
 
 
-namespace AnalysisPrograms
+namespace AudioAnalysisTools
 {
     public class IndexProperties
     {
@@ -55,9 +55,9 @@ namespace AnalysisPrograms
 
         // do not change headers unnecessarily - otherwise will lose compatibility with previous csv files
         // if change a header record the old header in method below:         public static string ConvertHeaderToKey(string header)
-        public static string header_count = AudioAnalysisTools.Keys.INDICES_COUNT;
-        public const string header_startMin = AudioAnalysisTools.Keys.START_MIN;
-        public const string header_SecondsDuration = AudioAnalysisTools.Keys.SEGMENT_DURATION;
+        public static string header_count = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT;
+        public const string header_startMin = AudioAnalysisTools.AnalysisKeys.START_MIN;
+        public const string header_SecondsDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
         public const string header_Clipping = "Clipping";
         public const string header_avAmpdB = "avAmp-dB";
         public const string header_snr = "SNR";
@@ -213,7 +213,7 @@ namespace AnalysisPrograms
             double[] order = new double[array.Length];
             for (int i = 0; i < array.Length; i++) order[i] = i;
 
-            int imageWidth = array.Length + DisplayIndices.TRACK_END_PANEL_WIDTH;
+            int imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
             Image image = Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, annotation);
             return image;
         }

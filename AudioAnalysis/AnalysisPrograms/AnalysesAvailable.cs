@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 using AnalysisBase;
-using TowseyLib;
+using TowseyLibrary;
 
 
 namespace AnalysisPrograms

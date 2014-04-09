@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TowseyLib
+namespace TowseyLibrary
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    //using System;
+    //using System.Collections.Generic;
+    //using System.Linq;
 
     public class ConfigDict : Dictionary<string, object>
     {

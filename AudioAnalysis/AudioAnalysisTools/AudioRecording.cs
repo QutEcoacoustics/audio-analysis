@@ -12,7 +12,9 @@
     using System.Drawing.Imaging;
     using System.IO;
 
-    using TowseyLib;
+    using TowseyLibrary;
+    using AudioAnalysisTools.DSP;
+
 
 	public class AudioRecording : IDisposable
 	{
@@ -428,8 +430,8 @@
 
 
             int resampleRate = DEFAULT_SAMPLE_RATE;
-            if (configDict.ContainsKey(Keys.RESAMPLE_RATE))
-                resampleRate = ConfigDictionary.GetInt(Keys.RESAMPLE_RATE, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.RESAMPLE_RATE))
+                resampleRate = ConfigDictionary.GetInt(AnalysisKeys.RESAMPLE_RATE, configDict);
 
             //EXTRACT RECORDING SEGMENT
             int startMilliseconds = (int)(start.TotalMilliseconds - buffer.TotalMilliseconds);

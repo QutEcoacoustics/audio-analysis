@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-using TowseyLib;
+using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {

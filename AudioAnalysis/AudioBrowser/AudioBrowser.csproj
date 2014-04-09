@@ -192,9 +192,9 @@
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
+    <ProjectReference Include="..\TowseyLib\TowseyLibrary.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
+      <Name>TowseyLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

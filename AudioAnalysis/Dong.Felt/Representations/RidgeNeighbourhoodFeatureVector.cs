@@ -6,7 +6,7 @@
     using System.Text;
     using AudioAnalysisTools;
     using System.Drawing;
-    using TowseyLib;
+    using TowseyLibrary;
 
     /// <summary>
     /// A class for generating RidgeNeighbourhoodFeatureVector for decribing the acoustic events(bird calls).

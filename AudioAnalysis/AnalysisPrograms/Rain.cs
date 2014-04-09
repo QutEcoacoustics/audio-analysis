@@ -13,10 +13,10 @@ using Acoustics.Tools;
 using Acoustics.Tools.Audio;
 using AnalysisBase;
 
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.Indices;
-
+using AudioAnalysisTools.DSP;
 
 
 namespace AnalysisPrograms
@@ -37,7 +37,7 @@ namespace AnalysisPrograms
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
 
-        public static string header_count = Keys.INDICES_COUNT;
+        public static string header_count = AnalysisKeys.INDICES_COUNT;
         //public const string  = count;
         public const string header_startMin = "start-min";
         //public const string header_SecondsDuration = "SegTimeSpan";
@@ -279,14 +279,14 @@ namespace AnalysisPrograms
             int lowFreqBound = IndexCalculate.lowFreqBound;
             int midFreqBound = IndexCalculate.midFreqBound;
 
-            if (config.ContainsKey(Keys.FRAME_LENGTH)) 
-                frameSize = ConfigDictionary.GetInt(Keys.FRAME_LENGTH, config);
+            if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH)) 
+                frameSize = ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config);
             if (config.ContainsKey(key_LOW_FREQ_BOUND)) 
                 lowFreqBound = ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config);
             if (config.ContainsKey(key_MID_FREQ_BOUND)) 
                 midFreqBound = ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config);
-            if (config.ContainsKey(Keys.FRAME_OVERLAP)) 
-                windowOverlap = ConfigDictionary.GetDouble(Keys.FRAME_OVERLAP, config);
+            if (config.ContainsKey(AnalysisKeys.FRAME_OVERLAP)) 
+                windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
 
             //get recording segment
             AudioRecording recording = new AudioRecording(fiAudioFile.FullName);
@@ -412,8 +412,8 @@ namespace AnalysisPrograms
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
-                    displayHeaders = configDict[Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
+                    displayHeaders = configDict[AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
             }
             //if config file does not exist or does not contain display headers then use the original headers
             if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
@@ -441,21 +441,21 @@ namespace AnalysisPrograms
             }
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
             }
 
             table2Display = NormaliseColumnsOfDataTable(table2Display);
@@ -491,7 +491,7 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (headers[i].Equals(Keys.AV_AMPLITUDE))
+                if (headers[i].Equals(AnalysisKeys.AV_AMPLITUDE))
                 {
                     min = -50;
                     max = -5;

@@ -16,7 +16,7 @@ namespace AnalysisPrograms.Production
 
     using PowerArgs;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     public enum DebugOptions
     {

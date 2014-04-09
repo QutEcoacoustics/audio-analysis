@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
-using System.Drawing;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 
 
 namespace AnalysisPrograms
@@ -262,7 +264,7 @@ namespace AnalysisPrograms
 
 
             // iv: generate the sonogram
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
             recording.Dispose();
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),

@@ -25,13 +25,14 @@ namespace Dong.Felt
 
     using AnalysisBase;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Sonogram;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
 
     using PowerArgs;
 
     using ServiceStack.Text;
 
-    using TowseyLib;
+    using TowseyLibrary;
     using log4net;
     using QutSensors.Shared;
     using AnalysisPrograms.Production;
@@ -280,7 +281,7 @@ namespace Dong.Felt
 
     public class RidgeEvent : EventBase
     {
-        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectralSonogram sonogram)
+        public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectrogramStandard sonogram)
         {
             this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
@@ -331,7 +332,7 @@ namespace Dong.Felt
             }
 
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5};
-            var sonogram = new SpectralSonogram(config, recording.GetWavReader());
+            var sonogram = new SpectrogramStandard(config, recording.GetWavReader());
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
             var ridgeConfig = new RidgeDetectionConfiguration {

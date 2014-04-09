@@ -4,7 +4,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-using TowseyLib;
+using TowseyLibrary;
+using AudioAnalysisTools.DSP;
+
 
 namespace AudioAnalysisTools.Indices
 {
@@ -112,7 +114,7 @@ namespace AudioAnalysisTools.Indices
             var dt = ConvertClassifcations2Datatable(classifications);
             foreach (DataRow row in dt.Rows)
             {
-                row[Keys.SEGMENT_TIMESPAN] = (double)audioDuration.TotalSeconds;
+                row[AnalysisKeys.SEGMENT_TIMESPAN] = (double)audioDuration.TotalSeconds;
             }
             return dt;
         } //Analysis()
@@ -211,7 +213,7 @@ namespace AudioAnalysisTools.Indices
 
         public static DataTable ConvertClassifcations2Datatable(string[] classifications)
         {
-            string[] headers = { Keys.INDICES_COUNT, Keys.START_MIN, Keys.SEGMENT_TIMESPAN, header_rain, header_cicada };
+            string[] headers = { AnalysisKeys.INDICES_COUNT, AnalysisKeys.START_MIN, AnalysisKeys.SEGMENT_TIMESPAN, header_rain, header_cicada };
             Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double) };
 
             int length = classifications.Length;

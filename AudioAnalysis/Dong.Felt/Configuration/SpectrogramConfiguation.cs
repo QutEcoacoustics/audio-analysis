@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TowseyLib;
+using TowseyLibrary;
+using AudioAnalysisTools.DSP;
+
 
 namespace Dong.Felt.Configuration
 {

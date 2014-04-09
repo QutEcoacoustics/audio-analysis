@@ -9,7 +9,7 @@ using System.Text;
 using AnalysisBase;
 using AudioAnalysisTools;
 
-using TowseyLib;
+using TowseyLibrary;
 
 namespace AnalysisPrograms
 {
@@ -92,7 +92,7 @@ namespace AnalysisPrograms
             {
                 var configuration = new ConfigDictionary(arguments.Config);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                analysisIdentifier = configDict[Keys.ANALYSIS_NAME];
+                analysisIdentifier = configDict[AnalysisKeys.ANALYSIS_NAME];
             }
 
             var outputDTs = Tuple.Create(new DataTable(), new DataTable() );
@@ -105,7 +105,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\nWARNING: Analysis name not recognized: " + analysisIdentifier);
                 LoggedConsole.WriteLine("\t\t Will construct default image");
-                outputDTs = DisplayIndices.ProcessCsvFile(arguments.InputCsv, null);
+                outputDTs = IndexDisplay.ProcessCsvFile(arguments.InputCsv, null);
             }
             else if (isStrongTypedAnalyser)
             {
@@ -146,7 +146,7 @@ namespace AnalysisPrograms
                 throw new NotImplementedException();
             }
 
-            Bitmap tracksImage = DisplayIndices.ConstructVisualIndexImage(dt2Display, title);
+            Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(dt2Display, title);
             tracksImage.Save(arguments.Output.FullName);
 
             // #########################################################################################################

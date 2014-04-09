@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 //using System.IO;
-using TowseyLib;
+using TowseyLibrary;
 using AudioAnalysisTools;
-using AudioAnalysisTools.Sonogram;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.DSP;
+
 
 
 namespace AudioAnalysisTools
@@ -81,7 +83,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectralSonogram sonogram, 
+        public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram, 
                                                                          List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -179,7 +181,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="dBThreshold"></param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_Spr_Match(char[,] template, SpectralSonogram sonogram,
+        public static System.Tuple<double[]> Execute_Spr_Match(char[,] template, SpectrogramStandard sonogram,
                                                                List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             int lineLength = 10;
@@ -375,7 +377,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="minDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectralSonogram sonogram,
+        public static System.Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -421,7 +423,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static System.Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectralSonogram sonogram,
+        public static System.Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -475,7 +477,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static System.Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectralSonogram sonogram,
+        public static System.Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -487,11 +489,11 @@ namespace AudioAnalysisTools
             //set up the matrix of cosine coefficients 
             int coeffCount = 12; //only use first 12 coefficients.
             int binCount = target.GetLength(1);  //number of filters in filter bank
-            double[,] cosines = Speech.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
+            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
 
             //adjust target's dynamic range to that set by user 
             target = SNR.SetDynamicRange(target, 3.0, dynamicRange); //set event's dynamic range
-            target = Speech.Cepstra(target, coeffCount, cosines);
+            target = MFCCStuff.Cepstra(target, coeffCount, cosines);
             double[] v1 = DataTools.Matrix2Array(target);
             v1 = DataTools.normalise2UnitLength(v1);
 
@@ -519,7 +521,7 @@ namespace AudioAnalysisTools
                     //string imagePath2 = @"C:\SensorNetworks\Output\FELT_Gecko\compare.png";
                     //var image = BaseSonogram.Data2ImageData(matrix);
                     //ImageTools.DrawMatrix(image, 1, 1, imagePath2);
-                    matrix = Speech.Cepstra(matrix, coeffCount, cosines);
+                    matrix = MFCCStuff.Cepstra(matrix, coeffCount, cosines);
 
                     double[] v2 = DataTools.Matrix2Array(matrix);
                     v2 = DataTools.normalise2UnitLength(v2);

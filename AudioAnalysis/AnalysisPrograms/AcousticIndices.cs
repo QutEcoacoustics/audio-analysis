@@ -30,10 +30,11 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Indices;
 
     using PowerArgs;
 
-    using TowseyLib;
+    using TowseyLibrary;
 
     public class Acoustic : IAnalyser
     {
@@ -432,9 +433,9 @@ namespace AnalysisPrograms
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
                 {
-                    displayHeaders = configDict[AudioAnalysisTools.Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                    displayHeaders = configDict[AudioAnalysisTools.AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
                     for (int i = 0; i < displayHeaders.Count; i++)
                     {
                         displayHeaders[i] = displayHeaders[i].Trim();
@@ -462,21 +463,21 @@ namespace AnalysisPrograms
 
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
             }
 
             //DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
@@ -526,9 +527,9 @@ namespace AnalysisPrograms
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(Keys.DISPLAY_COLUMNS))
+                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
                 {
-                    displayHeaders = configDict[AudioAnalysisTools.Keys.DISPLAY_COLUMNS].Split(',').ToList();
+                    displayHeaders = configDict[AudioAnalysisTools.AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
                     for (int i = 0; i < displayHeaders.Count; i++)
                     {
                         displayHeaders[i] = displayHeaders[i].Trim();
@@ -551,21 +552,21 @@ namespace AnalysisPrograms
 
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_START_ABS))
+            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_START_ABS + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.EVENT_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.EVENT_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.Keys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.Keys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
             }
 
             DataTable table2Display = null;

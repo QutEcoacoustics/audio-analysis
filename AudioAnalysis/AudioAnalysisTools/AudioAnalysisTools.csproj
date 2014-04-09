@@ -138,6 +138,9 @@
     <Reference Include="AForge.Math">
       <HintPath>..\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
+    <Reference Include="alglibnet2">
+      <HintPath>..\TowseyLib\bin\Debug\alglibnet2.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -181,28 +184,36 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
-    <Compile Include="DSP_Frames.cs" />
+    <Compile Include="CrossCorrelation.cs" />
+    <Compile Include="DSP\DSP_Filters.cs" />
+    <Compile Include="DSP\DSP_Frames.cs" />
+    <Compile Include="DSP\DSP_IIRFilter.cs" />
+    <Compile Include="DSP\FFT.cs" />
+    <Compile Include="DSP\SNR.cs" />
+    <Compile Include="DSP\MFCCStuff.cs" />
+    <Compile Include="DSP\WavInfo.cs" />
+    <Compile Include="DSP\WavWriter.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexProperties.cs" />
     <Compile Include="Indices\IndexStore.cs" />
     <Compile Include="Indices\RainIndices.cs" />
-    <Compile Include="LDSpectrogramTStatistic.cs" />
-    <Compile Include="LDSpectrogramRGB.cs" />
+    <Compile Include="LongDurationSpectrograms\LDSpectrogramTStatistic.cs" />
+    <Compile Include="LongDurationSpectrograms\LDSpectrogramRGB.cs" />
     <Compile Include="ConfigurationClasses.cs" />
-    <Compile Include="DisplayIndices.cs" />
+    <Compile Include="Indices\IndexDisplay.cs" />
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
-    <Compile Include="AudioSegmentation.cs" />
-    <Compile Include="HMMSettings.cs" />
-    <Compile Include="Keys.cs" />
+    <Compile Include="DSP\AudioSegmentation.cs" />
+    <Compile Include="AnalysisKeys.cs" />
     <Compile Include="PointOfInterest.cs" />
-    <Compile Include="Sonogram\CepstralSonogram.cs" />
-    <Compile Include="Sonogram\SobelEdgeSonogram.cs" />
-    <Compile Include="Sonogram\SpectralSonogram.cs" />
-    <Compile Include="SpectrogramConstants.cs" />
-    <Compile Include="LDSpectrogramDifference.cs" />
-    <Compile Include="LDSpectrogramDistance.cs" />
-    <Compile Include="SpectrogramTools.cs" />
+    <Compile Include="RecordingFetcher.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramCepstral.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramSobelEdge.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramStandard.cs" />
+    <Compile Include="LongDurationSpectrograms\SpectrogramConstants.cs" />
+    <Compile Include="LongDurationSpectrograms\LDSpectrogramDifference.cs" />
+    <Compile Include="LongDurationSpectrograms\LDSpectrogramDistance.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramTools.cs" />
     <Compile Include="NeuralNets\ART.cs" />
     <Compile Include="NeuralNets\ART_2A.cs" />
     <Compile Include="NeuralNets\BinaryCluster.cs" />
@@ -217,12 +228,11 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalToImage.cs" />
-    <Compile Include="Sonogram\BaseSonogram.cs" />
-    <Compile Include="Sonogram\BaseSonogramConfig.cs" />
-    <Compile Include="Sonogram\BaseSonogramDrawImage.cs" />
-    <Compile Include="Sonogram\Image_MultiTrack.cs" />
-    <Compile Include="Sonogram\Image_Track.cs" />
-    <Compile Include="Sonogram\PointOfInterest.cs" />
+    <Compile Include="StandardSpectrograms\BaseSonogram.cs" />
+    <Compile Include="StandardSpectrograms\BaseSonogramConfig.cs" />
+    <Compile Include="StandardSpectrograms\BaseSonogramDrawImage.cs" />
+    <Compile Include="StandardSpectrograms\Image_MultiTrack.cs" />
+    <Compile Include="StandardSpectrograms\Image_Track.cs" />
     <Compile Include="SpectralClustering.cs" />
     <Compile Include="SpectralTrack.cs" />
     <Compile Include="SpectralTracks.cs" />
@@ -230,7 +240,6 @@
     <Compile Include="ResultsTools.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
@@ -245,9 +254,9 @@
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
+    <ProjectReference Include="..\TowseyLib\TowseyLibrary.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
+      <Name>TowseyLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
