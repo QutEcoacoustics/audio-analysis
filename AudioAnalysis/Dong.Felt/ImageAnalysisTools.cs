@@ -230,15 +230,18 @@ namespace Dong.Felt
         /// <returns></returns>
         public static Image CombineImagesHorizontally(Image[] array)
         {
-            int width = array[0].Width;   // assume all images have the same width
-            int height = array[0].Height; // assume all images have the same height
-
-            int compositeWidth = 0;
-            for (int i = 0; i < array.Length; i++)
+            var compositeWidth = 0;
+            var height = 0;
+            if (array != null)
             {
-                compositeWidth += array[i].Width;
+                int width = array[0].Width;   // assume all images have the same width
+                height = array[0].Height; // assume all images have the same height
+               
+                for (int i = 0; i < array.Length; i++)
+                {
+                    compositeWidth += array[i].Width;
+                }
             }
-
             Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
             int xOffset = 0;
             Graphics gr = Graphics.FromImage(compositeBmp);
