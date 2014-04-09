@@ -200,7 +200,7 @@ namespace AudioAnalysisTools.DSP
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
             int maxAmplitudeCount, clipCount;
-            Clipping.GetClippingCount(signal, envelope, frameStepSize, epsilon, out maxAmplitudeCount, out clipCount);
+            ////Clipping.GetClippingCount(signal, envelope, frameStepSize, epsilon, out maxAmplitudeCount, out clipCount);
             //int clipCount = Clipping.GetClippingCount(signal, envelope.Max(), epsilon);
 
             // Remove the DC column ie column zero from amplitude spectrogram.
@@ -210,7 +210,7 @@ namespace AudioAnalysisTools.DSP
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
-            return new EnvelopeAndFFT(average, envelope, maxAmplitudeCount, clipCount, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT(average, envelope, -1, -1 /* maxAmplitudeCount, clipCount*/, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
 

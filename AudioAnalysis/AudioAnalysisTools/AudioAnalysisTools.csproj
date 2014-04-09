@@ -169,10 +169,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TowseyLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AnalysisPrograms\bin\Debug\TowseyLibrary.dll</HintPath>
-    </Reference>
     <Reference Include="YamlDotNet, Version=2.0.1.34456, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.dll</HintPath>
@@ -188,7 +184,6 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
-    <Compile Include="DSP\Clipping.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
     <Compile Include="DSP\DSP_Frames.cs" />
@@ -258,6 +253,10 @@
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
       <Name>AnalysisBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj">
+      <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
+      <Name>TowseyLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
