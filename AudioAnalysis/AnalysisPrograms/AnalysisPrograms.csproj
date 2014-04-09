@@ -179,6 +179,10 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TowseyLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\TowseyLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="YamlDotNet, Version=2.0.1.41986, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.dll</HintPath>
@@ -282,10 +286,6 @@
     <ProjectReference Include="..\SammonProjection\SammonProjection.csproj">
       <Project>{adcab854-897b-4604-94ba-aafcb4fb81a6}</Project>
       <Name>SammonProjection</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TowseyLib\TowseyLibrary.csproj">
-      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
