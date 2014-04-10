@@ -24,6 +24,13 @@ namespace AudioAnalysisTools
         public const string KEY_TemporalEntropy = "TEN";
         public const string KEY_Variance = "VAR";
 
+        // FOR FROG SPECTROGRAMS
+        public const string KEY_Tracks = "TRC";
+        public const string KEY_Oscillations = "OSC";
+        public const string KEY_Harmonics = "HAR";
+            
+                
+
         // NORMALISING CONSTANTS FOR INDICES
         //public const double ACI_MIN = 0.0;
         //public const double ACI_MAX = 1.0;
@@ -44,6 +51,16 @@ namespace AudioAnalysisTools
         public const double VAR_MIN = SDV_MIN * SDV_MIN;
         public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
 
+        // FOR FROG SPECTROGRAMS
+        public const double TRC_MIN = 0.0;
+        public const double TRC_MAX = 0.99;
+        public const double OSC_MIN = 0.0;
+        public const double OSC_MAX = 0.99;
+        public const double HAR_MIN = 0.0;
+        public const double HAR_MAX = 0.99;
+
+        
+        
         // False-colour map to acoustic indices
         //If you create a new colour assignment, you will need to code it in the class LDSpectrogramRGB, 
         //   method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
@@ -56,7 +73,9 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
         public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
         public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
-        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR";
+        public const string RGBMap_TRC_OSC_HAR = "TRC-OSC-HAR";
+
+        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRC-OSC-HAR";
 
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram

@@ -55,6 +55,8 @@ namespace QutBioacosutics.Xie
             
             //string imagePath = outPath2;
             string imagePath = configuration.image_path;
+            string ipDirStr = @"C:\Jie\output\index";
+            string opDirStr = @"C:\Jie\output\index";
             double amplitudeThreshold = configuration.amplitude_threshold;
             int range = configuration.range;
             int distance = configuration.distance;
@@ -72,7 +74,20 @@ namespace QutBioacosutics.Xie
 
             //..........................................................//
             //Draw False color spectrogram
+            string fileName = "frogs_DATE";
+            var ipDir = new DirectoryInfo(ipDirStr);
+            var opDir = new DirectoryInfo(opDirStr);
+            int startMinute = 19 * 60;
 
+            LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir); 
+            spgConfig.ColourMap = "TRC-OSC-HAR";
+            spgConfig.MinuteOffset = startMinute;
+            spgConfig.FrameWidth =  256;
+            spgConfig.SampleRate =  17640;
+            //spgConfig.SampleRate = 22050;
+            FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
+            spgConfig.WritConfigToYAML(path);
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(spgConfig);
 
 
 
@@ -128,9 +143,9 @@ namespace QutBioacosutics.Xie
                 
             }
 
-            FileTools.WriteMatrix2File(trackResult, @"C:\\Jie\\output\\index\\track.csv");
-            FileTools.WriteMatrix2File(oscillationResult, @"C:\\Jie\\output\\index\\oscillation.csv");
-            FileTools.WriteMatrix2File(harmonicResult, @"C:\\Jie\\output\\index\\harmonic.csv");
+            FileTools.WriteMatrix2File(trackResult, @"C:\Jie\output\index\track.csv");
+            FileTools.WriteMatrix2File(oscillationResult, @"C:\Jie\output\index\oscillation.csv");
+            FileTools.WriteMatrix2File(harmonicResult, @"C:\Jie\output\index\harmonic.csv");
 
 
             //Write 3 index matirxes to csv file
@@ -164,199 +179,199 @@ namespace QutBioacosutics.Xie
 
             // Execute analysis
 
-            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
+            //var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
 
-            var fileCount = fileEntries.Count();
-
-
-
-            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
-            {
-                string path = fileEntries[fileIndex];
-
-                string num = Path.GetFileNameWithoutExtension(path);
-
-                string outpath = Path.GetFileNameWithoutExtension(num);
-
-                string outPath = Path.Combine("c:\\jie\\output\\csv", outpath);
-                string outPath2 = Path.ChangeExtension(outPath, ".csv");
+            //var fileCount = fileEntries.Count();
 
 
-                //int numVal = 0;
-                //if (num.Length == 11)
-                //{
-                //    string subnum = num.Substring(7, 1);
-                //    numVal = Int32.Parse(subnum);
-                //}
 
-                //if (num.Length == 12)
-                //{
-                //    string subnum = num.Substring(7, 2);
-                //    numVal = Int32.Parse(subnum);
-                //}
+            //for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+            //{
+            //    string path = fileEntries[fileIndex];
 
-                //if (num.Length == 13)
-                //{
-                //    string subnum = num.Substring(7, 3);
-                //    numVal = Int32.Parse(subnum);
-                //}
+            //    string num = Path.GetFileNameWithoutExtension(path);
 
-                var recording = new AudioRecording(path);
+            //    string outpath = Path.GetFileNameWithoutExtension(num);
 
-                // Generate a spectrogram
-                //var recording = new AudioRecording(path);
-                var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = 512 };
-                var spectrogram = new SpectrogramStandard(spectrogramConfig, recording.GetWavReader());
-
-                // Rotate the spectrogram to make it more suitable for me
-                var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-
-                int rows = spectrogram.Data.GetLength(1);
-                int cols = spectrogram.Data.GetLength(0);
-
-                // Find short tracks
-
-                var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
-                var localPeaks = new FindLocalPeaks();
-                peakMatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
-
-                var multipleTracks = new ExtractTracks();
-                var results = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, minimumDuration, maximumDiffBin);
-                var trackMatrix = new double[rows, cols];
-
-                var trackFeature = new double[rows];
-                trackFeature = results.Item1;
-
-                // Normalization the track duration
-                var norTArray = new double[trackFeature.Length];
-
-                for (int i = 0; i < trackFeature.Length; i++)
-                {
-                    norTArray[i] = trackFeature[i] / cols;
-                }
-
-                trackMatrix = results.Item2;
+            //    string outPath = Path.Combine("c:\\jie\\output\\csv", outpath);
+            //    string outPath2 = Path.ChangeExtension(outPath, ".csv");
 
 
-                // Find long tracks
+            //    //int numVal = 0;
+            //    //if (num.Length == 11)
+            //    //{
+            //    //    string subnum = num.Substring(7, 1);
+            //    //    numVal = Int32.Parse(subnum);
+            //    //}
 
-                var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 512 };
-                var spectrogramLongTrack = new SpectrogramStandard(spectrogramConfigLongTrack, recording.GetWavReader());
+            //    //if (num.Length == 12)
+            //    //{
+            //    //    string subnum = num.Substring(7, 2);
+            //    //    numVal = Int32.Parse(subnum);
+            //    //}
 
-                // Smooth the spectrogram for extracting long tracks
-                var LongTrackSmoothMatrix = ImageTools.GaussianBlur_5cell(spectrogramLongTrack.Data);
+            //    //if (num.Length == 13)
+            //    //{
+            //    //    string subnum = num.Substring(7, 3);
+            //    //    numVal = Int32.Parse(subnum);
+            //    //}
 
-                int longrows = spectrogramLongTrack.Data.GetLength(1);
-                int longcols = spectrogramLongTrack.Data.GetLength(0);
+            //    var recording = new AudioRecording(path);
 
-                var peakLongMatrix = new double[longrows, longcols];
-                var fingLongPeaks = new FindLocalPeaks();
-                peakLongMatrix = fingLongPeaks.LocalLongPeaks(LongTrackSmoothMatrix, 3, 9, 19);
+            //    // Generate a spectrogram
+            //    //var recording = new AudioRecording(path);
+            //    var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = 512 };
+            //    var spectrogram = new SpectrogramStandard(spectrogramConfig, recording.GetWavReader());
 
-                // Extract long tracks with wide band
+            //    // Rotate the spectrogram to make it more suitable for me
+            //    var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
 
-                var trackLongMatrix = new double[longrows, longcols];
-                var trackLongArray = new double[longrows];
-                var multipleLongTracks = new ExtractTracks();
+            //    int rows = spectrogram.Data.GetLength(1);
+            //    int cols = spectrogram.Data.GetLength(0);
 
-                var resultsLong = multipleLongTracks.GetLongTracks(peakLongMatrix, 3, frameThreshold, duraionThreshold, trackThreshold, 40, 20);
-                trackLongArray = resultsLong.Item1;
+            //    // Find short tracks
 
-                // Normalization
-                var norLongTArray = new double[trackLongArray.Length];
-                for (int i = 0; i < trackLongArray.Length; i++)
-                {
-                    norLongTArray[i] = trackLongArray[i] / longcols;
-                }
+            //    var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
+            //    var localPeaks = new FindLocalPeaks();
+            //    peakMatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
 
-                trackLongMatrix = resultsLong.Item2;
+            //    var multipleTracks = new ExtractTracks();
+            //    var results = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, minimumDuration, maximumDiffBin);
+            //    var trackMatrix = new double[rows, cols];
 
-                // Find oscillation 
+            //    var trackFeature = new double[rows];
+            //    trackFeature = results.Item1;
 
-                var spectrogramConfigOscillation = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.1, WindowSize = 512 };
-                var spectrogramOscillation = new SpectrogramStandard(spectrogramConfigOscillation, recording.GetWavReader());
+            //    // Normalization the track duration
+            //    var norTArray = new double[trackFeature.Length];
 
-                var Oscillation = new FindOscillation();
-                var oscillationArray = Oscillation.getOscillation(spectrogramOscillation.Data, zeroBinIndex);
+            //    for (int i = 0; i < trackFeature.Length; i++)
+            //    {
+            //        norTArray[i] = trackFeature[i] / cols;
+            //    }
 
-                // Find harmonic
-
-                var Harmonic = new FindHarmonics();
-                var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
-                // Change harmonicMarix to array
-                var harmonicArray = new double[harmonicMatrix.GetLength(0)];
-                for (int i = 0; i < harmonicMatrix.GetLength(0); i++)
-                {
-                    var temp = 0.0;
-                    for (int j = 0; j < harmonicMatrix.GetLength(1); j++)
-                    {
-                        temp = temp + harmonicMatrix[i, j];
-                    }
-                    harmonicArray[i] = temp;
-                }
-
-                // Normalization
-                var norHArray = new double[harmonicArray.Length];
-                for (int i = 0; i < harmonicArray.Length; i++)
-                {
-                    norHArray[i] = harmonicArray[i] / spectrogram.Data.GetLength(0);
-                }
-
-                var FrogIndexList = new List<FrogIndex>();
-                for (int i = (norHArray.Length - 1); i > 0; i--)
-                {
-                    var FrogIndex = new FrogIndex();
-                    FrogIndex.Track = norTArray[i];
-                    FrogIndex.LongTrack = norLongTArray[i];
-                    FrogIndex.Oscillation = oscillationArray[i];
-                    FrogIndex.Harmonic = norHArray[i];
-
-                    FrogIndexList.Add(FrogIndex);
-                }
-
-                //var FrogIndex = new List<List<string>>();
-
-                //FrogIndex.Add(new List<string> { norTArray.ToString(), norOscArray.ToString(), norHArray.ToString() });
-
-                FileInfo fileInfo = new FileInfo(outPath2);
-
-                CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
+            //    trackMatrix = results.Item2;
 
 
-                // Write the index to three matrix
+            //    // Find long tracks
 
-                //for (int r = 0; r < norHArray.Length; r++)
-                //{
-                //    trackResult[r, numVal] = norTArray[r];
-                //}
+            //    var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 512 };
+            //    var spectrogramLongTrack = new SpectrogramStandard(spectrogramConfigLongTrack, recording.GetWavReader());
 
-                //for (int r = 0; r < norHArray.Length; r++)
-                //{
-                //    oscillationResult[r, numVal] = oscillationArray[r];
-                //}
+            //    // Smooth the spectrogram for extracting long tracks
+            //    var LongTrackSmoothMatrix = ImageTools.GaussianBlur_5cell(spectrogramLongTrack.Data);
 
-                //for (int r = 0; r < norHArray.Length; r++)
-                //{
-                //    harmonicResult[r, numVal] = norHArray[r];
-                //}
+            //    int longrows = spectrogramLongTrack.Data.GetLength(1);
+            //    int longcols = spectrogramLongTrack.Data.GetLength(0);
 
-                //Log.Info(numVal);
-            }
+            //    var peakLongMatrix = new double[longrows, longcols];
+            //    var fingLongPeaks = new FindLocalPeaks();
+            //    peakLongMatrix = fingLongPeaks.LocalLongPeaks(LongTrackSmoothMatrix, 3, 9, 19);
 
-            // Write 3 index into csv file
-            //var FrogIndexList = new List<FrogIndex>();
-            //var FrogIndex = new FrogIndex();
+            //    // Extract long tracks with wide band
 
-            //FrogIndex.Track = trackResult;
-            //FrogIndex.Oscillation = oscillationResult;
-            //FrogIndex.Harmonic = harmonicResult;
+            //    var trackLongMatrix = new double[longrows, longcols];
+            //    var trackLongArray = new double[longrows];
+            //    var multipleLongTracks = new ExtractTracks();
 
-            //FrogIndexList.Add(FrogIndex);
+            //    var resultsLong = multipleLongTracks.GetLongTracks(peakLongMatrix, 3, frameThreshold, duraionThreshold, trackThreshold, 40, 20);
+            //    trackLongArray = resultsLong.Item1;
 
-            //FileInfo fileInfo = new FileInfo(imagePath);
-            //CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
+            //    // Normalization
+            //    var norLongTArray = new double[trackLongArray.Length];
+            //    for (int i = 0; i < trackLongArray.Length; i++)
+            //    {
+            //        norLongTArray[i] = trackLongArray[i] / longcols;
+            //    }
 
-            Log.Info("Analysis complete");
+            //    trackLongMatrix = resultsLong.Item2;
+
+            //    // Find oscillation 
+
+            //    var spectrogramConfigOscillation = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.1, WindowSize = 512 };
+            //    var spectrogramOscillation = new SpectrogramStandard(spectrogramConfigOscillation, recording.GetWavReader());
+
+            //    var Oscillation = new FindOscillation();
+            //    var oscillationArray = Oscillation.getOscillation(spectrogramOscillation.Data, zeroBinIndex);
+
+            //    // Find harmonic
+
+            //    var Harmonic = new FindHarmonics();
+            //    var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
+            //    // Change harmonicMarix to array
+            //    var harmonicArray = new double[harmonicMatrix.GetLength(0)];
+            //    for (int i = 0; i < harmonicMatrix.GetLength(0); i++)
+            //    {
+            //        var temp = 0.0;
+            //        for (int j = 0; j < harmonicMatrix.GetLength(1); j++)
+            //        {
+            //            temp = temp + harmonicMatrix[i, j];
+            //        }
+            //        harmonicArray[i] = temp;
+            //    }
+
+            //    // Normalization
+            //    var norHArray = new double[harmonicArray.Length];
+            //    for (int i = 0; i < harmonicArray.Length; i++)
+            //    {
+            //        norHArray[i] = harmonicArray[i] / spectrogram.Data.GetLength(0);
+            //    }
+
+            //    var FrogIndexList = new List<FrogIndex>();
+            //    for (int i = (norHArray.Length - 1); i > 0; i--)
+            //    {
+            //        var FrogIndex = new FrogIndex();
+            //        FrogIndex.Track = norTArray[i];
+            //        FrogIndex.LongTrack = norLongTArray[i];
+            //        FrogIndex.Oscillation = oscillationArray[i];
+            //        FrogIndex.Harmonic = norHArray[i];
+
+            //        FrogIndexList.Add(FrogIndex);
+            //    }
+
+            //    //var FrogIndex = new List<List<string>>();
+
+            //    //FrogIndex.Add(new List<string> { norTArray.ToString(), norOscArray.ToString(), norHArray.ToString() });
+
+            //    FileInfo fileInfo = new FileInfo(outPath2);
+
+            //    CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
+
+
+            //    // Write the index to three matrix
+
+            //    //for (int r = 0; r < norHArray.Length; r++)
+            //    //{
+            //    //    trackResult[r, numVal] = norTArray[r];
+            //    //}
+
+            //    //for (int r = 0; r < norHArray.Length; r++)
+            //    //{
+            //    //    oscillationResult[r, numVal] = oscillationArray[r];
+            //    //}
+
+            //    //for (int r = 0; r < norHArray.Length; r++)
+            //    //{
+            //    //    harmonicResult[r, numVal] = norHArray[r];
+            //    //}
+
+            //    //Log.Info(numVal);
+            //}
+
+            //// Write 3 index into csv file
+            ////var FrogIndexList = new List<FrogIndex>();
+            ////var FrogIndex = new FrogIndex();
+
+            ////FrogIndex.Track = trackResult;
+            ////FrogIndex.Oscillation = oscillationResult;
+            ////FrogIndex.Harmonic = harmonicResult;
+
+            ////FrogIndexList.Add(FrogIndex);
+
+            ////FileInfo fileInfo = new FileInfo(imagePath);
+            ////CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
+
+            //Log.Info("Analysis complete");
 
 
             //var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramLongTrack.Data);
