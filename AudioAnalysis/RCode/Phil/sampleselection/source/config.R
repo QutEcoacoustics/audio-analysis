@@ -6,7 +6,8 @@ g.report.level <- 6
 # paths for input and output relative to working directory
 
 # directory containing all audio/event source files 
-g.source.dir <- file.path('..','..','..','..','..','..','SERF')
+
+g.source.dir <- file.path('','Users','n8933464','Documents','SERF')
 
 # audio source directory, containing wav files
 g.audio.dir  <- file.path(g.source.dir, 'mono')
@@ -20,7 +21,7 @@ g.events.source.dir  <- file.path(g.source.dir,'events',g.all.events.version)
 
 
 # output parent directory. All output is within this directory
-g.output.parent.dir <- file.path('..','output')
+g.output.parent.dir <- file.path('','Users','n8933464','Documents','sample_selection_output')
 
 
 g.study.start.date <- "2010-10-13"

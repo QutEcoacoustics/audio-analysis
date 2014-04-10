@@ -1,6 +1,6 @@
 EvaluateSamples <- function () {
     
-    ranks <- ReadObject('ranked_samples')
+    ranks <- ReadObject('ranked_samples', level = 2)
     d.names <- dimnames(ranks)
     num.clusters.options <- d.names$num.clusters
     default <- length(num.clusters.options) / 2
@@ -274,7 +274,7 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample
     
 }
 
-CountSpecies <- function (selected.samples, speciesmins) {
+CountSpecies.Delete <- function (selected.samples, speciesmins) {
     # finds which species were present in the minutes supplied in selected.samples
     # out of a full species list speciesmins
     found.species <- DoSpeciesCount(selected.samples, speciesmins)
@@ -293,6 +293,7 @@ CountSpecies <- function (selected.samples, speciesmins) {
     Report(1, percent,"% of ", length(total.species)," species present")
 }
 
+#todo: check if this function is still used
 DoSpeciesCount <- function (sample.mins, speciesmins) {
     #
     # Args:
@@ -500,7 +501,7 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
     
     output <- cbind(mins, output)
     
-    WriteOutput(output, output.fn)
+    WriteOutput(output, output.fn, level = 3)
     
     
 }
