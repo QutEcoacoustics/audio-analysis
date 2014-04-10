@@ -46,7 +46,7 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     cur.spectro <- FALSE
  
     
-    Report(2, 'Extracting features for events', OutputPath('events'), '...')
+    Report(2, 'Extracting features for events. Using target events from master')
     Report(2, nrow(events), 'events in total')
     
     num.events.before.previous.file <- 0

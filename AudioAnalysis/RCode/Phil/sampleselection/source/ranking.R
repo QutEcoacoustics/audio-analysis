@@ -5,9 +5,9 @@ RankSamples <- function () {
     ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
     
     # the different number of clusters to perform ranking for
-    num.num.clusters <- 20  # this many different numbers of clusters
-    num.clusters.start <- 5 # lowest number of clusters
-    num.clusters.multiplier <- 1.5 # each number of clusters is this many times the last
+    num.num.clusters <- 10  # this many different numbers of clusters
+    num.clusters.start <- 50 # lowest number of clusters
+    num.clusters.multiplier <- 1.3 # each number of clusters is this many times the last
     num.clusters <- round(num.clusters.start * 1.33^(1:num.num.clusters))
     
     # make sure we are not trying to use more clusters than events
@@ -20,7 +20,7 @@ RankSamples <- function () {
     colnames(groups) <- groups.col.names
     groups <- cbind(events, groups)
     
-    fit <- ReadObject('clustering')
+    fit <- ReadObject('clustering', level = 2)
     for (n in 1:length(num.clusters)) {
         group <- cutree(fit, num.clusters[n])
         events$group <- group #temporarily add the group to the events for ranking
@@ -35,27 +35,9 @@ RankSamples <- function () {
             output[m, n, ] <- r$rank
         }
     }
-    SaveObject(output, 'ranked_samples')
+    SaveObject(output, 'ranked_samples', level = 2)
+    WriteOutput(groups, 'clusters', level = 2)
     
-    WriteOutput(groups, 'clusters')
-    
-    
-    #WriteOutput(as.matrix(output[1,,]), 'ranked_samples2')
-   # r2 <- RankSamples2()
-   #  r3 <- RankSamples3()
-   # r1 <- OrderBy(r1, 'min.id')
-   # r2 <- OrderBy(r2, 'min.id')
-   # r3 <- OrderBy(r3, 'min.id')
-   # total.rankings <- data.frame(min.id = r3$min.id, 
-   #                              r1 = r1$rank, s1 = r1$score, 
-   #                              r2 = r2$rank, s2 = r2$score, 
-   #                              r3 = r3$rank, s3 = r3$score)
-
-    # add site,date,min cols to make it easier to examin
-    # total.rankings <- ExpandMinId(total.rankings)
-    
-    # WriteOutput(total.rankings, 'ranked_samples')
-    # return(total.rankings)
 }
 
 
@@ -175,7 +157,7 @@ RankSamples1 <- function (events) {
     # use the iterateOnSparseMatrix raking algorithm, 
     # using the distance scores as the multiplier
     
-    distance.scores <- ReadOutput('distance.scores')
+    distance.scores <- ReadOutput('distance.scores', level = 2)
     multiplier <- data.frame(min.id = distance.scores$min.id, multiplier = distance.scores$distance.score)
     #multiplier$multiplier <- 1
     return(IterateOnSparseMatrix(events, multiplier))
@@ -186,8 +168,6 @@ RankSamples1 <- function (events) {
 
 
 RankSamples2 <- function (events) {
-    
-    #events <- ReadOutput('clusters')
     
     Report(5, 'calculating number of events in each minute')
     # count removes duplicates and adds a 'freq' column which is the number 
@@ -209,7 +189,7 @@ RankSamples3 <- function (events) {
     
     
 
-    mins <- ReadOutput('distance.scores')
+    mins <- ReadOutput('distance.scores', level = 2)
     
     mins.ranked <- mins[order(mins$distance.score, decreasing = TRUE),]
     mins.ranked$rank <- 1:nrow(mins)

@@ -341,7 +341,6 @@ xcopy "$(ProjectDir)..\..\Extra Assemblies\shntool" "$(TargetDir)audio-utils\shn
 rem copy configs
 xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
