@@ -185,6 +185,7 @@
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="CrossCorrelation.cs" />
+    <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
     <Compile Include="DSP\DSP_Frames.cs" />
     <Compile Include="DSP\DSP_IIRFilter.cs" />
