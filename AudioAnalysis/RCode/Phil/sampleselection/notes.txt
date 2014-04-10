@@ -1,0 +1,8 @@
+Check if these functions are still used:
+
+DoSpeciesCount
+GetInnerTargetEvents
+
+.... anything that has ReadOutput('minlist')
+
+I thought minlist had been replaced wiht 'target.min.ids'

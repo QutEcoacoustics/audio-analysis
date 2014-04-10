@@ -217,7 +217,7 @@ GetInnerTargetEvents <- function () {
         }
     }
     
-    #WriteOutput(all.selected.events, 'events')
+
     Return(all.selected.events)
 }
 
@@ -295,10 +295,10 @@ FilterEvents <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0, db6 = 0) 
 }
 
 # bug: sometimes returns events and features with different number of rows!
-GetEventsAndFeatures <- function (reextract = TRUE, limit = 4000) {
+GetEventsAndFeatures <- function (reextract = TRUE, limit = 40000) {
     
     if (reextract || !OutputExists('events') || !OutputExists('features') || !OutputExists('rating.features')) {
-        
+        Report(4, 'Retrieving target events and features. Copying from master')   
         target.min.ids <- ReadOutput('target.min.ids')
         all.events <- ReadMasterOutput('events')
         events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
@@ -313,12 +313,14 @@ GetEventsAndFeatures <- function (reextract = TRUE, limit = 4000) {
         
         # limit the number
         if (limit < nrow(events)) {
+
+            Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")  
+            
             include <- GetIncluded(nrow(events), limit)
             events <- events[include, ]
             event.features <- event.features[include, ]
             rating.features <- rating.features[include, ]
         }
-        
         
         WriteOutput(events, 'events')
         WriteOutput(event.features, 'features')
@@ -326,13 +328,16 @@ GetEventsAndFeatures <- function (reextract = TRUE, limit = 4000) {
         
         
     } else {
-        
+        Report(4, 'Retrieving target events and features')
         events <- ReadOutput('events')
         event.features <- ReadOutput('features')
         rating.features <- ReadOutput('rating.features')
         
         
     }
+    
+
+    
     
     # remove event.id.column from features table
     drop.cols <- names(event.features) %in% c('event.id')

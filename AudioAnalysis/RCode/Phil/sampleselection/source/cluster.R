@@ -39,7 +39,7 @@ ClusterEvents <- function (num.groups = 'auto',
     # replace the 'event.id' column (which is not a feature), with 'all'
     # to use all features
     feature.options <- colnames(event.features)
-    feature.choices <- GetMultiUserchoice(feature.options, 'features to use', default = 'all', all = TRUE)
+    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE)
     
     # use only the chosen features
     event.features <- event.features[, feature.choices]
@@ -117,7 +117,7 @@ InternalMinuteDistances <- function () {
     vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
     dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
     mins$distance.score <- dist.scores
-    WriteOutput(mins, 'distance.scores')
+    WriteOutput(mins, 'distance.scores', level = 2)
 }
 
 

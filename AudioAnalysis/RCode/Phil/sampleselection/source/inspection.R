@@ -1,5 +1,5 @@
 
-# todo: this is broken since the multicluster group stuff
+# todo: this is completely broken since the multicluster group stuff
 InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.groups = 50) {
     #for each of the given cluster groups, will append randomly select duration.per.group
     # worth of events from that cluster group and append the spectrograms of each event
@@ -79,7 +79,7 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
         
     }
     
-    final.image.path <- OutputPath(IntegerVectorAsString(cluster.groups), ext = 'png')
+    final.image.path <- OutputPath(IntegerVectorAsString(cluster.groups), ext = 'png', level = 3)
     StitchImages(group.spectro.fns, final.image.path)
 
     
@@ -121,7 +121,7 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
     
     
     events <- ReadOutput('events')
-    groups <- ReadOutput('clusters')
+    groups <- ReadOutput('clusters', level = 2)
     group.col.name <- paste0('group.', num.clusters)
     
     # need to filter events by the selected minutes
@@ -252,7 +252,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     # draws the ranked n samples as spectrograms
     # with events marked and colour coded by cluster group
     
-    rankings <- ReadObject('ranked_samples')
+    rankings <- ReadObject('ranked_samples', level = 2)
     min.ids <- ReadOutput('target.min.ids')
     d.names <- dimnames(rankings)
     num.clusters.choices <- d.names$num.clusters

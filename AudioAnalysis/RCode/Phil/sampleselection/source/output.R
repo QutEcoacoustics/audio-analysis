@@ -43,7 +43,7 @@ CheckPaths <- function () {
 WriteOutput <- function (x, fn, new = FALSE, ext = 'csv', level = 1) {
     # writes output files in a consistent way, 
     # with reporting
-    Report(4, 'Writing output:', fn)
+    Report(4, 'Writing output',level,':', fn)
     path <- OutputPath(fn, new = new, ext = ext, level = level, allow.new = TRUE)
     WriteOutputCsv(x, path)
 }
@@ -58,7 +58,7 @@ ReadOutput <- function (fn, ext = 'csv', false.if.missing = FALSE, level = 1) {
     #   false.on.fail: boolean. If true, will check if exists and 
     #     return false if it is missing. If true, will cause an error
     #     if missing
-    Report(4, 'Reading:', fn)
+    Report(4, 'Reading output',level,':', fn)
     path <- OutputPath(fn, ext = ext, level = level, allow.new = FALSE)
     if (false.if.missing && !file.exists(path)) {
         return(FALSE)
@@ -76,11 +76,13 @@ WriteOutputCsv <- function (x, path) {
 }
 
 SaveObject <- function (x, fn, level = 1) {
+    Report(4, 'Saving object level',level,':', fn)
     path <- OutputPath(fn, ext = 'object', level = level, allow.new = TRUE)
     f <- save(x, file = path)
     
 }
 ReadObject <- function (fn, level = 1) {
+    Report(4, 'Reading object level',level,':', fn)
     path <- OutputPath(fn, ext = 'object', level = level)
     if (file.exists(path)) {  
         load(path)
@@ -118,13 +120,10 @@ OutputPath <- function (fn = FALSE, new = FALSE, ext = 'csv', level = 1, allow.n
                 choice <- 1
             }
             path <- dirs[choice]
-            
             if (!file.exists(path)) {
                 dir.create(path) 
-            }
-            
+            }          
         }
-
     } 
     if (fn != FALSE) {
         op <- OutputFile(path, fn, ext)
@@ -254,7 +253,7 @@ CleanupTempDir <- function () {
 
 
 
-Report <- function (level, ..., nl = TRUE) {
+Report <- function (level, ..., nl.before = FALSE, nl.after = TRUE) {
     # prints output to the screen if the level is above the 
     # global output level. 
     #
@@ -263,12 +262,13 @@ Report <- function (level, ..., nl = TRUE) {
     #   ... : strings;  concatenated to form the message
     #   nl: boolean; whether to start at a new line
     if (level <= g.report.level) {
-        if (nl) {
-            nl <- "\n"
-        } else {
-            nl <- ""
+        if (nl.before) {
+            cat("\n")
         }
-        cat(paste(c(nl, paste(as.vector(list(...)), collapse = " ")), collapse = ""))
+        cat(paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = ""))
+        if (nl.after) {
+            cat("\n")
+        }
     }
 }
 
@@ -285,10 +285,10 @@ Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
         return(proc.time())
     } else {
         t <- (proc.time() - prev)[3]
-        Report(3, 'finished', what, ':', round(t, 2), ' sec')
-        if (!is.null(num)) {
+        Report(3, 'finished', what, 'in', round(t, 2), ' sec')
+        if (is.numeric(num) && num > 0) {
             time.per.each <- round(t / num, 3)
-            Report(3, " ", time.per.each, "per", per, nl = FALSE)
+            Report(3, time.per.each, "per", per)
         } 
     }
 }
