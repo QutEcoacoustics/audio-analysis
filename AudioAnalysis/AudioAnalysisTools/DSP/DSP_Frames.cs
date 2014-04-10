@@ -210,7 +210,7 @@ namespace AudioAnalysisTools.DSP
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
-            return new EnvelopeAndFFT(average, envelope, -1, -1 /* maxAmplitudeCount, clipCount*/, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT(average, envelope, maxAmplitudeCount, clipCount, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
         }
 
 
