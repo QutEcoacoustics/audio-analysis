@@ -114,7 +114,8 @@ namespace AnalysisPrograms
             string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
 
             // DEV CONFIG OPTIONS
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
@@ -126,7 +127,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_09April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_10April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
