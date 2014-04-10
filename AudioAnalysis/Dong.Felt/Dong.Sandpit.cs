@@ -54,7 +54,7 @@
             foreach (var action in actions)
             {
                 Log.Info("Starting action: " + action);
-                string querySegmentLastDirectory = "SegmentOutput";
+                //string querySegmentLastDirectory = "SegmentOutput";
                 if (action == "batch")
                 {
                     /// Batch process for FELT
@@ -494,8 +494,8 @@
             {
                 var audioFiles = Directory.GetFiles(trainingWavFileDirectory, @"*.wav", SearchOption.AllDirectories);
                 var audioFilesCount = audioFiles.Count();
-                /// To save all the candidates       
-                var candidatesRegionList = new List<RegionRerepresentation>();
+                /// To save all the candidates for one recording      
+                var candidateList = new List<Candidates>();
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAudioFilePath);
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
@@ -517,6 +517,7 @@
                 var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
                 // regionRepresentation 
+                var candidatesRegionList = new List<RegionRerepresentation>();
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     /// 2. Read the candidates 
@@ -528,38 +529,39 @@
                     var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(candidateRidgeNhRepresentationList);
                     var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                         audioFiles[i], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
-                    var candidatesRepresentation = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-                    foreach (var c in candidatesRepresentation)
-                    {
-                        candidatesRegionList.Add(c);
-                    }
+                    candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                    //var candidatesRepresentation = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                    //foreach (var c in candidatesRepresentation)
+                    //{
+                    //    candidatesRegionList.Add(c);
+                    //}
+                    ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
+                    var weight1 = 1;
+                    var weight2 = 1;
+                    var weight3 = 1;
+                    var weight4 = 1;
+                    var weight5 = 1;
+                    var weight6 = 1;
+                    /// To calculate the distance
+                    var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesRegionList, weight1, weight2,
+                        weight3, weight4, weight5, weight6);
+                    //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
+                    var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+
+                    /// To save all matched acoustic events                    
+                    simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();
+                    candidateList.Add(simiScoreCandidatesList[0]);
+                    //if (simiScoreCandidatesList.Count != 0)
+                    //{
+                    //    for (int k = 0; k < rank; k++)
+                    //    {
+                    //        candidateList.Add(simiScoreCandidatesList[k]);
+                    //    }
+                    //}
                 }
                 //var outputFile = new FileInfo(regionPresentOutputCSVPath);
                 //CSVResults.RegionRepresentationListToCSV(outputFile, candidatesRegionList);
-
-                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                var weight1 = 1;
-                var weight2 = 1;
-                var weight3 = 1;
-                var weight4 = 1;
-                var weight5 = 1;
-                var weight6 = 1;
-                /// To calculate the distance
-                var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesRegionList, weight1, weight2,
-                    weight3, weight4, weight5, weight6);
-                //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
-                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-
-                /// To save all matched acoustic events
-                var candidateList = new List<Candidates>();
-                simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();
-                if (simiScoreCandidatesList.Count != 0)
-                {
-                    for (int i = 0; i < rank; i++)
-                    {
-                        candidateList.Add(simiScoreCandidatesList[i]);
-                    }
-                }
+              
                 var matchedCandidateFile = new FileInfo(matchedCandidateOutputFile);
                 CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
             }
@@ -604,14 +606,15 @@
                     //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
 
                     /// To get all the candidates  
+                    var candidatesRegionList = new List<RegionRerepresentation>();
+                    var candidateList = new List<Candidates>();
                     if (Directory.Exists(inputFileDirectory))
                     {
                         var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
                         var audioFilesCount = candidatesAudioFiles.Count();
-                        /// to get candidate region Representation      
-                        var candidatesRegionList = new List<RegionRerepresentation>();
-
-                        for (int j = 0; i < audioFilesCount; i++)
+                        /// to get candidate region Representation                      
+                        var finalOutputCandidates = new List<Candidates>();
+                        for (int j = 0; j < audioFilesCount; j++)
                         {
                             /// 2. Read the candidates 
                             var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
@@ -622,11 +625,11 @@
                             var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(candidateRidgeNhRepresentationList);
                             var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                             candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
-                            var candidatesRepresentation = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-                            foreach (var c in candidatesRepresentation)
-                            {
-                                candidatesRegionList.Add(c);
-                            }
+                            candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                            //foreach (var c in candidatesRepresentation)
+                            //{
+                            //    candidatesRegionList.Add(c);
+                            //}
                             ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
                             var weight1 = 1;
                             var weight2 = 1;
@@ -640,29 +643,33 @@
                             //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
                             var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
-                            /// To save all matched acoustic events
-                            var candidateList = new List<Candidates>();
-                            simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();
+                            /// To save all matched acoustic events                           
+                            simiScoreCandidatesList = simiScoreCandidatesList.OrderByDescending(x => x.Score).ToList();                           
                             if (simiScoreCandidatesList.Count != 0)
                             {
-                                for (int k = 0; k < rank; k++)
-                                {
-                                    candidateList.Add(simiScoreCandidatesList[k]);
-                                } // end of the loop for ranking
-                            }
-                            var queryTempFile = new FileInfo(queryCsvFiles[i]);
-                            var tempFileName = queryTempFile.Name + "-matched candidates.csv";
-                            var matchedCandidateCsvFileName = Path.Combine(outputDirectory, tempFileName);
-                            var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
-                            CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
-                            /// Drawing the combined image
-                            if (matchedCandidateFile != null)
+                                finalOutputCandidates.Add(simiScoreCandidatesList[0]);                                
+                            }                           
+                        }// end of the loop for candidates
+                        finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
+                        if (finalOutputCandidates != null)
+                        {
+                            for (int k = 0; k < rank; k++)
                             {
-                                DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
-                                    outputDirectory,
-                                    rank, ridgeConfig, config);
-                            }
-                        }// end of the loop for candidates  
+                                candidateList.Add(finalOutputCandidates[k]);
+                            } 
+                        }
+                        var queryTempFile = new FileInfo(queryCsvFiles[i]);
+                        var tempFileName = queryTempFile.Name + "-matched candidates.csv";
+                        var matchedCandidateCsvFileName = Path.Combine(outputDirectory, tempFileName);
+                        var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
+                        CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
+                        /// Drawing the combined image
+                        if (matchedCandidateFile != null)
+                        {
+                            DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                                outputDirectory,
+                                rank, ridgeConfig, config);
+                        }
                     }// end of if exist the traning datasets
                 } // end of for query search               
             }// end of if for checking the query directory
