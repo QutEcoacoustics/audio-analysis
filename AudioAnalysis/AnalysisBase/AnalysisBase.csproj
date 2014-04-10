@@ -149,7 +149,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--
   <UsingTask AssemblyFile="$(SolutionDir)..\Extra Assemblies\Gendarme\GendarmeMsBuild.dll" TaskName="GendarmeMsBuild.Gendarme"/>
   <Target Name="AfterBuild">
