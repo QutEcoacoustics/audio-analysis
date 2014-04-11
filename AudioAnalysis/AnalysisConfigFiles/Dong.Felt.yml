@@ -26,7 +26,7 @@ FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 7
+NeighbourhoodLength: 5
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000
