@@ -5,6 +5,7 @@ using System.Text;
 //using MathNet.Numerics;
 using MathNet.Numerics.Transformations;
 using TowseyLibrary;
+using AudioAnalysisTools.WavTools;
 
 
 namespace AudioAnalysisTools.DSP
@@ -125,7 +126,7 @@ namespace AudioAnalysisTools.DSP
             return frames;
         }
 
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioAnalysisTools.AudioRecording recording, int windowSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioRecording recording, int windowSize, double overlap)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             return ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, windowSize, overlap);

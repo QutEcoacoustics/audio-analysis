@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.Indices
     using AnalysisBase;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     using log4net;

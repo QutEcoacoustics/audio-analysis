@@ -4,11 +4,12 @@
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Linq;
+    using MathNet.Numerics.Transformations;
 
     using Acoustics.Tools.Wav;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
 
-    using MathNet.Numerics.Transformations;
 
     /// <summary>
     /// Interface for converting signal represented by bytes into an image.

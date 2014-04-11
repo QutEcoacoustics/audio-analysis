@@ -22,20 +22,19 @@ namespace Dong.Felt
 
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
+    using PowerArgs;
+    using ServiceStack.Text;
+    using log4net;
+    using QutSensors.Shared;
+    using AnalysisPrograms.Production;
 
     using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
-
-    using PowerArgs;
-
-    using ServiceStack.Text;
-
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using log4net;
-    using QutSensors.Shared;
-    using AnalysisPrograms.Production;
+
     
     /// <summary>
     /// The felt analysis.

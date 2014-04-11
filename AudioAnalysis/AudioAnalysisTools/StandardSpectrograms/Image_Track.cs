@@ -4,6 +4,7 @@
     using System;
     using System.Drawing;
 
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, similarityScoreList, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
