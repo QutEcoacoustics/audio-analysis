@@ -295,11 +295,16 @@ FilterEvents <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0, db6 = 0) 
 }
 
 # bug: sometimes returns events and features with different number of rows!
-GetEventsAndFeatures <- function (reextract = TRUE, limit = 40000) {
+GetEventsAndFeatures <- function (reextract = FALSE) {
     
-    if (reextract || !OutputExists('events') || !OutputExists('features') || !OutputExists('rating.features')) {
+    SetOutputPath(level = 1) # for reading
+    
+    if (reextract || !OutputExists('events', level = 1) || !OutputExists('features', level = 1) || !OutputExists('rating.features', level = 1)) {
+        
+        limit <- ReadInt('limit the number of events') 
+        
         Report(4, 'Retrieving target events and features. Copying from master')   
-        target.min.ids <- ReadOutput('target.min.ids')
+        target.min.ids <- ReadOutput('target.min.ids', level = 0)
         all.events <- ReadMasterOutput('events')
         events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
         all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
@@ -313,31 +318,24 @@ GetEventsAndFeatures <- function (reextract = TRUE, limit = 40000) {
         
         # limit the number
         if (limit < nrow(events)) {
-
-            Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")  
-            
+            Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")           
             include <- GetIncluded(nrow(events), limit)
             events <- events[include, ]
             event.features <- event.features[include, ]
             rating.features <- rating.features[include, ]
         }
         
-        WriteOutput(events, 'events')
-        WriteOutput(event.features, 'features')
-        WriteOutput(rating.features, 'rating.features')
+        WriteOutput(events, 'events', level = 1)
+        WriteOutput(event.features, 'features', level = 1)
+        WriteOutput(rating.features, 'rating.features', level = 1)
         
         
     } else {
         Report(4, 'Retrieving target events and features')
-        events <- ReadOutput('events')
-        event.features <- ReadOutput('features')
-        rating.features <- ReadOutput('rating.features')
-        
-        
+        events <- ReadOutput('events', level = 1)
+        event.features <- ReadOutput('features', level = 1)
+        rating.features <- ReadOutput('rating.features', level = 1)  
     }
-    
-
-    
     
     # remove event.id.column from features table
     drop.cols <- names(event.features) %in% c('event.id')
@@ -348,14 +346,4 @@ GetEventsAndFeatures <- function (reextract = TRUE, limit = 40000) {
 }
 
 
-GetIncluded <- function (total.num, num.included) {
-    # returns a vector of 1s and 0s 
-    # vecor is the same length as total.num, and has num.included 1s in it
-    # (fairly) evenly spaced
-    num.excluded <- max(c(total.num - num.included, 0))
-    ratio <- total.num / num.excluded
-    excluded <- round(((1:num.excluded) * ratio) - ratio / 2)
-    include <- rep(TRUE, total.num)
-    include[excluded] <- FALSE
-    return(include)
-}
+

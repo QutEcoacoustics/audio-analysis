@@ -55,13 +55,6 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     w <- Wave(left = wav.samples, right = numeric(0), 
               samp.rate = samp.rate, bit = bit)
     
-    if (save) {
-        fn <- paste(site, start.date, start.sec, duration, sep = '.')
-        path = OutputPath(fn, ext = 'wav')
-        writeWave(w, path)
-    }
-    
-    
     return(w)
     
 } 

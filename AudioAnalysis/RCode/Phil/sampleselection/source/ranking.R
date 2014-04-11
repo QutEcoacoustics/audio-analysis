@@ -1,13 +1,13 @@
 RankSamples <- function () {
  
     events <- ReadOutput('events')
-    mins <- ReadOutput('target.min.ids')
+    mins <- ReadOutput('target.min.ids', level = 0)
     ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
     
     # the different number of clusters to perform ranking for
-    num.num.clusters <- 10  # this many different numbers of clusters
+    num.num.clusters <- 5  # this many different numbers of clusters
     num.clusters.start <- 50 # lowest number of clusters
-    num.clusters.multiplier <- 1.3 # each number of clusters is this many times the last
+    num.clusters.multiplier <- 1.6 # each number of clusters is this many times the last
     num.clusters <- round(num.clusters.start * 1.33^(1:num.num.clusters))
     
     # make sure we are not trying to use more clusters than events
@@ -137,7 +137,7 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
     #mins.sorted <- rankings[order(rankings$rank, decreasing = FALSE),]
     
     #append empty minutes
-    mins <- ReadOutput('target.min.ids')
+    mins <- ReadOutput('target.min.ids', level = 0)
     unranked.ids <- setdiff(mins$min.id, rankings$min.id)
     
     if (length(unranked.ids > 0)) {
