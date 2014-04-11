@@ -1,9 +1,4 @@
-﻿using Acoustics.Shared;
-using AnalysisBase;
-using AnalysisPrograms;
-using AudioAnalysisTools;
-using log4net;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -12,6 +7,14 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+
+using Acoustics.Shared;
+using AnalysisBase;
+using AnalysisPrograms;
+using AudioAnalysisTools;
+using log4net;
+
+using AudioAnalysisTools.WavTools;
 using TowseyLibrary;
 
 namespace AudioBrowser

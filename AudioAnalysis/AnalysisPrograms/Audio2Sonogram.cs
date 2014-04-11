@@ -17,6 +17,7 @@ using Acoustics.Shared;
 using AnalysisBase;
 using AnalysisRunner;
 using AudioAnalysisTools;
+using AudioAnalysisTools.WavTools;
 using TowseyLibrary;
 
 
