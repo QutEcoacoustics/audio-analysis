@@ -133,7 +133,7 @@ namespace AudioAnalysisTools.Indices
             var dBarray = SNR.TruncateNegativeValues2Zero(bgNoise.noiseReducedSignal);
 
 
-            // ii: ACTIVITY and SEGMENT STATISTICS for NOISE REDUCED ARRAY
+            // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
             var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration, ActivityAndCover.DEFAULT_activityThreshold_dB);
 
             indicesStore.StoreIndex(IndexProperties.keyACTIVITY, activity.activeFrameCover); // fraction of frames having acoustic activity 
@@ -143,8 +143,8 @@ namespace AudioAnalysisTools.Indices
             indicesStore.StoreIndex(IndexProperties.keyAV_AMP, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
             indicesStore.StoreIndex(IndexProperties.keyHtemp, DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope))); // ENTROPY of ENERGY ENVELOPE
-            indicesStore.StoreIndex(IndexProperties.keySEG_PER_SEC, activity.segmentCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
-            indicesStore.StoreIndex(IndexProperties.keySEG_DUR, activity.avSegmentDuration);      //av segment duration in milliseconds
+            indicesStore.StoreIndex(IndexProperties.keyEVENT_RATE, activity.eventCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
+            indicesStore.StoreIndex(IndexProperties.keyEVENT_DUR, activity.avEventDuration);      //av event duration in milliseconds
 
 
             // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
@@ -305,7 +305,7 @@ namespace AudioAnalysisTools.Indices
             int clipThreshold = 1;
             // ######################################################################################################################################################
             // return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
-            if ((activity.activeFrameCount <= 2) || (activity.segmentCount == 0))
+            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
             {
                 indicesStore.StoreIndex(IndexProperties.keyCLUSTER_COUNT, 0);
                 indicesStore.StoreIndex(IndexProperties.keyCLUSTER_DUR, TimeSpan.Zero);
