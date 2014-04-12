@@ -21,22 +21,42 @@ GetMinuteList <- function () {
     return(min.list)
     
 }
-
 CreateTargetMinutes <- function () { 
     study.min.list <- GetMinuteList()
     target.mins <- TargetSubset(study.min.list)
     if (g.percent.of.target < 100) { 
-        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
-        target.min.ids <- target.mins$min.id[random.mins] 
-        new = TRUE
-    } else {
-        new = FALSE
+        num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
+        to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
+        target.min.ids <- target.mins$min.id[to.include]
+        # create a new folder inside the output path
+        # because target minutes are not deterministic if percent < 100
     }
     
     # create a new output directory if there is less than 100 % of the target
     # being used, because the random minutes will be different
     
-    WriteOutput(target.mins, 'target.min.ids', new = new)
+    WriteOutput(target.mins, 'target.min.ids', level = 0)
+}
+
+CreateTargetMinutesRandom <- function () {
+    # randomly selects a subset of the target minutes
+    # abandoned because it is non-deterministic and was making 
+    # it difficult to save output based on minute selection
+    # now use deterministic funciton CreateTargetMinutes
+    study.min.list <- GetMinuteList()
+    target.mins <- TargetSubset(study.min.list)
+    if (g.percent.of.target < 100) { 
+        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
+        target.min.ids <- target.mins$min.id[random.mins]
+        # create a new folder inside the output path
+        # because target minutes are not deterministic if percent < 100
+        OutputPathL1(new = TRUE)
+    }
+    
+    # create a new output directory if there is less than 100 % of the target
+    # being used, because the random minutes will be different
+    
+    WriteOutput(target.mins, 'target.min.ids')
 }
 
 TargetSubset <- function (df) {
@@ -69,7 +89,7 @@ ExpandMinId <- function (min.ids = NA) {
     if (class(min.ids) %in% c('numeric', 'integer')) {
         min.ids <- data.frame(min.id = min.ids)  
     } else if (class(min.ids) != 'data.frame') {
-        min.ids <- ReadOutput('target.min.ids')
+        min.ids <- ReadOutput('target.min.ids', level = 0)
     }
     row.names <- rownames(min.ids)
     full.min.list <- GetMinuteList()

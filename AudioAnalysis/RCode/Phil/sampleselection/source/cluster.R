@@ -1,5 +1,5 @@
 ClusterEvents <- function (num.groups = 'auto', 
-                           num.rows.to.use = FALSE, 
+                           num.events = NA, 
                            save.dendrogram = FALSE, 
                            method = 'complete', 
                            save = TRUE) {
@@ -21,19 +21,19 @@ ClusterEvents <- function (num.groups = 'auto',
     #     Will create a csv file which is the same as 
     #     events.csv but with a new 'groups' column
     
+
+    # give the user the option to write to a new output path
+
     
 
     vals <- GetEventsAndFeatures()
     event.features <- vals$event.features
     events <- vals$events
     
-    if (num.rows.to.use != FALSE && num.rows.to.use < nrow(event.features)) {
-        Report(4, 'subsetting features')
-        event.features <- event.features[1:num.rows.to.use, ]
-        events <- events[1:num.rows.to.use, ]
-    } else {
-        num.rows.to.use <- nrow(event.features)
-    }
+
+    SetOutputPath(level = 2)
+    
+
     
     # get user input for which features to use in clustering. 
     # replace the 'event.id' column (which is not a feature), with 'all'
@@ -45,12 +45,12 @@ ClusterEvents <- function (num.groups = 'auto',
     event.features <- event.features[, feature.choices]
     
     
-    Report(2, 'scaling features (m = ',  num.rows.to.use, ')')
+    Report(2, 'scaling features (m = ',  nrow(events), ')')
     ptm <- proc.time()
     event.features <- as.matrix(scale(event.features))  # standardize variables
     Timer(ptm, 'scaling features')
     
-    Report(2, 'calculating distance matrix (m = ',  num.rows.to.use, 'n = ', ncol(event.features),')')
+    Report(2, 'calculating distance matrix (m = ',  nrow(events), 'n = ', ncol(event.features),')')
     
     ptm <- proc.time()
     d <- dist(event.features, method = "euclidean")  # distance matrix
@@ -58,7 +58,7 @@ ClusterEvents <- function (num.groups = 'auto',
     
     
     if (save.dendrogram) { 
-        labels.for.dendrogram <- EventLabels(events[1:num.rows.to.use, ])
+        labels.for.dendrogram <- EventLabels(events)
     }
     #get a cluster object
     Report(2, 'clustering ... (method = ',  method, ')')
@@ -67,13 +67,11 @@ ClusterEvents <- function (num.groups = 'auto',
     Timer(ptm, 'clustering')
     
     if (num.groups == 'auto') {
-        num.groups <- floor(sqrt(num.rows.to.use))
+        num.groups <- floor(sqrt(nrow(events)))
     }
     
     SaveObject(fit, 'clustering', level = 2)
-    
     groups <- cutree(fit, num.groups)
-    
     print(length(groups))
     print(nrow(events))
     
@@ -91,7 +89,7 @@ ClusterEvents <- function (num.groups = 'auto',
     if (save.dendrogram) {
         library('pvclust')
         # display dendogram
-        img.path <- OutputPath('cluster_dendrogram', ext = 'png', level = 2);
+        img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
         Report(5, 'saving dendrogram')
         png(img.path, width = 30000, height = 20000)
         Dot()
@@ -113,7 +111,7 @@ ClusterEvents <- function (num.groups = 'auto',
 
 InternalMinuteDistances <- function () {
     vals <- GetEventsAndFeatures()
-    mins <- ReadOutput('target.min.ids')
+    mins <- ReadOutput('target.min.ids', level = 0)
     vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
     dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
     mins$distance.score <- dist.scores
@@ -139,7 +137,7 @@ InternalMinuteDistance <- function (min.id, features, events) {
 
 
 
-
+#todo: this doesn't work anymore since updates to clustering function
 TestClusterSpeed <- function () {
     # graphs the execution time of the clustering on the event-data
     
