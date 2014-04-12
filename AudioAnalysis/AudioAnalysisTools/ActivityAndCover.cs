@@ -9,24 +9,25 @@ namespace AudioAnalysisTools
 {
 
     /// <summary>
-    /// a set of indices to describe level of acoustic activity in recording.
+    /// a set of indices to describe level of acoustic activity and number of acoustic events in recording.
+    /// Location of acoustic events also called segmentation in some literature.
     /// </summary>
     public struct Activity
     {
         public double activeFrameCover, activeAvDB;
-        public TimeSpan avSegmentDuration;
-        public int activeFrameCount, segmentCount;
-        public bool[] activeFrames, segmentLocations;
+        public TimeSpan avEventDuration;
+        public int activeFrameCount, eventCount;
+        public bool[] activeFrames, eventLocations;
 
-        public Activity(bool[] _activeFrames, int _activeFrameCount, double _activity, double _activeAvDB, int _segmentCount, TimeSpan _avSegmentLength, bool[] _segments)
+        public Activity(bool[] _activeFrames, int _activeFrameCount, double _activity, double _activeAvDB, int _eventCount, TimeSpan _avEventDuration, bool[] _events)
         {
             activeFrames = _activeFrames;
             activeFrameCount = _activeFrameCount;
             activeFrameCover = _activity;
             activeAvDB = _activeAvDB;
-            segmentCount = _segmentCount;
-            avSegmentDuration = _avSegmentLength;
-            segmentLocations = _segments;
+            eventCount = _eventCount;
+            avEventDuration = _avEventDuration;
+            eventLocations = _events;
         }
     } // struct Activity
 
@@ -39,9 +40,9 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// reutrns the number of active frames and acoustic segments and their average duration in milliseconds
-        /// only counts a segment if it is LONGER than one frame. 
-        /// count segments as number of transitions from active to non-active frame
+        /// reutrns the number of active frames and acoustic events and their average duration in milliseconds
+        /// Only counts an event if it is LONGER than one frame. 
+        /// Count events as number of transitions from active to non-active frame
         /// </summary>
         /// <param name="activeFrames"></param>
         /// <param name="frameDuration">frame duration in seconds</param>
@@ -49,7 +50,7 @@ namespace AudioAnalysisTools
         public static Activity CalculateActivity(double[] dBarray, TimeSpan frameDuration, double db_Threshold)
         {
             bool[] activeFrames = new bool[dBarray.Length];
-            bool[] segments = new bool[dBarray.Length];
+            bool[] events = new bool[dBarray.Length];
             double activeAvDB = 0.0;
             int activeFrameCount = 0;
 
@@ -69,34 +70,34 @@ namespace AudioAnalysisTools
             if (activeFrameCount != 0) activeAvDB /= (double)activeFrameCount;
 
             if (activeFrameCount <= 1)
-                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, 0, TimeSpan.Zero, segments);
+                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, 0, TimeSpan.Zero, events);
 
 
             // store record of segments longer than one frame
-            segments = activeFrames;
+            events = activeFrames;
             for (int i = 1; i < activeFrames.Length - 1; i++)
             {
-                if (!segments[i - 1] && segments[i] && !segments[i + 1])
-                    segments[i] = false; //remove solitary active frames
+                if (!events[i - 1] && events[i] && !events[i + 1])
+                    events[i] = false; //remove solitary active frames
             }
 
-            int segmentCount = 0;
+            int eventCount = 0;
             for (int i = 2; i < activeFrames.Length; i++)
             {
-                if (!segments[i] && segments[i - 1] && segments[i - 2]) //count the ends of active segments
-                    segmentCount++;
+                if (!events[i] && events[i - 1] && events[i - 2]) //count the ends of active segments
+                    eventCount++;
             }
 
-            if (segmentCount == 0)
-                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, segmentCount, TimeSpan.Zero, segments);
+            if (eventCount == 0)
+                return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, eventCount, TimeSpan.Zero, events);
 
-            int segmentFrameCount = DataTools.CountTrues(segments);
-            var avSegmentDuration = TimeSpan.Zero;
+            int eventFrameCount = DataTools.CountTrues(events);
+            var avEventDuration = TimeSpan.Zero;
 
-            if (segmentFrameCount > 0)
-                avSegmentDuration = TimeSpan.FromSeconds(frameDuration.TotalSeconds * segmentFrameCount / (double)segmentCount);   //av segment duration in milliseconds
+            if (eventFrameCount > 0)
+                avEventDuration = TimeSpan.FromSeconds(frameDuration.TotalSeconds * eventFrameCount / (double)eventCount);   //av segment duration in milliseconds
 
-            return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, segmentCount, avSegmentDuration, segments);
+            return new Activity(activeFrames, activeFrameCount, percentActivity, activeAvDB, eventCount, avEventDuration, events);
         } // CalculateActivity()
 
 

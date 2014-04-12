@@ -36,8 +36,8 @@ namespace AudioAnalysisTools
         public const string keySNR = "SNR";
         public const string keySNR_ACTIVE = "SNR_ACTIVE";
         public const string keyACTIVITY = "ACTIVITY";
-        public const string keySEG_PER_SEC = "SEG/SEC";
-        public const string keySEG_DUR = "SEG-DUR";
+        public const string keyEVENT_RATE = "SEG/SEC";
+        public const string keyEVENT_DUR = "SEG-DUR";
         public const string keyHF_CVR = "HF-CVR";
         public const string keyMF_CVR = "MF-CVR";
         public const string keyLF_CVR = "LF-CVR";
@@ -284,10 +284,10 @@ namespace AudioAnalysisTools
                 new IndexProperties(keySNR_ACTIVE, header_activeSnr, typeof(double), doDisplay, 3.0, 50.0, "dB"));
             properties.Add(keyACTIVITY, 
                 new IndexProperties(keyACTIVITY, header_activity, typeof(double), doDisplay, 0.2, 0.80, ""));
-            properties.Add(keySEG_PER_SEC,
-                new IndexProperties(keySEG_PER_SEC, header_segPerSec, typeof(double), doDisplay, 0.0, 5.0, "av/s"));
-            properties.Add(keySEG_DUR, 
-                new IndexProperties(keySEG_DUR, header_avSegDur, typeof(TimeSpan), doDisplay, 0.0, 500, "ms"));
+            properties.Add(keyEVENT_RATE,
+                new IndexProperties(keyEVENT_RATE, header_segPerSec, typeof(double), doDisplay, 0.0, 5.0, "av/s"));
+            properties.Add(keyEVENT_DUR, 
+                new IndexProperties(keyEVENT_DUR, header_avSegDur, typeof(TimeSpan), doDisplay, 0.0, 500, "ms"));
             properties.Add(keyHF_CVR, 
                 new IndexProperties(keyHF_CVR, header_hfCover, typeof(int), doDisplay, 0.0, 30.0, "%"));
             properties.Add(keyMF_CVR, 
@@ -343,7 +343,7 @@ namespace AudioAnalysisTools
             mapName2Key.Add("snr-dB", keySNR);
             mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
             mapName2Key.Add("activity", keyACTIVITY);
-            mapName2Key.Add("segCount", keySEG_PER_SEC);
+            mapName2Key.Add("segCount", keyEVENT_RATE);
             mapName2Key.Add("ACI", keyACI);
             mapName2Key.Add("clusterCount", keyCLUSTER_COUNT);
             mapName2Key.Add("rain", keyRAIN);
