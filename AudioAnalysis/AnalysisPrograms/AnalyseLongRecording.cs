@@ -425,22 +425,18 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("");
 
                 // Convert datatable to image
+                Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices();
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
+                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
+                var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+
                 if (displayCSVImage)
                 {
-                    if (isStrongTypedAnalyser)
-                    {
-                        Log.Warn(
-                            "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
-                    }
-                    else
-                    {
-                        Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices(); 
-                        string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                        string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                        Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
-                        var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
-                        tracksImage.Save(imagePath);
-                    }
+                    //run Paint to display the image if it exists.
                 }
             }
 

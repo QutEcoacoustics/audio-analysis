@@ -34,7 +34,7 @@ namespace AudioAnalysisTools
     } // SPTrackInfo()
 
 
-    public static class SpectralTracks
+    public static class SpectralPeakTracks
     {
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             double[] spectrum = new double[colCount];
             double[] freqBin;
             int numberOfSeconds = (int)(rowCount / framesPerSecond);
-            int trackCount, totalFrameLength;
+            //int trackCount, totalFrameLength;
             int totalTrackCount = 0;
             int cummulativeFrameCount = 0;
             for (int col = 0; col < colCount; col++)
