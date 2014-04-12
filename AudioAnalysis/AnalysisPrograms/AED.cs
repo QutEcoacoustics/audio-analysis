@@ -12,27 +12,24 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Diagnostics.Contracts;
+    using System.Drawing;
+    using System.Drawing.Imaging;
 
     using Acoustics.Shared;
-
     using AnalysisBase;
-
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
 
     using PowerArgs;
-
     using log4net;
-
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLibrary;
-    using System.Diagnostics.Contracts;
-    using System.Drawing;
-    using System.Drawing.Imaging;
 
     /// <summary>
     /// Acoustic Event Detection.

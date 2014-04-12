@@ -6,6 +6,7 @@ using TowseyLibrary;
 
 using AudioAnalysisTools;
 using AudioAnalysisTools.DSP;
+using AudioAnalysisTools.WavTools;
 using AudioAnalysisTools.StandardSpectrograms;
 
 

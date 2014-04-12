@@ -1,5 +1,8 @@
 EvaluateSamples <- function () {
     
+    SetOutputPath(level = 2, allow.new = TRUE) # for reading
+    SetOutputPath(level = 3) # for writing
+    
     ranks <- ReadObject('ranked_samples', level = 2)
     d.names <- dimnames(ranks)
     num.clusters.options <- d.names$num.clusters
@@ -26,7 +29,7 @@ EvaluateSamples2d <- function (ranks, cutoff = NA) {
     
     
     speciesmins <- GetTags();  # get tags within outer target 
-    min.ids <- ReadOutput('target.min.ids')
+    min.ids <- ReadOutput('target.min.ids', level = 0)
     species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
     
     ranked.progressions <- list()
@@ -42,7 +45,7 @@ EvaluateSamples2d <- function (ranks, cutoff = NA) {
     }
 
     optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
-    random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, min.ids$min.id, dawn.first = FALSE)
+    random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, min.ids$min.id, dawn.first = TRUE)
     
     GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions)
     
@@ -51,7 +54,7 @@ EvaluateSamples2d <- function (ranks, cutoff = NA) {
 EvaluateSamples3d <- function (ranks) {
     
 
-    min.ids <- ReadOutput('target.min.ids')
+    min.ids <- ReadOutput('target.min.ids', level = 0)
     speciesmins <- GetTags();  # get tags within outer target 
     species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, min.ids)
     

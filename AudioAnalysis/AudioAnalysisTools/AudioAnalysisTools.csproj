@@ -183,7 +183,6 @@
     <Compile Include="AcousticEntropy.cs" />
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
-    <Compile Include="AudioRecording.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
@@ -206,8 +205,11 @@
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="DSP\AudioSegmentation.cs" />
     <Compile Include="AnalysisKeys.cs" />
+    <Compile Include="WavTools\AudioRecording.cs" />
+    <Compile Include="WavTools\RecordingFetcher.cs" />
+    <Compile Include="WavTools\WavChooser.cs" />
+    <Compile Include="WavTools\WavReader.cs" />
     <Compile Include="PointOfInterest.cs" />
-    <Compile Include="RecordingFetcher.cs" />
     <Compile Include="StandardSpectrograms\SpectrogramCepstral.cs" />
     <Compile Include="StandardSpectrograms\SpectrogramSobelEdge.cs" />
     <Compile Include="StandardSpectrograms\SpectrogramStandard.cs" />

@@ -17,7 +17,7 @@ using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
-
+using AudioAnalysisTools.WavTools;
 
 namespace AnalysisPrograms
 {
