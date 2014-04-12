@@ -516,100 +516,128 @@ namespace TowseyLibrary
             }
         }
 
-        private class CsvMatrix<T>
+        #region matrix/readers writers
+        public enum TwoDimensionalArray
         {
-            private readonly T[,] matrix;
+            ColumnMajor,
+            RowMajor
+        }
 
-            public CsvMatrix(T[,] matrix, CsvConfiguration configuration)
+        internal static void EncodeMatrix<T>(this CsvWriter writer, T[,] matrix, TwoDimensionalArray dimensionality, bool includeRowIndex)
+        {
+            int rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
+            int columns = TwoDimensionalArray.ColumnMajor == dimensionality ? matrix.ColumnLength() : matrix.RowLength();
+            
+            // write header
+            if (includeRowIndex)
             {
-                this.matrix = matrix;
-
-                int columnLength = matrix.ColumnLength();
-
-                configuration.UnregisterClassMap<MatrixClassMap<CsvMatrixRow<T>, T>>();
-
-                this.ClassMap = new MatrixClassMap<CsvMatrixRow<T>, T>(columnLength, true);
-
-                configuration.RegisterClassMap(this.ClassMap);
+                writer.WriteField("Index");
             }
-
-            private MatrixClassMap<CsvMatrixRow<T>, T> ClassMap { get; set; }
-
-            public IEnumerable<CsvMatrixRow<T>> GetRows()
+            for (int i = 0; i < columns; i++)
             {
-                for (int i = 0; i < this.matrix.RowLength(); i++)
-                {
-                    yield return new CsvMatrixRow<T>(this.matrix, i);
-                }
+                writer.WriteField("c" + i.ToString("000000"));
             }
+            writer.NextRecord();
 
-            public sealed class MatrixClassMap<TRow, TCell> : CsvClassMap<TRow> where TRow : CsvMatrixRow<TCell>
+            // write rows
+            if (TwoDimensionalArray.RowMajor == dimensionality)
             {
-                public MatrixClassMap(int columnCount, bool includeColumnIndex)
+                for (int i = 0; i < rows; i++)
                 {
-                    if (includeColumnIndex)
+                    for (int j = 0; j < columns; j++)
                     {
-                        this.Map(m => m.Row).Name("Index");
+                        writer.WriteField(matrix[i,j]);
                     }
-
-                    for (int i = 0; i < columnCount; i++)
-                    {
-                        int closureI = i;
-                        this.Map(m => m[closureI]).Name("c" + i.ToString("000000"));
-                    }
+                    writer.NextRecord();
                 }
             }
-
-            public class CsvMatrixRow<TRow>
+            else
             {
-                private readonly TRow[,] matrix;
-
-                private readonly int row;
-
-                public CsvMatrixRow(TRow[,] matrix, int row)
+                for (int j = 0; j < rows; j++)
                 {
-                    this.matrix = matrix;
-                    this.row = row;
-                }
-
-                public int Row
-                {
-                    get
+                    for (int i = 0; i < columns; i++)
                     {
-                        return row;
+                        writer.WriteField(matrix[j, i]);
                     }
-                }
-
-                public TRow this[int index]
-                {
-                    get
-                    {
-                        return this.matrix[this.row, index];
-                    }
-                    set
-                    {
-                        this.matrix[this.row, index] = value;
-                    }
+                    writer.NextRecord();
                 }
             }
         }
 
-        
-
-        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix)
+        internal static T[,] DecodeMatrix<T>(this CsvReader reader, TwoDimensionalArray dimensionality, bool includeRowIndex)
         {
-            throw new NotSupportedException("This implementation is fundementally flawed, do not use it.");
+            // read header
+            var headers = reader.FieldHeaders;
+            if (includeRowIndex && headers[0] != "Index")
+            {
+                throw new CsvHelperException("Expected an index header and there was none");
+            }
+            if (!includeRowIndex && headers[0] == "Index")
+            {
+                throw new CsvHelperException("Did not expect an index header and there was one");
+            }
+            
+            var columnCount = headers.Length;
+            var csvRows = new List<T[]>(1440);
 
+            int rowCount = 0;
+            while (reader.Read())
+            {
+                var row = new T[columnCount];
+                for (int i = includeRowIndex ? 1 : 0; i < columnCount; i++)
+                {
+                    row[i] = reader.GetField<T>(i);
+                }
+                csvRows.Add(row);
+
+                rowCount++;
+            }
+
+            var result = dimensionality == TwoDimensionalArray.RowMajor ? new T[rowCount, columnCount] : new T[columnCount, rowCount];
+
+            for (int i = 0; i < csvRows.Count; i++)
+            {
+                var row = csvRows[i];
+                for (int j = 0; j < row.Length; j++)
+                {
+                    if (dimensionality == TwoDimensionalArray.RowMajor)
+                    {
+                        result[i, j] = row[j];
+                    }
+                    else
+                    {
+                        result[j, i] = row[j];
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix, TwoDimensionalArray dimnesionality = TwoDimensionalArray.RowMajor)
+        {
+            // not tested!
             using (var stream = destination.CreateText())
             {
                 var writer = new CsvWriter(stream, DefaultConfiguration);
 
-                var csvMatrix = new CsvMatrix<T>(matrix, writer.Configuration);
-
-                writer.WriteRecords(csvMatrix.GetRows());
+                writer.EncodeMatrix(matrix, dimnesionality, true);
             }
         }
 
+        public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+        {
+            // not tested!
+            using (var stream = source.OpenText())
+            {
+                var reader = new CsvReader(stream, DefaultConfiguration);
+
+                return reader.DecodeMatrix<T>(dimensionality, true);
+            }
+        }
         #endregion
-    } //class
-}//namespace
+
+        #endregion
+    }
+}

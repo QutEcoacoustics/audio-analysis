@@ -10,10 +10,17 @@ namespace AudioAnalysisTools
 
         public static void GetClippingCount(double[] signal, double[] envelope, int frameStepSize, double epsilon, out int maxAmplitudeCount, out int clipCount)
         {
-            double bigEpsilon = epsilon * 100;
+            double bigEpsilon    = epsilon * 10;
             double littleEpsilon = epsilon * 4;
 
             double maximumAmplitude = envelope.Max();
+            if (maximumAmplitude < 0.8) // assume no clipping
+            {
+                maxAmplitudeCount = 0;
+                clipCount = 0;
+                return;
+            }
+
             int frameCount = envelope.Length;
 
             maxAmplitudeCount = 0;
@@ -29,16 +36,13 @@ namespace AudioAnalysisTools
                 {
                     double sample = Math.Abs(signal[index]);
                     double delta = Math.Abs(sample - previousSample);
+                    double gap = maximumAmplitude - sample;
 
                     // check if sample reached clipping ceiling (max - threshold) 
-                    if ((maximumAmplitude - sample) < bigEpsilon)
+                    if (gap < bigEpsilon)
                     {
                         maxAmplitudeCount++;
-                        if (((maximumAmplitude - sample) < littleEpsilon) && (delta < littleEpsilon))
-                        {
-                            // a clip has occurred
-                            clipCount++;
-                        }
+                        if ((gap < littleEpsilon) && (delta < littleEpsilon)) { clipCount++; } // a clip has occurred                       
                     }
                     previousSample = sample;
                 }

@@ -114,7 +114,8 @@ namespace AnalysisPrograms
             string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
 
             // DEV CONFIG OPTIONS
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
@@ -126,7 +127,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_09April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_11April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -424,22 +425,18 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("");
 
                 // Convert datatable to image
+                Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices();
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
+                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
+                var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+
                 if (displayCSVImage)
                 {
-                    if (isStrongTypedAnalyser)
-                    {
-                        Log.Warn(
-                            "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
-                    }
-                    else
-                    {
-                        Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices(); 
-                        string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                        string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                        Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
-                        var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
-                        tracksImage.Save(imagePath);
-                    }
+                    //run Paint to display the image if it exists.
                 }
             }
 

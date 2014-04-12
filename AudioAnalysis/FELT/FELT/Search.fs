@@ -75,6 +75,7 @@
         open Acoustics.Tools.Wav
         open AudioAnalysisTools
         open AudioAnalysisTools.DSP
+        open AudioAnalysisTools.WavTools
         open AudioAnalysisTools.StandardSpectrograms
         open Microsoft.FSharp.Core
         open Microsoft.FSharp.Math

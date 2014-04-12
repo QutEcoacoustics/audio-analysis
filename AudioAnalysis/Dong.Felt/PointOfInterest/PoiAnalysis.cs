@@ -18,6 +18,7 @@ namespace Dong.Felt
     using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;

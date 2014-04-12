@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.Indices
     using AnalysisBase;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     using log4net;
@@ -142,7 +143,7 @@ namespace AudioAnalysisTools.Indices
             indicesStore.StoreIndex(IndexProperties.keyAV_AMP, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
             indicesStore.StoreIndex(IndexProperties.keyHtemp, DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope))); // ENTROPY of ENERGY ENVELOPE
-            indicesStore.StoreIndex(IndexProperties.keySEG_COUNT, activity.segmentCount);         //number of segments whose duration > one frame
+            indicesStore.StoreIndex(IndexProperties.keySEG_PER_SEC, activity.segmentCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
             indicesStore.StoreIndex(IndexProperties.keySEG_DUR, activity.avSegmentDuration);      //av segment duration in milliseconds
 
 
@@ -247,14 +248,11 @@ namespace AudioAnalysisTools.Indices
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
             dBThreshold = 3.0;
             // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
-            SPTrackInfo sptInfo = SpectralTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
+            SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
             indicesStore.AddSpectrum(SpectrogramConstants.KEY_SpPeakTracks, sptInfo.spSpectrum);
 
-            int trackCount = 0;
-            if (sptInfo.listOfSPTracks != null) trackCount = sptInfo.listOfSPTracks.Count;
-
             indicesStore.StoreIndex(IndexProperties.keySPT_DUR, sptInfo.totalTrackDuration);
-            indicesStore.StoreIndex(IndexProperties.keySPT_PER_SEC, trackCount / wavDuration.TotalSeconds);
+            indicesStore.StoreIndex(IndexProperties.keySPT_PER_SEC, sptInfo.trackCount / wavDuration.TotalSeconds);
 
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration

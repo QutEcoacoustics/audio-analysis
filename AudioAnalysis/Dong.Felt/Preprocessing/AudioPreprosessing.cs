@@ -5,6 +5,7 @@ using System.Text;
 using AudioAnalysisTools;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
+using AudioAnalysisTools.WavTools;
 using TowseyLibrary;
 
 namespace Dong.Felt.Preprocessing

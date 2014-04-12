@@ -36,7 +36,7 @@ namespace AudioAnalysisTools
         public const string keySNR = "SNR";
         public const string keySNR_ACTIVE = "SNR_ACTIVE";
         public const string keyACTIVITY = "ACTIVITY";
-        public const string keySEG_COUNT = "SEG-COUNT";
+        public const string keySEG_PER_SEC = "SEG/SEC";
         public const string keySEG_DUR = "SEG-DUR";
         public const string keyHF_CVR = "HF-CVR";
         public const string keyMF_CVR = "MF-CVR";
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools
         public const string header_activeSnr = "ActiveSNR";
         public const string header_bgdB = "Background";
         public const string header_activity = "Activity";
-        public const string header_segCount = "SegCount";
+        public const string header_segPerSec = "Seg/Sec";
         public const string header_avSegDur = "avSegDur";
         public const string header_hfCover = "hfCover";
         public const string header_mfCover = "mfCover";
@@ -79,8 +79,8 @@ namespace AudioAnalysisTools
         public const string header_NumClusters = "ClusterCount";
         public const string header_avClustDuration = "avClustDur";
         public const string header_TrigramCount = "3gramCount";
-        public const string header_SPTracksPerSec = "SpPkTracks/Sec";
-        public const string header_SPTracksDur = "SpPkTracks%Dur";
+        public const string header_SPTracksPerSec = "Tracks/Sec";
+        public const string header_SPTracksDur = "avTrackDur";
         public const string header_rain = "Rain";
         public const string header_cicada = "Cicada";
 
@@ -93,6 +93,7 @@ namespace AudioAnalysisTools
 
         // for display purposes only
         private bool doDisplay;
+        public bool DoDisplay { private set; get; }
         private double normMin;
         private double normMax;
         private string units;
@@ -113,7 +114,7 @@ namespace AudioAnalysisTools
             name = _name;
             DataType = _dataType;
             SetExceptionDefaultValues(_key);
-            doDisplay = false;
+            DoDisplay = false;
             normMin = 0.0;
             normMax = 1.0;
 
@@ -126,7 +127,7 @@ namespace AudioAnalysisTools
             name    = _name;
             DataType = _dataType;
             SetExceptionDefaultValues(_key);
-            doDisplay = _doDisplay;
+            DoDisplay = _doDisplay;
             normMin = _normMin;
             normMax = _normMax;
             units   = _units;
@@ -139,7 +140,7 @@ namespace AudioAnalysisTools
             name = _name;
             DataType = _dataType;
             SetExceptionDefaultValues(_key);
-            doDisplay = _doDisplay;
+            DoDisplay = _doDisplay;
             normMin = _normMin;
             normMax = _normMax;
             units = _units;
@@ -166,7 +167,7 @@ namespace AudioAnalysisTools
             return norm;
         }
 
-        public double[] NormaliseValues(double[] val)
+        public double[] NormaliseIndexValues(double[] val)
         {
             double range = this.normMax - this.normMin;
             double[] norms = new double[val.Length];
@@ -193,9 +194,18 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public string GetPlotAnnotation()
         {
-            string format = "f0"; // most indices are expressed as integers.
-            if (this.units == "") format = "f2";
-            return String.Format(" {0} ({1:{4}}..{2:{4}}{3})", this.name, this.normMin, this.normMax, this.units, format);
+            if (this.units == "") 
+                return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.name, this.normMin, this.normMax, this.units);
+            if (this.units == "%")
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.name, this.normMin, this.normMax, this.units);
+            if (this.units == "dB")
+                return String.Format(" {0} ({1:f0} .. {2:f0} {3})", this.name, this.normMin, this.normMax, this.units);
+            if (this.units == "ms")
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.name, this.normMin, this.normMax, this.units);
+            if (this.units == "s")
+                return String.Format(" {0} ({1:f1} .. {2:f1}{3})", this.name, this.normMin, this.normMax, this.units);
+
+            return     String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.name, this.normMin, this.normMax, this.units);
         }
 
         /// <summary>
@@ -208,17 +218,30 @@ namespace AudioAnalysisTools
         public Image GetPlotImage(double[] array)
         {
             string annotation = GetPlotAnnotation();
-            double[] values = this.NormaliseValues(array);
-            double threshold = 0.0;
+            double[] values = this.NormaliseIndexValues(array);
 
-            //construct an order array - this assumes that the table is already properly ordered.
-            double[] order = new double[array.Length];
-            for (int i = 0; i < array.Length; i++) order[i] = i;
+            int trackWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
+            int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+            Color[] grayScale = ImageTools.GrayScale();
 
-            int imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
-            Image image = Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, annotation);
-            return image;
-        }
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(grayScale[240]);
+            for (int i = 0; i < array.Length; i++) //for pixels in the line
+            {
+                double value = array[i];
+                if (value > 1.0) value = 1.0; //expect normalised data
+                int barHeight = (int)Math.Round(value * trackHeight);
+                for (int y = 0; y < barHeight; y++) bmp.SetPixel(i, trackHeight - y - 1, Color.Black);
+                bmp.SetPixel(i, 0, Color.Gray); //draw upper boundary
+            }//end over all pixels
+
+            int endWidth = trackWidth - array.Length;
+            var font = new Font("Arial", 9.0f, FontStyle.Regular);
+            g.FillRectangle(Brushes.Black, array.Length + 1, 0, endWidth, trackHeight);
+            g.DrawString(annotation, font, Brushes.White, new PointF(array.Length + 5, 2));
+            return bmp;
+        } // GetPlotImage()
 
 
         // ****************************************************************************************************************************************
@@ -247,10 +270,10 @@ namespace AudioAnalysisTools
                 new IndexProperties(keySTART_MIN, header_startMin, typeof(double)));
             properties.Add(keySEC_DUR, 
                 new IndexProperties(keySEC_DUR, header_SecondsDuration, typeof(TimeSpan)));
-            properties.Add(keyCLIP1, 
-                new IndexProperties(keyCLIP1, header_Clipping1, typeof(double), doDisplay, 0.0, 100.0, ""));
+            properties.Add(keyCLIP1,
+                new IndexProperties(keyCLIP1, header_Clipping1, typeof(double), doDisplay, 0.0, 100.0, "av/s"));
             properties.Add(keyCLIP2,
-                new IndexProperties(keyCLIP2, header_Clipping2, typeof(double), doDisplay, 0.0, 1.0, ""));
+                new IndexProperties(keyCLIP2, header_Clipping2, typeof(double), doDisplay, 0.0, 1.0, "av/s"));
             properties.Add(keyAV_AMP, 
                 new IndexProperties(keyAV_AMP, header_avAmpdB, typeof(double), doDisplay, -50.0, -5.0, "dB"));
             properties.Add(keyBGN, 
@@ -261,8 +284,8 @@ namespace AudioAnalysisTools
                 new IndexProperties(keySNR_ACTIVE, header_activeSnr, typeof(double), doDisplay, 3.0, 50.0, "dB"));
             properties.Add(keyACTIVITY, 
                 new IndexProperties(keyACTIVITY, header_activity, typeof(double), doDisplay, 0.2, 0.80, ""));
-            properties.Add(keySEG_COUNT, 
-                new IndexProperties(keySEG_COUNT, header_segCount, typeof(int), doDisplay, 0.0, 50.0, ""));
+            properties.Add(keySEG_PER_SEC,
+                new IndexProperties(keySEG_PER_SEC, header_segPerSec, typeof(double), doDisplay, 0.0, 5.0, "av/s"));
             properties.Add(keySEG_DUR, 
                 new IndexProperties(keySEG_DUR, header_avSegDur, typeof(TimeSpan), doDisplay, 0.0, 500, "ms"));
             properties.Add(keyHF_CVR, 
@@ -288,7 +311,7 @@ namespace AudioAnalysisTools
             properties.Add(key3GRAM_COUNT, 
                 new IndexProperties(key3GRAM_COUNT, header_TrigramCount, typeof(int), doDisplay, 0.0, 50.0, ""));
             properties.Add(keySPT_PER_SEC, 
-                new IndexProperties(keySPT_PER_SEC, header_SPTracksPerSec, typeof(double), doDisplay, 0.0, 10.0, ""));
+                new IndexProperties(keySPT_PER_SEC, header_SPTracksPerSec, typeof(double), doDisplay, 0.0, 10.0, "av/s"));
             properties.Add(keySPT_DUR, 
                 new IndexProperties(keySPT_DUR, header_SPTracksDur, typeof(TimeSpan), doDisplay, 0.0, 200.0, "ms"));
 
@@ -315,13 +338,13 @@ namespace AudioAnalysisTools
             }
 
             //now add in historical names from previous incarnations of csv file headers
-            mapName2Key.Add("start-min", keySTART_MIN);
+            mapName2Key.Add("Start-min", keySTART_MIN);
             mapName2Key.Add("bg-dB", keyBGN);
             mapName2Key.Add("snr-dB", keySNR);
             mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
             mapName2Key.Add("activity", keyACTIVITY);
-            mapName2Key.Add("segCount", keySEG_COUNT);
-            mapName2Key.Add("AcComplexity", keyACI);
+            mapName2Key.Add("segCount", keySEG_PER_SEC);
+            mapName2Key.Add("ACI", keyACI);
             mapName2Key.Add("clusterCount", keyCLUSTER_COUNT);
             mapName2Key.Add("rain", keyRAIN);
             mapName2Key.Add("cicada", keyCICADA);
