@@ -6,19 +6,32 @@ using System.Text;
 
 using TowseyLibrary;
 using AnalysisBase;
-using AudioAnalysisTools;
+//using AudioAnalysisTools;
 
 
 
 namespace AudioAnalysisTools
 {
 
-    public class IndexStore
+    public class IndexStore : IndexBase
     {
-        //these dictionaries used to store index values accessible by key
-        private Dictionary<string, double>   summaryIndicesOfTypeDouble   = new Dictionary<string, double>();
-        private Dictionary<string, int>      summaryIndicesOfTypeInt      = new Dictionary<string, int>();
-        private Dictionary<string, TimeSpan> summaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
+        ////these dictionaries used to store index values accessible by key
+        //private Dictionary<string, double>   summaryIndicesOfTypeDouble   = new Dictionary<string, double>();
+        //public Dictionary<string, double>    SummaryIndicesOfTypeDouble   { get; private set; } 
+        //private Dictionary<string, int>      summaryIndicesOfTypeInt      = new Dictionary<string, int>();
+        //public Dictionary<string, int>       SummaryIndicesOfTypeInt      { get; private set; } 
+        //private Dictionary<string, TimeSpan> summaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
+        //public Dictionary<string, TimeSpan>  SummaryIndicesOfTypeTimeSpan { get; private set; }
+
+        ///// <summary>
+        ///// for storing spectral indices in a dictionary
+        ///// </summary>
+        //private Dictionary<string, double[]> spectralIndices;
+        //public Dictionary<string, double[]> SpectralIndices
+        //{
+        //    get { return spectralIndices; }
+        //    set { spectralIndices = value; }
+        //}
 
 
         public BaseSonogram Sg { get; set; }
@@ -46,29 +59,18 @@ namespace AudioAnalysisTools
 
 
 
-
-        /// <summary>
-        /// for storing spectral indices in a dictionary
-        /// </summary>
-        private Dictionary<string, double[]> spectra;
-        public Dictionary<string, double[]> Spectra
-        {
-            get { return spectra; }
-            set { spectra = value; }
-        }
-
         public double[] GetSpectrum(string key)
         {
-            return spectra[key];
+            return SpectralIndices[key];
         }
         public void AddSpectrum(string key, double[] spectrum)
         {
-            if(this.spectra.ContainsKey(key))
+            if(this.SpectralIndices.ContainsKey(key))
             {
-                this.spectra[key] = spectrum;
+                this.SpectralIndices[key] = spectrum;
             }
             else
-            this.spectra.Add(key, spectrum);
+            this.SpectralIndices.Add(key, spectrum);
         }
 
         /// <summary>
@@ -76,6 +78,11 @@ namespace AudioAnalysisTools
         /// </summary>
         public IndexStore(int freqBinCount, TimeSpan wavDuration)
         {
+            SummaryIndicesOfTypeDouble   = new Dictionary<string, double>();
+            SummaryIndicesOfTypeInt      = new Dictionary<string, int>();
+            SummaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
+
+
             // initiliase the stored values in the index dictionaries.
             Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
 
@@ -86,59 +93,59 @@ namespace AudioAnalysisTools
 
                 if(index.DataType == typeof(double))
                 {
-                    this.summaryIndicesOfTypeDouble.Add(key, defaultValue);
+                    this.SummaryIndicesOfTypeDouble.Add(key, defaultValue);
                 } else
                 if(index.DataType == typeof(int))
                 {
-                    this.summaryIndicesOfTypeInt.Add(key, (int)defaultValue);
+                    this.SummaryIndicesOfTypeInt.Add(key, (int)defaultValue);
                 }
                 else
                 if(index.DataType == typeof(TimeSpan))
                 {
-                    this.summaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
+                    this.SummaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
                 }
             }
 
-            this.Spectra = InitialiseSpectra(freqBinCount);
+            this.SpectralIndices = InitialiseSpectra(freqBinCount);
         }
 
         // store indices in relevant dictionaries
         public void StoreIndex(string key, double val)
         {
-            summaryIndicesOfTypeDouble[key] = val;
+            SummaryIndicesOfTypeDouble[key] = val;
         }
         public void StoreIndex(string key, int val)
         {
-            summaryIndicesOfTypeInt[key] = val;
+            SummaryIndicesOfTypeInt[key] = val;
         }
         public void StoreIndex(string key, TimeSpan val)
         {
-            summaryIndicesOfTypeTimeSpan[key] = val;
+            SummaryIndicesOfTypeTimeSpan[key] = val;
         }
 
-        // get any index as a double
-        public double GetIndex(string key)
-        {
-            if (summaryIndicesOfTypeDouble.ContainsKey(key))   return summaryIndicesOfTypeDouble[key];
-            if (summaryIndicesOfTypeInt.ContainsKey(key))      return (double)summaryIndicesOfTypeInt[key];
-            if (summaryIndicesOfTypeDouble.ContainsKey(key))   return summaryIndicesOfTypeDouble[key];
-            if (summaryIndicesOfTypeTimeSpan.ContainsKey(key)) return summaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
-            return 0.0;
-        }
+        //// get any index as a double
+        //public double GetIndex(string key)
+        //{
+        //    if (SummaryIndicesOfTypeDouble.ContainsKey(key))   return SummaryIndicesOfTypeDouble[key];
+        //    if (SummaryIndicesOfTypeInt.ContainsKey(key))      return (double)SummaryIndicesOfTypeInt[key];
+        //    if (SummaryIndicesOfTypeDouble.ContainsKey(key))   return SummaryIndicesOfTypeDouble[key];
+        //    if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key)) return SummaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
+        //    return 0.0;
+        //}
 
-        // get indices from relevant dictionaries
-        public double GetIndexAsDouble(string key)
-        {
-            return summaryIndicesOfTypeDouble[key];
-        }
-        public int GetIndexAsInteger(string key)
-        {
-            return summaryIndicesOfTypeInt[key];
-        }
-        public TimeSpan GetIndexAsTimeSpan(string key)
-        {
-             return summaryIndicesOfTypeTimeSpan[key];
-        }
+        //// get indices from relevant dictionaries
+        //public double GetIndexAsDouble(string key)
+        //{
+        //    return SummaryIndicesOfTypeDouble[key];
+        //}
+        //public int GetIndexAsInteger(string key)
+        //{
+        //    return SummaryIndicesOfTypeInt[key];
+        //}
+        //public TimeSpan GetIndexAsTimeSpan(string key)
+        //{
+        //     return SummaryIndicesOfTypeTimeSpan[key];
+        //}
 
         //==============================================================================================================================================
         //==============================================================================================================================================
@@ -206,6 +213,7 @@ namespace AudioAnalysisTools
                 }
             }
             dt.Rows.Add(row);
+            //DataTableTools.WriteTable2ConsoleInLongLayout(dt); // DEBUG
             return dt;
         }
 

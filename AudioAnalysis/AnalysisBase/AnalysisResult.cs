@@ -153,19 +153,31 @@
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
 
-        /// <summary>
-        /// Different spectra for displaying spectrograms of long duration recordings
-        /// These spectra typically calculated from one minute of recording
-        /// </summary>
-        private Dictionary<string, double[]> spectrumDict = new Dictionary<string, double[]>();
-        public Dictionary<string, double[]> Spectra
-        {
-            set { this.spectrumDict = value; }
-            get
-            {
-                return this.spectrumDict;
-            }
-        }
+        public IndexBase indexBase { get; set; }
+
+
+
+        ///// <summary>
+        ///// Different summary indices, typically calculated from one minute of recording
+        ///// these dictionaries used to store index values accessible by key
+        ///// </summary>
+        //public Dictionary<string, double>   SummaryIndicesOfTypeDouble   { get; set; }
+        //public Dictionary<string, int>      SummaryIndicesOfTypeInt      { get; set; }
+        //public Dictionary<string, TimeSpan> SummaryIndicesOfTypeTimeSpan { get; set; }
+
+        ///// <summary>
+        ///// Different spectral indices for displaying spectrograms of long duration recordings
+        ///// These spectra typically calculated from one minute of recording
+        ///// </summary>
+        //private Dictionary<string, double[]> dictionaryOfSpectralIndices = new Dictionary<string, double[]>();
+        //public Dictionary<string, double[]> DictionaryOfSpectralIndices
+        //{
+        //    set { this.dictionaryOfSpectralIndices = value; }
+        //    get
+        //    {
+        //        return this.dictionaryOfSpectralIndices;
+        //    }
+        //}
     }
 
     public class AnalysisResult2 : AnalysisResult
@@ -175,6 +187,6 @@
         /// </summary>
         public new IEnumerable<EventBase> Data { get; set; }
 
-        public new IEnumerable<IndexBase> Indexes { get; set; }
+        public new IEnumerable<IndexBase> Indices { get; set; }
     }
 }

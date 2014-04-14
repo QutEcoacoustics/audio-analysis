@@ -214,7 +214,7 @@ namespace AnalysisPrograms
                 }
             }
 
-            Execute(arguments);
+            //Execute(arguments);
 
             if (executeDev)
             {
@@ -245,103 +245,103 @@ namespace AnalysisPrograms
         /// Directs task to the appropriate method based on the first argument in the command line string.
         /// </summary>
         /// <returns></returns>
-        public static void Execute(Arguments arguments)
-        {
-            Contract.Requires(arguments != null);
+        //public static void Execute(Arguments arguments)
+        //{
+        //    Contract.Requires(arguments != null);
   
-            // loads a csv file for visulisation
-            if (arguments.TaskIsLoadCsv)
-            {
-                string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
-                var fiCsvFile = arguments.InputCsv;
-                var fiConfigFile = arguments.Config;
-                //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                IAnalyser analyser = new Acoustic();
-                var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-                //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-            } 
-            else if (arguments.TaskIsAnalyse)
-            {
-                // perform the analysis task
-                ExecuteAnalysis(arguments);
-            }
-        } // Execute()
+        //    // loads a csv file for visulisation
+        //    if (arguments.TaskIsLoadCsv)
+        //    {
+        //        string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
+        //        var fiCsvFile = arguments.InputCsv;
+        //        var fiConfigFile = arguments.Config;
+        //        //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
+        //        IAnalyser analyser = new Acoustic();
+        //        var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
+        //        //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
+        //    } 
+        //    else if (arguments.TaskIsAnalyse)
+        //    {
+        //        // perform the analysis task
+        //        ExecuteAnalysis(arguments);
+        //    }
+        //} // Execute()
 
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
-        public static void ExecuteAnalysis(Arguments args)
-        {
-            // Check arguments and that paths are valid
-            AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
-            analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
-            analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
+        //public static void ExecuteAnalysis(Arguments args)
+        //{
+        //    // Check arguments and that paths are valid
+        //    AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
+        //    analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
+        //    analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
 
-            // EXTRACT THE REQUIRED RECORDING SEGMENT
-            FileInfo fiSource = analysisSettings.SourceFile;
-            FileInfo tempF = analysisSettings.AudioFile;
-            if (tempF.Exists) { tempF.Delete(); }
+        //    // EXTRACT THE REQUIRED RECORDING SEGMENT
+        //    FileInfo fiSource = analysisSettings.SourceFile;
+        //    FileInfo tempF = analysisSettings.AudioFile;
+        //    if (tempF.Exists) { tempF.Delete(); }
 
-            // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
-            AudioUtilityModifiedInfo beforeAndAfterInfo;
+        //    // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
+        //    AudioUtilityModifiedInfo beforeAndAfterInfo;
 
-            if (analysisSettings.SegmentMaxDuration != null) // Process entire file
-            {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-            }
-            else
-            {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(
-                    fiSource,
-                    tempF,
-                    new AudioUtilityRequest
-                    {
-                        TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
-                        OffsetStart = analysisSettings.StartOfSegment,
-                        OffsetEnd = analysisSettings.StartOfSegment.Value.Add(analysisSettings.SegmentMaxDuration.Value)
-                    }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-            }
+        //    if (analysisSettings.SegmentMaxDuration != null) // Process entire file
+        //    {
+        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+        //    }
+        //    else
+        //    {
+        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(
+        //            fiSource,
+        //            tempF,
+        //            new AudioUtilityRequest
+        //            {
+        //                TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
+        //                OffsetStart = analysisSettings.StartOfSegment,
+        //                OffsetEnd = analysisSettings.StartOfSegment.Value.Add(analysisSettings.SegmentMaxDuration.Value)
+        //            }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+        //    }
 
-            // Store source sample rate - may need during the analysis if have upsampled the source.
-            analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
+        //    // Store source sample rate - may need during the analysis if have upsampled the source.
+        //    analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
 
-            // DO THE ANALYSIS
-            // #############################################################################################################################################
-            IAnalyser analyser = new Acoustic();
-            AnalysisResult result = analyser.Analyse(analysisSettings);
-            DataTable dt = result.Data;
-            if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
-            // #############################################################################################################################################
+        //    // DO THE ANALYSIS
+        //    // #############################################################################################################################################
+        //    IAnalyser analyser = new Acoustic();
+        //    AnalysisResult result = analyser.Analyse(analysisSettings);
+        //    DataTable dt = result.Data;
+        //    if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
+        //    // #############################################################################################################################################
 
-            // ADD IN ADDITIONAL INFO TO RESULTS TABLE
-            int iter = 0; // dummy - iteration number would ordinarily be available at this point.
-            int startMinute = (int)(args.Start ?? 0);
-            foreach (DataRow row in dt.Rows)
-            {
-                row[IndexProperties.header_count] = iter;
-                row[IndexProperties.header_startMin] = startMinute;
-                row[IndexProperties.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
-            }
+        //    // ADD IN ADDITIONAL INFO TO RESULTS TABLE
+        //    int iter = 0; // dummy - iteration number would ordinarily be available at this point.
+        //    int startMinute = (int)(args.Start ?? 0);
+        //    foreach (DataRow row in dt.Rows)
+        //    {
+        //        row[IndexProperties.header_count] = iter;
+        //        row[IndexProperties.header_startMin] = startMinute;
+        //        row[IndexProperties.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
+        //    }
 
-            CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
-            //DataTableTools.WriteTable2Console(dt);
+        //    CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
+        //    //DataTableTools.WriteTable2Console(dt);
 
-            // WRITE SUMMARY SPECTRA TO FILE HERE
-            int ID = result.SegmentStartOffset.Minutes;
-            string path = analysisSettings.IndicesFile.FullName;
-            string dir = Path.GetDirectoryName(path);
-            string fname = Path.GetFileNameWithoutExtension(path);
-            string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[SpectrogramConstants.KEY_BackgroundNoise]);
-            string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[SpectrogramConstants.KEY_AcousticComplexityIndex]);
-            string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[SpectrogramConstants.KEY_Average]);
-            string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-            CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[SpectrogramConstants.KEY_Variance]);
-        } // ExecuteAnalysis()
+        //    // WRITE SUMMARY SPECTRA TO FILE HERE
+        //    int ID = result.SegmentStartOffset.Minutes;
+        //    string path = analysisSettings.IndicesFile.FullName;
+        //    string dir = Path.GetDirectoryName(path);
+        //    string fname = Path.GetFileNameWithoutExtension(path);
+        //    string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
+        //    CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[SpectrogramConstants.KEY_BackgroundNoise]);
+        //    string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
+        //    CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[SpectrogramConstants.KEY_AcousticComplexityIndex]);
+        //    string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
+        //    CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[SpectrogramConstants.KEY_Average]);
+        //    string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
+        //    CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[SpectrogramConstants.KEY_Variance]);
+        //} // ExecuteAnalysis()
 
 
 
@@ -365,13 +365,13 @@ namespace AnalysisPrograms
                 return analysisResults; // nothing to process 
             }
 
-            DataTable dt = IndexStore.Indices2DataTable(indicesStore);
-            analysisResults.Data = dt;
-            //analysisResults.AudioDuration = indicesStore.RecordingDuration;
+            // analysisResults.Data = IndexStore.Indices2DataTable(indicesStore);
+            analysisResults.Data = null; // indicates that the analysis is of acoustic indices and not events.
+            analysisResults.indexBase = indicesStore;
             analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(IndexProperties.keySEC_DUR);
+            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
 
-            // Accumulate spectra in Dictionary
-            analysisResults.Spectra = indicesStore.Spectra;
+            
 
             if ((indicesStore.Sg != null) && (analysisSettings.ImageFile != null))
             {
@@ -390,6 +390,21 @@ namespace AnalysisPrograms
 
             return analysisResults;
         } // Analyse()
+
+
+        /// <summary>
+        /// This analysis type only calculates acoustic indices. There are no events to convert to indices.
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="unitTime"></param>
+        /// <param name="timeDuration"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <returns></returns>
+        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
+        {
+            return null;
+        }
+
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
@@ -413,99 +428,6 @@ namespace AnalysisPrograms
 
 
 
-        public Tuple<DataTable, DataTable> ProcessCsvFileOLD(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
-            //get its column headers
-            var dtHeaders = new List<string>();
-            var dtTypes = new List<Type>();
-            foreach (DataColumn col in dt.Columns)
-            {
-                dtHeaders.Add(col.ColumnName);
-                dtTypes.Add(col.DataType);
-            }
-
-            List<string> displayHeaders = null;
-            bool addColumnOfweightedIndices = true;
-            //check if config file contains list of display headers
-            if (fiConfigFile != null)
-            {
-                var configuration = new ConfigDictionary(fiConfigFile.FullName);
-                Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
-                {
-                    displayHeaders = configDict[AudioAnalysisTools.AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
-                    for (int i = 0; i < displayHeaders.Count; i++)
-                    {
-                        displayHeaders[i] = displayHeaders[i].Trim();
-                    }
-                }
-
-                // now check if required to display a track showing combination of weighted indices
-                //if (configDict.ContainsKey(Keys.DISPLAY_WEIGHTED_INDICES))
-                //{
-                //    addColumnOfweightedIndices = Boolean.Parse(configDict[Keys.DISPLAY_WEIGHTED_INDICES]);
-                //}
-            }
-            //if config file does not exist or does not contain display headers then use the original headers
-            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
-
-            //now determine how to display tracks in display datatable
-            Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay = new bool[displayHeaders.Count];
-            for (int i = 0; i < displayTypes.Length; i++)
-            {
-                displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-            }
-
-
-            //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
-            }
-
-            //DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
-            //foreach (DataRow row in dt.Rows)
-            //{
-            //    DataRow newRow = table2Display.NewRow();
-            //    for (int i = 0; i < canDisplay.Length; i++)
-            //    {
-            //        if (canDisplay[i])
-            //            newRow[displayHeaders[i]] = row[displayHeaders[i]];
-            //        else newRow[displayHeaders[i]] = 0.0;
-            //    }
-            //    table2Display.Rows.Add(newRow);
-            //}
-            //table2Display = Acoustic.NormaliseColumnsOfAcousticIndicesInDataTable(table2Display);
-
-            ////add in column of weighted indices
-            //if (addColumnOfweightedIndices)
-            //{
-            //    double[] comboWts = IndexCalculate.CalculateComboWeights();
-            //    double[] weightedIndices = IndexCalculate.GetArrayOfWeightedAcousticIndices(dt, comboWts);
-            //    string colName = "WeightedIndex";
-            //    DataTableTools.AddColumnOfDoubles2Table(table2Display, colName, weightedIndices);
-            //}
-            //return System.Tuple.Create(dt, table2Display);
-            DataTable table2Display = null;
-            return System.Tuple.Create(dt, table2Display);
-        } // ProcessCsvFile()
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
@@ -550,7 +472,6 @@ namespace AnalysisPrograms
                 if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
             }
 
-
             //order the table if possible
             if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
             {
@@ -573,180 +494,6 @@ namespace AnalysisPrograms
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-
-
-
-        ///// <summary>
-        ///// takes a data table of indices and converts column values to values in [0,1].
-        ///// </summary>
-        ///// <param name="dt"></param>
-        ///// <returns></returns>
-        //public static DataTable NormaliseColumnsOfAcousticIndicesInDataTable(DataTable dt)
-        //{
-        //    string[] headers = DataTableTools.GetColumnNames(dt);
-        //    string[] newHeaders = new string[headers.Length];
-
-        //    List<double[]> newColumns = new List<double[]>();
-
-        //    for (int i = 0; i < headers.Length; i++)
-        //    {
-        //        double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
-        //        if ((values == null) || (values.Length == 0)) continue;
-
-        //        double min = 0;
-        //        double max = 1;
-        //        if (headers[i].Equals(IndexProperties.header_avAmpdB))
-        //        {
-        //            min = -50;
-        //            max = -5;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (-50..-5dB)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_snr))
-        //        {
-        //            min = 3;
-        //            max = 50;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (3..50dB)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_activeSnr))
-        //        {
-        //            min = 3;
-        //            max = 10;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (3..10dB)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_avSegDur))
-        //        {
-        //            min = 0.0;
-        //            max = 500.0; //av segment duration in milliseconds
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0..500ms)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_bgdB))
-        //        {
-        //            min = -50;
-        //            max = -5;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (-50..-5dB)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_activity))
-        //        {
-        //            min = 0.0;
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (max={1:f2})", headers[i], max);
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_segCount))
-        //        {
-        //            min = 0.0;
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (max={1:f0})", headers[i], max);
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_lfCover))
-        //        {
-        //            min = 0.0; //
-        //            max = 0.8; //
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0..80%)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_mfCover))
-        //        {
-        //            min = 0.0; //
-        //            max = 0.8; //
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0..80%)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_hfCover))
-        //        {
-        //            min = 0.0; //
-        //            max = 0.8; //
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0..80%)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_HAmpl))
-        //        {
-        //            min = 0.3; //
-        //            max = 0.95; //
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0.6..0.95)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_HAvSpectrum))
-        //        {
-        //            min = 0.3; //
-        //            max = 0.95; //
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0.6..0.95)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_AcComplexity))
-        //        {
-        //            min = 0.3;
-        //            max = 0.7;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0.3..0.7)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_NumClusters))
-        //        {
-        //            min = 0.0; //
-        //            max = 50.0;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (0..50)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_avClustDuration))
-        //        {
-        //            min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
-        //            max = 200.0; //av segment duration in milliseconds
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (50..200ms)";
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_TrigramCount))
-        //        {
-        //            min = 0.0;
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (max={1:f0})", headers[i], max);
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_SPTracksPerSec))
-        //        {
-        //            min = 0.0;
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (0..{1:f1}tr/s)", headers[i], max);
-        //        }
-        //        else if (headers[i].Equals(IndexProperties.header_SPTracksDur))
-        //        {
-        //            min = 0.0;
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (0..{1:f0}%)", headers[i], max);
-        //        }
-        //        else //default is to normalise in [0,1]
-        //        {
-        //            newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
-        //            newHeaders[i] = headers[i];
-        //        }
-        //    } //for loop
-
-        //    //convert type int to type double due to normalisation
-        //    Type[] types = new Type[newHeaders.Length];
-        //    for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
-        //    var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
-        //    return processedtable;
-        //}
-
-        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
-        {
-            return null;
-        }
-
-        public string DefaultConfiguration
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
 
         public AnalysisSettings DefaultSettings
         {
@@ -802,5 +549,7 @@ namespace AnalysisPrograms
 
             return analysisSettings;
         } // CheckAllArguments()
+
+
     } //end class Acoustic
 }

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Text;
+
+//using AudioAnalysisTools;
+
 namespace AnalysisBase
 {
     using System.Collections.Generic;
@@ -129,13 +133,22 @@ namespace AnalysisBase
     {
         public string FileName { get; set; }
 
+        public int SegmentCount { get; set; }
+
+        public TimeSpan SegmentOffsetFromStartOfSource { get; set; }
+
+        //SEGMENT_TIMESPAN = "SegTimeSpan";
+        public double SegmentDuration { get; set; }
+
         //START_MIN = "start-min";
         //AudioAnalysisTools.Keys.EVENT_START_MIN,    //2
         public int MinuteOffset { get; set; }
 
-        //SEGMENT_TIMESPAN = "SegTimeSpan";
-        public double SegmentDuration { get; set; }
+
     }
+
+
+
 
     // TODO: Bring this to parity with the standard event class - ask Michael
     public abstract class EventBase : ResultBase
@@ -167,16 +180,79 @@ namespace AnalysisBase
         
     }
 
+
+
+
+
     // TODO: Bring this to parity with the standard index class - ask Michael
-    public abstract class IndexBase : ResultBase
+    public class IndexBase : ResultBase
     {
-        //INDICES_COUNT = "IndicesCount";
-        //AV_AMPLITUDE = "avAmp-dB";
-        //CALL_DENSITY = "CallDensity";
-        //SNR_SCORE = "SNRscore";
+        //these dictionaries used to store index values accessible by key
+        //private Dictionary<string, double> summaryIndicesOfTypeDouble = new Dictionary<string, double>();
+        public Dictionary<string, double> SummaryIndicesOfTypeDouble { get; set; }
+        //private Dictionary<string, int> summaryIndicesOfTypeInt = new Dictionary<string, int>();
+        public Dictionary<string, int> SummaryIndicesOfTypeInt { get; set; }
+        //private Dictionary<string, TimeSpan> summaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
+        public Dictionary<string, TimeSpan> SummaryIndicesOfTypeTimeSpan { get; set; }
+
+        /// <summary>
+        /// for storing spectral indices in a dictionary
+        /// </summary>
+        private Dictionary<string, double[]> spectralIndices;
+        public Dictionary<string, double[]> SpectralIndices
+        {
+            get { return spectralIndices; }
+            set { spectralIndices = value; }
+        }
 
 
-    }
+        // get any index as a double
+        public double GetIndex(string key)
+        {
+            if (SummaryIndicesOfTypeDouble.ContainsKey(key)) return SummaryIndicesOfTypeDouble[key];
+            if (SummaryIndicesOfTypeInt.ContainsKey(key)) return (double)SummaryIndicesOfTypeInt[key];
+            if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key)) return SummaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
+            return 0.0;
+        }
+
+        public string GetIndexAsString(string key, string units)
+        {
+            string str = "";
+            if (SummaryIndicesOfTypeDouble.ContainsKey(key)) 
+                return SummaryIndicesOfTypeDouble[key].ToString();
+            if (SummaryIndicesOfTypeInt.ContainsKey(key)) 
+                return SummaryIndicesOfTypeInt[key].ToString();
+            if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key))
+            {
+                if (units == "s")  return SummaryIndicesOfTypeTimeSpan[key].TotalSeconds.ToString();
+                if (units == "ms") return SummaryIndicesOfTypeTimeSpan[key].Milliseconds.ToString();
+            }
+
+            return str;
+        }
+
+
+        // get indices from relevant dictionaries
+        public double GetIndexAsDouble(string key)
+        {
+            return SummaryIndicesOfTypeDouble[key];
+        }
+        public int GetIndexAsInteger(string key)
+        {
+            return SummaryIndicesOfTypeInt[key];
+        }
+        public TimeSpan GetIndexAsTimeSpan(string key)
+        {
+            return SummaryIndicesOfTypeTimeSpan[key];
+        }
+
+
+    } //class IndexBase : ResultBase
+    
+
+
+
+
 
     public class EventIndex : IndexBase
     {
@@ -185,6 +261,6 @@ namespace AnalysisBase
         // TODO: possibility for dynamic column name
         public int EventsTotalThresholded { get; set; }
 
-        
+
     }
 }

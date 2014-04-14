@@ -314,7 +314,7 @@ namespace AudioAnalysisTools.Indices
                 indicesStore.Hits = hits;
                 indicesStore.TrackScores = scores;
                 //indicesStore.Tracks = trackInfo.listOfSPTracks;
-                if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.Spectra); 
+                if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.SpectralIndices); 
 
                 return indicesStore;
             }
@@ -370,7 +370,7 @@ namespace AudioAnalysisTools.Indices
             indicesStore.Hits = hits;
             indicesStore.TrackScores = scores;
             indicesStore.Tracks = sptInfo.listOfSPTracks;
-            if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.Spectra); 
+            if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.SpectralIndices); 
 
             return indicesStore;
         } //Analysis()
