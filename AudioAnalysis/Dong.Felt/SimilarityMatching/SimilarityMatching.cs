@@ -371,24 +371,6 @@
         public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, double weight1, double weight2)
         {
             var result = 0.0;
-            //var queryMatrix = StatisticalAnalysis.RegionRepreListToMatrix(query);
-            //var candidateMatrix = StatisticalAnalysis.RegionRepreListToMatrix(candidate);
-            //for (int i = 0; i < query[0].NhCountInRow; i++ )
-            //{
-            //    for (int j = 0; j < query[0].NhCountInCol; j++)
-            //    {
-            //        if (queryMatrix[i,j].magnitude != 0)
-            //        {
-            //            var queryScore = Math.Abs(queryMatrix[i,j].magnitude);
-            //            var queryOrientation = queryMatrix[i,j].orientation;
-            //            var candidateScore = Math.Abs(candidateMatrix[i,j].magnitude);
-            //            var candidateOrientation = candidateMatrix[i,j].orientation;
-            //            var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-            //            var magnitudeDifference = Math.Abs(queryScore - candidateScore);
-            //            nhSum1 += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
-            //        }
-            //    }
-            //}
             if (query != null && candidate != null)
             {
                 var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
@@ -396,50 +378,17 @@
                 var nhSum2 = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
-                    //if (query[index].magnitude != 0)
-                    //{
-                        
-                    //    var queryScore = Math.Abs(query[index].magnitude);
-                    //    var queryOrientation = query[index].orientation;                       
-                    //    var candidateScore = Math.Abs(candidate[index].magnitude);
-                    //    var candidateOrientation = candidate[index].orientation;
-                    //    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-                    //    var magnitudeDifference = Math.Abs(queryScore - candidateScore);
-                    //    if (candidate[index].magnitude == 0)
-                    //    {
-                    //        var improvedW1 = 0.5;
-                    //        var improvedW2 = 0.5;
-                    //        nhSum1 += improvedW1 * Math.Pow(magnitudeDifference, 2) + improvedW2 * Math.Pow(orientationDifference, 2);
-                    //    }
-                    //    else
-                    //    {
-                    //        nhSum1 += weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2);
-                    //    }
-                    //}
-                    //else
-                    //{
-                        var queryMagnitude = Math.Abs(query[index].magnitude);
+                   
+                        var queryMagnitude = query[index].magnitude;
                         var queryOrientation = query[index].orientation;                       
-                        var candidateMagnitude = Math.Abs(candidate[index].magnitude);
+                        var candidateMagnitude = candidate[index].magnitude;
                         var candidateOrientation = candidate[index].orientation;                        
-                        //var orientationDifferenceClockwise = Math.Abs(queryOrientation - candidateOrientation);
-                        //var maxOrientationDifference = 0.5;
-                        //var orientationDifferenceUnClockwise = maxOrientationDifference - Math.Abs(queryOrientation - candidateOrientation);
-                        //var orientationDifference = 0.0;
-                        //if (orientationDifferenceClockwise <= orientationDifferenceUnClockwise)
-                        //{
-                        //    orientationDifference = orientationDifferenceClockwise;
-                        //}
-                        //else
-                        //{
-                        //    orientationDifference = orientationDifferenceUnClockwise;
-                        //}
+                        
                         var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
                         var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);                      
                        nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
-                    //}
+                   
                 }
-                //result = Math.Sqrt(0.1 * nhSum1 + 0.9 * nhSum2);
                 result = nhSum2;
             }
             return result;
@@ -530,7 +479,7 @@
 
                     nhSum += Math.Sqrt(weight1 * Math.Pow(hMagnitudeDiff, 2) + weight2 * Math.Pow(hOrientationDiff, 2)
                         + weight3 * Math.Pow(vMagnitudeDiff, 2) + weight4 * Math.Pow(vOrientationDiff, 2)
-                        + weight4 * Math.Pow(hRmeasureDiff, 2) + weight5 * Math.Pow(vRmeasureDiff, 2));                   
+                        + weight5 * Math.Pow(hRmeasureDiff, 2) + weight6 * Math.Pow(vRmeasureDiff, 2));                   
                 }
                 result = nhSum;
             }

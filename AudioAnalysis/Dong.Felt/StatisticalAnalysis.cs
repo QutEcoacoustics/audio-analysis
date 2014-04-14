@@ -201,6 +201,11 @@
             return candidates;
         }
 
+        /// <summary>
+        /// this is feature set 1, it only involves 2 values, magnitude and orientation.
+        /// </summary>
+        /// <param name="nhList"></param>
+        /// <returns></returns>
         public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeProperties(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -228,15 +233,8 @@
             }
             var standDevMagnitude = Math.Sqrt(squareDiffMagnitude / nhList.Count);
             var standDevOrientation = Math.Sqrt(squareDiffOrientation / nhList.Count);
-            //var minimagnitude = magnitudeList.Min();
-            //var maxmagnitude = magnitudeList.Max();
-            //var miniOrientation = orientationList.Min();
-            //var maxOrientation = orientationList.Max();
-            //var miniOrientation = -Math.PI / 2;
-            //var maxOrientation = Math.PI / 2;
             foreach (var nh in nhList)
             {
-                //var enlargeTimes = 10;
                 if (nh.magnitude != 100)
                 {
                     nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
