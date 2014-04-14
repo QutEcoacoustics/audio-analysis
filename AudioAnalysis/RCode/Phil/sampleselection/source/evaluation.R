@@ -46,8 +46,9 @@ EvaluateSamples2d <- function (ranks, cutoff = NA) {
 
     optimal <- OptimalSamples(speciesmins, species.in.each.min = species.in.each.sample)
     random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, min.ids$min.id, dawn.first = TRUE)
+    from.indices <- IndicesProgression(species.in.each.sample, min.ids)
     
-    GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions)
+    GraphProgressions(optimal$found.species.count.progression, random.at.dawn, ranked.progressions, from.indices$count)
     
 }
 
@@ -213,7 +214,7 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = N
 }
 
 RandomSamples <- function (speciesmins = NA, species.in.each.sample
-                                 = NA, mins = NA, num.repetitions = 100, dawn.first = TRUE, dawn.from = 315, dawn.to = 495) {
+                                 = NA, mins = NA, num.repetitions = 10, dawn.first = TRUE, dawn.from = 315, dawn.to = 495) {
     # repeatedly performs a sample selection from random selection of dawn minutes
     # 
     # Value:
@@ -276,6 +277,19 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample
     
     
 }
+
+IndicesProgression <- function (species.in.each.sample, which.mins) {
+    
+    ranked.mins <- RankMinutesFromIndices()
+    ranked.mins <- ranked.mins[ ranked.mins$min.id %in% which.mins$min.id, ] 
+    ordered.min.ids <- ranked.mins$min.id[order(ranked.mins$rank)]
+    progression <- GetProgression(species.in.each.sample, ordered.min.ids)
+    
+    return(progression)
+    
+    
+}
+
 
 CountSpecies.Delete <- function (selected.samples, speciesmins) {
     # finds which species were present in the minutes supplied in selected.samples
@@ -346,13 +360,14 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     return(species.in.each.min)
 }
 
-GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cutoff = 180) {
+GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, from.indices, cutoff = 180) {
    
     rank.names <- names(ranked.progressions);
     
     # truncate all output at cuttoff
     if (!is.na(cutoff)) {
         optimal <- Truncate(optimal, cutoff)
+        from.indices <- Truncate(from.indices, cutoff)
         random.at.dawn$mean  <- Truncate(random.at.dawn$mean, cutoff)
         random.at.dawn$sd  <- Truncate(random.at.dawn$sd, cutoff)
         for (i in 1:length(rank.names)) {
@@ -388,6 +403,10 @@ GraphProgressions <- function (optimal, random.at.dawn, ranked.progressions, cut
     # plot optimal
     par(col = 'blue')
     points(optimal, type='l')
+    
+    # plot from indices
+    par(col = 'coral4')
+    points(from.indices, type='l')
     
     
     # plot each of the ranking results

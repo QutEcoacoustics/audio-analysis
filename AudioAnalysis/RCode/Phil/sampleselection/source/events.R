@@ -281,18 +281,55 @@ AddMinCol <- function (events, start.min) {
     return(events)
 }
 
-FilterEvents <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0, db6 = 0) {
-        e.and.f <- GetEventsAndFeatures()
-        events <- e.and.f$events
-        features <- e.and.f$rating.features
+FilterEvents <- function (min.ids = FALSE) {
+        events <- ReadMasterOutput('events')
+        features <- ReadMasterOutput('rating.features')
+        
+        if (is.numeric(min.ids)) {        
+            events <- events[events$min.id %in% min.ids, ]
+            features <- features[features$event.id %in% events$event.id, ]       
+        }
+        
         # remove the "event id" from features and add a column of 1s to the start
-        f2 <- cbind(rep(1, nrow(features)), features[,1:(length(features))])
+        # also, perform feature scaling
+        f2 <- cbind(rep(1, nrow(features)), scale(features[,1:(length(features)-1)]))
+
         #decision boundary
-        db <- c(db1, db2, db3, db4, db5, db6)
+        #db <- c(1, 1, 1, 1, 1, 1, 1, -1)
+        db <- c(1, 0, 0, 0, 0, 0, 0, -1)
+        
         # todo, train this classifier with simoid cost function or something like that
         events$is.good <- as.vector(crossprod(db, t(f2))) >= 0
-        WriteOutput(events, 'events')
+        WriteOutput(events, 'events', level = 1)
 }
+
+
+FilterEvents1 <- function (min.ids = FALSE, events = NA, rating.features = NA) {
+    
+    if (!is.data.frame(events) || !is.data.frame(rating.features)) {
+        # must supply both or both will be read from master
+        events <- ReadMasterOutput('events')
+        features <- ReadMasterOutput('rating.features')   
+    }
+
+    
+    if (is.numeric(min.ids)) {        
+        events <- events[events$min.id %in% min.ids, ]
+        rating.features <- rating.features[features$event.id %in% events$event.id, ]       
+    }
+    is.good <- rep(TRUE, nrow(events))
+        
+    # remove very long events
+    is.good[rating.features$duration > 6] <- FALSE
+    
+    # remove very short
+    is.good[rating.features$duration < 0.25] <- FALSE
+    
+    return(is.good)
+
+}
+
+
 
 # bug: sometimes returns events and features with different number of rows!
 GetEventsAndFeatures <- function (reextract = FALSE) {
@@ -306,15 +343,21 @@ GetEventsAndFeatures <- function (reextract = FALSE) {
         Report(4, 'Retrieving target events and features. Copying from master')   
         target.min.ids <- ReadOutput('target.min.ids', level = 0)
         all.events <- ReadMasterOutput('events')
-        events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
         all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
         all.rating.feature.rows <- ReadOutputCsv(MasterOutputPath('rating.features'))
+        events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
         event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]
         rating.features <- all.rating.feature.rows[all.rating.feature.rows$event.id %in% events$event.id, ]
         #ensure that both are sorted by event id
         events <- events[with(events, order(event.id)) ,]
         event.features <- event.features[with(event.features, order(event.id)) ,]
         rating.features <- rating.features[with(rating.features, order(event.id)) ,]
+        
+        event.filter <- FilterEvents1(events = events, rating.features = rating.features)
+        events <- events[event.filter, ]
+        event.features <- event.features[event.filter, ]
+        rating.features <- rating.features[event.filter, ]
+        
         
         # limit the number
         if (limit < nrow(events)) {
@@ -323,7 +366,7 @@ GetEventsAndFeatures <- function (reextract = FALSE) {
             events <- events[include, ]
             event.features <- event.features[include, ]
             rating.features <- rating.features[include, ]
-        }
+        }      
         
         WriteOutput(events, 'events', level = 1)
         WriteOutput(event.features, 'features', level = 1)

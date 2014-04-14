@@ -32,7 +32,7 @@ g.study.sites <- c('NW', 'NE')  # todo: include the others, eventually
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 0
+g.start.min <- 600
 #g.start.min <- 415
 
 # the date and minute to end sample selection at

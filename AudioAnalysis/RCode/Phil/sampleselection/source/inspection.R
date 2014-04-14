@@ -147,54 +147,32 @@ CreateSampleSpectrograms <- function (samples, num.clusters, temp.dir) {
 
 
 
-InspectFeatures <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0) {
-    
-    min.ids <- c(405)
-    #min.ids <- c(640)
-    features <- ReadMasterOutput('rating.features')
-    all.events <- ReadMasterOutput('events')
+InspectEvents <- function (min.ids = 405) {
+    FilterEvents1(min.ids)
+ 
+    all.events <- ReadOutput('events')
     events <- all.events[all.events$min.id %in% min.ids, ]
-    features <- features[features$event.id %in% events$event.id, ]
-    #check <- sum((events$event.id == features$event.id) * 1) == length(events$event.id)
     rects <- events[, c('start.sec', 'duration', 'bottom.f', 'top.f')]
-    rects$label.tl <- features$event.id
-    #rects$label.tr <- features[,2]
-    #rects$label.br <- features[,3]
-    #rects$label.bl <- features[,4]
-
-    # remove the "event id" from features and add a column of 1s to the start
-    f2 <- cbind(rep(1, nrow(features)), features[,1:4])
-    
-    #decision boundary
-    db <- c(db1, db2, db3, db4, db5)
-
-    # this should be replaced by sigmoid or something 
-    is.bird <- as.vector(crossprod(db, t(f2))) >= 0
-    
+    #rects$label.tl <- events$event.id
     rects$rect.color <- rep('#ff0000', nrow(rects))
-    rects$rect.color[is.bird] <- '#00ff00'
+    rects$rect.color[events$is.good] <- '#00ff00'
     
-    if (length(min.ids) == 1) {
+    output.path <- OutputFilePath(fn = 'event.filter', ext = 'png', level = 1)
     
-        mins <- ExpandMinId(min.ids)
-        which.events <- which(events$min.id == min.ids[1])
-        minute.events <- events[which.events, ]
-        minute.rects <- rects[which.events, ]
-    
-        spectro <- Sp.CreateTargeted(site = mins$site[1], 
+    mins <- ExpandMinId(min.ids)
+      
+    spectro <- Sp.CreateTargeted(site = mins$site[1], 
                       start.date = mins$date[1], 
                       start.sec = mins$min[1] * 60 , 
                       duration = 60, 
-                      rects = minute.rects,
-                      label = mins$min.id[1])
+                      rects = rects,
+                      label = mins$min.id[1],
+                      img.path = output.path)
     
-        Sp.Draw(spectro)
+    Sp.Draw(spectro)
     
-    } else {
-        temp.dir <- TempDirectory()
-        fns <- SaveMinuteSpectroImages(min.ids, rects, events, temp.dir)
-        StitchImages(fns, OutputFilePath('InspectFeatures', ext = 'png', level = 3))
-    }
+
+
 
     
 

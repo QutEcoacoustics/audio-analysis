@@ -93,6 +93,26 @@ GetValidatedInt <- function (msg, max = NA, min = 1, default = NA, num.attempts 
     }
 }
 
+GetValidatedFloat <- function (msg = 'Enter a number', max = NA, min = 0, default = NA, num.attempts = 0) {
+    max.attempts <- 8 
+    val <- readline(paste(msg, " : "))
+    if (val == '' && !is.na(default)) {
+        val <- as.numeric(default)
+    } else if (grepl("^-?[0-9]+.?[0-9]*$",val)) {
+        val <- as.numeric(val)
+    }
+    if (num.attempts > max.attempts) {
+        stop("you kept entering an invalid choice, idiot")
+    } else if (class(val) != 'numeric' || (!is.na(max) && max(val) > max) || (!is.na(min) && min(val) < min)) {
+        if (num.attempts == 0) {
+            msg <- paste("Invalid choice.", msg)
+        }
+        GetValidatedFloat(msg, max = max, min = min, default = default, num.attempts = num.attempts + 1)  
+    } else {
+        return(val)
+    }
+}
+
 
 
 ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) { 

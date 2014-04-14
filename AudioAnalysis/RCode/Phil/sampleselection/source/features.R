@@ -266,6 +266,8 @@ CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp)
     rating.features$mean.ratio.mean.amp <- mean(ratio.mean.amp)
     rating.features$mean.ratio.sd.amp <- mean(ratio.sd.amp)
     
+    rating.features$duration <- event$duration
+    
     return(rating.features)
     
     

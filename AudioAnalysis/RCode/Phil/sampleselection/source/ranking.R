@@ -2,12 +2,13 @@ RankSamples <- function () {
  
     events <- ReadOutput('events')
     mins <- ReadOutput('target.min.ids', level = 0)
-    ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
+    #ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
+    ranking.methods <- c('RankSamples1', 'RankSamples3')
     
     # the different number of clusters to perform ranking for
-    num.num.clusters <- 5  # this many different numbers of clusters
-    num.clusters.start <- 50 # lowest number of clusters
-    num.clusters.multiplier <- 1.6 # each number of clusters is this many times the last
+    num.num.clusters <- 4  # this many different numbers of clusters
+    num.clusters.start <- 80 # lowest number of clusters
+    num.clusters.multiplier <- 1.7 # each number of clusters is this many times the last
     num.clusters <- round(num.clusters.start * 1.33^(1:num.num.clusters))
     
     # make sure we are not trying to use more clusters than events

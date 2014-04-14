@@ -41,14 +41,28 @@ ClusterEvents <- function (num.groups = 'auto',
     feature.options <- colnames(event.features)
     feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE)
     
+
+
     # use only the chosen features
     event.features <- event.features[, feature.choices]
+    
+
+    
+
+    
+ 
     
     
     Report(2, 'scaling features (m = ',  nrow(events), ')')
     ptm <- proc.time()
     event.features <- as.matrix(scale(event.features))  # standardize variables
     Timer(ptm, 'scaling features')
+    
+    weights <- rep(NA, length(feature.choices))
+    for (i in 1:length(weights)) {
+        weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.options[feature.choices[i]]))    
+        event.features[,i] <-  event.features[,i] * weights[i]    
+    }
     
     Report(2, 'calculating distance matrix (m = ',  nrow(events), 'n = ', ncol(event.features),')')
     
