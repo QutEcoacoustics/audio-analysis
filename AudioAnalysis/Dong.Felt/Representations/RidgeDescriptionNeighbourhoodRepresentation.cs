@@ -638,8 +638,8 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        //ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
-                        ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                        ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
+                        //ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }
