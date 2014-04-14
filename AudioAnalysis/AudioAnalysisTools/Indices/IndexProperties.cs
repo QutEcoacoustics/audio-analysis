@@ -97,6 +97,7 @@ namespace AudioAnalysisTools
         private double normMin;
         private double normMax;
         private string units;
+        public string Units { private set; get; }
 
         // use these when calculated combination index.
         private bool includeInComboIndex;
@@ -152,12 +153,20 @@ namespace AudioAnalysisTools
         public void SetExceptionDefaultValues(string key)
         {
             //all values set 0.0 by default.//however the following are exceptions
-            if (key == keyAV_AMP) this.DefaultValue = -150.0;
+            if (key == keyAV_AMP) this.DefaultValue = SpectrogramConstants.AVG_MIN;
             else
                 if (key == keyAV_AMP) this.DefaultValue = 1.0;
                 else
-                    if (key == keyBGN) this.DefaultValue = -150.0;
+                    if (key == keyBGN) this.DefaultValue = SpectrogramConstants.BGN_MIN;
+                    else
+                        if (key == keySEC_DUR) this.Units = "s";
+                        else
+                            if (key == keySPT_DUR) this.Units = "ms";
+                            else
+                                if (key == keyCLUSTER_DUR) this.Units = "ms";
+
         }
+
 
 
         public double NormaliseValue(double val)

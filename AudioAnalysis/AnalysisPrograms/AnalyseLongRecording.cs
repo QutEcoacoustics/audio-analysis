@@ -110,8 +110,9 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
 
             // DEV CONFIG OPTIONS
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
@@ -265,23 +266,6 @@ namespace AnalysisPrograms
             }
             var isStrongTypedAnalyser = analyser is IAnalyser2;
 
-
-
-            //test conversion of events file to indices file
-            //if (false)
-            //{
-            //    string ipPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Events.csv";
-            //    string opPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Indices.csv";
-            //    DataTable dt = CsvTools.ReadCSVToTable(ipPath, true);
-            //    TimeSpan unitTime = new TimeSpan(0, 0, 60);
-            //    TimeSpan source   = new TimeSpan(0, 59, 47);
-            //    double dummy = 0.0;
-            //    DataTable dt1 = analyser.ConvertEvents2Indices(dt, unitTime, source, dummy);
-            //    CsvTools.DataTable2CSV(dt1, opPath);
-            //    LoggedConsole.WriteLine("FINISHED");
-            //    Console.ReadLine();
-            //}
-
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory, AnalysisKeys.SEGMENT_DURATION, AnalysisKeys.SEGMENT_OVERLAP);
@@ -315,30 +299,33 @@ namespace AnalysisPrograms
             }
             else
             {
+                //TODO - below line only handles case of indices. NEED TO FIX ALSO FOR EVENTS
+                mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults); 
+                //mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
                 // merge all the datatables from the analysis into a single datatable
-                mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-                if (mergedDatatable == null)
-                {
-                    LoggedConsole.WriteErrorLine("###################################################\n");
-                    LoggedConsole.WriteErrorLine(
-                        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
-                    LoggedConsole.WriteErrorLine("###################################################\n");
-                    throw new AnalysisOptionDevilException();
-                }
+                //mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
+                //if (mergedDatatable == null)
+                //{
+                //    LoggedConsole.WriteErrorLine("###################################################\n");
+                //    LoggedConsole.WriteErrorLine(
+                //        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
+                //    LoggedConsole.WriteErrorLine("###################################################\n");
+                //    throw new AnalysisOptionDevilException();
+                //}
             }
 
             // not an exceptional state, do not throw exception
-            if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
-            {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
-            }
+            //if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
+            //{
+            //    LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
+            //}
             if (mergedEventResults != null && mergedEventResults.Length == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+                LoggedConsole.WriteWarnLine("The analysis produced no EVENTS (mergedResults had zero count)");
             }
             if (mergedIndicesResults != null && mergedIndicesResults.Length == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+                LoggedConsole.WriteWarnLine("The analysis produced no INDICES (mergedResults had zero count)");
             }
 
 
@@ -360,10 +347,10 @@ namespace AnalysisPrograms
                 scoreThreshold = 1.0;
             }
 
-            // 9. CREATE INDICES IF NECESSARY
+            // 9. CREATE SUMMARY INDICES IF NECESSARY
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
-            int eventsCount;
+            int eventsCount = 0;
             int numberOfRowsOfIndices;
             if (isStrongTypedAnalyser)
             {
@@ -373,18 +360,23 @@ namespace AnalysisPrograms
             }
             else
             {
-                ResultsTools
-                    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
-                    .Decompose(out eventsDatatable, out indicesDatatable);
-                eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
-                numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
+                //ResultsTools
+                //    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
+                //    .Decompose(out eventsDatatable, out indicesDatatable);
+                //eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
+                //numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
+                numberOfRowsOfIndices = indicesDatatable == null ? 0 : mergedIndicesResults.Length;
             }
 
             // 10. SAVE THE RESULTS
+            //this dictionary is needed to write results to csv file and to draw the image of indices
+            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+
+
             var resultsDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
-            FileInfo eventsFile;
-            FileInfo indicesFile;
+            FileInfo eventsFile = null;
+            FileInfo indicesFile = null;
             if (isStrongTypedAnalyser)
             {
                 eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
@@ -392,9 +384,11 @@ namespace AnalysisPrograms
             }
             else
             {
-                ResultsTools
-                    .SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fileNameBase, resultsDirectory.FullName)
-                    .Decompose(out eventsFile, out indicesFile);
+                //ResultsTools
+                //    .SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fileNameBase, resultsDirectory.FullName)
+                //    .Decompose(out eventsFile, out indicesFile);
+
+                ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
             }
 
             LoggedConsole.WriteLine("\n###################################################");
@@ -429,7 +423,6 @@ namespace AnalysisPrograms
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
                 //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
-                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
                 Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
@@ -448,6 +441,10 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
+
+
+
+
 
         private static void ProcessSpectralIndices(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
             AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
@@ -472,7 +469,7 @@ namespace AnalysisPrograms
 
             int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
             var spectrogramDictionary = new Dictionary<string, double[,]>();
-            foreach (var spectrumKey in results[0].Spectra.Keys)
+            foreach (var spectrumKey in results[0].indexBase.SpectralIndices.Keys)
             {
                 // +1 for header
                 var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
@@ -481,7 +478,7 @@ namespace AnalysisPrograms
                 {
                     var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
 
-                    numbers[index] = analysisResult.Spectra[spectrumKey];
+                    numbers[index] = analysisResult.indexBase.SpectralIndices[spectrumKey];
 
                     // add one to offset header
                     lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
