@@ -111,7 +111,7 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
 
             // DEV CONFIG OPTIONS
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_11April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_15April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -265,6 +265,7 @@ namespace AnalysisPrograms
                 throw new Exception("Cannot find a valid IAnalyser");
             }
             var isStrongTypedAnalyser = analyser is IAnalyser2;
+            isStrongTypedAnalyser = true; // force analyser to tak strong type track !!!
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
@@ -295,30 +296,29 @@ namespace AnalysisPrograms
             IndexBase[] mergedIndicesResults = null;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
+                // next line commented out by Michael 15-04-2014 to force use of his merge method.
+                //ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
+                mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults);
             }
             else
             {
-                //TODO - below line only handles case of indices. NEED TO FIX ALSO FOR EVENTS
-                mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults); 
-                //mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
                 // merge all the datatables from the analysis into a single datatable
-                //mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-                //if (mergedDatatable == null)
-                //{
-                //    LoggedConsole.WriteErrorLine("###################################################\n");
-                //    LoggedConsole.WriteErrorLine(
-                //        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
-                //    LoggedConsole.WriteErrorLine("###################################################\n");
-                //    throw new AnalysisOptionDevilException();
-                //}
+                mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
+                if (mergedDatatable == null)
+                {
+                    LoggedConsole.WriteErrorLine("###################################################\n");
+                    LoggedConsole.WriteErrorLine(
+                        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
+                    LoggedConsole.WriteErrorLine("###################################################\n");
+                    throw new AnalysisOptionDevilException();
+                }
             }
 
             // not an exceptional state, do not throw exception
-            //if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
-            //{
-            //    LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
-            //}
+            if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
+            {
+                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
+            }
             if (mergedEventResults != null && mergedEventResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no EVENTS (mergedResults had zero count)");
@@ -354,18 +354,18 @@ namespace AnalysisPrograms
             int numberOfRowsOfIndices;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
-                eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
+                // next line commented out by Michael 15-04-2014 because not processing events at the moment
+                //ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
+                //eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
                 numberOfRowsOfIndices = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
             }
             else
             {
-                //ResultsTools
-                //    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
-                //    .Decompose(out eventsDatatable, out indicesDatatable);
-                //eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
-                //numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
-                numberOfRowsOfIndices = indicesDatatable == null ? 0 : mergedIndicesResults.Length;
+                ResultsTools
+                    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
+                    .Decompose(out eventsDatatable, out indicesDatatable);
+                eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
+                numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
             }
 
             // 10. SAVE THE RESULTS
@@ -379,16 +379,16 @@ namespace AnalysisPrograms
             FileInfo indicesFile = null;
             if (isStrongTypedAnalyser)
             {
-                eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
-                indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
+                // next line commented out by Michael 15-04-2014 to force use of indices only
+                //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
+                //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
+                ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
             }
             else
             {
-                //ResultsTools
-                //    .SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fileNameBase, resultsDirectory.FullName)
-                //    .Decompose(out eventsFile, out indicesFile);
-
-                ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+                ResultsTools
+                    .SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fileNameBase, resultsDirectory.FullName)
+                    .Decompose(out eventsFile, out indicesFile);
             }
 
             LoggedConsole.WriteLine("\n###################################################");

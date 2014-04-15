@@ -235,13 +235,14 @@ namespace AudioAnalysisTools.Indices
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
-            var tuple_Cover = ActivityAndCover.CalculateSpectralCoverage(deciBelSpectrogram, dBThreshold, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameDuration, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
 
             //TO DO TODO TODO TODO TODO TODO  etc
-            indicesStore.StoreIndex(IndexProperties.keyHF_CVR, (int)(tuple_Cover.Item3 * 100));
-            indicesStore.StoreIndex(IndexProperties.keyMF_CVR, (int)(tuple_Cover.Item2 * 100));
-            indicesStore.StoreIndex(IndexProperties.keyLF_CVR, (int)(tuple_Cover.Item1 * 100));
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinCover, tuple_Cover.Item4);
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinCover, spActivity.coverSpectrum);
+            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinEvents, spActivity.eventSpectrum);
+            indicesStore.StoreIndex(IndexProperties.keyHF_CVR, spActivity.highFreqBandCover);
+            indicesStore.StoreIndex(IndexProperties.keyMF_CVR, spActivity.midFreqBandCover);
+            indicesStore.StoreIndex(IndexProperties.keyLF_CVR, spActivity.lowFreqBandCover);
 
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -382,25 +383,6 @@ namespace AudioAnalysisTools.Indices
 
         //#########################################################################################################################################################
         //  OTHER METHODS
-
-
-
-        /// <summary>
-        /// TODO: This method should call the Analysis() method
-        /// Get all the intermediate information and return a sonogram with annotations.
-        /// </summary>
-        /// <param name="fiSegmentAudioFile"></param>
-        /// <param name="config"></param>
-        //public static Image GetImageFromAudioSegment(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
-        //{
-        //    if (config == null) return null;
-        //    Image image = null;
-        //    //Image image = MakeAndDrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
-        //    return image;
-        //} //GetImageFromAudioSegment()
-
-
-
         //########################################################################################################################################################################
 
 
