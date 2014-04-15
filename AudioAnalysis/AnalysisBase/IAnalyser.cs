@@ -68,6 +68,10 @@ namespace AnalysisBase
         void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
 
         IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
+
+        // TODO:
+        //void WriteSpectraFile(FileInfo destination, IEnumerable<SpectraBase> results);
+        //?void? SummariseResults(EventBase[] events, IndexBase[] index, SpectraBase[] spectras);
     }
 
     public static class AnalyserHelpers
