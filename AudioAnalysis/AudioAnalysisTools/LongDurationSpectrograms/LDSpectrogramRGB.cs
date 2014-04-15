@@ -743,17 +743,31 @@ namespace AudioAnalysisTools
             {
                 matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.VAR_MIN, SpectrogramConstants.VAR_MAX);
             }
+
+
+            //FOR FROG DETECTION 
+            else if (key == SpectrogramConstants.KEY_Tracks)//.Equals("VAR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.TRC_MIN, SpectrogramConstants.TRC_MAX);
+            }
+            else if (key == SpectrogramConstants.KEY_Oscillations)//.Equals("VAR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.OSC_MIN, SpectrogramConstants.OSC_MAX);
+            }
+            else if (key == SpectrogramConstants.KEY_Harmonics)//.Equals("VAR"))
+            {
+                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.HAR_MIN, SpectrogramConstants.HAR_MAX);
+            }
             else
             {
                 //Logger.Warn("NormaliseSpectrogramMatrix() is rendering an INDEX that is not specially normalised");
-                Console.WriteLine("NormaliseSpectrogramMatrix() is rendering an UNKNOWN INDEX or one not normalised");
+                Console.WriteLine("NormaliseSpectrogramMatrix() is rendering an UNKNOWN INDEX <{0}> or one not normalised", key);
                 matrix = DataTools.Normalise(matrix, 0, 1);
             }
 
             matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
             return matrix;
         } //NormaliseSpectrogramMatrix()
-
 
 
         public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
