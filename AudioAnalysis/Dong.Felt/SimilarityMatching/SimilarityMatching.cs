@@ -399,6 +399,7 @@
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
         /// based on the sum of sub-region in the process of calculation. There are four properties as feature vector. 
+        /// -changed the comparison, only compare the nh which the query has something in there. 
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidate"></param>
@@ -411,27 +412,47 @@
             var result = 0.0;        
             if (query != null && candidate != null)
             {
-                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;                
-                var nhSum = 0.0;
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var nhSumNotNull = 0.0;
+                var nhSumNull = 0.0;                
                 for (int index = 0; index < nhCount; index++)
                 {
-                    
-                    var queryMagnitude = Math.Abs(query[index].magnitude);
-                    var queryOrientation = query[index].orientation;
-                    var queryDominantOrientationType = query[index].dominantOrientationType;
-                    var queryDominantPoiCount = query[index].dominantPOICount;
-                    var candidateMagnitude = Math.Abs(candidate[index].magnitude);
-                    var candidateOrientation = candidate[index].orientation;
-                    var candidateDominantOrientationType = candidate[index].dominantOrientationType;
-                    var candidateDominantPoiCount = candidate[index].dominantPOICount;
-                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-                    var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
-                    var orientationTypeDiff = Math.Abs(queryDominantOrientationType - candidateDominantOrientationType);
-                    var dominantPoiCountDiff = Math.Abs(queryDominantPoiCount - candidateDominantPoiCount);
-                    nhSum += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2)
-                        + weight3 * Math.Pow(orientationTypeDiff, 2) + weight4 * Math.Pow(dominantPoiCountDiff, 2));
+                    if (query[index].magnitude != 100)
+                    {
+                        var queryMagnitude = query[index].magnitude;
+                        var queryOrientation = query[index].orientation;
+                        var queryDominantOrientationType = query[index].dominantOrientationType;
+                        var queryDominantPoiCount = query[index].dominantPOICount;
+                        var candidateMagnitude = candidate[index].magnitude;
+                        var candidateOrientation = candidate[index].orientation;
+                        var candidateDominantOrientationType = candidate[index].dominantOrientationType;
+                        var candidateDominantPoiCount = candidate[index].dominantPOICount;
+                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                        var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
+                        var orientationTypeDiff = Math.Abs(queryDominantOrientationType - candidateDominantOrientationType);
+                        var dominantPoiCountDiff = Math.Abs(queryDominantPoiCount - candidateDominantPoiCount);
+                        nhSumNotNull += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2)
+                            + weight3 * Math.Pow(orientationTypeDiff, 2) + weight4 * Math.Pow(dominantPoiCountDiff, 2));
+                    }
+                    else
+                    {
+                        var queryMagnitude = query[index].magnitude;
+                        var queryOrientation = query[index].orientation;
+                        var queryDominantOrientationType = query[index].dominantOrientationType;
+                        var queryDominantPoiCount = query[index].dominantPOICount;
+                        var candidateMagnitude = candidate[index].magnitude;
+                        var candidateOrientation = candidate[index].orientation;
+                        var candidateDominantOrientationType = candidate[index].dominantOrientationType;
+                        var candidateDominantPoiCount = candidate[index].dominantPOICount;
+                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                        var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
+                        var orientationTypeDiff = Math.Abs(queryDominantOrientationType - candidateDominantOrientationType);
+                        var dominantPoiCountDiff = Math.Abs(queryDominantPoiCount - candidateDominantPoiCount);
+                        nhSumNull += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2)
+                            + weight3 * Math.Pow(orientationTypeDiff, 2) + weight4 * Math.Pow(dominantPoiCountDiff, 2));
+                    }
                 }
-                result = nhSum;
+                result = nhSumNotNull + nhSumNull;
             }
             return result;
         }

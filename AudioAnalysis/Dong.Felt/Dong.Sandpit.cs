@@ -65,13 +65,12 @@
                         RidgeMatrixLength = ridgeMatrixLength,
                         FilterRidgeMatrixLength = filterRidgeMatrixLength,
                         MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
-                    };                   
+                    };
                     MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                    ridgeConfig, config, rank, outputDirectory.FullName);
 
-                    /// RidgeDetectionBatchProcess
-                    //string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Eastern Whipbird-Training";
-                    //RidgeDetectionBatchProcess(inputDirectory, config, ridgeConfig);
+                    /// RidgeDetectionBatchProcess                    
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
                 }
                 else if (action == "processOne")
                 {
@@ -595,7 +594,7 @@
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                     var cols = spectrogram.Data.GetLength(0);
                     var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols, neighbourhoodLength, spectrogramConfig);
-                    var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(ridgeNhRepresentationList);
+                    var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
 
                     /// 1. Read the query csv file by parsing the queryCsvFilePath
                     var queryCsvFile = new FileInfo(queryCsvFiles[i]);
@@ -622,7 +621,7 @@
                             var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                             var cols1 = candidateSpectrogram.Data.GetLength(0);
                             var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1, neighbourhoodLength, spectrogramConfig);
-                            var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(candidateRidgeNhRepresentationList);
+                            var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(candidateRidgeNhRepresentationList);
                             var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                             candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
                             var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);                        
@@ -636,11 +635,11 @@
                             var weight2 = 1;
                             var weight3 = 1;
                             var weight4 = 1;
-                            //var weight5 = 1;
-                            //var weight6 = 1;
+                            var weight5 = 1;
+                            var weight6 = 1;
                             /// To calculate the distance
-                            var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation2(queryRepresentation, candidatesList, weight1, weight2,
-                                weight3, weight4);
+                            var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
+                                weight1, weight2, weight3, weight4, weight5, weight6);
                             //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
                             var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
