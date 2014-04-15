@@ -141,13 +141,9 @@ namespace AnalysisBase
 
         public TimeSpan SegmentOffsetFromStartOfSource { get; set; }
 
-        //SEGMENT_TIMESPAN = "SegTimeSpan";
-        public double SegmentDuration { get; set; }
+        public TimeSpan SegmentDuration { get; set; } //SEGMENT_TIMESPAN = "SegTimeSpan";
 
-        //START_MIN = "start-min";
-        //AudioAnalysisTools.Keys.EVENT_START_MIN,    //2
-        public int MinuteOffset { get; set; }
-
+        public int MinuteOffset { get; set; } //START_MIN = "start-min" = AudioAnalysisTools.Keys.EVENT_START_MIN
 
     }
 

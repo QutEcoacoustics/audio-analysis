@@ -20,6 +20,7 @@ namespace AudioAnalysisTools
         public const string KEY_Cluster  = "CLS";
         public const string KEY_Colour = "COL";
         public const string KEY_BinCover = "CVR";
+        public const string KEY_BinEvents = "EVN";
         public const string KEY_SpPeakTracks = "SPT";
         public const string KEY_TemporalEntropy = "TEN";
         public const string KEY_Variance = "VAR";

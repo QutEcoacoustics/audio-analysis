@@ -56,47 +56,45 @@ namespace AudioAnalysisTools
 
         // do not change headers unnecessarily - otherwise will lose compatibility with previous csv files
         // if change a header record the old header in method below:         public static string ConvertHeaderToKey(string header)
-        public static string header_count = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT;
-        public const string header_startMin = AudioAnalysisTools.AnalysisKeys.START_MIN;
-        public const string header_SecondsDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
-        public const string header_Clipping1 = "Clipping1";
-        public const string header_Clipping2 = "Clipping2";
-        public const string header_avAmpdB = "avAmp-dB";
-        public const string header_snr = "SNR";
-        public const string header_activeSnr = "ActiveSNR";
-        public const string header_bgdB = "Background";
-        public const string header_activity = "Activity";
-        public const string header_segPerSec = "Seg/Sec";
-        public const string header_avSegDur = "avSegDur";
-        public const string header_hfCover = "hfCover";
-        public const string header_mfCover = "mfCover";
-        public const string header_lfCover = "lfCover";
-        public const string header_HAmpl = "H[temporal]";
-        public const string header_HPeakFreq = "H[peakFreq]";
-        public const string header_HAvSpectrum = "H[spectral]";
-        public const string header_HVarSpectrum = "H[spectralVar]";
-        public const string header_AcComplexity = "AcComplexity";
-        public const string header_NumClusters = "ClusterCount";
-        public const string header_avClustDuration = "avClustDur";
-        public const string header_TrigramCount = "3gramCount";
-        public const string header_SPTracksPerSec = "Tracks/Sec";
-        public const string header_SPTracksDur = "avTrackDur";
+        //public static string header_count = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT;
+        //public const string header_startMin = AudioAnalysisTools.AnalysisKeys.START_MIN;
+        //public const string header_SecondsDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
+        //public const string header_Clipping1 = "Clipping1";
+        //public const string header_Clipping2 = "Clipping2";
+        //public const string header_avAmpdB = "avAmp-dB";
+        //public const string header_snr = "SNR";
+        //public const string header_activeSnr = "ActiveSNR";
+        //public const string header_bgdB = "Background";
+        //public const string header_activity = "Activity";
+        //public const string header_segPerSec = "Seg/Sec";
+        //public const string header_avSegDur = "avSegDur";
+        //public const string header_hfCover = "hfCover";
+        //public const string header_mfCover = "mfCover";
+        //public const string header_lfCover = "lfCover";
+        //public const string header_HAmpl = "H[temporal]";
+        //public const string header_HPeakFreq = "H[peakFreq]";
+        //public const string header_HAvSpectrum = "H[spectral]";
+        //public const string header_HVarSpectrum = "H[spectralVar]";
+        //public const string header_AcComplexity = "AcComplexity";
+        //public const string header_NumClusters = "ClusterCount";
+        //public const string header_avClustDuration = "avClustDur";
+        //public const string header_TrigramCount = "3gramCount";
+        //public const string header_SPTracksPerSec = "Tracks/Sec";
+        //public const string header_SPTracksDur = "avTrackDur";
         public const string header_rain = "Rain";
         public const string header_cicada = "Cicada";
 
 
 
-        string key = "INVALID";
-        string name = "INVALID";
+        public string Key {set; get; }
+        public string Name { set; get; }
         public Type DataType {private set; get; }
         public double DefaultValue { private set; get; }
 
         // for display purposes only
-        private bool doDisplay;
         public bool DoDisplay { private set; get; }
         private double normMin;
         private double normMax;
-        private string units;
         public string Units { private set; get; }
 
         // use these when calculated combination index.
@@ -104,70 +102,23 @@ namespace AudioAnalysisTools
         private double comboWeight;
 
         /// <summary>
-        /// Three CONSTRUCTORS depending on what properties are passed.
+        /// constructor sets default values
         /// </summary>
-        /// <param name="_key"></param>
-        /// <param name="_name"></param>
-        /// <param name="_dataType"></param>
-        public IndexProperties(string _key, string _name, Type _dataType)
+        public IndexProperties()
         {
-            key = _key;
-            name = _name;
-            DataType = _dataType;
-            SetExceptionDefaultValues(_key);
-            DoDisplay = false;
+            Key = "NOT SET";
+            Name = String.Empty;
+            DataType = typeof(double);
+            DefaultValue = 0.0;
+
+            DoDisplay = true;
             normMin = 0.0;
             normMax = 1.0;
+            Units = String.Empty;
 
             includeInComboIndex = false;
             comboWeight = 0.0;
         }
-        public IndexProperties(string _key, string _name, Type _dataType, bool _doDisplay, double _normMin, double _normMax, string _units)
-        {
-            key     = _key;
-            name    = _name;
-            DataType = _dataType;
-            SetExceptionDefaultValues(_key);
-            DoDisplay = _doDisplay;
-            normMin = _normMin;
-            normMax = _normMax;
-            units   = _units;
-            includeInComboIndex = false;
-            comboWeight = 0.0;
-        }
-        public IndexProperties(string _key, string _name, Type _dataType, bool _doDisplay, double _normMin, double _normMax, string _units, bool _includeInComboIndex, double _weight)
-        {
-            key   = _key;
-            name = _name;
-            DataType = _dataType;
-            SetExceptionDefaultValues(_key);
-            DoDisplay = _doDisplay;
-            normMin = _normMin;
-            normMax = _normMax;
-            units = _units;
-
-            includeInComboIndex = _includeInComboIndex;
-            comboWeight = _weight;
-        }
-
-        public void SetExceptionDefaultValues(string key)
-        {
-            //all values set 0.0 by default.//however the following are exceptions
-            if (key == keyAV_AMP) this.DefaultValue = SpectrogramConstants.AVG_MIN;
-            else
-                if (key == keyAV_AMP) this.DefaultValue = 1.0;
-                else
-                    if (key == keyBGN) this.DefaultValue = SpectrogramConstants.BGN_MIN;
-                    else
-                        if (key == keySEC_DUR) this.Units = "s";
-                        else
-                            if (key == keySPT_DUR) this.Units = "ms";
-                            else
-                                if (key == keyCLUSTER_DUR) this.Units = "ms";
-
-        }
-
-
 
         public double NormaliseValue(double val)
         {
@@ -203,18 +154,18 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public string GetPlotAnnotation()
         {
-            if (this.units == "") 
-                return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.name, this.normMin, this.normMax, this.units);
-            if (this.units == "%")
-                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.name, this.normMin, this.normMax, this.units);
-            if (this.units == "dB")
-                return String.Format(" {0} ({1:f0} .. {2:f0} {3})", this.name, this.normMin, this.normMax, this.units);
-            if (this.units == "ms")
-                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.name, this.normMin, this.normMax, this.units);
-            if (this.units == "s")
-                return String.Format(" {0} ({1:f1} .. {2:f1}{3})", this.name, this.normMin, this.normMax, this.units);
+            if (this.Units == "") 
+                return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.normMin, this.normMax, this.Units);
+            if (this.Units == "%")
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})",  this.Name, this.normMin, this.normMax, this.Units);
+            if (this.Units == "dB")
+                return String.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.normMin, this.normMax, this.Units);
+            if (this.Units == "ms")
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})",  this.Name, this.normMin, this.normMax, this.Units);
+            if (this.Units == "s")
+                return String.Format(" {0} ({1:f1} .. {2:f1}{3})",  this.Name, this.normMin, this.normMax, this.Units);
 
-            return     String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.name, this.normMin, this.normMax, this.units);
+            return     String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.normMin, this.normMax, this.Units);
         }
 
         /// <summary>
@@ -274,55 +225,80 @@ namespace AudioAnalysisTools
             // use next line as template.
             //properties.Add("XXX", new IndexConstants("key", "name", typeof(double), doDisplay, 0.0, 1.0, "XX", !includeInComboIndex, 0.5));
             properties.Add(keyCOUNT,
-                new IndexProperties(keyCOUNT, header_count, typeof(int)));
+                new IndexProperties { Key = keyCOUNT, Name = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT, DataType = typeof(int), DoDisplay = false });
+
             properties.Add(keySTART_MIN,
-                new IndexProperties(keySTART_MIN, header_startMin, typeof(double)));
+                new IndexProperties { Key = keySTART_MIN, Name = AudioAnalysisTools.AnalysisKeys.START_MIN, DoDisplay = false });
+
             properties.Add(keySEC_DUR, 
-                new IndexProperties(keySEC_DUR, header_SecondsDuration, typeof(TimeSpan)));
+                new IndexProperties { Key = keySEC_DUR, Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION, DataType = typeof(TimeSpan), DoDisplay = false });
+
             properties.Add(keyCLIP1,
-                new IndexProperties(keyCLIP1, header_Clipping1, typeof(double), doDisplay, 0.0, 100.0, "av/s"));
+                new IndexProperties { Key = keyCLIP1, Name = "Clipping1", normMin = 0.0, normMax = 100.0, Units = "av/s" });
+
             properties.Add(keyCLIP2,
-                new IndexProperties(keyCLIP2, header_Clipping2, typeof(double), doDisplay, 0.0, 1.0, "av/s"));
+                new IndexProperties { Key = keyCLIP2, Name = "Clipping2", normMin = 0.0, normMax = 1.0, Units = "av/s" });
+
             properties.Add(keyAV_AMP, 
-                new IndexProperties(keyAV_AMP, header_avAmpdB, typeof(double), doDisplay, -50.0, -5.0, "dB"));
+                new IndexProperties { Key = keyCLIP1, Name = "avAmp-dB", normMin = -50.0, normMax = -5.0, Units = "dB", DefaultValue = SpectrogramConstants.AVG_MIN });
+
             properties.Add(keyBGN, 
-                new IndexProperties(keyBGN, header_bgdB, typeof(double), doDisplay, -80.0, -20.0, "dB"));
+                new IndexProperties { Key = keyBGN, Name = "Background", normMin = -80.0, normMax = -20.0, Units = "dB", DefaultValue = SpectrogramConstants.BGN_MIN});
+
             properties.Add(keySNR, 
-                new IndexProperties(keySNR, header_snr, typeof(double), doDisplay, 3.0, 50.0, "dB"));
+                new IndexProperties { Key = keySNR, Name = "SNR", normMin = 3.0, normMax = 50.0, Units = "dB"});
+
             properties.Add(keySNR_ACTIVE, 
-                new IndexProperties(keySNR_ACTIVE, header_activeSnr, typeof(double), doDisplay, 3.0, 50.0, "dB"));
+                new IndexProperties { Key = keySNR_ACTIVE, Name = "ActiveSNR", normMin = 3.0, normMax = 50.0, Units = "dB"});
+
             properties.Add(keyACTIVITY, 
-                new IndexProperties(keyACTIVITY, header_activity, typeof(double), doDisplay, 0.2, 0.80, ""));
+                new IndexProperties { Key = keyACTIVITY, Name = "Activity", normMin = 0.2, normMax = 0.8, Units = String.Empty});
+
             properties.Add(keyEVENT_RATE,
-                new IndexProperties(keyEVENT_RATE, header_segPerSec, typeof(double), doDisplay, 0.0, 5.0, "av/s"));
+                new IndexProperties { Key = keyEVENT_RATE, Name = "Events/s", normMin = 0.0, normMax = 5.0, Units = "av/s"});
+
             properties.Add(keyEVENT_DUR, 
-                new IndexProperties(keyEVENT_DUR, header_avSegDur, typeof(TimeSpan), doDisplay, 0.0, 500, "ms"));
+                new IndexProperties { Key = keyEVENT_DUR, Name = "avEventDuration", normMin = 0.0, normMax = 500, Units = "ms"});
+
             properties.Add(keyHF_CVR, 
-                new IndexProperties(keyHF_CVR, header_hfCover, typeof(int), doDisplay, 0.0, 30.0, "%"));
+                new IndexProperties { Key = keyHF_CVR, Name = "hfCover", normMin = 0, normMax = 30, DataType = typeof(int), Units = "%"});
+
             properties.Add(keyMF_CVR, 
-                new IndexProperties(keyMF_CVR, header_mfCover, typeof(int), doDisplay, 0.0, 30.0, "%"));
-            properties.Add(keyLF_CVR, 
-                new IndexProperties(keyLF_CVR, header_lfCover, typeof(int), doDisplay, 0.0, 30.0, "%"));
+                new IndexProperties { Key = keyMF_CVR, Name = "mfCover", normMin = 0, normMax = 30, DataType = typeof(int), Units = "%"});
+
+            properties.Add(keyLF_CVR,
+                new IndexProperties { Key = keyLF_CVR, Name = "lfCover", normMin = 0, normMax = 30, DataType = typeof(int), Units = "%" });
+
             properties.Add(keyHtemp, 
-                new IndexProperties(keyHtemp, header_HAmpl, typeof(double), doDisplay, 0.4, 0.95, "", includeInComboIndex, 0.3));
+                new IndexProperties { Key = keyHtemp, Name = "H[temp]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0,
+                    includeInComboIndex = true, comboWeight = 0.3 });
+
             properties.Add(keyHpeak, 
-                new IndexProperties(keyHpeak, header_HPeakFreq, typeof(double), doDisplay, 0.4, 0.95, ""));
-            properties.Add(keyHspec, 
-                new IndexProperties(keyHspec, header_HAvSpectrum, typeof(double), doDisplay, 0.4, 0.95, "", includeInComboIndex, 0.2));
-            properties.Add(keyHvari, 
-                new IndexProperties(keyHvari, header_HVarSpectrum, typeof(double), doDisplay, 0.4, 0.95, ""));
+                new IndexProperties { Key = keyHpeak, Name = "H[peakFreq]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+
+            properties.Add(keyHspec,
+                new IndexProperties { Key = keyHspec, Name = "H[spectral]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+
+            properties.Add(keyHvari,
+                new IndexProperties { Key = keyHvari, Name = "H[spectralVar]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+
             properties.Add(keyACI, 
-                new IndexProperties(keyACI, header_AcComplexity, typeof(double), doDisplay, 0.4, 0.7, "", includeInComboIndex, 0.2));
+                new IndexProperties { Key = keyACI, Name = "ACI", normMin = 0.4, normMax = 0.7, includeInComboIndex = true, comboWeight = 0.2 });
+
             properties.Add(keyCLUSTER_COUNT, 
-                new IndexProperties(keyCLUSTER_COUNT, header_NumClusters, typeof(int), doDisplay, 0.0, 50.0, "", includeInComboIndex, 0.3));
+                new IndexProperties { Key = keyCLUSTER_COUNT, Name = "ClusterCount", DataType = typeof(int), normMin = 0, normMax = 50, includeInComboIndex = true, comboWeight = 0.3 });
+
             properties.Add(keyCLUSTER_DUR, 
-                new IndexProperties(keyCLUSTER_DUR, header_avClustDuration, typeof(TimeSpan), doDisplay, 50.0, 200.0, "ms"));
+                new IndexProperties { Key = keyCLUSTER_DUR, Name = "avClusterDuration", DataType = typeof(TimeSpan), normMin = 50, normMax = 200, Units = "ms" });
+
             properties.Add(key3GRAM_COUNT, 
-                new IndexProperties(key3GRAM_COUNT, header_TrigramCount, typeof(int), doDisplay, 0.0, 50.0, ""));
+                new IndexProperties { Key = key3GRAM_COUNT, Name = "3gramCount", DataType = typeof(int), normMin = 0, normMax = 50 });
+
             properties.Add(keySPT_PER_SEC, 
-                new IndexProperties(keySPT_PER_SEC, header_SPTracksPerSec, typeof(double), doDisplay, 0.0, 10.0, "av/s"));
+                new IndexProperties { Key = keySPT_PER_SEC, Name = "Tracks/Sec", normMin = 0, normMax = 10, Units = "av/s" });
+
             properties.Add(keySPT_DUR, 
-                new IndexProperties(keySPT_DUR, header_SPTracksDur, typeof(TimeSpan), doDisplay, 0.0, 200.0, "ms"));
+                new IndexProperties { Key = keySPT_DUR, Name = "avTrackDur", DataType = typeof(TimeSpan), normMin = 0.0, normMax = 200, Units = "ms" });
 
             return properties;
         }
@@ -343,7 +319,7 @@ namespace AudioAnalysisTools
             foreach (string key in indexProperties.Keys)
             {
                 IndexProperties ip = indexProperties[key];
-                mapName2Key.Add(ip.name, key);
+                mapName2Key.Add(ip.Name, key);
             }
 
             //now add in historical names from previous incarnations of csv file headers
@@ -382,7 +358,7 @@ namespace AudioAnalysisTools
             foreach (string key in properties.Keys)
             {
                 IndexProperties ic = properties[key];
-                nameArray[count] = ic.name;
+                nameArray[count] = ic.Name;
                 count++;
             }
             return nameArray;
@@ -395,7 +371,7 @@ namespace AudioAnalysisTools
             foreach (string key in properties.Keys)
             {
                 IndexProperties ic = properties[key];
-                doDisplayArray[count] = ic.doDisplay;
+                doDisplayArray[count] = ic.DoDisplay;
                 count++;
             }
             return doDisplayArray;

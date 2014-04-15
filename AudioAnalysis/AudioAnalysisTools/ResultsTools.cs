@@ -31,9 +31,6 @@ namespace AudioAnalysisTools
             DataTable mergedDatatable = null;
             foreach (var result in analyserResults)
             {
-                //Console.WriteLine("RESULTS DATA");
-                //DataTableTools.WriteTable2ConsoleInLongLayout(result.Data); //for debugging
-
                 if ((result == null)||(result.Data == null)) continue;
                 DataTable dataTableForOneAudioSegment = GetSegmentDatatableWithContext(result);
 
@@ -41,11 +38,8 @@ namespace AudioAnalysisTools
                 {
                     mergedDatatable = dataTableForOneAudioSegment.Clone();
                 }
-                //Console.WriteLine("dataTableForOneAudioSegment");
-                //DataTableTools.WriteTable2ConsoleInLongLayout(dataTableForOneAudioSegment); //for debugging
                 if (dataTableForOneAudioSegment != null) mergedDatatable.Merge(dataTableForOneAudioSegment);
             }
-            //DataTableTools.WriteTable2ConsoleInLongLayout(mergedDatatable); //for debugging
             return mergedDatatable;
         }
 
@@ -86,9 +80,20 @@ namespace AudioAnalysisTools
             {
                 IndexBase ib = result.indexBase;
                 ib.SegmentOffsetFromStartOfSource = result.SegmentStartOffset;
-                ib.SegmentDuration = result.AudioDuration.TotalSeconds;
+                ib.SegmentDuration = result.AudioDuration;
+                //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
+                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
+                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySEC_DUR] = result.AudioDuration.TotalSeconds;
                 mergedIndices[count] = ib;
                 count++;
+            }
+
+            //need to sort the IndexBase array on the property ib.SegmentOffsetFromStartOfSource
+            // then add in the count of indices as below.
+            for (int i = 0; i < mergedIndices.Length; i++)
+            {
+                mergedIndices[i].SegmentCount = i;
+                mergedIndices[i].SummaryIndicesOfTypeInt[IndexProperties.keyCOUNT] = i;
             }
 
             return mergedIndices;
@@ -152,7 +157,7 @@ namespace AudioAnalysisTools
                 eventBase.EventCount = count;
                 count++;
 
-                eventBase.SegmentDuration = result.AudioDuration.TotalSeconds;
+                eventBase.SegmentDuration = result.AudioDuration;
                 var absoluteOffset = resultStartSeconds + eventBase.EventStartSeconds;
                 eventBase.EventStartAbsolute = absoluteOffset;
                 
@@ -173,7 +178,7 @@ namespace AudioAnalysisTools
             {
                 // (double)result.SegmentStartOffset.Minutes
                 indexBase.MinuteOffset = (int)result.SegmentStartOffset.TotalMinutes;
-                indexBase.SegmentDuration = result.AudioDuration.TotalSeconds;
+                indexBase.SegmentDuration = result.AudioDuration;
                 //indexBase.indexStore = result.
                 // TODO: what is the purpose of Indices_Count
 
@@ -342,28 +347,17 @@ namespace AudioAnalysisTools
 
         public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir)
         {
+            if (indices == null) return null;
             FileInfo fiIndices = null;
 
-            if (indices != null)  
-            {
-                //string sortString = (AnalysisKeys.START_MIN + " ASC");
-                //indicesDatatable = DataTableTools.SortTable(indicesDatatable, sortString);    //sort by start time
+            string reportfilePath = Path.Combine(opDir.FullName, fName + ".Indices" + ReportFileExt);
 
-                for (int i = 0; i < indices.Length; i++)
-                {
-                    indices[i].SegmentCount = i;
-                }
+            ResultsTools.WriteIndices2CSV(indices, reportfilePath);
 
-                string reportfilePath = Path.Combine(opDir.FullName, fName + ".Indices" + ReportFileExt);
-
-
-                ResultsTools.WriteIndices2CSV(indices, reportfilePath);
-
-                string target = Path.Combine(opDir.FullName, fName + ".Indices_BACKUP" + ReportFileExt);
-                File.Delete(target);               // Ensure that the target does not exist.
-                File.Copy(reportfilePath, target); // Copy the file 2 target
-                fiIndices = new FileInfo(reportfilePath);
-            }
+            string target = Path.Combine(opDir.FullName, fName + ".Indices_BACKUP" + ReportFileExt);
+            File.Delete(target);               // Ensure that the target does not exist.
+            File.Copy(reportfilePath, target); // Copy the file 2 target
+            fiIndices = new FileInfo(reportfilePath);
             return fiIndices;
         }
 
