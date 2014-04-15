@@ -53,11 +53,11 @@ namespace AudioAnalysisTools
 
         // FOR FROG SPECTROGRAMS
         public const double TRC_MIN = 0.0;
-        public const double TRC_MAX = 0.99;
+        public const double TRC_MAX = 0.065;
         public const double OSC_MIN = 0.0;
-        public const double OSC_MAX = 0.99;
+        public const double OSC_MAX = 0.5;
         public const double HAR_MIN = 0.0;
-        public const double HAR_MAX = 0.99;
+        public const double HAR_MAX = 0.025;
 
         
         
