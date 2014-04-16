@@ -20,13 +20,13 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 6.0
+RidgeDetectionMagnitudeThreshold: 6
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 7
+NeighbourhoodLength: 9
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000
@@ -34,8 +34,6 @@ SecondToMillionSecondUnit: 1000
 Rank: 10
 
 myNewValue: hello
-
-array: [1, 2.0, 3, 4, 5]
 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
