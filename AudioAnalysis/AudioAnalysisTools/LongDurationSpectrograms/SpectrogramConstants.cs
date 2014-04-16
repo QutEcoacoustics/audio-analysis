@@ -9,25 +9,29 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+
+    //public enum keysForSpectralIndices { ACI, AVG, BGN, CLS, CVR, EVN, SPT, TEN, VAR }
+
     public static class SpectrogramConstants
     {
-
+        // WHEN CREATING NEW SPECTRAL INDEX, YOU NEED TO ENTER ITS KEY _AND_ INCORPORATE IT INTO THE string ALL_KNOWN_KEYS.
         // CONST string for referring to different types of spectrogram - these should really be an enum                
         public const string KEY_AcousticComplexityIndex = "ACI";
         public const string KEY_Average = "AVG";
         public const string KEY_BackgroundNoise = "BGN";
-        public const string KEY_Combined = "CMB";
         public const string KEY_Cluster  = "CLS";
-        public const string KEY_Colour = "COL";
         public const string KEY_BinCover = "CVR";
         public const string KEY_BinEvents = "EVN";
         public const string KEY_SpPeakTracks = "SPT";
         public const string KEY_TemporalEntropy = "TEN";
-        public const string KEY_Variance = "VAR";
+        public const string KEY_Variance   = "VAR";
+        public const string KEY_Combined = "CMB"; //discontinued - replaced by false colour spectrograms
+        public const string KEY_Colour = "COL"; //discontinued - 
+
+        public const string ALL_KNOWN_KEYS = "ACI-AVG-BGN-CLS-CVR-EVN-SPT-TEN-VAR";
+
 
         // NORMALISING CONSTANTS FOR INDICES
-        //public const double ACI_MIN = 0.0;
-        //public const double ACI_MAX = 1.0;
         public const double ACI_MIN = 0.4;
         public const double ACI_MAX = 0.8;
         public const double AVG_MIN = 0.0;
@@ -38,6 +42,8 @@ namespace AudioAnalysisTools
         public const double CLS_MAX = 30.0;
         public const double CVR_MIN = 0.0;
         public const double CVR_MAX = 0.3;
+        public const double EVN_MIN = 0.0;
+        public const double EVN_MAX = 0.8;
         public const double TEN_MIN = 0.4;
         public const double TEN_MAX = 0.95;
         public const double SDV_MIN = 0.0; // for the variance bounds
@@ -52,12 +58,12 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_TEN_AVG = "ACI-TEN-AVG"; //R-G-B
         public const string RGBMap_ACI_TEN_CVR = "ACI-TEN-CVR"; //R-G-B
         public const string RGBMap_ACI_TEN_CLS = "ACI-TEN-CLS"; //R-G-B
+        public const string RGBMap_ACI_TEN_EVN = "ACI-TEN-EVN"; //R-G-B
         public const string RGBMap_ACI_TEN_SPT = "ACI-TEN-SPT"; //R-G-B
         public const string RGBMap_ACI_TEN_BGN = "ACI-TEN-BGN"; //R-G-B
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
         public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
         public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
-        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR";
 
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram

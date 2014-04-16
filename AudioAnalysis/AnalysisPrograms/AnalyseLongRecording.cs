@@ -128,7 +128,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_15April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_16April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -186,8 +186,6 @@ namespace AnalysisPrograms
             var configPath = arguments.Config;
             var outputDir = arguments.Output;
             var tempFilesDirectory = arguments.TempDir;
-
-
 
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
@@ -369,10 +367,6 @@ namespace AnalysisPrograms
             }
 
             // 10. SAVE THE RESULTS
-            //this dictionary is needed to write results to csv file and to draw the image of indices
-            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
-
-
             var resultsDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
             FileInfo eventsFile = null;
@@ -382,7 +376,22 @@ namespace AnalysisPrograms
                 // next line commented out by Michael 15-04-2014 to force use of indices only
                 //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
                 //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
-                ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+
+
+                LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+                LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
+                LoggedConsole.WriteLine("");
+                //this dictionary is needed to write results to csv file and to draw the image of indices
+                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+
+                // Convert summary indices to image
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesFile, title);
+                var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+
             }
             else
             {
@@ -408,30 +417,32 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n");
 
 
-            if (indicesFile == null)
-            {
-                LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
-            }
-            else
-            {
-                LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
-                LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
-                LoggedConsole.WriteLine("");
+            //if (indicesFile == null)
+            //{
+            //    LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
+            //}
+            //else
+            //{
+            //    LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+            //    LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
+            //    LoggedConsole.WriteLine("");
 
-                // Convert datatable to image
-                Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices();
-                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
-                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
-                var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
-                tracksImage.Save(imagePath);
+            //    //this dictionary is needed to write results to csv file and to draw the image of indices
+            //    Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
 
-                if (displayCSVImage)
-                {
-                    //run Paint to display the image if it exists.
-                }
-            }
+            //    // Convert datatable to image
+            //    string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+            //    string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            //    //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
+            //    Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
+            //    var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+            //    tracksImage.Save(imagePath);
+
+            //    if (displayCSVImage)
+            //    {
+            //        //run Paint to display the image if it exists.
+            //    }
+            //}
 
             // if doing ACOUSTIC INDICES then write SPECTROGRAMS of Spectral Indices to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))

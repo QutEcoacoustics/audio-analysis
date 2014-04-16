@@ -168,16 +168,6 @@ namespace AnalysisBase
         //AudioAnalysisTools.Keys.EVENT_COUNT,        //1
         public int EventCount { get; set; }
 
-        
-        //AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,   //5
-        //AudioAnalysisTools.Keys.EVENT_DURATION,     //6
-        ////AudioAnalysisTools.Keys.EVENT_INTENSITY,
-        //AudioAnalysisTools.Keys.EVENT_NAME,         //7
-        //AudioAnalysisTools.Keys.DOMINANT_FREQUENCY,
-        //AudioAnalysisTools.Keys.OSCILLATION_RATE,
-        //AudioAnalysisTools.Keys.EVENT_NORMSCORE,
-        //AudioAnalysisTools.Keys.MAX_HZ,
-        
     }
 
 
@@ -188,11 +178,7 @@ namespace AnalysisBase
     public class IndexBase : ResultBase
     {
         //these dictionaries used to store index values accessible by key
-        //private Dictionary<string, double> summaryIndicesOfTypeDouble = new Dictionary<string, double>();
         public Dictionary<string, double> SummaryIndicesOfTypeDouble { get; set; }
-        //private Dictionary<string, int> summaryIndicesOfTypeInt = new Dictionary<string, int>();
-        public Dictionary<string, int> SummaryIndicesOfTypeInt { get; set; }
-        //private Dictionary<string, TimeSpan> summaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
         public Dictionary<string, TimeSpan> SummaryIndicesOfTypeTimeSpan { get; set; }
 
         /// <summary>
@@ -210,18 +196,22 @@ namespace AnalysisBase
         public double GetIndex(string key)
         {
             if (SummaryIndicesOfTypeDouble.ContainsKey(key)) return SummaryIndicesOfTypeDouble[key];
-            if (SummaryIndicesOfTypeInt.ContainsKey(key)) return (double)SummaryIndicesOfTypeInt[key];
+            //if (SummaryIndicesOfTypeInt.ContainsKey(key)) return (double)SummaryIndicesOfTypeInt[key];
             if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key)) return SummaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
             return 0.0;
         }
 
-        public string GetIndexAsString(string key, string units)
+        public string GetIndexAsString(string key, string units, Type datatype)
         {
             string str = "";
-            if (SummaryIndicesOfTypeDouble.ContainsKey(key)) 
-                return SummaryIndicesOfTypeDouble[key].ToString();
-            if (SummaryIndicesOfTypeInt.ContainsKey(key)) 
-                return SummaryIndicesOfTypeInt[key].ToString();
+            if (SummaryIndicesOfTypeDouble.ContainsKey(key))
+            {
+                if (datatype == typeof(int)) 
+                    return String.Format("{0:f0}",SummaryIndicesOfTypeDouble[key].ToString());
+                else
+                    return SummaryIndicesOfTypeDouble[key].ToString();
+            }
+            else
             if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key))
             {
                 if (units == "s")  return SummaryIndicesOfTypeTimeSpan[key].TotalSeconds.ToString();
@@ -239,7 +229,7 @@ namespace AnalysisBase
         }
         public int GetIndexAsInteger(string key)
         {
-            return SummaryIndicesOfTypeInt[key];
+            return (int)Math.Floor(SummaryIndicesOfTypeDouble[key]);
         }
         public TimeSpan GetIndexAsTimeSpan(string key)
         {

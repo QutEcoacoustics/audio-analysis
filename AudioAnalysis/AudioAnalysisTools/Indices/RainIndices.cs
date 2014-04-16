@@ -137,7 +137,7 @@ namespace AudioAnalysisTools.Indices
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
