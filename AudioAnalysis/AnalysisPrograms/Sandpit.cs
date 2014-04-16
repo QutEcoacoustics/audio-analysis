@@ -126,8 +126,8 @@ namespace AnalysisPrograms
                     Console.WriteLine("There are no spectrogram matrices in the dictionary.");
                     return;
                 }
-                string possibleIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
-                cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem, possibleIndices);
+                string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
+                cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem, keys);
 
                 colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
                 Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);

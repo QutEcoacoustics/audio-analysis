@@ -135,17 +135,21 @@ namespace AudioAnalysisTools
         /// <param name="size"></param>
         public static Dictionary<string, double[]> InitialiseSpectra(int size)
         {
-            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+            Dictionary<string, IndexProperties> dict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            //Dictionary<string, IndexProperties> dict2 = IndexProperties.GetDictionaryOfSummaryIndexProperties();
+            string[] keys = dict.Keys.ToArray();
+
+            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
 
             Dictionary<string, double[]> spectra = new Dictionary<string, double[]>();
             foreach (string key in keys)
             {
                 var spectrum = new double[size];
-                if (key == SpectrogramConstants.KEY_BackgroundNoise)
+                if (key == IndexProperties.spKEY_BkGround)
                 {
                     for (int i = 0; i < size; i++) spectrum[i] = -150; // set rock bottom BGN level in decibels
                 } else
-                if (key == SpectrogramConstants.KEY_TemporalEntropy)
+                    if (key == IndexProperties.spKEY_TemporalEntropy)
                 {
                     for (int i = 0; i < size; i++) spectrum[i] = 1.0; // this is default for temporal entropy
                 }

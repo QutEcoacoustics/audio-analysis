@@ -137,7 +137,7 @@ namespace AudioAnalysisTools.Indices
             var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration);
 
             indicesStore.StoreIndex(IndexProperties.keyACTIVITY, activity.activeFrameCover); // fraction of frames having acoustic activity 
-            indicesStore.StoreIndex(IndexProperties.keyBGN, bgNoise.NoiseMode);              // bg noise in dB
+            indicesStore.StoreIndex(IndexProperties.keyBKGROUND, bgNoise.NoiseMode);              // bg noise in dB
             indicesStore.StoreIndex(IndexProperties.keySNR, bgNoise.Snr);                    // SNR
             indicesStore.StoreIndex(IndexProperties.keySNR_ACTIVE, activity.activeAvDB);     // snr calculated from active frames only
             indicesStore.StoreIndex(IndexProperties.keySIG_AMPL, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
@@ -169,13 +169,13 @@ namespace AudioAnalysisTools.Indices
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             double[] aciArray = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_AcousticComplexityIndex, aciArray); //store ACI spectrum
+            indicesStore.AddSpectrum(IndexProperties.spKEY_ACI, aciArray); //store ACI spectrum
             double[] reducedSpectrum = DataTools.Subarray(aciArray, lowerBinBound, reducedFreqBinCount);  // remove low freq band
             indicesStore.StoreIndex(IndexProperties.keyACI, reducedSpectrum.Average()); // average of ACI spectrum with low freq bins removed
 
 
             // ii: CALCULATE H(t) or Temporal ENTROPY Spectrum 
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_TemporalEntropy, AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram));
+            indicesStore.AddSpectrum(IndexProperties.spKEY_TemporalEntropy, AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram));
 
             // iii: remove background noise from the amplitude spectrogram
             double SD_COUNT = 0.0;
@@ -220,7 +220,7 @@ namespace AudioAnalysisTools.Indices
             // ii: Calculate background noise spectrum in decibels
             SD_COUNT = 0.0; // number of SDs above the mean for noise removal
             SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BackgroundNoise, DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7)); // smooth modal profile
+            indicesStore.AddSpectrum(IndexProperties.spKEY_BkGround, DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7)); // smooth modal profile
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
@@ -229,8 +229,8 @@ namespace AudioAnalysisTools.Indices
 
             // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_Average,  tuple2.Item1);
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_Variance, tuple2.Item2);
+            indicesStore.AddSpectrum(IndexProperties.spKEY_Average, tuple2.Item1);
+            indicesStore.AddSpectrum(IndexProperties.spKEY_Variance, tuple2.Item2);
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -238,8 +238,8 @@ namespace AudioAnalysisTools.Indices
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameDuration, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
 
             //TO DO TODO TODO TODO TODO TODO  etc
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinCover, spActivity.coverSpectrum);
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_BinEvents, spActivity.eventSpectrum);
+            indicesStore.AddSpectrum(IndexProperties.spKEY_BinCover, spActivity.coverSpectrum);
+            indicesStore.AddSpectrum(IndexProperties.spKEY_BinEvents, spActivity.eventSpectrum);
             indicesStore.StoreIndex(IndexProperties.keyHF_CVR, spActivity.highFreqBandCover);
             indicesStore.StoreIndex(IndexProperties.keyMF_CVR, spActivity.midFreqBandCover);
             indicesStore.StoreIndex(IndexProperties.keyLF_CVR, spActivity.lowFreqBandCover);
@@ -250,7 +250,7 @@ namespace AudioAnalysisTools.Indices
             dBThreshold = 3.0;
             // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
             SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
-            indicesStore.AddSpectrum(SpectrogramConstants.KEY_SpPeakTracks, sptInfo.spSpectrum);
+            indicesStore.AddSpectrum(IndexProperties.spKEY_SpPeakTracks, sptInfo.spSpectrum);
 
             indicesStore.StoreIndex(IndexProperties.keySPT_DUR, sptInfo.totalTrackDuration);
             indicesStore.StoreIndex(IndexProperties.keySPT_PER_SEC, sptInfo.trackCount / wavDuration.TotalSeconds);
@@ -350,7 +350,7 @@ namespace AudioAnalysisTools.Indices
                 indicesStore.StoreIndex(IndexProperties.key3GRAM_COUNT, clusterInfo.triGramUniqueCount);
 
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
-                indicesStore.AddSpectrum(SpectrogramConstants.KEY_Cluster, 
+                indicesStore.AddSpectrum(IndexProperties.spKEY_Cluster, 
                                          SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor));
             }
 
@@ -447,26 +447,26 @@ namespace AudioAnalysisTools.Indices
 
         public static void MarkClippedSpectra(Dictionary<string, double[]> spectra)  
         {
-            int freqBinCount = spectra[SpectrogramConstants.KEY_BackgroundNoise].Length;
+            int freqBinCount = spectra[IndexProperties.spKEY_BkGround].Length;
             for (int i = (freqBinCount - 10); i < freqBinCount; i++)
             {
-                spectra[SpectrogramConstants.KEY_BackgroundNoise][i] = 1.0;
-                spectra[SpectrogramConstants.KEY_Average][i] = 0.0;
-                spectra[SpectrogramConstants.KEY_BinCover][i] = 0.0;
+                spectra[IndexProperties.spKEY_BkGround][i] = 1.0;
+                spectra[IndexProperties.spKEY_Average][i] = 0.0;
+                spectra[IndexProperties.spKEY_BinCover][i] = 0.0;
 
-                spectra[SpectrogramConstants.KEY_AcousticComplexityIndex][i] = 1.0;
-                spectra[SpectrogramConstants.KEY_TemporalEntropy][i] = 1.0;
-                spectra[SpectrogramConstants.KEY_SpPeakTracks][i] = 0.0;
+                spectra[IndexProperties.spKEY_ACI][i] = 1.0;
+                spectra[IndexProperties.spKEY_TemporalEntropy][i] = 1.0;
+                spectra[IndexProperties.spKEY_SpPeakTracks][i] = 0.0;
             }
-            spectra[SpectrogramConstants.KEY_Average][freqBinCount - 5] = 100.0; // dB
-            spectra[SpectrogramConstants.KEY_BinCover][freqBinCount - 5] = 1.0;
-            spectra[SpectrogramConstants.KEY_Average][freqBinCount - 7] = 100.0;
-            spectra[SpectrogramConstants.KEY_BinCover][freqBinCount - 7] = 1.0;
-            
-            spectra[SpectrogramConstants.KEY_TemporalEntropy][freqBinCount - 5] = 0.0;
-            spectra[SpectrogramConstants.KEY_SpPeakTracks][freqBinCount - 5] = 1.0;
-            spectra[SpectrogramConstants.KEY_TemporalEntropy][freqBinCount - 7] = 0.0;
-            spectra[SpectrogramConstants.KEY_SpPeakTracks][freqBinCount - 7] = 1.0;
+            spectra[IndexProperties.spKEY_Average][freqBinCount - 5] = 100.0; // dB
+            spectra[IndexProperties.spKEY_BinCover][freqBinCount - 5] = 1.0;
+            spectra[IndexProperties.spKEY_Average][freqBinCount - 7] = 100.0;
+            spectra[IndexProperties.spKEY_BinCover][freqBinCount - 7] = 1.0;
+
+            spectra[IndexProperties.spKEY_TemporalEntropy][freqBinCount - 5] = 0.0;
+            spectra[IndexProperties.spKEY_SpPeakTracks][freqBinCount - 5] = 1.0;
+            spectra[IndexProperties.spKEY_TemporalEntropy][freqBinCount - 7] = 0.0;
+            spectra[IndexProperties.spKEY_SpPeakTracks][freqBinCount - 7] = 1.0;
 
         } // MarkClippedSpectra()
 
