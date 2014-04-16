@@ -13,10 +13,75 @@ namespace AudioAnalysisTools
     public static class IndexDisplay
     {
         public const int DEFAULT_TRACK_HEIGHT = 20;
-        public const int TRACK_END_PANEL_WIDTH = 300; // pixels. This is where name of index goes in track image
+        public const int TRACK_END_PANEL_WIDTH = 250; // pixels. This is where name of index goes in track image
         public const int TIME_SCALE = 60;   //One minute segments or 60 segments per hour. This constant places grid lines every 60 pixels = 1 hour
 
-        
+
+
+
+        /// <summary>
+        /// reads csv file and converts to tracks image
+        /// </summary>
+        /// <param name="listOfIndexProperties"></param>
+        /// <param name="dt"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static Bitmap ConstructVisualIndexImage(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, string title)
+        {
+
+            if (! csvFile.Exists) return null;
+
+            Dictionary<string, double[]> dict = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+
+
+            int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+            int length = 0;
+            int imageWidth = 0;
+            var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
+
+            // for each column of values in the csv file create a display track
+            foreach (string key in listOfIndexProperties.Keys)
+            {
+                IndexProperties ip = listOfIndexProperties[key];
+                if (! ip.DoDisplay) continue;
+
+                string name = ip.Name;
+                double[] array = dict[key];
+                imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
+                Image bitmap = ip.GetPlotImage(array);
+                listOfBitmaps.Add(bitmap);
+            }
+
+            //set up the composite image parameters
+            int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(length, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+
+            //draw the composite bitmap
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+            using (Graphics gr = Graphics.FromImage(compositeBmp))
+            {
+                gr.Clear(Color.Black);
+
+                int offset = 0;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top title
+                offset += trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset += trackHeight;
+                for (int i = 0; i < listOfBitmaps.Count; i++)
+                {
+                    gr.DrawImage(listOfBitmaps[i], 0, offset);
+                    offset += trackHeight;
+                }
+                gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
+            }
+            return compositeBmp;
+        }
+
+
+
+
+
         /// <summary>
         /// This method assumes that the data table of indices is already properly ordered for display.
         /// </summary>

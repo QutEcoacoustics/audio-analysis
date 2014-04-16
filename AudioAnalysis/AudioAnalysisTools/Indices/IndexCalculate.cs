@@ -115,7 +115,7 @@ namespace AudioAnalysisTools.Indices
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             IndexStore indicesStore = new IndexStore(freqBinCount, wavDuration);  // total duration of recording
-            indicesStore.StoreIndex(IndexProperties.keySEC_DUR, wavDuration);     // duration of recording in seconds
+            indicesStore.StoreIndex(IndexProperties.keySEG_DURATION, wavDuration);     // duration of recording in seconds
             indicesStore.StoreIndex(IndexProperties.keyCLIP1, dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds); //average high ampl rate per second
             indicesStore.StoreIndex(IndexProperties.keyCLIP2, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
 
@@ -134,13 +134,13 @@ namespace AudioAnalysisTools.Indices
 
 
             // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
-            var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration, ActivityAndCover.DEFAULT_activityThreshold_dB);
+            var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration);
 
             indicesStore.StoreIndex(IndexProperties.keyACTIVITY, activity.activeFrameCover); // fraction of frames having acoustic activity 
             indicesStore.StoreIndex(IndexProperties.keyBGN, bgNoise.NoiseMode);              // bg noise in dB
             indicesStore.StoreIndex(IndexProperties.keySNR, bgNoise.Snr);                    // SNR
             indicesStore.StoreIndex(IndexProperties.keySNR_ACTIVE, activity.activeAvDB);     // snr calculated from active frames only
-            indicesStore.StoreIndex(IndexProperties.keyAV_AMP, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
+            indicesStore.StoreIndex(IndexProperties.keySIG_AMPL, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
             indicesStore.StoreIndex(IndexProperties.keyHtemp, DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope))); // ENTROPY of ENERGY ENVELOPE
             indicesStore.StoreIndex(IndexProperties.keyEVENT_RATE, activity.eventCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
@@ -290,7 +290,7 @@ namespace AudioAnalysisTools.Indices
                 sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-                scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), ActivityAndCover.DEFAULT_activityThreshold_dB));
+                scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 //convert spectral peaks to frequency

@@ -83,7 +83,7 @@ namespace AudioAnalysisTools
                 ib.SegmentDuration = result.AudioDuration;
                 //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
                 ib.SummaryIndicesOfTypeDouble[IndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
-                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySEC_DUR] = result.AudioDuration.TotalSeconds;
+                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySEG_DURATION] = result.AudioDuration.TotalSeconds;
                 mergedIndices[count] = ib;
                 count++;
             }
@@ -93,7 +93,7 @@ namespace AudioAnalysisTools
             for (int i = 0; i < mergedIndices.Length; i++)
             {
                 mergedIndices[i].SegmentCount = i;
-                mergedIndices[i].SummaryIndicesOfTypeInt[IndexProperties.keyCOUNT] = i;
+                mergedIndices[i].SummaryIndicesOfTypeDouble[IndexProperties.keyCOUNT] = (double)i;
             }
 
             return mergedIndices;
@@ -380,7 +380,8 @@ namespace AudioAnalysisTools
                 StringBuilder builder = new StringBuilder();
 
 
-                foreach (string name in headers)
+                //foreach (string name in headers)
+                foreach (string name in keys)
                 {
                     builder.Append(seperator).Append(name);
                     seperator = seperatorChar;
@@ -394,9 +395,7 @@ namespace AudioAnalysisTools
                     foreach (string key in keys)
                     {
                         IndexProperties ip = listOfIndexProperties[key]; 
-                        string units = ip.Units;
-
-                        string str = ib.GetIndexAsString(key, units);
+                        string str = ib.GetIndexAsString(key, ip.Units, ip.DataType);
 
                         builder.Append(seperator).Append(str);
                         seperator = seperatorChar;

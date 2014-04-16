@@ -1019,7 +1019,8 @@ namespace AudioAnalysisTools
             image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
-            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
+            //colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT; //this has been good
+            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_EVN;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);

@@ -79,31 +79,25 @@ namespace AudioAnalysisTools
         public IndexStore(int freqBinCount, TimeSpan wavDuration)
         {
             SummaryIndicesOfTypeDouble   = new Dictionary<string, double>();
-            SummaryIndicesOfTypeInt      = new Dictionary<string, int>();
             SummaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
 
 
-            // initiliase the stored values in the index dictionaries.
+            // initialise the stored values in the index dictionaries.
             Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
 
             foreach (string key in dictOfIndexProperties.Keys)
             {
                 IndexProperties index = dictOfIndexProperties[key];
-                double defaultValue = dictOfIndexProperties[key].DefaultValue;
 
-                if(index.DataType == typeof(double))
-                {
-                    this.SummaryIndicesOfTypeDouble.Add(key, defaultValue);
-                } else
-                if(index.DataType == typeof(int))
-                {
-                    this.SummaryIndicesOfTypeInt.Add(key, (int)defaultValue);
-                }
-                else
                 if(index.DataType == typeof(TimeSpan))
                 {
                     this.SummaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
                 }
+                else 
+                {
+                    this.SummaryIndicesOfTypeDouble.Add(key, dictOfIndexProperties[key].DefaultValue);
+                } 
+
             }
 
             this.SpectralIndices = InitialiseSpectra(freqBinCount);
@@ -116,36 +110,13 @@ namespace AudioAnalysisTools
         }
         public void StoreIndex(string key, int val)
         {
-            SummaryIndicesOfTypeInt[key] = val;
+            SummaryIndicesOfTypeDouble[key] = (double)val;
         }
         public void StoreIndex(string key, TimeSpan val)
         {
             SummaryIndicesOfTypeTimeSpan[key] = val;
         }
 
-        //// get any index as a double
-        //public double GetIndex(string key)
-        //{
-        //    if (SummaryIndicesOfTypeDouble.ContainsKey(key))   return SummaryIndicesOfTypeDouble[key];
-        //    if (SummaryIndicesOfTypeInt.ContainsKey(key))      return (double)SummaryIndicesOfTypeInt[key];
-        //    if (SummaryIndicesOfTypeDouble.ContainsKey(key))   return SummaryIndicesOfTypeDouble[key];
-        //    if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key)) return SummaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
-        //    return 0.0;
-        //}
-
-        //// get indices from relevant dictionaries
-        //public double GetIndexAsDouble(string key)
-        //{
-        //    return SummaryIndicesOfTypeDouble[key];
-        //}
-        //public int GetIndexAsInteger(string key)
-        //{
-        //    return SummaryIndicesOfTypeInt[key];
-        //}
-        //public TimeSpan GetIndexAsTimeSpan(string key)
-        //{
-        //     return SummaryIndicesOfTypeTimeSpan[key];
-        //}
 
         //==============================================================================================================================================
         //==============================================================================================================================================

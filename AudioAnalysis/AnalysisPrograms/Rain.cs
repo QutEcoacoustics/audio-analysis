@@ -223,7 +223,7 @@ namespace AnalysisPrograms
                 {
                     row[IndexProperties.keyCOUNT] = iter;
                     row[IndexProperties.keySTART_MIN] = startMinute;
-                    row[IndexProperties.keySEC_DUR] = result.AudioDuration.TotalSeconds;
+                    row[IndexProperties.keySEG_DURATION] = result.AudioDuration.TotalSeconds;
                 }
 
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
