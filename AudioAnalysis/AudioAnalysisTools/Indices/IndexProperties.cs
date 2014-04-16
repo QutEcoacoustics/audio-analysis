@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+
+using AudioAnalysisTools.DSP;
 using TowseyLibrary;
 
 
@@ -26,13 +28,14 @@ namespace AudioAnalysisTools
         public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
 
 
+        //KEYS FOR SUMMARY INDICES
         public const string keyCOUNT = "COUNT";
         public const string keySTART_MIN = "START-MIN";
         public const string keySEG_DURATION = "SEGMENT-DUR";
         public const string keyCLIP1 = "hiSIG-AMPL";
         public const string keyCLIP2 = "CLIPPING";
         public const string keySIG_AMPL = "SIGNAL-AMPL";
-        public const string keyBGN = "BGN";
+        public const string keyBKGROUND = "BKGROUND";
         public const string keySNR = "SNR";
         public const string keySNR_ACTIVE = "SNR-ACTIVE";
         public const string keyACTIVITY = "ACTIVITY";
@@ -45,7 +48,7 @@ namespace AudioAnalysisTools
         public const string keyHpeak = "H-PEAK";
         public const string keyHspec = "H-SPG";
         public const string keyHvari = "H-VAR";
-        public const string keyACI   = "ACI";
+        public const string keyACI   = "AcousticComplexity";
         public const string keyCLUSTER_COUNT = "CLUSTER-COUNT";
         public const string keyCLUSTER_DUR = "avCLUST-DUR";
         public const string key3GRAM_COUNT = "3GRAM-COUNT";
@@ -53,6 +56,48 @@ namespace AudioAnalysisTools
         public const string keySPT_DUR     = "avSPT-DUR";
         public const string keyRAIN = "RAIN";
         public const string keyCICADA = "CICADA";
+
+        //KEYS FOR SPECTRAL INDICES
+        // CONST string for referring to different types of spectrogram - these should really be an enum                
+        //public enum keysForSpectralIndices { ACI, AVG, BGN, CLS, CVR, EVN, SPT, TEN, VAR }
+        // WHEN CREATING NEW SPECTRAL INDEX, YOU NEED TO ENTER ITS KEY _AND_ INCORPORATE IT INTO THE string ALL_KNOWN_KEYS.
+        public const string spKEY_ACI = "ACI";
+        public const string spKEY_Average = "AVG";
+        public const string spKEY_BkGround = "BGN";
+        public const string spKEY_Cluster = "CLS";
+        public const string spKEY_BinCover = "CVR";
+        public const string spKEY_BinEvents = "EVN";
+        public const string spKEY_SpPeakTracks = "SPT";
+        public const string spKEY_TemporalEntropy = "TEN";
+        public const string spKEY_Variance = "VAR";
+        public const string spKEY_Combined = "CMB"; //discontinued - replaced by false colour spectrograms
+        public const string spKEY_Colour = "COL"; //discontinued - 
+
+        public const string ALL_KNOWN_SPECTRAL_KEYS = "ACI-AVG-BGN-CLS-CVR-EVN-SPT-TEN-VAR";
+
+
+        // NORMALISING CONSTANTS FOR INDICES
+        public const double ACI_MIN = 0.4;
+        public const double ACI_MAX = 0.8;
+        public const double AVG_MIN = 0.0;
+        public const double AVG_MAX = 50.0;
+        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
+        public const double BGN_MAX = -20.0;
+        public const double CLS_MIN = 0.0;
+        public const double CLS_MAX = 30.0;
+        public const double CVR_MIN = 0.0;
+        public const double CVR_MAX = 0.3;
+        public const double EVN_MIN = 0.0;
+        public const double EVN_MAX = 0.8;
+        public const double TEN_MIN = 0.4;
+        public const double TEN_MAX = 0.95;
+        public const double SDV_MIN = 0.0; // for the variance bounds
+        public const double SDV_MAX = 100.0;
+        public const double VAR_MIN = SDV_MIN * SDV_MIN;
+        public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
+
+
+
 
         // do not change headers unnecessarily - otherwise will lose compatibility with previous csv files
         // if change a header record the old header in method below:         public static string ConvertHeaderToKey(string header)
@@ -220,8 +265,8 @@ namespace AudioAnalysisTools
             var properties = new Dictionary<string, IndexProperties>();
 
             //string _key, string _name, Type _dataType, bool _doDisplay, double _normMin, double _normMax, "dB", bool _includeInComboIndex, 
-            bool doDisplay = true; 
-            bool includeInComboIndex = true;
+            //bool doDisplay = true; 
+            //bool includeInComboIndex = true;
 
             // use next line as template.
             //properties.Add("XXX", new IndexConstants("key", "name", typeof(double), doDisplay, 0.0, 1.0, "XX", !includeInComboIndex, 0.5));
@@ -241,10 +286,10 @@ namespace AudioAnalysisTools
                 new IndexProperties { Key = keyCLIP2, Name = "Clipping", normMax = 1.0, Units = "avClips/s" });
 
             properties.Add(keySIG_AMPL,
-                new IndexProperties { Key = keySIG_AMPL, Name = "av Signal Ampl", normMin = -50.0, normMax = -5.0, Units = "dB", DefaultValue = SpectrogramConstants.BGN_MIN });
+                new IndexProperties { Key = keySIG_AMPL, Name = "av Signal Ampl", normMin = -50.0, normMax = -5.0, Units = "dB", DefaultValue = IndexProperties.BGN_MIN });
 
-            properties.Add(keyBGN, 
-                new IndexProperties { Key = keyBGN, Name = "Background", normMin = -80.0, normMax = -20.0, Units = "dB", DefaultValue = SpectrogramConstants.BGN_MIN});
+            properties.Add(keyBKGROUND,
+                new IndexProperties { Key = keyBKGROUND, Name = "Background", normMin = -80.0, normMax = -20.0, Units = "dB", DefaultValue = IndexProperties.BGN_MIN });
 
             properties.Add(keySNR, 
                 new IndexProperties { Key = keySNR, Name = "SNR", normMin = 0.0, normMax = 50.0, Units = "dB"});
@@ -301,11 +346,99 @@ namespace AudioAnalysisTools
             properties.Add(keySPT_DUR, 
                 new IndexProperties { Key = keySPT_DUR, Name = "av Track Duration", DataType = typeof(TimeSpan), normMax = 200, Units = "ms" });
 
+
+            // ADD THE SUMMARY INDICES ABOVE HERE
+            //==================================================================================================================================================
+            // ADD THE SPECTRAL INDICES BELOW HERE
+
+            //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
+
+            properties.Add(spKEY_ACI, 
+                new IndexProperties { Key = spKEY_ACI, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double ACI_MIN = 0.4;
+            //public const double ACI_MAX = 0.8;
+
+            properties.Add(spKEY_Average,
+                new IndexProperties { Key = spKEY_Average, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double AVG_MIN = 0.0;
+            //public const double AVG_MAX = 50.0;
+
+            properties.Add(spKEY_BkGround,
+                new IndexProperties { Key = spKEY_BkGround, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
+            //public const double BGN_MAX = -20.0;
+
+            properties.Add(spKEY_Cluster,
+                new IndexProperties { Key = spKEY_Cluster, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double CLS_MIN = 0.0;
+            //public const double CLS_MAX = 30.0;
+
+            properties.Add(spKEY_BinCover,
+                new IndexProperties { Key = spKEY_BinCover, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double CVR_MIN = 0.0;
+            //public const double CVR_MAX = 0.3;
+
+            properties.Add(spKEY_BinEvents,
+                new IndexProperties { Key = spKEY_BinEvents, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double EVN_MIN = 0.0;
+            //public const double EVN_MAX = 0.8;
+
+            properties.Add(spKEY_SpPeakTracks,
+                new IndexProperties { Key = spKEY_SpPeakTracks, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+
+            properties.Add(spKEY_TemporalEntropy,
+                new IndexProperties { Key = spKEY_TemporalEntropy, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double TEN_MIN = 0.4;
+            //public const double TEN_MAX = 0.95;
+
+            properties.Add(spKEY_Variance,
+                new IndexProperties { Key = spKEY_Variance, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+            //public const double SDV_MIN = 0.0; // for the variance bounds
+            //public const double SDV_MAX = 100.0;
+            //public const double VAR_MIN = SDV_MIN * SDV_MIN;
+            //public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
+
+            //properties.Add(spKEY_Combined,
+            //    new IndexProperties { Key = spKEY_Combined, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+
+            //public const string ALL_KNOWN_SPECTRAL_KEYS = "ACI-AVG-BGN-CLS-CVR-EVN-SPT-TEN-VAR";
+
             return properties;
         }
 
+
+        public static Dictionary<string, IndexProperties> GetDictionaryOfSpectralIndexProperties()
+        {
+            Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
+
+            var dict = new Dictionary<string, IndexProperties>();
+            foreach (IndexProperties ip in indexProperties.Values)
+            {
+                if (ip.DataType == typeof(double[]))
+                {
+                    dict.Add(ip.Key, ip);
+                }
+            }
+            return dict;
+        }
+
+        public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties()
+        {
+            Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
+
+            var dict = new Dictionary<string, IndexProperties>();
+            foreach (IndexProperties ip in indexProperties.Values)
+            {
+                if (ip.DataType != typeof(double[]))
+                {
+                    dict.Add(ip.Key, ip);
+                }
+            }
+            return dict;
+        }
+        
         /// <summary>
-        /// This method converts a csv file header into an apporpriate key for the given index.
+        /// This method converts a csv file header into an appropriate key for the given index.
         /// The headers in the csv fiels have changed over the years so there may be several headers for any one index.
         /// Enter any new header you come across into the file.
         /// </summary>
@@ -325,7 +458,7 @@ namespace AudioAnalysisTools
 
             //now add in historical names from previous incarnations of csv file headers
             mapName2Key.Add("Start-min", keySTART_MIN);
-            mapName2Key.Add("bg-dB", keyBGN);
+            mapName2Key.Add("bg-dB", keyBKGROUND);
             mapName2Key.Add("snr-dB", keySNR);
             mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
             mapName2Key.Add("activity", keyACTIVITY);

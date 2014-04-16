@@ -89,7 +89,8 @@ namespace AudioAnalysisTools
             cs1.FileName = opFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+            string[] keys = colorMap.Split('-');
+            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
             string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2.Name;
@@ -97,7 +98,7 @@ namespace AudioAnalysisTools
             cs2.FileName = opFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
+            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
 
             bool allOK = true;
             int N = 30;
