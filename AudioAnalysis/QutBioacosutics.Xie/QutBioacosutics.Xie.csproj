@@ -69,6 +69,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BandOscillationRate.cs" />
+    <Compile Include="Configuration\CanetoadConfiguration.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />

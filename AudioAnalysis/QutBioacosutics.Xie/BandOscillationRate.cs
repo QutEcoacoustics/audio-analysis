@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
+using TowseyLibrary;
 
 namespace QutBioacosutics.Xie
 {
@@ -39,7 +40,7 @@ namespace QutBioacosutics.Xie
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
             Double[,] hits = new Double[rows, cols];
-            Double[,] matrix = sonogram.Data;
+            Double[,] matrixCanetoad = sonogram.Data;
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -57,7 +58,7 @@ namespace QutBioacosutics.Xie
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < 5; j++) array[i] += matrix[r + i, c + j];
+                        for (int j = 0; j < 5; j++) array[i] += matrixCanetoad[r + i, c + j];
 
                     array = DataTools.SubtractMean(array);
                     //     DataTools.writeBarGraph(array);
