@@ -1,24 +1,24 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-file:  C:\Jie\data\020313_min248.wav
+File:  C:\Jie\data\020313_min248.wav
 
 # Path for saving image
-image_path: C:\Jie\output\a.png
+ImagePath: C:\Jie\output\a.png
 
 # Parameters for finding local peaks
-amplitude_threshold: 4
-range: 2
-distance: 5
-binToreance: 3
+AmplitudeThreshold: 4
+Range: 2
+Distance: 5
+BinToreance: 3
 
 # Parameters for extracting tracks
-frame_threshold: 5
-track_threshold: 0.75
-maximum_duration: 45
-minimum_duration: 18
-maximum_diffBin: 25
-duraion_threshold: 15
+FrameThreshold: 5
+TrackThreshold: 0.75
+MaximumTrackDuration: 45
+MinimumTrackDuration: 18
+BinDifference: 25
+TrackDuraionThreshold: 15
 
 # Parameters for extracting harmonics
 col_threshold: 6
