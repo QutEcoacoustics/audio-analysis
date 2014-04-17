@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using AudioAnalysisTools;
 using TowseyLibrary;
 using System.Drawing.Imaging;
 using System.IO;
@@ -70,11 +71,6 @@ namespace QutBioacosutics.Xie
 
             return result;
         }
-        // Draw tracks on the spectrogram
-        //public static void DrawSpectrogram(double[,] matrix)
-        //{
-
-        //}
 
         public static double[,] MedianFilter(double[,] matrix, int length)
         {
@@ -82,10 +78,9 @@ namespace QutBioacosutics.Xie
             int cols = matrix.GetLength(1);
 
             int numRows = rows / length;
-            //int numCols = cols / length;
 
             var tempMatrix = new double[length, length];
-            //var result = new double[rows, cols];
+
             for (int c = 0; c < cols; c++) 
             {
                 for (int r = 0; r < numRows; r++)
@@ -93,25 +88,17 @@ namespace QutBioacosutics.Xie
                     double temp = 0;
                     for (int i = length * r; i < length * (r + 1); i++)
                     {
-                        //for (int j = length * r; j < length * (c + 1); j++)
-                        //{
-                            temp = matrix[i, c] + temp;
-                        //}
-                    }
+                        temp = matrix[i, c] + temp;
 
-                    //double average = temp / (length * length);
+                    }
 
                     double average = temp / length;
 
                     for (int i = length * r; i < length * (r + 1); i++)
                     {
-                        //for (int j = length * r; j < length * (c + 1); j++)
-                        //{
-
                         matrix[i, c] = average;
-                        //}
+                      
                     }
-
                 }            
             }
 
@@ -202,17 +189,62 @@ namespace QutBioacosutics.Xie
         }
 
 
-
-        public static double[] XieCrossCorrelation(double[] v1, double[] v2)
+        public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
         {
-            int n1 = v1.Length;
-            int n2 = v2.Length;
+            string ipdir = configuration.InputDirectory.FullName;
+            DirectoryInfo ipDir = new DirectoryInfo(ipdir);
+            string fileStem = configuration.FileName;
+            string opdir = configuration.OutputDirectory.FullName;
+            DirectoryInfo opDir = new DirectoryInfo(opdir);
 
-            
+            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            string map = configuration.ColourMap;
+            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
 
-            return null;
+            double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
+
+            // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
+            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
+            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
+
+
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilterCoeff;
+            cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return;
+            }
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+
+            cs1.CalculateStatisticsForAllIndices();
+            List<string> lines = cs1.WriteStatisticsForAllIndices();
+            FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
+
+            colorMap = SpectrogramConstants.RGBMap_TRC_OSC_HAR;
+            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+
+            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
+            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image2.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+            Image[] array = new Image[2];
+            array[0] = image1;
+            array[1] = image2;
+            Image image3 = ImageTools.CombineImagesVertically(array);
+            image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
-
 
     }
 }
