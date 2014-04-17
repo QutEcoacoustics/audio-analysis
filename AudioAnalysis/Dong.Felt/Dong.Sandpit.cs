@@ -46,8 +46,7 @@
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
-            int neighbourhoodLength = configuration.NeighbourhoodLength;
-            int[] featureSet = configuration.FeatureSet;
+            int neighbourhoodLength = configuration.NeighbourhoodLength;           
 
             int rank = configuration.Rank;
             /* dont use configuration after this */
@@ -66,12 +65,7 @@
                         RidgeMatrixLength = ridgeMatrixLength,
                         FilterRidgeMatrixLength = filterRidgeMatrixLength,
                         MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
-                    };
-                    for (int i = 0; i < featureSet.Count; i++)
-                    {
-                        var feature = featureSet[i];
-
-                    }
+                    };                   
                     int feature = 1;
                             MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                            ridgeConfig, config, feature, rank, outputDirectory.FullName);
@@ -492,7 +486,7 @@
         /// <param name="matchedCandidateOutputFile"></param>
         /// <param name="rank"></param>
         public static void MatchingBatchProcess(string queryCsvFilePath, string queryAudioFilePath, string trainingWavFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, string queryRepresenationCsvPath,
+            RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, int featureType, string queryRepresenationCsvPath,
             string regionPresentOutputCSVPath,
             string matchedCandidateOutputFile, int rank)
         {
@@ -513,7 +507,8 @@
                 var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
+                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, 
+                    neighbourhoodLength, featureType, spectrogramConfig);
                 var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFilePath);
@@ -531,7 +526,8 @@
                     var candidateRidges = POISelection.PostRidgeDetection(candidateSpectrogram, ridgeConfig);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1, neighbourhoodLength, spectrogramConfig);
+                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges,
+                        rows1, cols1, neighbourhoodLength, featureType, spectrogramConfig);
                     var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(candidateRidgeNhRepresentationList);
                     var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                         audioFiles[i], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
@@ -779,7 +775,6 @@
                     imageResult.Save(imagePath, ImageFormat.Png);
                 }         
         }
-
 
 
         public static List<Image> DrawingSpectrogramsFromAudios(string audioFileDirectory, SonogramConfig config, List<string> s,
