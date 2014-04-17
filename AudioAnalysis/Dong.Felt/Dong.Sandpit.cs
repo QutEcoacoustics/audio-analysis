@@ -67,14 +67,14 @@
                         FilterRidgeMatrixLength = filterRidgeMatrixLength,
                         MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                     };
-                    for (int i = 0; i < featureSet.Count; i++)
+                    for (int i = 0; i < featureSet.Length; i++)
                     {
                         var feature = featureSet[i];
 
                     }
-                    int feature = 1;
+                    //int feature = 1;
                             MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                           ridgeConfig, config, feature, rank, outputDirectory.FullName);
+                           ridgeConfig, config, 1, rank, outputDirectory.FullName);
 
                     /// RidgeDetectionBatchProcess                    
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
@@ -513,7 +513,7 @@
                 var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, spectrogramConfig);
+                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(ridges, rows, cols, neighbourhoodLength, 1, spectrogramConfig);
                 var NormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFilePath);
@@ -531,7 +531,7 @@
                     var candidateRidges = POISelection.PostRidgeDetection(candidateSpectrogram, ridgeConfig);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1, neighbourhoodLength, spectrogramConfig);
+                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1, neighbourhoodLength, 1, spectrogramConfig);
                     var CanNormalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(candidateRidgeNhRepresentationList);
                     var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                         audioFiles[i], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
