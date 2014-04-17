@@ -220,7 +220,7 @@ namespace QutBioacosutics.Xie
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
-            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstants.ALL_KNOWN_KEYS});
 
             cs1.CalculateStatisticsForAllIndices();
             List<string> lines = cs1.WriteStatisticsForAllIndices();
