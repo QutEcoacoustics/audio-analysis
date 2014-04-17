@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="BandOscillationRate.cs" />
     <Compile Include="Configuration\CanetoadConfiguration.cs" />
+    <Compile Include="Configuration\TracksConfiguration.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
