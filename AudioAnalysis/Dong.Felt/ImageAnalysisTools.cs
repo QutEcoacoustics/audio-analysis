@@ -124,7 +124,7 @@ namespace Dong.Felt
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 30));
+            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if ((acousticEvent != null) && (acousticEvent.Count > 0))
             {
@@ -183,11 +183,11 @@ namespace Dong.Felt
             var audioFileName = audioFilePath.Name;
             var bmp = new Bitmap(image);
             var height = image.Height;
-            RectangleF rectf1 = new RectangleF(10, height - 23, 70, 30);
-            RectangleF rectf2 = new RectangleF(10, height - 12, 260, 50);
+            RectangleF rectf1 = new RectangleF(10, height - 39, 260, 70);
+            RectangleF rectf2 = new RectangleF(10, height - 15, 70, 30);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7,FontStyle.Bold), Brushes.Black, rectf1);
-            g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf2);
+            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7,FontStyle.Bold), Brushes.Black, rectf2);
+            g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf1);
             g.Flush();
             return bmp;
         }

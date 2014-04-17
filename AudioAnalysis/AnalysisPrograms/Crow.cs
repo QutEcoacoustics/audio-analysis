@@ -17,6 +17,7 @@ using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
+using AudioAnalysisTools.WavTools;
 
 
 //Here is link to wiki page containing info about how to write Analysis techniques

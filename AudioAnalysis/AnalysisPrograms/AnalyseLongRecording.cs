@@ -110,11 +110,13 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
             string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
 
             // DEV CONFIG OPTIONS
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
+            //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
@@ -126,7 +128,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_09April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_16April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -184,8 +186,6 @@ namespace AnalysisPrograms
             var configPath = arguments.Config;
             var outputDir = arguments.Output;
             var tempFilesDirectory = arguments.TempDir;
-
-
 
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
@@ -263,23 +263,7 @@ namespace AnalysisPrograms
                 throw new Exception("Cannot find a valid IAnalyser");
             }
             var isStrongTypedAnalyser = analyser is IAnalyser2;
-
-
-
-            //test conversion of events file to indices file
-            //if (false)
-            //{
-            //    string ipPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Events.csv";
-            //    string opPath = @"C:\SensorNetworks\Output\Test1\Towsey.MultiAnalyser\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h_Towsey.MultiAnalyser.Indices.csv";
-            //    DataTable dt = CsvTools.ReadCSVToTable(ipPath, true);
-            //    TimeSpan unitTime = new TimeSpan(0, 0, 60);
-            //    TimeSpan source   = new TimeSpan(0, 59, 47);
-            //    double dummy = 0.0;
-            //    DataTable dt1 = analyser.ConvertEvents2Indices(dt, unitTime, source, dummy);
-            //    CsvTools.DataTable2CSV(dt1, opPath);
-            //    LoggedConsole.WriteLine("FINISHED");
-            //    Console.ReadLine();
-            //}
+            isStrongTypedAnalyser = true; // force analyser to tak strong type track !!!
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
@@ -310,7 +294,9 @@ namespace AnalysisPrograms
             IndexBase[] mergedIndicesResults = null;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
+                // next line commented out by Michael 15-04-2014 to force use of his merge method.
+                //ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
+                mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults);
             }
             else
             {
@@ -333,11 +319,11 @@ namespace AnalysisPrograms
             }
             if (mergedEventResults != null && mergedEventResults.Length == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+                LoggedConsole.WriteWarnLine("The analysis produced no EVENTS (mergedResults had zero count)");
             }
             if (mergedIndicesResults != null && mergedIndicesResults.Length == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedResults had zero rows)");
+                LoggedConsole.WriteWarnLine("The analysis produced no INDICES (mergedResults had zero count)");
             }
 
 
@@ -359,15 +345,16 @@ namespace AnalysisPrograms
                 scoreThreshold = 1.0;
             }
 
-            // 9. CREATE INDICES IF NECESSARY
+            // 9. CREATE SUMMARY INDICES IF NECESSARY
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
-            int eventsCount;
+            int eventsCount = 0;
             int numberOfRowsOfIndices;
             if (isStrongTypedAnalyser)
             {
-                ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
-                eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
+                // next line commented out by Michael 15-04-2014 because not processing events at the moment
+                //ResultsTools.ConvertEventsToIndices((IAnalyser2) analyser, mergedEventResults, ref mergedIndicesResults, sourceInfo.Duration.Value, scoreThreshold);
+                //eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
                 numberOfRowsOfIndices = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
             }
             else
@@ -382,12 +369,29 @@ namespace AnalysisPrograms
             // 10. SAVE THE RESULTS
             var resultsDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
-            FileInfo eventsFile;
-            FileInfo indicesFile;
+            FileInfo eventsFile = null;
+            FileInfo indicesFile = null;
             if (isStrongTypedAnalyser)
             {
-                eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
-                indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
+                // next line commented out by Michael 15-04-2014 to force use of indices only
+                //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
+                //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
+                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+
+
+                LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+                LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
+                LoggedConsole.WriteLine("");
+                //this dictionary is needed to write results to csv file and to draw the image of indices
+                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+
+                // Convert summary indices to image
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesFile, title);
+                var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+
             }
             else
             {
@@ -413,35 +417,32 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n");
 
 
-            if (indicesFile == null)
-            {
-                LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
-            }
-            else
-            {
-                LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
-                LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
-                LoggedConsole.WriteLine("");
+            //if (indicesFile == null)
+            //{
+            //    LoggedConsole.WriteLine("An Indices CSV file was NOT returned.");
+            //}
+            //else
+            //{
+            //    LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+            //    LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
+            //    LoggedConsole.WriteLine("");
 
-                // Convert datatable to image
-                if (displayCSVImage)
-                {
-                    if (isStrongTypedAnalyser)
-                    {
-                        Log.Warn(
-                            "Event Indices image not output because I haven't had the time to adapt the IndicesCsv2Display class yet!");
-                    }
-                    else
-                    {
-                        Dictionary<string, IndexProperties> dict = IndexProperties.InitialisePropertiesOfIndices(); 
-                        string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                        string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                        Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
-                        var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
-                        tracksImage.Save(imagePath);
-                    }
-                }
-            }
+            //    //this dictionary is needed to write results to csv file and to draw the image of indices
+            //    Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+
+            //    // Convert datatable to image
+            //    string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+            //    string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            //    //Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(indicesDatatable, title);
+            //    Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesDatatable, title);
+            //    var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+            //    tracksImage.Save(imagePath);
+
+            //    if (displayCSVImage)
+            //    {
+            //        //run Paint to display the image if it exists.
+            //    }
+            //}
 
             // if doing ACOUSTIC INDICES then write SPECTROGRAMS of Spectral Indices to CSV files and draw their images
             if (analyserResults.First().AnalysisIdentifier.Equals("Towsey." + Acoustic.AnalysisName))
@@ -451,6 +452,10 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
+
+
+
+
 
         private static void ProcessSpectralIndices(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
             AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
@@ -475,7 +480,7 @@ namespace AnalysisPrograms
 
             int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
             var spectrogramDictionary = new Dictionary<string, double[,]>();
-            foreach (var spectrumKey in results[0].Spectra.Keys)
+            foreach (var spectrumKey in results[0].indexBase.SpectralIndices.Keys)
             {
                 // +1 for header
                 var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
@@ -484,7 +489,7 @@ namespace AnalysisPrograms
                 {
                     var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
 
-                    numbers[index] = analysisResult.Spectra[spectrumKey];
+                    numbers[index] = analysisResult.indexBase.SpectralIndices[spectrumKey];
 
                     // add one to offset header
                     lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);

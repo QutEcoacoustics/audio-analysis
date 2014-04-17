@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Text;
+
+//using AudioAnalysisTools;
+
 namespace AnalysisBase
 {
     using System.Collections.Generic;
@@ -64,6 +68,10 @@ namespace AnalysisBase
         void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
 
         IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
+
+        // TODO:
+        //void WriteSpectraFile(FileInfo destination, IEnumerable<SpectraBase> results);
+        //?void? SummariseResults(EventBase[] events, IndexBase[] index, SpectraBase[] spectras);
     }
 
     public static class AnalyserHelpers
@@ -129,13 +137,18 @@ namespace AnalysisBase
     {
         public string FileName { get; set; }
 
-        //START_MIN = "start-min";
-        //AudioAnalysisTools.Keys.EVENT_START_MIN,    //2
-        public int MinuteOffset { get; set; }
+        public int SegmentCount { get; set; }
 
-        //SEGMENT_TIMESPAN = "SegTimeSpan";
-        public double SegmentDuration { get; set; }
+        public TimeSpan SegmentOffsetFromStartOfSource { get; set; }
+
+        public TimeSpan SegmentDuration { get; set; } //SEGMENT_TIMESPAN = "SegTimeSpan";
+
+        public int MinuteOffset { get; set; } //START_MIN = "start-min" = AudioAnalysisTools.Keys.EVENT_START_MIN
+
     }
+
+
+
 
     // TODO: Bring this to parity with the standard event class - ask Michael
     public abstract class EventBase : ResultBase
@@ -155,28 +168,81 @@ namespace AnalysisBase
         //AudioAnalysisTools.Keys.EVENT_COUNT,        //1
         public int EventCount { get; set; }
 
-        
-        //AudioAnalysisTools.Keys.SEGMENT_TIMESPAN,   //5
-        //AudioAnalysisTools.Keys.EVENT_DURATION,     //6
-        ////AudioAnalysisTools.Keys.EVENT_INTENSITY,
-        //AudioAnalysisTools.Keys.EVENT_NAME,         //7
-        //AudioAnalysisTools.Keys.DOMINANT_FREQUENCY,
-        //AudioAnalysisTools.Keys.OSCILLATION_RATE,
-        //AudioAnalysisTools.Keys.EVENT_NORMSCORE,
-        //AudioAnalysisTools.Keys.MAX_HZ,
-        
     }
+
+
+
+
 
     // TODO: Bring this to parity with the standard index class - ask Michael
-    public abstract class IndexBase : ResultBase
+    public class IndexBase : ResultBase
     {
-        //INDICES_COUNT = "IndicesCount";
-        //AV_AMPLITUDE = "avAmp-dB";
-        //CALL_DENSITY = "CallDensity";
-        //SNR_SCORE = "SNRscore";
+        //these dictionaries used to store index values accessible by key
+        public Dictionary<string, double> SummaryIndicesOfTypeDouble { get; set; }
+        public Dictionary<string, TimeSpan> SummaryIndicesOfTypeTimeSpan { get; set; }
+
+        /// <summary>
+        /// for storing spectral indices in a dictionary
+        /// </summary>
+        private Dictionary<string, double[]> spectralIndices;
+        public Dictionary<string, double[]> SpectralIndices
+        {
+            get { return spectralIndices; }
+            set { spectralIndices = value; }
+        }
 
 
-    }
+        // get any index as a double
+        public double GetIndex(string key)
+        {
+            if (SummaryIndicesOfTypeDouble.ContainsKey(key)) return SummaryIndicesOfTypeDouble[key];
+            //if (SummaryIndicesOfTypeInt.ContainsKey(key)) return (double)SummaryIndicesOfTypeInt[key];
+            if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key)) return SummaryIndicesOfTypeTimeSpan[key].TotalMilliseconds;
+            return 0.0;
+        }
+
+        public string GetIndexAsString(string key, string units, Type datatype)
+        {
+            string str = "";
+            if (SummaryIndicesOfTypeDouble.ContainsKey(key))
+            {
+                if (datatype == typeof(int)) 
+                    return String.Format("{0:f0}",SummaryIndicesOfTypeDouble[key].ToString());
+                else
+                    return SummaryIndicesOfTypeDouble[key].ToString();
+            }
+            else
+            if (SummaryIndicesOfTypeTimeSpan.ContainsKey(key))
+            {
+                if (units == "s")  return SummaryIndicesOfTypeTimeSpan[key].TotalSeconds.ToString();
+                if (units == "ms") return SummaryIndicesOfTypeTimeSpan[key].Milliseconds.ToString();
+            }
+
+            return str;
+        }
+
+
+        // get indices from relevant dictionaries
+        public double GetIndexAsDouble(string key)
+        {
+            return SummaryIndicesOfTypeDouble[key];
+        }
+        public int GetIndexAsInteger(string key)
+        {
+            return (int)Math.Floor(SummaryIndicesOfTypeDouble[key]);
+        }
+        public TimeSpan GetIndexAsTimeSpan(string key)
+        {
+            return SummaryIndicesOfTypeTimeSpan[key];
+        }
+
+
+    } //class IndexBase : ResultBase
+    
+
+
+
+
 
     public class EventIndex : IndexBase
     {
@@ -185,6 +251,6 @@ namespace AnalysisBase
         // TODO: possibility for dynamic column name
         public int EventsTotalThresholded { get; set; }
 
-        
+
     }
 }

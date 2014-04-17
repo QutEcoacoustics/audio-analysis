@@ -4,6 +4,7 @@
     using System;
     using System.Drawing;
 
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, similarityScoreList, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
@@ -16,7 +17,7 @@
         public const int timeScaleHt = 10;   //pixel height of the top and bottom time scales
         public const int syllablesTrackHeight = 10;   //pixel height of a track
         public const int envelopeTrackHeight  = 40;   //pixel height of a track
-        public const int scoreTrackHeight = 20;   //pixel height of a track
+        public const int scoreTrackHeight = 40;   //pixel height of a track
         #endregion
 
 

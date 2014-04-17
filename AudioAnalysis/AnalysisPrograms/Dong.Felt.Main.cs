@@ -22,20 +22,19 @@ namespace Dong.Felt
 
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
+    using PowerArgs;
+    using ServiceStack.Text;
+    using log4net;
+    using QutSensors.Shared;
+    using AnalysisPrograms.Production;
 
     using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
-
-    using PowerArgs;
-
-    using ServiceStack.Text;
-
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using log4net;
-    using QutSensors.Shared;
-    using AnalysisPrograms.Production;
+
     
     /// <summary>
     /// The felt analysis.
@@ -356,9 +355,9 @@ namespace Dong.Felt
             if (analysisSettings.IndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
-                result.Indexes = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
+                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
 
-                WriteIndicesFile(analysisSettings.IndicesFile, result.Indexes);
+                WriteIndicesFile(analysisSettings.IndicesFile, result.Indices);
             }
 
             if (analysisSettings.ImageFile != null)

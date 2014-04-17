@@ -1,13 +1,41 @@
 
+OutputState <- setRefClass("OutputState", 
+                           fields = list(state = 'list'), 
+                           methods = list(
+                               new = function () {
+                                   state$a <<- 'b'
+                                   
+                               }
+                               ))
+g.output.state <- OutputState$new()
 
-setClass("Output",
-              representation(l1 = "character",
-                             l2 = "character",
-                             l3 = "character",
-                             test = "function"))
+PrintOutput <- function (msg) {
+    
+    last.msg <- g.output.state$state$last.msg
 
-output.constructor <- function () {
-    new("Output", l1 = "a", l2 = "b", l3 = "b", test = function () { print(l1) }) 
+    if (!is.null(last.msg) && msg == last.msg) {
+        return('You just printed that')
+    }
+    
+    
+    print(msg)
+    
+    g.output.state$state$last.msg <- msg
+    
+    return(TRUE)
+    
 }
 
-output <- output.constructor()
+g.state <- list()
+
+test1 <- function (msg) {
+    
+    g.state$one <- msg
+    g.state$two <<- msg
+    
+}
+
+
+
+
+

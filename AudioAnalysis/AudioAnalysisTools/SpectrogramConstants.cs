@@ -11,7 +11,7 @@ namespace AudioAnalysisTools
     public static class SpectrogramConstants
     {
 
-        // CONST string for referring to different types of spectrogram - these should really be an enum                
+        // CONST string for referring to different types of long duration spectrograms - these should really be an enum                
         public const string KEY_AcousticComplexityIndex = "ACI";
         public const string KEY_Average = "AVG";
         public const string KEY_BackgroundNoise = "BGN";
@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
         public const string KEY_TemporalEntropy = "TEN";
         public const string KEY_Variance = "VAR";
 
-        // NORMALISING CONSTANTS FOR INDICES
+        // NORMALISING CONSTANTS FOR spectral INDICES
         //public const double ACI_MIN = 0.0;
         //public const double ACI_MAX = 1.0;
         public const double ACI_MIN = 0.4;

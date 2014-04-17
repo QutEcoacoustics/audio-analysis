@@ -128,13 +128,16 @@ namespace AudioAnalysisTools
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {
-            return ReadCSVFiles(ipdir, fileName, SpectrogramConstants.ALL_KNOWN_KEYS);
+            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
+            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            string[] keys = spDict.Keys.ToArray();
+
+            return ReadCSVFiles(ipdir, fileName, keys);
         }
 
-        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys)
+        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
         {
             bool allOK = true;
-            string[] keys = indexKeys.Split('-');
             string warning = null;
             for (int key = 0; key < keys.Length; key++)
             {
@@ -275,8 +278,11 @@ namespace AudioAnalysisTools
         public void CalculateStatisticsForAllIndices()
         {
             double[,] matrix;
-            bool allOK = true;
-            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
+            //Dictionary<string, IndexProperties> dict2 = IndexProperties.GetDictionaryOfSummaryIndexProperties();
+            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            string[] keys = spDict.Keys.ToArray();
+
             foreach(string key in keys)
             {
                 if(this.spectrogramMatrices.ContainsKey(key)) 
@@ -290,7 +296,10 @@ namespace AudioAnalysisTools
 
         public List<string> WriteStatisticsForAllIndices()
         {
-            string[] keys = SpectrogramConstants.ALL_KNOWN_KEYS.Split('-');
+            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
+            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            string[] keys = spDict.Keys.ToArray();
+
             List<string> lines = new List<string>();
             foreach (string key in keys)
             {
@@ -384,15 +393,15 @@ namespace AudioAnalysisTools
 
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            DrawGreyScaleSpectrograms(opdir, opFileName, this.ColorMap);
+            string[] keys = this.ColorMap.Split('-');
+            DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
 
-        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string keyString)
+        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
             //string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
             string warning = null;
 
-            string[] keys = keyString.Split('-');
             for (int i = 0; i < keys.Length; i++)
             {
                 string key = keys[i];
@@ -471,7 +480,7 @@ namespace AudioAnalysisTools
             }
 
             Image bmpBgn;
-            string key = SpectrogramConstants.KEY_BackgroundNoise;
+            string key = IndexProperties.spKEY_BkGround;
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
                 Console.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
@@ -521,10 +530,10 @@ namespace AudioAnalysisTools
         /// <param name="imagePath"></param>
         public Image DrawCombinedAverageSpectrogram(double backgroundFilter)
         {
-            var avgMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_Average, spectrogramMatrices[SpectrogramConstants.KEY_Average], backgroundFilter);
-            var cvrMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_BinCover, spectrogramMatrices[SpectrogramConstants.KEY_BinCover], backgroundFilter);
-            var aciMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_AcousticComplexityIndex, spectrogramMatrices[SpectrogramConstants.KEY_AcousticComplexityIndex], backgroundFilter);
-            var tenMatrix = NormaliseSpectrogramMatrix(SpectrogramConstants.KEY_TemporalEntropy, spectrogramMatrices[SpectrogramConstants.KEY_TemporalEntropy], backgroundFilter);
+            var avgMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_Average, spectrogramMatrices[IndexProperties.spKEY_Average], backgroundFilter);
+            var cvrMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_BinCover, spectrogramMatrices[IndexProperties.spKEY_BinCover], backgroundFilter);
+            var aciMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_ACI, spectrogramMatrices[IndexProperties.spKEY_ACI], backgroundFilter);
+            var tenMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_TemporalEntropy, spectrogramMatrices[IndexProperties.spKEY_TemporalEntropy], backgroundFilter);
 
             // assume all matrices have same rows and columns
             int rows = avgMatrix.GetLength(0);
@@ -705,14 +714,14 @@ namespace AudioAnalysisTools
 
         public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix, double backgroundFilterCoeff)
         {
-            if (key == SpectrogramConstants.KEY_AcousticComplexityIndex) //.Equals("ACI"))
+            if (key == IndexProperties.spKEY_ACI) //.Equals("ACI"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.ACI_MIN, SpectrogramConstants.ACI_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.ACI_MIN, IndexProperties.ACI_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_TemporalEntropy)//.Equals("TEN"))
+            else if (key == IndexProperties.spKEY_TemporalEntropy)//.Equals("TEN"))
             {
                 // normalise and reverse
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.TEN_MIN, SpectrogramConstants.TEN_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.TEN_MIN, IndexProperties.TEN_MAX);
                 int rowCount = matrix.GetLength(0);
                 int colCount = matrix.GetLength(1);
                 for (int r = 0; r < rowCount; r++)
@@ -723,25 +732,25 @@ namespace AudioAnalysisTools
                     }
                 }
             }
-            else if (key == SpectrogramConstants.KEY_Average)//.Equals("AVG"))
+            else if (key == IndexProperties.spKEY_Average)//.Equals("AVG"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.AVG_MIN, SpectrogramConstants.AVG_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.AVG_MIN, IndexProperties.AVG_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_BackgroundNoise)//.Equals("BGN"))
+            else if (key == IndexProperties.spKEY_BkGround)//.Equals("BGN"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.BGN_MIN, SpectrogramConstants.BGN_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.BGN_MIN, IndexProperties.BGN_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_Cluster)//.Equals("CLS"))
+            else if (key == IndexProperties.spKEY_Cluster)//.Equals("CLS"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.CLS_MIN, SpectrogramConstants.CLS_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.CLS_MIN, IndexProperties.CLS_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_BinCover)//.Equals("CVR"))
+            else if (key == IndexProperties.spKEY_BinCover)//.Equals("CVR"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.CVR_MIN, SpectrogramConstants.CVR_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.CVR_MIN, IndexProperties.CVR_MAX);
             }
-            else if (key == SpectrogramConstants.KEY_Variance)//.Equals("VAR"))
+            else if (key == IndexProperties.spKEY_Variance)//.Equals("VAR"))
             {
-                matrix = DataTools.NormaliseInZeroOne(matrix, SpectrogramConstants.VAR_MIN, SpectrogramConstants.VAR_MAX);
+                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.VAR_MIN, IndexProperties.VAR_MAX);
             }
 
 
@@ -1020,7 +1029,11 @@ namespace AudioAnalysisTools
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
-            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, SpectrogramConstants.ALL_KNOWN_KEYS);
+
+            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            string[] keys = spDict.Keys.ToArray();
+
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, keys);
 
             cs1.CalculateStatisticsForAllIndices();
             List<string> lines = cs1.WriteStatisticsForAllIndices();
@@ -1033,7 +1046,8 @@ namespace AudioAnalysisTools
             image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
-            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT;
+            //colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT; //this has been good
+            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_EVN;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);

@@ -12,6 +12,8 @@ using TowseyLibrary;
 using Acoustics.Tools.Audio;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
+using AudioAnalysisTools.WavTools;
+
 using Acoustics.Shared;
 
 namespace AudioAnalysisTools

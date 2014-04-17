@@ -10,7 +10,7 @@ namespace Dong.Felt
     using System.Drawing;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
-
+    using AudioAnalysisTools.WavTools;
 
 
 

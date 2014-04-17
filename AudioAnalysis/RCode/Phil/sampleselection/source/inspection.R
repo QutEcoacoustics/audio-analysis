@@ -79,7 +79,7 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
         
     }
     
-    final.image.path <- OutputPath(IntegerVectorAsString(cluster.groups), ext = 'png', level = 3)
+    final.image.path <- OutputFilePath(IntegerVectorAsString(cluster.groups), ext = 'png', level = 3)
     StitchImages(group.spectro.fns, final.image.path)
 
     
@@ -193,7 +193,7 @@ InspectFeatures <- function (db1 = 0, db2 = 1, db3 = 0, db4 = 0, db5 = 0) {
     } else {
         temp.dir <- TempDirectory()
         fns <- SaveMinuteSpectroImages(min.ids, rects, events, temp.dir)
-        StitchImages(fns, OutputPath('InspectFeatures', ext = 'png'))
+        StitchImages(fns, OutputFilePath('InspectFeatures', ext = 'png', level = 3))
     }
 
     
@@ -253,7 +253,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     # with events marked and colour coded by cluster group
     
     rankings <- ReadObject('ranked_samples', level = 2)
-    min.ids <- ReadOutput('target.min.ids')
+    min.ids <- ReadOutput('target.min.ids', level = 0)
     d.names <- dimnames(rankings)
     num.clusters.choices <- d.names$num.clusters
     num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters', default = floor(length(num.clusters.choices)/2))
@@ -282,7 +282,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     # if samples are chosen using rankings
     for (i in 1:ncol(ordered.samples)) {    
         output.fn <- paste('InspectSamples', output.fns[i],  collapse = "_", sep='.')
-        StitchImages(sample.spectro.fns[,i], OutputPath(output.fn, ext = 'png'))   
+        StitchImages(sample.spectro.fns[,i], OutputFilePath(output.fn, ext = 'png', level = 3))   
     }
     
 }

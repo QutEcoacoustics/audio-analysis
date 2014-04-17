@@ -342,4 +342,21 @@ ExplodeDatetime <- function (datetime) {
     
 }
 
+GetIncluded <- function (total.num, num.included, offset = NA) {
+    # returns a vector of 1s and 0s 
+    # vecor is the same length as total.num, and has num.included 1s in it
+    # (fairly) evenly spaced
+    num.excluded <- max(c(total.num - num.included, 0))
+    ratio <- total.num / num.excluded
 
+    excluded <- ceiling(((1:num.excluded) * ratio))
+    if (is.na(offset)) {
+        offset <- ceiling(ratio / 2)
+    } else {
+        offset <- offset %% (min(excluded) + 1)
+    }
+    excluded <- excluded - offset
+    include <- rep(TRUE, total.num)
+    include[excluded] <- FALSE
+    return(include)
+}
