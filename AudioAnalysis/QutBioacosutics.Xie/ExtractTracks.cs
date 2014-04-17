@@ -6,6 +6,7 @@ using MathNet.Numerics;
 
 namespace QutBioacosutics.Xie
 {
+    using AudioAnalysisTools.StandardSpectrograms;
     using MathNet.Numerics.LinearAlgebra.Single;
     using TowseyLibrary;
 
@@ -19,8 +20,7 @@ namespace QutBioacosutics.Xie
             var column = matrix.GetLength(1);
 
             double binToreanceStable = binToreance;
-            // save local peaks to an array of list
-
+            // Save local peaks to an array of list
             var pointList = new List<Peak>[column];
             
             for (int j = 0; j < column; j++)
@@ -774,13 +774,7 @@ namespace QutBioacosutics.Xie
             return Tuple.Create(arrayResult, result);
         }
 
-
-
-
-
-        // get long and wide tracks
-
-
+        // Get long and wide tracks
         public System.Tuple<double[], double[,]> GetLongTracks(double[,] matrix, double binToreance, int frameThreshold, int duraionThreshold, double trackThreshold, int minimumDuration, double maximumDiffBin)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
@@ -1535,6 +1529,14 @@ namespace QutBioacosutics.Xie
 
 
             return Tuple.Create(arrayResult, result);
+        }
+
+
+        public static double[,] Tracks(SpectrogramStandard sonogram, Configuration.TracksConfiguration tracksConfig)
+        {
+
+
+            return null;
         }
 
     }
