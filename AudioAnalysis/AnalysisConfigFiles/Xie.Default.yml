@@ -1,22 +1,41 @@
 --- # Configuration file for Jie Xie
 
-#file:  C:\Jie\data\Frogspecies\Litoria nasuta---traning---5min.wav
-#file: C:\Jie\data\NoiseRecordings\dp2_20080415-124000.wav.silenceAndClicks.wav
+# Path of the loaded recording
 file:  C:\Jie\data\020313_min248.wav
-do_noise_reduction: 0
+
+# Path for saving image
 image_path: C:\Jie\output\a.png
+
+# Parameters for finding local peaks
 amplitude_threshold: 4
 range: 2
 distance: 5
 binToreance: 3
-frameThreshold: 5
-trackThreshold: 0.75
-maximumDuration: 45
-minimumDuration: 18
-maximumDiffBin: 25
-colThreshold: 6
-zeroBinIndex: 5
-duraionThreshold: 15
+
+# Parameters for extracting tracks
+frame_threshold: 5
+track_threshold: 0.75
+maximum_duration: 45
+minimum_duration: 18
+maximum_diffBin: 25
+duraion_threshold: 15
+
+# Parameters for extracting harmonics
+col_threshold: 6
+zero_binIndex: 5
+
+# Parameters for extracting oscillation rate for cane_toad
+
+# OSCILLATIONS PER SECOND
+MinimumOscillationNumberCanetoad: 10
+MaximumOscillationNumberCanetoad: 25
+# Frequency band---Hz
+MinimumFrequencyCanetoad: 400
+MaximumFrequencyCanetoad: 900
+# duration of DCT in seconds
+Dct_DurationCanetoad: 0.5
+# minimum acceptable value of a DCT coefficient
+Dct_ThresholdCanetoad: 0.5
 
 
   
