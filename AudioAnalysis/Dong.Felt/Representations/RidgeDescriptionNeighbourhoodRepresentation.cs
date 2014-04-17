@@ -626,7 +626,9 @@ namespace Dong.Felt.Representations
             this.POICount = this.HOrientationPOICount + this.VOrientationPOICount + this.PDOrientationPOICount + this.NDOrientationPOICount;
         }
 
-        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, int rowsCount, int colsCount, int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, 
+            int rowsCount, int colsCount, int neighbourhoodLength, int featureSetType,
+            SpectrogramConfiguration spectrogramConfig)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
@@ -638,8 +640,15 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        //ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);      
-                        ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                        if (featureSetType == 1 || featureSetType == 2)
+                        {
+                            ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                            
+                        }
+                        if (featureSetType == 3)
+                        {
+                            ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                        }
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }

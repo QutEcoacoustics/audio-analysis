@@ -84,7 +84,7 @@ namespace AudioAnalysisTools.Indices
                 if (chunkSignal.Length < 50) continue;  //an arbitrary minimum length
                 double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin - 1);
 
-                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, binWidth);
+                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameDuration, binWidth);
                 string classification = RainIndices.ConvertAcousticIndices2Classifcations(rainIndices);
                 classifications[i] = classification;
 
@@ -128,7 +128,8 @@ namespace AudioAnalysisTools.Indices
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth"></param>
         /// <returns></returns>
-        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
+        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, 
+                                                    TimeSpan frameDuration, double binWidth)
         {
             // i: FRAME ENERGIES - 
             double StandardDeviationCount = 0.1;
@@ -136,7 +137,7 @@ namespace AudioAnalysisTools.Indices
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
@@ -174,11 +175,12 @@ namespace AudioAnalysisTools.Indices
             //spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
             //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = ActivityAndCover.CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
-            rainIndices.lowFreqCover = tuple3.Item1;
-            rainIndices.midFreqCover = tuple3.Item2;
-            rainIndices.hiFreqCover = tuple3.Item3;
-            // double[] coverSpectrum = tuple3.Item4;
+            SpectralActivity sa = ActivityAndCover.CalculateSpectralEvents(spectrogram, spectralBgThreshold, frameDuration, lowFreqBound, midFreqBound, binWidth);
+            rainIndices.lowFreqCover = sa.lowFreqBandCover;
+            rainIndices.midFreqCover = sa.midFreqBandCover;
+            rainIndices.hiFreqCover = sa.highFreqBandCover;
+            //double[] coverSpectrum = sa.coverSpectrum;
+            //double[] eventSpectrum = sa.eventSpectrum;
 
             return rainIndices;
         }

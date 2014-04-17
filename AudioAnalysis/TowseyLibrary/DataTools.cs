@@ -727,6 +727,37 @@ namespace TowseyLibrary
         return binary;
     }
 
+    public static List<int> GetEventLengths(bool[] boolArray)
+    {
+        int L = boolArray.Length;
+        List<int> list = new List<int>();
+        bool inEvent = false;
+        int counter = 0;
+
+        for (int i = 0; i < L; i++) // iterate through boolArray
+        {
+            if (boolArray[i])
+            {
+                    counter++;
+                if (! inEvent)
+                {
+                    inEvent = true;
+                }
+            }
+            else if ((! boolArray[i]) && inEvent)
+            {
+                list.Add(counter);
+                inEvent = false;
+                counter = 0;
+            }
+        }
+        if ((boolArray[L - 1]) && (inEvent))
+        {
+            list.Add(counter);
+        }
+        return list;
+    }
+
 
 
     //=============================================================================

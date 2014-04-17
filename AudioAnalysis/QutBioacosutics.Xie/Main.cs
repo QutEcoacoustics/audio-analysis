@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.WavTools;
 using AudioAnalysisTools.DSP;
 using System.IO;
 using MathNet.Numerics;

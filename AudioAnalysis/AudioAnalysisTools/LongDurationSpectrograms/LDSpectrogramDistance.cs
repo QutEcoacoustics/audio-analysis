@@ -80,7 +80,8 @@ namespace AudioAnalysisTools
                 var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.ColorMODE = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
-                cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+                string[] keys = colorMap.Split('-');
+                cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
                 //ColourSpectrogram.BlurSpectrogram(cs1);
                 //cs1.DrawGreyScaleSpectrograms(opdir, opFileName1);
                 cs1.DrawNegativeFalseColourSpectrogram(opdir, opFileName1);
@@ -99,7 +100,7 @@ namespace AudioAnalysisTools
                 var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs2.ColorMODE = colorMap;
                 cs2.BackgroundFilter = backgroundFilterCoeff;
-                cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
+                cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
                 cs2.DrawNegativeFalseColourSpectrogram(opdir, opFileName2);
                 imagePath = Path.Combine(opdir.FullName, opFileName2 + ".COLNEG.png");

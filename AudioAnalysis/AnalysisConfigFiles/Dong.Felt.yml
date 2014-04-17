@@ -1,13 +1,13 @@
 ---
-# AnalysisPrograms dong -d -c "C:\XUEYAN\Our Programming Work\Sensors\AudioAnalysis\AnalysisConfigFiles\Dong.Felt.yml"
+# AnalysisPrograms dong -d -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Dong.Felt.yml"
 # AnalysisPrograms dong -d -c "C:\XUEYAN\Our Programming Work\Sensors\AudioAnalysis\AnalysisConfigFiles\Dong.Felt.yml" -input "C:\XUEYAN\PHD research work\Testing\Training recordings" -output "C:\XUEYAN\PHD research work\Testing\Output"
 
 # possibles: Bardelli, StdDev, AED
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\PHD research work\Testing\Training recordings
-OutputDirectory: C:\XUEYAN\PHD research work\Testing\Output
+InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings
+OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
 
 # action
 Actions: [batch]  # processOne batch makeImages another
@@ -20,7 +20,7 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 6.0
+RidgeDetectionMagnitudeThreshold: 6
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
@@ -34,8 +34,6 @@ SecondToMillionSecondUnit: 1000
 Rank: 10
 
 myNewValue: hello
-
-array: [1, 2.0, 3, 4, 5]
 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...

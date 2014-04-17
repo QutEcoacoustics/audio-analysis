@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
-using AudioAnalysisTools.DSP;
 using TowseyLibrary;
+using AudioAnalysisTools.DSP;
 
 
 namespace AudioAnalysisTools
 {
+
+
     public static class SpectrogramConstants
     {
 
@@ -59,8 +61,7 @@ namespace AudioAnalysisTools
         public const double HAR_MIN = 0.0;
         public const double HAR_MAX = 0.025;
 
-        
-        
+
         // False-colour map to acoustic indices
         //If you create a new colour assignment, you will need to code it in the class LDSpectrogramRGB, 
         //   method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
@@ -68,6 +69,7 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_TEN_AVG = "ACI-TEN-AVG"; //R-G-B
         public const string RGBMap_ACI_TEN_CVR = "ACI-TEN-CVR"; //R-G-B
         public const string RGBMap_ACI_TEN_CLS = "ACI-TEN-CLS"; //R-G-B
+        public const string RGBMap_ACI_TEN_EVN = "ACI-TEN-EVN"; //R-G-B
         public const string RGBMap_ACI_TEN_SPT = "ACI-TEN-SPT"; //R-G-B
         public const string RGBMap_ACI_TEN_BGN = "ACI-TEN-BGN"; //R-G-B
         public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
@@ -76,7 +78,6 @@ namespace AudioAnalysisTools
         public const string RGBMap_TRC_OSC_HAR = "TRC-OSC-HAR";
 
         public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRC-OSC-HAR";
-
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
         public const double BACKGROUND_FILTER_COEFF = 0.75; //must be value <=1.0
