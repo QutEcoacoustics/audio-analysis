@@ -246,5 +246,21 @@ namespace QutBioacosutics.Xie
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
+
+
+
+        public static double CalculateRequiredWindowOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
+        {
+            double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
+            //double frameOffset = sr / (double)optimumFrameRate;
+            int frameOffset = (int)(sr / (double)optimumFrameRate);  //do this AND NOT LINE ABOVE OR ELSE GET CUMULATIVE ERRORS IN time scale
+
+            double overlap = (framewidth - frameOffset) / (double)framewidth;
+            return overlap;
+        }
+
+
+
+
     }
 }
