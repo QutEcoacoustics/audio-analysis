@@ -367,7 +367,7 @@ namespace AudioAnalysisTools
         {
             string seperatorChar = ",";
 
-            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
+            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetDictionaryOfSummaryIndexProperties();
             string[] headers = IndexProperties.GetArrayOfIndexNames(listOfIndexProperties);
             string[] keys    = listOfIndexProperties.Keys.ToArray();
 

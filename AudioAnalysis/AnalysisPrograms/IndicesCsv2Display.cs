@@ -113,49 +113,49 @@ namespace AnalysisPrograms
             }
             else
             {
-                outputDTs = analyser.ProcessCsvFile(arguments.InputCsv, arguments.Config);
-
+                string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
+                string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(arguments.InputCsv, title);
+                if (tracksImage == null)
+                {
+                    LoggedConsole.WriteLine("\nWARNING: Null image returned from DisplayIndices.DrawTracksOfSummaryIndices(dt2Display, title, normalisedDisplay, imagePath);");
+                }
+                else
+                    tracksImage.Save(arguments.Output.FullName);
             }
 
             //DataTable dtRaw = output.Item1;
-            DataTable dt2Display = outputDTs.Item2;
-            if (isStrongTypedAnalyser)
-            {
-                if (indices == null)
-                {
-                    throw new InvalidOperationException("Indices are null - cannot continue");
-                }
-            }
-            else
-            {
-                if (dt2Display == null)
-                {
-                    throw new InvalidOperationException("Data table is null - cannot continue");
-                }
-            }
+            //DataTable dt2Display = outputDTs.Item2;
+            //if (isStrongTypedAnalyser)
+            //{
+            //    if (indices == null)
+            //    {
+            //        throw new InvalidOperationException("Indices are null - cannot continue");
+            //    }
+            //}
+            //else
+            //{
+            //    if (dt2Display == null)
+            //    {
+            //        throw new InvalidOperationException("Data table is null - cannot continue");
+            //    }
+            //}
 
 
             // #########################################################################################################
             // Convert datatable to image
-            string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
-            string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            //string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
+            //string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
 
-            if (isStrongTypedAnalyser)
-            {
-                // TODO: add suport for drawing images from strong typed classes - talk to anthony about this
-                throw new NotImplementedException();
-            }
+            //if (isStrongTypedAnalyser)
+            //{
+            //    // TODO: add suport for drawing images from strong typed classes - talk to anthony about this
+            //    throw new NotImplementedException();
+            //}
 
-            Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(dt2Display, title);
-            tracksImage.Save(arguments.Output.FullName);
 
             // #########################################################################################################
 
-            if (tracksImage == null)
-            {
-                LoggedConsole.WriteLine("\nWARNING: Null image returned from DisplayIndices.ConstructVisualIndexImage(dt2Display, title, normalisedDisplay, imagePath);");
-                throw new AnalysisOptionDevilException();
-            }
 
         } // Main();
     } //class

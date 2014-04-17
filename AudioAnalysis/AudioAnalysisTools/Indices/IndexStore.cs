@@ -128,15 +128,12 @@ namespace AudioAnalysisTools
 
         
         /// <summary>
-        /// The following are vectors of spectral indices  
-        /// NB: if you create a new spectrum of indices you need to put reference for saving it in AcousticIndices.Analyse() method, line 379
-        /// double[] spectrum_BGN, spectrum_ACI, spectrum_AVG, spectrum_VAR, spectrum_CVR, spectrum_ENT, spectrum_CLS;
+        /// Initialise all vectors of spectral indices  
         /// </summary>
         /// <param name="size"></param>
         public static Dictionary<string, double[]> InitialiseSpectra(int size)
         {
             Dictionary<string, IndexProperties> dict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            //Dictionary<string, IndexProperties> dict2 = IndexProperties.GetDictionaryOfSummaryIndexProperties();
             string[] keys = dict.Keys.ToArray();
 
             //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');

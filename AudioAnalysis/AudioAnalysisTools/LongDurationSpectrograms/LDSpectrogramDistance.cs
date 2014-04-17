@@ -18,7 +18,7 @@ namespace AudioAnalysisTools
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
         private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
 
-        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE default RGB mapping here.
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
 
 
@@ -43,7 +43,7 @@ namespace AudioAnalysisTools
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
-            colorMap = map!=null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
+            colorMap = map!=null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
             backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? backgroundFilterCoeff;   // must be value <=1.0
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms

@@ -26,8 +26,9 @@ namespace AudioAnalysisTools
         public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
         public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
         public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
+        public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
 
-
+        // KEYS for referring to indices. These should really be an enum                
         //KEYS FOR SUMMARY INDICES
         public const string keyCOUNT = "COUNT";
         public const string keySTART_MIN = "START-MIN";
@@ -58,43 +59,38 @@ namespace AudioAnalysisTools
         public const string keyCICADA = "CICADA";
 
         //KEYS FOR SPECTRAL INDICES
-        // CONST string for referring to different types of spectrogram - these should really be an enum                
-        //public enum keysForSpectralIndices { ACI, AVG, BGN, CLS, CVR, EVN, SPT, TEN, VAR }
-        // WHEN CREATING NEW SPECTRAL INDEX, YOU NEED TO ENTER ITS KEY _AND_ INCORPORATE IT INTO THE string ALL_KNOWN_KEYS.
         public const string spKEY_ACI = "ACI";
-        public const string spKEY_Average = "AVG";
-        public const string spKEY_BkGround = "BGN";
+        public const string spKEY_Average = "AVG";  // average dB value in each frequency bin after noise removal
+        public const string spKEY_BkGround = "BGN"; // modal dB value in each frequency bin prior to noise removal
         public const string spKEY_Cluster = "CLS";
         public const string spKEY_BinCover = "CVR";
         public const string spKEY_BinEvents = "EVN";
         public const string spKEY_SpPeakTracks = "SPT";
-        public const string spKEY_TemporalEntropy = "TEN";
+        public const string spKEY_TemporalEntropy = "ENT";
         public const string spKEY_Variance = "VAR";
-        public const string spKEY_Combined = "CMB"; //discontinued - replaced by false colour spectrograms
-        public const string spKEY_Colour = "COL"; //discontinued - 
-
-        public const string ALL_KNOWN_SPECTRAL_KEYS = "ACI-AVG-BGN-CLS-CVR-EVN-SPT-TEN-VAR";
+        //public const string spKEY_Combined = "CMB"; //discontinued - replaced by false colour spectrograms
+        //public const string spKEY_Colour = "COL"; //discontinued - 
 
 
         // NORMALISING CONSTANTS FOR INDICES
-        public const double ACI_MIN = 0.4;
-        public const double ACI_MAX = 0.8;
-        public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 50.0;
-        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
-        public const double BGN_MAX = -20.0;
-        public const double CLS_MIN = 0.0;
-        public const double CLS_MAX = 30.0;
-        public const double CVR_MIN = 0.0;
-        public const double CVR_MAX = 0.3;
-        public const double EVN_MIN = 0.0;
-        public const double EVN_MAX = 0.8;
-        public const double TEN_MIN = 0.4;
-        public const double TEN_MAX = 0.95;
-        public const double SDV_MIN = 0.0; // for the variance bounds
-        public const double SDV_MAX = 100.0;
-        public const double VAR_MIN = SDV_MIN * SDV_MIN;
-        public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
+        //public const double ACI_MIN = 0.4;
+        //public const double ACI_MAX = 0.8;
+        //public const double AVG_MIN = 0.0;
+        //public const double AVG_MAX = 50.0;
+        //public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
+        //public const double BGN_MAX = -20.0;
+        //public const double CLS_MIN = 0.0;
+        //public const double CLS_MAX = 30.0;
+        //public const double CVR_MIN = 0.0;
+        //public const double CVR_MAX = 0.3;
+        //public const double EVN_MIN = 0.0;
+        //public const double EVN_MAX = 0.8;
+        //public const double TEN_MIN = 0.4;
+        //public const double TEN_MAX = 0.95;
+        //public const double SDV_MIN = 0.0; // for the variance bounds
+        //public const double SDV_MAX = 100.0;
+        //public const double VAR_MIN = SDV_MIN * SDV_MIN;
+        //public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
 
 
 
@@ -169,6 +165,9 @@ namespace AudioAnalysisTools
         {
             double range = this.normMax - this.normMin;
             double norm = (val - this.normMin) / range;
+            if (norm > 1.0) norm = 1.0;
+            else
+                if (norm < 0.0) norm = 0.0;
             return norm;
         }
 
@@ -179,9 +178,44 @@ namespace AudioAnalysisTools
             for (int i = 0; i < val.Length; i++)
             {
                 norms[i] = (val[i] - this.normMin) / range;
+                if (norms[i] > 1.0) norms[i] = 1.0;
+                else
+                    if (norms[i] < 0.0) norms[i] = 0.0;
             }
             return norms;
         }
+
+        public double[,] NormaliseIndexValues(double[,] M)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double range = this.normMax - this.normMin;
+            double[,] M2return = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    M2return[r,c] = (M[r,c] - this.normMin) / range;
+                    if (M2return[r, c] > 1.0) M2return[r, c] = 1.0;
+                    else
+                        if (M2return[r, c] < 0.0) M2return[r, c] = 0.0;
+                }
+            }
+
+            // Reverse temporal entropy values
+            if (this.Key == IndexProperties.spKEY_TemporalEntropy)
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < cols; c++)
+                    {
+                        M2return[r, c] = 1 - M2return[r, c];
+                    }
+                }
+            }
+            return M2return;
+        }
+
         public double[] NormaliseValues(int[] val)
         {
             double range = this.normMax - this.normMin;
@@ -189,6 +223,9 @@ namespace AudioAnalysisTools
             for (int i = 0; i < val.Length; i++)
             {
                 norms[i] = (val[i] - this.normMin) / range;
+                if (norms[i] > 1.0) norms[i] = 1.0;
+                else
+                    if (norms[i] < 0.0) norms[i] = 0.0;
             }
             return norms;
         }
@@ -263,145 +300,183 @@ namespace AudioAnalysisTools
         public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
         {
             var properties = new Dictionary<string, IndexProperties>();
-
-            //string _key, string _name, Type _dataType, bool _doDisplay, double _normMin, double _normMax, "dB", bool _includeInComboIndex, 
-            //bool doDisplay = true; 
-            //bool includeInComboIndex = true;
-
-            // use next line as template.
-            //properties.Add("XXX", new IndexConstants("key", "name", typeof(double), doDisplay, 0.0, 1.0, "XX", !includeInComboIndex, 0.5));
+            // use one of following lines as template to create a new index.
             properties.Add(keyCOUNT,
-                new IndexProperties { Key = keyCOUNT, Name = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT, DataType = typeof(int), DoDisplay = false });
+                new IndexProperties { Key = keyCOUNT, Name = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT, DataType = typeof(int), DoDisplay = false 
+                });
 
             properties.Add(keySTART_MIN,
-                new IndexProperties { Key = keySTART_MIN, Name = AudioAnalysisTools.AnalysisKeys.START_MIN, DoDisplay = false });
+                new IndexProperties { Key = keySTART_MIN, Name = AudioAnalysisTools.AnalysisKeys.START_MIN, DoDisplay = false 
+                });
 
             properties.Add(keySEG_DURATION, 
-                new IndexProperties { Key = keySEG_DURATION, Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION, DataType = typeof(TimeSpan), DoDisplay = false });
+                new IndexProperties { Key = keySEG_DURATION, Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION, DataType = typeof(TimeSpan), DoDisplay = false 
+                });
 
             properties.Add(keyCLIP1,
-                new IndexProperties { Key = keyCLIP1, Name = "High Signal Ampl", normMax = 10.0, Units = "av/s" });
+                new IndexProperties { Key = keyCLIP1, Name = "High Signal Ampl", normMax = 10.0, Units = "av/s" 
+                });
 
             properties.Add(keyCLIP2,
-                new IndexProperties { Key = keyCLIP2, Name = "Clipping", normMax = 1.0, Units = "avClips/s" });
+                new IndexProperties { Key = keyCLIP2, Name = "Clipping", normMax = 1.0, Units = "avClips/s" 
+                });
 
             properties.Add(keySIG_AMPL,
-                new IndexProperties { Key = keySIG_AMPL, Name = "av Signal Ampl", normMin = -50.0, normMax = -5.0, Units = "dB", DefaultValue = IndexProperties.BGN_MIN });
+                new IndexProperties { Key = keySIG_AMPL, Name = "av Signal Ampl",
+                                      normMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL,
+                                      normMax = -5.0, 
+                                      Units = "dB", 
+                                      DefaultValue = IndexProperties.DEFAULT_SIGNAL_MIN 
+                });
 
             properties.Add(keyBKGROUND,
-                new IndexProperties { Key = keyBKGROUND, Name = "Background", normMin = -80.0, normMax = -20.0, Units = "dB", DefaultValue = IndexProperties.BGN_MIN });
+                new IndexProperties { Key = keyBKGROUND, Name = "Background",
+                                      normMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL,
+                                      normMax = -20.0, 
+                                      Units = "dB", 
+                                      DefaultValue = IndexProperties.DEFAULT_SIGNAL_MIN 
+                });
 
             properties.Add(keySNR, 
-                new IndexProperties { Key = keySNR, Name = "SNR", normMin = 0.0, normMax = 50.0, Units = "dB"});
+                new IndexProperties { Key = keySNR, Name = "SNR", normMin = 0.0, normMax = 50.0, Units = "dB"
+                });
 
             properties.Add(keySNR_ACTIVE,
-                new IndexProperties { Key = keySNR_ACTIVE, Name = "avSNRActive", normMin = 0.0, normMax = 50.0, Units = "dB" });
+                new IndexProperties { Key = keySNR_ACTIVE, Name = "avSNRActive", normMin = 0.0, normMax = 50.0, Units = "dB"
+                });
 
             properties.Add(keyACTIVITY, 
-                new IndexProperties { Key = keyACTIVITY, Name = "Activity", normMax = 0.8, Units = String.Empty});
+                new IndexProperties { Key = keyACTIVITY, Name = "Activity", normMax = 0.8, Units = String.Empty
+                });
 
             properties.Add(keyEVENT_RATE,
-                new IndexProperties { Key = keyEVENT_RATE, Name = "Events/s", normMax = 1.0, Units = ""});
+                new IndexProperties { Key = keyEVENT_RATE, Name = "Events/s", normMax = 1.0, Units = ""
+                });
 
             properties.Add(keyEVENT_DUR,
-                new IndexProperties { Key = keyEVENT_DUR, Name = "av Event Duration", DataType = typeof(TimeSpan), normMax = 500, Units = "ms" });
+                new IndexProperties { Key = keyEVENT_DUR, Name = "av Event Duration", DataType = typeof(TimeSpan), normMax = 500, Units = "ms" 
+                });
 
             properties.Add(keyHF_CVR, 
-                new IndexProperties { Key = keyHF_CVR, Name = "hf Cover", normMax = 30, DataType = typeof(int), Units = "%"});
+                new IndexProperties { Key = keyHF_CVR, Name = "hf Cover", normMax = 30, DataType = typeof(int), Units = "%"
+                });
 
             properties.Add(keyMF_CVR, 
-                new IndexProperties { Key = keyMF_CVR, Name = "mf Cover", normMax = 30, DataType = typeof(int), Units = "%"});
+                new IndexProperties { Key = keyMF_CVR, Name = "mf Cover", normMax = 30, DataType = typeof(int), Units = "%"
+                });
 
             properties.Add(keyLF_CVR,
-                new IndexProperties { Key = keyLF_CVR, Name = "lf Cover", normMax = 30, DataType = typeof(int), Units = "%" });
+                new IndexProperties { Key = keyLF_CVR, Name = "lf Cover", normMax = 30, DataType = typeof(int), Units = "%" 
+                });
 
             properties.Add(keyHtemp, 
                 new IndexProperties { Key = keyHtemp, Name = "H[temporal]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0,
-                    includeInComboIndex = true, comboWeight = 0.3 });
+                    includeInComboIndex = true, comboWeight = 0.3 
+                });
 
             properties.Add(keyHpeak, 
-                new IndexProperties { Key = keyHpeak, Name = "H[peak freq]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+                new IndexProperties { Key = keyHpeak, Name = "H[peak freq]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 
+                });
 
             properties.Add(keyHspec,
-                new IndexProperties { Key = keyHspec, Name = "H[spectral]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+                new IndexProperties { Key = keyHspec, Name = "H[spectral]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0
+                });
 
             properties.Add(keyHvari,
-                new IndexProperties { Key = keyHvari, Name = "H[spectral var]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 });
+                new IndexProperties { Key = keyHvari, Name = "H[spectral var]", normMin = 0.4, normMax = 0.95, DefaultValue = 1.0 
+                });
 
             properties.Add(keyACI, 
-                new IndexProperties { Key = keyACI, Name = "ACI", normMin = 0.4, normMax = 0.7, includeInComboIndex = true, comboWeight = 0.2 });
+                new IndexProperties { Key = keyACI, Name = "ACI", normMin = 0.4, normMax = 0.7, 
+                                      includeInComboIndex = true, comboWeight = 0.2 
+                });
 
             properties.Add(keyCLUSTER_COUNT, 
-                new IndexProperties { Key = keyCLUSTER_COUNT, Name = "Cluster Count", DataType = typeof(int), normMax = 50, includeInComboIndex = true, comboWeight = 0.3 });
+                new IndexProperties { Key = keyCLUSTER_COUNT, Name = "Cluster Count", DataType = typeof(int), 
+                                      normMax = 50, 
+                                      includeInComboIndex = true, comboWeight = 0.3 
+                });
 
             properties.Add(keyCLUSTER_DUR, 
-                new IndexProperties { Key = keyCLUSTER_DUR, Name = "av Cluster Duration", DataType = typeof(TimeSpan), normMax = 200, Units = "ms" });
+                new IndexProperties { Key = keyCLUSTER_DUR, Name = "av Cluster Duration", DataType = typeof(TimeSpan), normMax = 200, Units = "ms"
+                });
 
             properties.Add(key3GRAM_COUNT, 
-                new IndexProperties { Key = key3GRAM_COUNT, Name = "3gramCount", DataType = typeof(int), normMax = 50 });
+                new IndexProperties { Key = key3GRAM_COUNT, Name = "3gramCount", DataType = typeof(int), normMax = 50 
+                });
 
             properties.Add(keySPT_PER_SEC, 
-                new IndexProperties { Key = keySPT_PER_SEC, Name = "av Tracks/Sec", normMax = 10 });
+                new IndexProperties { Key = keySPT_PER_SEC, Name = "av Tracks/Sec", normMax = 10
+                });
 
             properties.Add(keySPT_DUR, 
-                new IndexProperties { Key = keySPT_DUR, Name = "av Track Duration", DataType = typeof(TimeSpan), normMax = 200, Units = "ms" });
+                new IndexProperties { Key = keySPT_DUR, Name = "av Track Duration", DataType = typeof(TimeSpan), normMax = 200, Units = "ms"
+                });
 
 
             // ADD THE SUMMARY INDICES ABOVE HERE
+            //==================================================================================================================================================
             //==================================================================================================================================================
             // ADD THE SPECTRAL INDICES BELOW HERE
 
             //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
 
-            properties.Add(spKEY_ACI, 
-                new IndexProperties { Key = spKEY_ACI, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double ACI_MIN = 0.4;
-            //public const double ACI_MAX = 0.8;
+            properties.Add(spKEY_ACI,
+                new IndexProperties { Key = spKEY_ACI, Name = "ACI", DataType = typeof(double[]), 
+                                      normMin = 0.4, normMax = 0.8, 
+                                      Units = "" 
+                });
 
             properties.Add(spKEY_Average,
-                new IndexProperties { Key = spKEY_Average, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double AVG_MIN = 0.0;
-            //public const double AVG_MAX = 50.0;
+                new IndexProperties { Key = spKEY_Average, Name = "AVG", DataType = typeof(double[]), 
+                                      normMin = 0.0, normMax = 50.0, 
+                                      Units = "dB"
+                });
 
             properties.Add(spKEY_BkGround,
-                new IndexProperties { Key = spKEY_BkGround, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
-            //public const double BGN_MAX = -20.0;
+                new IndexProperties { Key = spKEY_BkGround, Name = "BGN", DataType = typeof(double[]),
+                                      normMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
+                                      normMax = -20.0, //-20 adds more contrast into bgn image
+                                      DefaultValue = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
+                                      Units = "dB"
+                }); 
 
             properties.Add(spKEY_Cluster,
-                new IndexProperties { Key = spKEY_Cluster, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double CLS_MIN = 0.0;
-            //public const double CLS_MAX = 30.0;
+                new IndexProperties { Key = spKEY_Cluster, Name = "CLS", DataType = typeof(double[]), 
+                                      normMin = 0.0, normMax = 30.0, 
+                                      Units = "ms" 
+                });
 
             properties.Add(spKEY_BinCover,
-                new IndexProperties { Key = spKEY_BinCover, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double CVR_MIN = 0.0;
-            //public const double CVR_MAX = 0.3;
+                new IndexProperties { Key = spKEY_BinCover, Name = "CVR", DataType = typeof(double[]), 
+                                      normMax = 0.3, Units = "" 
+                });
 
             properties.Add(spKEY_BinEvents,
-                new IndexProperties { Key = spKEY_BinEvents, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double EVN_MIN = 0.0;
-            //public const double EVN_MAX = 0.8;
+                new IndexProperties { Key = spKEY_BinEvents, Name = "EVN", DataType = typeof(double[]), 
+                                      normMax = 0.5, Units = "" 
+                });
 
             properties.Add(spKEY_SpPeakTracks,
-                new IndexProperties { Key = spKEY_SpPeakTracks, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+                new IndexProperties { Key = spKEY_SpPeakTracks, Name = "SPT", DataType = typeof(double[]),
+                                      normMax = 1.0, 
+                                      Units = ""
+                });
 
             properties.Add(spKEY_TemporalEntropy,
-                new IndexProperties { Key = spKEY_TemporalEntropy, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double TEN_MIN = 0.4;
-            //public const double TEN_MAX = 0.95;
+                new IndexProperties { Key = spKEY_TemporalEntropy, Name = "ENT", DataType = typeof(double[]), 
+                                      normMin = 0.4, normMax = 0.95,
+                                      DefaultValue = 1.0,
+                                      Units = ""
+                });
 
             properties.Add(spKEY_Variance,
-                new IndexProperties { Key = spKEY_Variance, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-            //public const double SDV_MIN = 0.0; // for the variance bounds
-            //public const double SDV_MAX = 100.0;
-            //public const double VAR_MIN = SDV_MIN * SDV_MIN;
-            //public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
+                new IndexProperties { Key = spKEY_Variance, Name = "VAR", DataType = typeof(double[]),
+                                      normMax = 100 * 100,  // square of the expected maximum standard deviation // for the variance bounds previously 30000.0
+                                      Units = "" });
 
             //properties.Add(spKEY_Combined,
             //    new IndexProperties { Key = spKEY_Combined, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
-
-            //public const string ALL_KNOWN_SPECTRAL_KEYS = "ACI-AVG-BGN-CLS-CVR-EVN-SPT-TEN-VAR";
 
             return properties;
         }
@@ -444,32 +519,32 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="header"></param>
         /// <returns></returns>
-        public static Dictionary<string, string> GetDictionaryOfName2Key()
-        {
-            Dictionary<string, string> mapName2Key = new Dictionary<string, string>();
+        //public static Dictionary<string, string> GetDictionaryOfName2Key()
+        //{
+        //    Dictionary<string, string> mapName2Key = new Dictionary<string, string>();
 
-            Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
+        //    Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
 
-            foreach (string key in indexProperties.Keys)
-            {
-                IndexProperties ip = indexProperties[key];
-                mapName2Key.Add(ip.Name, key);
-            }
+        //    foreach (string key in indexProperties.Keys)
+        //    {
+        //        IndexProperties ip = indexProperties[key];
+        //        mapName2Key.Add(ip.Name, key);
+        //    }
 
-            //now add in historical names from previous incarnations of csv file headers
-            mapName2Key.Add("Start-min", keySTART_MIN);
-            mapName2Key.Add("bg-dB", keyBKGROUND);
-            mapName2Key.Add("snr-dB", keySNR);
-            mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
-            mapName2Key.Add("activity", keyACTIVITY);
-            mapName2Key.Add("segCount", keyEVENT_RATE);
-            mapName2Key.Add("ACI", keyACI);
-            mapName2Key.Add("clusterCount", keyCLUSTER_COUNT);
-            mapName2Key.Add("rain", keyRAIN);
-            mapName2Key.Add("cicada", keyCICADA);
+        //    //now add in historical names from previous incarnations of csv file headers
+        //    mapName2Key.Add("Start-min", keySTART_MIN);
+        //    mapName2Key.Add("bg-dB", keyBKGROUND);
+        //    mapName2Key.Add("snr-dB", keySNR);
+        //    mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
+        //    mapName2Key.Add("activity", keyACTIVITY);
+        //    mapName2Key.Add("segCount", keyEVENT_RATE);
+        //    mapName2Key.Add("ACI", keyACI);
+        //    mapName2Key.Add("clusterCount", keyCLUSTER_COUNT);
+        //    mapName2Key.Add("rain", keyRAIN);
+        //    mapName2Key.Add("cicada", keyCICADA);
 
-            return mapName2Key;
-        }
+        //    return mapName2Key;
+        //}
 
 
         public static Type[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)

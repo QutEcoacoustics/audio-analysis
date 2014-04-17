@@ -128,7 +128,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_16April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_17April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -382,13 +382,11 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
                 LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " + numberOfRowsOfIndices);
                 LoggedConsole.WriteLine("");
-                //this dictionary is needed to write results to csv file and to draw the image of indices
-                Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.InitialisePropertiesOfIndices();
 
                 // Convert summary indices to image
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                Bitmap tracksImage = IndexDisplay.ConstructVisualIndexImage(listOfIndexProperties, indicesFile, title);
+                Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(indicesFile, title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
 

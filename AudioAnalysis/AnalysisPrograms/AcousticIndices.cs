@@ -327,20 +327,6 @@ namespace AnalysisPrograms
 
         //    CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
         //    //DataTableTools.WriteTable2Console(dt);
-
-        //    // WRITE SUMMARY SPECTRA TO FILE HERE
-        //    int ID = result.SegmentStartOffset.Minutes;
-        //    string path = analysisSettings.IndicesFile.FullName;
-        //    string dir = Path.GetDirectoryName(path);
-        //    string fname = Path.GetFileNameWithoutExtension(path);
-        //    string csvFilePath1 = Path.Combine(dir, fname + ".bgnSpectrum.csv");
-        //    CsvTools.AppendRow2CSVFile(csvFilePath1, ID, result.Spectra[SpectrogramConstants.KEY_BackgroundNoise]);
-        //    string csvFilePath2 = Path.Combine(dir, fname + ".aciSpectrum.csv");
-        //    CsvTools.AppendRow2CSVFile(csvFilePath2, ID, result.Spectra[SpectrogramConstants.KEY_AcousticComplexityIndex]);
-        //    string csvFilePath3 = Path.Combine(dir, fname + ".avgSpectrum.csv");
-        //    CsvTools.AppendRow2CSVFile(csvFilePath3, ID, result.Spectra[SpectrogramConstants.KEY_Average]);
-        //    string csvFilePath4 = Path.Combine(dir, fname + ".varSpectrum.csv");
-        //    CsvTools.AppendRow2CSVFile(csvFilePath4, ID, result.Spectra[SpectrogramConstants.KEY_Variance]);
         //} // ExecuteAnalysis()
 
 
@@ -377,8 +363,6 @@ namespace AnalysisPrograms
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
                 var image = DrawSonogram(indicesStore.Sg, indicesStore.Hits, indicesStore.TrackScores, indicesStore.Tracks);
-                //var fiImage = new FileInfo(imagePath);
-                //if (fiImage.Exists) fiImage.Delete();
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = new FileInfo(imagePath);
             }
