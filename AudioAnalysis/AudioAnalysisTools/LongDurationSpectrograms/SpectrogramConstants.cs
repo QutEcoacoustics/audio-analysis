@@ -14,17 +14,15 @@ namespace AudioAnalysisTools
     {
 
         // False-colour map to acoustic indices
-        //If you create a new colour assignment, you will need to code it in the class LDSpectrogramRGB, 
-        //   method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
-        public const string RGBMap_DEFAULT     = "ACI-TEN-CVR"; //R-G-B
-        public const string RGBMap_ACI_TEN_AVG = "ACI-TEN-AVG"; //R-G-B
-        public const string RGBMap_ACI_TEN_CVR = "ACI-TEN-CVR"; //R-G-B
-        public const string RGBMap_ACI_TEN_CLS = "ACI-TEN-CLS"; //R-G-B
-        public const string RGBMap_ACI_TEN_EVN = "ACI-TEN-EVN"; //R-G-B
-        public const string RGBMap_ACI_TEN_SPT = "ACI-TEN-SPT"; //R-G-B
-        public const string RGBMap_ACI_TEN_BGN = "ACI-TEN-BGN"; //R-G-B
-        public const string RGBMap_ACI_CVR_TEN = "ACI-CVR-TEN";
-        public const string RGBMap_ACI_TEN_CVRAVG = "ACI-TEN-CVR_AVG";
+        public const string RGBMap_DEFAULT     = "ACI-ENT-CVR"; //R-G-B
+        public const string RGBMap_ACI_ENT_AVG = "ACI-ENT-AVG"; //R-G-B
+        public const string RGBMap_ACI_ENT_CVR = "ACI-ENT-CVR"; //R-G-B
+        public const string RGBMap_ACI_ENT_CLS = "ACI-ENT-CLS"; //R-G-B
+        public const string RGBMap_ACI_ENT_EVN = "ACI-ENT-EVN"; //R-G-B
+        public const string RGBMap_ACI_ENT_SPT = "ACI-ENT-SPT"; //R-G-B
+        public const string RGBMap_ACI_ENT_BGN = "ACI-ENT-BGN"; //R-G-B
+        public const string RGBMap_ACI_CVR_ENT = "ACI-CVR-ENT";
+        public const string RGBMap_ACI_ENT_CVRAVG = "ACI-EN-CVR_AVG";
         public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
 
 

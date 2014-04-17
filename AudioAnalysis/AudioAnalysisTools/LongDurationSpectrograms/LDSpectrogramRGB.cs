@@ -20,6 +20,9 @@ namespace AudioAnalysisTools
 {
     public class LDSpectrogramRGB
     {
+
+
+
         /// <summary>
         /// File name from which spectrogram was derived.
         /// </summary>
@@ -82,6 +85,10 @@ namespace AudioAnalysisTools
         public string ColorMap { get; set; }    //within current recording     
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
+        public Dictionary<string, IndexProperties> spProperties { get; private set; }
+        public string[] spectrogramKeys { get; private set; } 
+
+
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
         private Dictionary<string, Dictionary<string, double>> indexStats = new Dictionary<string, Dictionary<string, double>>(); // used to save mode and sd of the indices 
@@ -104,7 +111,9 @@ namespace AudioAnalysisTools
             // set the X and Y axis scales for the spectrograms 
             this.X_interval = Xscale; 
             this.SampleRate = sampleRate; 
-            this.ColorMap = colourMap; 
+            this.ColorMap = colourMap;
+            spProperties = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            spectrogramKeys = spProperties.Keys.ToArray();
         }
 
         /// <summary>
@@ -115,39 +124,31 @@ namespace AudioAnalysisTools
         /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
         /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public LDSpectrogramRGB(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap)
+        public LDSpectrogramRGB(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap): this(Xscale, sampleRate, colourMap)
         {
-            // set the X-axis scale for the spectrogram 
             this.minOffset = minuteOffset;
-            this.X_interval = Xscale;
-            // set the Y axis scale for the spectrogram 
-            this.SampleRate = sampleRate;
             this.FrameWidth = frameWidth;
-            this.ColorMap = colourMap;
         }
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
-        {
-            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
-            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            string[] keys = spDict.Keys.ToArray();
-
-            return ReadCSVFiles(ipdir, fileName, keys);
+        {            
+            return ReadCSVFiles(ipdir, fileName, this.spectrogramKeys);
         }
+
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
         {
             bool allOK = true;
             string warning = null;
-            for (int key = 0; key < keys.Length; key++)
+            for (int i = 0; i < keys.Length; i++)
             {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
+                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
                 {
                     int freqBinCount;
                     double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    this.spectrogramMatrices.Add(keys[key], matrix);
+                    this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;
 
                 }
@@ -157,7 +158,7 @@ namespace AudioAnalysisTools
                     {
                         warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
                     }
-                    warning += String.Format("\n      {0} File does not exist: {1}", keys[key], path);
+                    warning += String.Format("\n      {0} File does not exist: {1}", keys[i], path);
                     allOK = false;
                 }
             } // for loop
@@ -278,12 +279,8 @@ namespace AudioAnalysisTools
         public void CalculateStatisticsForAllIndices()
         {
             double[,] matrix;
-            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
-            //Dictionary<string, IndexProperties> dict2 = IndexProperties.GetDictionaryOfSummaryIndexProperties();
-            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            string[] keys = spDict.Keys.ToArray();
 
-            foreach(string key in keys)
+            foreach (string key in this.spectrogramKeys)
             {
                 if(this.spectrogramMatrices.ContainsKey(key)) 
                 {
@@ -296,12 +293,8 @@ namespace AudioAnalysisTools
 
         public List<string> WriteStatisticsForAllIndices()
         {
-            //string[] keys = IndexProperties.ALL_KNOWN_SPECTRAL_KEYS.Split('-');
-            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            string[] keys = spDict.Keys.ToArray();
-
             List<string> lines = new List<string>();
-            foreach (string key in keys)
+            foreach (string key in this.spectrogramKeys)
             {
                 if (this.spectrogramMatrices.ContainsKey(key))
                 {
@@ -364,100 +357,91 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// returns a matrix of acoustic indices whose values are normalised.
-        /// In addition, temporal entropy is subtracted from 1.0.
-        /// In addition, small background values are reduced as per filter coeeficient. 1.0 = unchanged. 
+        /// In addition, small background values are reduced as per filter coefficient. 1.0 = unchanged. 
         /// </summary>
         /// <param name="key"></param>
         /// <param name="backgroundFilterCoeff"></param>
         /// <returns></returns>
         public double[,] GetNormalisedSpectrogramMatrix(string key)
         {
-            if (this.spectrogramMatrices.ContainsKey(key))
+            if (!this.spProperties.ContainsKey(key))
             {
-                return LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.GetMatrix(key), this.BackgroundFilter);
+                Console.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
+                Console.WriteLine("Dictionary of Spectral Properties does not contain key {0}", key);
+                return null;
             }
-            else
+            if (!this.spectrogramMatrices.ContainsKey(key))
             {
-                Console.WriteLine("SpectrogramMatrices does not contain key {0}", key);
+                Console.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
+                Console.WriteLine("Dictionary of Spectrogram Matrices does not contain key {0}", key);
                 return null;
             }
 
+            IndexProperties indexProperties = this.spProperties[key];
+            var matrix = indexProperties.NormaliseIndexValues(this.GetMatrix(key));
+            return MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
         }
 
 
-        public void BlurSpectrogramMatrix(string key)
-        {
-            double[,] matrix = ImageTools.GaussianBlur_5cell(spectrogramMatrices[key]);
-            spectrogramMatrices[key] = matrix;
-        }
-
+        /// <summary>
+        /// Draws all available spectrograms in grey scale 
+        /// </summary>
+        /// <param name="opdir"></param>
+        /// <param name="opFileName"></param>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            string[] keys = this.ColorMap.Split('-');
-            DrawGreyScaleSpectrograms(opdir, opFileName, keys);
+            DrawGreyScaleSpectrograms(opdir, opFileName, this.spectrogramKeys);
         }
 
+        /// <summary>
+        /// draws only those spectrograms in the passed array of keys
+        /// </summary>
+        /// <param name="opdir"></param>
+        /// <param name="opFileName"></param>
+        /// <param name="keys"></param>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
-            //string putativeIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
-            string warning = null;
-
             for (int i = 0; i < keys.Length; i++)
             {
                 string key = keys[i];
-                if (this.spectrogramMatrices.ContainsKey(key))
+
+                if (!this.spectrogramMatrices.ContainsKey(key))
                 {
-                    string path = Path.Combine(opdir.FullName, opFileName + "." + key + ".png");
-                    Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
-                    bmp.Save(path);
-                }
-                else
-                {
-                    if (warning == null)
+                    Console.WriteLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    Console.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                    List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
+                    string list = "";
+                    foreach (string str in keyList)
                     {
-                        warning = "\nWARNING: from method ColourSpectrogram.DrawGreyScaleSpectrograms()";
-                        warning += "\n     " + opFileName + ": Dictionary of SpectrogramMatrices does not contain key(s): ";
+                        list += (str + ", ");
                     }
-                    warning += String.Format("{0} ", key);
+                    Console.WriteLine("          List of keys in dictionary = {0}", list);
+                    continue;
                 }
-            } // for loop
-            if (warning != null)
-            {
-                Console.WriteLine(warning);
-            }
+                if (this.spectrogramMatrices[key] == null)
+                {
+                    Console.WriteLine("WARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    Console.WriteLine("         Null matrix returned with key: {0}", key);
+                    continue;
+                }
+
+                string path = Path.Combine(opdir.FullName, opFileName + "." + key + ".png");
+                Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
+                if (bmp != null) bmp.Save(path);
+            } // end for loop
         }
 
+        /// <summary>
+        /// Assume calling method has done all the reality checks
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
-            if (!this.spectrogramMatrices.ContainsKey(key))
-            {
-                Console.WriteLine("\n\nWARNING: From method ColourSpectrogram.DrawGreyscaleSpectrogramOfIndex()");
-                Console.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
-                List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
-                string list = "";
-                foreach (string str in keyList)
-                {
-                    list += (str + ", ");
-                }
-                Console.WriteLine("          List of keys in dictionary = {0}", list);
-                return null;
-                //Console.WriteLine("  Press <RETURN> to exit.");
-                //Console.ReadLine();
-                //System.Environment.Exit(666);
-            }
-            if (this.spectrogramMatrices[key] == null)
-            {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawGreyscaleSpectrogramOfIndex()");
-                Console.WriteLine("         Null matrix returned with key: {0}", key);
-                return null;
-                //Console.WriteLine("  Press <RETURN> to exit.");
-                //Console.ReadLine();
-                //System.Environment.Exit(666);
-            }
-
-            double[,] matrix = LDSpectrogramRGB.NormaliseSpectrogramMatrix(key, this.spectrogramMatrices[key], this.BackgroundFilter);
+            double[,] matrix = this.GetNormalisedSpectrogramMatrix(key);
+            if(matrix == null) return null;
             Image bmp = ImageTools.DrawMatrixWithoutNormalisation(matrix);
-            //ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
             return bmp;
         }
 
@@ -524,34 +508,10 @@ namespace AudioAnalysisTools
             }
         }
 
-        /// <summary>
-        /// Calculates a COMBO spectrogram from four equal weighted normalised indices.
-        /// </summary>
-        /// <param name="imagePath"></param>
-        public Image DrawCombinedAverageSpectrogram(double backgroundFilter)
+        public void BlurSpectrogramMatrix(string key)
         {
-            var avgMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_Average, spectrogramMatrices[IndexProperties.spKEY_Average], backgroundFilter);
-            var cvrMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_BinCover, spectrogramMatrices[IndexProperties.spKEY_BinCover], backgroundFilter);
-            var aciMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_ACI, spectrogramMatrices[IndexProperties.spKEY_ACI], backgroundFilter);
-            var tenMatrix = NormaliseSpectrogramMatrix(IndexProperties.spKEY_TemporalEntropy, spectrogramMatrices[IndexProperties.spKEY_TemporalEntropy], backgroundFilter);
-
-            // assume all matrices have same rows and columns
-            int rows = avgMatrix.GetLength(0);
-            int cols = avgMatrix.GetLength(1);
-            var combo = new double[rows, cols];
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    // comboSpectrum[r, c] = (cover + aci + entropy + avg) / (double)4;
-                    double value = avgMatrix[r, c] + cvrMatrix[r, c] + aciMatrix[r, c] + (1 - tenMatrix[r, c]); // reverse temporal entropy
-                    combo[r, c] = value / (double)4;
-                }
-            }
-
-            Image bmp = ImageTools.DrawMatrixWithoutNormalisation(combo);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
-            return bmp;
+            double[,] matrix = ImageTools.GaussianBlur_5cell(spectrogramMatrices[key]);
+            spectrogramMatrices[key] = matrix;
         }
 
         public Image DrawFalseColourSpectrogram(string colorMODE)
@@ -569,9 +529,10 @@ namespace AudioAnalysisTools
 
             string[] rgbMap = colorMap.Split('-');
 
-            var redMatrix = NormaliseSpectrogramMatrix(rgbMap[0], spectrogramMatrices[rgbMap[0]], this.BackgroundFilter);
-            var grnMatrix = NormaliseSpectrogramMatrix(rgbMap[1], spectrogramMatrices[rgbMap[1]], this.BackgroundFilter);
-            var bluMatrix = NormaliseSpectrogramMatrix(rgbMap[2], spectrogramMatrices[rgbMap[2]], this.BackgroundFilter);
+            //var indexProperties = this.spProperties[rgbMap[0]];
+            var redMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[0]);
+            var grnMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[1]);
+            var bluMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[2]);
             bool doReverseColour = false;
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
 
@@ -684,7 +645,7 @@ namespace AudioAnalysisTools
                 // set the X and Y axis scales for the spectrograms 
                 int xScale = 60;  // assume one minute spectra and hourly time lines
                 int sampleRate = 17640; // default value - after resampling
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_BGN; //CHANGE RGB mapping here.
+                string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN; //CHANGE RGB mapping here.
                 var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
                 cs.ReadCSVFiles(new DirectoryInfo(ipdir), ipFileName);
                 cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
@@ -712,52 +673,9 @@ namespace AudioAnalysisTools
         //############################################################################################################################################################
 
 
-        public static double[,] NormaliseSpectrogramMatrix(string key, double[,] matrix, double backgroundFilterCoeff)
+        public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
         {
-            if (key == IndexProperties.spKEY_ACI) //.Equals("ACI"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.ACI_MIN, IndexProperties.ACI_MAX);
-            }
-            else if (key == IndexProperties.spKEY_TemporalEntropy)//.Equals("TEN"))
-            {
-                // normalise and reverse
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.TEN_MIN, IndexProperties.TEN_MAX);
-                int rowCount = matrix.GetLength(0);
-                int colCount = matrix.GetLength(1);
-                for (int r = 0; r < rowCount; r++)
-                {
-                    for (int c = 0; c < colCount; c++)
-                    {
-                        matrix[r, c] = 1 - matrix[r, c];
-                    }
-                }
-            }
-            else if (key == IndexProperties.spKEY_Average)//.Equals("AVG"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.AVG_MIN, IndexProperties.AVG_MAX);
-            }
-            else if (key == IndexProperties.spKEY_BkGround)//.Equals("BGN"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.BGN_MIN, IndexProperties.BGN_MAX);
-            }
-            else if (key == IndexProperties.spKEY_Cluster)//.Equals("CLS"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.CLS_MIN, IndexProperties.CLS_MAX);
-            }
-            else if (key == IndexProperties.spKEY_BinCover)//.Equals("CVR"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.CVR_MIN, IndexProperties.CVR_MAX);
-            }
-            else if (key == IndexProperties.spKEY_Variance)//.Equals("VAR"))
-            {
-                matrix = DataTools.NormaliseInZeroOne(matrix, IndexProperties.VAR_MIN, IndexProperties.VAR_MAX);
-            }
-            else
-            {
-                //Logger.Warn("NormaliseSpectrogramMatrix() is rendering an INDEX that is not specially normalised");
-                Console.WriteLine("NormaliseSpectrogramMatrix() is rendering an UNKNOWN INDEX or one not normalised");
-                matrix = DataTools.Normalise(matrix, 0, 1);
-            }
+            matrix = indexProperties.NormaliseIndexValues(matrix);
 
             matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
             return matrix;
@@ -994,7 +912,7 @@ namespace AudioAnalysisTools
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColourMap;
-            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
+            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;   // assigns indices to RGB
 
             double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -1016,10 +934,7 @@ namespace AudioAnalysisTools
                 return;
             }
 
-            Dictionary<string, IndexProperties> spDict = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            string[] keys = spDict.Keys.ToArray();
-
-            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, keys);
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
             List<string> lines = cs1.WriteStatisticsForAllIndices();
@@ -1032,8 +947,8 @@ namespace AudioAnalysisTools
             image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
-            //colorMap = SpectrogramConstants.RGBMap_ACI_TEN_SPT; //this has been good
-            colorMap = SpectrogramConstants.RGBMap_ACI_TEN_EVN;
+            //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
+            colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
@@ -1072,7 +987,7 @@ namespace AudioAnalysisTools
         }
 
         //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        private string colourmap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;  // CHANGE default RGB mapping here.
+        private string colourmap = SpectrogramConstants.RGBMap_ACI_ENT_SPT;  // CHANGE default RGB mapping here.
         public string ColourMap
         {
             get { return colourmap; }
