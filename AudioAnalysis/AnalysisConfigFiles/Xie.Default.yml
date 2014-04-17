@@ -1,43 +1,70 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-File:  C:\Jie\data\020313_min248.wav
+# LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_429min.wav
+LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_424min.wav
 
 # Path for saving image
-ImagePath: C:\Jie\output\a.png
+SaveImagePath: C:\Jie\output\CaneToad.png
 
 # Parameters for finding local peaks
 AmplitudeThreshold: 4
 Range: 2
 Distance: 5
-BinToreance: 3
 
 # Parameters for extracting tracks
+BinToreance: 3
 FrameThreshold: 5
-TrackThreshold: 0.75
+TracksThreshold: 0.75
 MaximumTrackDuration: 45
 MinimumTrackDuration: 18
 BinDifference: 25
-TrackDuraionThreshold: 15
 
 # Parameters for extracting harmonics
-col_threshold: 6
-zero_binIndex: 5
+ColoumThreshold: 6
+ZeroBinIndex: 5
 
 # Parameters for extracting oscillation rate for cane_toad
 
 # OSCILLATIONS PER SECOND
-MinimumOscillationNumberCanetoad: 10
+MinimumOscillationNumberCanetoad: 12
 MaximumOscillationNumberCanetoad: 25
 # Frequency band---Hz
 MinimumFrequencyCanetoad: 400
 MaximumFrequencyCanetoad: 900
-# duration of DCT in seconds
-Dct_DurationCanetoad: 0.5
-# minimum acceptable value of a DCT coefficient
-Dct_ThresholdCanetoad: 0.5
+# Duration of DCT in seconds
+Dct_DurationCanetoad: 0.6
+# Minimum acceptable value of a DCT coefficient
+Dct_ThresholdCanetoad: 0.55
 
 
-  
+# Parameters for producing spectrogram
+WindowSize: 512
+
+
+# Parameters for peaks in the bands of 6 frog species
+
+FrequencyLowCanetoad: 400
+FrequencyHighCanetoad: 900
+
+FrequencyLowCaerulea: 200
+FrequencyHighCaerulea: 1600
+
+FrequencyLowNasuta: 1000
+FrequencyHighNasuta: 3500
+
+FrequencyLowGracillenta: 1200
+FrequencyHighGracillenta: 3800
+
+FrequencyLowFallax: 3000
+FrequencyHighFallax: 4500
+
+FrequencyLowLatopalmata: 1000
+FrequencyHighLatopalmata: 3500
+
+
+
+
+
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
