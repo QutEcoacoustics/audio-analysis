@@ -1,32 +1,34 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-# LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_429min.wav
+# LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_18min.wav
 LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_424min.wav
 
 # Path for saving image
-SaveImagePath: C:\Jie\output\CaneToad.png
+SaveImagePath: C:\Jie\output\BandMax.png
 
-# Parameters for finding local peaks
-AmplitudeThreshold: 4
-Range: 2
-Distance: 5
+# Parameters for producing spectrogram
+WindowSize: 512
 
-# Parameters for extracting tracks
-BinToreance: 3
-FrameThreshold: 5
-TracksThreshold: 0.75
-MaximumTrackDuration: 45
-MinimumTrackDuration: 18
-BinDifference: 25
-
-# Parameters for extracting harmonics
-ColoumThreshold: 6
-ZeroBinIndex: 5
-
-# Parameters for extracting oscillation rate for cane_toad
-
-# OSCILLATIONS PER SECOND
+#################################################################
+# CANETOAD   HARMONIC:NO   OSCILLATION:YES 
+#################################################################
+# PEAKS---Frame Unit
+AmplitudeThresholdCanetoad: 4
+RangeCanetoad: 2
+DistanceCanetoad: 5
+# TRACKS---Frame
+BinToreanceCanetoad: 3
+FrameThresholdCanetoad: 8
+TrackDurationThreshold: 20
+TrackThresholdCanetoad: 0.6
+MaximumTrackDurationCanetoad: 45
+MinimumTrackDurationCanetoad: 15
+BinDifferenceCanetoad: 8
+# Band
+FrequencyLowCanetoad: 400
+FrequencyHighCanetoad: 900
+# OSCILLATION
 MinimumOscillationNumberCanetoad: 12
 MaximumOscillationNumberCanetoad: 25
 # Frequency band---Hz
@@ -37,32 +39,87 @@ Dct_DurationCanetoad: 0.6
 # Minimum acceptable value of a DCT coefficient
 Dct_ThresholdCanetoad: 0.55
 
+# #################################################################
+# # CAERULEA
+# #################################################################
+# # PEAKS
+# AmplitudeThresholdCaerulea: 4
+# RangeCaerulea: 2
+# DistanceCaerulea: 5
+# # TRACKS
+# BinToreanceCaerulea: 3
+# FrameThresholdCaerulea: 5
+# TrackThresholdCaerulea: 0.75
+# MaximumTrackDurationCaerulea: 45
+# MinimumTrackDurationCaerulea: 18
+# BinDifferenceCaerulea: 25
+# # Band
+# FrequencyLowCaerulea: 400
+# FrequencyHighCaerulea: 900
+# # OSCILLATION
+# MinimumOscillationNumberCanetoad: 12
+# MaximumOscillationNumberCanetoad: 25
+# # Duration of DCT in seconds
+# Dct_DurationCaerulea: 0.6
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdCaerulea: 0.55
 
-# Parameters for producing spectrogram
-WindowSize: 512
+# #################################################################
+# # FALLAX
+# #################################################################
+# # PEAKS
+# AmplitudeThresholdFallax: 4
+# RangeFallax: 2
+# DistanceFallax: 5
+# # TRACKS
+# BinToreanceFallax: 3
+# FrameThresholdFallax: 5
+# TrackThresholdFallax: 0.75
+# MaximumTrackDurationFallax: 45
+# MinimumTrackDurationFallax: 18
+# BinDifferenceFallax: 25
+# # Band
+# FrequencyLowFallax: 3000
+# FrequencyHighFallax: 4500
+# # OSCILLATION
+# MinimumOscillationNumberFallax: 12
+# MaximumOscillationNumberFallax: 25
+# # Frequency band---Hz
+# MinimumFrequencyFallax: 400
+# MaximumFrequencyFallax: 900
+# # Duration of DCT in seconds
+# Dct_DurationFallax: 0.6
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdFallax: 0.55
 
+# #################################################################
+# # GRACILLENTA  HARMONIC:NO OSCILLATION:NO
+# #################################################################
+# # PEAKS
+# AmplitudeThresholdGracillenta: 4
+# RangeGracillenta: 2
+# DistanceGracillenta: 5
+# # TRACKS
+# BinToreanceGracillenta: 3
+# FrameThresholdGracillenta: 5
+# TrackThresholdGracillenta: 0.75
+# MaximumTrackDurationGracillenta: 45
+# MinimumTrackDurationGracillenta: 18
+# BinDifferenceGracillenta: 25
+# # Band
+# FrequencyLowGracillenta: 1200
+# FrequencyHighGracillenta: 3800
 
-# Parameters for peaks in the bands of 6 frog species
-
-FrequencyLowCanetoad: 400
-FrequencyHighCanetoad: 900
-
-FrequencyLowCaerulea: 200
-FrequencyHighCaerulea: 1600
-
-FrequencyLowNasuta: 1000
-FrequencyHighNasuta: 3500
-
-FrequencyLowGracillenta: 1200
-FrequencyHighGracillenta: 3800
-
-FrequencyLowFallax: 3000
-FrequencyHighFallax: 4500
-
-FrequencyLowLatopalmata: 1000
-FrequencyHighLatopalmata: 3500
-
-
+# #################################################################
+# # LATOPALMATA HARMONIC:YES 
+# #################################################################
+# FrequencyLowLatopalmata: 1500
+# FrequencyHighLatopalmata: 4800
+# #################################################################
+# # NASUTA  HARMONIC:YES OSCILLATION:YES
+# #################################################################
+# FrequencyLowNasuta: 1000
+# FrequencyHighNasuta: 3500
 
 
 
