@@ -69,17 +69,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BandOscillationRate.cs" />
     <Compile Include="Configuration\CanetoadConfiguration.cs" />
-    <Compile Include="Configuration\TracksConfiguration.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
-    <Compile Include="FindOscillation.cs" />
+    <Compile Include="Oscillation Feature\FindOscillation.cs" />
     <Compile Include="FrogIndex.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Oscillation Feature\RemoveSparseHits.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="XieFunction.cs" />
   </ItemGroup>
