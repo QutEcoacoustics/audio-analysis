@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using TowseyLibrary;
+using AudioAnalysisTools.DSP;
 
 
 namespace AudioAnalysisTools
@@ -12,6 +13,54 @@ namespace AudioAnalysisTools
 
     public static class SpectrogramConstants
     {
+
+        // CONST string for referring to different types of spectrogram - these should really be an enum                
+        public const string KEY_AcousticComplexityIndex = "ACI";
+        public const string KEY_Average = "AVG";
+        public const string KEY_BackgroundNoise = "BGN";
+        public const string KEY_Combined = "CMB";
+        public const string KEY_Cluster  = "CLS";
+        public const string KEY_Colour = "COL";
+        public const string KEY_BinCover = "CVR";
+        public const string KEY_SpPeakTracks = "SPT";
+        public const string KEY_TemporalEntropy = "TEN";
+        public const string KEY_Variance = "VAR";
+
+        // FOR FROG SPECTROGRAMS
+        public const string KEY_Tracks = "TRC";
+        public const string KEY_Oscillations = "OSC";
+        public const string KEY_Harmonics = "HAR";
+            
+                
+
+        // NORMALISING CONSTANTS FOR INDICES
+        //public const double ACI_MIN = 0.0;
+        //public const double ACI_MAX = 1.0;
+        public const double ACI_MIN = 0.4;
+        public const double ACI_MAX = 0.8;
+        public const double AVG_MIN = 0.0;
+        public const double AVG_MAX = 50.0;
+        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
+        public const double BGN_MAX = -20.0;
+        public const double CLS_MIN = 0.0;
+        public const double CLS_MAX = 30.0;
+        public const double CVR_MIN = 0.0;
+        public const double CVR_MAX = 0.3;
+        public const double TEN_MIN = 0.4;
+        public const double TEN_MAX = 0.95;
+        public const double SDV_MIN = 0.0; // for the variance bounds
+        public const double SDV_MAX = 100.0;
+        public const double VAR_MIN = SDV_MIN * SDV_MIN;
+        public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
+
+        // FOR FROG SPECTROGRAMS
+        public const double TRC_MIN = 0.0;
+        public const double TRC_MAX = 0.065;
+        public const double OSC_MIN = 0.0;
+        public const double OSC_MAX = 0.5;
+        public const double HAR_MIN = 0.0;
+        public const double HAR_MAX = 0.025;
+
 
         // False-colour map to acoustic indices
         public const string RGBMap_DEFAULT     = "ACI-ENT-CVR"; //R-G-B
@@ -24,7 +73,9 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_CVR_ENT = "ACI-CVR-ENT";
         public const string RGBMap_ACI_ENT_CVRAVG = "ACI-EN-CVR_AVG";
         public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
+        public const string RGBMap_TRC_OSC_HAR = "TRC-OSC-HAR";
 
+        public const string ALL_KNOWN_KEYS     = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRC-OSC-HAR";
 
         //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
         public const double BACKGROUND_FILTER_COEFF = 0.75; //must be value <=1.0

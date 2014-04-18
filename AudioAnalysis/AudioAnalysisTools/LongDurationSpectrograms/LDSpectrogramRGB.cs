@@ -682,7 +682,6 @@ namespace AudioAnalysisTools
         } //NormaliseSpectrogramMatrix()
 
 
-
         public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
         {
             double[] values = DataTools.Matrix2Array(M);
