@@ -18,10 +18,15 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+
+    /// <summary>
+    /// This class generates false-colour spectrograms of long duration audio recordings.
+    /// Important properties are:
+    /// 1) the colour map which maps three acoutic indices to RGB.
+    /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
+    /// </summary>
     public class LDSpectrogramRGB
     {
-
-
 
         /// <summary>
         /// File name from which spectrogram was derived.
