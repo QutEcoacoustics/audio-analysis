@@ -26,9 +26,8 @@ namespace AudioAnalysisTools
     /// 1) the colour map which maps three acoutic indices to RGB.
     /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
     /// 
-    /// Copy the method 
+    /// In order to create false colour spectrograms, copy the method 
     ///         public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
-    /// in order to create false colour spectrograms. 
     /// All the arguments can be passed through a config file.
     /// Create the config file throu an instance of the class LDSpectrogramConfig
     /// and then call config.WritConfigToYAML(FileInfo path).
@@ -46,10 +45,6 @@ namespace AudioAnalysisTools
             get { return fileName; }
             set { fileName = value; }
         }
-
-        //Define new colour schemes in class SpectorgramConstants and implement the code in the class Colourspectrogram, 
-        //            method DrawFalseColourSpectrogramOfIndices(string colorSchemeID, int X_interval, int Y_interval, double[,] avgMatrix, double[,] cvrMatrix, double[,] aciMatrix, double[,] tenMatrix)
-        //public string colorSchemeID = SpectrogramConstants.RGBMap_DEFAULT; //R-G-B
 
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -337,6 +332,22 @@ namespace AudioAnalysisTools
             }
             return lines;
         }
+
+        public void DrawIndexDistributionsAndSave(string imagePath)
+        {
+            int width = 100;  //pixels 
+            int height = 100; // pixels
+            var list = new List<Image>();
+            foreach (string key in this.spectrogramMatrices.Keys)
+            {
+                int[] histogram = Histogram.Histo(this.spectrogramMatrices[key], width);
+                list.Add(ImageTools.DrawHistogram(key, histogram, width, height));
+            }
+            Image image3 = ImageTools.CombineImagesVertically(list.ToArray());
+            image3.Save(imagePath);
+        }
+
+
 
         /// <summary>
         /// All matrices must be in spectrogram orientation before adding to list of spectrograms.
@@ -968,6 +979,8 @@ namespace AudioAnalysisTools
             cs1.CalculateStatisticsForAllIndices();
             List<string> lines = cs1.WriteStatisticsForAllIndices();
             FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
+
+            cs1.DrawIndexDistributionsAndSave(Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png"));
 
             colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);

@@ -142,7 +142,8 @@ namespace AudioAnalysisTools.Indices
             indicesStore.StoreIndex(InitialiseIndexProperties.keySNR_ACTIVE, activity.activeAvDB);     // snr calculated from active frames only
             indicesStore.StoreIndex(InitialiseIndexProperties.keySIG_AMPL, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHtemp, DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope))); // ENTROPY of ENERGY ENVELOPE
+            double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
+            indicesStore.StoreIndex(InitialiseIndexProperties.keyHtemp, 1 - entropy);  //1-Ht because want measure of concentration of acoustic energy.
             indicesStore.StoreIndex(InitialiseIndexProperties.keyEVENT_RATE, activity.eventCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
             indicesStore.StoreIndex(InitialiseIndexProperties.keyEVENT_DUR, activity.avEventDuration);      //av event duration in milliseconds
 
@@ -173,9 +174,10 @@ namespace AudioAnalysisTools.Indices
             double[] reducedSpectrum = DataTools.Subarray(aciArray, lowerBinBound, reducedFreqBinCount);  // remove low freq band
             indicesStore.StoreIndex(InitialiseIndexProperties.keyACI, reducedSpectrum.Average()); // average of ACI spectrum with low freq bins removed
 
-
-            // ii: CALCULATE H(t) or Temporal ENTROPY Spectrum 
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_TemporalEntropy, AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram));
+            // ii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
+            double[] temporalEntropySpectrum = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
+            for (int i = 0; i < temporalEntropySpectrum.Length; i++) { temporalEntropySpectrum[i] = 1 - temporalEntropySpectrum[i]; }
+            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_TemporalEntropy, temporalEntropySpectrum);
 
             // iii: remove background noise from the amplitude spectrogram
             double SD_COUNT = 0.0;
@@ -230,7 +232,6 @@ namespace AudioAnalysisTools.Indices
             // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
             indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_Average, tuple2.Item1);
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_Variance, tuple2.Item2);
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram

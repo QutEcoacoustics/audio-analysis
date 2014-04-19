@@ -17,12 +17,6 @@ namespace AudioAnalysisTools
     /// </summary>
     public class IndexProperties
     {
-        public static int bitsPerSample = 16;
-        public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
-        public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
-        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
-
-
 
         public string Key {set; get; }
         public string Name { set; get; }
@@ -103,18 +97,6 @@ namespace AudioAnalysisTools
                         if (M2return[r, c] < 0.0) M2return[r, c] = 0.0;
                 }
             }
-
-            //// Reverse temporal entropy values
-            //if (this.Key == InitialiseIndexProperties.spKEY_TemporalEntropy)
-            //{
-            //    for (int r = 0; r < rows; r++)
-            //    {
-            //        for (int c = 0; c < cols; c++)
-            //        {
-            //            M2return[r, c] = 1 - M2return[r, c];
-            //        }
-            //    }
-            //}
             return M2return;
         }
 

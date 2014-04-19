@@ -26,6 +26,12 @@ namespace AudioAnalysisTools.Indices
     public static class InitialiseIndexProperties
     {
         public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
+        public static int bitsPerSample = 16;
+        public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
+        public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
+        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
+
+
 
         // KEYS for referring to indices. These should really be an enum                
         //KEYS FOR SUMMARY INDICES
@@ -60,13 +66,12 @@ namespace AudioAnalysisTools.Indices
         //KEYS FOR SPECTRAL INDICES
         public const string spKEY_ACI = "ACI";
         public const string spKEY_Average = "AVG";  // average dB value in each frequency bin after noise removal
-        public const string spKEY_BkGround = "BGN"; // modal dB value in each frequency bin prior to noise removal
+        public const string spKEY_BkGround = "BGN"; // modal dB value in each frequency bin calculated during noise removal
         public const string spKEY_Cluster = "CLS";
         public const string spKEY_BinCover = "CVR";
         public const string spKEY_BinEvents = "EVN";
         public const string spKEY_SpPeakTracks = "SPT";
         public const string spKEY_TemporalEntropy = "ENT";
-        public const string spKEY_Variance = "VAR";
 
         //the below headers will eventually be deleted and replaced by their keys
         public const string header_rain = "Rain";
@@ -232,10 +237,11 @@ namespace AudioAnalysisTools.Indices
                 new IndexProperties
                 {
                     Key = keyHtemp,
-                    Name = "H[temporal]",
-                    NormMin = 0.4,
-                    NormMax = 0.95,
-                    DefaultValue = 1.0,
+                    Name = "1-H[t]",
+                    Comment = "1-Ht is a meassure of concentration of acoustic energy instead of energy dispersal.",
+                    NormMin = 0.0,
+                    NormMax = 0.6,
+                    DefaultValue = 0.0,
                     includeInComboIndex = true,
                     comboWeight = 0.3
                 });
@@ -418,19 +424,10 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_TemporalEntropy,
                     Name = "ENT",
                     DataType = typeof(double[]),
-                    NormMin = 0.4,
-                    NormMax = 0.95,
-                    DefaultValue = 1.0,
-                    Units = ""
-                });
-
-            properties.Add(spKEY_Variance,
-                new IndexProperties
-                {
-                    Key = spKEY_Variance,
-                    Name = "VAR",
-                    DataType = typeof(double[]),
-                    NormMax = 100 * 100,  // square of the expected maximum standard deviation // for the variance bounds previously 30000.0
+                    NormMin = 0.0,
+                    NormMax = 0.6,
+                    DefaultValue = 0.0,
+                    Comment = "Default value = 0.0 because index = 1-Ht. It is a meassure of concentration of acoustic energy instead of energy dispersal.",
                     Units = ""
                 });
 
