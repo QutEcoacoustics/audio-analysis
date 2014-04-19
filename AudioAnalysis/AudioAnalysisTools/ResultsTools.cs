@@ -9,6 +9,7 @@ using AnalysisBase;
 //using AudioAnalysisTools;
 using log4net;
 using TowseyLibrary;
+using AudioAnalysisTools.Indices;
 //using Acoustics.Shared;
 //using Acoustics.Tools.Audio;
 //using AnalysisRunner;
@@ -82,8 +83,8 @@ namespace AudioAnalysisTools
                 ib.SegmentOffsetFromStartOfSource = result.SegmentStartOffset;
                 ib.SegmentDuration = result.AudioDuration;
                 //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
-                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
-                ib.SummaryIndicesOfTypeDouble[IndexProperties.keySEG_DURATION] = result.AudioDuration.TotalSeconds;
+                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
+                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keySEGMENT_DURATION] = result.AudioDuration.TotalSeconds;
                 mergedIndices[count] = ib;
                 count++;
             }
@@ -93,7 +94,7 @@ namespace AudioAnalysisTools
             for (int i = 0; i < mergedIndices.Length; i++)
             {
                 mergedIndices[i].SegmentCount = i;
-                mergedIndices[i].SummaryIndicesOfTypeDouble[IndexProperties.keyCOUNT] = (double)i;
+                mergedIndices[i].SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keyCOUNT] = (double)i;
             }
 
             return mergedIndices;
@@ -367,8 +368,8 @@ namespace AudioAnalysisTools
         {
             string seperatorChar = ",";
 
-            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetDictionaryOfSummaryIndexProperties();
-            string[] headers = IndexProperties.GetArrayOfIndexNames(listOfIndexProperties);
+            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
+            string[] headers = InitialiseIndexProperties.GetArrayOfIndexNames(listOfIndexProperties);
             string[] keys    = listOfIndexProperties.Keys.ToArray();
 
             StreamWriter sr = null;

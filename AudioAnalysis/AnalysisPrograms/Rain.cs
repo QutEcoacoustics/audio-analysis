@@ -221,9 +221,9 @@ namespace AnalysisPrograms
                 int startMinute = (int)tsStart.TotalMinutes;
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[IndexProperties.keyCOUNT] = iter;
-                    row[IndexProperties.keySTART_MIN] = startMinute;
-                    row[IndexProperties.keySEG_DURATION] = result.AudioDuration.TotalSeconds;
+                    row[InitialiseIndexProperties.keyCOUNT] = iter;
+                    row[InitialiseIndexProperties.keySTART_MIN] = startMinute;
+                    row[InitialiseIndexProperties.keySEGMENT_DURATION] = result.AudioDuration.TotalSeconds;
                 }
 
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
