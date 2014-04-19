@@ -16,7 +16,6 @@ namespace QutBioacosutics.Xie
         public double[] DetectOscillation(double[,] matrix, int zeroBinIndex)
         {
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-
             // Get oscillation of the whole duration of one recording
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -39,8 +38,7 @@ namespace QutBioacosutics.Xie
                     if (peakMatrix[i, j] < 0)
                     {
                         peakMatrix[i, j] = 1;
-                    }
-                    
+                    }                   
                 }           
             }
 
@@ -75,7 +73,6 @@ namespace QutBioacosutics.Xie
                         {
                             listLow.Add(c);
                         }
-
                     }
 
                     arrayLow = listLow.ToArray();
@@ -141,11 +138,9 @@ namespace QutBioacosutics.Xie
                                 score[r]++;
                                 break;
                             }
-
                         }
                     }
                 }
-
             }
 
             // Normalize the score
@@ -157,17 +152,9 @@ namespace QutBioacosutics.Xie
             return norArray;
         }
 
-        public static double[,] CalculateOscillationRate(SpectrogramStandard sonogram, Configuration.CanetoadConfiguration canetoadConfig)
+        public static double[,] CalculateOscillationRate(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
+                                                         int minOscilFreq, int maxOscilFreq)
         {
-            int minHz = canetoadConfig.MinimumFrequencyCanetoad;
-            int maxHz = canetoadConfig.MaximumFrequencyCanetoad;
-
-            double dctDuration = canetoadConfig.Dct_DurationCanetoad;
-            double dctThreshold = canetoadConfig.Dct_ThresholdCanetoad;
-
-            int minOscilFreq = canetoadConfig.MinimumOscillationNumberCanetoad;
-            int maxOscilFreq = canetoadConfig.MaximumOscillationNumberCanetoad;
-
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
 
