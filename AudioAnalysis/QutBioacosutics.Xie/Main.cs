@@ -49,12 +49,12 @@ namespace QutBioacosutics.Xie
             //***************************Canetoad*****************************//  
             // Peak parameters
             double amplitudeThresholdCanetoad = configuration.AmplitudeThresholdCanetoad;   // Decibel---the minimum amplitude value
-            int rangeCanetoad = configuration.RangeCanetoad;                                // Frame---the distance in either side for selecting peaks
-            int distanceCanetoad = configuration.DistanceCanetoad;                          // Frame---remove near peaks
+            //int rangeCanetoad = configuration.RangeCanetoad;                                // Frame---the distance in either side for selecting peaks
+            //int distanceCanetoad = configuration.DistanceCanetoad;                          // Frame---remove near peaks
             // Track parameters
             double binToreanceCanetoad = configuration.BinToreanceCanetoad;                 // Bin---the fluctuation of the dominant frequency bin 
             int frameThresholdCanetoad = configuration.FrameThresholdCanetoad;              // Frame---frame numbers of the silence    
-            int trackDurationThresholdCanetoad = configuration.TrackDurationThreshold;      
+            int trackDurationThresholdCanetoad = configuration.TrackDurationThresholdCanetoad;      
             double trackThresholdCanetoad = configuration.TrackThresholdCanetoad;           // Used for calculating the percent of peaks in one track    
             int maximumTrackDurationCanetoad = configuration.MaximumTrackDurationCanetoad;  // Minimum duration of tracks
             int minimumTrackDurationCanetoad = configuration.MinimumTrackDurationCanetoad;  // Maximum duration of tracks   
@@ -70,11 +70,13 @@ namespace QutBioacosutics.Xie
             double dct_DurationCanetoad = configuration.Dct_DurationCanetoad;
             double dct_ThresholdCanetoad = configuration.Dct_ThresholdCanetoad;
 
+            bool doSlopeCanetoad = configuration.DoSlopeCanetoad;
+
             var canetoadConfig = new CanetoadConfiguration
             {
                 AmplitudeThresholdCanetoad = amplitudeThresholdCanetoad,
-                RangeCanetoad = rangeCanetoad,
-                DistanceCanetoad = distanceCanetoad,
+                //RangeCanetoad = rangeCanetoad,
+                //DistanceCanetoad = distanceCanetoad,
 
                 BinToreanceCanetoad = binToreanceCanetoad,
                 FrameThresholdCanetoad = frameThresholdCanetoad,
@@ -82,7 +84,7 @@ namespace QutBioacosutics.Xie
                 TrackThresholdCanetoad = trackThresholdCanetoad,
                 MaximumTrackDurationCanetoad = maximumTrackDurationCanetoad,
                 MinimumTrackDurationCanetoad = minimumTrackDurationCanetoad,
-                BinDifferencCanetoade = binDifferenceCanetoad,
+                BinDifferencCanetoad = binDifferenceCanetoad,
 
                 FrequencyLowCanetoad = frequencyLowCanetoad,
                 FrequencyHighCanetoad = frequencyHighCanetoad,
@@ -93,6 +95,8 @@ namespace QutBioacosutics.Xie
                 MaximumFrequencyCanetoad = maximumFrequencyCanetoad,
                 Dct_DurationCanetoad = dct_DurationCanetoad,
                 Dct_ThresholdCanetoad = dct_ThresholdCanetoad,
+
+                DoSlopeCanetoad = doSlopeCanetoad,
             };
 
             //***************************************************************//
@@ -101,23 +105,181 @@ namespace QutBioacosutics.Xie
             //int frequencyLowCaerulea = configuration.FrequencyLowCaerulea;
             //int frequencyHighCaerulea = configuration.FrequencyHighCaerulea;
 
-            //// Nasuta 
-            //int frequencyLowFallax = configuration.FrequencyLowFallax;
-            //int frequencyHighFallax = configuration.FrequencyHighFallax;
 
-            //// Gracillenta
-            //int frequencyLowGracillenta = configuration.FrequencyLowGracillenta;
-            //int frequencyHighGracillenta = configuration.FrequencyHighGracillenta;
+            //********************Gracillenta********************************//
+
+            // Peak parameters
+            double amplitudeThresholdGracillenta = configuration.AmplitudeThresholdGracillenta;   // Decibel---the minimum amplitude value
+            //int rangeGracillenta = configuration.RangeGracillenta;                              // Frame---the distance in either side for selecting peaks
+            //int distanceGracillenta = configuration.DistanceGracillenta;                        // Frame---remove near peaks
+            // Track parameters
+            double binToreanceGracillenta = configuration.BinToreanceGracillenta;                 // Bin---the fluctuation of the dominant frequency bin 
+            int frameThresholdGracillenta = configuration.FrameThresholdGracillenta;              // Frame---frame numbers of the silence    
+            int trackDurationThresholdGracillenta = configuration.TrackDurationThresholdGracillenta;
+            double trackThresholdGracillenta = configuration.TrackThresholdGracillenta;           // Used for calculating the percent of peaks in one track    
+            int maximumTrackDurationGracillenta = configuration.MaximumTrackDurationGracillenta;  // Minimum duration of tracks
+            int minimumTrackDurationGracillenta = configuration.MinimumTrackDurationGracillenta;  // Maximum duration of tracks   
+            double binDifferenceGracillenta = configuration.BinDifferenceGracillenta;             // Difference between the highest and lowest bins   
+            // Band tracks parameters
+            int frequencyLowGracillenta = configuration.FrequencyLowGracillenta;
+            int frequencyHighGracillenta = configuration.FrequencyHighGracillenta;
+            // DCT
+            //int minimumOscillationNumberGracillenta = configuration.minimumOscillationNumberGracillenta;
+            //int maximumOscillationNumberGracillenta = configuration.maximumOscillationNumberGracillenta;
+            //int minimumFrequencyGracillenta = configuration.MinimumFrequencyGracillenta;
+            //int maximumFrequencyGracillenta = configuration.MaximumFrequencyGracillenta;
+            //double dct_DurationGracillenta = configuration.Dct_DurationGracillenta;
+            //double dct_ThresholdGracillenta = configuration.Dct_ThresholdGracillenta;
+
+            bool doSlopeGracillenta = configuration.DoSlopeGracillenta;
+
+            var gracillentaConfig = new GracillentaConfiguration
+            {
+                AmplitudeThresholdGracillenta = amplitudeThresholdGracillenta,
+                //RangeGracillenta = rangeGracillenta,
+                //DistanceGracillenta = distanceGracillenta,
+
+                BinToreanceGracillenta = binToreanceGracillenta,
+                FrameThresholdGracillenta = frameThresholdGracillenta,
+                TrackDurationThresholdGracillenta = trackDurationThresholdGracillenta,
+                TrackThresholdGracillenta = trackThresholdGracillenta,
+                MaximumTrackDurationGracillenta = maximumTrackDurationGracillenta,
+                MinimumTrackDurationGracillenta = minimumTrackDurationGracillenta,
+                BinDifferencGracillenta = binDifferenceGracillenta,
+
+                FrequencyLowGracillenta = frequencyLowGracillenta,
+                FrequencyHighGracillenta = frequencyHighGracillenta,
+
+                //MinimumOscillationNumberGracillenta = minimumOscillationNumberGracillenta,
+                //MaximumOscillationNumberGracillenta = maximumOscillationNumberGracillenta,
+                //MinimumFrequencyGracillenta = minimumFrequencyGracillenta,
+                //MaximumFrequencyGracillenta = maximumFrequencyGracillenta,
+                //Dct_DurationGracillenta = dct_DurationGracillenta,
+                //Dct_ThresholdGracillenta = dct_ThresholdGracillenta,
+
+                DoSlopeGracillenta = doSlopeGracillenta,
+            };
 
             //// Latopalmata                       
             //int frequencyLowLatopalmata = configuration.FrequencyLowLatopalmata;
             //int frequencyHighLatopalmata = configuration.FrequencyHighLatopalmata;
-    
 
-            //// Nasuta
-            //int frequencyLowNasuta = configuration.FrequencyLowNasuta;                                            
-            //int frequencyHighNasuta = configuration.FrequencyHighNasuta;
-            
+
+            //********************Nasuta********************************//
+
+            // Peak parameters
+            double amplitudeThresholdNasuta = configuration.AmplitudeThresholdNasuta;   // Decibel---the minimum amplitude value
+            int rangeNasuta = configuration.RangeNasuta;                                // Frame---the distance in either side for selecting peaks
+            int distanceNasuta = configuration.DistanceNasuta;                          // Frame---remove near peaks
+            // Track parameters
+            double binToreanceNasuta = configuration.BinToreanceNasuta;                 // Bin---the fluctuation of the dominant frequency bin 
+            int frameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence    
+            int trackDurationThresholdNasuta = configuration.TrackDurationThresholdNasuta;
+            double trackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track    
+            int maximumTrackDurationNasuta = configuration.MaximumTrackDurationNasuta;  // Minimum duration of tracks
+            int minimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks   
+            double binDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins   
+            // Band tracks parameters
+            int frequencyLowNasuta = configuration.FrequencyLowNasuta;
+            int frequencyHighNasuta = configuration.FrequencyHighNasuta;
+            // DCT
+            int minimumOscillationNumberNasuta = configuration.minimumOscillationNumberNasuta;
+            int maximumOscillationNumberNasuta = configuration.maximumOscillationNumberNasuta;
+            int minimumFrequencyNasuta = configuration.MinimumFrequencyNasuta;
+            int maximumFrequencyNasuta = configuration.MaximumFrequencyNasuta;
+            double dct_DurationNasuta = configuration.Dct_DurationNasuta;
+            double dct_ThresholdNasuta = configuration.Dct_ThresholdNasuta;
+
+            bool doSlopeNasuta = configuration.DoSlopeNasuta;
+
+            int harmonicComponentNasuta = configuration.HarmonicComponentNasuta;
+            int harmonicSensityNasuta = configuration.HarmonicSensityNasuta;
+
+            var nasutaConfig = new NasutaConfiguration
+            {
+                AmplitudeThresholdNasuta = amplitudeThresholdNasuta,
+                RangeNasuta = rangeNasuta,
+                DistanceNasuta = distanceNasuta,
+
+                BinToreanceNasuta = binToreanceNasuta,
+                FrameThresholdNasuta = frameThresholdNasuta,
+                TrackDurationThresholdNasuta = trackDurationThresholdNasuta,
+                TrackThresholdNasuta = trackThresholdNasuta,
+                MaximumTrackDurationNasuta = maximumTrackDurationNasuta,
+                MinimumTrackDurationNasuta = minimumTrackDurationNasuta,
+                BinDifferencNasuta = binDifferenceNasuta,
+
+                FrequencyLowNasuta = frequencyLowNasuta,
+                FrequencyHighNasuta = frequencyHighNasuta,
+
+                MinimumOscillationNumberNasuta = minimumOscillationNumberNasuta,
+                MaximumOscillationNumberNasuta = maximumOscillationNumberNasuta,
+                MinimumFrequencyNasuta = minimumFrequencyNasuta,
+                MaximumFrequencyNasuta = maximumFrequencyNasuta,
+                Dct_DurationNasuta = dct_DurationNasuta,
+                Dct_ThresholdNasuta = dct_ThresholdNasuta,
+
+                DoSlopeNasuta = doSlopeNasuta,
+
+                HarmonicComponentNasuta = harmonicComponentNasuta,
+                HarmonicSensityNasuta = harmonicSensityNasuta,
+            };
+
+            //********************Caerulea********************************//
+            // Peak parameters
+            double amplitudeThresholdCaerulea = configuration.AmplitudeThresholdCaerulea;   // Decibel---the minimum amplitude value
+            int rangeCaerulea = configuration.RangeCaerulea;                                // Frame---the distance in either side for selecting peaks
+            int distanceCaerulea = configuration.DistanceCaerulea;                          // Frame---remove near peaks
+            // Track parameters
+            double binToreanceCaerulea = configuration.BinToreanceCaerulea;                 // Bin---the fluctuation of the dominant frequency bin 
+            int frameThresholdCaerulea = configuration.FrameThresholdCaerulea;              // Frame---frame numbers of the silence    
+            int trackDurationThresholdCaerulea = configuration.TrackDurationThresholdCaerulea;
+            double trackThresholdCaerulea = configuration.TrackThresholdCaerulea;           // Used for calculating the percent of peaks in one track    
+            int maximumTrackDurationCaerulea = configuration.MaximumTrackDurationCaerulea;  // Minimum duration of tracks
+            int minimumTrackDurationCaerulea = configuration.MinimumTrackDurationCaerulea;  // Maximum duration of tracks   
+            double binDifferenceCaerulea = configuration.BinDifferenceCaerulea;             // Difference between the highest and lowest bins   
+            // Band tracks parameters
+            int frequencyLowCaerulea = configuration.FrequencyLowCaerulea;
+            int frequencyHighCaerulea = configuration.FrequencyHighCaerulea;
+            // DCT
+            int minimumOscillationNumberCaerulea = configuration.minimumOscillationNumberCaerulea;
+            int maximumOscillationNumberCaerulea = configuration.maximumOscillationNumberCaerulea;
+            int minimumFrequencyCaerulea = configuration.MinimumFrequencyCaerulea;
+            int maximumFrequencyCaerulea = configuration.MaximumFrequencyCaerulea;
+            double dct_DurationCaerulea = configuration.Dct_DurationCaerulea;
+            double dct_ThresholdCaerulea = configuration.Dct_ThresholdCaerulea;
+
+            bool doSlopeCaerulea = configuration.DoSlopeCaerulea;
+
+            var caeruleaConfig = new CaeruleaConfiguration
+            {
+                AmplitudeThresholdCaerulea = amplitudeThresholdCaerulea,
+                RangeCaerulea = rangeCaerulea,
+                DistanceCaerulea = distanceCaerulea,
+
+                BinToreanceCaerulea = binToreanceCaerulea,
+                FrameThresholdCaerulea = frameThresholdCaerulea,
+                TrackDurationThresholdCaerulea = trackDurationThresholdCaerulea,
+                TrackThresholdCaerulea = trackThresholdCaerulea,
+                MaximumTrackDurationCaerulea = maximumTrackDurationCaerulea,
+                MinimumTrackDurationCaerulea = minimumTrackDurationCaerulea,
+                BinDifferencCaerulea = binDifferenceCaerulea,
+
+                FrequencyLowCaerulea = frequencyLowCaerulea,
+                FrequencyHighCaerulea = frequencyHighCaerulea,
+
+                MinimumOscillationNumberCaerulea = minimumOscillationNumberCaerulea,
+                MaximumOscillationNumberCaerulea = maximumOscillationNumberCaerulea,
+                MinimumFrequencyCaerulea = minimumFrequencyCaerulea,
+                MaximumFrequencyCaerulea = maximumFrequencyCaerulea,
+                Dct_DurationCaerulea = dct_DurationCaerulea,
+                Dct_ThresholdCaerulea = dct_ThresholdCaerulea,
+
+                DoSlopeCaerulea = doSlopeCaerulea,
+
+            };
+
+            //****************************************************************//
             // Path for saving images
             string saveImagePath = configuration.SaveImagePath;
 
@@ -141,69 +303,117 @@ namespace QutBioacosutics.Xie
 
             // Step.1 Generate spectrogarm
             // A. Generate spectrogram for extracting tracks, entropy and harmonic
-            
+            /* 
             var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
             var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.GetWavReader());
             
+            */
             // B. Generate spectrogram for extracting oscillation rate
 
             //*************************************************************//
-                   
-           
-            
+                                   
             // Calculate windowOverlap
-            /*
-            double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
+            //double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
 
-            var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = windowOverlap, WindowSize = windowSize };
+            var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
             var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.GetWavReader());
-            */
-
+            
+            
             // Step.2 Produce features
 
             // A. Tracks &  B. Entropy
 
-            //***************************************************************//
+            //***********************Canetoad*************************//
 
+            /*
 
-            var peakHitsCanetoad = FindLocalPeaks.Max(spectrogramLong, canetoadConfig.AmplitudeThresholdCanetoad, canetoadConfig.FrequencyLowCanetoad, canetoadConfig.FrequencyHighCanetoad);
+            var peakHitsCanetoad = FindLocalPeaks.Max(spectrogramLong, canetoadConfig.AmplitudeThresholdCanetoad, canetoadConfig.FrequencyLowCanetoad, 
+                                                        canetoadConfig.FrequencyHighCanetoad);
 
             var trackHitsCanetoad = ExtractTracks.GetTracks(spectrogramLong, peakHitsCanetoad, canetoadConfig.FrequencyLowCanetoad,canetoadConfig.FrequencyHighCanetoad,
                                                             canetoadConfig.BinToreanceCanetoad, canetoadConfig.FrameThresholdCanetoad, canetoadConfig.TrackDurationThresholdCanetoad,
                                                             canetoadConfig.TrackThresholdCanetoad, canetoadConfig.MaximumTrackDurationCanetoad,canetoadConfig.MinimumTrackDurationCanetoad,
-                                                            canetoadConfig.BinDifferencCanetoade);
-
-
-
-
-
+                                                            canetoadConfig.BinDifferencCanetoad, canetoadConfig.DoSlopeCanetoad);
+            
             // C. Oscillation rate
-            /*
+            
+
+            
+            
             // 1. Cane_toad detection  
-            var canetoadOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, canetoadConfig);           
+            var canetoadOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, canetoadConfig.MinimumFrequencyCanetoad, canetoadConfig.MaximumFrequencyCanetoad,
+                                                                                   canetoadConfig.Dct_DurationCanetoad, canetoadConfig.Dct_ThresholdCanetoad,
+                                                                                   canetoadConfig.MinimumOscillationNumberCanetoad, canetoadConfig.MaximumOscillationNumberCanetoad);           
             // Find canetoad events
             var canetoadOscillationResults = RemoveSparseHits.PruneHits(canetoadOscillationHits);
 
             */
 
-
-            // FileTools.WriteMatrix2File(canetoadOscillationHits, @"C:\Jie\output\canetoadOscillationHits.csv");
-
+            //***********************Gracillenta*************************//
             // 2. Gracillenta detection  (Frequency band is overlapped with Nasuta, but the duration is different)
 
+            /*
+            var peakHitsGracillenta = FindLocalPeaks.Max(spectrogramLong, gracillentaConfig.AmplitudeThresholdGracillenta, gracillentaConfig.FrequencyLowGracillenta,
+                                                            gracillentaConfig.FrequencyHighGracillenta);
+
+            var trackHitsGracillenta = ExtractTracks.GetTracks(spectrogramLong, peakHitsGracillenta, gracillentaConfig.FrequencyLowGracillenta, gracillentaConfig.FrequencyHighGracillenta,
+                                                gracillentaConfig.BinToreanceGracillenta, gracillentaConfig.FrameThresholdGracillenta, gracillentaConfig.TrackDurationThresholdGracillenta,
+                                                gracillentaConfig.TrackThresholdGracillenta, gracillentaConfig.MaximumTrackDurationGracillenta, gracillentaConfig.MinimumTrackDurationGracillenta,
+                                                gracillentaConfig.BinDifferencGracillenta, gracillentaConfig.DoSlopeGracillenta);
+
+            */
+            //***********************Nasuta*************************//
+
+            // 3. Nasuta detection (Harmonic structure)
+            /*
+            var peakHitsNasuta = FindLocalPeaks.LocalPeaks(spectrogramLong, nasutaConfig.AmplitudeThresholdNasuta, nasutaConfig.RangeNasuta, nasutaConfig.DistanceNasuta,
+                                                            nasutaConfig.FrequencyLowNasuta, nasutaConfig.FrequencyHighNasuta);
+            var peakHitsNasutaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsNasuta);
 
 
 
-
-            // 3. Nasuta detection
-                         
+            var trackHitsNasuta = ExtractTracks.GetTracks(spectrogramLong, peakHitsNasutaRotated, nasutaConfig.FrequencyLowNasuta, nasutaConfig.FrequencyHighNasuta,
+                                                nasutaConfig.BinToreanceNasuta, nasutaConfig.FrameThresholdNasuta, nasutaConfig.TrackDurationThresholdNasuta,
+                                                nasutaConfig.TrackThresholdNasuta, nasutaConfig.MaximumTrackDurationNasuta, nasutaConfig.MinimumTrackDurationNasuta,
+                                                nasutaConfig.BinDifferencNasuta, nasutaConfig.DoSlopeNasuta);
+            
             //D. Harmonic
+            var harmonicHitsNasuta = FindHarmonics.GetHarmonic(trackHitsNasuta.Item4,nasutaConfig.HarmonicComponentNasuta, nasutaConfig.HarmonicSensityNasuta);
+
+            var NasutaOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, nasutaConfig.MinimumFrequencyNasuta, nasutaConfig.MaximumFrequencyNasuta,
+                                                                                   nasutaConfig.Dct_DurationNasuta, nasutaConfig.Dct_ThresholdNasuta, 
+                                                                                   nasutaConfig.MinimumOscillationNumberNasuta, nasutaConfig.MaximumOscillationNumberNasuta);
+
+            var nasutaOscillationResults = RemoveSparseHits.PruneHits(NasutaOscillationHits);
+
+            */
+
+            //***********************Caerulea*************************//
+            /*
+            var peakHitsCaerulea = FindLocalPeaks.LocalPeaks(spectrogramLong, caeruleaConfig.AmplitudeThresholdCaerulea, caeruleaConfig.RangeCaerulea, caeruleaConfig.DistanceCaerulea,
+                                                            caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea);
+
+            var peakHitsCaeruleaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsCaerulea);
+
+            var trackHitsCaerulea = ExtractTracks.GetTracks(spectrogramLong, peakHitsCaeruleaRotated, caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea,
+                                                            caeruleaConfig.BinToreanceCaerulea, caeruleaConfig.FrameThresholdCaerulea, caeruleaConfig.TrackDurationThresholdCaerulea,
+                                                            caeruleaConfig.TrackThresholdCaerulea, caeruleaConfig.MaximumTrackDurationCaerulea, caeruleaConfig.MinimumTrackDurationCaerulea,
+                                                            caeruleaConfig.BinDifferencCaerulea, caeruleaConfig.DoSlopeCaerulea);
+            */
+            // Find the peaks based on tracks (# should be 2 or 3)
+
+            var CaeruleaOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, caeruleaConfig.MinimumFrequencyCaerulea, caeruleaConfig.MaximumFrequencyCaerulea,
+                                                                                   caeruleaConfig.Dct_DurationCaerulea, caeruleaConfig.Dct_ThresholdCaerulea,
+                                                                                   caeruleaConfig.MinimumOscillationNumberCaerulea, caeruleaConfig.MaximumOscillationNumberCaerulea);
+
+            
+
+
 
             // Step.3 Draw spectrogram
 
-
-            double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
-            //var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(result);
+            double[,] spectrogramMatrix = DataTools.normalise(spectrogramShort.Data);
+            var result = MatrixTools.MatrixRotate90Anticlockwise(CaeruleaOscillationHits);
             //var spectrogramMatrix = MatrixTools.MatrixRotate90Clockwise(result);
 
             int rows = spectrogramMatrix.GetLength(0);
@@ -230,7 +440,7 @@ namespace QutBioacosutics.Xie
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (trackHitsCanetoad.Item2[j, i] != 0)
+                    if (result[j, i] != 0)
                     {
                         bmp.SetPixel((cols - j), i, Color.Blue);
                     }
@@ -306,8 +516,6 @@ namespace QutBioacosutics.Xie
             //spgConfig.WritConfigToYAML(path);
             ////LDSpectrogramRGB.DrawFalseColourSpectrograms(spgConfig);
             //XieFunction.DrawFalseColourSpectrograms(spgConfig);
-
-
 
             ////..........................................................//
             ////Read csc files and save them to make three indexes
@@ -432,153 +640,6 @@ namespace QutBioacosutics.Xie
             //    //    numVal = Int32.Parse(subnum);
             //    //}
 
-            //    var recording = new AudioRecording(path);
-
-            //    // Generate a spectrogram
-            //    //var recording = new AudioRecording(path);
-            //    var spectrogramConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = 512 };
-            //    var spectrogram = new SpectrogramStandard(spectrogramConfig, recording.GetWavReader());
-
-            //    // Rotate the spectrogram to make it more suitable for me
-            //    var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-
-            //    int rows = spectrogram.Data.GetLength(1);
-            //    int cols = spectrogram.Data.GetLength(0);
-
-            //    // Find short tracks
-
-            //    var peakMatrix = new double[spectrogram.Data.GetLength(1), spectrogram.Data.GetLength(0)];
-            //    var localPeaks = new FindLocalPeaks();
-            //    peakMatrix = localPeaks.LocalPeaks(spectrogram.Data, amplitudeThreshold, range, distance);
-
-            //    var multipleTracks = new ExtractTracks();
-            //    var results = multipleTracks.GetTracks(peakMatrix, binToreance, frameThreshold, duraionThreshold, trackThreshold, maximumDuration, minimumDuration, maximumDiffBin);
-            //    var trackMatrix = new double[rows, cols];
-
-            //    var trackFeature = new double[rows];
-            //    trackFeature = results.Item1;
-
-            //    // Normalize the track duration
-            //    var norTArray = new double[trackFeature.Length];
-
-            //    for (int i = 0; i < trackFeature.Length; i++)
-            //    {
-            //        norTArray[i] = trackFeature[i] / cols;
-            //    }
-
-            //    trackMatrix = results.Item2;
-
-
-            //    // Find long tracks
-
-            //    //var spectrogramConfigLongTrack = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5, WindowSize = 512 };
-            //    //var spectrogramLongTrack = new SpectrogramStandard(spectrogramConfigLongTrack, recording.GetWavReader());
-
-            //    //// Smooth the spectrogram for extracting long tracks
-            //    //var LongTrackSmoothMatrix = ImageTools.GaussianBlur_5cell(spectrogramLongTrack.Data);
-
-            //    //int longrows = spectrogramLongTrack.Data.GetLength(1);
-            //    //int longcols = spectrogramLongTrack.Data.GetLength(0);
-
-            //    //var peakLongMatrix = new double[longrows, longcols];
-            //    //var fingLongPeaks = new FindLocalPeaks();
-            //    //peakLongMatrix = fingLongPeaks.LocalLongPeaks(LongTrackSmoothMatrix, 3, 9, 19);
-
-            //    //// Extract long tracks with wide band
-
-            //    //var trackLongMatrix = new double[longrows, longcols];
-            //    //var trackLongArray = new double[longrows];
-            //    //var multipleLongTracks = new ExtractTracks();
-
-            //    //var resultsLong = multipleLongTracks.GetLongTracks(peakLongMatrix, 3, frameThreshold, duraionThreshold, trackThreshold, 40, 20);
-            //    //trackLongArray = resultsLong.Item1;
-
-            //    //// Normalization
-            //    //var norLongTArray = new double[trackLongArray.Length];
-            //    //for (int i = 0; i < trackLongArray.Length; i++)
-            //    //{
-            //    //    norLongTArray[i] = trackLongArray[i] / longcols;
-            //    //}
-
-            //    //trackLongMatrix = resultsLong.Item2;
-
-            //    // Find oscillation 
-
-            //    var spectrogramConfigOscillation = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = 512 };
-            //    var spectrogramOscillation = new SpectrogramStandard(spectrogramConfigOscillation, recording.GetWavReader());
-
-
-            //    var oscRate = new FindOscillation();
-            //    var oscRateResult = oscRate.OscillationRate(spectrogramOscillation, 400, 900, 0.5, 10, 15, 0.75);
-
-                
-
-
-            //    double[,] spectrogramMatrix1 = DataTools.normalise(spectrogramOscillation.Data);
-            //    int rows1 = spectrogramMatrix1.GetLength(0);
-            //    int cols1 = spectrogramMatrix1.GetLength(1);
-
-            //    Color[] grayScale = ImageTools.GrayScale();
-            //    Bitmap bmp = new Bitmap(cols1, rows1, PixelFormat.Format24bppRgb);
-
-            //    for (int r = 0; r < rows1; r++)
-            //    {
-            //        for (int c = 0; c < cols1; c++)
-            //        {
-            //            int greyId = (int)Math.Floor(spectrogramMatrix1[r, c] * 255);
-            //            if (greyId < 0) greyId = 0;
-            //            else
-            //                if (greyId > 255) greyId = 255;
-
-            //            greyId = 255 - greyId;
-            //            bmp.SetPixel(c, r, grayScale[greyId]);
-            //        }
-            //    }
-
-            //    for (int i = 0; i < rows1; i++)
-            //    {
-            //        for (int j = 0; j < cols1; j++)
-            //        {
-            //            if (oscRateResult[i, j] != 0)
-            //            {
-            //                bmp.SetPixel(j, i, Color.Blue);
-            //            }
-
-            //        }
-            //    }
-
-
-            //    bmp.Save(imagePath);
-
-
-
-
-
-            //    var Oscillation = new FindOscillation();
-            //    var oscillationArray = Oscillation.getOscillation(spectrogramOscillation.Data, zeroBinIndex);
-
-            //    // Find harmonic
-
-            //    var Harmonic = new FindHarmonics();
-            //    var harmonicMatrix = Harmonic.getHarmonic(trackMatrix, colThreshold, zeroBinIndex);
-            //    // Change harmonicMarix to array
-            //    var harmonicArray = new double[harmonicMatrix.GetLength(0)];
-            //    for (int i = 0; i < harmonicMatrix.GetLength(0); i++)
-            //    {
-            //        var temp = 0.0;
-            //        for (int j = 0; j < harmonicMatrix.GetLength(1); j++)
-            //        {
-            //            temp = temp + harmonicMatrix[i, j];
-            //        }
-            //        harmonicArray[i] = temp;
-            //    }
-
-            //    // Normalization
-            //    var norHArray = new double[harmonicArray.Length];
-            //    for (int i = 0; i < harmonicArray.Length; i++)
-            //    {
-            //        norHArray[i] = harmonicArray[i] / spectrogram.Data.GetLength(0);
-            //    }
 
             //    var FrogIndexList = new List<FrogIndex>();
             //    for (int i = (norHArray.Length - 1); i > 0; i--)
