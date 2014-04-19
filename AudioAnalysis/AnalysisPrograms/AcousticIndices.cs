@@ -354,7 +354,7 @@ namespace AnalysisPrograms
             // analysisResults.Data = IndexStore.Indices2DataTable(indicesStore);
             analysisResults.Data = null; // indicates that the analysis is of acoustic indices and not events.
             analysisResults.indexBase = indicesStore;
-            analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(IndexProperties.keySEG_DURATION);
+            analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(InitialiseIndexProperties.keySEGMENT_DURATION);
             analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
 
             

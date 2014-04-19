@@ -11,6 +11,7 @@ using System.IO;
 //using AnalysisPrograms.Production;
 using Acoustics.Shared;
 using TowseyLibrary;
+using AudioAnalysisTools.Indices;
 
 
 
@@ -491,7 +492,7 @@ namespace AudioAnalysisTools
             }
 
             Image bmpBgn;
-            string key = IndexProperties.spKEY_BkGround;
+            string key = InitialiseIndexProperties.spKEY_BkGround;
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
                 Console.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
@@ -953,8 +954,8 @@ namespace AudioAnalysisTools
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            var proprs = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            cs1.SetSpectralIndexProperties(proprs); // set the relevant dictionary of index properties
+            var sip = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
+            cs1.SetSpectralIndexProperties(sip); // set the relevant dictionary of index properties
             cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {

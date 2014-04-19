@@ -1,11 +1,11 @@
-﻿using System;
+﻿using AudioAnalysisTools.Indices;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-
 using TowseyLibrary;
 
 namespace AudioAnalysisTools
@@ -22,7 +22,7 @@ namespace AudioAnalysisTools
         public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, string title)
         {
             //this dictionary is needed to draw the image of indices
-            Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetDictionaryOfSummaryIndexProperties();
+            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
             return IndexDisplay.DrawImageOfSummaryIndices(listOfIndexProperties, csvFile, title);
         }
 
