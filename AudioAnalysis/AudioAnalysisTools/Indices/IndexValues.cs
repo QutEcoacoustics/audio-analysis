@@ -119,17 +119,13 @@ namespace AudioAnalysisTools
             foreach (string key in dictOfIndexProperties.Keys)
             {
                 if (dictOfIndexProperties[key].DataType != typeof(double[])) continue; // only want spectral indices
+                double defaultValue = dictOfIndexProperties[key].DefaultValue;
 
                 var spectrum = new double[size];
-                if (key == InitialiseIndexProperties.spKEY_BkGround)
+                if (defaultValue != 0.0)
                 {
-                    for (int i = 0; i < size; i++) spectrum[i] = -150; // set rock bottom BGN level in decibels
+                    for (int i = 0; i < size; i++) spectrum[i] = defaultValue; 
                 }
-                else
-                    if (key == InitialiseIndexProperties.spKEY_TemporalEntropy)
-                    {
-                        for (int i = 0; i < size; i++) spectrum[i] = 1.0; // this is default for temporal entropy
-                    }
 
                 spectra.Add(key, spectrum);
             }

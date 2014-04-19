@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -2047,6 +2048,30 @@ namespace TowseyLibrary
             }//end all rows
             return bmp;
         }
+
+        public static Image DrawHistogram(string label, int[] histogram, int width, int height)
+        {
+            int sum = histogram.Sum();
+            Pen pen1 = new Pen(Color.White);
+            Pen pen2 = new Pen(Color.Red);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            //SizeF stringSize = new SizeF();
+
+            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            for (int X = 0; X < width; X++)
+            {
+                int Y = (int)(histogram[X] * height * 2 / (double)sum);
+                g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+                g.DrawLine(pen1, 0, height-1, width, height-1);
+                g.DrawLine(pen2, X, height-1, X, height - Y);
+            }
+            return bmp;
+        }
+
 
         public static void DrawGridLinesOnImage(Bitmap bmp, int minOffset, int xInterval, int yInterval)
         {
