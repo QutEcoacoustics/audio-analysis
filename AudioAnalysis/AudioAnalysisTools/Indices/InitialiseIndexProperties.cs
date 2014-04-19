@@ -13,7 +13,16 @@ namespace AudioAnalysisTools.Indices
     /// 2) Declare the new index and its properties in the method IndexConstants.InitialisePropertiesOfIndices();
     /// 3) Calculate the INDEX some where. In the case of Acoustic Indices, they are calculated in the class IndicesCalculate.cs.
     /// 4) Store the value of the index in the class IndexValues
+    //==============
 
+    /// <summary>
+    /// This static class contains all the keys to identify available acoustic indices.
+    /// The principle method, 
+    ///         public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
+    /// creates a dictionary of index properties.
+    /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
+    /// To create a new index you initilliase it in the above method and add it to the dictionary of indices. 
+    /// </summary>
     public static class InitialiseIndexProperties
     {
         public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
@@ -58,60 +67,8 @@ namespace AudioAnalysisTools.Indices
         public const string spKEY_SpPeakTracks = "SPT";
         public const string spKEY_TemporalEntropy = "ENT";
         public const string spKEY_Variance = "VAR";
-        //public const string spKEY_Combined = "CMB"; //discontinued - replaced by false colour spectrograms
-        //public const string spKEY_Colour = "COL"; //discontinued - 
 
-
-        // NORMALISING CONSTANTS FOR INDICES
-        //public const double ACI_MIN = 0.4;
-        //public const double ACI_MAX = 0.8;
-        //public const double AVG_MIN = 0.0;
-        //public const double AVG_MAX = 50.0;
-        //public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
-        //public const double BGN_MAX = -20.0;
-        //public const double CLS_MIN = 0.0;
-        //public const double CLS_MAX = 30.0;
-        //public const double CVR_MIN = 0.0;
-        //public const double CVR_MAX = 0.3;
-        //public const double EVN_MIN = 0.0;
-        //public const double EVN_MAX = 0.8;
-        //public const double TEN_MIN = 0.4;
-        //public const double TEN_MAX = 0.95;
-        //public const double SDV_MIN = 0.0; // for the variance bounds
-        //public const double SDV_MAX = 100.0;
-        //public const double VAR_MIN = SDV_MIN * SDV_MIN;
-        //public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
-
-
-
-
-        // do not change headers unnecessarily - otherwise will lose compatibility with previous csv files
-        // if change a header record the old header in method below:         public static string ConvertHeaderToKey(string header)
-        //public static string header_count = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT;
-        //public const string header_startMin = AudioAnalysisTools.AnalysisKeys.START_MIN;
-        //public const string header_SecondsDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
-        //public const string header_Clipping1 = "Clipping1";
-        //public const string header_Clipping2 = "Clipping2";
-        //public const string header_avAmpdB = "avAmp-dB";
-        //public const string header_snr = "SNR";
-        //public const string header_activeSnr = "ActiveSNR";
-        //public const string header_bgdB = "Background";
-        //public const string header_activity = "Activity";
-        //public const string header_segPerSec = "Seg/Sec";
-        //public const string header_avSegDur = "avSegDur";
-        //public const string header_hfCover = "hfCover";
-        //public const string header_mfCover = "mfCover";
-        //public const string header_lfCover = "lfCover";
-        //public const string header_HAmpl = "H[temporal]";
-        //public const string header_HPeakFreq = "H[peakFreq]";
-        //public const string header_HAvSpectrum = "H[spectral]";
-        //public const string header_HVarSpectrum = "H[spectralVar]";
-        //public const string header_AcComplexity = "AcComplexity";
-        //public const string header_NumClusters = "ClusterCount";
-        //public const string header_avClustDuration = "avClustDur";
-        //public const string header_TrigramCount = "3gramCount";
-        //public const string header_SPTracksPerSec = "Tracks/Sec";
-        //public const string header_SPTracksDur = "avTrackDur";
+        //the below headers will eventually be deleted and replaced by their keys
         public const string header_rain = "Rain";
         public const string header_cicada = "Cicada";
 
