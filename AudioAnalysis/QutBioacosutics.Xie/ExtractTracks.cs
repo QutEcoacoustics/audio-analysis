@@ -12,8 +12,9 @@ namespace QutBioacosutics.Xie
 
     class ExtractTracks
     {
-        public static System.Tuple<double[], double[,], double[]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold, 
-                                                                    int duraionThreshold, double trackThreshold, int maximumDuration, int minimumDuration, double maximumDiffBin )
+        public static System.Tuple<double[], double[,], double[], double[,]> GetTracks(SpectrogramStandard sonogram, double[,] matrix, int minHz, int maxHz, double binToreance, int frameThreshold, 
+                                                                            int duraionThreshold, double trackThreshold, int maximumDuration, int minimumDuration, double maximumDiffBin, 
+                                                                            bool doSlope)
                                                                     
         {
             // matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
@@ -257,13 +258,10 @@ namespace QutBioacosutics.Xie
                                 numberE.Add(i);
                                 numberF.Add(j);
                                 binToreance = Math.Abs(shortTrackList[i].HighBin - pointList[c][j].Y);
-
                             }
                         }
                     }
-
                     //.......................................//
-
                     for (int i = 0; i < numberE.Count; i++)
                     {
                         var longTrack = new Track();
@@ -495,6 +493,23 @@ namespace QutBioacosutics.Xie
                 }
             }
 
+            // Calculate slope
+            if (doSlope == true)
+            {
+                for (int i = 0; i < closedTrackList.Count; i++)
+                {
+                    var slope = (closedTrackList[i].HighBin - closedTrackList[i].LowBin) / (closedTrackList[i].EndFrame - closedTrackList[i].StartFrame);
+                    if (slope < 0.05 & slope > 0.01)
+                    {
+                        closedTrackList.RemoveAt(i);
+                        closedTrackXList.RemoveAt(i);
+                        closedTrackYList.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+
+
             // Fill the gap among tracks             
             var finalTrackXList = new List<List<int>>();
             var finalTrackXListD = new List<List<double>>();
@@ -594,7 +609,7 @@ namespace QutBioacosutics.Xie
             // Convert closedTrackList to trackMatrix
             // To do: convert double to int 
 
-            // Calculate the entropy of the frequency band
+            // Calculate the entropy based on frequency band
             var tempMatrix = new double[row, column];
             for (int i = 0; i < closedTrackList.Count; i++)
             {
@@ -615,8 +630,7 @@ namespace QutBioacosutics.Xie
                 for (int j = 0; j < column; j++)
                 {
                     rowValue.Add(matrix[i,j]);               
-                }
-            
+                }            
                 var rowArray = rowValue.ToArray();
                 double entropyRow = DataTools.Entropy_normalised(rowArray);
                 if(entropyRow > 0)
@@ -629,17 +643,32 @@ namespace QutBioacosutics.Xie
             {
                 for (int col = closedTrackList[i].StartFrame; col < closedTrackList[i].EndFrame; col++)
                 {
-                    for (int r = minBin; r < maxBin; r++)
+                    //for (int r = minBin; r < maxBin; r++)
+                    for (int r = closedTrackList[i].LowBin; r < (closedTrackList[i].HighBin + 1); r++)
                     {
                         result[r, col] = 1;
                     }
                 }
             }
 
+
+            // Track hits
+            var trackHits = new double[row, column];
+            var xArray = finalTrackXList.ToArray(); 
+            var yArray = finalTrackYList.ToArray();
+            
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                var xIndex = xArray[i];
+                var yIndex = yArray[i];
+                for (int j = 0; j < closedTrackXList[i].Count; j++)
+                {
+                    trackHits[(int) yIndex[j] , xIndex[j]] = 1;
+                }
+            }
+
             // Count the number of tracks in each frequency band
-
             var arrayResult = new double[row];
-
             for (int i = 0; i < result.GetLength(0); i++)
             {
                 for (int j = 0; j < result.GetLength(1); j++)
@@ -650,7 +679,7 @@ namespace QutBioacosutics.Xie
                     }                                  
                 }
             }    
-            return Tuple.Create(arrayResult, result,entropy);
+            return Tuple.Create(arrayResult, result, entropy, trackHits);
         }
 
     }

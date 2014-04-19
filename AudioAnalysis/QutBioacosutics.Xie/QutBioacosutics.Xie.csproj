@@ -69,7 +69,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\CaeruleaConfiguration.cs" />
     <Compile Include="Configuration\CanetoadConfiguration.cs" />
+    <Compile Include="Configuration\FallaxConfiguration.cs" />
+    <Compile Include="Configuration\GracillentaConfiguration.cs" />
+    <Compile Include="Configuration\LatopalmataConfiguration.cs" />
+    <Compile Include="Configuration\NasutaConfiguration.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
