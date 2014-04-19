@@ -7,10 +7,9 @@ namespace QutBioacosutics.Xie.Configuration
 {
     public class CanetoadConfiguration
     {
-
         public double AmplitudeThresholdCanetoad { get; set; }
-        public int RangeCanetoad { get; set; }
-        public int DistanceCanetoad { get; set; }
+        //public int RangeCanetoad { get; set; }
+        //public int DistanceCanetoad { get; set; }
 
         public double BinToreanceCanetoad { get; set; }
         public int FrameThresholdCanetoad { get; set; }
@@ -18,7 +17,7 @@ namespace QutBioacosutics.Xie.Configuration
         public double TrackThresholdCanetoad { get; set; }
         public int MaximumTrackDurationCanetoad { get; set; }
         public int MinimumTrackDurationCanetoad { get; set; }
-        public double BinDifferencCanetoade { get; set; }
+        public double BinDifferencCanetoad { get; set; }
 
         public int FrequencyLowCanetoad { get; set; }
         public int FrequencyHighCanetoad { get; set; }
@@ -30,5 +29,6 @@ namespace QutBioacosutics.Xie.Configuration
         public double Dct_DurationCanetoad { get; set; }
         public double Dct_ThresholdCanetoad { get; set; }
 
+        public bool DoSlopeCanetoad { get; set; }
     }
 }
