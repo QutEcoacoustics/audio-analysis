@@ -24,6 +24,14 @@ namespace AudioAnalysisTools
     /// Important properties are:
     /// 1) the colour map which maps three acoutic indices to RGB.
     /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
+    /// 
+    /// Copy the method 
+    ///         public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
+    /// in order to create false colour spectrograms. 
+    /// All the arguments can be passed through a config file.
+    /// Create the config file throu an instance of the class LDSpectrogramConfig
+    /// and then call config.WritConfigToYAML(FileInfo path).
+    /// Then pass that path to the above static method.
     /// </summary>
     public class LDSpectrogramRGB
     {
@@ -90,7 +98,8 @@ namespace AudioAnalysisTools
         public string ColorMap { get; set; }    //within current recording     
         public string ColorMODE { get; set; }   //POSITIVE or NEGATIVE     
 
-        public Dictionary<string, IndexProperties> spProperties { get; private set; }
+        private Dictionary<string, IndexProperties> spectralIndexProperties; 
+
         public string[] spectrogramKeys { get; private set; } 
 
 
@@ -117,8 +126,6 @@ namespace AudioAnalysisTools
             this.X_interval = Xscale; 
             this.SampleRate = sampleRate; 
             this.ColorMap = colourMap;
-            spProperties = IndexProperties.GetDictionaryOfSpectralIndexProperties();
-            spectrogramKeys = spProperties.Keys.ToArray();
         }
 
         /// <summary>
@@ -134,6 +141,21 @@ namespace AudioAnalysisTools
             this.minOffset = minuteOffset;
             this.FrameWidth = frameWidth;
         }
+
+        public Dictionary<string, IndexProperties> GetSpectralIndexProperties()
+        {
+            return spectralIndexProperties;
+        }
+
+
+
+        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
+        {
+            spectralIndexProperties = _spectralIndexProperties;
+            spectrogramKeys = spectralIndexProperties.Keys.ToArray();
+        }
+
+
 
         public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
         {            
@@ -369,7 +391,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double[,] GetNormalisedSpectrogramMatrix(string key)
         {
-            if (!this.spProperties.ContainsKey(key))
+            if (! this.spectralIndexProperties.ContainsKey(key))
             {
                 Console.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
                 Console.WriteLine("Dictionary of Spectral Properties does not contain key {0}", key);
@@ -382,7 +404,7 @@ namespace AudioAnalysisTools
                 return null;
             }
 
-            IndexProperties indexProperties = this.spProperties[key];
+            IndexProperties indexProperties = this.spectralIndexProperties[key];
             var matrix = indexProperties.NormaliseIndexValues(this.GetMatrix(key));
             return MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
         }
@@ -931,6 +953,8 @@ namespace AudioAnalysisTools
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
+            var proprs = IndexProperties.GetDictionaryOfSpectralIndexProperties();
+            cs1.SetSpectralIndexProperties(proprs); // set the relevant dictionary of index properties
             cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
