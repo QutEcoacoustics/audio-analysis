@@ -41,8 +41,6 @@ namespace QutBioacosutics.Xie
             return number;
         }
 
-
-
         //ArrayIndex function in R
         public static int[] ArrayIndex(double[] Array)
         {
@@ -172,8 +170,6 @@ namespace QutBioacosutics.Xie
             return sd;      
         }
 
-
-
         public static double[] CrossCorrelation(double[] v1, double[] v2)
         {
             int n = v1.Length;
@@ -247,8 +243,6 @@ namespace QutBioacosutics.Xie
         }
 
 
-
-
         public static double CalculateRequiredWindowOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
@@ -258,9 +252,6 @@ namespace QutBioacosutics.Xie
             double overlap = (framewidth - frameOffset) / (double)framewidth;
             return overlap;
         }
-
-
-
 
     }
 }
