@@ -9,6 +9,12 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+    /// <summary>
+    /// This class stores the properties of a particular index.
+    /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
+    /// This class stores default values, normalisation bounds and provides methods for the correct display of a summary index in a tracks image.
+    /// Display of Spectral indices is handled in the class LDSPectrogramRGB.
+    /// </summary>
     public class IndexProperties
     {
         public static int bitsPerSample = 16;
