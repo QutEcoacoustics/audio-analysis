@@ -188,12 +188,12 @@ namespace AudioAnalysisTools
 
             if (warning != null)
             {
-                Console.WriteLine(warning);
+                LoggedConsole.WriteLine(warning);
             }
             if (this.spectrogramMatrices.Count == 0)
             {
-                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
-                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+                LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
                 allOK = false;
             }
             return allOK;
@@ -229,12 +229,12 @@ namespace AudioAnalysisTools
 
             if (warning != null)
             {
-                Console.WriteLine(warning);
+                LoggedConsole.WriteLine(warning);
             }
             if (dict.Count == 0)
             {
-                Console.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
-                Console.WriteLine("         NO FILES were read from this directory: " + ipdir);
+                LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
+                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
             }
             return dict;
         }
@@ -390,7 +390,7 @@ namespace AudioAnalysisTools
             }
             else
             {
-                Console.WriteLine("SpectrogramMatrices does not contain key {0}", key);
+                LoggedConsole.WriteLine("SpectrogramMatrices does not contain key {0}", key);
                 return null;
             }
         }
@@ -406,14 +406,14 @@ namespace AudioAnalysisTools
         {
             if (! this.spectralIndexProperties.ContainsKey(key))
             {
-                Console.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
-                Console.WriteLine("Dictionary of Spectral Properties does not contain key {0}", key);
+                LoggedConsole.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
+                LoggedConsole.WriteLine("Dictionary of Spectral Properties does not contain key {0}", key);
                 return null;
             }
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
-                Console.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
-                Console.WriteLine("Dictionary of Spectrogram Matrices does not contain key {0}", key);
+                LoggedConsole.WriteLine("WARNING from LDSpectrogram.GetNormalisedSpectrogramMatrix");
+                LoggedConsole.WriteLine("Dictionary of Spectrogram Matrices does not contain key {0}", key);
                 return null;
             }
 
@@ -447,21 +447,21 @@ namespace AudioAnalysisTools
 
                 if (!this.spectrogramMatrices.ContainsKey(key))
                 {
-                    Console.WriteLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
-                    Console.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                    LoggedConsole.WriteLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    LoggedConsole.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
                     List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
                     string list = "";
                     foreach (string str in keyList)
                     {
                         list += (str + ", ");
                     }
-                    Console.WriteLine("          List of keys in dictionary = {0}", list);
+                    LoggedConsole.WriteLine("          List of keys in dictionary = {0}", list);
                     continue;
                 }
                 if (this.spectrogramMatrices[key] == null)
                 {
-                    Console.WriteLine("WARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
-                    Console.WriteLine("         Null matrix returned with key: {0}", key);
+                    LoggedConsole.WriteLine("WARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    LoggedConsole.WriteLine("         Null matrix returned with key: {0}", key);
                     continue;
                 }
 
@@ -496,8 +496,8 @@ namespace AudioAnalysisTools
             Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
             if (bmpNeg == null)
             {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
-                Console.WriteLine("         Null image returned");
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+                LoggedConsole.WriteLine("         Null image returned");
                 return;
             } else {
                 bmpNeg.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
@@ -507,7 +507,7 @@ namespace AudioAnalysisTools
             string key = InitialiseIndexProperties.spKEY_BkGround;
             if (!this.spectrogramMatrices.ContainsKey(key))
             {
-                Console.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
+                LoggedConsole.WriteLine("\nWARNING: SG {0} does not contain key: {1}", opFileName, key);
                 //return;
             }
             else
@@ -523,8 +523,8 @@ namespace AudioAnalysisTools
             Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
             if (bmpNeg == null)
             {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
-                Console.WriteLine("         Null image returned");
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+                LoggedConsole.WriteLine("         Null image returned");
                 return;
             }
             else
@@ -538,8 +538,8 @@ namespace AudioAnalysisTools
             Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
             if (bmpPos == null)
             {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawPositiveFalseColourSpectrograms()");
-                Console.WriteLine("         Null image returned");
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawPositiveFalseColourSpectrograms()");
+                LoggedConsole.WriteLine("         Null image returned");
                 return;
             }
             else
@@ -585,7 +585,7 @@ namespace AudioAnalysisTools
         {
             if (spectrogramMatrices.Count == 0)
             {
-                Console.WriteLine("ERROR! ERROR! ERROR! - There are no indices with which to construct a spectrogram!");
+                LoggedConsole.WriteLine("ERROR! ERROR! ERROR! - There are no indices with which to construct a spectrogram!");
                 return false;
             }
             bool containsKey = true;
@@ -603,7 +603,7 @@ namespace AudioAnalysisTools
             if (spectrogramMatrices.ContainsKey(key)) return true;
             else
             {
-                Console.WriteLine("ERROR! - spectrogramMatrices does not contain key: <{0}> !", key);
+                LoggedConsole.WriteLine("ERROR! - spectrogramMatrices does not contain key: <{0}> !", key);
                 return false;
             }
         }
@@ -971,7 +971,7 @@ namespace AudioAnalysisTools
             cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
 

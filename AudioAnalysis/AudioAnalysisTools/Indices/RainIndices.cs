@@ -136,7 +136,7 @@ namespace AudioAnalysisTools.Indices
 
             double spikeThreshold = 0.05;
             double spikeIndex = RainIndices.CalculateSpikeIndex(signal, spikeThreshold);
-            //Console.WriteLine("spikeIndex=" + spikeIndex);
+            //LoggedConsole.WriteLine("spikeIndex=" + spikeIndex);
             //DataTools.writeBarGraph(signal);
 
             RainStruct rainIndices; // struct in which to store all indices

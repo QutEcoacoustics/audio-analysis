@@ -82,7 +82,7 @@ namespace AudioAnalysisTools
             cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
+                LoggedConsole.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace AudioAnalysisTools
             cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
             if (cs2.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("There are no spectrogram matrices in cs2.dictionary.");
+                LoggedConsole.WriteLine("There are no spectrogram matrices in cs2.dictionary.");
                 return;
             }
 

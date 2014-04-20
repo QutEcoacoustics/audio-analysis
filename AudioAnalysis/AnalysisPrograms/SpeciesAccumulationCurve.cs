@@ -171,7 +171,7 @@ namespace AnalysisPrograms
                 int[] sortedSamples = tuple.Item2;
                 sortedSamples = DataTools.reverseArray(sortedSamples);
 
-                for (int i = 0; i < samples.Length; i++) Console.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
+                for (int i = 0; i < samples.Length; i++) LoggedConsole.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
 
                 Log.WriteLine("# Finished everything!");
                 return;
@@ -438,7 +438,7 @@ namespace AnalysisPrograms
                 int reps = 5000;
                 for (int i = 0; i < reps; i++)
                 {
-                    if (i % 100 == 0) Console.WriteLine(i);
+                    if (i % 100 == 0) LoggedConsole.WriteLine(i);
                     int seed2 = DateTime.Now.Millisecond + i; // add i in case speed of one iter < 1ms
                     int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
@@ -775,7 +775,7 @@ namespace AnalysisPrograms
                                 score += (/*stats.percentRecognitionWith30Samples*/ +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples); // +stats.percentRecognitionWith120Samples;
                                 if (score >= maxScore)
                                 {
-                                    Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}", 
+                                    LoggedConsole.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}", 
                                         maxScore, stats.percentRecognitionWith60Samples, weights[1], weights[5],   weights[6],    weights[11],   weights[13],  weights[14],  weights[15],   weights[16]);
                                    
                                     maxScore = score;

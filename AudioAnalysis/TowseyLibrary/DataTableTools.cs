@@ -487,14 +487,14 @@ namespace TowseyLibrary
        {
            if (dt == null) return;
            string[] headers = DataTableTools.GetColumnNames(dt);
-           Console.WriteLine("===========================================");
+           LoggedConsole.WriteLine("===========================================");
            foreach (DataRow row in dt.Rows)
            {
                //Object[] array = row.ItemArray;
-               foreach (string name in headers) Console.WriteLine("   {0} = {1}", name, row[name].ToString());
-               Console.WriteLine();
+               foreach (string name in headers) LoggedConsole.WriteLine("   {0} = {1}", name, row[name].ToString());
+               LoggedConsole.WriteLine();
            }
-           Console.WriteLine("===========================================");
+           LoggedConsole.WriteLine("===========================================");
        }
 
 

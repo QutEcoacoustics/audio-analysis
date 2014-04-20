@@ -140,7 +140,7 @@ namespace AnalysisPrograms
                         var hash = SHA256Hash(file);
                         stopwatch.Stop();
 
-                        Console.WriteLine("info: {1} hash: {2} for {0}.", file.Name, infoTime, stopwatch.Elapsed);
+                        LoggedConsole.WriteLine("info: {1} hash: {2} for {0}.", file.Name, infoTime, stopwatch.Elapsed);
 
                         var output = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
                             CsvSafeString(info.SourceFile != null ? info.SourceFile.ToString() : string.Empty),

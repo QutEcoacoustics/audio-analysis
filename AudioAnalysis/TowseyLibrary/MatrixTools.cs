@@ -358,7 +358,7 @@ namespace TowseyLibrary
 
                 }
             } // for loop
-            Console.WriteLine("Zeroed {0} of {1} non-zero cells.", count, total);
+            LoggedConsole.WriteLine("Zeroed {0} of {1} non-zero cells.", count, total);
         } // SetSingletonsToZero
 
 
@@ -414,7 +414,7 @@ namespace TowseyLibrary
                     }
                 }
             } // for loop
-            Console.WriteLine("Removed {0} doublets.", total);
+            LoggedConsole.WriteLine("Removed {0} doublets.", total);
         } // SetSingletonsToZero
 
 

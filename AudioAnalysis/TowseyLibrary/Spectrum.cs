@@ -54,7 +54,7 @@ namespace TowseyLibrary
 
 //        public void WriteSpectrum2Line()
 //        {
-//            Console.WriteLine("{0}  {1}  {2}", this.Index, this.Name, this.SpectrumToCsvString());
+//            LoggedConsole.WriteLine("{0}  {1}  {2}", this.Index, this.Name, this.SpectrumToCsvString());
 //        }
 
 //        public static void ListOfSpectraToCsvFile(string path, IEnumerable<Spectrum> list)

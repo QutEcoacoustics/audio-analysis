@@ -516,7 +516,7 @@ namespace AudioAnalysisTools.DSP
             if (binCount > 500) binCount = 500;
             double min, max, binWidth;
             int[] histo = Histogram.Histo(array, binCount, out binWidth, out min, out max);
-            //Console.WriteLine("BindWidth = "+ binWidth);
+            //LoggedConsole.WriteLine("BindWidth = "+ binWidth);
 
             int smoothingwindow = 3;
             if (binCount > 250) smoothingwindow = 5;

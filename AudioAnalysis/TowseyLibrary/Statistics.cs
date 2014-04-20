@@ -177,7 +177,7 @@ namespace TowseyLibrary
             //for (int i = 0; i < length; i++) distribution[i] = 1 / (double)((i + 1) * (i + 1));
             //double sum = 0;
             //for (int i = 0; i < length; i++) sum += distribution[i];
-            //Console.WriteLine("pre-sum = {0:f3}", sum);
+            //LoggedConsole.WriteLine("pre-sum = {0:f3}", sum);
             distribution = DataTools.Normalise2Probabilites(distribution);
             return distribution;
         }
@@ -187,7 +187,7 @@ namespace TowseyLibrary
             for (int i = 0; i < length; i++) distribution[i] = i * i;
             //double sum = 0;
             //for (int i = 0; i < length; i++) sum += distribution[i];
-            //Console.WriteLine("pre-sum = {0:f3}", sum);
+            //LoggedConsole.WriteLine("pre-sum = {0:f3}", sum);
             distribution = DataTools.Normalise2Probabilites(distribution);
             distribution = DataTools.reverseArray(distribution);
             return distribution;
@@ -198,20 +198,20 @@ namespace TowseyLibrary
             double[] distribution = Statistics.CreateInverseProbabilityDistribution(distributionlength);
             //double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
             // double sum = distribution.Sum();
-            // Console.WriteLine("post-sum = {0:f3}", sum);
+            // LoggedConsole.WriteLine("post-sum = {0:f3}", sum);
             distribution = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(distribution);
             // sum = distribution.Sum();
-            // Console.WriteLine("cumm-sum = {0:f3}", sum);
-            // Console.WriteLine("cumm-sum = {0:f3}", distribution[length-1]);
+            // LoggedConsole.WriteLine("cumm-sum = {0:f3}", sum);
+            // LoggedConsole.WriteLine("cumm-sum = {0:f3}", distribution[length-1]);
 
             // double refValue = 0.65;
             // int lowerIndex = 0;
             // int upperIndex = 99;
             // int location = DataTools.WhichSideOfCentre(distribution, refValue, lowerIndex, upperIndex);
-            // Console.WriteLine("location = " + location);
+            // LoggedConsole.WriteLine("location = " + location);
 
             int[] samples = DataTools.SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(distribution, sampleCount, seed);
-            //for (int i = 0; i < sampleCount; i++) Console.WriteLine("s"+i+ "    " + samples[i]);
+            //for (int i = 0; i < sampleCount; i++) LoggedConsole.WriteLine("s"+i+ "    " + samples[i]);
             Tuple<int[], int[]> tuple = DataTools.SortArray(samples);
             int[] sortedSamples = tuple.Item2;
             return Tuple.Create(samples, sortedSamples);
