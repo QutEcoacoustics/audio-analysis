@@ -7,6 +7,8 @@ using System.Text;
 using Acoustics.Shared.Extensions;
 using AnalysisBase;
 //using AudioAnalysisTools;
+using AnalysisBase.StrongAnalyser;
+using AnalysisBase.StrongAnalyser.ResultBases;
 using log4net;
 using TowseyLibrary;
 using AudioAnalysisTools.Indices;

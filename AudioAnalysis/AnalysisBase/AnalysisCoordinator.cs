@@ -1,4 +1,6 @@
-﻿namespace AnalysisBase
+﻿using AnalysisBase.StrongAnalyser;
+
+namespace AnalysisBase
 {
     using System;
     using System.Collections.Generic;

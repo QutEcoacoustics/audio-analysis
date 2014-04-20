@@ -132,11 +132,18 @@
     <Compile Include="AnalysisCoordinator.cs" />
     <Compile Include="AnalysisResult.cs" />
     <Compile Include="AnalysisSettings.cs" />
+    <Compile Include="StrongAnalyser\ResultBases\EventBase.cs" />
+    <Compile Include="StrongAnalyser\ResultBases\EventIndex.cs" />
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalyser.cs" />
+    <Compile Include="StrongAnalyser\ResultBases\IndexBase.cs" />
+    <Compile Include="StrongAnalyser\ResultBases\ResultBase.cs" />
+    <Compile Include="StrongAnalyser\IAnalyser2.cs" />
     <Compile Include="ISourcePreparer.cs" />
     <Compile Include="PluginHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StrongAnalyser\IAnalyser2Abstract.cs" />
+    <Compile Include="StrongAnalyser\ResultBases\SpectrumBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">

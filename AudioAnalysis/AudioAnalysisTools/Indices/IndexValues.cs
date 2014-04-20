@@ -2,15 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-
+using AnalysisBase.StrongAnalyser;
+using AnalysisBase.StrongAnalyser.ResultBases;
 using TowseyLibrary;
-using AnalysisBase;
-using AudioAnalysisTools.Indices;
 
-
-
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.Indices
 {
     /// <summary>
     /// This class is used to store the values of all indices regardless of type.

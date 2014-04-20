@@ -8,6 +8,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System.Linq;
+using AnalysisBase.StrongAnalyser;
+using AnalysisBase.StrongAnalyser.ResultBases;
 using ServiceStack;
 
 namespace Dong.Felt

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 
 using AnalysisBase;
+using AnalysisBase.StrongAnalyser;
+using AnalysisBase.StrongAnalyser.ResultBases;
 using AudioAnalysisTools;
 
 using TowseyLibrary;
