@@ -376,12 +376,12 @@ namespace Dong.Felt
 
         public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            CsvTools.WriteResultsToCsv(destination, results.Cast<RidgeEvent>());
+            Csv.WriteToCsv(destination, results.Cast<RidgeEvent>());
         }
 
         public void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
         {
-            CsvTools.WriteResultsToCsv(destination, results.Cast<EventIndex>());
+            Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
 
         public IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
