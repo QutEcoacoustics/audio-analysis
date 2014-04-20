@@ -217,7 +217,7 @@ namespace QutBioacosutics.Xie
             cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstants.ALL_KNOWN_KEYS});

@@ -457,7 +457,7 @@ namespace AudioAnalysisTools
             // Return if no suitable training data for clustering
             if (data.trainingData.Count <= 8)
             {
-                Console.WriteLine("Abort clustering. Only {0} spectra available for training data. Must be at least 9.", data.trainingData.Count);
+                LoggedConsole.WriteLine("Abort clustering. Only {0} spectra available for training data. Must be at least 9.", data.trainingData.Count);
             }
             else
             {
@@ -465,7 +465,7 @@ namespace AudioAnalysisTools
                 double wtThreshold = rowSumThreshold; // used to remove wt vectors whose sum of wts <= threshold
                 int hitThreshold = 4;                 // used to remove wt vectors which have fewer than the threshold hits
                 SpectralClustering.ClusterInfo clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
-                Console.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
+                LoggedConsole.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
                 //spectrogramData = SpectralClustering.SuperImposeHitsOnSpectrogram(spectrogramData, lowBinBound, clusterInfo.trainingDataAsSpectrogram);
                 //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
                 //ImageTools.DrawMatrix(spectrogramData, imagePath);

@@ -106,7 +106,7 @@ namespace AudioAnalysisTools
             allOK = cs1.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName1.Name);
             if (!allOK)
             {
-                Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
+                LoggedConsole.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName1.Name);
                 return;
             }
             cs1.SampleCount = N;
@@ -114,7 +114,7 @@ namespace AudioAnalysisTools
             allOK = cs2.ReadStandardDeviationSpectrogramCSVs(ipdir, ipSdFileName2.Name);
             if (!allOK)
             {
-                Console.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);
+                LoggedConsole.WriteLine("Cannot do t-test comparison because error reading standard deviation file: {0}", ipSdFileName2.Name);
                 return;
             }
             cs2.SampleCount = N;
@@ -205,10 +205,10 @@ namespace AudioAnalysisTools
 
             if ((image1 == null) || (image2 == null))
             {
-                Console.WriteLine("WARNING: From method ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex()");
-                Console.WriteLine("         Null image returned with key: {0}", key);
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex()");
+                LoggedConsole.WriteLine("         Null image returned with key: {0}", key);
                 return null;
-                //Console.WriteLine("  Press <RETURN> to exit.");
+                //LoggedConsole.WriteLine("  Press <RETURN> to exit.");
                 //Console.ReadLine();
                 //System.Environment.Exit(666);
             }

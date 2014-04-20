@@ -343,7 +343,7 @@ namespace AudioAnalysisTools.Indices
             else
             {
                 clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
-                //Console.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
+                //LoggedConsole.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
                 indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, clusterInfo.clusterCount);
                 indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds)); //av cluster duration
                 indicesStore.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, clusterInfo.triGramUniqueCount);

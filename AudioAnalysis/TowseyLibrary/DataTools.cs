@@ -2281,7 +2281,7 @@ namespace TowseyLibrary
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++) 
                 sum += v[i];
-            //Console.WriteLine("Area={0:f4}",sum);
+            //LoggedConsole.WriteLine("Area={0:f4}",sum);
             if (sum == 0.0) return data;
 
             double[] ret = new double[v.Length];
@@ -2939,8 +2939,8 @@ namespace TowseyLibrary
           //double[] avAndsd = new double[2];
           //avAndsd[0] = avDist;
           //avAndsd[1] = sdDist;
-          //Console.Write("Standard av & sd for data.");
-          //Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
+          //LoggedConsole.Write("Standard av & sd for data.");
+          //LoggedConsole.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
       }
 
   /// <summary>

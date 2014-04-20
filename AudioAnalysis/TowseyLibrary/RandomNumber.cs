@@ -166,8 +166,8 @@ namespace TowseyLibrary
             double av, sd;
             NormalDist.AverageAndSD(distanceArray, out av, out sd);
             double[] avAndsd = {av, sd };
-            Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 5));
-            Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
+            LoggedConsole.WriteLine(NormalDist.formatAvAndSD(avAndsd, 5));
+            LoggedConsole.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
         } //GetRandomDistancesInEuclidianSpace()
 
     }

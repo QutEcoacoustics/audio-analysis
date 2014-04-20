@@ -335,9 +335,9 @@
                 else
                 {
                     this.SegmentMaxDuration = null;
-                    Console.WriteLine("############### WARNING #############");
-                    Console.WriteLine("ERROR READING USER CONFIGURATION FILE");
-                    Console.WriteLine("\tINVALID KVP: key={0}, value={1}", key_SEGMENT_DURATION, value);
+                    LoggedConsole.WriteLine("############### WARNING #############");
+                    LoggedConsole.WriteLine("ERROR READING USER CONFIGURATION FILE");
+                    LoggedConsole.WriteLine("\tINVALID KVP: key={0}, value={1}", key_SEGMENT_DURATION, value);
                 }
             }
 

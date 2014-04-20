@@ -89,7 +89,7 @@ namespace AudioAnalysisTools
                 Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg1Image == null)
                 {
-                    Console.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
+                    LoggedConsole.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
                     return;
                 }
                 string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
@@ -107,7 +107,7 @@ namespace AudioAnalysisTools
                 Image spg2Image = ImageTools.ReadImage2Bitmap(imagePath);
                 if (spg2Image == null)
                 {
-                    Console.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
+                    LoggedConsole.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
                     return;
                 }
 
@@ -144,53 +144,53 @@ namespace AudioAnalysisTools
             var dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
             cs1.SetIndexStatistics(key, dict);
             m1Red = MatrixTools.Matrix2ZScores(m1Red, dict["mode"], dict["sd"]);
-            //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m1Grn = cs1.GetNormalisedSpectrogramMatrix(key);
             dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Grn);
             cs1.SetIndexStatistics(key, dict);
             m1Grn = MatrixTools.Matrix2ZScores(m1Grn, dict["mode"], dict["sd"]);
-            //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m1Blu = cs1.GetNormalisedSpectrogramMatrix(key);
             dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Blu);
             cs1.SetIndexStatistics(key, dict);
             m1Blu = MatrixTools.Matrix2ZScores(m1Blu, dict["mode"], dict["sd"]);
-            //Console.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[0];
             double[,] m2Red = cs2.GetNormalisedSpectrogramMatrix(key);
             dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Red);
             cs2.SetIndexStatistics(key, dict);
             m2Red = MatrixTools.Matrix2ZScores(m2Red, dict["mode"], dict["sd"]);
-            //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[1];
             double[,] m2Grn = cs2.GetNormalisedSpectrogramMatrix(key);
             dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Grn);
             cs2.SetIndexStatistics(key, dict);
             m2Grn = MatrixTools.Matrix2ZScores(m2Grn, dict["mode"], dict["sd"]);
-            //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
             key = keys[2];
             double[,] m2Blu = cs2.GetNormalisedSpectrogramMatrix(key);
             dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Blu);
             cs2.SetIndexStatistics(key, dict);
             m2Blu = MatrixTools.Matrix2ZScores(m2Blu, dict["mode"], dict["sd"]);
-            //Console.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
+            //LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
 
 
             double[] v1 = new double[3];
             double[] mode1 = { cs1.GetIndexStatistics(keys[0], "mode"), cs1.GetIndexStatistics(keys[1], "mode"), cs1.GetIndexStatistics(keys[2], "mode") };
             double[] stDv1 = { cs1.GetIndexStatistics(keys[0], "sd"),   cs1.GetIndexStatistics(keys[1], "sd"),   cs1.GetIndexStatistics(keys[2], "sd") };
-            Console.WriteLine("1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode1[0], stDv1[0], mode1[1], stDv1[1], mode1[2], stDv1[2]);
+            LoggedConsole.WriteLine("1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode1[0], stDv1[0], mode1[1], stDv1[1], mode1[2], stDv1[2]);
 
             double[] v2 = new double[3];
             double[] mode2 = { cs2.GetIndexStatistics(keys[0], "mode"), cs2.GetIndexStatistics(keys[1], "mode"), cs2.GetIndexStatistics(keys[2], "mode") };
             double[] stDv2 = { cs2.GetIndexStatistics(keys[0], "sd"),   cs2.GetIndexStatistics(keys[1], "sd"),   cs2.GetIndexStatistics(keys[2], "sd") };
-            Console.WriteLine("2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode2[0], stDv2[0], mode2[1], stDv2[1], mode2[2], stDv2[2]);
+            LoggedConsole.WriteLine("2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", mode2[0], stDv2[0], mode2[1], stDv2[1], mode2[2], stDv2[2]);
 
             // assume all matricies are normalised and of the same dimensions
             int rows = m1Red.GetLength(0); //number of rows
@@ -218,9 +218,9 @@ namespace AudioAnalysisTools
                     //following lines are for debugging purposes
                     //if ((row == 150) && (col == 1100))
                     //{
-                    //    Console.WriteLine("V1={0:f3}, {1:f3}, {2:f3}", v1[0], v1[1], v1[2]);
-                    //    Console.WriteLine("V2={0:f3}, {1:f3}, {2:f3}", v2[0], v2[1], v2[2]);
-                    //    Console.WriteLine("EDist12={0:f4};   ED11={1:f4};   ED22={2:f4}", d12Matrix[row, col], d11Matrix[row, col], d22Matrix[row, col]);
+                    //    LoggedConsole.WriteLine("V1={0:f3}, {1:f3}, {2:f3}", v1[0], v1[1], v1[2]);
+                    //    LoggedConsole.WriteLine("V2={0:f3}, {1:f3}, {2:f3}", v2[0], v2[1], v2[2]);
+                    //    LoggedConsole.WriteLine("EDist12={0:f4};   ED11={1:f4};   ED22={2:f4}", d12Matrix[row, col], d11Matrix[row, col], d22Matrix[row, col]);
                     //}
                 }
             } // rows

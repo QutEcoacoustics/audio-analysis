@@ -81,7 +81,7 @@ namespace AnalysisPrograms
 
                 foreach (string extention in fileExtentions)
                 {
-                    Console.WriteLine("\n\nFILE TYPE: "+extention);
+                    LoggedConsole.WriteLine("\n\nFILE TYPE: "+extention);
 
                     List<string> lines = new List<string>();
 
@@ -90,9 +90,9 @@ namespace AnalysisPrograms
                         string fName = names[i] + extention;
                         string path = Path.Combine(dirNames[i], fName);
                         var fileInfo = new FileInfo(path);
-                        Console.WriteLine(path);
+                        LoggedConsole.WriteLine(path);
                         if(! fileInfo.Exists)
-                            Console.WriteLine("ABOVE FILE DOES NOT EXIST");
+                            LoggedConsole.WriteLine("ABOVE FILE DOES NOT EXIST");
 
                         var ipLines = FileTools.ReadTextFile(path);
                         if (i != 0)
@@ -123,7 +123,7 @@ namespace AnalysisPrograms
                 cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
                 if (cs1.GetCountOfSpectrogramMatrices() == 0)
                 {
-                    Console.WriteLine("There are no spectrogram matrices in the dictionary.");
+                    LoggedConsole.WriteLine("There are no spectrogram matrices in the dictionary.");
                     return;
                 }
                 cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
@@ -250,7 +250,7 @@ namespace AnalysisPrograms
                 int poiCount;
                 double fraction;
                 PointOfInterest.CountPOIsInMatrix(poiMatrix, out poiCount, out fraction);
-                Console.WriteLine("poiCount={0};  fraction={1}", poiCount, fraction);
+                LoggedConsole.WriteLine("poiCount={0};  fraction={1}", poiCount, fraction);
 
                 poiMatrix = MatrixTools.MatrixRotate90Clockwise(poiMatrix);
                 image = DrawSonogram(spectrogram, scores, poiMatrix);
@@ -286,7 +286,7 @@ namespace AnalysisPrograms
             // experiments with false colour images - categorising/discretising the colours
             if (false)
             {
-                Console.WriteLine("Reading image");
+                LoggedConsole.WriteLine("Reading image");
                 //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
                 //string inputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrum.png";
                 //string outputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.discreteColSpectrum.png";

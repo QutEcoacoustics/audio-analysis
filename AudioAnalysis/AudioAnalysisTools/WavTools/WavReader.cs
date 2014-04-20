@@ -126,7 +126,7 @@ namespace AudioAnalysisTools.WavTools
 
             // Sample Rate
             this.SampleRate = (int)BitConverter.ToUInt32(data, 24);
-            //Console.WriteLine("SampleRate=" + this.SampleRate);
+            //LoggedConsole.WriteLine("SampleRate=" + this.SampleRate);
 
             // Bytes Per Second
             BitConverter.ToUInt32(data, 28);
@@ -187,14 +187,14 @@ namespace AudioAnalysisTools.WavTools
 
         public static double[] TrimSamples(double[] data)
         {
-            //for(int i=0; i < 2000; i++) Console.WriteLine(i+"  "+data[i]);
+            //for(int i=0; i < 2000; i++) LoggedConsole.WriteLine(i+"  "+data[i]);
 
             int L = data.Length;
             double threshold = 16 / (double)65536;
-            //Console.WriteLine("threshold = " + threshold);
+            //LoggedConsole.WriteLine("threshold = " + threshold);
             int startZeros = 0;
             double value = Math.Abs(data[0]);
-            //Console.WriteLine("value = "+value);
+            //LoggedConsole.WriteLine("value = "+value);
             while (value < threshold)
             {
                 startZeros++;
@@ -208,7 +208,7 @@ namespace AudioAnalysisTools.WavTools
                 endZeros++;
                 value = Math.Abs(data[L-1-startZeros]);
             }
-            //Console.WriteLine("startZeros=" + startZeros + "   endZeros=" + endZeros);
+            //LoggedConsole.WriteLine("startZeros=" + startZeros + "   endZeros=" + endZeros);
             //Console.ReadLine();
 
             if ((startZeros == 0) && (endZeros == 0)) return data; //nothing to trim
@@ -220,8 +220,8 @@ namespace AudioAnalysisTools.WavTools
             double[] newData = new double[newL];
             for (int i = 0; i < newL; i++) newData[i] = data[startZeros+i];
 
-            //Console.WriteLine("start=" + newData[0] + "   end=" + newData[newL-1]);
-            //for (int i = 0; i < 400; i++) Console.WriteLine(i + "  " + newData[i]);
+            //LoggedConsole.WriteLine("start=" + newData[0] + "   end=" + newData[newL-1]);
+            //for (int i = 0; i < 400; i++) LoggedConsole.WriteLine(i + "  " + newData[i]);
             return newData;
         }
 
@@ -232,8 +232,13 @@ namespace AudioAnalysisTools.WavTools
 
         public void SubSample(int interval)
         {
-            if (interval <= 1) return; //do not change anything!
-            Console.WriteLine("\tSUBSAMPLING the signal - interval = " + interval);
+            if (interval <= 1)
+            {
+                //do not change anything!
+                return;
+            }
+
+            LoggedConsole.WriteLine("\tSUBSAMPLING the signal - interval = " + interval);
             int L = SampleCount;
             int newL = L / interval; // the new length
             double[] newSamples = new double[newL];
