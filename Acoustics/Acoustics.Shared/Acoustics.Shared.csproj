@@ -88,6 +88,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsvHelper">
+      <HintPath>..\..\AudioAnalysis\packages\CsvHelper.2.5.0\lib\net40-client\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -123,6 +126,7 @@
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
     <Compile Include="Coordinate.cs" />
+    <Compile Include="Csv.cs" />
     <Compile Include="Debugging\AutoAttachVs.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
@@ -145,6 +149,7 @@
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
     <Compile Include="Logging\Logging.cs" />
+    <Compile Include="MatrixMapper.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />

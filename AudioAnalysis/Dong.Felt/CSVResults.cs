@@ -1,4 +1,6 @@
-﻿namespace Dong.Felt
+﻿using Acoustics.Shared;
+
+namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
@@ -182,7 +184,7 @@
                     filteredReselt.Add(nh);
                 }
             }
-            CsvTools.WriteResultsToCsv(file, filteredReselt);
+            Csv.WriteToCsv(file, filteredReselt);
         }
 
         /// <summary>
@@ -192,7 +194,7 @@
         /// <param name="ridgeRegion"></param>
         public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
         {
-            CsvTools.WriteResultsToCsv(file, ridgeRegion);
+            Csv.WriteToCsv(file, ridgeRegion);
         }
 
         /// <summary>
@@ -202,12 +204,12 @@
         /// <param name="candidates"></param>
         public static void CandidateListToCSV(FileInfo file, List<Candidates> candidates)
         {
-            CsvTools.WriteResultsToCsv(file, candidates);
+            Csv.WriteToCsv(file, candidates);
         }
 
         public static List<Candidates> CsvToCandidatesList(FileInfo candidatesCsvfile)
         {
-            return CsvTools.ReadResultsFromCsv<Candidates>(candidatesCsvfile).ToList();
+            return Csv.ReadFromCsv<Candidates>(candidatesCsvfile).ToList();
         }
 
         /// <summary>
