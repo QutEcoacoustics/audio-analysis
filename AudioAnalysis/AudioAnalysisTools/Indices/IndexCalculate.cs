@@ -204,12 +204,10 @@ namespace AudioAnalysisTools.Indices
             // viii: calculate RAIN and CICADA indices.
             indicesStore.StoreIndex(InitialiseIndexProperties.keyRAIN, 0.0);
             indicesStore.StoreIndex(InitialiseIndexProperties.keyCICADA, 0.0);
-            DataTable dt = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
-            if (dt != null)
+            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            foreach (string key in dict.Keys)
             {
-                DataRow row = dt.Rows[0];
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyRAIN, (double)row[InitialiseIndexProperties.header_rain]);
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCICADA, (double)row[InitialiseIndexProperties.header_cicada]);
+                indicesStore.StoreIndex(key, dict[key]);
             }
 
 

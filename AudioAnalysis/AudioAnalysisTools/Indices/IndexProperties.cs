@@ -46,7 +46,7 @@ namespace AudioAnalysisTools
             DataType = typeof(double);
             DefaultValue = 0.0;
             ProjectID = "NOT SET";
-            Comment = "Everything is OK";
+            Comment = "Relax - everything is OK";
 
             DoDisplay = true;
             NormMin = 0.0;
