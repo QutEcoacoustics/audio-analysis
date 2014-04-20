@@ -248,7 +248,11 @@ namespace AnalysisPrograms
 
             if (results == null)  return analysisResults; //nothing to process 
 
-            analysisResults.Data = results.Item1;
+            //analysisResults.Data = results.Item1;
+            foreach (KeyValuePair<string, double> entry in results.Item1)
+            {
+                analysisResults.indexBase.SummaryIndicesOfTypeDouble.Add(entry.Key, entry.Value); 
+            }
             analysisResults.AudioDuration = results.Item2;
             //var sonogram = results.Item3;
             //var scores = results.Item4;
@@ -270,7 +274,7 @@ namespace AnalysisPrograms
             return analysisResults;
         }
 
-        public static Tuple<DataTable, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings)
+        public static Tuple<Dictionary<string, double>, TimeSpan> RainAnalyser(FileInfo fiAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
@@ -361,8 +365,8 @@ namespace AnalysisPrograms
                 sb = new StringBuilder(header+"\n");
             }
 
-            DataTable dt = RainIndices.GetIndices(envelope, audioDuration, frameDuration, spectrogram, lowFreqBound, midFreqBound, binWidth);
-            return System.Tuple.Create(dt, audioDuration);
+            Dictionary<string, double> dict = RainIndices.GetIndices(envelope, audioDuration, frameDuration, spectrogram, lowFreqBound, midFreqBound, binWidth);
+            return System.Tuple.Create(dict, audioDuration);
         } //Analysis()
 
 

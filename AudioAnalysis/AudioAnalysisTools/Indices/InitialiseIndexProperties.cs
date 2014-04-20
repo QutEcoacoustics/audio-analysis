@@ -73,11 +73,6 @@ namespace AudioAnalysisTools.Indices
         public const string spKEY_SpPeakTracks = "SPT";
         public const string spKEY_TemporalEntropy = "ENT";
 
-        //the below headers will eventually be deleted and replaced by their keys
-        public const string header_rain = "Rain";
-        public const string header_cicada = "Cicada";
-
-
 
 
 
@@ -199,7 +194,7 @@ namespace AudioAnalysisTools.Indices
                     Key = keyEVENT_DUR,
                     Name = "av Event Duration",
                     DataType = typeof(TimeSpan),
-                    NormMax = 500,
+                    NormMax = 1000,
                     Units = "ms"
                 });
 
@@ -240,7 +235,7 @@ namespace AudioAnalysisTools.Indices
                     Name = "1-H[t]",
                     Comment = "1-Ht is a meassure of concentration of acoustic energy instead of energy dispersal.",
                     NormMin = 0.0,
-                    NormMax = 0.6,
+                    NormMax = 0.5,
                     DefaultValue = 0.0,
                     includeInComboIndex = true,
                     comboWeight = 0.3
@@ -281,7 +276,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keyACI,
                     Name = "ACI",
-                    NormMin = 0.4,
+                    NormMin = 0.3,
                     NormMax = 0.7,
                     includeInComboIndex = true,
                     comboWeight = 0.2
@@ -293,7 +288,7 @@ namespace AudioAnalysisTools.Indices
                     Key = keyCLUSTER_COUNT,
                     Name = "Cluster Count",
                     DataType = typeof(int),
-                    NormMax = 50,
+                    NormMax = 20,
                     includeInComboIndex = true,
                     comboWeight = 0.3
                 });
@@ -335,6 +330,25 @@ namespace AudioAnalysisTools.Indices
                     Units = "ms"
                 });
 
+            properties.Add(keyRAIN,
+                new IndexProperties
+                {
+                    Key = keyRAIN,
+                    Name = "Rain Index",
+                    NormMax = 1.0,
+                    Units = "",
+                    Comment = "Rain score calculated every 5 sec and averaged over the minute."
+                });
+
+            properties.Add(keyCICADA,
+                new IndexProperties
+                {
+                    Key = keyCICADA,
+                    Name = "Cicada Index",
+                    NormMax = 1.0,
+                    Units = "",
+                    Comment = "Cicada score calculated every 10 sec and 6 values averaged over the minute."
+                });
 
             // ADD THE SUMMARY INDICES ABOVE HERE
             //==================================================================================================================================================
@@ -349,8 +363,8 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_ACI,
                     Name = "ACI",
                     DataType = typeof(double[]),
-                    NormMin = 0.4,
-                    NormMax = 0.8,
+                    NormMin = 0.3,
+                    NormMax = 0.7,
                     Units = ""
                 });
 
@@ -404,7 +418,7 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_BinEvents,
                     Name = "EVN",
                     DataType = typeof(double[]),
-                    NormMax = 0.5,
+                    NormMax = 1.0,
                     Units = ""
                 });
 
