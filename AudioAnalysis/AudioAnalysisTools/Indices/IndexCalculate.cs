@@ -190,18 +190,18 @@ namespace AudioAnalysisTools.Indices
             //DataTools.writeBarGraph(modalValues);
 
 
-            // iv: ENTROPY OF AVERAGE & 
-            //  v: VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
+            // iv: ENTROPY OF AVERAGE & VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
+            //     Then reverse the values i.e. calculate 1-Hs and 1-Hv and 1- Hp for energy concentration
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
-            indexValues.StoreIndex(InitialiseIndexProperties.keyHspec, tuple.Item1);     // ENTROPY of spectral averages
-            indexValues.StoreIndex(InitialiseIndexProperties.keyHvari, tuple.Item2);     // ENTROPY of spectral variances
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHspec, 1 - tuple.Item1);     // ENTROPY of spectral averages
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHvari, 1 - tuple.Item2);     // ENTROPY of spectral variances
 
 
-            // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
+            // v: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            indexValues.StoreIndex(InitialiseIndexProperties.keyHpeak, AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin));
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHpeak, 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin));
 
-            // viii: calculate RAIN and CICADA indices.
+            // vi: calculate RAIN and CICADA indices.
             indexValues.StoreIndex(InitialiseIndexProperties.keyRAIN, 0.0);
             indexValues.StoreIndex(InitialiseIndexProperties.keyCICADA, 0.0);
             Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);

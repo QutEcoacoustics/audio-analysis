@@ -130,6 +130,7 @@ namespace AudioAnalysisTools
             int highFreqBinIndex = spectrogram.GetLength(1) - 1; // avoid top row which can have edge effects
             int rows = spectrogram.GetLength(0); // frames
             int cols = spectrogram.GetLength(1); // # of freq bins
+            double recordingDuration = rows * frameDuration.TotalSeconds;
 
             SummaryActivity activity;
             double[] coverSpectrum = new double[cols];
@@ -143,7 +144,7 @@ namespace AudioAnalysisTools
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.percentActiveFrames; 
                 //double a4 = activity.activeAvDB;
-                eventSpectrum[c] = activity.eventCount / (double) rows;
+                eventSpectrum[c] = activity.eventCount / recordingDuration;
                 //TimeSpan a6 = activity.avEventDuration;
                 //bool[] a7 = activity.eventLocations;
             }
