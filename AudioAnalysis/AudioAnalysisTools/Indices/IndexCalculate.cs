@@ -428,13 +428,13 @@ namespace AudioAnalysisTools.Indices
             return weightedIndices;
         }
 
-        public static double[] CalculateComboWeights()
-        {
-            Dictionary<string, IndexProperties> indexProperties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
-            //var items = AcousticIndicesStore.InitOutputTableColumns();
-            //return items.Item4; // COMBO_WEIGHTS;
-            return InitialiseIndexProperties.GetArrayOfComboWeights(indexProperties);
-        }
+        //public static double[] CalculateComboWeights()
+        //{
+        //    Dictionary<string, IndexProperties> indexProperties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
+        //    //var items = AcousticIndicesStore.InitOutputTableColumns();
+        //    //return items.Item4; // COMBO_WEIGHTS;
+        //    return InitialiseIndexProperties.GetArrayOfComboWeights(indexProperties);
+        //}
 
 
         private static readonly ILog Logger =

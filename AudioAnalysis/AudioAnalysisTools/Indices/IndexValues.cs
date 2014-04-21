@@ -132,49 +132,5 @@ namespace AudioAnalysisTools
             return spectra;
         }
 
-
-
-        //==============================================================================================================================================
-        //==============================================================================================================================================
-        //==============================================================================================================================================
-        //======= STATIC METHODS BELOW HERE=============================================================================================================
-        //==============================================================================================================================================
-        //==============================================================================================================================================
-        //==============================================================================================================================================
-
-        public static DataTable Indices2DataTable(IndexValues indicesStore)
-        {
-            Dictionary<string, IndexProperties> properties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
-            var headers = InitialiseIndexProperties.GetArrayOfIndexNames(properties);
-            var types = InitialiseIndexProperties.GetArrayOfIndexTypes(properties);
-            string[] keys = properties.Keys.ToArray();
-
-            var dt = DataTableTools.CreateTable(headers, types);
-
-            DataRow row = dt.NewRow();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                var key = keys[i];
-                IndexProperties prop = properties[key];
-
-                if (prop.DataType == typeof(double)) 
-                {
-                    row[headers[i]] = indicesStore.GetIndexAsDouble(key);              
-                }
-                else if(prop.DataType == typeof(TimeSpan)) 
-                {
-                    row[headers[i]] = indicesStore.GetIndexAsTimeSpan(key);
-                }
-                else if (prop.DataType == typeof(int)) 
-                {
-                    row[headers[i]] = indicesStore.GetIndexAsInteger(key);
-                }
-            }
-            dt.Rows.Add(row);
-            //DataTableTools.WriteTable2ConsoleInLongLayout(dt); // DEBUG
-            return dt;
-        }
-
-
-    }
+    } // class IndexValues : IndexBase
 }
