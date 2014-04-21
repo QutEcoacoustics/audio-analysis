@@ -343,8 +343,8 @@ namespace AudioAnalysisTools.Indices
                     Key = keySPT_DUR,
                     Name = "av Track Duration",
                     DataType = typeof(TimeSpan),
-                    NormMax = 200,
-                    Units = "ms",
+                    NormMax = 1.0,
+                    Units = "s",
                     Comment = "Average duration of a spectral track."
                 });
 
