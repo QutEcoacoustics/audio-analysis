@@ -114,16 +114,16 @@ namespace AudioAnalysisTools.Indices
 
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
-            IndexValues indicesStore = new IndexValues(freqBinCount, wavDuration);  // total duration of recording
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySEGMENT_DURATION, wavDuration);     // duration of recording in seconds
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyCLIP1, dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds); //average high ampl rate per second
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyCLIP2, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
+            IndexValues indexValues = new IndexValues(freqBinCount, wavDuration);  // total duration of recording
+            indexValues.StoreIndex(InitialiseIndexProperties.keySEGMENT_DURATION, wavDuration);     // duration of recording in seconds
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHIGH_SIGNAL_AMPLITUDE, dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds); //average high ampl rate per second
+            indexValues.StoreIndex(InitialiseIndexProperties.keyCLIPPING, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
 
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
             if (avSignalEnvelope < 0.001) // although signal appears zero, this condition is required
             {
-                return indicesStore;
+                return indexValues;
             }
             
             // i: FRAME ENERGIES -
@@ -136,16 +136,16 @@ namespace AudioAnalysisTools.Indices
             // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
             var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration);
 
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyACTIVITY, activity.activeFrameCover); // fraction of frames having acoustic activity 
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyBKGROUND, bgNoise.NoiseMode);              // bg noise in dB
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySNR, bgNoise.Snr);                    // SNR
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySNR_ACTIVE, activity.activeAvDB);     // snr calculated from active frames only
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySIG_AMPL, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
+            indexValues.StoreIndex(InitialiseIndexProperties.keyACTIVITY, activity.percentActiveFrames); // fraction of frames having acoustic activity 
+            indexValues.StoreIndex(InitialiseIndexProperties.keyBKGROUND, bgNoise.NoiseMode);              // bg noise in dB
+            indexValues.StoreIndex(InitialiseIndexProperties.keySNR, bgNoise.Snr);                    // SNR
+            indexValues.StoreIndex(InitialiseIndexProperties.keySNR_ACTIVE, activity.activeAvDB);     // snr calculated from active frames only
+            indexValues.StoreIndex(InitialiseIndexProperties.keySIG_AMPL, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
             double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope)); // ENTROPY of ENERGY ENVELOPE
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHtemp, 1 - entropy);  //1-Ht because want measure of concentration of acoustic energy.
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyEVENT_RATE, activity.eventCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyEVENT_DUR, activity.avEventDuration);      //av event duration in milliseconds
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHtemp, 1 - entropy);  //1-Ht because want measure of concentration of acoustic energy.
+            indexValues.StoreIndex(InitialiseIndexProperties.keyEVENT_RATE, activity.eventCount / wavDuration.TotalSeconds); //number of segments whose duration > one frame
+            indexValues.StoreIndex(InitialiseIndexProperties.keyEVENT_DUR, activity.avEventDuration);      //av event duration in milliseconds
 
 
             // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
@@ -170,14 +170,14 @@ namespace AudioAnalysisTools.Indices
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             double[] aciArray = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_ACI, aciArray); //store ACI spectrum
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_ACI, aciArray); //store ACI spectrum
             double[] reducedSpectrum = DataTools.Subarray(aciArray, lowerBinBound, reducedFreqBinCount);  // remove low freq band
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyACI, reducedSpectrum.Average()); // average of ACI spectrum with low freq bins removed
+            indexValues.StoreIndex(InitialiseIndexProperties.keyACI, reducedSpectrum.Average()); // average of ACI spectrum with low freq bins removed
 
             // ii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
             double[] temporalEntropySpectrum = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
             for (int i = 0; i < temporalEntropySpectrum.Length; i++) { temporalEntropySpectrum[i] = 1 - temporalEntropySpectrum[i]; }
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_TemporalEntropy, temporalEntropySpectrum);
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_TemporalEntropy, temporalEntropySpectrum);
 
             // iii: remove background noise from the amplitude spectrogram
             double SD_COUNT = 0.0;
@@ -193,21 +193,21 @@ namespace AudioAnalysisTools.Indices
             // iv: ENTROPY OF AVERAGE & 
             //  v: VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHspec, tuple.Item1);     // ENTROPY of spectral averages
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHvari, tuple.Item2);     // ENTROPY of spectral variances
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHspec, tuple.Item1);     // ENTROPY of spectral averages
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHvari, tuple.Item2);     // ENTROPY of spectral variances
 
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHpeak, AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin));
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHpeak, AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin));
 
             // viii: calculate RAIN and CICADA indices.
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyRAIN, 0.0);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyCICADA, 0.0);
+            indexValues.StoreIndex(InitialiseIndexProperties.keyRAIN, 0.0);
+            indexValues.StoreIndex(InitialiseIndexProperties.keyCICADA, 0.0);
             Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
             foreach (string key in dict.Keys)
             {
-                indicesStore.StoreIndex(key, dict[key]);
+                indexValues.StoreIndex(key, dict[key]);
             }
 
 
@@ -220,7 +220,7 @@ namespace AudioAnalysisTools.Indices
             // ii: Calculate background noise spectrum in decibels
             SD_COUNT = 0.0; // number of SDs above the mean for noise removal
             SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_BkGround, DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7)); // smooth modal profile
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_BkGround, DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7)); // smooth modal profile
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
@@ -229,7 +229,7 @@ namespace AudioAnalysisTools.Indices
 
             // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_Average, tuple2.Item1);
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_Average, tuple2.Item1);
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -237,11 +237,11 @@ namespace AudioAnalysisTools.Indices
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameDuration, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
 
             //TO DO TODO TODO TODO TODO TODO  etc
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_BinCover, spActivity.coverSpectrum);
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_BinEvents, spActivity.eventSpectrum);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyHF_CVR, spActivity.highFreqBandCover);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyMF_CVR, spActivity.midFreqBandCover);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keyLF_CVR, spActivity.lowFreqBandCover);
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_BinCover, spActivity.coverSpectrum);
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_BinEvents, spActivity.eventSpectrum);
+            indexValues.StoreIndex(InitialiseIndexProperties.keyHF_CVR, spActivity.highFreqBandCover);
+            indexValues.StoreIndex(InitialiseIndexProperties.keyMF_CVR, spActivity.midFreqBandCover);
+            indexValues.StoreIndex(InitialiseIndexProperties.keyLF_CVR, spActivity.lowFreqBandCover);
 
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
@@ -249,10 +249,10 @@ namespace AudioAnalysisTools.Indices
             dBThreshold = 3.0;
             // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
             SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
-            indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_SpPeakTracks, sptInfo.spSpectrum);
+            indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_SpPeakTracks, sptInfo.spSpectrum);
 
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySPT_DUR, sptInfo.totalTrackDuration);
-            indicesStore.StoreIndex(InitialiseIndexProperties.keySPT_PER_SEC, sptInfo.trackCount / wavDuration.TotalSeconds);
+            indexValues.StoreIndex(InitialiseIndexProperties.keySPT_DUR, sptInfo.totalTrackDuration);
+            indexValues.StoreIndex(InitialiseIndexProperties.keySPT_PER_SEC, sptInfo.trackCount / wavDuration.TotalSeconds);
 
 
             //TO DO: calculate av track duration and total duration as fraction of recording duration
@@ -307,16 +307,16 @@ namespace AudioAnalysisTools.Indices
             // return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
             if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
             {
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, 0);
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.Zero);
-                indicesStore.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, 0);
-                indicesStore.Sg = sonogram;
-                indicesStore.Hits = hits;
-                indicesStore.TrackScores = scores;
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, 0);
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.Zero);
+                indexValues.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, 0);
+                indexValues.Sg = sonogram;
+                indexValues.Hits = hits;
+                indexValues.TrackScores = scores;
                 //indicesStore.Tracks = trackInfo.listOfSPTracks;
-                if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.SpectralIndices); 
+                if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indexValues.SpectralIndices); 
 
-                return indicesStore;
+                return indexValues;
             }
             //#V#####################################################################################################################################################
 
@@ -336,20 +336,20 @@ namespace AudioAnalysisTools.Indices
             if (data.trainingData.Count <= 8)     // Skip clustering if not enough suitable training data
             {
                 clusterInfo.clusterHits2 = null;
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, 0);
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.Zero);
-                indicesStore.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, 0);
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, 0);
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.Zero);
+                indexValues.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, 0);
             }
             else
             {
                 clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, wtThreshold, hitThreshold, data.selectedFrames);
                 //Console.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, clusterInfo.clusterCount);
-                indicesStore.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds)); //av cluster duration
-                indicesStore.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, clusterInfo.triGramUniqueCount);
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, clusterInfo.clusterCount);
+                indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_DUR, TimeSpan.FromSeconds(clusterInfo.av2 * frameDuration.TotalSeconds)); //av cluster duration
+                indexValues.StoreIndex(InitialiseIndexProperties.key3GRAM_COUNT, clusterInfo.triGramUniqueCount);
 
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
-                indicesStore.AddSpectrum(InitialiseIndexProperties.spKEY_Cluster, 
+                indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_Cluster, 
                                          SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor));
             }
 
@@ -366,13 +366,13 @@ namespace AudioAnalysisTools.Indices
             }
 
             //indicesStore.Indices = indices;
-            indicesStore.Sg = sonogram;
-            indicesStore.Hits = hits;
-            indicesStore.TrackScores = scores;
-            indicesStore.Tracks = sptInfo.listOfSPTracks;
-            if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indicesStore.SpectralIndices); 
+            indexValues.Sg = sonogram;
+            indexValues.Hits = hits;
+            indexValues.TrackScores = scores;
+            indexValues.Tracks = sptInfo.listOfSPTracks;
+            if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indexValues.SpectralIndices); 
 
-            return indicesStore;
+            return indexValues;
         } //Analysis()
 
 

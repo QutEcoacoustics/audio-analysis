@@ -14,7 +14,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public struct SummaryActivity
     {
-        public double activeFrameCover, activeAvDB;
+        public double percentActiveFrames, activeAvDB;
         public TimeSpan avEventDuration;
         public int activeFrameCount, eventCount;
         public bool[] activeFrames, eventLocations;
@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
         {
             activeFrames = _activeFrames;
             activeFrameCount = _activeFrameCount;
-            activeFrameCover = activeFrameCount / (double)activeFrames.Length;
+            percentActiveFrames = activeFrameCount * 100 / (double)activeFrames.Length;
             activeAvDB = _activeAvDB;
             eventCount = _eventCount;
             avEventDuration = _avEventDuration;
@@ -141,7 +141,7 @@ namespace AudioAnalysisTools
                 activity = ActivityAndCover.CalculateActivity(bin, frameDuration);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
-                coverSpectrum[c] = activity.activeFrameCover; 
+                coverSpectrum[c] = activity.percentActiveFrames; 
                 //double a4 = activity.activeAvDB;
                 eventSpectrum[c] = activity.eventCount / (double) rows;
                 //TimeSpan a6 = activity.avEventDuration;
@@ -149,17 +149,17 @@ namespace AudioAnalysisTools
             }
 
 
-            //calculate coverage for low freq band
+            //calculate coverage for low freq band as a percentage
             int count = 0;
             double sum = 0;
             for (int j = 0; j < lowFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
             double lowFreqCover = sum / (double)count;
-            //calculate coverage for mid freq band
+            //calculate coverage for mid freq band as a percentage
             count = 0;
             sum = 0;
             for (int j = lowFreqBinIndex; j < midFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
             double midFreqCover = sum / (double)count;
-            //calculate coverage for high freq band
+            //calculate coverage for high freq band as a percentage
             count = 0;
             sum = 0;
             for (int j = midFreqBinIndex; j < highFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
