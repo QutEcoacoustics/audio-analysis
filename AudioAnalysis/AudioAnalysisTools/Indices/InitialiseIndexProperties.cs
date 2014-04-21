@@ -138,8 +138,8 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keySIG_AMPL,
                     Name = "av Signal Ampl",
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL,
-                    NormMax = -5.0,
+                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10, //-70 dB is typical level for enironmental BGN
+                    NormMax = -10.0,
                     Units = "dB",
                     DefaultValue = DEFAULT_SIGNAL_MIN,
                     Comment = "Av amplitude of the signal envelope in dB."
@@ -150,8 +150,8 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keyBKGROUND,
                     Name = "Background",
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL,
-                    NormMax = -20.0,
+                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10,
+                    NormMax = -10.0,
                     Units = "dB",
                     DefaultValue = DEFAULT_SIGNAL_MIN,
                     Comment = "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
@@ -258,30 +258,30 @@ namespace AudioAnalysisTools.Indices
                 new IndexProperties
                 {
                     Key = keyHpeak,
-                    Name = "H[peak freq]",
-                    NormMin = 0.4,
+                    Name = "1-H[peak freq]",
+                    NormMin = 0.0,
                     NormMax = 1.0,
-                    DefaultValue = 1.0
+                    DefaultValue = 0.0
                 });
 
             properties.Add(keyHspec,
                 new IndexProperties
                 {
                     Key = keyHspec,
-                    Name = "H[spectral]",
-                    NormMin = 0.4,
+                    Name = "1-H[spectral avg]",
+                    NormMin = 0.0,
                     NormMax = 1.0,
-                    DefaultValue = 1.0
+                    DefaultValue = 0.0
                 });
 
             properties.Add(keyHvari,
                 new IndexProperties
                 {
                     Key = keyHvari,
-                    Name = "H[spectral var]",
-                    NormMin = 0.4,
+                    Name = "1-H[spectral var]",
+                    NormMin = 0.0,
                     NormMax = 1.0,
-                    DefaultValue = 1.0
+                    DefaultValue = 0.0
                 });
 
             properties.Add(keyACI,
@@ -407,8 +407,8 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_BkGround,
                     Name = "BGN",
                     DataType = typeof(double[]),
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
-                    NormMax = -20.0, //-20 adds more contrast into bgn image
+                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20, //-20 adds more contrast into BGN spectrogram
+                    NormMax = -20.0, 
                     DefaultValue = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
                     Units = "dB",
                     Comment = "dB value of the bcakground 'noise' removed each frequency bin."
@@ -421,7 +421,7 @@ namespace AudioAnalysisTools.Indices
                     Name = "CLS",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
-                    NormMax = 30.0,
+                    NormMax = 20.0,
                     Units = "ms",
                     Comment = "The number of spectral clusters in which each frequency bin is included."
                 });
@@ -443,9 +443,9 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_BinEvents,
                     Name = "EVN",
                     DataType = typeof(double[]),
-                    NormMax = 100.0,
-                    Units = "%",
-                    Comment = "The % of frames included within an acoustic event as defined above."
+                    NormMax = 1.0,
+                    Units = "events/s",
+                    Comment = "Acoustic events per second (as defined above) within each frequency band."
                 });
 
             properties.Add(spKEY_SpPeakTracks,

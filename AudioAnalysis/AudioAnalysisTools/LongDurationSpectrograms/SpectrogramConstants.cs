@@ -14,6 +14,9 @@ namespace AudioAnalysisTools
     public static class SpectrogramConstants
     {
 
+
+        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
+        // NOW IN INITIALISE INDEX PROPERTIES class.
         // CONST string for referring to different types of spectrogram - these should really be an enum                
         public const string KEY_AcousticComplexityIndex = "ACI";
         public const string KEY_Average = "AVG";
@@ -26,13 +29,17 @@ namespace AudioAnalysisTools
         public const string KEY_TemporalEntropy = "TEN";
         public const string KEY_Variance = "VAR";
 
+        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
+        // NOW IN INITIALISE INDEX PROPERTIES class.
         // FOR FROG SPECTROGRAMS
         public const string KEY_Tracks = "TRC";
         public const string KEY_Oscillations = "OSC";
         public const string KEY_Harmonics = "HAR";
-            
-                
 
+
+
+        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
+        // NOW IN INITIALISE INDEX PROPERTIES class.
         // NORMALISING CONSTANTS FOR INDICES
         //public const double ACI_MIN = 0.0;
         //public const double ACI_MAX = 1.0;
@@ -53,6 +60,8 @@ namespace AudioAnalysisTools
         public const double VAR_MIN = SDV_MIN * SDV_MIN;
         public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
 
+        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
+        // NOW IN INITIALISE INDEX PROPERTIES class.
         // FOR FROG SPECTROGRAMS
         public const double TRC_MIN = 0.0;
         public const double TRC_MAX = 0.065;
@@ -61,6 +70,9 @@ namespace AudioAnalysisTools
         public const double HAR_MIN = 0.0;
         public const double HAR_MAX = 0.025;
 
+
+
+        // THE BELOW CONSTANTS COULD BE SHIFTED TO THE LD-SPECTROGRAM-RGB class
 
         // False-colour map to acoustic indices
         public const string RGBMap_DEFAULT     = "ACI-ENT-CVR"; //R-G-B
@@ -98,6 +110,9 @@ namespace AudioAnalysisTools
         //public const double T_STAT_THRESHOLD = 3.09;  // 0.1% confidence @ df=infinity
         public const double T_STAT_THRESHOLD = 3.29;    // 0.05% confidence @ df=infinity
 
+
+
+        // THE BELOW TWO METHODS COULD BE SHIFTED TO THE INDEX-DISPLAY class
 
         /// <summary>
         /// Returns an image of an array of colour patches.
