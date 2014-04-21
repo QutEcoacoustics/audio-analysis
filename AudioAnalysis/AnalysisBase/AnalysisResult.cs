@@ -156,8 +156,9 @@ namespace AnalysisBase
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
 
-        public IndexBase indexBase { get; set; }
-
+        /* this should never of been in here
+        ////public IndexBase indexBase { get; set; }
+        */
 
 
         ///// <summary>
@@ -181,15 +182,5 @@ namespace AnalysisBase
         //        return this.dictionaryOfSpectralIndices;
         //    }
         //}
-    }
-
-    public class AnalysisResult2 : AnalysisResult
-    {
-        /// <summary>
-        /// Gets or sets results.
-        /// </summary>
-        public new IEnumerable<EventBase> Data { get; set; }
-
-        public new IEnumerable<IndexBase> Indices { get; set; }
     }
 }

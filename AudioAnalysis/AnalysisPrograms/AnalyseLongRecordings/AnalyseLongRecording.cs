@@ -102,38 +102,45 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             // 5. initialise the analyser
-            var analysers = AnalysisCoordinator.GetAnalysers(typeof (MainEntry).Assembly);
-            IAnalyser2 analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
-            if (analyser == null)
-            {
-                LoggedConsole.WriteLine("###################################################\n");
-                LoggedConsole.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
-                LoggedConsole.WriteLine("Available analysers are:");
-                foreach (IAnalyser anal in analysers)
-                {
-                    LoggedConsole.WriteLine("\t  " + anal.Identifier);
-                }
-                LoggedConsole.WriteLine("###################################################\n");
-
-                throw new Exception("Cannot find a valid IAnalyser");
-            }
-            var isStrongTypedAnalyser = analyser is IAnalyser2;
-            isStrongTypedAnalyser = true; // force analyser to tak strong type track !!!
+            var analyser = FindAndCheckAnalyser(analysisIdentifier);
 
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
-            analysisSettings.SetUserConfiguration(tempFilesDirectory, configFile, configDict, outputDirectory,
-                AnalysisKeys.SEGMENT_DURATION, AnalysisKeys.SEGMENT_OVERLAP);
+            analysisSettings.ConfigFile = configFile;
             analysisSettings.SourceFile = sourceAudio;
+            analysisSettings.AnalysisBaseOutputDirectory = outputDirectory;
+            analysisSettings.AnalysisBaseTempDirectory = tempFilesDirectory;
 
-            LoggedConsole.WriteLine("STARTING ANALYSIS ...");
+            // #SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
+            // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
+            try
+            {
+                int rawDuration = configuration[AnalysisKeys.SEGMENT_DURATION];
+                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(rawDuration);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squahsed, default value used)", ex);
+                analysisSettings.SegmentMaxDuration = null;
+            }
+
+            // set overlap
+            try
+            {
+                int rawOverlap = configuration[AnalysisKeys.SEGMENT_OVERLAP];
+                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squahsed, default value used)", ex);
+                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+            }
 
             // 7. ####################################### DO THE ANALYSIS ###################################
-
+            LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
 
             //    ###########################################################################################
-
             // 8. PROCESS THE RESULTS
 
             LoggedConsole.WriteLine("");
@@ -306,6 +313,26 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             } // if doing acoustic indices
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+        }
+
+        private static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)
+        {
+            var analysers = AnalysisCoordinator.GetAnalysers(typeof (MainEntry).Assembly).ToList();
+            IAnalyser2 analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);
+            if (analyser == null)
+            {
+                LoggedConsole.WriteLine("###################################################\n");
+                LoggedConsole.WriteLine("Analysis failed. UNKNOWN Analyser: <{0}>", analysisIdentifier);
+                LoggedConsole.WriteLine("Available analysers are:");
+                foreach (IAnalyser2 anal in analysers)
+                {
+                    LoggedConsole.WriteLine("\t  " + anal.Identifier);
+                }
+                LoggedConsole.WriteLine("###################################################\n");
+
+                throw new Exception("Cannot find a valid IAnalyser2");
+            }
+            return analyser;
         }
 
 

@@ -46,35 +46,44 @@ namespace AudioAnalysisTools
             return mergedDatatable;
         }
 
-        public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
+        public static Tuple<EventBase[], IndexBase[], SpectrumBase[]> MergeResults(IEnumerable<AnalysisResult2> results)
         {
             var eventCount = 0;
             var indexCount = 0;
+            var spectrumCount = 0;
 
             foreach (AnalysisResult2 result in results)
             {
-                eventCount += result.Data.Count();
-                indexCount += result.Indices.Count();
+                eventCount += result.Events.Count();
+                indexCount += result.SummaryIndices.Count();
+                spectrumCount += result.SpectralIndices.Count();
             }
             
             var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
             var mergedIndices = indexCount > 0 ? new IndexBase[indexCount] :  null;
+            var mergedSpectra = indexCount > 0 ? new SpectrumBase[indexCount] :  null;
 
             int eventIndex = 0;
-            int indexIndex = 0;            
+            int indexIndex = 0;
+            int spectrumIndex = 0;
             foreach (AnalysisResult2 result in results)
             {
-                eventIndex = ResultsTools.CorrectEventOffsets(mergedEvents, eventIndex, result);
+                // todo - make sure these sort instead of increment counters
+                eventIndex = CorrectEventOffsets(mergedEvents, eventIndex, result);
 
-                indexIndex = ResultsTools.CorrectIndexOffsets(mergedIndices, indexIndex, result);
+                indexIndex = CorrectIndexOffsets(mergedIndices, indexIndex, result);
+
+                spectrumIndex = CorrectSpectrumOffsets(mergedSpectra, spectrumIndex, result);
             }
 
-            return Tuple.Create(mergedEvents, mergedIndices);
+            return Tuple.Create(mergedEvents, mergedIndices, mergedSpectra);
         }
 
+        // TODO: ensure all functionality here is tkaen care of in correct index offsets
+        [Obsolete]
         public static IndexBase[] MergeIndexResults(IEnumerable<AnalysisResult> results)
         {
-            if ((results == null)||(results.Count() == 0)) return null;
+            if ((results == null)||(!results.Any())) return null;
             int indexCount = results.Count();
             var mergedIndices = new IndexBase[indexCount];
 

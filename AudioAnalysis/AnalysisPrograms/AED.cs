@@ -207,7 +207,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.StartOfSegment.HasValue ? analysisSettings.StartOfSegment.Value : TimeSpan.Zero;
+            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset.HasValue ? analysisSettings.SegmentStartOffset.Value : TimeSpan.Zero;
             analysisResults.Data = null;
 
             // READ PARAMETER VALUES FROM INI FILE

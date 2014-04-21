@@ -287,7 +287,7 @@ namespace Dong.Felt
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
 
-            this.MinuteOffset = (int) (analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
+            this.MinuteOffset = (int) (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
             
         }
@@ -310,7 +310,7 @@ namespace Dong.Felt
         public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
-            var startOffset = analysisSettings.StartOfSegment ?? TimeSpan.Zero;
+            var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
             var result = new AnalysisResult2
                          {
                              AnalysisIdentifier = Identifier,

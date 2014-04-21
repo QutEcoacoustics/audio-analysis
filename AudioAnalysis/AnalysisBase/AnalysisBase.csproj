@@ -106,6 +106,9 @@
     <Reference Include="CsvHelper">
       <HintPath>..\packages\CsvHelper.2.5.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
+    <Reference Include="GeorgeCloney">
+      <HintPath>..\packages\GeorgeCloney.1.0.0.11\lib\net40\GeorgeCloney.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -131,6 +134,7 @@
   <ItemGroup>
     <Compile Include="AnalysisCoordinator.cs" />
     <Compile Include="AnalysisResult.cs" />
+    <Compile Include="StrongAnalyser\AnalysisResult2.cs" />
     <Compile Include="AnalysisSettings.cs" />
     <Compile Include="StrongAnalyser\ResultBases\EventBase.cs" />
     <Compile Include="StrongAnalyser\ResultBases\EventIndex.cs" />

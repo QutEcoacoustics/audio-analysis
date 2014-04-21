@@ -276,7 +276,7 @@ namespace AnalysisPrograms
         //{
         //    // Check arguments and that paths are valid
         //    AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
-        //    analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
+        //    analysisSettings.SegmentStartOffset = new TimeSpan(0, 0, args.Start ?? 0);
         //    analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
 
         //    // EXTRACT THE REQUIRED RECORDING SEGMENT
@@ -299,8 +299,8 @@ namespace AnalysisPrograms
         //            new AudioUtilityRequest
         //            {
         //                TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
-        //                OffsetStart = analysisSettings.StartOfSegment,
-        //                OffsetEnd = analysisSettings.StartOfSegment.Value.Add(analysisSettings.SegmentMaxDuration.Value)
+        //                OffsetStart = analysisSettings.SegmentStartOffset,
+        //                OffsetEnd = analysisSettings.SegmentStartOffset.Value.Add(analysisSettings.SegmentMaxDuration.Value)
         //            }, analysisSettings.AnalysisBaseTempDirectoryChecked);
         //    }
 
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.StartOfSegment.HasValue ? analysisSettings.StartOfSegment.Value : TimeSpan.Zero;
+            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset.HasValue ? analysisSettings.SegmentStartOffset.Value : TimeSpan.Zero;
             analysisResults.Data = null;
 
             // ######################################################################
@@ -355,7 +355,7 @@ namespace AnalysisPrograms
             analysisResults.Data = null; // indicates that the analysis is of acoustic indices and not events.
             analysisResults.indexBase = indicesStore;
             analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(InitialiseIndexProperties.keySEGMENT_DURATION);
-            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
+            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.SegmentStartOffset;
 
             
 

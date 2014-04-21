@@ -8,4 +8,6 @@ namespace AnalysisBase.StrongAnalyser.ResultBases
     public class SpectrumBase : ResultBase
     {
     }
+
+
 }
