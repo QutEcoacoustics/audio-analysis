@@ -33,5 +33,6 @@ namespace QutBioacosutics.Xie.Configuration
 
         public int HarmonicComponentNasuta { get; set; }
         public int HarmonicSensityNasuta { get; set; }
+        public int HarmonicDiffrangeNasuta { get; set; }
     }
 }
