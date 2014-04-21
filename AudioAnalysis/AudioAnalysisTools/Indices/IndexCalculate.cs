@@ -251,7 +251,7 @@ namespace AudioAnalysisTools.Indices
             SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
             indexValues.AddSpectrum(InitialiseIndexProperties.spKEY_SpPeakTracks, sptInfo.spSpectrum);
 
-            indexValues.StoreIndex(InitialiseIndexProperties.keySPT_DUR, sptInfo.totalTrackDuration);
+            indexValues.StoreIndex(InitialiseIndexProperties.keySPT_DUR, sptInfo.avTrackDuration);
             indexValues.StoreIndex(InitialiseIndexProperties.keySPT_PER_SEC, sptInfo.trackCount / wavDuration.TotalSeconds);
 
 
