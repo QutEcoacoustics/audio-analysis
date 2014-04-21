@@ -467,14 +467,14 @@ namespace AnalysisPrograms
             //table2Display = NormaliseColumnsOfDataTable(table2Display);
 
             //add in column of weighted indices
-            bool addColumnOfweightedIndices = true;
-            if (addColumnOfweightedIndices)
-            {
-                double[] comboWts = IndexCalculate.CalculateComboWeights();
-                double[] weightedIndices = IndexCalculate.GetArrayOfWeightedAcousticIndices(dt, comboWts);
-                string colName = "WeightedIndex";
-                DataTableTools.AddColumnOfDoubles2Table(table2Display, colName, weightedIndices);
-            }
+            //bool addColumnOfweightedIndices = true;
+            //if (addColumnOfweightedIndices)
+            //{
+            //    double[] comboWts = IndexCalculate.CalculateComboWeights();
+            //    double[] weightedIndices = IndexCalculate.GetArrayOfWeightedAcousticIndices(dt, comboWts);
+            //    string colName = "WeightedIndex";
+            //    DataTableTools.AddColumnOfDoubles2Table(table2Display, colName, weightedIndices);
+            //}
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 

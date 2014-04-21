@@ -117,7 +117,7 @@ namespace AudioAnalysisTools
 
                 string opFileName4 = ipFileName1 + ".EuclidianDistance.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
-                Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(SpectrogramConstants.GetDifferenceColourChart());
+                Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDistance.GetDifferenceColourChart());
                 titleBar = LDSpectrogramDistance.DrawTitleBarOfEuclidianDistanceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
                 deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
@@ -241,7 +241,7 @@ namespace AudioAnalysisTools
             //int MaxRGBValue = 255;
             //int v;
             double zScore;
-            Dictionary<string, Color> colourChart = SpectrogramConstants.GetDifferenceColourChart();
+            Dictionary<string, Color> colourChart = LDSpectrogramDistance.GetDifferenceColourChart();
             Color colour;
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
@@ -348,6 +348,21 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
+        public static Dictionary<string, Color> GetDifferenceColourChart()
+        {
+            Dictionary<string, Color> colourChart = new Dictionary<string, Color>();
+            colourChart.Add("+99.9%", Color.FromArgb(255, 190, 20));
+            colourChart.Add("+99.0%", Color.FromArgb(240, 50, 30)); //+99% conf
+            colourChart.Add("+95.0%", Color.FromArgb(200, 30, 15)); //+95% conf
+            colourChart.Add("+NotSig", Color.FromArgb(50, 5, 5));   //+ not significant
+            colourChart.Add("NoValue", Color.Black);
+            //no value
+            colourChart.Add("-99.9%", Color.FromArgb(20, 255, 230));
+            colourChart.Add("-99.0%", Color.FromArgb(30, 240, 50)); //+99% conf
+            colourChart.Add("-95.0%", Color.FromArgb(15, 200, 30)); //+95% conf
+            colourChart.Add("-NotSig", Color.FromArgb(10, 50, 20)); //+ not significant
+            return colourChart;
+        }
 
     } //    class LDSpectrogramDistance
 }

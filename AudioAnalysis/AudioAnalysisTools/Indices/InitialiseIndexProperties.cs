@@ -21,7 +21,7 @@ namespace AudioAnalysisTools.Indices
     ///         public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
     /// creates a dictionary of index properties.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
-    /// To create a new index you initilliase it in the above method and add it to the dictionary of indices. 
+    /// To create a new index you initialise it in the above method and add it to the dictionary of indices. 
     /// </summary>
     public static class InitialiseIndexProperties
     {
@@ -508,40 +508,6 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
-        /// <summary>
-        /// This method converts a csv file header into an appropriate key for the given index.
-        /// The headers in the csv fiels have changed over the years so there may be several headers for any one index.
-        /// Enter any new header you come across into the file.
-        /// </summary>
-        /// <param name="header"></param>
-        /// <returns></returns>
-        //public static Dictionary<string, string> GetDictionaryOfName2Key()
-        //{
-        //    Dictionary<string, string> mapName2Key = new Dictionary<string, string>();
-
-        //    Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
-
-        //    foreach (string key in indexProperties.Keys)
-        //    {
-        //        IndexProperties ip = indexProperties[key];
-        //        mapName2Key.Add(ip.Name, key);
-        //    }
-
-        //    //now add in historical names from previous incarnations of csv file headers
-        //    mapName2Key.Add("Start-min", keySTART_MIN);
-        //    mapName2Key.Add("bg-dB", keyBKGROUND);
-        //    mapName2Key.Add("snr-dB", keySNR);
-        //    mapName2Key.Add("activeSnr-dB", keySNR_ACTIVE);
-        //    mapName2Key.Add("activity", keyACTIVITY);
-        //    mapName2Key.Add("segCount", keyEVENT_RATE);
-        //    mapName2Key.Add("ACI", keyACI);
-        //    mapName2Key.Add("clusterCount", keyCLUSTER_COUNT);
-        //    mapName2Key.Add("rain", keyRAIN);
-        //    mapName2Key.Add("cicada", keyCICADA);
-
-        //    return mapName2Key;
-        //}
-
 
         public static Type[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
         {
@@ -594,6 +560,41 @@ namespace AudioAnalysisTools.Indices
             }
             return weightArray;
         }
+
+
+        //public static DataTable Indices2DataTable(IndexValues indicesStore)
+        //{
+        //    Dictionary<string, IndexProperties> properties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
+        //    var headers = InitialiseIndexProperties.GetArrayOfIndexNames(properties);
+        //    var types = InitialiseIndexProperties.GetArrayOfIndexTypes(properties);
+        //    string[] keys = properties.Keys.ToArray();
+
+        //    var dt = DataTableTools.CreateTable(headers, types);
+
+        //    DataRow row = dt.NewRow();
+        //    for (int i = 0; i < keys.Length; i++)
+        //    {
+        //        var key = keys[i];
+        //        IndexProperties prop = properties[key];
+
+        //        if (prop.DataType == typeof(double)) 
+        //        {
+        //            row[headers[i]] = indicesStore.GetIndexAsDouble(key);              
+        //        }
+        //        else if(prop.DataType == typeof(TimeSpan)) 
+        //        {
+        //            row[headers[i]] = indicesStore.GetIndexAsTimeSpan(key);
+        //        }
+        //        else if (prop.DataType == typeof(int)) 
+        //        {
+        //            row[headers[i]] = indicesStore.GetIndexAsInteger(key);
+        //        }
+        //    }
+        //    dt.Rows.Add(row);
+        //    //DataTableTools.WriteTable2ConsoleInLongLayout(dt); // DEBUG
+        //    return dt;
+        //}
+
 
 
     }

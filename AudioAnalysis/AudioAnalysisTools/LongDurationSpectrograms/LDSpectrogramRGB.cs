@@ -35,7 +35,6 @@ namespace AudioAnalysisTools
     /// </summary>
     public class LDSpectrogramRGB
     {
-
         /// <summary>
         /// File name from which spectrogram was derived.
         /// </summary>
@@ -636,76 +635,11 @@ namespace AudioAnalysisTools
 
             //draw a colour spectrum of basic colours
             int maxScaleLength = imageWidth / 3;
-            Image scale = SpectrogramConstants.DrawColourScale(maxScaleLength, trackHeight - 2);
+            Image scale = LDSpectrogramRGB.DrawColourScale(maxScaleLength, trackHeight - 2);
             int xLocation = imageWidth * 2 / 3;
             gr.DrawImage(scale, xLocation, 1); //dra
             return compositeBmp;
         }
-
-
-
-        //========================================================================================================================================================
-        //========= DEV AND EXECUTE STATIC METHODS BELOW HERE ====================================================================================================================
-        //========================================================================================================================================================
-
-        public class Arguments
-        {
-        }
-
-        public static void Dev(Arguments arguments)
-        {
-            bool executeDev = (arguments == null);
-            if (executeDev)
-            {
-
-                // INPUT CSV FILES
-                //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
-                string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic";
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
-
-                //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-                string ipFileName = @"TEST_TUITCE_20091215_220004";
-                //string ipFileName = "DM420233_20120302_000000";
-                //string ipFileName = "SERF_20130915_Merged";
-                //string ipFileName = "SERF_20130730_Merged";
-
-                // OUTPUT CSV FILES
-                string opdir = ipdir;
-                //string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";  //SERF
-                //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
-                //string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
-                //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
-                //string opdir = @"C:\SensorNetworks\Output\temp";
-                string opFileName = ipFileName + ".Test1";
-
-
-                // set the X and Y axis scales for the spectrograms 
-                int xScale = 60;  // assume one minute spectra and hourly time lines
-                int sampleRate = 17640; // default value - after resampling
-                string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN; //CHANGE RGB mapping here.
-                var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
-                cs.ReadCSVFiles(new DirectoryInfo(ipdir), ipFileName);
-                cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
-                cs.DrawGreyScaleSpectrograms(new DirectoryInfo(opdir), opFileName);
-                cs.DrawFalseColourSpectrograms(new DirectoryInfo(opdir), opFileName);
-            }
-
-            Execute(arguments);
-
-            if (executeDev)
-            {
-
-            }
-        }
-
-        public static void Execute(Arguments arguments)
-        {
-            // doesn't do anything for now
-        }
-
 
 
         //############################################################################################################################################################
@@ -736,6 +670,9 @@ namespace AudioAnalysisTools
             return dict;
         }
 
+        //========================================================================================================================================================
+        //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
+        //========================================================================================================================================================
 
         public static Image FrameSpectrogram(Image bmp1, Image titleBar, int minOffset, int X_interval, int Y_interval)
         {
@@ -790,7 +727,7 @@ namespace AudioAnalysisTools
 
         public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width)
         {
-            Image colourChart = SpectrogramConstants.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
+            Image colourChart = LDSpectrogramRGB.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
 
             Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             Graphics g = Graphics.FromImage(bmp);
@@ -922,25 +859,71 @@ namespace AudioAnalysisTools
             return array;
         }
 
-        public static void BlurSpectrogram(LDSpectrogramRGB cs)
+        /// <summary>
+        /// Returns an image of an array of colour patches.
+        /// It shows the three primary colours and pairwise combinations.
+        /// </summary>
+        /// <param name="ht"></param>
+        /// <returns></returns>
+        public static Image DrawColourScale(int maxScaleLength, int ht)
         {
-            string[] rgbMap = cs.ColorMap.Split('-');
+            int width = maxScaleLength / 7;
+            if (width > ht) width = ht;
+            else if (width < 3) width = 3;
+            Bitmap colorScale = new Bitmap(8 * width, ht);
+            Graphics gr = Graphics.FromImage(colorScale);
+            int offset = width + 1;
+            if (width < 5) offset = width;
 
-            cs.BlurSpectrogramMatrix(rgbMap[0]);
-            cs.BlurSpectrogramMatrix(rgbMap[1]);
-            cs.BlurSpectrogramMatrix(rgbMap[2]);
+            Bitmap colorBmp = new Bitmap(width - 1, ht);
+            Graphics gr2 = Graphics.FromImage(colorBmp);
+            Color c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            int x = 0;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            c = Color.FromArgb(250, 15, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //yellow
+            c = Color.FromArgb(250, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            //green
+            c = Color.FromArgb(15, 250, 15);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // pale blue
+            c = Color.FromArgb(15, 250, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // blue
+            c = Color.FromArgb(15, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            // purple
+            c = Color.FromArgb(250, 15, 250);
+            gr2.Clear(c);
+            x += offset;
+            gr.DrawImage(colorBmp, x, 0); //dra
+            return (Image)colorScale;
         }
 
-        public static void BlurSpectrogram(LDSpectrogramRGB cs, string matrixKeys)
-        {
-            string[] keys = matrixKeys.Split('-');
 
-            for (int k = 0; k < keys.Length; k++)
-            {
-                cs.BlurSpectrogramMatrix(keys[k]);
-            }
-        }
+        //========================================================================================================================================================
+        //========= DrawFalseColourSpectrograms() IS THE MAJOR METHOD FOR CREATING LD SPECTROGRAMS ===============================================================
+        //========= IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. ===============================================================
+        //========================================================================================================================================================
 
+        /// <summary>
+        ///  This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
+        ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
+        /// </summary>
+        /// <param name="configuration"></param>
         public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
         {
             string ipdir = configuration.InputDirectory.FullName;
@@ -1004,10 +987,86 @@ namespace AudioAnalysisTools
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
+
+
+
+        //========================================================================================================================================================
+        //========= DEV AND EXECUTE STATIC METHODS BELOW HERE ====================================================================================================================
+        //========================================================================================================================================================
+
+        public class Arguments
+        {
+        }
+
+        public static void Dev(Arguments arguments)
+        {
+            bool executeDev = (arguments == null);
+            if (executeDev)
+            {
+
+                // INPUT CSV FILES
+                //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
+                string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic";
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
+                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
+
+                //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+                string ipFileName = @"TEST_TUITCE_20091215_220004";
+                //string ipFileName = "DM420233_20120302_000000";
+                //string ipFileName = "SERF_20130915_Merged";
+                //string ipFileName = "SERF_20130730_Merged";
+
+                // OUTPUT CSV FILES
+                string opdir = ipdir;
+                //string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";  //SERF
+                //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
+                //string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
+                //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
+                //string opdir = @"C:\SensorNetworks\Output\temp";
+                string opFileName = ipFileName + ".Test1";
+
+
+                // set the X and Y axis scales for the spectrograms 
+                int xScale = 60;  // assume one minute spectra and hourly time lines
+                int sampleRate = 17640; // default value - after resampling
+                string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN; //CHANGE RGB mapping here.
+                var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
+                cs.ReadCSVFiles(new DirectoryInfo(ipdir), ipFileName);
+                cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
+                cs.DrawGreyScaleSpectrograms(new DirectoryInfo(opdir), opFileName);
+                cs.DrawFalseColourSpectrograms(new DirectoryInfo(opdir), opFileName);
+            }
+
+            Execute(arguments);
+
+            if (executeDev)
+            {
+
+            }
+        }
+
+        public static void Execute(Arguments arguments)
+        {
+            // doesn't do anything for now
+        }
+
+
+
+
+
     } //LDSpectrogramRGB
 
 
 
+    //========================================================================================================================================================
+    //========= CONFIG CLASS FOR LD SPECTROGRAMS ====================================================================================================================
+    //========================================================================================================================================================
+
+    /// <summary>
+    /// CONFIG CLASS FOR the class LDSpectrogramConfig
+    /// </summary>
     public class LDSpectrogramConfig
     {
         private string fileName;  // File name from which spectrogram was derived.
