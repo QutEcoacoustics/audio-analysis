@@ -11,7 +11,7 @@ namespace QutBioacosutics.Xie
 {
     class FindHarmonics
     {
-        public static double[,] GetHarmonic(double[,] matrix, int component, int sensity)
+        public static double[,] GetHarmonic(double[,] matrix, int component, int sensity, int diffThreshold)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -33,7 +33,7 @@ namespace QutBioacosutics.Xie
 
                     for (int j = 0; j < (diffIndex.Count - 2); j++)
                     {
-                        if (Math.Abs(diffIndex[j]) < 10 & Math.Abs(diffIndex[j + 1]) < 10 & Math.Abs(diffIndex[j + 2]) < 10)
+                        if (Math.Abs(diffIndex[j]) < diffThreshold & Math.Abs(diffIndex[j + 1]) < diffThreshold & Math.Abs(diffIndex[j + 2]) < diffThreshold)
                         {
                             int tempA = diffIndex[j + 1] - diffIndex[j];
                             int tempB = diffIndex[j + 2] - diffIndex[j + 1];

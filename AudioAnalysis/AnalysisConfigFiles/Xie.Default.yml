@@ -1,11 +1,11 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_424min.wav
+LoadedFilePath:  C:\Jie\data\Individual recording from JCU\Litoria latopalmata.wav
 #LoadedFilePath:  C:\Jie\data\New folder\Litoria caerulea.wav
 
 # Path for saving image
-SaveImagePath: C:\Jie\output\Caerulea.png
+SaveImagePath: C:\Jie\output\Latopalmata.png
 
 # Parameters for producing spectrogram
 WindowSize: 512
@@ -68,23 +68,22 @@ Dct_DurationCaerulea: 1
 Dct_ThresholdCaerulea: 0.55
 
 DoSlopeCaerulea: false
-# #################################################################
-# # FALLAX
-# #################################################################
-# # PEAKS
-# AmplitudeThresholdFallax: 4
-# RangeFallax: 2
-# DistanceFallax: 5
-# # TRACKS
-# BinToreanceFallax: 3
-# FrameThresholdFallax: 5
-# TrackThresholdFallax: 0.75
-# MaximumTrackDurationFallax: 45
-# MinimumTrackDurationFallax: 18
-# BinDifferenceFallax: 25
-# # Band
-# FrequencyLowFallax: 3000
-# FrequencyHighFallax: 4500
+#################################################################
+# FALLAX
+#################################################################
+# PEAKS
+AmplitudeThresholdFallax: 4
+# TRACKS
+BinToreanceFallax: 12
+FrameThresholdFallax: 5
+TrackThresholdFallax: 0.75
+TrackDurationThresholdFallax: 180
+MaximumTrackDurationFallax: 45
+MinimumTrackDurationFallax: 200
+BinDifferenceFallax: 30
+# Band
+FrequencyLowFallax: 3000
+FrequencyHighFallax: 4500
 # # OSCILLATION
 # MinimumOscillationNumberFallax: 12
 # MaximumOscillationNumberFallax: 25
@@ -96,6 +95,7 @@ DoSlopeCaerulea: false
 # # Minimum acceptable value of a DCT coefficient
 # Dct_ThresholdFallax: 0.55
 
+DoSlopeFallax: true
 #################################################################
 # GRACILLENTA  HARMONIC:NO OSCILLATION:NO
 #################################################################
@@ -129,17 +129,47 @@ DoSlopeGracillenta: true
 #################################################################
 # LATOPALMATA HARMONIC:YES 
 #################################################################
-# FrequencyLowLatopalmata: 1500
-# FrequencyHighLatopalmata: 4800
+# PEAKS---Frame Unit
+AmplitudeThresholdLatopalmata: 4
+RangeLatopalmata: 2
+DistanceLatopalmata: 2
+# TRACKS---Frame
+BinToreanceLatopalmata: 2
+FrameThresholdLatopalmata: 6
+TrackDurationThresholdLatopalmata: 15
+TrackThresholdLatopalmata: 0.6
+MaximumTrackDurationLatopalmata: 200
+MinimumTrackDurationLatopalmata: 15
+BinDifferenceLatopalmata: 10
+# Band
+FrequencyLowLatopalmata: 1500
+FrequencyHighLatopalmata: 4800
+# # OSCILLATION
+# MinimumOscillationNumberLatopalmata: 3
+# MaximumOscillationNumberLatopalmata: 5
+# # Frequency band---Hz
+# MinimumFrequencyLatopalmata: 1500
+# MaximumFrequencyLatopalmata: 4800
+# # Duration of DCT in seconds
+# Dct_DurationLatopalmata: 0.5
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdLatopalmata: 0.5
+
+DoSlopeLatopalmata: false
+
+HarmonicComponentLatopalmata: 5
+HarmonicSensityLatopalmata: 5
+HarmonicDiffrangeLatopalmata: 20
+
 # #################################################################
 # # NASUTA  HARMONIC:YES OSCILLATION:YES
 # #################################################################
 # PEAKS---Frame Unit
-AmplitudeThresholdNasuta: 4
+AmplitudeThresholdNasuta: 3
 RangeNasuta: 2
 DistanceNasuta: 2
 # TRACKS---Frame
-BinToreanceNasuta: 3
+BinToreanceNasuta: 2
 FrameThresholdNasuta: 5
 TrackDurationThresholdNasuta: 15
 TrackThresholdNasuta: 0.6
@@ -164,7 +194,7 @@ DoSlopeNasuta: false
 
 HarmonicComponentNasuta: 3
 HarmonicSensityNasuta: 3
-
+HarmonicDiffrangeNasuta: 10
 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
