@@ -195,16 +195,16 @@ namespace QutBioacosutics.Xie
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColourMap;
-            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
+            string colorMap = map != null ? map : SpectrogramConstantsJie.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
 
-            double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstantsJie.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
-            int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
-            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
+            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstantsJie.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            int xScale = (int?)configuration.X_interval ?? SpectrogramConstantsJie.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstantsJie.SAMPLE_RATE;
+            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstantsJie.FRAME_WIDTH;
 
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
@@ -216,20 +216,20 @@ namespace QutBioacosutics.Xie
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
-            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstants.ALL_KNOWN_KEYS});
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstantsJie.ALL_KNOWN_KEYS});
 
             cs1.CalculateStatisticsForAllIndices();
             List<string> lines = cs1.WriteStatisticsForAllIndices();
             FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
 
-            colorMap = SpectrogramConstants.RGBMap_TRC_OSC_HAR;
+            colorMap = SpectrogramConstantsJie.RGBMap_TRC_OSC_HAR;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
             image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
-            colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT;
+            colorMap = SpectrogramConstantsJie.RGBMap_ACI_ENT_SPT;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
