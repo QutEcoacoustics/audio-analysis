@@ -1,24 +1,200 @@
 --- # Configuration file for Jie Xie
 
-#file:  C:\Jie\data\Frogspecies\Litoria nasuta---traning---5min.wav
-#file: C:\Jie\data\NoiseRecordings\dp2_20080415-124000.wav.silenceAndClicks.wav
-file:  C:\Jie\data\020313_min248.wav
-do_noise_reduction: 0
-image_path: C:\Jie\output\a.png
-amplitude_threshold: 4
-range: 2
-distance: 5
-binToreance: 3
-frameThreshold: 5
-trackThreshold: 0.75
-maximumDuration: 45
-minimumDuration: 18
-maximumDiffBin: 25
-colThreshold: 6
-zeroBinIndex: 5
-duraionThreshold: 15
+# Path of the loaded recording
+LoadedFilePath:  C:\Jie\data\Individual recording from JCU\Litoria latopalmata.wav
+#LoadedFilePath:  C:\Jie\data\New folder\Litoria caerulea.wav
 
+# Path for saving image
+SaveImagePath: C:\Jie\output\Latopalmata.png
 
-  
+# Parameters for producing spectrogram
+WindowSize: 512
+
+#################################################################
+# CANETOAD   HARMONIC:NO   OSCILLATION:YES 
+#################################################################
+# PEAKS---Frame Unit
+AmplitudeThresholdCanetoad: 4
+# TRACKS---Frame
+BinToreanceCanetoad: 3
+FrameThresholdCanetoad: 8
+TrackDurationThresholdCanetoad: 20
+TrackThresholdCanetoad: 0.6
+MaximumTrackDurationCanetoad: 40
+MinimumTrackDurationCanetoad: 15
+BinDifferenceCanetoad: 8
+# Band
+FrequencyLowCanetoad: 400
+FrequencyHighCanetoad: 900
+# OSCILLATION
+MinimumOscillationNumberCanetoad: 12
+MaximumOscillationNumberCanetoad: 25
+# Frequency band---Hz
+MinimumFrequencyCanetoad: 400
+MaximumFrequencyCanetoad: 900
+# Duration of DCT in seconds
+Dct_DurationCanetoad: 0.6
+# Minimum acceptable value of a DCT coefficient
+Dct_ThresholdCanetoad: 0.55
+
+DoSlopeCanetoad: false
+#################################################################
+# CAERULEA
+#################################################################
+# PEAKS
+AmplitudeThresholdCaerulea: 4
+RangeCaerulea: 2
+DistanceCaerulea: 5
+# TRACKS
+BinToreanceCaerulea: 4
+FrameThresholdCaerulea: 10
+TrackDurationThresholdCaerulea: 50
+TrackThresholdCaerulea: 0.5
+MaximumTrackDurationCaerulea: 500
+MinimumTrackDurationCaerulea: 40
+BinDifferenceCaerulea: 25
+# Band
+FrequencyLowCaerulea: 300
+FrequencyHighCaerulea: 2000
+# OSCILLATION
+MinimumOscillationNumberCaerulea: 3
+MaximumOscillationNumberCaerulea: 8
+# Frequency band---Hz
+MinimumFrequencyCaerulea: 300
+MaximumFrequencyCaerulea: 2000
+# Duration of DCT in seconds
+Dct_DurationCaerulea: 1
+# Minimum acceptable value of a DCT coefficient
+Dct_ThresholdCaerulea: 0.55
+
+DoSlopeCaerulea: false
+#################################################################
+# FALLAX
+#################################################################
+# PEAKS
+AmplitudeThresholdFallax: 4
+# TRACKS
+BinToreanceFallax: 12
+FrameThresholdFallax: 5
+TrackThresholdFallax: 0.75
+TrackDurationThresholdFallax: 180
+MaximumTrackDurationFallax: 45
+MinimumTrackDurationFallax: 200
+BinDifferenceFallax: 30
+# Band
+FrequencyLowFallax: 3000
+FrequencyHighFallax: 4500
+# # OSCILLATION
+# MinimumOscillationNumberFallax: 12
+# MaximumOscillationNumberFallax: 25
+# # Frequency band---Hz
+# MinimumFrequencyFallax: 400
+# MaximumFrequencyFallax: 900
+# # Duration of DCT in seconds
+# Dct_DurationFallax: 0.6
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdFallax: 0.55
+
+DoSlopeFallax: true
+#################################################################
+# GRACILLENTA  HARMONIC:NO OSCILLATION:NO
+#################################################################
+# PEAKS---Frame Unit
+AmplitudeThresholdGracillenta: 4
+# TRACKS---Frame
+BinToreanceGracillenta: 8
+FrameThresholdGracillenta: 10
+TrackDurationThresholdGracillenta: 500
+TrackThresholdGracillenta: 0.6
+MaximumTrackDurationGracillenta: 8000
+MinimumTrackDurationGracillenta: 550
+BinDifferenceGracillenta: 40
+# Band
+FrequencyLowGracillenta: 2000
+FrequencyHighGracillenta: 3500
+# OSCILLATION
+# MinimumOscillationNumberGracillenta: 12
+# MaximumOscillationNumberGracillenta: 25
+# # Frequency band---Hz
+# MinimumFrequencyGracillenta: 400
+# MaximumFrequencyGracillenta: 900
+# # Duration of DCT in seconds
+# Dct_DurationGracillenta: 0.6
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdGracillenta: 0.55
+
+# Slope and structure
+DoSlopeGracillenta: true
+
+#################################################################
+# LATOPALMATA HARMONIC:YES 
+#################################################################
+# PEAKS---Frame Unit
+AmplitudeThresholdLatopalmata: 4
+RangeLatopalmata: 2
+DistanceLatopalmata: 2
+# TRACKS---Frame
+BinToreanceLatopalmata: 2
+FrameThresholdLatopalmata: 6
+TrackDurationThresholdLatopalmata: 15
+TrackThresholdLatopalmata: 0.6
+MaximumTrackDurationLatopalmata: 200
+MinimumTrackDurationLatopalmata: 15
+BinDifferenceLatopalmata: 10
+# Band
+FrequencyLowLatopalmata: 1500
+FrequencyHighLatopalmata: 4800
+# # OSCILLATION
+# MinimumOscillationNumberLatopalmata: 3
+# MaximumOscillationNumberLatopalmata: 5
+# # Frequency band---Hz
+# MinimumFrequencyLatopalmata: 1500
+# MaximumFrequencyLatopalmata: 4800
+# # Duration of DCT in seconds
+# Dct_DurationLatopalmata: 0.5
+# # Minimum acceptable value of a DCT coefficient
+# Dct_ThresholdLatopalmata: 0.5
+
+DoSlopeLatopalmata: false
+
+HarmonicComponentLatopalmata: 5
+HarmonicSensityLatopalmata: 5
+HarmonicDiffrangeLatopalmata: 20
+
+# #################################################################
+# # NASUTA  HARMONIC:YES OSCILLATION:YES
+# #################################################################
+# PEAKS---Frame Unit
+AmplitudeThresholdNasuta: 3
+RangeNasuta: 2
+DistanceNasuta: 2
+# TRACKS---Frame
+BinToreanceNasuta: 2
+FrameThresholdNasuta: 5
+TrackDurationThresholdNasuta: 15
+TrackThresholdNasuta: 0.6
+MaximumTrackDurationNasuta: 50
+MinimumTrackDurationNasuta: 15
+BinDifferenceNasuta: 10
+# Band
+FrequencyLowNasuta: 1000
+FrequencyHighNasuta: 3500
+# OSCILLATION
+MinimumOscillationNumberNasuta: 3
+MaximumOscillationNumberNasuta: 5
+# Frequency band---Hz
+MinimumFrequencyNasuta: 1000
+MaximumFrequencyNasuta: 3500
+# Duration of DCT in seconds
+Dct_DurationNasuta: 0.5
+# Minimum acceptable value of a DCT coefficient
+Dct_ThresholdNasuta: 0.5
+
+DoSlopeNasuta: false
+
+HarmonicComponentNasuta: 3
+HarmonicSensityNasuta: 3
+HarmonicDiffrangeNasuta: 10
+
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...

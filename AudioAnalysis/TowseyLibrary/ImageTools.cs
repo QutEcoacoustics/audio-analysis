@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -2047,6 +2048,51 @@ namespace TowseyLibrary
             }//end all rows
             return bmp;
         }
+
+        public static Image DrawHistogram(string label, int[] histogram, Dictionary<string, double> statistics, int imageWidth, int height)
+        {
+            int sum = histogram.Sum();
+            Pen pen1 = new Pen(Color.White);
+            Pen pen2 = new Pen(Color.Red);
+            Pen pen3 = new Pen(Color.Wheat);
+            SolidBrush brush = new SolidBrush(Color.Red);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            //SizeF stringSize = new SizeF();
+
+            imageWidth = 300;
+            int barWidth = imageWidth / histogram.Length;
+
+            int grid1 = imageWidth / 4;
+            int grid2 = imageWidth / 2;
+            int grid3 = (imageWidth * 3) / 4;
+
+            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            g.DrawLine(pen3, grid1, height - 1, grid1, 0);
+            g.DrawLine(pen3, grid2, height - 1, grid2, 0);
+            g.DrawLine(pen3, grid3, height - 1, grid3, 0);
+            g.DrawLine(pen1, 0, height-1, imageWidth, height - 1);
+            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            string[] statKeys = statistics.Keys.ToArray();
+            for (int s = 0; s < statKeys.Length; s++)
+            {
+                int Y = s * 12; // 10 = height of line of text
+                string str = String.Format("{0}={1:f3}", statKeys[s], statistics[statKeys[s]]);
+                g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid1, Y));
+            }
+
+            for (int b = 0; b < histogram.Length; b++)
+            {
+                int X = b * barWidth;
+                int Y = (int)Math.Ceiling((histogram[b] * height * 2 / (double)sum));
+                g.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
+            }
+            return bmp;
+        }
+
 
         public static void DrawGridLinesOnImage(Bitmap bmp, int minOffset, int xInterval, int yInterval)
         {

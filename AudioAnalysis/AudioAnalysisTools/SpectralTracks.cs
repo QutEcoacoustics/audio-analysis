@@ -16,19 +16,17 @@ namespace AudioAnalysisTools
     {
         public double[,] peaks;
         public List<SpectralTrack> listOfSPTracks;
-        public TimeSpan totalTrackDuration;
         public int trackCount;
-        public int percentDuration; // percent of recording length
+        public TimeSpan avTrackDuration;
         public double[] spSpectrum;
 
-        public SPTrackInfo(double[,] _peaks, List<SpectralTrack> _tracks, TimeSpan _totalTrackDuration, int _percentDuration, double[] _spSpectrum)
+        public SPTrackInfo(double[,] _peaks, List<SpectralTrack> _tracks, int _trackCount, TimeSpan _avTrackDuration, double[] _spSpectrum)
         {
             peaks = _peaks;
             listOfSPTracks = _tracks;
-            totalTrackDuration = _totalTrackDuration;
-            percentDuration = _percentDuration;
+            trackCount = _trackCount;
+            avTrackDuration = _avTrackDuration;
             spSpectrum = _spSpectrum;
-            trackCount = 0; // set value elsewhere
         }
 
     } // SPTrackInfo()
@@ -60,8 +58,7 @@ namespace AudioAnalysisTools
 
             double[] spectrum = new double[colCount];
             double[] freqBin;
-            int numberOfSeconds = (int)(rowCount / framesPerSecond);
-            //int trackCount, totalFrameLength;
+
             int totalTrackCount = 0;
             int cummulativeFrameCount = 0;
             for (int col = 0; col < colCount; col++)
@@ -76,12 +73,12 @@ namespace AudioAnalysisTools
                 cummulativeFrameCount += tracksInOneBin.TotalFrameLength; // accumulate track frames over all frequency bins 
             }
 
-            List<SpectralTrack> tracks = null;
-            TimeSpan totalTrackDuration = TimeSpan.FromSeconds((double)totalTrackCount);
-            int percentDuration = (int)(totalTrackDuration.TotalSeconds * 100 / numberOfSeconds);
+            double avFramesPerTrack = 0.0;
+            if (totalTrackCount > 0) avFramesPerTrack = cummulativeFrameCount / (double)totalTrackCount;
+            TimeSpan avTrackDuration = TimeSpan.FromSeconds(avFramesPerTrack / framesPerSecond);
 
-            var info = new SPTrackInfo(peaks, tracks, totalTrackDuration, percentDuration, spectrum);
-            info.trackCount = totalTrackCount;
+            List<SpectralTrack> tracks = null; //filler for the moment
+            var info = new SPTrackInfo(peaks, tracks, totalTrackCount, avTrackDuration, spectrum);
             return info;
         }
 

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using AudioAnalysisTools.Indices;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-
 using TowseyLibrary;
 
 namespace AudioAnalysisTools
@@ -13,52 +13,51 @@ namespace AudioAnalysisTools
     public static class IndexDisplay
     {
         public const int DEFAULT_TRACK_HEIGHT = 20;
-        public const int TRACK_END_PANEL_WIDTH = 300; // pixels. This is where name of index goes in track image
+        public const int TRACK_END_PANEL_WIDTH = 250; // pixels. This is where name of index goes in track image
         public const int TIME_SCALE = 60;   //One minute segments or 60 segments per hour. This constant places grid lines every 60 pixels = 1 hour
 
-        
+
+
+
+        public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, string title)
+        {
+            //this dictionary is needed to draw the image of indices
+            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
+            return IndexDisplay.DrawImageOfSummaryIndices(listOfIndexProperties, csvFile, title);
+        }
+
         /// <summary>
-        /// This method assumes that the data table of indices is already properly ordered for display.
+        /// reads csv file and converts to tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
         /// <param name="dt"></param>
         /// <param name="title"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(Dictionary<string, IndexProperties> listOfIndexProperties, DataTable dt, string title)
+        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, string title)
         {
 
-            if (dt == null) return null;
+            if (! csvFile.Exists) return null;
+
+            Dictionary<string, double[]> dict = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+
+
             int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
             int length = 0;
             int imageWidth = 0;
-
-            Dictionary<string, string> dictOfName2Key = IndexProperties.GetDictionaryOfName2Key();
-
             var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
 
-            // for each column of values in data table (except last) create a display track
-            foreach (DataColumn col in dt.Columns)
+            // for each column of values in the csv file create a display track
+            foreach (string key in listOfIndexProperties.Keys)
             {
-                string name = col.ColumnName;
-                double[] array = DataTableTools.Column2ArrayOfDouble(dt, name);
-                length = array.Length;
-                imageWidth = length + IndexDisplay.TRACK_END_PANEL_WIDTH;
-                string key = dictOfName2Key[name];
-                IndexProperties indexProperties = listOfIndexProperties[key];
-                if (! indexProperties.DoDisplay) continue;
-                Image bitmap = indexProperties.GetPlotImage(array);
+                IndexProperties ip = listOfIndexProperties[key];
+                if (! ip.DoDisplay) continue;
+
+                string name = ip.Name;
+                double[] array = dict[key];
+                imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
+                Image bitmap = ip.GetPlotImage(array);
                 listOfBitmaps.Add(bitmap);
             }
-
-            // last track is weighted index
-            //int x = values.Count - 1;
-            //array = values[x];
-            //bool doNormalise = false;
-            //if (doNormalise) array = DataTools.normalise(values[x]);
-            ////if (values[x].Length > 0)
-            ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
-            //if (values[x].Length > 0)
-            //    listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
@@ -85,6 +84,79 @@ namespace AudioAnalysisTools
             }
             return compositeBmp;
         }
+
+
+
+
+
+        /// <summary>
+        /// This method assumes that the data table of indices is already properly ordered for display.
+        /// </summary>
+        /// <param name="listOfIndexProperties"></param>
+        /// <param name="dt"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        //public static Bitmap ConstructVisualIndexImage(Dictionary<string, IndexProperties> listOfIndexProperties, DataTable dt, string title)
+        //{
+
+        //    if (dt == null) return null;
+        //    int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+        //    int length = 0;
+        //    int imageWidth = 0;
+
+        //    Dictionary<string, string> dictOfName2Key = IndexProperties.GetDictionaryOfName2Key();
+
+        //    var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
+
+        //    // for each column of values in data table (except last) create a display track
+        //    foreach (DataColumn col in dt.Columns)
+        //    {
+        //        string name = col.ColumnName;
+        //        double[] array = DataTableTools.Column2ArrayOfDouble(dt, name);
+        //        length = array.Length;
+        //        imageWidth = length + IndexDisplay.TRACK_END_PANEL_WIDTH;
+        //        string key = dictOfName2Key[name];
+        //        IndexProperties indexProperties = listOfIndexProperties[key];
+        //        if (! indexProperties.DoDisplay) continue;
+        //        Image bitmap = indexProperties.GetPlotImage(array);
+        //        listOfBitmaps.Add(bitmap);
+        //    }
+
+        //    // last track is weighted index
+        //    //int x = values.Count - 1;
+        //    //array = values[x];
+        //    //bool doNormalise = false;
+        //    //if (doNormalise) array = DataTools.normalise(values[x]);
+        //    ////if (values[x].Length > 0)
+        //    ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+        //    //if (values[x].Length > 0)
+        //    //    listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
+
+        //    //set up the composite image parameters
+        //    int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+        //    Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(length, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+
+        //    //draw the composite bitmap
+        //    Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+        //    using (Graphics gr = Graphics.FromImage(compositeBmp))
+        //    {
+        //        gr.Clear(Color.Black);
+
+        //        int offset = 0;
+        //        gr.DrawImage(titleBmp, 0, offset); //draw in the top title
+        //        offset += trackHeight;
+        //        gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+        //        offset += trackHeight;
+        //        for (int i = 0; i < listOfBitmaps.Count; i++)
+        //        {
+        //            gr.DrawImage(listOfBitmaps[i], 0, offset);
+        //            offset += trackHeight;
+        //        }
+        //        gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
+        //    }
+        //    return compositeBmp;
+        //}
 
 
 
@@ -256,47 +328,6 @@ namespace AudioAnalysisTools
             return System.Tuple.Create(dt, table2Display);
         } // ProcessCsvFile()
 
-        /// <summary>
-        /// takes a data table of indices and normalises column values to values in [0,1].
-        /// These indices could be of anything i.e. koala counts rain events etc and therefore only normalise AV_AMPLITUDE tracks
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
-        //public static DataTable NormaliseColumnsOfDataTable(DataTable dt)
-        //{
-        //    string[] headers = DataTableTools.GetColumnNames(dt);
-        //    string[] newHeaders = new string[headers.Length];
-
-        //    List<double[]> newColumns = new List<double[]>();
-
-        //    for (int i = 0; i < headers.Length; i++)
-        //    {
-        //        double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
-        //        if ((values == null) || (values.Length == 0)) continue;
-
-        //        double min = 0;
-        //        double max = 1;
-        //        if (headers[i].Equals(AnalysisKeys.AV_AMPLITUDE))
-        //        {
-        //            min = -50;
-        //            max = -5;
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = headers[i] + "  (-50..-5dB)";
-        //        }
-        //        else //default is to normalise in [0,1]
-        //        {
-        //            max = values.Max();
-        //            newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-        //            newHeaders[i] = String.Format("{0} (0..{1:f2})", headers[i], max);
-        //        }
-        //    } //for loop
-
-        //    //convert type int to type double due to normalisation
-        //    Type[] types = new Type[newHeaders.Length];
-        //    for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
-        //    var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
-        //    return processedtable;
-        //}
 
     } //class DisplayIndices
 }

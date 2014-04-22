@@ -77,6 +77,7 @@ namespace Dong.Felt
 
         /// <summary>
         /// To calculate the distance between regionRepresentation of a query and a candidate. 
+        /// This distance calculation method will be based on 2 values feature vector. 
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
