@@ -36,21 +36,6 @@ namespace QutBioacosutics.Xie.FrogIndices
 
 
 
-        //public static double(NasutaConfiguration nasutaConfig, System.Tuple trackHitsNasuta)
-        //{
-        //            var harmonicHitsNasuta = FindHarmonics.GetHarmonic(trackHitsNasuta.Item4, nasutaConfig.HarmonicComponentNasuta, nasutaConfig.HarmonicSensityNasuta,
-        //                                                   nasutaConfig.HarmonicDiffrangeNasuta);
-        //    return harmonicHitsNasuta;
-        //}
-
-
-        //public static 
-        
-        //var NasutaOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, nasutaConfig.MinimumFrequencyNasuta, nasutaConfig.MaximumFrequencyNasuta,
-        //                                                                       nasutaConfig.Dct_DurationNasuta, nasutaConfig.Dct_ThresholdNasuta,
-        //                                                                       nasutaConfig.MinimumOscillationNumberNasuta, nasutaConfig.MaximumOscillationNumberNasuta);
-
-        //var nasutaOscillationResults = RemoveSparseHits.PruneHits(NasutaOscillationHits);
 
     }
 }
