@@ -11,7 +11,7 @@ TS <- function (s = NA) {
 
 
 Sp.CreateTargeted <- function (site, start.date, start.sec, 
-                               duration, img.path = NA, rects = NA, 
+                               duration, img.path = NA, rects = NULL, 
                                audio.source.in.label = TRUE, label = NA) {
     # creates a spectrogram of audio given the start, duration and site 
     #
@@ -187,7 +187,7 @@ ConvertToDb <- function (amp, bit.resolution = 16) {
 
 
 
-Sp.Draw <- function (spectro, img.path = NA) {
+Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
     #  draws a spectrogram given a matrix of amplitudes
     #
     #  Args: 
@@ -201,10 +201,14 @@ Sp.Draw <- function (spectro, img.path = NA) {
     
     
     amp <- spectro$vals
+    
+
+    
+    
     width <- ncol(amp)
     height <- nrow(amp)
     if (!is.na(img.path)) {
-        png(img.path, width = width, height = height)
+        png(img.path, width = width*scale, height = height*scale)
     } else {
         
     }
@@ -215,7 +219,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
     grid.newpage()
     devsize.cm <- dev.size(units = "cm")
     devsize.px <- dev.size(units = "px")
-    px.per.cm <- devsize.px[1] / devsize.cm[1]
+    px.per.cm <- (devsize.px[1] / devsize.cm[1]) / scale
     vp.width.cm <- ncol(spectro$val) / px.per.cm
     vp.height.cm <- nrow(spectro$val) / px.per.cm
     vp <- viewport(x = 0, y = 0, just = c('left', 'bottom'), width = vp.width.cm, height = vp.height.cm, default.units = 'cm')
@@ -236,6 +240,7 @@ Sp.Draw <- function (spectro, img.path = NA) {
       }
     }
     
+    Sp.DrawLines(spectro)
 
     
     if (!is.na(img.path)) {
@@ -244,6 +249,65 @@ Sp.Draw <- function (spectro, img.path = NA) {
     
     
 }
+
+
+Sp.DrawLines <- function (spectro) {
+    
+    if(!is.null(spectro$lines) && nrow(spectro$lines) > 0) {
+        palette(rainbow(20)) 
+        
+        spectro$lines$color <- ceiling(Normalize(spectro$lines$score) * 10)
+        # only show the top scoring half
+        # spectro$lines <- spectro$lines[spectro$lines$color > 1 ,]
+        
+        for (i in 1:nrow(spectro$lines)) {
+            # add lines
+            
+            
+            
+            line <- spectro$lines[i, ]
+            Sp.AddLine(spectro, line)          
+        }
+    }
+    
+    
+}
+
+Sp.AddLine <- function (spectro, line) {
+    
+    r <- 4
+    
+    # find start and end of the line
+    x.start <- line$col + cos(line$angle) * r
+    x.end <- line$col - cos(line$angle) * r
+    
+    # be careful with the y values. Remember, row zero goes to the bottom of the spectrogram
+    # but the angle is measured with row zero at the TOP
+    y.start <- line$row - sin(line$angle) * r
+    y.end <- line$row + sin(line$angle) * r
+    
+    
+    # convert units 
+    x.start <- x.start / ncol(spectro$vals)
+    y.start <- y.start / nrow(spectro$vals)
+    x.end <- x.end / ncol(spectro$vals)
+    y.end <- y.end / nrow(spectro$vals)
+    
+    
+    #quality <- round(line$val)
+    
+    # red = low, green = high
+    
+    
+    grid.lines(x = unit(c(x.start, x.end), "npc"),
+               y = unit(c(y.start, y.end), "npc"),
+               default.units = "npc",
+               arrow = NULL, name = NULL,
+               gp=gpar(col = line$color), draw = TRUE, vp = NULL)
+    
+    
+}
+
 
 Sp.AmpToRaster <- function (amp) {
     # normalise to {0,1}, reversing value so 
@@ -392,161 +456,5 @@ Sp.Rect <- function (spectro, rect) {
 
 
 
-TR <- function (threshold = 1) {
-    # test ridges
-    sp <- TS()
-    #amp <- sp$vals[101:120, 51:70]
-    amp <- sp$vals
-    edges <- amp
-    for (i in 1:1) {
-        edges <- Sp.Ridge(edges)
-    }
-    amp <- Normalize(amp)
-    edges <- Normalize(edges)
-    both <- rbind(amp, edges)
-    image(t(both))
-    return(both)
-    
-}
-source('../../../liang/Acoustic Indices/ridgeDetectionS.R')
-Sp.Ridges <- function (amp, threshold) {
-    
-    require('biOps')
-    
-    x <- imagedata(amp)
-    #sigma <- threshold
-    #edges <- imgCanny(x, sigma)
-    m <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)
-    
-    
-    
-    edges <- imgConvolve(x, m, 32)
-    
-    
-    return(edges)
-    
-}
 
-Sp.Ridge.1 <- function (amp) { 
-    
-    
-    before.blur <- amp
-    w <- ncol(amp)
-    h <- nrow(amp)
-    amp <- Blur(amp)
-    left.delta <- amp[,2:(w-1)] - amp[,1:(w-2)]
-    right.delta <- amp[,2:(w-1)] - amp[,3:w]
-    ridges <- left.delta * right.delta * (left.delta + right.delta);
-    ridges[ridges <= 0] <- 0
-    ridges[ridges > 0] <- 1
-    border <- rep(0, nrow(ridges))
-    ridges <- cbind(border, ridges, border)
-    return(ridges)
-}
-
-TR2 <- function () {
-    
-    sp <- TS()
-    amp <- sp$vals
-    #amp <- sp$vals[101:120, 51:70]
-    w <- 11
-    h <- 5
-    
-
-    
-    amp2 <- Normalize(amp)
-    
-    iteration.widths <- c(13, 11, 9, 7, 5, 3)
-    
-    for (w in iteration.widths) {
-        m <- rep(-1/(w-1), w)
-        m[ceiling(w/2)] <- 1  
-        m <- matrix(rep(m, h), nrow = h, byrow = TRUE) 
-        
-        image(t(amp2))
-        ridges <- Convolve(amp2, m)
-        amp2[ridges < sd(ridges)] <- 0
-        amp2 <- Normalize(amp2)
-
-    }
-    
-    image(t(rbind(Normalize(amp), amp2)))
-    
-}
-
-
-Sp.Ridge <- function (amp) {
-    amp <- Normalize(amp)
-    
-    left.v <- c(-0.3, -0.3, -0.4, 1, 0, 0, 0)
-    left <- matrix(rep(left.v, 5), nrow = 5, byrow = TRUE)
-    right.v <- rev(left.v)
-    right <- matrix(rep(right.v, 5), nrow = 5, byrow = TRUE)
-
-    ridge.right <- Convolve(amp, right)
-    ridge.left <- Convolve(amp, left)
-    
-    #standard deviation for each freq
-    #sds <- apply(sd, 2, ridge.right)
-    
-    threshold <- sd(ridge.right)
-    
-    #m <- matrix(c(-1,-1,-1,0,1,1,1))
-
-    ridge <- ridge.left > threshold & ridge.right > threshold
-    
-    amp[!ridge] <- 0
-    
-    return(amp)
-    
-    
-
-}
-
-Convolve <- function (amp, mask = NA) {
-    w <- ncol(amp)
-    h <- nrow(amp)
-    if (class(mask) != 'matrix') {
-        mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)  
-    }
-    amp2 <- ExpandMatrix(amp, floor(nrow(mask)/2), floor(ncol(mask)/2))
-    total <- matrix(0, nrow = nrow(amp), ncol = ncol(amp))
-    for (rr in 1:nrow(mask)) {
-        for (cc in 1:ncol(mask)) {
-            offset <- amp2[rr:(rr+h-1), cc:(cc+w-1)]
-            total <- total + (offset * mask[rr, cc])   
-        }
-    }
-    return(total)
-}
-
-ExpandMatrix <- function (m, rr, cc) {
-    # copies the edge rows and columns by rr and cc respectively
-    if (cc > 0) {
-        m <- cbind(matrix(rep(m[,1], cc), ncol = cc), m,  matrix(rep(m[,ncol(m)], cc), ncol = cc) )    
-    }
-    if (rr > 0) {
-        m <- rbind(matrix(rep(m[1,], rr), byrow = TRUE, nrow = rr), m,  matrix(rep(m[nrow(m),], rr), byrow = TRUE, nrow = rr) )
-    }
-    return(m)
-}
-
-ShiftMatrix <- function (m, rr, cc) {
-    if (cc < 0) {
-        m <- cbind(matrix(rep(m[,1], -cc), ncol = -cc), m)
-        m <- m[,-(ncol(m):(ncol(m)+(cc+1)))]
-    } else if (cc > 0) {
-        m <- cbind(m, matrix(rep(m[,ncol(m)], cc), ncol = cc))
-        m <- m[,-(1:cc)]
-    }
-    if (rr < 0) {
-        m <- rbind(matrix(rep(m[1,], -rr), nrow = -rr, byrow = TRUE), m)
-        m <- m[-(nrow(m):(nrow(m)+(rr+1))), ]
-    } else if (rr > 0) {
-        m <- rbind(m, matrix(rep(m[nrow(m),], rr), nrow = rr, byrow = TRUE))
-        m <- m[-(1:rr), ]
-    }
-    
-    return(m)
-}
 

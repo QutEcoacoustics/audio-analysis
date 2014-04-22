@@ -414,9 +414,10 @@ MatrixToExamples <- function (m) {
     #   2 1
     #   2 2  # row 2 column 2 appears once
     
+    m[is.na(m)] <- 0
 
-    examples <- mapply(function (r,c, val) {
-        mx <- rep(c(r,c), val)  
+    examples <- mapply(function (row,col, val) {
+        mx <- rep(c(row,col), val)  
         return(mx)  
     }, c(row(m)), c(col(m)), c(m), SIMPLIFY = TRUE);
     examples <- matrix(unlist(examples), ncol = 2, byrow = TRUE);

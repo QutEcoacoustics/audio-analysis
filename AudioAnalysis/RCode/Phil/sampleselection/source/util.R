@@ -156,21 +156,20 @@ Normalize <- function (v) {
     #   will become one, with the other values remaining the same 
     #   relative distance from the max and min. If all the values 
     #  are the same in v, the returned vector will be all zeros
-    #
-    # TODO:
-    #   Check whether there is a better built in way to do this
+    #   any NA values will be ignored
+
     
     
     # make the minimum value zero
-    v <- v - min(v)
+    v <- v - min(v, na.rm = TRUE)
     
     #make the maximum value 1, keeping the min value zero
-    max.val <- max(v)
+    max.val <- max(v, na.rm = TRUE)
     if (max.val != 0) {
         v <- v / max.val
     } else {
         # all vals were the same
-        v <- 0.5
+        v[!is.na(v)] <- 0.5
     }
     
     return(v)
@@ -360,3 +359,107 @@ GetIncluded <- function (total.num, num.included, offset = NA) {
     include[excluded] <- FALSE
     return(include)
 }
+
+Convolve <- function (amp, mask = NA) {
+    w <- ncol(amp)
+    h <- nrow(amp)
+    if (class(mask) != 'matrix') {
+        mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)  
+    }
+    amp2 <- ExpandMatrix(amp, floor(nrow(mask)/2), floor(ncol(mask)/2))
+    total <- matrix(0, nrow = nrow(amp), ncol = ncol(amp))
+    for (rr in 1:nrow(mask)) {
+        for (cc in 1:ncol(mask)) {
+            offset <- amp2[rr:(rr+h-1), cc:(cc+w-1)]
+            total <- total + (offset * mask[rr, cc])   
+        }
+    }
+    return(total)
+}
+
+Blur <- function (m) {  
+    #mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)
+    mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)
+    m2 <- Convolve(m, mask)
+    return(m2)  
+}
+
+MovingAverage <- function (v, amount = 1, gaussian = TRUE) {
+    # existing moving average functions seem to return a shorter output than input
+    # becasue edges can't be averaged with values outside the vector
+    num <- 2*amount+1  # amount either side plus the original
+    l <- length(v)
+    v2 <- ExpandVector(v, amount)
+    # 1 matrix columen for each version of the vecor
+    m <- matrix(rep(NA, l*num), nrow = length(v)) 
+    if (gaussian) {
+        weights <- GaussianMask(num)
+    } else {
+        weights <- rep(1/num, num)
+    }
+    for (i in 1:num) {       
+        m[ ,i] <- v2[i:(i+l-1)] * weights[i]  
+    }
+    v3 <- apply(m, 1, sum)
+    return(v3)
+}
+
+ExpandVector <- function (v, amount) {
+    # expands the vector v by repeating the start and end values by amount
+    v <- c(rep(v[1], amount), v, rep(v[length(v)], amount))
+    return(v)
+}
+GaussianMask <- function (width) {
+    
+    side <- (width-1)/2
+    x <- -side:side
+    # old crap before I found teh dnorm function
+    #mask <- GaussianFunction(exp(1)/(width-1), x, 0, (width-1)/6.66 , 0)
+    
+    mask <- dnorm(x)
+    
+    #sum will be slightly less than 1 for small widths
+    # correct it
+    mask <- mask + ((1 - sum(mask)) / width)
+    
+    
+    return(mask)
+}
+
+GaussianFunction <- function (a, x, b = 0, c = 1, d = 0) {
+    # see http://en.wikipedia.org/wiki/Gaussian_function
+    fx <- a*exp((-((x-b)^2)/(2*(c^2)))+d)  
+    return(fx)  
+}
+
+
+ExpandMatrix <- function (m, rr, cc) {
+    # copies the edge rows and columns by rr and cc respectively
+    if (cc > 0) {
+        m <- cbind(matrix(rep(m[,1], cc), ncol = cc), m,  matrix(rep(m[,ncol(m)], cc), ncol = cc) )    
+    }
+    if (rr > 0) {
+        m <- rbind(matrix(rep(m[1,], rr), byrow = TRUE, nrow = rr), m,  matrix(rep(m[nrow(m),], rr), byrow = TRUE, nrow = rr) )
+    }
+    return(m)
+}
+
+ShiftMatrix <- function (m, rr, cc) {
+    if (cc < 0) {
+        m <- cbind(matrix(rep(m[,1], -cc), ncol = -cc), m)
+        m <- m[,-(ncol(m):(ncol(m)+(cc+1)))]
+    } else if (cc > 0) {
+        m <- cbind(m, matrix(rep(m[,ncol(m)], cc), ncol = cc))
+        m <- m[,-(1:cc)]
+    }
+    if (rr < 0) {
+        m <- rbind(matrix(rep(m[1,], -rr), nrow = -rr, byrow = TRUE), m)
+        m <- m[-(nrow(m):(nrow(m)+(rr+1))), ]
+    } else if (rr > 0) {
+        m <- rbind(m, matrix(rep(m[nrow(m),], rr), nrow = rr, byrow = TRUE))
+        m <- m[-(1:rr), ]
+    }
+    
+    return(m)
+}
+
