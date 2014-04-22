@@ -137,17 +137,10 @@ Simplify <- function (m) {
 
 Lines <- function (m) {
     
-
     m <- Simplify(m)
-
     #centroids <- GetPeaks.1(m, 20, 20)
-    
     centroids <- GetPeaks.2(m, 2)
-    
-    
 
-    
-    #stop()
     
     # we now have a list of 'centroids' which are the maximum values in the neighbourhood
     # might be a more efficient way to do this with masks
@@ -159,10 +152,12 @@ Lines <- function (m) {
                                centroids$row < nrow(m) - diff &  
                                centroids$col < ncol(m) - diff, ]
     empty.line.cols <- rep(NA, nrow(centroids))
-    lines <- data.frame(angle = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
+    #lines <- data.frame(angle = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
+    
+    lines <- list()
+    
     for (cc in (1:nrow(centroids))) {
         # sub matrix centered on the centroid
-        sub <- m[(centroids[cc,1]-diff):(centroids[cc,1]+diff), (centroids[cc,2]-diff):(centroids[cc,2]+diff)]
         
         if (cc %in% c(199, 200)) {
             inspect = TRUE
@@ -170,8 +165,11 @@ Lines <- function (m) {
             inspect = FALSE     
         }
         
-        line.angle <- FindBestLine(sub, inspect = inspect)
-        lines[cc, ] <- unlist(line.angle)
+        line <- LineWalk(m, as.numeric(centroids[cc,]), 4)
+        
+        lines[[cc]] <- line
+        
+        #lines[cc, ] <- unlist(line.angle)
     }
     
     # join lines
@@ -181,32 +179,138 @@ Lines <- function (m) {
     
 }
 
-FindBestLine <- function (m = NA, r = 4, inspect = FALSE) {
+LineWalk <- function (m, center, r) {
+    
+    sub <- m[(center[1]-r):(center[1]+r), (center[2]-r):(center[2]+r)] 
+    best.angle <- FindBestLine(sub, recurse.depth = 2)
+    
+    branch.1 <- LineWalkBranch(m, center, r, best.angle$angle, range = pi/4, resolution = 3, refinements = 1)
+    branch.2 <- LineWalkBranch(m, center, r, OppositeAngle(best.angle$angle), range = pi/4, resolution = 3, refinements = 1)
+    
+    #branch.1$branch <- rep(1, nrow(branch.1))
+    #branch.1$joint <- 1:nrow(branch.1)
+    #branch.2$branch <- rep(1, nrow(branch.2))
+    #branch.2$joint <- 1:nrow(branch.2)
+    
+    return(list(
+        branch.1 = branch.1,
+        branch.2 = branch.2,
+        center = center      
+    ))
+    
+    
+}
+
+OppositeAngle <- function (angle) {
+    # maybe there is a way to do this in 1 line with modulus. I couldn't find it
+    if (angle <= 0) {
+        return(angle + pi)    
+    } else {
+        return(angle - pi)
+    }
+}
+
+LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refinements = 2) {
+    
+    score.threshold <- 50
+    max.per.branch <- 10
+    
+    cur.center <- start.center
+    empty.line.cols <- rep(NA, max.per.branch)
+    branch <- data.frame(angle = empty.line.cols,  length = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
+    
+    for(line.num in 1:max.per.branch) {
+        
+        sub <- m[(cur.center[1]-r):(cur.center[1]+r), (cur.center[2]-r):(cur.center[2]+r)] 
+        line <- FindBestLine(sub, angle, range, recurse.depth = refinements)
+        
+        if (line$score < score.threshold) {
+            break()
+        }
+        
+        branch[line.num, ] <- unlist(line)
+        # shift the current center to the coordinates given by line length and angle
+        
+        #!! this is broken!
+        cur.center <- round(c(cur.center[1] * sin(line$angle), cur.center[2] * cos(line$angle)))
+        angle <- line$angle
+        
+    }
+    
+    
+    return(branch)
+    
+    
+    
+}
+
+
+
+FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse.depth = 2) {
+    # finds angle of the line starting at the center of the matrix m
+    # within the range eiher side of angle
+    # resolution is the number of divisions of the range to compare (either side of angle)
+  
+    # radius is 1 less than half the width of the square matrix
+    r <- (ncol(m) - 1) / 2  
+    scores <- rep(NA, 2*resolution+1) 
+    angles <- angle + range*(-resolution:resolution)/resolution
+    if (range == pi) {
+        # if the range is pi, then the last angle will equal the first
+        angles <- angles[1:(length(angles)-1)]
+    }    
+    for (theta.i in 1:length(angles)) {       
+        distances <- DistanceToLine(angles[theta.i], r, TRUE)
+        weights <- GaussianFunction(a = 1, x = distances, b = 0, c = 1) 
+        scores[theta.i] <- sum(m * weights, na.rm = TRUE) 
+    } 
+    # return the angle, what its score was
+    # what the mean score was and what the sd of scores was
+    # so that we know how 'good' the best was. 
+    # if there was no clear best, then this point might not lie on a line
+    best <- which.max(scores)
+    best.angle <- angles[best]
+    mean <- mean(scores)
+    sd <- sd(scores)
+    score <- max(scores)
+    
+    # TODO: variable length
+    length <- r
+    
+    if (recurse.depth > 1) {
+        line <- FindBestLine(m = m, angle = best.angle, range = range/(resolution*2), resolution = resolution, recurse.depth = recurse.depth-1)
+    } else {
+        line <- list(
+            angle = best.angle,
+            length = length,
+            score = score,
+            mean = mean,
+            sd = sd
+        )
+    }
+    
+    return(line)
+    
+    
+}
+
+
+
+FindBestLine.twoDirections <- function (m = NA, r = 4, inspect = FALSE) {
     # finds angle of the line passing through the centre of m
     # which has the least error
-    
-    
     if (inspect) {
         inspect = TRUE
-    }
-    
+    }   
     # how many angles to check between zero and 180 deg (pi)
     angle.resolution <- 8  # best to use be power of 2 ? not sure
-    
-    
-    r <- (ncol(m) - 1) / 2
-    
+    r <- (ncol(m) - 1) / 2  
     scores <- rep(NA, angle.resolution)
-
-    
-    for (theta.i in 1:angle.resolution) {
-        
+    for (theta.i in 1:angle.resolution) {    
         distances <- DistanceToLine(pi*((theta.i-1)/angle.resolution), r)
         weights <- GaussianFunction(a = 1, x = distances, b = 0, c = 1) 
-        scores[theta.i] <- sum(m * weights, na.rm = TRUE)
-        
+        scores[theta.i] <- sum(m * weights, na.rm = TRUE) 
     }
-    
     
     # return the angle, what its score was
     # what the mean score was and what the sd of scores was
@@ -216,8 +320,7 @@ FindBestLine <- function (m = NA, r = 4, inspect = FALSE) {
     angle <- pi*((best-1)/angle.resolution)
     mean <- mean(scores)
     sd <- sd(scores)
-    score <- max(scores)
-    
+    score <- max(scores) 
     return(list(
         angle = angle,
         score = score,
@@ -229,7 +332,7 @@ FindBestLine <- function (m = NA, r = 4, inspect = FALSE) {
 }
 
 
-DistanceToLine <- function (theta, r) {
+DistanceToLine <- function (theta, r, one.way = FALSE) {
     # returns a width*width matrix. Each cell holds the distance of
     # that cell from  a line which passes through the center 
     # of the matrix at an angle theta. 
@@ -245,6 +348,10 @@ DistanceToLine <- function (theta, r) {
     #   slightly inaccurate (I think because of accuracy that pi is stored)
     #   so zeros will not be exactly zero. 
     
+    if (theta > pi || theta < -pi) {
+        stop('theta must be between pi and negative pi')
+    }
+    
     width <- 2*r + 1    
     mx <- matrix(-r:r, nrow = width, ncol = width, byrow = TRUE)
     my <- matrix(r:-r, nrow = width, ncol = width)
@@ -254,9 +361,32 @@ DistanceToLine <- function (theta, r) {
     outside.circle <- (mx^2 + my^2) > (r+0.5)^2
     md[outside.circle] <- NA
     
+    if (one.way) { 
+        tan.theta2 <- tan(theta + (pi/2))
+        
+        #x.1 <- 1
+        #x.2 <- -1
+        #y.1 <- tan.theta2 
+        #y.2 <- -tan.theta2
+        #remove <- ((x.2 - x.1)*(my - y.1) - (y.2 - y.1)*(mx - x.1)) > 0;
+        print(tan.theta2)
+        
+        if (theta > 0 & theta <= pi) {
+            remove <- my < (mx - 0.01) * tan.theta2    
+        } else {
+            remove <- my > (mx + 0.01) * tan.theta2      
+        }
+        md[remove] <- NA      
+    }
+    
     return(md)
     
 }
+
+
+
+    
+
 
 
 Lines1 <- function (spectro) { 
