@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QutBioacosutics.Xie.Configuration
 {
-    class FallaxConfiguration
+    public class FallaxConfiguration
     {
         public double AmplitudeThresholdFallax { get; set; }
         //public int RangeFallax { get; set; }
