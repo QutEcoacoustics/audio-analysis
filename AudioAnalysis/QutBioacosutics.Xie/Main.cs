@@ -8,6 +8,7 @@ using AudioAnalysisTools.WavTools;
 using AudioAnalysisTools.DSP;
 using System.IO;
 using MathNet.Numerics;
+using QutBioacosutics.Xie.FrogIndices;
 
 
 
@@ -430,89 +431,47 @@ namespace QutBioacosutics.Xie
             // B. Generate spectrogram for extracting oscillation rate
 
             //*************************************************************//
-            /*                      
+                                
             // Calculate windowOverlap
             //double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
 
             var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
             var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.GetWavReader());
             
-            */
+            
             // Step.2 Produce features
 
-            // A. Tracks &  B. Entropy
 
             //***********************Canetoad*************************//
-
-            /*
-
-
-
-            */
+            var peakHitsCanetoad = CalculateIndexForCanetoad.GetPeakHits(canetoadConfig, spectrogramLong);
+            var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
+            var oscillationCanetaod = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
 
             //***********************Gracillenta*************************//
-            // 2. Gracillenta detection  (Frequency band is overlapped with Nasuta, but the duration is different)
 
-            /*
-            var peakHitsGracillenta = FindLocalPeaks.Max(spectrogramLong, gracillentaConfig.AmplitudeThresholdGracillenta, gracillentaConfig.FrequencyLowGracillenta,
-                                                            gracillentaConfig.FrequencyHighGracillenta);
+            var peakHitsGracillenta = CalculateIndexForLitoriaGracillenta.GetPeakHitsGracillenta(gracillentaConfig, spectrogramLong);
+            var trackGracillenta = CalculateIndexForLitoriaGracillenta.GetFrogTracksGracillenta(gracillentaConfig,spectrogramLong,peakHitsGracillenta);
 
-            var trackHitsGracillenta = ExtractTracks.GetTracks(spectrogramLong, peakHitsGracillenta, gracillentaConfig.FrequencyLowGracillenta, gracillentaConfig.FrequencyHighGracillenta,
-                                                gracillentaConfig.BinToreanceGracillenta, gracillentaConfig.FrameThresholdGracillenta, gracillentaConfig.TrackDurationThresholdGracillenta,
-                                                gracillentaConfig.TrackThresholdGracillenta, gracillentaConfig.MaximumTrackDurationGracillenta, gracillentaConfig.MinimumTrackDurationGracillenta,
-                                                gracillentaConfig.BinDifferencGracillenta, gracillentaConfig.DoSlopeGracillenta);
-
-            */
+ 
             //***********************Nasuta*************************//
-
-            // 3. Nasuta detection (Harmonic structure)
-            /*
-
-
-            */
+            var peakHitsNasuta = CalculateIndexForLitoriaNasuta.GetPeakHitsNasuta(nasutaConfig,spectrogramLong);
+            var trackNasuta = CalculateIndexForLitoriaNasuta.GetFrogTracksFallax(nasutaConfig, spectrogramLong, peakHitsNasuta);
 
             //***********************Caerulea*************************//
-            /*
-            var peakHitsCaerulea = FindLocalPeaks.LocalPeaks(spectrogramLong, caeruleaConfig.AmplitudeThresholdCaerulea, caeruleaConfig.RangeCaerulea, caeruleaConfig.DistanceCaerulea,
-                                                            caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea);
 
-            var peakHitsCaeruleaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsCaerulea);
+            var peakHitsCaerulea = CalculateIndexForLitoriaCaerulea.GetPeakHits(caeruleaConfig, spectrogramLong);
+            var trackCaerulea = CalculateIndexForLitoriaCaerulea.GetFrogTracks(caeruleaConfig, spectrogramLong, peakHitsCaerulea);
+            var oscillationCaerulea = CalculateIndexForLitoriaCaerulea.GetOscillationRate(caeruleaConfig,spectrogramShort);
 
-            var trackHitsCaerulea = ExtractTracks.GetTracks(spectrogramLong, peakHitsCaeruleaRotated, caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea,
-                                                            caeruleaConfig.BinToreanceCaerulea, caeruleaConfig.FrameThresholdCaerulea, caeruleaConfig.TrackDurationThresholdCaerulea,
-                                                            caeruleaConfig.TrackThresholdCaerulea, caeruleaConfig.MaximumTrackDurationCaerulea, caeruleaConfig.MinimumTrackDurationCaerulea,
-                                                            caeruleaConfig.BinDifferencCaerulea, caeruleaConfig.DoSlopeCaerulea);
-            
-            // Find the peaks based on tracks (# should be 2 or 3)
+            //***********************Fallax*************************//
 
-            var CaeruleaOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, caeruleaConfig.MinimumFrequencyCaerulea, caeruleaConfig.MaximumFrequencyCaerulea,
-                                                                                   caeruleaConfig.Dct_DurationCaerulea, caeruleaConfig.Dct_ThresholdCaerulea,
-                                                                                   caeruleaConfig.MinimumOscillationNumberCaerulea, caeruleaConfig.MaximumOscillationNumberCaerulea);
-
-            */
-
-
+            var peakHitsFallax = CalculateIndexForLitoriaFallax.GetPeakHitsFallax(fallaxConfig, spectrogramLong);
+            var trackFallax = CalculateIndexForLitoriaFallax.GetFrogTracksFallax(fallaxConfig, spectrogramLong, peakHitsFallax);
 
             //********************Latopalmata********************************//
 
-            var peakHitsLatopalmata = FindLocalPeaks.LocalPeaks(spectrogramLong, latopalmataConfig.AmplitudeThresholdLatopalmata, latopalmataConfig.RangeLatopalmata, 
-                                                                latopalmataConfig.DistanceLatopalmata,latopalmataConfig.FrequencyLowLatopalmata, latopalmataConfig.FrequencyHighLatopalmata);
-
-            var peakHitsLatopalmataRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
-
-            var trackHitsLatopalmata = ExtractTracks.GetTracks(spectrogramLong, peakHitsLatopalmataRotated, latopalmataConfig.FrequencyLowLatopalmata,
-                                                               latopalmataConfig.FrequencyHighLatopalmata, latopalmataConfig.BinToreanceLatopalmata,
-                                                               latopalmataConfig.FrameThresholdLatopalmata, latopalmataConfig.TrackDurationThresholdLatopalmata,
-                                                               latopalmataConfig.TrackThresholdLatopalmata, latopalmataConfig.MaximumTrackDurationLatopalmata,
-                                                               latopalmataConfig.MinimumTrackDurationLatopalmata, latopalmataConfig.BinDifferencLatopalmata,
-                                                               latopalmataConfig.DoSlopeLatopalmata);
-
-
-            // Contain harmonic structure & 
-            var harmonicHitsLatopalmata = FindHarmonics.GetHarmonic(trackHitsLatopalmata.Item4, latopalmataConfig.HarmonicComponentLatopalmata,
-                                                                    latopalmataConfig.HarmonicSensityLatopalmata, latopalmataConfig.HarmonicDiffrangeLatopalmata);
-
-
+            var peakHitsLatopalmata = CalculateIndexForLitoriaLatopalmata.GetPeakHits(latopalmataConfig,spectrogramLong);
+            var trackLatopalmata = CalculateIndexForLitoriaLatopalmata.GetFrogTracks(latopalmataConfig,spectrogramLong,peakHitsLatopalmata);
 
 
 
@@ -520,43 +479,43 @@ namespace QutBioacosutics.Xie
 
             // Step.3 Draw spectrogram
 
-            double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
-            //var result = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
-            //var spectrogramMatrix = MatrixTools.MatrixRotate90Clockwise(result);
+            //double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
+            ////var result = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
+            ////var spectrogramMatrix = MatrixTools.MatrixRotate90Clockwise(result);
 
-            int rows = spectrogramMatrix.GetLength(0);
-            int cols = spectrogramMatrix.GetLength(1);
+            //int rows = spectrogramMatrix.GetLength(0);
+            //int cols = spectrogramMatrix.GetLength(1);
 
-            Color[] grayScale = ImageTools.GrayScale();
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            //Color[] grayScale = ImageTools.GrayScale();
+            //Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
-                    if (greyId < 0) greyId = 0;
-                    else
-                        if (greyId > 255) greyId = 255;
+            //for (int r = 0; r < rows; r++)
+            //{
+            //    for (int c = 0; c < cols; c++)
+            //    {
+            //        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
+            //        if (greyId < 0) greyId = 0;
+            //        else
+            //            if (greyId > 255) greyId = 255;
 
-                    greyId = 255 - greyId;
-                    bmp.SetPixel(c, r, grayScale[greyId]);
-                }
-            }
+            //        greyId = 255 - greyId;
+            //        bmp.SetPixel(c, r, grayScale[greyId]);
+            //    }
+            //}
 
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    if (harmonicHitsLatopalmata[j, i] != 0)
-                    {
-                        bmp.SetPixel((cols - j), i, Color.Blue);
-                    }
+            //for (int i = 0; i < rows; i++)
+            //{
+            //    for (int j = 0; j < cols; j++)
+            //    {
+            //        if (harmonicHitsLatopalmata[j, i] != 0)
+            //        {
+            //            bmp.SetPixel((cols - j), i, Color.Blue);
+            //        }
 
-                }
-            }
+            //    }
+            //}
 
-            bmp.Save(saveImagePath);
+            //bmp.Save(saveImagePath);
 
 
             // Step.4 Draw false-color spectrogram

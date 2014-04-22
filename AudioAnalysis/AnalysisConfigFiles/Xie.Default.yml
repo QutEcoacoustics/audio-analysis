@@ -1,7 +1,7 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-LoadedFilePath:  C:\Jie\data\Individual recording from JCU\Litoria latopalmata.wav
+LoadedFilePath:  C:\Jie\data\Individual recording from JCU\Litoria gracillenta1.wav
 #LoadedFilePath:  C:\Jie\data\New folder\Litoria caerulea.wav
 
 # Path for saving image

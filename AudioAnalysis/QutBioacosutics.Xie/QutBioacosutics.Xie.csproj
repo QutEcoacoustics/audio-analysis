@@ -78,7 +78,10 @@
     <Compile Include="Configuration\NasutaConfiguration.cs" />
     <Compile Include="FrogIndices\CalculateIndexForCanetoad.cs" />
     <Compile Include="FrogIndices\CalculateIndexForLitoriaFallax.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForLitoriaGracillenta.cs" />
     <Compile Include="FrogIndices\CalculateIndexForLitoriaNasuta.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForLitoriaCaerulea.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForLitoriaLatopalmata.cs" />
     <Compile Include="LDSpectrograms\DrawLDSpectrogram.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
