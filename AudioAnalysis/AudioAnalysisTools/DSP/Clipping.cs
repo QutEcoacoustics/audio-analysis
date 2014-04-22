@@ -14,7 +14,7 @@ namespace AudioAnalysisTools
             double littleEpsilon = epsilon * 4;
 
             double maximumAmplitude = envelope.Max();
-            if (maximumAmplitude < 0.8) // assume no clipping
+            if (maximumAmplitude < 0.6) // assume no clipping
             {
                 maxAmplitudeCount = 0;
                 clipCount = 0;
@@ -25,14 +25,14 @@ namespace AudioAnalysisTools
 
             maxAmplitudeCount = 0;
             clipCount = 0;
-            for (int i = 0; i < frameCount; i++)
+            for (int i = 0; i < frameCount; i++) // step through all frames
             {
                 if ((maximumAmplitude - envelope[i]) > epsilon) continue; // skip frames where max is not near global max - no clipping there
 
-                int startFrame = i * frameStepSize;
-                double previousSample = signal[startFrame];
+                int idOfFirstSampleInFrame = i * frameStepSize;
+                double previousSample = signal[idOfFirstSampleInFrame];
 
-                for (int index = startFrame + 1; index < startFrame + frameStepSize; index++)
+                for (int index = idOfFirstSampleInFrame + 1; index < idOfFirstSampleInFrame + frameStepSize; index++)
                 {
                     double sample = Math.Abs(signal[index]);
                     double delta = Math.Abs(sample - previousSample);

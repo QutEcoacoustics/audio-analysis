@@ -110,7 +110,7 @@ namespace AnalysisPrograms
                 OutputDirectory = opdir,
 
                 //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-                ColorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR,                   // CHANGE RGB mapping here.
+                ColorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR,                   // CHANGE RGB mapping here.
                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF, // must be value <=1.0
                 ColourGain = SpectrogramConstants.COLOUR_GAIN,                        // determines colour saturation of the difference spectrogram
 

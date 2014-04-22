@@ -19,7 +19,7 @@ namespace AudioAnalysisTools
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
         private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
 
-        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE default RGB mapping here.
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
         private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
@@ -45,7 +45,7 @@ namespace AudioAnalysisTools
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
-            colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
+            colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
 
             backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF; 
             colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -78,7 +78,8 @@ namespace AudioAnalysisTools
             cs1.FileName = ipFileName1.Name;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+            string[] keys = colorMap.Split('-');
+            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 Console.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
@@ -89,7 +90,7 @@ namespace AudioAnalysisTools
             cs2.FileName = ipFileName2.Name;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
+            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
             if (cs2.GetCountOfSpectrogramMatrices() == 0)
             {
                 Console.WriteLine("There are no spectrogram matrices in cs2.dictionary.");

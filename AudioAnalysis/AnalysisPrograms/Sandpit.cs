@@ -114,7 +114,7 @@ namespace AnalysisPrograms
                 int sampleRate = 17640;
                 int frameWidth = 256;
                 double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-                string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
+                string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
                 var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
                 cs1.FileName = fileStem;
                 cs1.ColorMODE = colorMap;
@@ -126,10 +126,9 @@ namespace AnalysisPrograms
                     Console.WriteLine("There are no spectrogram matrices in the dictionary.");
                     return;
                 }
-                string possibleIndices = "ACI-AVG-CVR-TEN-VAR-CMB-BGN";
-                cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem, possibleIndices);
+                cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
 
-                colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR;
+                colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
                 Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
                 string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);

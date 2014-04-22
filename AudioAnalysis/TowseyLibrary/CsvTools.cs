@@ -368,6 +368,54 @@ namespace TowseyLibrary
             return System.Tuple.Create(headers, values);
         }
 
+        /// <summary>
+        /// returns a Dictionary of the column values in a csv file with column headings as keys
+        /// ASSUMED to be doubles
+        /// TODO Anthony to use the new U-BEAUT csv file reader.
+        /// </summary>
+        /// <param name="csvFileName"></param>
+        /// <returns></returns>
+        public static Dictionary<string, double[]> ReadCSVFile2Dictionary(string csvFileName)
+        {
+            string dir = Path.GetDirectoryName(csvFileName);
+            string pathSansExtention = Path.GetFileNameWithoutExtension(csvFileName);
+            //string opFile = Path.Combine(dir, pathSansExtention + ".png");
+            List<string> lines = FileTools.ReadTextFile(csvFileName);
+
+            int lineCount = lines.Count;
+            string[] words = lines[0].Split(',');
+            int columnCount = words.Length;
+
+            //GET the CSV COLUMN HEADINGS
+            List<string> headers = new List<string>();
+            for (int c = 0; c < columnCount; c++) headers.Add(words[c]);
+
+            //GET the CSV COLUMN HEADINGS
+            //set up the matrix as List of arrays
+            List<double[]> values = new List<double[]>();
+            for (int c = 0; c < columnCount; c++)
+            {
+                double[] array = new double[lineCount - 1];
+                values.Add(array);
+            }
+
+            //fill the arrays
+            for (int r = 1; r < lineCount; r++)
+            {
+                words = lines[r].Split(',');
+                for (int c = 0; c < columnCount; c++)
+                {
+                    values[c][r - 1] = Double.Parse(words[c]);
+                }
+            }
+
+            Dictionary<string, double[]> dict = new Dictionary<string, double[]>();
+            for (int c = 0; c < columnCount; c++)
+            {
+                dict.Add(headers[c], values[c]);
+            }
+            return dict;
+        }
         public static double[,] ReadCSVFile2Matrix(string csvFileName)
         {
             System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);

@@ -355,9 +355,9 @@ namespace Dong.Felt
             if (analysisSettings.IndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
-                result.Indexes = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
+                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
 
-                WriteIndicesFile(analysisSettings.IndicesFile, result.Indexes);
+                WriteIndicesFile(analysisSettings.IndicesFile, result.Indices);
             }
 
             if (analysisSettings.ImageFile != null)

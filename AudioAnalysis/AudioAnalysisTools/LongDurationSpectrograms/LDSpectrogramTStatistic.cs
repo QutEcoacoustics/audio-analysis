@@ -19,11 +19,21 @@ namespace AudioAnalysisTools
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
         private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
 
-        private static string colorMap = SpectrogramConstants.RGBMap_ACI_TEN_CVR; //CHANGE default RGB mapping here.
+        private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
         private static double colourGain = SpectrogramConstants.COLOUR_GAIN;
 
-        private static double tStatThreshold = SpectrogramConstants.T_STAT_THRESHOLD;
+
+
+        //double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
+        //double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
+        //double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
+
+        //public const double tStatThreshold = 1.645;   // 5% confidence @ df=infinity
+        //public const double tStatThreshold = 2.326;   // 1% confidence @ df=infinity
+        //public const double T_STAT_THRESHOLD = 3.09;  // 0.1% confidence @ df=infinity
+        public const double T_STAT_THRESHOLD = 3.29;    // 0.05% confidence @ df=infinity
+        private static double tStatThreshold = T_STAT_THRESHOLD;
 
 
 
@@ -38,7 +48,7 @@ namespace AudioAnalysisTools
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColorMap;
-            colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_TEN_CVR;           // assigns indices to RGB
+            colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
 
             backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -49,7 +59,7 @@ namespace AudioAnalysisTools
             sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;  
             frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH; 
 
-            tStatThreshold = (double?)configuration.TStatThreshold ?? SpectrogramConstants.T_STAT_THRESHOLD;  
+            tStatThreshold = (double?)configuration.TStatThreshold ?? T_STAT_THRESHOLD;  
            
             DrawTStatisticThresholdedDifferenceSpectrograms(new DirectoryInfo(ipdir),
                                                             new FileInfo(ipFileName1), new FileInfo(ipSdFileName1),
@@ -89,7 +99,8 @@ namespace AudioAnalysisTools
             cs1.FileName = opFileName1;
             cs1.ColorMODE = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, colorMap);
+            string[] keys = colorMap.Split('-');
+            cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
             string imagePath = Path.Combine(opdir.FullName, opFileName1 + ".COLNEG.png");
 
             string opFileName2 = ipFileName2.Name;
@@ -97,7 +108,7 @@ namespace AudioAnalysisTools
             cs2.FileName = opFileName2;
             cs2.ColorMODE = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
-            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, colorMap);
+            cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
 
             bool allOK = true;
             int N = 30;
@@ -280,7 +291,7 @@ namespace AudioAnalysisTools
                     //catch low values of dB used to avoid log of zero amplitude.
                     tStat = tStatMatrix[row, col];
                     double tStatAbsolute = Math.Abs(tStat);
-                    Dictionary<string, Color> colourChart = SpectrogramConstants.GetDifferenceColourChart();
+                    Dictionary<string, Color> colourChart = LDSpectrogramDistance.GetDifferenceColourChart();
                     Color colour;
 
                     if (tStat >= 0)

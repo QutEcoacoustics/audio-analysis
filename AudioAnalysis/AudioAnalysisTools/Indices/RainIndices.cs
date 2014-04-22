@@ -12,8 +12,8 @@ namespace AudioAnalysisTools.Indices
 {
     public static class  RainIndices
     {
-        public const string header_rain = "rain";
-        public const string header_cicada = "cicada";
+        public const string header_rain   = InitialiseIndexProperties.keyRAIN;
+        public const string header_cicada = InitialiseIndexProperties.keyCICADA;
         public const string header_negative = "none";
 
 
@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="signal">envelope of the original signal</param>
+        /// <param name="signalEnvelope">envelope of the original signal</param>
         /// <param name="audioDuration"></param>
         /// <param name="frameDuration"></param>
         /// <param name="spectrogram">the original amplitude spectrum BUT noise reduced</param>
@@ -61,10 +61,10 @@ namespace AudioAnalysisTools.Indices
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth">derived from original nyquist and window/2</param>
         /// <returns></returns>
-        public static DataTable GetIndices(double[] signal, TimeSpan audioDuration, TimeSpan frameDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
+        public static Dictionary<string, double> GetIndices(double[] signalEnvelope, TimeSpan audioDuration, TimeSpan frameDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
         {
-            int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration
-
+            int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration            
+ 
             double framesPerSecond = 1 / frameDuration.TotalSeconds;
             int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
             int framesPerChunk = (int)(chunkDuration * framesPerSecond);
@@ -79,16 +79,16 @@ namespace AudioAnalysisTools.Indices
                 int startSecond = i * chunkDuration;
                 int start = (int)(startSecond * framesPerSecond);
                 int end = start + framesPerChunk;
-                if (end >= signal.Length) end = signal.Length - 1;
-                double[] chunkSignal = DataTools.Subarray(signal, start, framesPerChunk);
+                if (end >= signalEnvelope.Length) end = signalEnvelope.Length - 1;
+                double[] chunkSignal = DataTools.Subarray(signalEnvelope, start, framesPerChunk);
                 if (chunkSignal.Length < 50) continue;  //an arbitrary minimum length
                 double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin - 1);
 
-                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, binWidth);
+                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameDuration, binWidth);
                 string classification = RainIndices.ConvertAcousticIndices2Classifcations(rainIndices);
                 classifications[i] = classification;
 
-                //write indices and clsasification info to console
+                //write indices and classification info to console
                 string separator = ",";
                 string line = String.Format("{1:d2}{0} {2:d2}{0} {3:f1}{0} {4:f1}{0} {5:f1}{0} {6:f2}{0} {7:f3}{0} {8:f2}{0} {9:f2}{0} {10:f2}{0} {11:f2}{0} {12:f2}{0} {13:f2}{0} {14}", separator,
                                       startSecond, (startSecond + chunkDuration),
@@ -98,10 +98,7 @@ namespace AudioAnalysisTools.Indices
                                       rainIndices.temporalEntropy, rainIndices.spectralEntropy, classification);
 
                 //if (verbose)
-                if (false)
-                {
-                    LoggedConsole.WriteLine(line);
-                }
+                if (false) { LoggedConsole.WriteLine(line); }
                 //FOR PREPARING SEE.5 DATA  -------  write indices and clsasification info to file
                 //sb.AppendLine(line);
             }
@@ -111,12 +108,8 @@ namespace AudioAnalysisTools.Indices
             //string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
             //FileTools.WriteTextFile(opPath, sb.ToString());
 
-            var dt = ConvertClassifcations2Datatable(classifications);
-            foreach (DataRow row in dt.Rows)
-            {
-                row[AnalysisKeys.SEGMENT_TIMESPAN] = (double)audioDuration.TotalSeconds;
-            }
-            return dt;
+            Dictionary<string, double> dict = ConvertClassifcations2Dictionary(classifications);
+            return dict;
         } //Analysis()
 
         /// <summary>
@@ -128,7 +121,8 @@ namespace AudioAnalysisTools.Indices
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth"></param>
         /// <returns></returns>
-        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
+        public static RainStruct Get10SecondIndices(double[] signal, double[,] spectrogram, int lowFreqBound, int midFreqBound, 
+                                                    TimeSpan frameDuration, double binWidth)
         {
             // i: FRAME ENERGIES - 
             double StandardDeviationCount = 0.1;
@@ -136,7 +130,7 @@ namespace AudioAnalysisTools.Indices
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
@@ -174,11 +168,12 @@ namespace AudioAnalysisTools.Indices
             //spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
             //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
-            var tuple3 = ActivityAndCover.CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, binWidth);
-            rainIndices.lowFreqCover = tuple3.Item1;
-            rainIndices.midFreqCover = tuple3.Item2;
-            rainIndices.hiFreqCover = tuple3.Item3;
-            // double[] coverSpectrum = tuple3.Item4;
+            SpectralActivity sa = ActivityAndCover.CalculateSpectralEvents(spectrogram, spectralBgThreshold, frameDuration, lowFreqBound, midFreqBound, binWidth);
+            rainIndices.lowFreqCover = sa.lowFreqBandCover;
+            rainIndices.midFreqCover = sa.midFreqBandCover;
+            rainIndices.hiFreqCover = sa.highFreqBandCover;
+            //double[] coverSpectrum = sa.coverSpectrum;
+            //double[] eventSpectrum = sa.eventSpectrum;
 
             return rainIndices;
         }
@@ -211,10 +206,9 @@ namespace AudioAnalysisTools.Indices
         } //CalculateSpikeIndex()
 
 
-        public static DataTable ConvertClassifcations2Datatable(string[] classifications)
+        public static Dictionary<string, double> ConvertClassifcations2Dictionary(string[] classifications)
         {
-            string[] headers = { AnalysisKeys.INDICES_COUNT, AnalysisKeys.START_MIN, AnalysisKeys.SEGMENT_TIMESPAN, header_rain, header_cicada };
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double) };
+            Dictionary<string, double> dict = new Dictionary<string, double>(); 
 
             int length = classifications.Length;
             int rainCount = 0;
@@ -225,15 +219,13 @@ namespace AudioAnalysisTools.Indices
                 if (classifications[i] == header_cicada) cicadaCount++;
             }
 
-            var dt = DataTableTools.CreateTable(headers, types);
-            dt.Rows.Add(0, 0.0, 0.0,  //add dummy values to the first three columns. These will be entered later.
-                        (rainCount / (double)length), (cicadaCount / (double)length)
-                        );
-            return dt;
+            dict.Add(header_rain,   (rainCount   / (double)length));
+            dict.Add(header_cicada, (cicadaCount / (double)length));
+            return dict;
         }
 
         /// <summary>
-        /// The values in this class were derived from See5 runs data extracted from 
+        /// The values in this class were derived from See5 runs of data taken from ???? 
         /// </summary>
         /// <param name="indices"></param>
         /// <returns></returns>
@@ -247,8 +239,8 @@ namespace AudioAnalysisTools.Indices
             }
             else
             {
-                if (indices.spectralEntropy < 0.61) return header_cicada;
-                if (indices.bgNoise > -24) return header_cicada;
+                if ((indices.spectralEntropy < 0.6) && (indices.bgNoise > -20)) 
+                    return header_cicada;
             }
             return classification;
         }

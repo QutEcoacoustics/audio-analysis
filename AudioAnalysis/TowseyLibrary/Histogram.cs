@@ -15,14 +15,23 @@ namespace TowseyLibrary
             double max;
             DataTools.MinMax(data, out min, out max);
             double range = max - min;
+            int[] bins = new int[binCount];
+
+            if(range == 0.0)
+            {
+                bins[0] = data.Length;
+                return bins;
+            }
+
             double binWidth = range / (double)binCount;
             // init freq bin array
-            int[] bins = new int[binCount];
             for (int i = 0; i < data.Length; i++)
             {
                 int id = (int)((data[i] - min) / binWidth);
-                if (id >= binCount) id--;
-                else if (id < 0) id = 0;
+                if (id >= binCount) 
+                    id = binCount-1;
+                else if (id < 0)
+                    id = 0;
                 bins[id]++;
             }
             return bins;
@@ -32,14 +41,21 @@ namespace TowseyLibrary
         {
             DataTools.MinMax(data, out min, out max);
             double range = max - min;
-            binWidth = range / (double)binCount;
             // init freq bin array
             int[] bins = new int[binCount];
+
+            if (range == 0.0)
+            {
+                binWidth = 0.0;
+                bins[0] = data.Length;
+                return bins;
+            }
+
+            binWidth = range / (double)binCount;
             for (int i = 0; i < data.Length; i++)
             {
-                int id = 0;
-                if (binWidth != 0.0) id = (int)((data[i] - min) / binWidth);
-                if (id >= binCount) id = binCount - 1; // check because too lazy to do it properly.
+                int id = (int)((data[i] - min) / binWidth);
+                if (id >= binCount) id = binCount - 1; 
                 bins[id]++;
             }
             return bins;
@@ -56,6 +72,43 @@ namespace TowseyLibrary
             max = -double.MaxValue;
             DataTools.MinMax(data, out min, out max);
             binWidth = (max - min) / binCount;
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    int bin = (int)((data[i, j] - min) / binWidth);
+                    if (bin >= binCount) bin = binCount - 1;
+                    if (bin < 0) bin = 0;
+                    histo[bin]++;
+                }
+
+            return histo;
+        }
+
+
+
+        /// <summary>
+        /// HISTOGRAM from a matrix of double
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="binCount"></param>
+        /// <returns></returns>
+        static public int[] Histo(double[,] data, int binCount)
+        {
+            double min;
+            double max;
+            DataTools.MinMax(data, out min, out max);
+            double binWidth = (max - min) / (double)binCount;
+            //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
+
+            return Histo(data, binCount, min, max, binWidth);
+        }
+
+        static public int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            int[] histo = new int[binCount];
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
@@ -174,43 +227,6 @@ namespace TowseyLibrary
 
             return histo;
         }
-
-
-        /// <summary>
-        /// HISTOGRAM from a matrix of double
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <returns></returns>
-        static public int[] Histo(double[,] data, int binCount)
-        {
-            double min;
-            double max;
-            DataTools.MinMax(data, out min, out max);
-            double binWidth = (max - min + 1) / (double)binCount;
-            LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
-
-            return Histo(data, binCount, min, max, binWidth);
-        }
-
-        static public int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
-        {
-            int rows = data.GetLength(0);
-            int cols = data.GetLength(1);
-            int[] histo = new int[binCount];
-
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
-                {
-                    int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
-                    histo[bin]++;
-                }
-
-            return histo;
-        }
-
 
         static public int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
         {
