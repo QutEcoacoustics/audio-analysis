@@ -47,7 +47,6 @@
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
             int neighbourhoodLength = configuration.NeighbourhoodLength;
-            int[] featureSet = configuration.FeatureSet;
 
             int rank = configuration.Rank;
             /* dont use configuration after this */
@@ -67,11 +66,7 @@
                         FilterRidgeMatrixLength = filterRidgeMatrixLength,
                         MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                     };
-                    for (int i = 0; i < featureSet.Length; i++)
-                    {
-                        var feature = featureSet[i];
-
-                    }
+                    
                     int feature2 = 1;
                             MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                            ridgeConfig, config, feature2, rank, outputDirectory.FullName);
