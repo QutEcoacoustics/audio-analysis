@@ -69,15 +69,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticIndicesJie\InitialiseJiesIndexProperties.cs" />
     <Compile Include="Configuration\CaeruleaConfiguration.cs" />
     <Compile Include="Configuration\CanetoadConfiguration.cs" />
     <Compile Include="Configuration\FallaxConfiguration.cs" />
     <Compile Include="Configuration\GracillentaConfiguration.cs" />
     <Compile Include="Configuration\LatopalmataConfiguration.cs" />
     <Compile Include="Configuration\NasutaConfiguration.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForCanetoad.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForLitoriaFallax.cs" />
+    <Compile Include="FrogIndices\CalculateIndexForLitoriaNasuta.cs" />
+    <Compile Include="LDSpectrograms\DrawLDSpectrogram.cs" />
     <Compile Include="ExtractTracks.cs" />
     <Compile Include="FindHarmonics.cs" />
     <Compile Include="FindLocalPeaks.cs" />
+    <Compile Include="LDSpectrograms\SpectrogramConstantsJie.cs" />
     <Compile Include="Oscillation Feature\FindOscillation.cs" />
     <Compile Include="FrogIndex.cs" />
     <Compile Include="Main.cs" />
@@ -116,6 +122,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
