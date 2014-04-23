@@ -376,20 +376,20 @@
                     MinimumNumberInRidgeInMatrix = (int)configuration.MinimumNumberInRidgeInMatrix,
                     NeighbourhoodLength = (int)configuration.NeighbourhoodLength
                     },
-                    new { 
-                    RidgeDetectionMagnitudeThreshold = 6.2,
-                    RidgeMatrixLength = 6,
-                    FilterRidgeMatrixLength = 10,
-                    MinimumNumberInRidgeInMatrix = 4,
-                    NeighbourhoodLength = 8
-                    },
-                    new { 
-                    RidgeDetectionMagnitudeThreshold = 6.2,
-                    RidgeMatrixLength = 6,
-                    FilterRidgeMatrixLength = 10,
-                    MinimumNumberInRidgeInMatrix = 4,
-                    NeighbourhoodLength = 8
-                    },
+                    //new { 
+                    //RidgeDetectionMagnitudeThreshold = 6.0,
+                    //RidgeMatrixLength = 5,
+                    //FilterRidgeMatrixLength = 7,
+                    //MinimumNumberInRidgeInMatrix = 3,
+                    //NeighbourhoodLength = 9
+                    //},
+                    //new { 
+                    //RidgeDetectionMagnitudeThreshold = 5.5,
+                    //RidgeMatrixLength = 5,
+                    //FilterRidgeMatrixLength = 7,
+                    //MinimumNumberInRidgeInMatrix = 3,
+                    //NeighbourhoodLength = 11
+                    //},
             };
 
             foreach (var entry in parameterMixtures)
@@ -425,6 +425,7 @@
                 };
 
                 Play(currentConfig, featurePropertySet, inputDirectory, new DirectoryInfo(fullPath));
+                
             }
 
             //                                  | 1 | 2 | 3 |
@@ -648,7 +649,7 @@
 
         public static void MatchingBatchProcess2(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
             RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, int rank, string featurePropertySet,
-            string outputDirectory)
+            string outputPath)
         {
             /// To read the query file
             var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
@@ -772,15 +773,16 @@
                             }
                         }
                         var queryTempFile = new FileInfo(queryCsvFiles[i]);
-                        var tempFileName = queryTempFile.Name + "-matched candidates.csv";
-                        var matchedCandidateCsvFileName = Path.Combine(outputDirectory, tempFileName);
+                        var tempFileName = queryTempFile.Name + "-matched candidates.csv";                        
+                        // for different feature
+                        var matchedCandidateCsvFileName = outputPath + tempFileName;
                         var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
                         CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
                         /// Drawing the combined image
                         if (matchedCandidateFile != null)
                         {
                             DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
-                                outputDirectory,
+                                outputPath,
                                 rank, ridgeConfig, config);
                         }
                     }// end of if exist the traning datasets
@@ -789,7 +791,7 @@
         }
 
         public static void DrawingCandiOutputSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
-            string outputDirectory, int rank, RidgeDetectionConfiguration ridgeConfig, SonogramConfig config)
+            string outputPath, int rank, RidgeDetectionConfiguration ridgeConfig, SonogramConfig config)
         {
             var candidateFilePathInfo = new FileInfo(candidateCsvFilePath);
             var candidateDirectory = candidateFilePathInfo.DirectoryName;
@@ -827,7 +829,7 @@
                 var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
                 var temp = new FileInfo(candidates[0].SourceFilePath);
                 var imageOutputName = temp.Name + "Combined image.png";
-                var imagePath = Path.Combine(outputDirectory, imageOutputName);
+                var imagePath = outputPath + imageOutputName;
                 imageResult.Save(imagePath, ImageFormat.Png);
             }
         }
