@@ -19,6 +19,8 @@ namespace AnalysisBase.StrongAnalyser.ResultBases
             set { spectralIndices = value; }
         }
 
+        public IndexBase IndexCount { get; set; }
+
 
         // get any index as a double
         public double GetIndex(string key)

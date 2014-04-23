@@ -80,7 +80,7 @@ namespace AnalysisBase.StrongAnalyser
 
                 int unitId = (int) (i * unitTime.TotalMinutes);
 
-                newIndex.MinuteOffset = unitId;
+                newIndex.StartOffsetMinute = unitId;
                 newIndex.EventsTotal = eventsPerUnitTime[i];
                 newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
 

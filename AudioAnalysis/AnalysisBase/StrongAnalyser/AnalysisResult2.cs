@@ -11,7 +11,7 @@ namespace AnalysisBase.StrongAnalyser
     /// 
     /// DO NOT CHANGE THIS CLASS UNLESS YOU ARE TOLD TO.
     /// </summary>
-    public class AnalysisResult2
+    public class AnalysisResult2 : IComparable<AnalysisResult2>
     {
         private readonly AnalysisSettings settingsUsed;
 
@@ -19,7 +19,7 @@ namespace AnalysisBase.StrongAnalyser
         {
             this.settingsUsed = (AnalysisSettings) settingsUsed.Clone();
             this.OutputFiles = new Dictionary<string, FileInfo>();
-            this.AudioDuration = durationAnalysed;
+            this.SegmentAudioDuration = durationAnalysed;
         }
 
         /// <summary>
@@ -31,19 +31,19 @@ namespace AnalysisBase.StrongAnalyser
         /// Gets or sets event results.
         /// Should typically contain many results
         /// </summary>
-        public IEnumerable<EventBase> Events { get; set; }
+        public EventBase[] Events { get; set; }
 
         /// <summary>
         /// Gets or sets summary indices results.
         /// Should typically contain just 1 result.
         /// </summary>
-        public IEnumerable<IndexBase> SummaryIndices { get; set; }
+        public IndexBase[] SummaryIndices { get; set; }
 
         /// <summary>
         /// Get or sets spectral indices results.
         /// Should typically contrain just 1 result
         /// </summary>
-        public IEnumerable<SpectrumBase> SpectralIndices { get; set; } 
+        public SpectrumBase[] SpectralIndices { get; set; } 
 
         /// <summary>
         /// A loosely typed dictinary that can store arbitary result data.
@@ -92,14 +92,19 @@ namespace AnalysisBase.StrongAnalyser
         /// <summary>
         /// Gets or sets the duration of the analysed segment.
         /// </summary>
-        public TimeSpan? AudioDuration { get; private set; }
+        public TimeSpan SegmentAudioDuration { get; private set; }
 
         /// <summary>
         /// Gets or sets the offset of the segment from the original entire audio file.
         /// </summary>
-        public TimeSpan? SegmentStartOffset
+        public TimeSpan SegmentStartOffset
         {
-            get { return this.settingsUsed.SegmentStartOffset; }
+            get { return this.settingsUsed.SegmentStartOffset ?? TimeSpan.Zero; }
+        }
+
+        public int CompareTo(AnalysisResult2 other)
+        {
+            return this.SegmentStartOffset.CompareTo(other.SegmentStartOffset);
         }
     }
 }

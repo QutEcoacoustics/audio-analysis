@@ -24,7 +24,7 @@ namespace AudioAnalysisTools
         public const string ReportFileExt = ".csv";
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
-        /// <summary>
+        /*/// <summary>
         /// 
         /// </summary>
         /// <param name="analyserResults"></param>  
@@ -44,42 +44,83 @@ namespace AudioAnalysisTools
                 if (dataTableForOneAudioSegment != null) mergedDatatable.Merge(dataTableForOneAudioSegment);
             }
             return mergedDatatable;
-        }
+        }*/
 
-        public static Tuple<EventBase[], IndexBase[], SpectrumBase[]> MergeResults(IEnumerable<AnalysisResult2> results)
+//        public static Tuple<EventBase[], IndexBase[], SpectrumBase[]> MergeResults(IEnumerable<AnalysisResult2> results)
+//        {
+//            var eventCount = 0;
+//            var indexCount = 0;
+//            var spectrumCount = 0;
+//
+//            foreach (AnalysisResult2 result in results)
+//            {
+//                eventCount += result.Events.Count;
+//                indexCount += result.SummaryIndices.Count;
+//                spectrumCount += result.SpectralIndices.Count;
+//            }
+//            
+//            var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
+//            var mergedIndices = indexCount > 0 ? new IndexBase[indexCount] :  null;
+//            var mergedSpectra = indexCount > 0 ? new SpectrumBase[spectrumCount] :  null;
+//
+//            int eventIndex = 0;
+//            int indexIndex = 0;
+//            int spectrumIndex = 0;
+//            foreach (AnalysisResult2 result in results)
+//            {
+//                // todo - make sure these sort instead of increment counters
+//                eventIndex = CorrectEventOffsets(mergedEvents, eventIndex, result);
+//
+//                indexIndex = CorrectIndexOffsets(mergedIndices, indexIndex, result);
+//
+//                spectrumIndex = CorrectSpectrumOffsets(mergedSpectra, spectrumIndex, result);
+//            }
+//
+//            Array.Sort();
+//
+//            return Tuple.Create(mergedEvents, mergedIndices, mergedSpectra);
+//        }
+
+        public static T[] MergeResults<T>(IEnumerable<AnalysisResult2> results, Func<AnalysisResult2, T[]> selector, Action<AnalysisResult2, T, int, int> correctionFunc ) where T: ResultBase
         {
-            var eventCount = 0;
-            var indexCount = 0;
-            var spectrumCount = 0;
+            var count = results.Sum(result => selector(result).Length);
 
-            foreach (AnalysisResult2 result in results)
+            if (count <= 0)
             {
-                eventCount += result.Events.Count();
-                indexCount += result.SummaryIndices.Count();
-                spectrumCount += result.SpectralIndices.Count();
-            }
-            
-            var mergedEvents = eventCount > 0 ? new EventBase[eventCount] : null;
-            var mergedIndices = indexCount > 0 ? new IndexBase[indexCount] :  null;
-            var mergedSpectra = indexCount > 0 ? new SpectrumBase[indexCount] :  null;
-
-            int eventIndex = 0;
-            int indexIndex = 0;
-            int spectrumIndex = 0;
-            foreach (AnalysisResult2 result in results)
-            {
-                // todo - make sure these sort instead of increment counters
-                eventIndex = CorrectEventOffsets(mergedEvents, eventIndex, result);
-
-                indexIndex = CorrectIndexOffsets(mergedIndices, indexIndex, result);
-
-                spectrumIndex = CorrectSpectrumOffsets(mergedSpectra, spectrumIndex, result);
+                return null;
             }
 
-            return Tuple.Create(mergedEvents, mergedIndices, mergedSpectra);
+            var merged = new T[count];  
+
+            int index = 0;
+            foreach (var result in results)
+            {
+                T[] items = selector(result);
+
+                // relies on SegmentStartOffset to be set (enforced by analysisCoordinator)
+                Array.Sort(items);
+
+                for (int resultIndex = 0; resultIndex < items.Length; resultIndex++)
+                {
+                    var item = items[resultIndex];
+                    item.StartOffsetMinute = (int)result.SegmentStartOffset.TotalMinutes;
+                    item.SegmentDuration = result.SegmentAudioDuration;
+
+                    // correct specific details
+                    correctionFunc(result, item, index, resultIndex);
+
+                    merged[index] = item;
+                    index++;
+                }
+            }
+
+            // assumption of non-overlapping results - otherwise another sort of the final list will be needed.
+
+            return merged;
         }
 
-        // TODO: ensure all functionality here is tkaen care of in correct index offsets
+
+        // TODO: ensure all functionality here is taken care of in correct index offsets
         [Obsolete]
         public static IndexBase[] MergeIndexResults(IEnumerable<AnalysisResult> results)
         {
@@ -91,7 +132,7 @@ namespace AudioAnalysisTools
             foreach (AnalysisResult result in results)
             {
                 IndexBase ib = result.indexBase;
-                ib.SegmentOffsetFromStartOfSource = result.SegmentStartOffset;
+                ib.SegmentStartOffset = result.SegmentStartOffset;
                 ib.SegmentDuration = result.AudioDuration;
                 //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
                 ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
@@ -111,7 +152,7 @@ namespace AudioAnalysisTools
             return mergedIndices;
         }
 
-        
+        /*
         public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
         {
             TimeSpan segmentStartOffset = result.SegmentStartOffset;
@@ -158,47 +199,32 @@ namespace AudioAnalysisTools
             }
 
             return dt;
-        } //GetSegmentDatatableWithContext()
+        } //GetSegmentDatatableWithContext()*/
 
-        public static int CorrectEventOffsets(EventBase[] destination, int destinationIndex, AnalysisResult2 result)
+
+        public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar )
         {
-            var resultStartSeconds = result.SegmentStartOffset.TotalSeconds;
-            var count = 0;
-            foreach (var eventBase in result.Data)
-            {
-                eventBase.EventCount = count;
-                count++;
+            // TODO: check with michael what this should be (totalEventsSoFa or totalEventsInResultSoFar)
+            eventToBeFixed.EventCount = totalEventsSoFar;
 
-                eventBase.SegmentDuration = result.AudioDuration;
-                var absoluteOffset = resultStartSeconds + eventBase.EventStartSeconds;
-                eventBase.EventStartAbsolute = absoluteOffset;
-                
-                // just in case the event was in a segment longer than 60 seconds, rebase values
-                eventBase.MinuteOffset = (int) (absoluteOffset / 60);
-                eventBase.EventStartSeconds = resultStartSeconds % 60;
+            var resultStartSeconds = eventToBeFixed.SegmentStartOffset.TotalSeconds;
+            var absoluteOffset = resultStartSeconds + eventToBeFixed.EventStartSeconds;
+            eventToBeFixed.EventStartAbsolute = absoluteOffset;
 
-                destination[destinationIndex] = eventBase;
-                destinationIndex++;
-            }
-
-            return destinationIndex;
+            // just in case the event was in a segment longer than 60 seconds, rebase values
+            eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
+            eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 
-        public static int CorrectIndexOffsets(IndexBase[] destination, int destinationIndex, AnalysisResult2 result)
+        public static void CorrectSummaryIndex(AnalysisResult2 result, IndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInResultSoFar)
         {
-            foreach (var indexBase in result.Indices)
-            {
-                // (double)result.SegmentStartOffset.Minutes
-                indexBase.MinuteOffset = (int)result.SegmentStartOffset.TotalMinutes;
-                indexBase.SegmentDuration = result.AudioDuration;
-                //indexBase.indexStore = result.
-                // TODO: what is the purpose of Indices_Count
+            indexToBeFixed.IndexCount = indexToBeFixed;
+        }
 
-                destination[destinationIndex] = indexBase;
-                destinationIndex++;
-            }
 
-            return destinationIndex;
+        public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectrumBase spectrumToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
+        {
+            
         }
 
         

@@ -287,7 +287,7 @@ namespace Dong.Felt
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
 
-            this.MinuteOffset = (int) (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+            this.StartOffsetMinute = (int) (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
             
         }
@@ -319,7 +319,7 @@ namespace Dong.Felt
                          };
 
             var recording = new AudioRecording(audioFile.FullName);
-            result.AudioDuration = recording.Duration();
+            result.SegmentAudioDuration = recording.Duration();
             if (recording.SampleRate != 22050)
             {
                 throw new NotSupportedException();
@@ -357,7 +357,7 @@ namespace Dong.Felt
             if (analysisSettings.IndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
-                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
+                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.SegmentAudioDuration, 0);
 
                 WriteIndicesFile(analysisSettings.IndicesFile, result.Indices);
             }
@@ -367,7 +367,7 @@ namespace Dong.Felt
                 throw new NotImplementedException();
             }
 
-            result.AudioDuration = recording.Duration();
+            result.SegmentAudioDuration = recording.Duration();
             return result;
         }
 

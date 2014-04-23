@@ -101,7 +101,7 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult2> Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
+        public AnalysisResult2[] Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
         {
             return Run(new List<FileSegment>() {new FileSegment() {OriginalFile = file}}, analysis, settings);
         }
@@ -121,7 +121,7 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult2> Run(FileSegment fileSegment, IAnalyser2 analysis, AnalysisSettings settings)
+        public AnalysisResult2[] Run(FileSegment fileSegment, IAnalyser2 analysis, AnalysisSettings settings)
         {
             return Run(new List<FileSegment>() {fileSegment}, analysis, settings);
         }
@@ -141,7 +141,7 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult2> Run(IEnumerable<FileSegment> fileSegments, IAnalyser2 analysis,
+        public AnalysisResult2[] Run(IEnumerable<FileSegment> fileSegments, IAnalyser2 analysis,
             AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
@@ -160,7 +160,7 @@ namespace AnalysisBase
                 analysisSegments.Remove(finalSegment);
             }
 
-            IEnumerable<AnalysisResult2> results;
+            AnalysisResult2[] results;
 
             Log.DebugFormat("Analysis started in {0}.", this.IsParallel ? "parallel" : "sequence");
 
@@ -172,6 +172,9 @@ namespace AnalysisBase
             if (this.IsParallel)
             {
                 results = RunParallel(analysisSegments, analysis, settings);
+
+                // TODO: determine of this is bad because we do not do it for sequential as well!
+                Array.Sort(results);
             }
             else // sequential
             {
@@ -209,7 +212,7 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        private IEnumerable<AnalysisResult2> RunParallel(IEnumerable<FileSegment> analysisSegments, IAnalyser2 analysis,
+        private AnalysisResult2[] RunParallel(IEnumerable<FileSegment> analysisSegments, IAnalyser2 analysis,
             AnalysisSettings settings)
         {
             var analysisSegmentsCount = analysisSegments.Count();
@@ -263,12 +266,13 @@ namespace AnalysisBase
         /// <returns>
         /// The analysis results.
         /// </returns>
-        private IEnumerable<AnalysisResult2> RunSequential(IEnumerable<FileSegment> analysisSegments,
+        private AnalysisResult2[] RunSequential(IEnumerable<FileSegment> analysisSegments,
             IAnalyser2 analysis, AnalysisSettings settings)
         {
-            var results = new List<AnalysisResult2>();
             var analysisSegmentsList = analysisSegments.ToList();
             var totalItems = analysisSegmentsList.Count;
+            var results = new AnalysisResult2[totalItems];
+            
 
             for (var index = 0; index < analysisSegmentsList.Count; index++)
             {
@@ -279,7 +283,7 @@ namespace AnalysisBase
                 var result = ProcessItem(item, analysis, settings);
                 if (result != null)
                 {
-                    results.Add(result);
+                    results[index] = result;
                 }
 
                 // check for cancellation
@@ -429,7 +433,7 @@ namespace AnalysisBase
         {
             Debug.Assert(result.SettingsUsed != null);
             Debug.Assert(result.SegmentStartOffset == start);
-            Debug.Assert(result.AudioDuration == preparedFileDuration);
+            Debug.Assert(result.SegmentAudioDuration == preparedFileDuration);
             Debug.Assert(settings.ImageFile != null && settings.ImageFile.Exists);
             if (result.Events != null)
             {

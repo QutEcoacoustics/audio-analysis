@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -59,6 +60,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             bool doParallelProcessing = (bool?) configuration[AnalysisKeys.PARALLEL_PROCESSING] ?? false;
             string analysisIdentifier = configuration[AnalysisKeys.ANALYSIS_NAME];
 
+
            /* var configuration = new ConfigDictionary(configFile.FullName);
             Dictionary<string, string> configDict = configuration.GetTable();
 
@@ -81,7 +83,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                 doParallelProcessing = ConfigDictionary.GetBoolean(AnalysisKeys.PARALLEL_PROCESSING, configDict);*/
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, displayCsvImage)
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,
@@ -151,49 +153,43 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                 LoggedConsole.WriteErrorLine("###################################################\n");
                 throw new AnalysisOptionDevilException();
             }
-
-            DataTable mergedDatatable = null;
-            EventBase[] mergedEventResults = null;
-            IndexBase[] mergedIndicesResults = null;
-            if (isStrongTypedAnalyser)
-            {
+        
                 // next line commented out by Michael 15-04-2014 to force use of his merge method.
                 //ResultsTools.MergeResults(analyserResults).Decompose(out mergedEventResults, out mergedIndicesResults);
-                mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults);
-            }
-            else
-            {
-                // merge all the datatables from the analysis into a single datatable
-                mergedDatatable = ResultsTools.MergeResultsIntoSingleDataTable(analyserResults);
-                if (mergedDatatable == null)
-                {
-                    LoggedConsole.WriteErrorLine("###################################################\n");
-                    LoggedConsole.WriteErrorLine(
-                        "MergeEventResultsIntoSingleDataTable() has returned a null data table.");
-                    LoggedConsole.WriteErrorLine("###################################################\n");
-                    throw new AnalysisOptionDevilException();
-                }
-            }
+                //mergedIndicesResults = ResultsTools.MergeIndexResults(analyserResults);
+
+            // 8.1. Merge and correct main result types
+            EventBase[] mergedEventResults = ResultsTools.MergeResults(analyserResults, ar => ar.Events, ResultsTools.CorrectEvent);
+            IndexBase[] mergedIndicesResults = ResultsTools.MergeResults(analyserResults, ar => ar.SummaryIndices, ResultsTools.CorrectSummaryIndex);
+            SpectrumBase[] mergedSpectrumResults = ResultsTools.MergeResults(analyserResults, ar => ar.SpectralIndices, ResultsTools.CorrectSpectrumIndex);
+            
+
 
             // not an exceptional state, do not throw exception
-            if (mergedDatatable != null && mergedDatatable.Rows.Count == 0)
-            {
-                LoggedConsole.WriteWarnLine("The analysis produced no results at all (mergedDatatable had zero rows)");
-            }
             if (mergedEventResults != null && mergedEventResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no EVENTS (mergedResults had zero count)");
             }
             if (mergedIndicesResults != null && mergedIndicesResults.Length == 0)
             {
-                LoggedConsole.WriteWarnLine("The analysis produced no INDICES (mergedResults had zero count)");
+                LoggedConsole.WriteWarnLine("The analysis produced no Summary INDICES (mergedResults had zero count)");
+            }
+            if (mergedSpectrumResults != null && mergedSpectrumResults.Length == 0)
+            {
+                LoggedConsole.WriteWarnLine("The analysis produced no Spectral Indices (merged results had zero count)");
             }
 
 
             // get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
+#if DEBUG
             var audioUtility = new MasterAudioUtility(tempFilesDirectory);
             var mimeType = MediaTypes.GetMediaType(sourceAudio.Extension);
             var sourceInfo = audioUtility.Info(sourceAudio);
+
+            // updated by reference all the way down in LocalSourcePreparer
+            Debug.Assert(fileSegment.OriginalFileDuration == sourceInfo.Duration);
+#endif
+            var duration = fileSegment.OriginalFileDuration;
 
             double scoreThreshold = 0.2; // min score for an acceptable event
             if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.EVENT_THRESHOLD))
@@ -223,7 +219,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             else
             {
                 ResultsTools
-                    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, sourceInfo.Duration.Value, scoreThreshold)
+                    .GetEventsAndIndicesDataTables(mergedDatatable, analyser, duration, scoreThreshold)
                     .Decompose(out eventsDatatable, out indicesDatatable);
                 eventsCount = eventsDatatable == null ? 0 : eventsDatatable.Rows.Count;
                 numberOfRowsOfIndices = indicesDatatable == null ? 0 : indicesDatatable.Rows.Count;
