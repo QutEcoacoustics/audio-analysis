@@ -11,6 +11,10 @@ namespace Dong.Felt.Representations
 {
     public class RidgeDescriptionNeighbourhoodRepresentation 
     {
+        public const string FeaturePropSet1 = "FeaturePropSet1";
+        public const string FeaturePropSet2 = "FeaturePropSet2";
+        public const string FeaturePropSet3 = "FeaturePropSet3";
+
         #region Properties
 
         // all neighbourhoods for one representation must be the same dimensions
@@ -627,7 +631,7 @@ namespace Dong.Felt.Representations
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList, 
-            int rowsCount, int colsCount, int neighbourhoodLength, int featureSetType,
+            int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -640,12 +644,13 @@ namespace Dong.Felt.Representations
                     {
                         var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
                         var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
-                        if (featureSetType == 1 || featureSetType == 2)
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1
+                            || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
                         {
                             ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
                             
                         }
-                        if (featureSetType == 3)
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
                         {
                             ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
                         }

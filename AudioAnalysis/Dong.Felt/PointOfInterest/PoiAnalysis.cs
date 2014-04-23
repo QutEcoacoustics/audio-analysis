@@ -23,7 +23,7 @@ namespace Dong.Felt
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
 
-    // several types of points of interest
+    // several types of points of interest (for later use)
     public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
 
     public class PointOfInterestAnalysis

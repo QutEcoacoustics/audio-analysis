@@ -6,11 +6,34 @@ namespace Dong.Felt.Representations
     using System.Linq;
     using System.Text;
 
-    // This class will contain a bunch of neighbourhoods. 
-    //public class RidgeDescriptionRegionRepresentation : RegionRerepresentation
-    //{
-        
-        
+    //This class will contain a bunch of neighbourhoods. 
+    public class RidgeDescriptionRegionRepresentation : RegionRerepresentation
+    {
+
+        /// <summary>
+        /// This method is trying to normalize the neighbourhood ridge properties based on featurePropertySet. 
+        /// </summary>
+        /// <param name="ridgeNhRepresentationList"></param>
+        /// <param name="featurePropertySet"></param>
+        /// <returns></returns>
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NomalizeNhRidgeProperties(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNhRepresentationList,
+            string featurePropertySet)
+        {
+            var normalizedNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+            {
+                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties(ridgeNhRepresentationList);
+            }
+            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+            {
+                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(ridgeNhRepresentationList);
+            }
+            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+            {
+                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
+            }
+            return normalizedNhRepresentationList;
+        }
 
 
         //// nhRepre has already had these two properties, it indicates the top left point coordinates. 
@@ -50,5 +73,5 @@ namespace Dong.Felt.Representations
         //    this.AudioFrequencyIndex = (int)(this.minFrequency / (neighbourhoodLength * frequencyScale));
         //}
 
-    //}
+    }
 }

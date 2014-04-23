@@ -34,6 +34,7 @@ namespace Dong.Felt
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
+    using Dong.Felt.Representations;
 
     
     /// <summary>
@@ -93,7 +94,8 @@ namespace Dong.Felt
             // these are configuration settings
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
  
-            DongSandpit.Play(configuration, args.Input, args.Output);
+            //DongSandpit.Play(configuration, args.Input, args.Output);
+            DongSandpit.ParameterMixture(configuration, args.FeaturePropertySet, args.Input, args.Output);
             // Batch Process
             //foreach (string path in Files)
             //{
@@ -193,6 +195,10 @@ namespace Dong.Felt
             [ArgDescription("The source directory to analyse")]
             [AnalysisPrograms.Production.ArgExistingFile()]
             public DirectoryInfo Input { get; set; }
+
+            [ArgDescription("The set of feature properties to use to represent a feature")]
+            [DefaultValue(RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)]
+            public string FeaturePropertySet { get; set; }
 
             [ArgDescription("The path to the config file")]
             [AnalysisPrograms.Production.ArgExistingFile()]
