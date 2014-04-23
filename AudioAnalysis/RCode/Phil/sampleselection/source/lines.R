@@ -175,17 +175,29 @@ Lines <- function (m) {
     # join lines
     # todo
 
-    return(cbind(centroids, lines))
+    return(lines)
     
 }
 
 LineWalk <- function (m, center, r) {
+    # given a center point on matrix m,
+    # creates a "line", which consists of 2 branches. 
+    # branch 1 is created by finding the angle from 'center' with the highest score
+    # then moving "r" pixels in that direction and finding the angle from 
+    # there with the highest score and so on. the range of angle to include for each step is 
+    # limited to 90 degrees (configurable) from the previous step, so that it keeps
+    # the line moving in the same direction. 
+    # branch 2 is created in the same way, but by starting the walk 180 degrees from the angle
+    # of the first node of branch 1. 
+    
+    
+    
     
     sub <- m[(center[1]-r):(center[1]+r), (center[2]-r):(center[2]+r)] 
-    best.angle <- FindBestLine(sub, recurse.depth = 2)
+    best.angle <- FindBestLine(sub, recurse.depth = 1)
     
-    branch.1 <- LineWalkBranch(m, center, r, best.angle$angle, range = pi/4, resolution = 3, refinements = 1)
-    branch.2 <- LineWalkBranch(m, center, r, OppositeAngle(best.angle$angle), range = pi/4, resolution = 3, refinements = 1)
+    branch.1 <- LineWalkBranch(m, center, r, best.angle$angle, range = pi/4, resolution = 3, refinements = 2)
+    branch.2 <- LineWalkBranch(m, center, r, OppositeAngle(best.angle$angle), range = pi/4, resolution = 3, refinements = 2)
     
     #branch.1$branch <- rep(1, nrow(branch.1))
     #branch.1$joint <- 1:nrow(branch.1)
@@ -203,11 +215,7 @@ LineWalk <- function (m, center, r) {
 
 OppositeAngle <- function (angle) {
     # maybe there is a way to do this in 1 line with modulus. I couldn't find it
-    if (angle <= 0) {
-        return(angle + pi)    
-    } else {
-        return(angle - pi)
-    }
+    return((angle + pi) %% (2*pi))
 }
 
 LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refinements = 2) {
@@ -217,7 +225,7 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
     
     cur.center <- start.center
     empty.line.cols <- rep(NA, max.per.branch)
-    branch <- data.frame(angle = empty.line.cols,  length = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
+    branch <- data.frame(row = empty.line.cols, col = empty.line.cols, angle = empty.line.cols,  length = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
     
     for(line.num in 1:max.per.branch) {
         
@@ -228,14 +236,29 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
             break()
         }
         
-        branch[line.num, ] <- unlist(line)
+
         # shift the current center to the coordinates given by line length and angle
         
-        #!! this is broken!
-        cur.center <- round(c(cur.center[1] * sin(line$angle), cur.center[2] * cos(line$angle)))
+        # negative angle means move down, which means positive change to row
+        # therefore reverse the sign on row change
+        cur.center <- cur.center + round(c( (0-line$length) * sin(line$angle), line$length * cos(line$angle)))
+        
+        # the "row" and "col" of the line, are the end point of the line. 
+        # the start point is the end point of the previous line, or the start of the branch if it's the first line
+        # this is why 'cur.center' is calculated before recording this line
+        branch$row[line.num] <- cur.center[1]
+        branch$col[line.num] <- cur.center[2]
+        branch$angle[line.num] <- line$angle
+        branch$length[line.num] <- line$length
+        branch$score[line.num] <- line$score
+        branch$mean[line.num] <- line$mean
+        branch$sd[line.num] <- line$sd
+        
         angle <- line$angle
         
     }
+    
+    branch <- branch[complete.cases(branch), ]
     
     
     return(branch)
@@ -253,13 +276,17 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
   
     # radius is 1 less than half the width of the square matrix
     r <- (ncol(m) - 1) / 2  
-    scores <- rep(NA, 2*resolution+1) 
+
     angles <- angle + range*(-resolution:resolution)/resolution
-    if (range == pi) {
-        # if the range is pi, then the last angle will equal the first
-        angles <- angles[1:(length(angles)-1)]
-    }    
-    for (theta.i in 1:length(angles)) {       
+    
+    # if range is pi or more, this will remove duplicate angles 
+    # (eg 0 and 2pi if range is pi)
+    angles <- unique(angles %% (2*pi))
+    scores <- rep(NA, length(angles)) 
+    
+    
+    for (theta.i in 1:length(angles)) {      
+        
         distances <- DistanceToLine(angles[theta.i], r, TRUE)
         weights <- GaussianFunction(a = 1, x = distances, b = 0, c = 1) 
         scores[theta.i] <- sum(m * weights, na.rm = TRUE) 
@@ -296,6 +323,52 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
 
 
 
+DistanceToLine <- function (theta, r, one.way = FALSE) {
+    # returns a width*width matrix. Each cell holds the distance of
+    # that cell from  a line which passes through the center 
+    # of the matrix at an angle theta. 
+    #
+    # Args:
+    #   width: integer
+    #   theta: number [0,180] angle from horizontal in radians
+    # 
+    # Value: 
+    #   m: matrix
+    #
+    # Details:
+    #   slightly inaccurate (I think because of accuracy that pi is stored)
+    #   so zeros will not be exactly zero. 
+    
+    if (theta > 2*pi || theta < 0) {
+        stop('theta must be between 0 and 2 pi')
+    }
+    
+    width <- 2*r + 1    
+    mx <- matrix(-r:r, nrow = width, ncol = width, byrow = TRUE)
+    my <- matrix(r:-r, nrow = width, ncol = width)
+    tan.theta <- tan(theta)
+    md <- abs(tan.theta*mx - my) / sqrt(tan.theta^2 + 1)
+    
+    outside.circle <- (mx^2 + my^2) > (r+0.5)^2
+    md[outside.circle] <- NA
+    
+    if (one.way) { 
+        tan.theta2 <- tan(theta + (pi/2))        
+        
+        if (theta > 0 & theta <= pi) {
+            # round to some significant figure so that very small numbers end up equal to zero
+            remove <- my < round(mx * tan.theta2, 6)  
+        } else {
+            remove <- my > round(mx * tan.theta2, 6)
+        }
+        md[remove] <- NA      
+    }
+    
+    return(md)
+    
+}
+
+
 FindBestLine.twoDirections <- function (m = NA, r = 4, inspect = FALSE) {
     # finds angle of the line passing through the centre of m
     # which has the least error
@@ -326,84 +399,20 @@ FindBestLine.twoDirections <- function (m = NA, r = 4, inspect = FALSE) {
         score = score,
         mean = mean,
         sd = sd   
-        ))
+    ))
     
     
 }
-
-
-DistanceToLine <- function (theta, r, one.way = FALSE) {
-    # returns a width*width matrix. Each cell holds the distance of
-    # that cell from  a line which passes through the center 
-    # of the matrix at an angle theta. 
-    #
-    # Args:
-    #   width: integer
-    #   theta: number [0,180] angle from horizontal in radians
-    # 
-    # Value: 
-    #   m: matrix
-    #
-    # Details:
-    #   slightly inaccurate (I think because of accuracy that pi is stored)
-    #   so zeros will not be exactly zero. 
-    
-    if (theta > pi || theta < -pi) {
-        stop('theta must be between pi and negative pi')
-    }
-    
-    width <- 2*r + 1    
-    mx <- matrix(-r:r, nrow = width, ncol = width, byrow = TRUE)
-    my <- matrix(r:-r, nrow = width, ncol = width)
-    tan.theta <- tan(theta)
-    md <- abs(tan.theta*mx - my) / sqrt(tan.theta^2 + 1)
-    
-    outside.circle <- (mx^2 + my^2) > (r+0.5)^2
-    md[outside.circle] <- NA
-    
-    if (one.way) { 
-        tan.theta2 <- tan(theta + (pi/2))
-        
-        #x.1 <- 1
-        #x.2 <- -1
-        #y.1 <- tan.theta2 
-        #y.2 <- -tan.theta2
-        #remove <- ((x.2 - x.1)*(my - y.1) - (y.2 - y.1)*(mx - x.1)) > 0;
-        print(tan.theta2)
-        
-        if (theta > 0 & theta <= pi) {
-            remove <- my < (mx - 0.01) * tan.theta2    
-        } else {
-            remove <- my > (mx + 0.01) * tan.theta2      
-        }
-        md[remove] <- NA      
-    }
-    
-    return(md)
-    
-}
-
-
-
-    
-
-
 
 Lines1 <- function (spectro) { 
-
     m <- spectro$vals
-
     m <- Simplify(m)
-    
     #spectro$vals <- m
     #Sp.Draw(spectro)  
-    
     cell.w <- 10
     cell.h <- 10
-    
     x.offsets <- seq(1, ncol(m) - ncol(m) %% cell.w, cell.w)
     y.offsets <- seq(1, nrow(m) - nrow(m) %% cell.w, cell.w)
-    
     line.cols <- rep(NA, length(x.offsets) * length(y.offsets))
     lines <- data.frame(start.x = line.cols, 
                         start.y = line.cols, 
@@ -411,30 +420,21 @@ Lines1 <- function (spectro) {
                         end.y = line.cols, 
                         slope = line.cols, 
                         error = line.cols)
-    
     lnum = 1
-    
     for (x in x.offsets) {
         for (y in y.offsets) {
             y.offset <- y
             x.offset <- x
             sub <- m[y.offset:(y.offset+cell.h), x.offset:(x.offset+cell.w)]
-
             if (length(sub[sub > 0]) > 3) {
-
-                image(t(sub))
-                
- 
-                
-                lobf <- LineOfBestFit2(sub)       
-                
+                image(t(sub))    
+                lobf <- LineOfBestFit2(sub)                   
                 if(lobf$y.intercept < 0) {
                     x.bottom.intercept <- (0 - lobf$y.intercept) / lobf$slope                   
                     start <- c(x.bottom.intercept, 0)
                 } else {
                     start <- c(0, lobf$y.intercept)   
-                }
-                
+                }           
                 y.right.intercept <- lobf$y.intercept + lobf$slope * cell.w
                 
                 if (y.right.intercept > cell.h) {
@@ -442,41 +442,27 @@ Lines1 <- function (spectro) {
                     end <- c(x.top.intercept, cell.h)
                 } else {
                     end <- c(cell.w, y.right.intercept) 
-                }
-                
-                
+                }         
                 
                 lines$start.x[lnum] <- start[1] + x.offset 
                 lines$end.x[lnum] <- end[1] + x.offset
-                
-            
-                
+                             
                 # y is a bit hard because we are starting from the top
                 lines$start.y[lnum] <-  y.offset + cell.h - start[2]
                 lines$end.y[lnum] <-  y.offset + cell.h - end[2]
                 
                 lines$slope[lnum] <- lobf$slope
                 lines$error <- lobf$error
-                
-    
-                
-
-                
- 
-                
+      
                 lnum <- lnum + 1
              
-            }
-            
-
+            }   
         }
     }
     
     spectro$lines <- lines
     
     return(spectro)
-    
-    
     
 }
 
@@ -492,23 +478,11 @@ LineOfBestFit <- function(m) {
     
 }
 
-LineOfBestFit2 <- function (m) {
-    
-
-    
-    angle.res <- 10  # sweep in increments of 10 degrees
-    
-    
-    
-    
-}
-
 GetMaxCell <- function (m) {
     max.cell <- which(m == max(m), arr.ind = TRUE)
     max.cell <- max.cell[ceiling(nrow(max.cell)/2) ,]  # if there are more than one, use the middle value
     return(max.cell)
 }
-
 
 BlurForLines <- function (m) {  
     
