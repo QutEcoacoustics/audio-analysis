@@ -127,15 +127,15 @@
             }
 
 
-            /// experiments with similarity search with ridgeNeighbourhoodRepresentation.
+            //// experiments with similarity search with ridgeNeighbourhoodRepresentation.
             //if (true)
             //{                  
             //string csvOutputPath = Path.Combine(outputDirectory, csvOutputFileName);
             //string matchedCandidateFileName = "matched candidates--Scarlet Honeyeater1.csv";
             //string matchedCandidateOutputPath = Path.Combine(outputDirectory, matchedCandidateFileName);
 
-            /// Single experiment. 
-            /// FilePathSetting
+            //// Single experiment. 
+            //// FilePathSetting
             //string inputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Query";
             //string outputDirectory = @"C:\XUEYAN\PHD research work\New Datasets\4.Easten Whipbird1\Query\CSV Results";
             //string audioFileName = "NEJB_NE465_20101014-052000-0521000-estern whipbird.wav";
@@ -161,7 +161,7 @@
             //    NyquistFrequency = spectrogram.NyquistFrequency
             //};
 
-            /// Read Liang's spectrogram.Data
+            //// Read Liang's spectrogram.Data
             ////string fileName = "2Liang_spectro.csv";
             ////string csvPath = Path.Combine(outputDirectory, fileName);
             ////var lines = File.ReadAllLines(csvPath).Select(i => i.Split(','));
@@ -197,7 +197,7 @@
             ////    }
             ////}
 
-            /// spectrogram drawing setting
+            //// spectrogram drawing setting
             //var scores = new List<double>();
             //scores.Add(1.0);
             //var acousticEventlist = new List<AcousticEvent>();
@@ -307,7 +307,7 @@
             //var candidatefile = new FileInfo(candidateOutputFilePath);
             //CSVResults.CandidateListToCSV(candidatefile, candidateList); 
 
-            ///reconstruct the spectrogram.
+            ////reconstruct the spectrogram.
             //var gr = Graphics.FromImage(bmp);
             //foreach (var nh in nhRepresentationList)
             //foreach (var nh in normalisedNhRepresentationList)
@@ -317,7 +317,7 @@
             //image = (Image)bmp;
             //bmp.Save(imagePath);
 
-            /// To get the similairty score and get the ranking. 
+            //// To get the similairty score and get the ranking. 
             //var rank = 10;
             //var itemList = (from l in listOfPositions
             //                orderby l.Item1 ascending
@@ -347,16 +347,16 @@
             //var filterOverlappedEvents = FilterOutOverlappedEvents(finalAcousticEvents);
             //var similarityScore = StatisticalAnalysis.ConvertDistanceToPercentageSimilarityScore(Indexing.DistanceScoreFromAudioRegionVectorRepresentation(queryRegionRepresentation, candidatesVector));
 
-            ///Read the acoustic events from csv files.  
+            ////Read the acoustic events from csv files.  
             //acousticEventlist = CSVResults.CsvToAcousticEvent(file);
-            /// output events image
+            //// output events image
             //imagePath = Path.Combine(outputDirectory, annotatedImageFileName);
 
-            /// to save the ridge detection spectrogram. 
+            //// to save the ridge detection spectrogram. 
             //image = (Image)bmp;
             //image.Save(annotatedImagePath);
 
-            /// to save the annotated spectrogram. 
+            //// to save the annotated spectrogram. 
             //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
             //image.Save(imagePath, ImageFormat.Png);
             //}
