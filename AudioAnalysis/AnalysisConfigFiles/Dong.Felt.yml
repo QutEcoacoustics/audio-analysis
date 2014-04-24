@@ -8,7 +8,7 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings
+InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2
 OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
 
 # action
@@ -35,6 +35,8 @@ SecondToMillionSecondUnit: 1000
 
 Rank: 5
 
+# For neighbourhood representation 
+FeaturePropertySet: [FeaturePropSet1, FeaturePropSet2, FeaturePropSet3]
 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
