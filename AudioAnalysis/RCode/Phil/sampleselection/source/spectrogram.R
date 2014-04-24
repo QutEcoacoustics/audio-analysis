@@ -251,29 +251,81 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
 }
 
 
-Sp.DrawLines <- function (spectro) {
-    
-    if(!is.null(spectro$lines) && nrow(spectro$lines) > 0) {
-        palette(rainbow(20)) 
-        
-        spectro$lines$color <- ceiling(Normalize(spectro$lines$score) * 10)
+Sp.DrawLines.1 <- function (spectro) {  
+    if(!is.null(spectro$lines) && nrow(spectro$lines) > 0) {       
+        pallete.size <- 20    
+        palette(rainbow(pallete.size))     
         # only show the top scoring half
         # spectro$lines <- spectro$lines[spectro$lines$color > 1 ,]
-        
         for (i in 1:nrow(spectro$lines)) {
-            # add lines
-            
-            
-            
+            # add lines           
+            spectro$lines$color <- ceiling(Normalize(spectro$lines$score) * 10)          
             line <- spectro$lines[i, ]
             Sp.AddLine(spectro, line)          
         }
+    }   
+}
+
+Sp.DrawLines <- function (spectro) {  
+    if(!is.null(spectro$lines) && length(spectro$lines) > 0) {       
+        palette.size <- 20
+        max.score <- 200   # set this to something which will easily be bigger than the highest socre        
+        palette(rainbow(palette.size))
+        color.converter <- palette.size / max.score
+        # only show the top scoring half
+        # spectro$lines <- spectro$lines[spectro$lines$color > 1 ,]
+        for (i in 1:length(spectro$lines)) {           
+            center <- spectro$lines[[i]]$center           
+            for (b in c('branch.1', 'branch.2')) {
+                Sp.Drawbranch(spectro, center, spectro$lines[[i]][[b]], color.converter)
+            }     
+        }
+    }   
+}
+
+
+Sp.Drawbranch <- function (spectro, start, branch, color.converter) {
+    
+    if (nrow(branch) < 1) {
+        return()
     }
     
+    from.row <- start[1]
+    from.col <- start[2]
+    
+    for (i in 1:nrow(branch)) {
+        
+        color <- round(branch$score[i] * color.converter)
+        Sp.AddLine(spectro, 
+                   from.row = from.row, 
+                   from.col = from.col, 
+                   to.row = branch$row[i],
+                   to.col = branch$col[i],
+                   color = color
+        )
+        from.row <- branch$row[i]
+        from.col <- branch$col[i]
+        
+    }
     
 }
 
-Sp.AddLine <- function (spectro, line) {
+Sp.AddLine <- function (spectro, from.col, to.col, from.row, to.row, color) {    
+    # convert units 
+    x.start <- from.col / ncol(spectro$vals)
+    y.start <- from.row / nrow(spectro$vals)
+    x.end <- to.col / ncol(spectro$vals)
+    y.end <- to.row / nrow(spectro$vals)
+    grid.lines(x = unit(c(x.start, x.end), "npc"),
+               y = unit(c(y.start, y.end), "npc"),
+               default.units = "npc",
+               arrow = NULL, name = NULL,
+               gp=gpar(col = color), draw = TRUE, vp = NULL)
+}
+
+
+
+Sp.AddLine.1 <- function (spectro, line) {
     
     r <- 4
     

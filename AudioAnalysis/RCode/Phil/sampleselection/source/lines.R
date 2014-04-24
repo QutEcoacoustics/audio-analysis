@@ -1,8 +1,16 @@
 l.test <- function () {
     
-    spectro <- Sp.CreateTargeted("NW", "2010-10-13", 21600, 5)
+    duration <- 10
+    
+    spectro <- Sp.CreateTargeted("NW", "2010-10-13", 21600, duration)
     
     lines <- Lines(spectro$vals)
+
+    
+    
+    #Sp.Draw(spectro)
+    
+    
     
     spectro$lines <- lines
     
@@ -108,20 +116,22 @@ Simplify <- function (m) {
     #c <- 1:(floor(ncol(m)/2)) * 2
     #m <- m[r,c]   
     # background removal (all vals < 1 standard deviation above the mean per freq band)
-    row.means <- apply(m, 1, mean)
+    # row.means <- apply(m, 1, mean)
+    row.av  <- apply(m, 1, median)
     row.sds <- apply(m, 1, sd)  
     # blur the row thresholds a bit
-    row.means <- MovingAverage(row.means, 2, TRUE)
+    row.av <- MovingAverage(row.av, 2, TRUE)
     row.sds <- MovingAverage(row.sds, 2, TRUE)
-    row.thresholds <- row.means + row.sds
+
+    
     # remove values below threshold
-    rm.matrix <- matrix(row.means, nrow = nrow(m), ncol = ncol(m))
+    rm.matrix <- matrix(row.av, nrow = nrow(m), ncol = ncol(m))
     rsd.matrix <- matrix(row.sds, nrow = nrow(m), ncol = ncol(m))
     adjust <- TRUE
     if (adjust) {
         # adjust intensities of each frequency band to keep them similar
         m <- m - rm.matrix
-        rt.matrix <- rsd.matrix 
+        rt.matrix <- rsd.matrix * .01
     } else {
         rt.matrix <- rm.matrix + rsd.matrix
     }
@@ -138,8 +148,8 @@ Simplify <- function (m) {
 Lines <- function (m) {
     
     m <- Simplify(m)
-    #centroids <- GetPeaks.1(m, 20, 20)
-    centroids <- GetPeaks.2(m, 2)
+    
+    centroids <- GetPeaks.2(m, 6)
 
     
     # we now have a list of 'centroids' which are the maximum values in the neighbourhood
@@ -220,7 +230,7 @@ OppositeAngle <- function (angle) {
 
 LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refinements = 2) {
     
-    score.threshold <- 50
+    score.threshold <- 40
     max.per.branch <- 10
     
     cur.center <- start.center
@@ -253,6 +263,11 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
         branch$score[line.num] <- line$score
         branch$mean[line.num] <- line$mean
         branch$sd[line.num] <- line$sd
+        
+        if (cur.center[1] > nrow(m) - r || cur.center[1] < r || cur.center[2] > ncol(m) - r || cur.center[2] < r ) {
+            # the line has walked to the edge of the matrix
+            break()
+        }
         
         angle <- line$angle
         
