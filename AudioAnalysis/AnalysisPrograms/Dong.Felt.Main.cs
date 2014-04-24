@@ -93,9 +93,19 @@ namespace Dong.Felt
 
             // these are configuration settings
             dynamic configuration = Yaml.Deserialise(analysisSettings.ConfigFile);
- 
+
+            args.Input = args.Input ?? ((string)configuration.InputDirectory).ToDirectoryInfo();
+            args.Output = args.Output ?? ((string)configuration.OutputDirectory).ToDirectoryInfo();
+
+            if (args.TempDir == null)
+            {
+                args.TempDir = new DirectoryInfo(Path.Combine(args.Output.FullName, "temp"));
+            }
+
+            Directory.CreateDirectory(args.TempDir.FullName);
+
             //DongSandpit.Play(configuration, args.Input, args.Output);
-            DongSandpit.ParameterMixture(configuration, args.FeaturePropertySet, args.Input, args.Output);
+            DongSandpit.ParameterMixture(configuration, args.FeaturePropertySet, args.Input, args.Output, args.TempDir);
             // Batch Process
             //foreach (string path in Files)
             //{
@@ -208,6 +218,9 @@ namespace Dong.Felt
             [ArgDescription("The ouput directory")]
             [AnalysisPrograms.Production.ArgExistingDirectory()]
             public DirectoryInfo Output { get; set; }
+
+            [ArgDescription("The directory to store temporary files")]
+            public DirectoryInfo TempDir { get; set; }
 
             public static string Description()
             {
