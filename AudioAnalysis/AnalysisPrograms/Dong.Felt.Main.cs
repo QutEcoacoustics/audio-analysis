@@ -193,7 +193,7 @@ namespace Dong.Felt
         {
 
             [ArgDescription("The source directory to analyse")]
-            [AnalysisPrograms.Production.ArgExistingFile()]
+            [AnalysisPrograms.Production.ArgExistingDirectory()]
             public DirectoryInfo Input { get; set; }
 
             [ArgDescription("The set of feature properties to use to represent a feature")]
@@ -206,7 +206,7 @@ namespace Dong.Felt
             public FileInfo Config { get; set; }
 
             [ArgDescription("The ouput directory")]
-            [AnalysisPrograms.Production.ArgExistingFile()]
+            [AnalysisPrograms.Production.ArgExistingDirectory()]
             public DirectoryInfo Output { get; set; }
 
             public static string Description()

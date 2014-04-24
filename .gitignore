@@ -200,3 +200,7 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 
+
+#ncrunch
+*ncrunch*
+*crunch*.local.xml

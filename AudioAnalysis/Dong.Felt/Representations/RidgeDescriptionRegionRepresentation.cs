@@ -20,17 +20,20 @@ namespace Dong.Felt.Representations
             string featurePropertySet)
         {
             var normalizedNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+            if (ridgeNhRepresentationList != null)
             {
-                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties(ridgeNhRepresentationList);
-            }
-            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
-            {
-                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(ridgeNhRepresentationList);
-            }
-            if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
-            {
-                normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
+                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+                {
+                    normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties(ridgeNhRepresentationList);
+                }
+                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                {
+                    normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties2(ridgeNhRepresentationList);
+                }
+                if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                {
+                    normalizedNhRepresentationList = StatisticalAnalysis.NormalizeProperties3(ridgeNhRepresentationList);
+                }
             }
             return normalizedNhRepresentationList;
         }
