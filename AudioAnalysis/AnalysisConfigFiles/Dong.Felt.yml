@@ -36,7 +36,7 @@ SecondToMillionSecondUnit: 1000
 Rank: 5
 
 # For neighbourhood representation 
-FeaturePropertySet: [FeaturePropSet1, FeaturePropSet2, FeaturePropSet3]
+#FeaturePropertySet: [FeaturePropSet1, FeaturePropSet2, FeaturePropSet3]
 
 # you can find more help here: http://en.wikipedia.org/wiki/YAML
 ...
