@@ -172,55 +172,41 @@ namespace AudioAnalysisTools
 
 
 
-        public static IndexProperties GetIndexProperties(dynamic config)
+        public static Dictionary<string, IndexProperties> GetIndexProperties(dynamic dynamicConfig)
         {
-            IndexProperties ip = new IndexProperties();
-            ip.Key = config.Key;
-            ip.Name = config.Name;
-            string datatype = config.DataType;
-            ip.DataType = typeof(double);
-            if (datatype == "TimeSpan") ip.DataType = typeof(TimeSpan);
-            else if (datatype == "double[]") ip.DataType = typeof(double[]);
-            else if (datatype == "int") ip.DataType = typeof(int);
-            ip.Comment = config.Comment;
-            ip.DefaultValue = (double)config.DefaultValue;
-            ip.ProjectID = config.ProjectID;
+            var dict = new Dictionary<string, IndexProperties>();
 
-            // for display purposes only
-            string doDisplay = config.DoDisplay;
-            ip.DoDisplay = false;
-            if ((doDisplay == "Yes") || (doDisplay == "true") || (doDisplay == "True")) ip.DoDisplay = true;
-            ip.NormMin = (double)config.NormMin;
-            ip.NormMax = (double)config.NormMax;
-            ip.Units = config.Units;
+            foreach (dynamic config in dynamicConfig.Children)
+            {
+                var ip = new IndexProperties();          
+                ip.Key = config.Key;
+                ip.Name = config.Name;
+                string datatype = config.DataType;
+                ip.DataType = typeof(double);
+                if (datatype == "TimeSpan") ip.DataType = typeof(TimeSpan);
+                else if (datatype == "double[]") ip.DataType = typeof(double[]);
+                else if (datatype == "int") ip.DataType = typeof(int);
+                ip.Comment = config.Comment;
+                ip.DefaultValue = (double)config.DefaultValue;
+                ip.ProjectID = config.ProjectID;
 
-            // use these when calculated combination index.
-            string asComboIndex = config.includeInComboIndex;
-            ip.includeInComboIndex = false;
-            if ((asComboIndex == "Yes") || (asComboIndex == "true") || (asComboIndex == "True")) ip.includeInComboIndex = true;
-            ip.comboWeight = (double)config.comboWeight;
+                // for display purposes only
+                string doDisplay = config.DoDisplay;
+                ip.DoDisplay = false;
+                if ((doDisplay == "Yes") || (doDisplay == "true") || (doDisplay == "True")) ip.DoDisplay = true;
+                ip.NormMin = (double)config.NormMin;
+                ip.NormMax = (double)config.NormMax;
+                ip.Units = config.Units;
 
+                // use these when calculated combination index.
+                string asComboIndex = config.includeInComboIndex;
+                ip.includeInComboIndex = false;
+                if ((asComboIndex == "Yes") || (asComboIndex == "true") || (asComboIndex == "True")) ip.includeInComboIndex = true;
+                ip.comboWeight = (double)config.comboWeight;
 
-            //var ip = new IndexProperties
-            //    {
-            //        Key = config.Key,
-            //        Name = config.Name,
-            //        DataType = config.DataType,
-            //        Comment = config.Comment,
-            //        DefaultValue = config.DefaultValue,
-            //        ProjectID = config.ProjectID,
-
-            //        // for display purposes only
-            //        DoDisplay = config.DoDisplay,
-            //        NormMin = config.NormMin,
-            //        NormMax = config.NormMax,
-            //        Units = config.Units,
-
-            //        // use these when calculated combination index.
-            //        includeInComboIndex = config.includeInComboIndex,
-            //        comboWeight = config.comboWeight
-            //    };
-            return ip;
+                dict.Add(ip.Key, ip);
+            }
+            return dict;
         }
 
 
