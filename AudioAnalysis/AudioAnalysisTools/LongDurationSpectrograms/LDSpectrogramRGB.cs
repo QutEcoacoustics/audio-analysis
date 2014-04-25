@@ -934,8 +934,10 @@ namespace AudioAnalysisTools
             DirectoryInfo opDir = configuration.OutputDirectory;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string map = configuration.ColourMap;
-            string colorMap = map != null ? map : SpectrogramConstants.RGBMap_ACI_ENT_CVR;   // assigns indices to RGB
+            string map1 = configuration.ColourMap1;
+            string colorMap1 = map1 != null ? map1 : SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+            string map2 = configuration.ColourMap2;
+            string colorMap2 = map2 != null ? map2 : SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
             double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -947,7 +949,7 @@ namespace AudioAnalysisTools
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
 
             
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             var sip = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
@@ -967,7 +969,7 @@ namespace AudioAnalysisTools
 
             cs1.DrawIndexDistributionsAndSave(Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png"));
 
-            colorMap = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
+            string colorMap = colorMap1;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
@@ -975,7 +977,7 @@ namespace AudioAnalysisTools
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
-            colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
@@ -997,8 +999,14 @@ namespace AudioAnalysisTools
 
         public class Arguments
         {
+            //private FileInfo configPath;
+            public FileInfo  ConfigPath { get; set; }
         }
 
+        /// <summary>
+        /// To get tot his DEV method the first command line argument must be "colourspectrogram"
+        /// </summary>
+        /// <param name="arguments"></param>
         public static void Dev(Arguments arguments)
         {
             bool executeDev = (arguments == null);
@@ -1009,35 +1017,32 @@ namespace AudioAnalysisTools
                 //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
                 //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
-                string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic";
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\BeforeRefactoring\Towsey.Acoustic";// SERF 13th October 2010
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic"; // SERF
+                //string ipdir = @"C:\SensorNetworks\Output\Test\TestYaml";
+                string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\2014Apr24-020709 - Indices, OCT 2010, SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
 
                 //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-                string ipFileName = @"TEST_TUITCE_20091215_220004";
+                string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
                 //string ipFileName = "DM420233_20120302_000000";
                 //string ipFileName = "SERF_20130915_Merged";
                 //string ipFileName = "SERF_20130730_Merged";
 
                 // OUTPUT CSV FILES
                 string opdir = ipdir;
-                //string opdir = @"C:\SensorNetworks\Output\SERF\AfterRefactoring\Towsey.Acoustic";  //SERF
                 //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
                 //string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
                 //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
                 //string opdir = @"C:\SensorNetworks\Output\temp";
-                string opFileName = ipFileName + ".Test1";
 
+                DirectoryInfo ipDir = new DirectoryInfo(ipdir);
+                DirectoryInfo opDir = new DirectoryInfo(ipdir);
 
-                // set the X and Y axis scales for the spectrograms 
-                int xScale = 60;  // assume one minute spectra and hourly time lines
-                int sampleRate = 17640; // default value - after resampling
-                string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN; //CHANGE RGB mapping here.
-                var cs = new LDSpectrogramRGB(xScale, sampleRate, colorMap);
-                cs.ReadCSVFiles(new DirectoryInfo(ipdir), ipFileName);
-                cs.BackgroundFilter = 1.0; // 1.0 = no background filtering
-                cs.DrawGreyScaleSpectrograms(new DirectoryInfo(opdir), opFileName);
-                cs.DrawFalseColourSpectrograms(new DirectoryInfo(opdir), opFileName);
+                //Write the default Yaml Config file
+                var config = new LDSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+                FileInfo path = new FileInfo(Path.Combine(ipDir.FullName, "LDSpectrogramConfig.yml"));
+                config.WritConfigToYAML(path);
+
+                arguments = new Arguments();
+                arguments.ConfigPath = path;
             }
 
             Execute(arguments);
@@ -1050,12 +1055,8 @@ namespace AudioAnalysisTools
 
         public static void Execute(Arguments arguments)
         {
-            // doesn't do anything for now
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(arguments.ConfigPath);
         }
-
-
-
-
 
     } //LDSpectrogramRGB
 
@@ -1090,11 +1091,19 @@ namespace AudioAnalysisTools
         }
 
         //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        private string colourmap = SpectrogramConstants.RGBMap_ACI_ENT_SPT;  // CHANGE default RGB mapping here.
-        public string ColourMap
+        private string colourmap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;  // CHANGE default RGB mapping here.
+        public string ColourMap1
         {
-            get { return colourmap; }
-            set { colourmap = value; }
+            get { return colourmap1; }
+            set { colourmap1 = value; }
+        }
+        //these parameters manipulate the colour map and appearance of the false-colour spectrogram
+        // pass two colour maps because interesting to draw a double image.
+        private string colourmap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;  // CHANGE default RGB mapping here.
+        public string ColourMap2
+        {
+            get { return colourmap2; }
+            set { colourmap2 = value; }
         }
         private double backgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF; // must be value <=1.0
         public double BackgroundFilterCoeff 
@@ -1149,6 +1158,7 @@ namespace AudioAnalysisTools
             fileName = _fileName;
             ipDir = _ipDir;
             opDir = _opDir;
+            // DEFAULT VALUES are set for the remaining parameters            
         }
 
         /// <summary>
@@ -1172,7 +1182,8 @@ namespace AudioAnalysisTools
             LDSpectrogramConfig config = new LDSpectrogramConfig((string)configuration.FileName, ipDir, opDir);
 
             //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-            config.ColourMap = (string)configuration.ColourMap;
+            config.ColourMap1 = (string)configuration.ColourMap1;
+            config.ColourMap2 = (string)configuration.ColourMap2;
             config.BackgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff; // must be value <=1.0
 
             // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
@@ -1195,7 +1206,8 @@ namespace AudioAnalysisTools
                 OutputDirectory = this.OutputDirectory.FullName,
 
                 //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-                ColorMap = this.ColourMap,
+                ColourMap1 = this.ColourMap1,
+                ColourMap2 = this.ColourMap2,
                 BackgroundFilterCoeff = this.BackgroundFilterCoeff, // must be value <=1.0
 
                 // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
@@ -1205,6 +1217,7 @@ namespace AudioAnalysisTools
                 X_interval = this.X_interval        // default is one minute spectra and hourly time lines
             });
         } // WritConfigToYAML()
+
 
     } // class LDSpectrogramConfig
 

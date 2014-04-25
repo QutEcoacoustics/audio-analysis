@@ -396,7 +396,7 @@ namespace AudioAnalysisTools.Indices
                     Name = "AVG",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
-                    NormMax = 50.0,
+                    NormMax = 70.0,
                     Units = "dB",
                     Comment = "Average dB amplitude in each frequency bin after noise removal."
                 });
@@ -421,7 +421,7 @@ namespace AudioAnalysisTools.Indices
                     Name = "CLS",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
-                    NormMax = 20.0,
+                    NormMax = 10.0,
                     Units = "ms",
                     Comment = "The number of spectral clusters in which each frequency bin is included."
                 });
@@ -432,7 +432,7 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_BinCover,
                     Name = "CVR",
                     DataType = typeof(double[]),
-                    NormMax = 30,
+                    NormMax = 50,
                     Units = "%",
                     Comment = "The percent of active elements in each frequency bin - i.e. where amplitude exceeds threshold = 3 dB."
                 });
@@ -443,7 +443,7 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_BinEvents,
                     Name = "EVN",
                     DataType = typeof(double[]),
-                    NormMax = 1.0,
+                    NormMax = 2.0,
                     Units = "events/s",
                     Comment = "Acoustic events per second (as defined above) within each frequency band."
                 });
@@ -454,7 +454,7 @@ namespace AudioAnalysisTools.Indices
                     Key = spKEY_SpPeakTracks,
                     Name = "SPT",
                     DataType = typeof(double[]),
-                    NormMax = 1.0,
+                    NormMax = 0.5,
                     Units = ""
                 });
 
