@@ -20,7 +20,8 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             int startMinute = 19 * 60; // 7pm frogs only call at night!!
             LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir);
             //spgConfig.ColourMap = "TRC-OSC-HAR";
-            spgConfig.ColourMap = "OSC-HAR-TRC";
+            spgConfig.ColourMap1 = "OSC-HAR-TRC";
+            //spgConfig.ColourMap2 = "OSC-HAR-TRC";
             spgConfig.MinuteOffset = startMinute;
             spgConfig.FrameWidth = 256;
             //spgConfig.SampleRate = 17640;
@@ -45,7 +46,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string map = configuration.ColourMap;
+            string map = configuration.ColourMap1;
             string colorMap = map != null ? map : SpectrogramConstantsJie.RGBMap_ACI_ENT_CVR;   // assigns indices to RGB
 
             double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstantsJie.BACKGROUND_FILTER_COEFF;

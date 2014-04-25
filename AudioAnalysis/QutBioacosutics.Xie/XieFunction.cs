@@ -194,7 +194,7 @@ namespace QutBioacosutics.Xie
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string map = configuration.ColourMap;
+            string map = configuration.ColourMap1;
             string colorMap = map != null ? map : SpectrogramConstantsJie.RGBMap_ACI_ENT_CVR;           // assigns indices to RGB
 
             double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstantsJie.BACKGROUND_FILTER_COEFF;
