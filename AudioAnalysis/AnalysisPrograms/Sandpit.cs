@@ -47,7 +47,7 @@ namespace AnalysisPrograms
                 //ip.Units = configuration.Units;
 
                 //IndexProperties ip = (IndexProperties)configuration;
-                IndexProperties ip = IndexProperties.GetIndexProperties(configuration);
+                Dictionary<string, IndexProperties> dict = IndexProperties.GetIndexProperties(configuration);
 
                 Log.WriteLine("GOT To HERE");
 
