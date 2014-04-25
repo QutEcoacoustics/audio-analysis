@@ -39,7 +39,7 @@ namespace AnalysisPrograms
             if (true)  // reading/deserialising a config file)
             {
                 var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-                var configFile = Path.Combine(opDir.FullName, "config.yml");
+                var configFile = Path.Combine(opDir.FullName, "IndexProperties.yml");
 
                 dynamic configuration = Yaml.Deserialise(new FileInfo(configFile));
 
@@ -49,7 +49,7 @@ namespace AnalysisPrograms
                 //IndexProperties ip = (IndexProperties)configuration;
                 Dictionary<string, IndexProperties> dict = IndexProperties.GetIndexProperties(configuration);
 
-                Log.WriteLine("GOT To HERE");
+                Log.WriteLine("GOT To HERE - YAML file unfinished");
 
             }
 
@@ -58,7 +58,7 @@ namespace AnalysisPrograms
                 var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
                 var sip = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
 
-                FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "config.yml"));
+                FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "IndexProperties.yml"));
 
                 //Yaml.Serialise<Dictionary<string, IndexProperties>>(path, sip);
 
