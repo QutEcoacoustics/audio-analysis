@@ -924,13 +924,17 @@ namespace AudioAnalysisTools
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
         /// </summary>
         /// <param name="configuration"></param>
-        public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
+        public static void DrawFalseColourSpectrograms(FileInfo configPath )
         {
-            string ipdir = configuration.InputDirectory.FullName;
-            DirectoryInfo ipDir = new DirectoryInfo(ipdir);
+            //LDSpectrogramConfig configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
+
+            LDSpectrogramConfig configuration = LDSpectrogramConfig.ReadYAMLToConfig(configPath);
+
+            //string ipdir = configuration.InputDirectory.FullName;
+            //DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             string fileStem = configuration.FileName;
-            string opdir = configuration.OutputDirectory.FullName;
-            DirectoryInfo opDir = new DirectoryInfo(opdir);
+            //string opdir = configuration.OutputDirectory.FullName;
+            DirectoryInfo opDir = configuration.OutputDirectory;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.ColourMap;
@@ -951,7 +955,7 @@ namespace AudioAnalysisTools
             cs1.BackgroundFilter = backgroundFilterCoeff;
             var sip = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
             cs1.SetSpectralIndexProperties(sip); // set the relevant dictionary of index properties
-            cs1.ReadCSVFiles(ipDir, fileStem); // reads all known files spectral indices
+            cs1.ReadCSVFiles(configuration.InputDirectory, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -1150,13 +1154,46 @@ namespace AudioAnalysisTools
             opDir = _opDir;
         }
 
+        /// <summary>
+        /// READS A YAML CONFIG FILE into a dynamic variable and then transfers all values into the appropriate config class
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static LDSpectrogramConfig ReadYAMLToConfig(FileInfo path)
+        {
+            // load YAML configuration
+            dynamic configuration = Yaml.Deserialise(path);
+            /*
+             * Warning! The `configuration` variable is dynamic.
+             * Do not use it outside this method. 
+             * Extract all params below.
+             */
+
+            DirectoryInfo ipDir = new DirectoryInfo((string)configuration.InputDirectory);
+            DirectoryInfo opDir = new DirectoryInfo((string)configuration.OutputDirectory);
+
+            LDSpectrogramConfig config = new LDSpectrogramConfig((string)configuration.FileName, ipDir, opDir);
+
+            //these parameters manipulate the colour map and appearance of the false-colour spectrogram
+            config.ColourMap = (string)configuration.ColourMap;
+            config.BackgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff; // must be value <=1.0
+
+            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
+            config.SampleRate = (int)configuration.SampleRate;
+            config.FrameWidth = (int)configuration.FrameWidth;       // frame width from which spectrogram was derived. Assume no frame overlap.
+            config.MinuteOffset = (int)configuration.MinuteOffset;   // default is recording starts at zero minute of day i.e. midnight
+            config.X_interval = (int)configuration.X_interval;       // default is one minute spectra and hourly time lines
+
+            return config;            
+        } // ReadYAMLToConfig()
+
         public void WritConfigToYAML(FileInfo path)
         {
             // WRITE THE YAML CONFIG FILE
             Yaml.Serialise(path, new
             {
                 //paths to required directories and files
-                FileOfIndices = this.FileName,
+                FileName = this.FileName,
                 InputDirectory = this.InputDirectory.FullName,
                 OutputDirectory = this.OutputDirectory.FullName,
 
@@ -1168,7 +1205,7 @@ namespace AudioAnalysisTools
                 SampleRate = this.SampleRate,    
                 FrameWidth = this.FrameWidth,       // frame width from which spectrogram was derived. Assume no frame overlap.
                 MinuteOffset = this.MinuteOffset,   // default is recording starts at zero minute of day i.e. midnight
-                X_Scale = this.X_interval           // default is one minute spectra and hourly time lines
+                X_interval = this.X_interval        // default is one minute spectra and hourly time lines
             });
         } // WritConfigToYAML()
 

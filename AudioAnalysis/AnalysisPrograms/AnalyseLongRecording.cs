@@ -128,7 +128,7 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_22April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_25April2014".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -507,7 +507,7 @@ namespace AnalysisPrograms
             var config = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
             FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
             config.WritConfigToYAML(path);
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(config);
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(path);
 
         }
 
