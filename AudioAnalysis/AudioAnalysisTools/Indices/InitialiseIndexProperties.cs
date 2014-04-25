@@ -216,7 +216,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keyHF_CVR,
                     Name = "hf Cover",
-                    NormMax = 30,
+                    NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
@@ -226,7 +226,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keyMF_CVR,
                     Name = "mf Cover",
-                    NormMax = 30,
+                    NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
@@ -236,7 +236,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     Key = keyLF_CVR,
                     Name = "lf Cover",
-                    NormMax = 30,
+                    NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
