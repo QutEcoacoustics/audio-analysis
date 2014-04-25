@@ -930,10 +930,7 @@ namespace AudioAnalysisTools
 
             LDSpectrogramConfig configuration = LDSpectrogramConfig.ReadYAMLToConfig(configPath);
 
-            //string ipdir = configuration.InputDirectory.FullName;
-            //DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             string fileStem = configuration.FileName;
-            //string opdir = configuration.OutputDirectory.FullName;
             DirectoryInfo opDir = configuration.OutputDirectory;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
