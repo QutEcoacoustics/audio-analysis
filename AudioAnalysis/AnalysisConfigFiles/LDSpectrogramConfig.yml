@@ -1,0 +1,9 @@
+FileName: TEST_TUITCE_20091215_220004
+InputDirectory: C:\SensorNetworks\Output\Test\TestYaml
+OutputDirectory: C:\SensorNetworks\Output\Test\TestYaml
+ColorMap: ACI-ENT-SPT
+BackgroundFilterCoeff: 0.75
+SampleRate: 17640
+FrameWidth: 512
+MinuteOffset: 0
+X_interval: 60
