@@ -504,10 +504,15 @@ namespace AnalysisPrograms
                 spectrogramDictionary.Add(spectrumKey, matrix);
             } // foreach spectrumKey
 
-            var config = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
-            FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
-            config.WritConfigToYAML(path);
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(path);
+            var spectrogramConfig = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
+            FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
+            spectrogramConfig.WritConfigToYAML(spectrogramConfigPath);
+
+            var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
+            FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+
+
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(spectrogramConfigPath, indicesConfigPath);
 
         }
 

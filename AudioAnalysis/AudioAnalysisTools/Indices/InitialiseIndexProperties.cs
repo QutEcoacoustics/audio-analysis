@@ -35,43 +35,43 @@ namespace AudioAnalysisTools.Indices
 
         // KEYS for referring to indices. These should really be an enum                
         //KEYS FOR SUMMARY INDICES
-        public const string keyCOUNT = "COUNT";
-        public const string keySTART_MIN = "START-MIN";
-        public const string keySEGMENT_DURATION = "SEGMENT-DUR";
-        public const string keyHIGH_SIGNAL_AMPLITUDE = "hiSIG-AMPL";
-        public const string keyCLIPPING = "CLIPPING";
-        public const string keySIG_AMPL = "SIGNAL-AMPL";
-        public const string keyBKGROUND = "BKGROUND";
-        public const string keySNR = "SNR";
-        public const string keySNR_ACTIVE = "SNR-ACTIVE";
-        public const string keyACTIVITY = "ACTIVITY";
-        public const string keyEVENT_RATE = "EVENTS-RATE";
-        public const string keyEVENT_DUR = "avEVENT-DUR";
-        public const string keyHF_CVR = "HF-CVR";
-        public const string keyMF_CVR = "MF-CVR";
-        public const string keyLF_CVR = "LF-CVR";
-        public const string keyHtemp = "H-TEMP";
-        public const string keyHpeak = "H-PEAK";
-        public const string keyHspec = "H-SPG";
-        public const string keyHvari = "H-VAR";
-        public const string keyACI = "AcousticComplexity";
-        public const string keyCLUSTER_COUNT = "CLUSTER-COUNT";
-        public const string keyCLUSTER_DUR = "avCLUST-DUR";
-        public const string key3GRAM_COUNT = "3GRAM-COUNT";
-        public const string keySPT_PER_SEC = "SPT-RATE";
-        public const string keySPT_DUR = "avSPT-DUR";
-        public const string keyRAIN = "RAIN";
-        public const string keyCICADA = "CICADA";
+        public const string KEYRankOrder = "RankOrder";
+        public const string KEYStartMinute = "StartMinute";
+        public const string KEYSegmentDuration = "SegmentDuration";
+        public const string KEYHighAmplitudeIndex = "HighAmplitudeIndex";
+        public const string KEYClippingIndex = "ClippingIndex";
+        public const string KEYAvSignalAmplitude = "AvSignalAmplitude";
+        public const string KEYBackgroundNoise = "BackgroundNoise";
+        public const string KEYSNR = "SNR";
+        public const string KEYAvSNROfActiveFrames = "AvSNROfActiveFrames";
+        public const string KEYActivity = "Activity";
+        public const string KEYEventsPerSec = "EventsPerSec";
+        public const string KEYAvEventDuration = "AvEventDuration";
+        public const string KEYHF_CVR = "HF_CVR";
+        public const string KEYMF_CVR = "MF_CVR";
+        public const string KEYLF_CVR = "LF_CVR";
+        public const string KEYHtemporal = "Htemporal";
+        public const string KEYHpeak = "Hpeak";
+        public const string KEYHAvSpectrum = "HAvSpectrum";
+        public const string KEYHVarSpectrum = "HVarSpectrum";
+        public const string KEYAcousticComplexity = "AcousticComplexity";
+        public const string keyCLUSTER_COUNT = "ClusterCount";
+        public const string keyCLUSTER_DUR = "AvClusterDuration";
+        public const string key3GRAM_COUNT = "3GramCount";
+        public const string keySPT_PER_SEC = "SPTPerSec";
+        public const string keySPT_DUR = "AvSPTDuration";
+        public const string keyRAIN = "RainIndex";
+        public const string keyCICADA = "CicadaIndex";
 
         //KEYS FOR SPECTRAL INDICES
-        public const string spKEY_ACI = "ACI";
-        public const string spKEY_Average = "AVG";  // average dB value in each frequency bin after noise removal
-        public const string spKEY_BkGround = "BGN"; // modal dB value in each frequency bin calculated during noise removal
-        public const string spKEY_Cluster = "CLS";
-        public const string spKEY_BinCover = "CVR";
-        public const string spKEY_BinEvents = "EVN";
-        public const string spKEY_SpPeakTracks = "SPT";
-        public const string spKEY_TemporalEntropy = "ENT";
+        public const string KEYspectralACI = "ACI";
+        public const string KEYspectralAVG = "AVG";  // average dB value in each frequency bin after noise removal
+        public const string KEYspectralBGN = "BGN"; // modal dB value in each frequency bin calculated during noise removal
+        public const string KEYspectralCLS = "CLS";
+        public const string KEYspectralCVR = "CVR";
+        public const string KEYspectralENT = "ENT";
+        public const string KEYspectralEVN = "EVN";
+        public const string KEYspectralSPT = "SPT";
 
 
 
@@ -84,59 +84,59 @@ namespace AudioAnalysisTools.Indices
         {
             var properties = new Dictionary<string, IndexProperties>();
             // use one of following lines as template to create a new index.
-            properties.Add(keyCOUNT,
+            properties.Add(KEYRankOrder,
                 new IndexProperties
                 {
-                    Key = keyCOUNT,
-                    Name = AudioAnalysisTools.AnalysisKeys.INDICES_COUNT,
+                    Key = KEYRankOrder,
+                    Name = AudioAnalysisTools.AnalysisKeys.KEY_RankOrder,
                     DataType = typeof(int),
                     DoDisplay = false,
                     Comment = "Order ID of minute segment in temporal order from start of recording."
                 });
 
-            properties.Add(keySTART_MIN,
+            properties.Add(KEYStartMinute,
                 new IndexProperties
                 {
-                    Key = keySTART_MIN,
-                    Name = AudioAnalysisTools.AnalysisKeys.START_MIN,
+                    Key = KEYStartMinute,
+                    Name = AudioAnalysisTools.AnalysisKeys.KEY_StartMinute,
                     DoDisplay = false,
                     Comment = "Exact time span (total minutes) from start of recording to start of this segment."
                 });
 
-            properties.Add(keySEGMENT_DURATION,
+            properties.Add(KEYSegmentDuration,
                 new IndexProperties
                 {
-                    Key = keySEGMENT_DURATION,
+                    Key = KEYSegmentDuration,
                     Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION,
                     DataType = typeof(TimeSpan),
                     DoDisplay = false,
                     Comment = "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
                 });
 
-            properties.Add(keyHIGH_SIGNAL_AMPLITUDE,
+            properties.Add(KEYHighAmplitudeIndex,
                 new IndexProperties
                 {
-                    Key = keyHIGH_SIGNAL_AMPLITUDE,
+                    Key = KEYHighAmplitudeIndex,
                     Name = "High Signal Ampl",
                     NormMax = 10.0,
                     Units = "av/s",
                     Comment = "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
                 });
 
-            properties.Add(keyCLIPPING,
+            properties.Add(KEYClippingIndex,
                 new IndexProperties
                 {
-                    Key = keyCLIPPING,
+                    Key = KEYClippingIndex,
                     Name = "Clipping",
                     NormMax = 1.0,
                     Units = "avClips/s",
                     Comment = "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
                 });
 
-            properties.Add(keySIG_AMPL,
+            properties.Add(KEYAvSignalAmplitude,
                 new IndexProperties
                 {
-                    Key = keySIG_AMPL,
+                    Key = KEYAvSignalAmplitude,
                     Name = "av Signal Ampl",
                     NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10, //-70 dB is typical level for enironmental BGN
                     NormMax = -10.0,
@@ -145,10 +145,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Av amplitude of the signal envelope in dB."
                 });
 
-            properties.Add(keyBKGROUND,
+            properties.Add(KEYBackgroundNoise,
                 new IndexProperties
                 {
-                    Key = keyBKGROUND,
+                    Key = KEYBackgroundNoise,
                     Name = "Background",
                     NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10,
                     NormMax = -10.0,
@@ -157,10 +157,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
                 });
 
-            properties.Add(keySNR,
+            properties.Add(KEYSNR,
                 new IndexProperties
                 {
-                    Key = keySNR,
+                    Key = KEYSNR,
                     Name = "SNR",
                     NormMin = 0.0,
                     NormMax = 50.0,
@@ -168,10 +168,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Max amplitude of signal envelope after noise removal."
                 });
 
-            properties.Add(keySNR_ACTIVE,
+            properties.Add(KEYAvSNROfActiveFrames,
                 new IndexProperties
                 {
-                    Key = keySNR_ACTIVE,
+                    Key = KEYAvSNROfActiveFrames,
                     Name = "avSNRActive",
                     NormMin = 0.0,
                     NormMax = 30.0,
@@ -179,10 +179,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
                 });
 
-            properties.Add(keyACTIVITY,
+            properties.Add(KEYActivity,
                 new IndexProperties
                 {
-                    Key = keyACTIVITY,
+                    Key = KEYActivity,
                     Name = "%Activity",
                     DataType = typeof(int),
                     NormMax = 100.0,
@@ -190,20 +190,20 @@ namespace AudioAnalysisTools.Indices
                     Comment = "% of active frames i.e. where SNR exceeds threshold = 3 dB."
                 });
 
-            properties.Add(keyEVENT_RATE,
+            properties.Add(KEYEventsPerSec,
                 new IndexProperties
                 {
-                    Key = keyEVENT_RATE,
+                    Key = KEYEventsPerSec,
                     Name = "Events/s",
                     NormMax = 1.0,
                     Units = "",
                     Comment = "Av number of events persecond. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
                 });
 
-            properties.Add(keyEVENT_DUR,
+            properties.Add(KEYAvEventDuration,
                 new IndexProperties
                 {
-                    Key = keyEVENT_DUR,
+                    Key = KEYAvEventDuration,
                     Name = "av Event Duration",
                     DataType = typeof(TimeSpan),
                     NormMax = 1000,
@@ -211,40 +211,40 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Av duration in ms of the events in an audio segment."
                 });
 
-            properties.Add(keyHF_CVR,
+            properties.Add(KEYHF_CVR,
                 new IndexProperties
                 {
-                    Key = keyHF_CVR,
+                    Key = KEYHF_CVR,
                     Name = "hf Cover",
                     NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
 
-            properties.Add(keyMF_CVR,
+            properties.Add(KEYMF_CVR,
                 new IndexProperties
                 {
-                    Key = keyMF_CVR,
+                    Key = KEYMF_CVR,
                     Name = "mf Cover",
                     NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
 
-            properties.Add(keyLF_CVR,
+            properties.Add(KEYLF_CVR,
                 new IndexProperties
                 {
-                    Key = keyLF_CVR,
+                    Key = KEYLF_CVR,
                     Name = "lf Cover",
                     NormMax = 50,
                     DataType = typeof(int),
                     Units = "%"
                 });
 
-            properties.Add(keyHtemp,
+            properties.Add(KEYHtemporal,
                 new IndexProperties
                 {
-                    Key = keyHtemp,
+                    Key = KEYHtemporal,
                     Name = "1-H[t]",
                     Comment = "1-Ht is a meassure of concentration of acoustic energy instead of energy dispersal.",
                     NormMin = 0.0,
@@ -254,40 +254,40 @@ namespace AudioAnalysisTools.Indices
                     comboWeight = 0.3
                 });
 
-            properties.Add(keyHpeak,
+            properties.Add(KEYHpeak,
                 new IndexProperties
                 {
-                    Key = keyHpeak,
+                    Key = KEYHpeak,
                     Name = "1-H[peak freq]",
                     NormMin = 0.0,
                     NormMax = 1.0,
                     DefaultValue = 0.0
                 });
 
-            properties.Add(keyHspec,
+            properties.Add(KEYHAvSpectrum,
                 new IndexProperties
                 {
-                    Key = keyHspec,
+                    Key = KEYHAvSpectrum,
                     Name = "1-H[spectral avg]",
                     NormMin = 0.0,
                     NormMax = 1.0,
                     DefaultValue = 0.0
                 });
 
-            properties.Add(keyHvari,
+            properties.Add(KEYHVarSpectrum,
                 new IndexProperties
                 {
-                    Key = keyHvari,
+                    Key = KEYHVarSpectrum,
                     Name = "1-H[spectral var]",
                     NormMin = 0.0,
                     NormMax = 1.0,
                     DefaultValue = 0.0
                 });
 
-            properties.Add(keyACI,
+            properties.Add(KEYAcousticComplexity,
                 new IndexProperties
                 {
-                    Key = keyACI,
+                    Key = KEYAcousticComplexity,
                     Name = "ACI",
                     NormMin = 0.4,
                     NormMax = 0.7,
@@ -377,10 +377,10 @@ namespace AudioAnalysisTools.Indices
 
             //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
 
-            properties.Add(spKEY_ACI,
+            properties.Add(KEYspectralACI,
                 new IndexProperties
                 {
-                    Key = spKEY_ACI,
+                    Key = KEYspectralACI,
                     Name = "ACI",
                     DataType = typeof(double[]),
                     NormMin = 0.4,
@@ -389,10 +389,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Spectrum of ACI values, one value for each frequency bin."
                 });
 
-            properties.Add(spKEY_Average,
+            properties.Add(KEYspectralAVG,
                 new IndexProperties
                 {
-                    Key = spKEY_Average,
+                    Key = KEYspectralAVG,
                     Name = "AVG",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
@@ -401,10 +401,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Average dB amplitude in each frequency bin after noise removal."
                 });
 
-            properties.Add(spKEY_BkGround,
+            properties.Add(KEYspectralBGN,
                 new IndexProperties
                 {
-                    Key = spKEY_BkGround,
+                    Key = KEYspectralBGN,
                     Name = "BGN",
                     DataType = typeof(double[]),
                     NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20, //-20 adds more contrast into BGN spectrogram
@@ -414,10 +414,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "dB value of the bcakground 'noise' removed each frequency bin."
                 });
 
-            properties.Add(spKEY_Cluster,
+            properties.Add(KEYspectralCLS,
                 new IndexProperties
                 {
-                    Key = spKEY_Cluster,
+                    Key = KEYspectralCLS,
                     Name = "CLS",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
@@ -426,10 +426,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "The number of spectral clusters in which each frequency bin is included."
                 });
 
-            properties.Add(spKEY_BinCover,
+            properties.Add(KEYspectralCVR,
                 new IndexProperties
                 {
-                    Key = spKEY_BinCover,
+                    Key = KEYspectralCVR,
                     Name = "CVR",
                     DataType = typeof(double[]),
                     NormMax = 50,
@@ -437,10 +437,10 @@ namespace AudioAnalysisTools.Indices
                     Comment = "The percent of active elements in each frequency bin - i.e. where amplitude exceeds threshold = 3 dB."
                 });
 
-            properties.Add(spKEY_BinEvents,
+            properties.Add(KEYspectralEVN,
                 new IndexProperties
                 {
-                    Key = spKEY_BinEvents,
+                    Key = KEYspectralEVN,
                     Name = "EVN",
                     DataType = typeof(double[]),
                     NormMax = 2.0,
@@ -448,20 +448,20 @@ namespace AudioAnalysisTools.Indices
                     Comment = "Acoustic events per second (as defined above) within each frequency band."
                 });
 
-            properties.Add(spKEY_SpPeakTracks,
+            properties.Add(KEYspectralSPT,
                 new IndexProperties
                 {
-                    Key = spKEY_SpPeakTracks,
+                    Key = KEYspectralSPT,
                     Name = "SPT",
                     DataType = typeof(double[]),
                     NormMax = 0.5,
                     Units = ""
                 });
 
-            properties.Add(spKEY_TemporalEntropy,
+            properties.Add(KEYspectralENT,
                 new IndexProperties
                 {
-                    Key = spKEY_TemporalEntropy,
+                    Key = KEYspectralENT,
                     Name = "ENT",
                     DataType = typeof(double[]),
                     NormMin = 0.0,
@@ -482,6 +482,11 @@ namespace AudioAnalysisTools.Indices
         {
             Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
 
+            return GetDictionaryOfSpectralIndexProperties(indexProperties);
+        }
+
+        public static Dictionary<string, IndexProperties> GetDictionaryOfSpectralIndexProperties(Dictionary<string, IndexProperties> indexProperties)
+        {
             var dict = new Dictionary<string, IndexProperties>();
             foreach (IndexProperties ip in indexProperties.Values)
             {

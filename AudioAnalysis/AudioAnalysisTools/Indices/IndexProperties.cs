@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Acoustics.Shared;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
-
 using TowseyLibrary;
 
 
@@ -172,11 +173,13 @@ namespace AudioAnalysisTools
 
 
 
-        public static Dictionary<string, IndexProperties> GetIndexProperties(dynamic dynamicConfig)
+        public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
         {
+            dynamic configuration = Yaml.Deserialise(configFile);
+
             var dict = new Dictionary<string, IndexProperties>();
 
-            foreach (dynamic config in dynamicConfig.Children)
+            foreach (dynamic config in configuration.Children)
             {
                 var ip = new IndexProperties();          
                 ip.Key = config.Key;
@@ -207,7 +210,7 @@ namespace AudioAnalysisTools
                 dict.Add(ip.Key, ip);
             }
             return dict;
-        }
+        } // GetIndexProperties()
 
 
     } // IndexProperties

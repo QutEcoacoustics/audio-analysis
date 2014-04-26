@@ -83,8 +83,8 @@ namespace AudioAnalysisTools
                 ib.SegmentOffsetFromStartOfSource = result.SegmentStartOffset;
                 ib.SegmentDuration = result.AudioDuration;
                 //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
-                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keySTART_MIN] = result.SegmentStartOffset.TotalMinutes;
-                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keySEGMENT_DURATION] = result.AudioDuration.TotalSeconds;
+                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.KEYStartMinute] = result.SegmentStartOffset.TotalMinutes;
+                ib.SummaryIndicesOfTypeDouble[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 mergedIndices[count] = ib;
                 count++;
             }
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools
             for (int i = 0; i < mergedIndices.Length; i++)
             {
                 mergedIndices[i].SegmentCount = i;
-                mergedIndices[i].SummaryIndicesOfTypeDouble[InitialiseIndexProperties.keyCOUNT] = (double)i;
+                mergedIndices[i].SummaryIndicesOfTypeDouble[InitialiseIndexProperties.KEYRankOrder] = (double)i;
             }
 
             return mergedIndices;
@@ -125,8 +125,8 @@ namespace AudioAnalysisTools
                 foreach (DataRow row in dt.Rows)
                 {
                     row[AnalysisKeys.EVENT_COUNT] = (double)count++;
-                    if (headers.Contains(AnalysisKeys.SEGMENT_TIMESPAN))
-                        row[AnalysisKeys.SEGMENT_TIMESPAN] = result.AudioDuration.TotalSeconds;
+                    if (headers.Contains(AnalysisKeys.KEY_SegmentDuration))
+                        row[AnalysisKeys.KEY_SegmentDuration] = result.AudioDuration.TotalSeconds;
                     if (headers.Contains(AnalysisKeys.EVENT_START_SEC))
                     {
                         double secondsOffsetInCurrentAudioSegment = (double)row[AnalysisKeys.EVENT_START_SEC];
@@ -142,7 +142,7 @@ namespace AudioAnalysisTools
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[AnalysisKeys.START_MIN] = segmentStartOffset.TotalMinutes;
+                    row[AnalysisKeys.KEY_StartMinute] = segmentStartOffset.TotalMinutes;
                 }
             }
 
@@ -249,7 +249,7 @@ namespace AudioAnalysisTools
         {
             DataTable eventsDatatable = null;
             DataTable indicesDatatable = null;
-            if (masterDataTable.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT)) //outputdata consists of rows of one minute indices 
+            if (masterDataTable.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder)) //outputdata consists of rows of one minute indices 
             {
                 // in this case masterDataTable is the indicies table and there is no table of events.
                 eventsDatatable = null;
@@ -310,13 +310,13 @@ namespace AudioAnalysisTools
             {
                 DataTableTools.WriteTable2ConsoleInLongLayout(indicesDatatable); //for debugging
 
-                string sortString = (AnalysisKeys.START_MIN + " ASC");
+                string sortString = (AnalysisKeys.KEY_StartMinute + " ASC");
                 indicesDatatable = DataTableTools.SortTable(indicesDatatable, sortString);    //sort by start time
 
                 int count = 0;
                 foreach (DataRow row in indicesDatatable.Rows)
                 {
-                    row[AnalysisKeys.INDICES_COUNT] = count++;
+                    row[AnalysisKeys.KEY_RankOrder] = count++;
                     //row[AnalysisKeys.INDICES_COUNT] = (int)row[AnalysisKeys.START_MIN].Minutes;
                 }
 

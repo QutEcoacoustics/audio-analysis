@@ -39,15 +39,9 @@ namespace AnalysisPrograms
             if (true)  // reading/deserialising a config file)
             {
                 var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-                var configFile = Path.Combine(opDir.FullName, "IndexProperties.yml");
+                var configFile = Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml");
 
-                dynamic configuration = Yaml.Deserialise(new FileInfo(configFile));
-
-                //IndexProperties ip = new IndexProperties();
-                //ip.Units = configuration.Units;
-
-                //IndexProperties ip = (IndexProperties)configuration;
-                Dictionary<string, IndexProperties> dict = IndexProperties.GetIndexProperties(configuration);
+                Dictionary<string, IndexProperties> dict = IndexProperties.GetIndexProperties(new FileInfo(configFile));
 
                 Log.WriteLine("GOT To HERE - YAML file unfinished");
 
