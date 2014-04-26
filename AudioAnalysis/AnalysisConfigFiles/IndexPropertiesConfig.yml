@@ -1,0 +1,465 @@
+--- 
+- 
+  Key: RankOrder
+  Name: Rank order of audio segment
+  Comment: "Rank of minute segment in temporal order from start of recording."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: StartMinute
+  Name: Segment start minute
+  Comment: "Exact time span (total minutes) from start of recording to start of this segment."
+  DataType: TimeSpan
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: SegmentDuration
+  Name: Time duration of audio segment
+  Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
+  DataType: TimeSpan
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: HighAmplitudeIndex
+  Name: High Amplitude Index
+  Comment: "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "av/s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: ClippingIndex
+  Name: Clipping Index
+  Comment: "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "avClips/s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: AvSignalAmplitude
+  Name: av Signal Ampl
+  Comment: "Av amplitude of the signal envelope in dB."
+  DataType: double
+  DefaultValue: -70
+  DoDisplay: true
+  # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10 = -80+10 = -70 dB. This is typical level for environmental BGN
+  NormMin: -70
+  NormMax: -10.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: BackgroundNoise
+  Name: Background Noise
+  Comment: "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
+  DataType: double
+  DefaultValue: -70
+  DoDisplay: true
+  # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10
+  NormMin: -70
+  NormMax: -10.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: SNR
+  Name: Maximum SNR
+  Comment: "Max amplitude of signal envelope after noise removal."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 50.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: AvSNRActive
+  Name: av SNR (Active frames)
+  Comment: "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 30.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: Activity
+  Name: Activity
+  Comment: "% of active frames i.e. where SNR exceeds threshold = 3 dB."
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 100
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: EventsPerSec
+  Name: Events per sec
+  Comment: "Av number of events per second. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: AvEventDuration
+  Name: Av Event Duration
+  Comment: "Av duration in ms of the events in an audio segment."
+  DataType: TimeSpan
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1000
+  ProjectID: Acoustic Indices
+  Units: "ms"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: HF_CVR
+  Name: hf Cover
+  Comment: "% hf Cover 4000 Hz to 8800 Hz"
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 50
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: MF_CVR
+  Name: mf Cover
+  Comment: "% mf Cover. 500 Hz to 4000 Hz"
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 50
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: LF_CVR
+  Name: lf Cover
+  Comment: "% lf Cover. 0 - 500 Hz"
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 50
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: Htemp
+  Name: 1-H[t]
+  Comment: "1-Ht is a measure of concentration of acoustic energy instead of energy dispersal."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.5
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: true
+  comboWeight: 0.3
+- 
+  Key: Hpeak
+  Name: 1-H[peak freq]
+  Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: HAvSpectrum
+  Name: 1-H[spectral avg]
+  Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: HVarSpectrum
+  Name: 1-H[spectral var]
+  Comment: "1-H[spectral var] is a measure of concentration of acoustic energy in the variance spectrum over one minute."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: AcousticComplexity
+  Name: ACI
+  Comment: "ACI"
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0.4
+  NormMax: 0.7
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: true
+  comboWeight: 0.2
+- 
+  Key: ClusterCount
+  Name: Cluster Count
+  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 20
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: true
+  comboWeight: 0.3
+- 
+  Key: AvClusterDuration
+  Name: av Cluster Duration
+  Comment: "Average duration in ms of the spectrum cluster sequences."
+  DataType: TimeSpan
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 500
+  ProjectID: Acoustic Indices
+  Units: "ms"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: 3GramCount
+  Name: 3-gram Count
+  Comment: "Number of different tri-gram cluster sequences."
+  DataType: int
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 50
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: SPTPerSec
+  Name: av Tracks/Sec
+  Comment: "Average number of spectral tracks per second."
+  DataType: double
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 10
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: AvSPTDuration
+  Name: av Track Duration
+  Comment: "Average duration of a spectral track."
+  DataType: TimeSpan
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: RainIndex
+  Name: Rain Index
+  Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
+  DataType: TimeSpan
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+- 
+  Key: CicadaIndex
+  Name: Cicada Index
+  Comment: "Cicada score calculated every 10 sec and 6 values averaged over the minute."
+  DataType: TimeSpan
+  DefaultValue: 0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+  # ADD THE SUMMARY INDICES ABOVE HERE
+  # ====================================================================================================================================
+  # ====================================================================================================================================
+  # ADD THE SPECTRAL INDICES BELOW HERE
+
+  # IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
+-
+  Key: ACI
+  Name: spectralACI
+  Comment: "Spectrum of ACI values, one value for each frequency bin."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.4
+  NormMax: 0.7
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: AVG
+  Name: spectralAVG
+  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 70.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: BGN
+  Name: spectralBGN
+  Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
+  DataType: double[]
+  DefaultValue: -100.0
+  DoDisplay: true
+  # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, //-20 adds more contrast into BGN spectrogram
+  NormMin: -100.0
+  NormMax: -20.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: CLS
+  Name: spectralCLS
+  Comment: "Spectrum of the number of spectral clusters in which each frequency bin is included."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 10.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: CVR
+  Name: spectralCVR
+  Comment: "Freq bin COVER: Spectrum of the % of active elements in each freq bin - i.e. amplitude > threshold = 3 dB."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 50.0
+  ProjectID: Acoustic Indices
+  Units: "%"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: EVN
+  Name: spectralEVN
+  Comment: "Spectrum of acoustic events per second (as defined above) in each frequency band."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 2.0
+  ProjectID: Acoustic Indices
+  Units: "events/s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: SPT
+  Name: spectralSPT
+  Comment: "Spectrum of average number of spectral Peak Tracks persecond within each freq bin."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.5
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: ENT
+  Name: spectralENT
+  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.6
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
