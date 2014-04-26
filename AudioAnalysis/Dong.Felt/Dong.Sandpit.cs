@@ -789,7 +789,7 @@
                         rank, ridgeConfig, config,
                         featurePropSet, tempDirectory);
                 }
-                //}
+                Log.Info(i.ToString() + " querys have been done");
             } // end of for searching the query folder
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
