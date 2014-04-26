@@ -491,7 +491,7 @@ namespace AnalysisPrograms
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.START_MIN, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.KEY_StartMinute, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 

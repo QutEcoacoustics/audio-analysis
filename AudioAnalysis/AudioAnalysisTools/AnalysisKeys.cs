@@ -31,8 +31,8 @@ namespace AudioAnalysisTools
         public static string MIN_GAP = "MIN_GAP";
         public static string MAX_GAP = "MAX_GAP";
         public static string MIN_AMPLITUDE = "MIN_AMPLITUDE";
-        public static string MIN_DURATION = "MIN_DURATION";
-        public static string MAX_DURATION = "MAX_DURATION";
+        public static string MIN_DURATION  = "MIN_DURATION";
+        public static string MAX_DURATION  = "MAX_DURATION";
         public static string MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
         public static string MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
         public static string MIN_PERIODICITY = "MIN_PERIOD";
@@ -42,7 +42,7 @@ namespace AudioAnalysisTools
         public static string RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
         public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
-        public const string SEGMENT_DURATION = "SEGMENT_DURATION";
+        public const string SEGMENT_DURATION  = "SEGMENT_DURATION";
         public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
         public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
         public static string THRESHOLD        = "THRESHOLD";
@@ -71,15 +71,15 @@ namespace AudioAnalysisTools
 
 
 
-        //KEYS TO OUTPUT INDICES HEADERS
-        public static string INDICES_COUNT    = "IndicesCount";
-        public static string SEGMENT_TIMESPAN = "SegTimeSpan";
-        public static string AV_AMPLITUDE     = "avAmp-dB";
-        public const string START_MIN        = "start-min";
-        public static string CALL_DENSITY     = "CallDensity";
-        public static string SNR_SCORE        = "SNRscore";
+        //KEYS TO CSV HEADERS FOR SUMMARY INDEX
+        public static string KEY_RankOrder       = "RankOrder";
+        public const string  KEY_StartMinute     = "StartMinute";
+        public static string KEY_SegmentDuration = "SegmentDuration";
+        public static string KEY_AvSignalAmplitude = "AvSignalAmplitude";
+        public static string KEY_CallDensity     = "CallDensity";
+        public static string KEY_SNRScore        = "SNRscore";
 
-        //KEYS TO OUTPUT EVENT HEADERS
+        //KEYS TO CSV HEADERS FOR EVENTS
         public static string EVENT_COUNT     = "EventCount";
         public static string EVENT_DURATION  = "EvDuration";
         public static string EVENT_INTENSITY = "EvIntensity";

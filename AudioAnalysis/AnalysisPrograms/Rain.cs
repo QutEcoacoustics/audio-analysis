@@ -38,7 +38,7 @@ namespace AnalysisPrograms
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
 
-        public static string header_count = AnalysisKeys.INDICES_COUNT;
+        public static string header_count = AnalysisKeys.KEY_RankOrder;
         //public const string  = count;
         public const string header_startMin = "start-min";
         //public const string header_SecondsDuration = "SegTimeSpan";
@@ -221,9 +221,9 @@ namespace AnalysisPrograms
                 int startMinute = (int)tsStart.TotalMinutes;
                 foreach (DataRow row in dt.Rows)
                 {
-                    row[InitialiseIndexProperties.keyCOUNT] = iter;
-                    row[InitialiseIndexProperties.keySTART_MIN] = startMinute;
-                    row[InitialiseIndexProperties.keySEGMENT_DURATION] = result.AudioDuration.TotalSeconds;
+                    row[InitialiseIndexProperties.KEYRankOrder] = iter;
+                    row[InitialiseIndexProperties.KEYStartMinute] = startMinute;
+                    row[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 }
 
                 CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
@@ -454,13 +454,13 @@ namespace AnalysisPrograms
             {
                 dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_RankOrder + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_StartMinute))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_StartMinute + " ASC");
             }
 
             //this depracted now that use class indexProperties to do normalisation
@@ -497,7 +497,7 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (headers[i].Equals(AnalysisKeys.AV_AMPLITUDE))
+                if (headers[i].Equals(AnalysisKeys.KEY_AvSignalAmplitude))
                 {
                     min = -50;
                     max = -5;

@@ -356,13 +356,13 @@ namespace AnalysisPrograms
             {
                 dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.INDICES_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.INDICES_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_RankOrder + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.START_MIN))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_StartMinute))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.START_MIN + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_StartMinute + " ASC");
             }
 
             table2Display = NormaliseColumnsOfDataTable(table2Display);
@@ -388,7 +388,7 @@ namespace AnalysisPrograms
 
                 double min = 0;
                 double max = 1;
-                if (headers[i].Equals(AnalysisKeys.AV_AMPLITUDE))
+                if (headers[i].Equals(AnalysisKeys.KEY_AvSignalAmplitude))
                 {
                     min = -50;
                     max = -5;
@@ -427,7 +427,7 @@ namespace AnalysisPrograms
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.START_MIN, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.KEY_StartMinute, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -708,7 +708,7 @@ namespace AnalysisPrograms
                                  AudioAnalysisTools.AnalysisKeys.EVENT_START_MIN,    //2
                                  AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC,    //3
                                  AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS,    //4
-                                 AudioAnalysisTools.AnalysisKeys.SEGMENT_TIMESPAN,   //5
+                                 AudioAnalysisTools.AnalysisKeys.KEY_SegmentDuration,   //5
                                  AudioAnalysisTools.AnalysisKeys.EVENT_DURATION,     //6
                                  //AudioAnalysisTools.Keys.EVENT_INTENSITY,
                                  AudioAnalysisTools.AnalysisKeys.EVENT_NAME,         //7

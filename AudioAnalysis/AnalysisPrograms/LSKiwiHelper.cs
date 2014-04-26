@@ -23,7 +23,7 @@ namespace AnalysisPrograms
         public static string key_EVENT_NAME = AudioAnalysisTools.AnalysisKeys.EVENT_NAME;
         public static string key_INTENSITY_SCORE = AudioAnalysisTools.AnalysisKeys.EVENT_INTENSITY;
         public static string key_EVENT_NORMSCORE = AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE;
-        public static string key_SNR_SCORE = AudioAnalysisTools.AnalysisKeys.SNR_SCORE;
+        public static string key_SNR_SCORE = AudioAnalysisTools.AnalysisKeys.KEY_SNRScore;
 
         public static string key_CHIRP_SCORE     = "ChirpScore";
         public static string key_DELTA_SCORE     = "DeltaPeriodScore";
