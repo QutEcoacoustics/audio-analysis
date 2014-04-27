@@ -789,7 +789,7 @@
                         rank, ridgeConfig, config,
                         featurePropSet, tempDirectory);
                 }
-                Log.InfoFormat("{0}/{1} ({2:P}) querys have been done", i, csvFilesCount, i / csvFilesCount );
+                Log.InfoFormat("{0}/{1} ({2:#0.00%}) queries have been done", i + 1, csvFilesCount, (i + 1) / csvFilesCount );
             } // end of for searching the query folder
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
