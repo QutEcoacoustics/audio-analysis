@@ -513,6 +513,19 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
+        public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties(Dictionary<string, IndexProperties> indexProperties)
+        {
+            var dict = new Dictionary<string, IndexProperties>();
+            foreach (IndexProperties ip in indexProperties.Values)
+            {
+                if (ip.DataType != typeof(double[])) //summary indices are never of type double[]
+                {
+                    dict.Add(ip.Key, ip);
+                }
+            }
+            return dict;
+        }
+
 
         public static Type[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
         {
@@ -565,6 +578,44 @@ namespace AudioAnalysisTools.Indices
             }
             return weightArray;
         }
+
+
+        public static Dictionary<string, string> GetKeyTranslationDictionary()
+        {
+            var dict = new Dictionary<string, string>();
+            dict.Add("COUNT", "RankOrder");
+            dict.Add("START-MIN", "StartMinute");
+            dict.Add("SEGMENT-DUR", "SegmentDuration");
+            dict.Add("hiSIG-AMPL", "HighAmplitudeIndex");
+            dict.Add("CLIPPING", "ClippingIndex");
+            dict.Add("SIGNAL-AMPL", "AvSignalAmplitude");
+            dict.Add("BKGROUND", "BackgroundNoise");
+            dict.Add("SNR", "SNR");
+            dict.Add("SNR-ACTIVE", "AvSNRActive");
+            dict.Add("ACTIVITY", "Activity");
+            dict.Add("EVENTS-RATE", "EventsPerSec");
+            dict.Add("avEVENT-DUR", "AvEventDuration");
+            dict.Add("HF-CVR", "HF_CVR");
+            dict.Add("MF-CVR", "MF_CVR");
+            dict.Add("LF-CVR", "LF_CVR");
+            dict.Add("H-TEMP", "Htemp");
+            dict.Add("H-PEAK", "Hpeak");
+            dict.Add("H-SPG", "HAvSpectrum");
+            dict.Add("H-VAR", "HVarSpectrum");
+            dict.Add("ACI", "AcousticComplexity");
+            dict.Add("CLUSTER-COUNT", "ClusterCount");
+            dict.Add("avCLUST-DUR", "AvClusterDuration");
+            dict.Add("3GRAM-COUNT", "3GramCount");
+            dict.Add("SPT-RATE", "SPTPerSec");
+            dict.Add("avSPT-DUR", "AvSPTDuration");
+            dict.Add("RAIN", "RainIndex");
+            dict.Add("CICADA", "CicadaIndex");
+
+
+
+            return dict;
+        }
+
 
 
         //public static DataTable Indices2DataTable(IndexValues indicesStore)
