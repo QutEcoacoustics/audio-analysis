@@ -19,11 +19,19 @@ namespace AudioAnalysisTools
 
 
 
-        public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, string title)
+        //public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, string title)
+        //{
+        //    //this dictionary is needed to draw the image of indices
+        //    Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
+        //    return IndexDisplay.DrawImageOfSummaryIndices(listOfIndexProperties, csvFile, title);
+        //}
+
+        public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, FileInfo indexPropertiesConfig, string title)
         {
             //this dictionary is needed to draw the image of indices
-            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
-            return IndexDisplay.DrawImageOfSummaryIndices(listOfIndexProperties, csvFile, title);
+            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
+            return IndexDisplay.DrawImageOfSummaryIndices(dictIP, csvFile, title);
         }
 
         /// <summary>
@@ -38,7 +46,8 @@ namespace AudioAnalysisTools
 
             if (! csvFile.Exists) return null;
 
-            Dictionary<string, double[]> dict = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); //to translate past keys into current keys
 
 
             int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
@@ -46,18 +55,23 @@ namespace AudioAnalysisTools
             int imageWidth = 0;
             var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
 
-            // for each column of values in the csv file create a display track
-            foreach (string key in listOfIndexProperties.Keys)
+            foreach (string key in dictionaryOfCsvFile.Keys)
             {
-                IndexProperties ip = listOfIndexProperties[key];
-                if (! ip.DoDisplay) continue;
-
+                string correctKey = key;
+                if (!listOfIndexProperties.ContainsKey(key))
+                {
+                    correctKey = translationDictionary[key];
+                    LoggedConsole.WriteWarnLine("The csv header is an unknown index <{0}>. Translated to <{1}>", key, correctKey);
+                }
+                IndexProperties ip = listOfIndexProperties[correctKey];
+                if (!ip.DoDisplay) continue;
                 string name = ip.Name;
-                double[] array = dict[key];
+                double[] array = dictionaryOfCsvFile[key];
                 imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
                 Image bitmap = ip.GetPlotImage(array);
                 listOfBitmaps.Add(bitmap);
             }
+
 
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks

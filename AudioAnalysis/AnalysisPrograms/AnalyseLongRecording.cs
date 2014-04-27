@@ -386,7 +386,11 @@ namespace AnalysisPrograms
                 // Convert summary indices to image
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(indicesFile, title);
+
+
+                //THE FOLLOWING PATH HAS TO BE PASSED THROUGH ANALYSIS SETTINGS !!! 
+                FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+                Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(indicesFile, indexPropertiesConfig, title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
 
