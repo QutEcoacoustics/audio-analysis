@@ -202,6 +202,7 @@
     <Compile Include="Canetoad.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
+    <Compile Include="DummyAnalyser.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="Frogs.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
