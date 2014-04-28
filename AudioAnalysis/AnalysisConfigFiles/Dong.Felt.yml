@@ -22,13 +22,13 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 5.5
+RidgeDetectionMagnitudeThreshold: 6
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 7
+NeighbourhoodLength: 13
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000

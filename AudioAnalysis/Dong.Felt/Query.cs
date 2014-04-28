@@ -119,12 +119,12 @@
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength) - enlargedOffset;
             this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength) - enlargedOffset;
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
-            if (nhendTime < this.endTime)
+            if (this.endTime - nhendTime > nhFrameLength)
             {
                 nhCountInCol++;
             }
             var nhlowFrequency = spectrogramConfig.NyquistFrequency - (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
-            if (nhlowFrequency > this.minFrequency)
+            if (this.minFrequency - nhlowFrequency > nhFrequencyLength)
             {
                 nhCountInRow++;
             }
