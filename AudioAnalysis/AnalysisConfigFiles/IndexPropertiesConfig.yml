@@ -71,8 +71,9 @@
   DataType: double
   DefaultValue: -70
   DoDisplay: true
-  # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10 = -80+10 = -70 dB. This is typical level for environmental BGN
-  NormMin: -70
+  # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL = -80 dB
+  # -50 dB is typical level for environmental BGN
+  NormMin: -50.0
   NormMax: -10.0
   ProjectID: Acoustic Indices
   Units: "dB"
@@ -86,7 +87,7 @@
   DefaultValue: -70
   DoDisplay: true
   # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10
-  NormMin: -70
+  NormMin: -50.0
   NormMax: -10.0
   ProjectID: Acoustic Indices
   Units: "dB"
@@ -139,7 +140,7 @@
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 2.0
   ProjectID: Acoustic Indices
   Units: ""
   includeInComboIndex: false
@@ -269,7 +270,7 @@
   DefaultValue: 0
   DoDisplay: true
   NormMin: 0
-  NormMax: 20
+  NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
   includeInComboIndex: true
@@ -282,7 +283,7 @@
   DefaultValue: 0
   DoDisplay: true
   NormMin: 0
-  NormMax: 500
+  NormMax: 250
   ProjectID: Acoustic Indices
   Units: "ms"
   includeInComboIndex: false
@@ -295,7 +296,7 @@
   DefaultValue: 0
   DoDisplay: true
   NormMin: 0
-  NormMax: 50
+  NormMax: 1000
   ProjectID: Acoustic Indices
   Units: ""
   includeInComboIndex: false
@@ -308,7 +309,7 @@
   DefaultValue: 0
   DoDisplay: true
   NormMin: 0
-  NormMax: 10
+  NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
   includeInComboIndex: false
@@ -320,8 +321,8 @@
   DataType: TimeSpan
   DefaultValue: 0
   DoDisplay: true
-  NormMin: 0
-  NormMax: 1.0
+  NormMin: 0.25
+  NormMax: 2.0
   ProjectID: Acoustic Indices
   Units: "s"
   includeInComboIndex: false
