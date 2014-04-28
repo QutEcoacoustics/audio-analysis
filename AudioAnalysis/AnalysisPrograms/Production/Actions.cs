@@ -358,6 +358,13 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.DifferenceSpectrogram.Execute;
         }
 
+
+        public DummyAnalyser.Arguments DummyArgs { get; set; }
+        public static Action<DummyAnalyser.Arguments> Dummy()
+        {
+            return AnalysisPrograms.DummyAnalyser.Execute;
+        }
+
         #endregion
     }
 }
