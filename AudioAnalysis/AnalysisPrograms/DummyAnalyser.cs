@@ -68,14 +68,14 @@ namespace AnalysisPrograms
             Random random;
             if (arguments.Seed.HasValue)
             {
-                Log.InfoFormat("Using seed #{0}", arguments.Seed.Value);
+                Log.InfoFormat("Using given seed #{0}", arguments.Seed.Value);
                 random = new Random(arguments.Seed.Value);
             }
             else
             {
                 int seed = Environment.TickCount;
                 random = new Random(seed);
-                Log.InfoFormat("Seed that was used is #{0}", seed);
+                Log.InfoFormat("Using a generated seed #{0}", seed);
             }
 
             int tasks = arguments.Parallel ? Environment.ProcessorCount : 1;
@@ -106,6 +106,7 @@ namespace AnalysisPrograms
             var lastLog = DateTime.Now;
             while (completeBy >= DateTime.Now)
             {
+                // Like Thread.Sleep but does not give thread control to others
                 // approx 0.54 seconds at ~2.7Ghz
                 Thread.SpinWait(100000000);
 
