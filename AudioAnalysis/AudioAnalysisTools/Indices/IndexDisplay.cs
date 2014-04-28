@@ -51,8 +51,7 @@ namespace AudioAnalysisTools
 
 
             int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
-            int length = 0;
-            int imageWidth = 0;
+            int scaleLength = 0;
             var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
 
             foreach (string key in dictionaryOfCsvFile.Keys)
@@ -67,16 +66,18 @@ namespace AudioAnalysisTools
                 if (!ip.DoDisplay) continue;
                 string name = ip.Name;
                 double[] array = dictionaryOfCsvFile[key];
-                imageWidth = array.Length + IndexDisplay.TRACK_END_PANEL_WIDTH;
+                scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array);
                 listOfBitmaps.Add(bitmap);
             }
 
 
             //set up the composite image parameters
+            int X_offset = 2;
+            int imageWidth = X_offset + scaleLength + IndexDisplay.TRACK_END_PANEL_WIDTH;
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(length, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -84,17 +85,17 @@ namespace AudioAnalysisTools
             {
                 gr.Clear(Color.Black);
 
-                int offset = 0;
-                gr.DrawImage(titleBmp, 0, offset); //draw in the top title
-                offset += trackHeight;
-                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-                offset += trackHeight;
+                int Y_offset = 0;
+                gr.DrawImage(titleBmp, X_offset, Y_offset); //draw in the top title
+                Y_offset += trackHeight;
+                gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in the top time scale
+                Y_offset += trackHeight;
                 for (int i = 0; i < listOfBitmaps.Count; i++)
                 {
-                    gr.DrawImage(listOfBitmaps[i], 0, offset);
-                    offset += trackHeight;
+                    gr.DrawImage(listOfBitmaps[i], X_offset, Y_offset);
+                    Y_offset += trackHeight;
                 }
-                gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
+                gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in bottom time scale
             }
             return compositeBmp;
         }

@@ -844,6 +844,7 @@
             }//end over all pixels
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
 
             g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
             return bmp;
