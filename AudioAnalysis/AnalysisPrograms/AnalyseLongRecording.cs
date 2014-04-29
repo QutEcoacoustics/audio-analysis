@@ -390,7 +390,7 @@ namespace AnalysisPrograms
 
                 //THE FOLLOWING PATH HAS TO BE PASSED THROUGH ANALYSIS SETTINGS !!! 
                 FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-                Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(indicesFile, indexPropertiesConfig, title);
+                Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfig, title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
 
@@ -516,7 +516,7 @@ namespace AnalysisPrograms
             FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
 
 
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(spectrogramConfigPath, indicesConfigPath);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indicesConfigPath);
 
         }
 

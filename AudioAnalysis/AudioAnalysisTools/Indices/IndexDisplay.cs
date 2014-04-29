@@ -6,11 +6,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
-    public static class IndexDisplay
+    public static class DrawSummaryIndices
     {
         public const int DEFAULT_TRACK_HEIGHT = 20;
         public const int TRACK_END_PANEL_WIDTH = 250; // pixels. This is where name of index goes in track image
@@ -19,23 +20,22 @@ namespace AudioAnalysisTools
 
 
 
-        //public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, string title)
-        //{
-        //    //this dictionary is needed to draw the image of indices
-        //    Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
-        //    return IndexDisplay.DrawImageOfSummaryIndices(listOfIndexProperties, csvFile, title);
-        //}
-
-        public static Bitmap DrawImageOfSummaryIndices(FileInfo csvFile, FileInfo indexPropertiesConfig, string title)
+        /// <summary>
+        /// Uses a dictionary of index properties to traw an image of summary index tracks
+        /// </summary>
+        /// <param name="csvFile"></param>
+        /// <param name="indexPropertiesConfig"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static Bitmap DrawImageOfSummaryIndexTracks(FileInfo csvFile, FileInfo indexPropertiesConfig, string title)
         {
-            //this dictionary is needed to draw the image of indices
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
-            return IndexDisplay.DrawImageOfSummaryIndices(dictIP, csvFile, title);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(dictIP, csvFile, title);
         }
 
         /// <summary>
-        /// reads csv file and converts to tracks image
+        /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
         /// <param name="dt"></param>
@@ -50,7 +50,7 @@ namespace AudioAnalysisTools
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); //to translate past keys into current keys
 
 
-            int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
             int scaleLength = 0;
             var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
 
@@ -74,10 +74,10 @@ namespace AudioAnalysisTools
 
             //set up the composite image parameters
             int X_offset = 2;
-            int imageWidth = X_offset + scaleLength + IndexDisplay.TRACK_END_PANEL_WIDTH;
+            int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, DrawSummaryIndices.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -104,76 +104,10 @@ namespace AudioAnalysisTools
 
 
 
-        /// <summary>
-        /// This method assumes that the data table of indices is already properly ordered for display.
-        /// </summary>
-        /// <param name="listOfIndexProperties"></param>
-        /// <param name="dt"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
-        //public static Bitmap ConstructVisualIndexImage(Dictionary<string, IndexProperties> listOfIndexProperties, DataTable dt, string title)
-        //{
-
-        //    if (dt == null) return null;
-        //    int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
-        //    int length = 0;
-        //    int imageWidth = 0;
-
-        //    Dictionary<string, string> dictOfName2Key = IndexProperties.GetDictionaryOfName2Key();
-
-        //    var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
-
-        //    // for each column of values in data table (except last) create a display track
-        //    foreach (DataColumn col in dt.Columns)
-        //    {
-        //        string name = col.ColumnName;
-        //        double[] array = DataTableTools.Column2ArrayOfDouble(dt, name);
-        //        length = array.Length;
-        //        imageWidth = length + IndexDisplay.TRACK_END_PANEL_WIDTH;
-        //        string key = dictOfName2Key[name];
-        //        IndexProperties indexProperties = listOfIndexProperties[key];
-        //        if (! indexProperties.DoDisplay) continue;
-        //        Image bitmap = indexProperties.GetPlotImage(array);
-        //        listOfBitmaps.Add(bitmap);
-        //    }
-
-        //    // last track is weighted index
-        //    //int x = values.Count - 1;
-        //    //array = values[x];
-        //    //bool doNormalise = false;
-        //    //if (doNormalise) array = DataTools.normalise(values[x]);
-        //    ////if (values[x].Length > 0)
-        //    ////    bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
-        //    //if (values[x].Length > 0)
-        //    //    listOfBitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, threshold, headers[x])); //assumed to be weighted index
-
-        //    //set up the composite image parameters
-        //    int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
-        //    Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(length, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
-
-        //    //draw the composite bitmap
-        //    Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-        //    using (Graphics gr = Graphics.FromImage(compositeBmp))
-        //    {
-        //        gr.Clear(Color.Black);
-
-        //        int offset = 0;
-        //        gr.DrawImage(titleBmp, 0, offset); //draw in the top title
-        //        offset += trackHeight;
-        //        gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-        //        offset += trackHeight;
-        //        for (int i = 0; i < listOfBitmaps.Count; i++)
-        //        {
-        //            gr.DrawImage(listOfBitmaps[i], 0, offset);
-        //            offset += trackHeight;
-        //        }
-        //        gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
-        //    }
-        //    return compositeBmp;
-        //}
-
-
+        //===========================================================================================================================================================
+        //==== ALL THE BELOW METHODS SHOULD EVENTUALLY BE REMOVED. THEY USE DATA TABLES WHICH ARE NOW NO lONGER NECESSARY ============================================
+        //===========================================================================================================================================================
+        //===========================================================================================================================================================
 
         /// <summary>
         /// 
@@ -192,7 +126,7 @@ namespace AudioAnalysisTools
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
 
-            Bitmap tracksImage = IndexDisplay.ConstructImageOfIndexTracks(headers, values, title, order);
+            Bitmap tracksImage = DrawSummaryIndices.ConstructImageOfIndexTracks(headers, values, title, order);
             return tracksImage;
         }
 
@@ -209,12 +143,12 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap ConstructImageOfIndexTracks(List<string> headers, List<double[]> values, string title, double[] order)
         {
-            int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
 
 
             // accumulate the individual tracks
             int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
-            int imageWidth = duration + IndexDisplay.TRACK_END_PANEL_WIDTH;
+            int imageWidth = duration + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
 
             var listOfBitmaps = new List<Bitmap>();
             double threshold = 0.0;
@@ -239,7 +173,7 @@ namespace AudioAnalysisTools
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, IndexDisplay.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, DrawSummaryIndices.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image

@@ -13,8 +13,8 @@ namespace AudioAnalysisTools
     /// <summary>
     /// This class stores the properties of a particular index.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
-    /// This class stores default values, normalisation bounds and provides methods for the correct display of a summary index in a tracks image.
-    /// Display of Spectral indices is handled in the class LDSPectrogramRGB.
+    /// This class stores default values, normalisation bounds and provides methods for the correct display of a SUMMARY INDEX in a tracks image.
+    /// Display of SPECTRAL INDICES is handled in the class LDSpectrogramRGB.
     /// </summary>
     public class IndexProperties
     {
@@ -148,8 +148,8 @@ namespace AudioAnalysisTools
             string annotation = GetPlotAnnotation();
             double[] values = this.NormaliseIndexValues(array);
 
-            int trackWidth = dataLength + IndexDisplay.TRACK_END_PANEL_WIDTH;
-            int trackHeight = IndexDisplay.DEFAULT_TRACK_HEIGHT;
+            int trackWidth = dataLength + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
+            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
             Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);

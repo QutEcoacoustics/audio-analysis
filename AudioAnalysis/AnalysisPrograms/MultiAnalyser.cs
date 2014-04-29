@@ -620,7 +620,7 @@ namespace AnalysisPrograms
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            return IndexDisplay.ProcessCsvFile(fiCsvFile, fiConfigFile);
+            return DrawSummaryIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
         } // ProcessCsvFile()
 
 

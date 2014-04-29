@@ -79,6 +79,15 @@ namespace AnalysisPrograms.Production
             return IndicesCsv2Display.Main;
         }
 
+        //public DrawSummaryIndices.Arguments IndicesCsv2ImageArgs { get; set; }
+        //public static Action<DrawSummaryIndices.Arguments> IndicesCsv2Image()
+        //{
+        //    // 4. Produces a tracks image of summary indices in a csv file - one track per summary index.
+        //    // Signed off: Michael Towsey 29th April 2014
+        //    return DrawSummaryIndices.Main;
+        //}
+        
+
         #endregion
 
         #region Analyses for Individual Calls

@@ -28,10 +28,10 @@ namespace AnalysisPrograms
             [ArgPosition(1)]
             public FileInfo InputCsv { get; set; }
 
-            // Note: not required
+            /* // Note: not required
             [ArgDescription("The path to the image config file")]
             [Production.ArgExistingFile]
-            public FileInfo ImageConfig { get; set; }
+            public FileInfo ImageConfig { get; set; } */
 
             [ArgDescription("The path to the index properties config file")]
             [Production.ArgExistingFile]
@@ -53,7 +53,7 @@ namespace AnalysisPrograms
             //return new Arguments
             //{
             //    InputCsv              = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM420036.Towsey.Acoustic\DM420036_Towsey.Acoustic.Indices.csv".ToFileInfo(),
-            //    ImageConfig           = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+            ////    ImageConfig           = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
             //    IndexPropertiesConfig = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
             //    Output                = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM420036.Towsey.Acoustic\DM420036_Towsey.Acoustic.Indices2.png".ToFileInfo()
             //};
@@ -61,7 +61,7 @@ namespace AnalysisPrograms
             return new Arguments
             {
                 InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
-                ImageConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
+                ////ImageConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Test\Test_26April2014\DM420036_Towsey.Acoustic.Indices2.png".ToFileInfo()
             };
@@ -84,10 +84,10 @@ namespace AnalysisPrograms
 
             bool verbose = true;
 
-            if (arguments.ImageConfig == null)
+            /*if (arguments.ImageConfig == null)
             {
                 LoggedConsole.WriteLine("### WARNING: Config file is not provided - using defaults");
-            }
+            }*/
 
             arguments.Output.CreateParentDirectories();
 
@@ -97,7 +97,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# MAKE AN IMAGE FROM A CSV FILE OF SUMMARY INDICES DERIVED FROM AN AUDIO RECORDING");
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine("# Input  .csv   file: " + arguments.InputCsv);
-                LoggedConsole.WriteLine("# Configuration file: " + arguments.ImageConfig);
+                ////LoggedConsole.WriteLine("# Configuration file: " + arguments.ImageConfig);
                 LoggedConsole.WriteLine("# Output image  file: " + arguments.Output);
                 LoggedConsole.WriteLine("");
             }
@@ -105,7 +105,7 @@ namespace AnalysisPrograms
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
             string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(arguments.InputCsv, arguments.IndexPropertiesConfig, title);
+            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(arguments.InputCsv, arguments.IndexPropertiesConfig, title);
             //var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
             tracksImage.Save(arguments.Output.FullName);
 
