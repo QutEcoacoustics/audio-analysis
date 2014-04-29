@@ -60,11 +60,32 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
 } 
 
 
-DateTimeToFn <- function (site, start.datetime, end.datetime) {
+
+
+DateTimeToFn <- function (site, start.datetime = NA, end.datetime = NA, start.date = NA, start.min = NA, ext = FALSE) {
     # determines which file the 
     # recording at a given site and datetime (POSIXlt), 
-    # and the number of seconds into the recording it is   
-    start.datetime <- as.POSIXct(start.datetime, tz = "GMT")  
+    # and the number of seconds into the recording it is 
+    # if the optional end.datetime is included, then all the files between start.datetime and end.datetime are included
+    # alternative params are start date and start min
+    #
+    # Args
+    #   site: string
+    #   start.datetime: string
+    #   end.datetime: string (optional)
+    #   start.date: string
+    #   start.min: int
+    
+    
+    if (is.na(start.datetime)) {     
+        start.datetime <- paste(start.date, MinToTime(start.min))      
+    }
+    
+    start.datetime <- as.POSIXct(start.datetime, tz = "GMT") 
+    
+    if (is.na(end.datetime)) {
+        end.datetime <- start.datetime
+    }
     end.datetime <- as.POSIXct(end.datetime, tz = "GMT") 
     target.diff <-  as.double(difftime(start.datetime, 
                                        end.datetime, 
@@ -81,7 +102,7 @@ DateTimeToFn <- function (site, start.datetime, end.datetime) {
         if (site != fn.site) {
             next()
         }
-        fn.date <- as.Date(fn[2], format = "%Y_%m_%d")
+        fn.date <- as.Date(fn[2], format = "%Y-%m-%d")
         fn.min <- as.numeric(fn[3])
         fn.duration <- as.numeric(fn[4]) * 60
         fn.datetime <- as.POSIXct(paste0(format(fn.date, "%Y-%m-%d"), 
@@ -119,6 +140,18 @@ DateTimeToFn <- function (site, start.datetime, end.datetime) {
             
             
         } 
+    }
+    
+    if (ext != 'wav') {
+        target.fns <- sapply(target.fns, function (fn) {
+            return(substr(fn, 1, nchar(fn)- 4))
+            
+        }, simplify = TRUE, USE.NAMES = FALSE)
+        
+        if (ext != FALSE) {
+            target.fns <- paste(target.fns, ext, sep = '.')    
+        }
+        
     }
     
     return(data.frame(fn = target.fns, from.sec = target.from.sec, 
@@ -194,7 +227,7 @@ FnToMeta <- function (filename) {
     
 }
 
-MetaToFn <- function (meta, units = 'm') {
+MetaToFn <- function (meta, units = 'm', ext = FALSE) {
     # reverse of MetaToFn (see that function for explanation)   
     #
     # Args:
@@ -256,11 +289,56 @@ MetaToFn <- function (meta, units = 'm') {
     }
     
     # convert to strings and pad start so that files are listed in order
-    start = sprintf(paste0("%",start.str.len,"s"), as.character(round(start)));
+    start = sprintf(paste0("%0",start.str.len,"s"), as.character(round(start)));
     duration = as.character(round(duration));
     
-    fn <- paste(meta$site, meta$date, meta$start)
+    fn <- paste(meta$site, meta$date, start, duration, sep = '.')
+    
+    if (is.character(ext)) {
+        fn <- paste(fn, ext, sep = '.')
+    }
+    
+    return(fn)
     
             
+}
+
+
+
+FileNamesInTarget <- function (ext) {
+    mins <- ReadOutput('target.min.ids', level = 0)
+    
+    site.col <- which('site' == colnames(mins))
+    date.col <- which('date' == colnames(mins))
+    min.col <- which('min' == colnames(mins))
+    
+    fns <- apply(mins, 1, function (row) {        
+        site <- row[site.col]
+        date <- row[date.col]
+        min <- as.integer(row[min.col])
+        fn <- DateTimeToFn(site, start.date = date, start.min = min, ext = ext)
+        return(as.character(fn$fn))    
+    })
+    
+    fns <- unique(fns)
+    
+    return(fns)
+}
+
+
+FixNames <- function () {
+    
+    # renames files so that start min is always 4 digits
+    
+    path <- g.audio.dir
+    files <- list.files(g.audio.dir)
+    for (f in files) {
+        
+        meta <- FnToMeta(f)
+        fixed <- MetaToFn(meta, ext = 'wav')
+        file.rename(file.path(g.audio.dir, f), file.path(g.audio.dir, fixed))
+        
+    }
+    
 }
 

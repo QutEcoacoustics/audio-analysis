@@ -1,23 +1,133 @@
-l.test <- function () {
-    
+l.test <- function () {  
     duration <- 10
-    
     spectro <- Sp.CreateTargeted("NW", "2010-10-13", 21600, duration)
-    
     lines <- Lines(spectro$vals)
-
-    
-    
     #Sp.Draw(spectro)
-    
-    
-    
     spectro$lines <- lines
+    Sp.Draw(spectro) 
+}
+
+
+
+EmptyFeatureDataFrame <- function (num.rows) {
+    empty.feature.cols <- rep(NA, num.rows)   
+    return(data.frame('main.frequency' = empty.feature.cols,
+                      'av.angle' = empty.feature.cols, 
+                      'length' = empty.feature.cols,
+                      'straight.length' = empty.feature.cols,
+                      'total.score' = empty.feature.cols,
+                      'mean.score' = empty.feature.cols,
+                      'sec' = empty.feature.cols,
+                      'date' = empty.feature.cols,
+                      'site' = empty.feature.cols))  
+}
+
+
+LineFeatureExtraction <- function () {   
+    fns <- FileNamesInTarget(ext = 'lines')
+    line.paths <- file.path(g.lines.dir, fns)
     
-    Sp.Draw(spectro)
+    all.features <- EmptyFeatureDataFrame(0)
     
+    for (file.num in 1:length(fns)) {
+        
+        # loads lines for this file into a variable called 'lines'
+        load(line.paths[file.num])
+
+        features <- EmptyFeatureDataFrame(length(line.collection$lines))
+         
+        
+        for (l in 1:length(line.collection$lines)) {
+            
+            cat(paste(l, " "))
+            
+            lines <- line.collection$lines[[l]]
+            
+            rows <- c(lines$branch.1$row, lines$center[1], rev(lines$branch.2$row))
+            cols <- c(lines$branch.1$col, lines$center[2], rev(lines$branch.2$col))
+            scores <- c(lines$branch.1$score, lines$branch.1$score[1], lines$branch.2$score)
+            weights <- scores / sum(scores)
+            av.row <- sum(rows * weights)
+            
+            features$main.frequency[l] <- av.row
+            
+            angles <- c(lines$branch.1$angle, lines$branch.2$angle)
+            scores <- c(lines$branch.1$score, lines$branch.2$score)
+            weights <- scores / sum(scores)
+            
+            av.angle <- sum(angles * weights)
+            
+            features$av.angle[l] <- av.angle
+            
+            features$length[l] <- sum(nrow(lines$branch.1), nrow(lines$branch.2))
+            
+            features$total.score[l] <- sum(scores)
+            features$mean.score[l] <- features$total.score[l] / features$length[l]
+            
+            features$straight.length[l] <- ((rows[1] - rows[length(rows)])^2 + (cols[1] - cols[length(cols)])^2)^0.5
+            
+            features$date[l] <- line.collection$meta$date
+            features$site[l] <- line.collection$meta$site
+            features$sec[l] <-  line.collection$meta$start.sec + ColNumToTime(lines$center[2], line.collection$meta$frames.per.sec)
+            
+            
+            
+            
+            
+        }
+        
+        all.features <- rbind(all.features, features)
+        
+        
+    }
+    
+    WriteOutput(all.features, 'line.features', 2)
     
 }
+
+
+
+FindLines <- function () {
+    #performs line extraction on each of the minutes in the target       
+        library('tuneR')       
+        cur.wav.path <- FALSE
+        cur.spectro <- FALSE          
+        Report(2, 'Detecting lines.')    
+        num.lines.before.previous.file <- 0
+        ptmt <- proc.time();
+        ptm <- proc.time()
+
+
+        fns <- FileNamesInTarget(ext = 'wav')
+        
+        
+        for (f in fns) {
+            Report(5, 'lines for ', f)    
+            audio.path <- file.path(g.audio.dir, f)  
+            spectro <- Sp.CreateFromFile(audio.path)
+            lines <- Lines(spectro$vals)          
+            file.meta <- FnToMeta(f)
+            
+            file.meta$frames.per.sec <- spectro$frames.per.sec
+            file.meta$hz.per.bin <- spectro$hz.per.bin
+            
+            line.collection <- list(lines = lines,
+                                    meta = file.meta)
+  
+            lines.path <- file.path(g.lines.dir, MetaToFn(file.meta, ext = 'lines'))
+            f <- save(line.collection, file = lines.path)
+        }
+        
+        Timer(ptmt, paste('line extraction for all',length(fns),'files'), length(fns), 'files')
+        
+    
+        
+        
+    }
+
+
+
+
 
 
 GetPeaks.1 <- function (m, cell.w = 10, cell.h = 10, overlap = 2) {
@@ -65,17 +175,32 @@ GetPeaks.2 <- function (m, r = 4) {
     # returns a list of cells (row/column) which are the
     # peak values within a radius of r  
     
+    # first, simplify by taking every second row and column
+    
+    reduce.by <- 2
+    
+    if (reduce.by > 1) {
+        # reduce dimensions by half to reduce computation
+        rows <- 1:(floor(nrow(m)/reduce.by)) * reduce.by
+        cols <- 1:(floor(ncol(m)/reduce.by)) * reduce.by
+        m <- m[rows,cols]      
+    }
+
+    
+    
     line.offsets <- -r:r   
     x.offsets <- rep(line.offsets, times = length(line.offsets), each = 1)
     y.offsets <- rep(line.offsets, each = length(line.offsets), times = 1)  
-    in.circle <- (x.offsets^2 + x.offsets^2) <= r^2
+    in.circle <- (x.offsets^2 + y.offsets^2) <= r^2
     offsets <- data.frame(x = x.offsets, y = y.offsets)
     offsets <- offsets[in.circle,]
     block <- array(NA, dim = c(nrow(m), ncol(m), nrow(offsets)))
     
     # create a 3d array: 3rd dimension is the passed matrix offset by some value
-    for (i in 1:nrow(offsets)) {     
-        block[,,i] <- ShiftMatrix(m, offsets$y[i], offsets$x[i]) 
+    for (i in 1:nrow(offsets)) {
+        
+        shifted <- ShiftMatrix(m, offsets$y[i], offsets$x[i]) 
+        block[,,i] <- shifted
     }
     
     #find the maximum offset, and the value of the maximum offset
@@ -99,6 +224,12 @@ GetPeaks.2 <- function (m, r = 4) {
     row[row == 0] <-  nrow(m)
     col <- ceiling(w / nrow(m))
     peaks <- data.frame(row = row, col = col)
+    
+    if (reduce.by > 1) {
+        peaks <- peaks * reduce.by 
+    }
+    
+    
     return(peaks)
     
 }
@@ -166,30 +297,47 @@ Lines <- function (m) {
     
     lines <- list()
     
+    print(nrow(centroids))
+    
     for (cc in (1:nrow(centroids))) {
         # sub matrix centered on the centroid
         
-        if (cc %in% c(199, 200)) {
-            inspect = TRUE
+        if (cc == 1170) {
+            #inspect = TRUE
         } else {
             inspect = FALSE     
         }
         
-        line <- LineWalk(m, as.numeric(centroids[cc,]), 4)
+        line <- LineWalk(m, as.numeric(centroids[cc,]), 4, inspect)
         
-        lines[[cc]] <- line
+        
+        
+        if (class(line) == 'list') {
+            lines[[cc]] <- line
+            Dot()
+        }
+        
+
         
         #lines[cc, ] <- unlist(line.angle)
+        
+       
+        
     }
+    
+    # remove null values where the line wasn't over the threshold
+    # https://www.inkling.com/read/r-cookbook-paul-teetor-1st/chapter-5/recipe-5-12
+    lines[sapply(lines, is.null)] <- NULL
     
     # join lines
     # todo
 
+    
     return(lines)
     
 }
 
-LineWalk <- function (m, center, r) {
+LineWalk <- function (m, center, r, inspect = FALSE) {
     # given a center point on matrix m,
     # creates a "line", which consists of 2 branches. 
     # branch 1 is created by finding the angle from 'center' with the highest score
@@ -200,8 +348,11 @@ LineWalk <- function (m, center, r) {
     # branch 2 is created in the same way, but by starting the walk 180 degrees from the angle
     # of the first node of branch 1. 
     
-    
-    
+    if (inspect) {
+        
+        readline()
+        
+    }
     
     sub <- m[(center[1]-r):(center[1]+r), (center[2]-r):(center[2]+r)] 
     best.angle <- FindBestLine(sub, recurse.depth = 1)
@@ -214,11 +365,17 @@ LineWalk <- function (m, center, r) {
     #branch.2$branch <- rep(1, nrow(branch.2))
     #branch.2$joint <- 1:nrow(branch.2)
     
-    return(list(
-        branch.1 = branch.1,
-        branch.2 = branch.2,
-        center = center      
-    ))
+    if (nrow(branch.1) == 0) {
+        return(FALSE)
+    } else {
+        return(list(
+            branch.1 = branch.1,
+            branch.2 = branch.2,
+            center = center      
+        ))
+    }
+    
+
     
     
 }
@@ -230,7 +387,7 @@ OppositeAngle <- function (angle) {
 
 LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refinements = 2) {
     
-    score.threshold <- 40
+    score.threshold <- 60
     max.per.branch <- 10
     
     cur.center <- start.center
@@ -241,7 +398,6 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
         
         sub <- m[(cur.center[1]-r):(cur.center[1]+r), (cur.center[2]-r):(cur.center[2]+r)] 
         line <- FindBestLine(sub, angle, range, recurse.depth = refinements)
-        
         if (line$score < score.threshold) {
             break()
         }
@@ -264,7 +420,7 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
         branch$mean[line.num] <- line$mean
         branch$sd[line.num] <- line$sd
         
-        if (cur.center[1] > nrow(m) - r || cur.center[1] < r || cur.center[2] > ncol(m) - r || cur.center[2] < r ) {
+        if (cur.center[1] > nrow(m) - r || cur.center[1] <= r || cur.center[2] > ncol(m) - r || cur.center[2] <= r ) {
             # the line has walked to the edge of the matrix
             break()
         }
@@ -274,7 +430,6 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
     }
     
     branch <- branch[complete.cases(branch), ]
-    
     
     return(branch)
     
@@ -297,11 +452,9 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
     # if range is pi or more, this will remove duplicate angles 
     # (eg 0 and 2pi if range is pi)
     angles <- unique(angles %% (2*pi))
-    scores <- rep(NA, length(angles)) 
+    scores <- rep(NA, length(angles))  
     
-    
-    for (theta.i in 1:length(angles)) {      
-        
+    for (theta.i in 1:length(angles)) {           
         distances <- DistanceToLine(angles[theta.i], r, TRUE)
         weights <- GaussianFunction(a = 1, x = distances, b = 0, c = 1) 
         scores[theta.i] <- sum(m * weights, na.rm = TRUE) 

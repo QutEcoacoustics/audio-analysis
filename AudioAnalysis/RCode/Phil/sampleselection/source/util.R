@@ -219,6 +219,16 @@ TimeToColNum <- function (t, frames.per.second) {
     return(col.num)
 }
 
+ColNumToTime <- function (col, frames.per.second) {  
+    time <- col/frames.per.second
+    return(time)
+}
+
+RowNumToFrequency <- function (row, hz.per.bin) {
+    return(row * hz.per.bin)
+}
+
+
 # temp to fix the stuffup i made with the filenames
 RenameMatlabOutput <- function () {
     

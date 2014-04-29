@@ -11,6 +11,7 @@ g.source.dir <- file.path('','Users','n8933464','Documents','SERF')
 
 # audio source directory, containing wav files
 g.audio.dir  <- file.path(g.source.dir, 'mono')
+g.lines.dir  <- file.path(g.source.dir, 'lines')
 
 g.all.events.version <- 3
 #g.all.events.version <- 'a'
@@ -37,7 +38,7 @@ g.start.min <- 600
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 1439
+g.end.min <- 619
 #g.end.min <- 430
 
 # which sites to include in sample selection
