@@ -8,32 +8,23 @@ using AudioAnalysisTools.DSP;
 namespace AudioAnalysisTools.Indices
 {
     ///
-    /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC SUMMARY INDEX, DO THE FOLLOWING:
-    /// 1) Create a KEY or IDENTIFIER for the index in the list below.
-    /// 2) Declare the new index and its properties in the method IndexConstants.InitialisePropertiesOfIndices();
+    /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:
+    /// 1) Create a KEY or IDENTIFIER for the index in the list below. Always use this key when referencing the index.
+    /// 2) Declare the properties of the new index in the YAML file: C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml
     /// 3) Calculate the INDEX some where. In the case of Acoustic Indices, they are calculated in the class IndicesCalculate.cs.
     /// 4) Store the value of the index in the class IndexValues
-    //==============
+    /// 4a) e.g. for spectral index:   indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralENT, spectrumOfENTvalues);
+    /// 4b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue); 
+    /// ==============
+
 
     /// <summary>
     /// This static class contains all the keys to identify available acoustic indices.
-    /// The principle method, 
-    ///         public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
-    /// creates a dictionary of index properties.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
-    /// To create a new index you initialise it in the above method and add it to the dictionary of indices. 
     /// </summary>
     public static class InitialiseIndexProperties
     {
-        public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
-        public static int bitsPerSample = 16;
-        public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
-        public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
-        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
 
-
-
-        // KEYS for referring to indices. These should really be an enum                
         //KEYS FOR SUMMARY INDICES
         public const string KEYRankOrder = "RankOrder";
         public const string KEYStartMinute = "StartMinute";
@@ -73,10 +64,20 @@ namespace AudioAnalysisTools.Indices
         public const string KEYspectralEVN = "EVN";
         public const string KEYspectralSPT = "SPT";
 
+       
+        public const double DEFAULT_SIGNAL_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //in decibels
+        public static int bitsPerSample = 16;
+        public static double epsilon = Math.Pow(0.5, bitsPerSample - 1);
+        public static double CLIPPING_THRESHOLD = epsilon * 4; // estimate of fraction of clipped values in wave form
+        public const double ZERO_SIGNAL_THRESHOLD = 0.001; // all values in zero signal are less than this value
+
+
 
 
 
         /// <summary>
+        /// ///// THIS METHOD IS TO BE DELETED. NOW REPLACED BY A YAML FILE
+        /// 
         /// Creates and returns all info about the currently calculated indices.
         /// </summary>
         /// <returns>A DICTIONARY OF INDICES</returns>

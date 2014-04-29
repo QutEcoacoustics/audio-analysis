@@ -924,7 +924,7 @@ namespace AudioAnalysisTools
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
         /// </summary>
         /// <param name="configuration"></param>
-        public static void DrawFalseColourSpectrograms(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
+        public static void DrawSpectrogramsFromSpectralIndices(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
         {
             //LDSpectrogramConfig configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
             LDSpectrogramConfig configuration = LDSpectrogramConfig.ReadYAMLToConfig(spectrogramConfigPath);
@@ -1061,7 +1061,7 @@ namespace AudioAnalysisTools
 
         public static void Execute(Arguments arguments)
         {
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(arguments.SpectrogramConfigPath, arguments.IndicesConfigPath);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndicesConfigPath);
         }
 
     } //LDSpectrogramRGB
