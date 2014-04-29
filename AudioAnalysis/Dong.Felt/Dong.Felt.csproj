@@ -142,6 +142,7 @@
     <Compile Include="Query.cs" />
     <Compile Include="Representations\RectangularRepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionNeighbourhoodRepresentation.cs" />
+    <Compile Include="ResultsOutput\MathingResultsAnalysis.cs" />
     <Compile Include="ResultsOutput\OutputResults.cs" />
     <Compile Include="SimilarityMatching\SimilarityMatching.cs" />
     <Compile Include="StatisticalAnalysis.cs" />

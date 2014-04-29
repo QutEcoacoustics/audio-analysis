@@ -82,40 +82,7 @@
                 else if (action == "processOne")
                 {
                     /// Single file experiment
-                    //var file = new FileInfo(matchedCandidateOutputPath);
-                    //var candidates = CSVResults.CsvToCandidatesList(file);
-                    //string segmentOutputDirectory = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Query\Scarlet Honeyeater1\SegmentOutput";
-                    //var queryCsvFile = new FileInfo(querycsvFilePath);
-                    //var query = new Candidates();
-                    //var queryInfo = CSVResults.CsvToQuery(queryCsvFile);
-                    //query.StartTime = queryInfo.startTime * 1000;
-                    //query.EndTime = query.StartTime + queryInfo.duration * 1000;
-                    //query.MaxFrequency = queryInfo.maxFrequency;
-                    //query.MinFrequency = queryInfo.minFrequency;
-                    //query.SourceFilePath = queryaudioFilePath;
-                    //candidates.Insert(0, query);
-                    //if (candidates != null)
-                    //{
-                    //    for (int i = 0; i < candidates.Count(); i++)
-                    //    {
-                    //        var outPutFileName = i + ".wav";
-                    //        var outPutFilePath = Path.Combine(segmentOutputDirectory, outPutFileName);
-                    //        OutputResults.AudioSegmentBasedCandidates(candidates[i], outPutFilePath.ToFileInfo());
-                    //    }
-                    //}
-                    //var listString = new List<string>();
-                    //listString.Add("Q");
-                    //for (int i = 0; i < rank; i++)
-                    //{
-                    //    int temp = i + 1;
-                    //    listString.Add(temp.ToString());
-                    //}
-
-                    //var imageArray = DrawingSpectrogramsFromAudios(segmentOutputDirectory, config, listString, candidates, ridgeConfig).ToArray();
-                    //var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
-                    //var imageOutputName = "Combined image.png";
-                    //var imagePath = Path.Combine(segmentOutputDirectory, imageOutputName);
-                    //imageResult.Save(imagePath, ImageFormat.Png);
+                    MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName));
                 }
                 else
                 {
@@ -935,6 +902,12 @@
             return result;
         }
 
+        public static void MatchingStatisticalAnalysis(DirectoryInfo matchResultsDirectory, FileInfo outputPath)
+        {
+            var matchedResults = OutputResults.MatchingStatAnalysis(matchResultsDirectory);
+            var improvedOutputPath = outputPath.ToString() + ".csv";
+            CSVResults.MatchingStatResultsToCSV(new FileInfo(improvedOutputPath), matchedResults);         
+        }
 
     } // class dong.sandpit
 }
