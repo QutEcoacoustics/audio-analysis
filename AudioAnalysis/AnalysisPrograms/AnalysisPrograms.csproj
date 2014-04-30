@@ -202,6 +202,7 @@
     <Compile Include="Canetoad.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />
+    <Compile Include="DrawLongDurationSpectrograms.cs" />
     <Compile Include="DummyAnalyser.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="Frogs.cs" />
@@ -215,7 +216,7 @@
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="Human1.cs" />
-    <Compile Include="IndicesCsv2Display.cs" />
+    <Compile Include="DrawSummaryIndexTracks.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="LewinsRail3.cs" />
     <Compile Include="LSKiwi3.cs" />

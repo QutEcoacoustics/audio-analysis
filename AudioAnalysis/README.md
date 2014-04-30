@@ -30,7 +30,7 @@ The build produces `AnalysisPrograms\bin\[Debug|Release]\AnalysisPrograms.exe` w
 
 ###Analysis Programs Architecture
 ####CLI
-The `AnalysisPrograms.exe` (abbrevieted here on in to `AP`) contains many sub programs. 
+The `AnalysisPrograms.exe` (abbreviated here on in to `AP`) contains many sub programs. 
 Usage is obtained by
 
     $ AP help
@@ -40,17 +40,17 @@ A list of sub-programs can be obtained by running:
 
     $ AP list
 
-The list of programs is defined in `AnalysisPrograms\Production\Actions.cs`. All subprograms have `Execute` or `Main` methods within the `AnalysisPrograms` project. If necessary these entrypoints simply redirect to main methods within other projects.
+The list of programs is defined in `AnalysisPrograms\Production\Actions.cs`. All sub-programs have `Execute` or `Main` methods within the `AnalysisPrograms` project. If necessary these entry points simply redirect to main methods within other projects.
 
-Commandline argument parsing is automatically done by a custom build of the `PowerArgs` library. This library has been earmarked for replacement with an alternative.
+Command-line argument parsing is automatically done by a custom build of the `PowerArgs` library. This library has been earmarked for replacement with an alternative.
 
-####Subprogram types
-There are, in broad terms, these types of subprograms:
+####Sub-program types
+There are, in broad terms, these types of sub-programs:
 
  - Main actions
 	 - Process large amounts of information (like `audio2csv`)
- - Development / small scall actions
-	 - Small data / development entrypoints 
+ - Development / small scale actions
+	 - Small data / development entry points 
  - Utility actions
 	 - DummyAnalyser
 	 - audiocutter
@@ -58,19 +58,19 @@ There are, in broad terms, these types of subprograms:
 	 - CLI usage
 	 - `analysesavailable`
 
-Most development actions correlate to an implementation of `IAnalyser` or a custom algorithm. For details on implemting the `IAnalyser` workflow refer to [AboutIAnalyser.md](AboutIAnalyser.md)
+Most development actions correlate to an implementation of `IAnalyser` or a custom algorithm. For details on implementing the `IAnalyser` work-flow refer to [AboutIAnalyser.md](AboutIAnalyser.md)
 
 ####Logging
 Every execution of `AP` produces a log file that is saved relative the executables' location in the `LogFiles` directory. Log files:
  
 - Are automatically rolled over on every execution
-- The latest logfile will always be named `Log.txt`
+- The latest log file will always be named `Log.txt`
 - Up to 50 log files will be kept
 - All StandardOutput should be directed to the log provider
 	- **DO NOT USE THE `System.Console.Write*` methods**
 	- Instead use the proper logger or the `LoggedConsole` helper class
 - A new instance of the logger can be created (per class) with the following snippet:
-    `private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);`
+    `private static read-only ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);`
 - Logging level, output format, and destinations are controlled in `AnalysisPrograms\log4net.config`
 
 ####Production Code
@@ -85,7 +85,7 @@ Some code is used often enough to be depended on. Any code that matches the foll
 - All well used Action declarations (`AnalysisPrograms\Production\Actions.cs`)
 	- Including: 
 		- names (the names listed by usage)
-		- arguments (properties/argument avaialbility or format)
+		- arguments (properties/argument availability or format)
 
 
 #Matlab
