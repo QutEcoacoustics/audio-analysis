@@ -71,12 +71,12 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Audio2Sonogram.Main;
         }
 
-        public IndicesCsv2Display.Arguments IndicesCsv2ImageArgs { get; set; }
-        public static Action<IndicesCsv2Display.Arguments> IndicesCsv2Image()
+        public DrawSummaryIndexTracks.Arguments IndicesCsv2ImageArgs { get; set; }
+        public static Action<DrawSummaryIndexTracks.Arguments> IndicesCsv2Image()
         {
             // 4. Produces a tracks image of column values in a csv file - one track per csv column.
             // Signed off: Michael Towsey 27th July 2012
-            return IndicesCsv2Display.Main;
+            return DrawSummaryIndexTracks.Main;
         }
 
         //public DrawSummaryIndices.Arguments IndicesCsv2ImageArgs { get; set; }
@@ -343,10 +343,10 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.AudioFileCheck.Execute;
         }
 
-        public LDSpectrogramRGB.Arguments ColourSpectrogramArgs { get; set; }
-        public static Action<LDSpectrogramRGB.Arguments> ColourSpectrogram()
+        public DrawLongDurationSpectrograms.Arguments ColourSpectrogramArgs { get; set; }
+        public static Action<DrawLongDurationSpectrograms.Arguments> ColourSpectrogram()
         {
-            return AudioAnalysisTools.LDSpectrogramRGB.Dev;
+            return DrawLongDurationSpectrograms.Execute;
         }
 
         public AudioCutter.Arguments AudioCutterArgs { get; set; }
