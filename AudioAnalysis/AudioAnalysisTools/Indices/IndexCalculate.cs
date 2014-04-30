@@ -116,8 +116,10 @@ namespace AudioAnalysisTools.Indices
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             IndexValues indexValues = new IndexValues(freqBinCount, wavDuration);  // total duration of recording
             indexValues.StoreIndex(InitialiseIndexProperties.KEYSegmentDuration, wavDuration);     // duration of recording in seconds
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds); //average high ampl rate per second
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYClippingIndex, dspOutput.ClipCount / wavDuration.TotalSeconds); //average clip rate per second
+            double highAmplIndex = dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds;
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, highAmplIndex); //average high ampl rate per second
+            double clippingIndex = dspOutput.ClipCount / wavDuration.TotalSeconds;
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYClippingIndex, clippingIndex); //average clip rate per second
 
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
@@ -302,7 +304,6 @@ namespace AudioAnalysisTools.Indices
             }
 
 
-            int clipThreshold = 1;
             // ######################################################################################################################################################
             // return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
             if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
@@ -314,7 +315,7 @@ namespace AudioAnalysisTools.Indices
                 indexValues.Hits = hits;
                 indexValues.TrackScores = scores;
                 //indicesStore.Tracks = trackInfo.listOfSPTracks;
-                if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indexValues.SpectralIndices); 
+                IndexCalculate.MarkClippedSpectra(indexValues.SpectralIndices, highAmplIndex, clippingIndex); 
 
                 return indexValues;
             }
@@ -370,7 +371,7 @@ namespace AudioAnalysisTools.Indices
             indexValues.Hits = hits;
             indexValues.TrackScores = scores;
             indexValues.Tracks = sptInfo.listOfSPTracks;
-            if (dspOutput.ClipCount > clipThreshold) MarkClippedSpectra(indexValues.SpectralIndices); 
+            IndexCalculate.MarkClippedSpectra(indexValues.SpectralIndices, highAmplIndex, clippingIndex); 
 
             return indexValues;
         } //Analysis()
@@ -443,29 +444,56 @@ namespace AudioAnalysisTools.Indices
  
 
         //############################################################################################################################################################
-
-        public static void MarkClippedSpectra(Dictionary<string, double[]> spectra)  
+        /// <summary>
+        /// This methods adds a colour code at the top of spectra where the high amplitude and clipping indices exceed an arbitrary threshold value.
+        /// IMPORTANT: IT ASSUMES THE ultimate COLOUR MAPS for the LDSPectrograms are BGN-AVG-CVR and ACI-ENT-EVN.
+        /// This is a quick and dirty solution. Could be done better one day!
+        /// </summary>
+        /// <param name="spectra"></param>
+        /// <param name="highAmplCountsPerSecond"></param>
+        /// <param name="clipCountsPerSecond"></param>
+        public static void MarkClippedSpectra(Dictionary<string, double[]> spectra, double highAmplCountsPerSecond, double clipCountsPerSecond)  
         {
+            if (highAmplCountsPerSecond <= 0.01) return; //Ignore when index values are small
+
             int freqBinCount = spectra[InitialiseIndexProperties.KEYspectralBGN].Length;
-            for (int i = (freqBinCount - 10); i < freqBinCount; i++)
+            for (int i = (freqBinCount - 20); i < freqBinCount; i++)
             {
-                spectra[InitialiseIndexProperties.KEYspectralBGN][i] = 1.0;
-                spectra[InitialiseIndexProperties.KEYspectralAVG][i] = 0.0;
-                spectra[InitialiseIndexProperties.KEYspectralCVR][i] = 0.0;
+                // this will paint top of each spectrum a red colour.
+                spectra[InitialiseIndexProperties.KEYspectralBGN][i] = 1.0; // red
+                spectra[InitialiseIndexProperties.KEYspectralAVG][i] = 0.0; // green
+                spectra[InitialiseIndexProperties.KEYspectralCVR][i] = 0.0; // blue
 
                 spectra[InitialiseIndexProperties.KEYspectralACI][i] = 1.0;
-                spectra[InitialiseIndexProperties.KEYspectralENT][i] = 1.0;
+                spectra[InitialiseIndexProperties.KEYspectralENT][i] = 0.0;
                 spectra[InitialiseIndexProperties.KEYspectralSPT][i] = 0.0;
+                spectra[InitialiseIndexProperties.KEYspectralEVN][i] = 0.0;
             }
-            spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 5] = 100.0; // dB
-            spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 5] = 1.0;
-            spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 7] = 100.0;
-            spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 7] = 1.0;
 
-            spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 5] = 0.0;
-            spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 5] = 1.0;
-            spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 7] = 0.0;
-            spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 7] = 1.0;
+            if (clipCountsPerSecond <= 0.01) return; //Ignore when index values are very small
+
+            // Setting these values above the normalisation MAX will turn bin N-5 white
+            spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 5] = 100.0; // dB
+            spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 5] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 5] = 2.0;
+            spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 5] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 5] = 100.0;
+
+            if (clipCountsPerSecond <= 0.1) return; //Ignore when index values are small
+            // Setting these values above the normalisation MAX will turn bin N-7 white
+            spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 7] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 7] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 7] = 2.0;
+            spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 7] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 7] = 100.0;
+
+            if (clipCountsPerSecond <= 1.0) return; //Ignore when index values are small
+            // Setting these values above the normalisation MAX will turn bin N-9 white
+            spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 9] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 9] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 9] = 2.0;
+            spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 9] = 100.0;
+            spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 9] = 100.0;
 
         } // MarkClippedSpectra()
 
