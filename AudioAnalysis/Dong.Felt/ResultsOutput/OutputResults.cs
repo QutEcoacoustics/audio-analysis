@@ -36,9 +36,10 @@ namespace Dong.Felt.ResultsOutput
                 // read the audio source file
                 var content = CSVResults.CsvToCandidatesList(new FileInfo(matchedResults[index]));
                 var contentCount = content.Count();
-                var hit = false;
+                var hit = new int[contentCount];               
                 var tempScore = 0.0;
-                var positionIndicator = 0;
+                var firstPositionIndicator = 0;
+                var secondPositionIndicator = 0;
                 for (var i = 0; i < contentCount; i++)
                 {
                     var matchedItemFileName = Path.GetFileNameWithoutExtension(content[i].SourceFilePath);
@@ -48,23 +49,60 @@ namespace Dong.Felt.ResultsOutput
                     // read the similarity score to check its position
                     if (score != tempScore)
                     {
-                        if (hit == false)
+                        if (hit[i] == 0)
                         {
-                            positionIndicator++;
                             tempScore = score;
                         }
                     }                   
                     if (querySpeciesName.Contains(candidateSpeciesName))
                     {
-                        hit = true;                      
-                    }                
+                        hit[i] = 1;
+                    }                       
                 }
-                var item = new MathingResultsAnalysis
+                var correctHitCount = 0;
+                for (var j = 0; j < contentCount; j++)
                 {
-                    HitPosition = positionIndicator,
-                    Hit = hit,
-                    MatchedAudioName = content[positionIndicator-1].SourceFilePath + ".csv",
-                };               
+                    if (hit[j] == 1)
+                    {
+                        correctHitCount++;
+                        if (correctHitCount == 1)
+                        {
+                            firstPositionIndicator = j + 1;
+                        }
+                        if (correctHitCount == 2)
+                        {
+                            secondPositionIndicator = j + 1;
+                        }                     
+                    }
+                }
+                string firstHitFileName;
+                string matchedHitName;
+                if (correctHitCount == 0)
+                {
+                    firstHitFileName = Path.GetFileNameWithoutExtension(content[firstPositionIndicator].SourceFilePath);
+                    matchedHitName = Path.GetFileNameWithoutExtension(content[firstPositionIndicator].SourceFilePath) + ".csv";
+                }
+                else
+                {
+                    firstHitFileName = Path.GetFileNameWithoutExtension(content[firstPositionIndicator - 1].SourceFilePath);
+                    matchedHitName = Path.GetFileNameWithoutExtension(content[firstPositionIndicator - 1].SourceFilePath) + ".csv";
+                }
+                var splittedHitFileName = firstHitFileName.Split('-');
+                var hitSpeciesName = splittedHitFileName[splittedHitFileName.Count() - 1];
+                var item = new MathingResultsAnalysis
+                {                    
+                    QuerySpeciesName = querySpeciesName,
+                    HitSpeciesName = hitSpeciesName,
+                    FirstHitPosition = firstPositionIndicator,
+                    SecondHitPosition = secondPositionIndicator,
+                    FirstHit = hit[0],
+                    SecondHit = hit[1],                    
+                    ThirdHit = hit[2],                   
+                    FourthHit = hit[3],                  
+                    FifthHit = hit[4],
+                    QueryAudioName = Path.GetFileNameWithoutExtension(matchedResults[index]),
+                    MatchedAudioName = matchedHitName
+                };           
                 results.Add(item);
             }
 

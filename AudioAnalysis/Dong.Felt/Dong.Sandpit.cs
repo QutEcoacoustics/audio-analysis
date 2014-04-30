@@ -82,7 +82,7 @@
                 else if (action == "processOne")
                 {
                     /// Single file experiment
-                    MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName));
+                    MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                 }
                 else
                 {
@@ -902,10 +902,10 @@
             return result;
         }
 
-        public static void MatchingStatisticalAnalysis(DirectoryInfo matchResultsDirectory, FileInfo outputPath)
+        public static void MatchingStatisticalAnalysis(DirectoryInfo matchResultsDirectory, FileInfo outputPath, string featurePropertySet)
         {
             var matchedResults = OutputResults.MatchingStatAnalysis(matchResultsDirectory);
-            var improvedOutputPath = outputPath.ToString() + ".csv";
+            var improvedOutputPath = outputPath.ToString() + featurePropertySet + ".csv";
             CSVResults.MatchingStatResultsToCSV(new FileInfo(improvedOutputPath), matchedResults);         
         }
 
