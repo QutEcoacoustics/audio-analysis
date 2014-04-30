@@ -215,7 +215,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                throw new InvalidOperationException("Data table is null");
+                LoggedConsole.WriteLine("No events found");
             }
         }
 
