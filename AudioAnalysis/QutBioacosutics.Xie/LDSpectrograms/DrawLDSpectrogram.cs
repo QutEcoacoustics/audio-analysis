@@ -8,6 +8,7 @@ using System.Text;
 using AudioAnalysisTools;
 using TowseyLibrary;
 using AcousticIndicesJie;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
 
 namespace QutBioacosutics.Xie.LDSpectrograms

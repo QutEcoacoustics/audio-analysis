@@ -24,18 +24,15 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
 
     using AnalysisBase;
-
     using AnalysisPrograms.Production;
-
     using AnalysisRunner;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
 
     using Dong.Felt;
-
     using PowerArgs;
-
-    using TowseyLibrary;
 
     public class AnalyseLongRecording
     {
