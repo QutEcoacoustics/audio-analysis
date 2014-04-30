@@ -7,6 +7,7 @@ using System.Text;
 using AudioAnalysisTools;
 using PowerArgs;
 using AnalysisPrograms.Production;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
 
 
