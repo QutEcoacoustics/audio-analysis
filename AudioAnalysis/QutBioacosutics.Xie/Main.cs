@@ -9,6 +9,7 @@ using AudioAnalysisTools.DSP;
 using System.IO;
 using MathNet.Numerics;
 using QutBioacosutics.Xie.FrogIndices;
+using QutBioacosutics.Xie.LDSpectrograms;
 
 
 
@@ -21,7 +22,6 @@ namespace QutBioacosutics.Xie
     using System.Drawing.Imaging;
     using QutBioacosutics.Xie.Configuration;
     using LDSpectrograms;
-
 
     public static class Main
     {
@@ -45,7 +45,31 @@ namespace QutBioacosutics.Xie
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside of this method. Extract all params below.
              */
-            
+
+
+            // Step.4 Draw false-color spectrogram
+            string ipDirStr = @"C:\Jie\output\indexCanetoad";
+            string opDirStr = @"C:\Jie\output\indexCanetoad";
+            string fileName = "canetoad_DATE";
+            var ipDir = new DirectoryInfo(ipDirStr);
+            var opDir = new DirectoryInfo(opDirStr);
+            int startMinute = 19 * 60;
+
+            //..........................................................//
+            //Draw False color spectrogram
+            LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir);
+            //spgConfig.ColourMap = "TRC-OSC-HAR";
+            spgConfig.ColourMap1 = "OSC-HAR-TRC";
+            spgConfig.MinuteOffset = startMinute;
+            spgConfig.FrameWidth = 256;
+            //spgConfig.SampleRate = 17640;
+            spgConfig.SampleRate = 22050;
+            FileInfo outPath = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
+            spgConfig.WritConfigToYAML(outPath);
+            DrawLDSpectrogram.DrawFalseColourSpectrograms(spgConfig);
+
+
+
             //***************************************************************//
             //Parameters setting
             //***************************Canetoad*****************************//  
@@ -412,76 +436,207 @@ namespace QutBioacosutics.Xie
   
             // Path of loaded recording
 
-            string path = configuration.LoadedFilePath;
+            //string path = configuration.LoadedFilePath;
 
-            if (path == null)
+                      
+            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
+
+            var fileCount = fileEntries.Count();
+
+            // Canetoad
+            var canetoadTrack = new double[257, 726];
+            var canetoadEnergy = new double[257, 726];
+            var canetoadOscillation = new double[257, 726];
+
+            // Gracillenta
+            var gracillentaTrack = new double[257, 726];
+            var gracillentaEnergy = new double[257, 726];
+
+            // Nasuta
+            var nasutaTrack = new double[257, 726];
+            var nasutaHarmonic = new double[257, 726];
+            var nasutaOscillation = new double[257, 726];
+
+
+            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
             {
-                path = @"C:\Jie\data\Segment_JCU_01\020313_429min.wav";
+                Log.Info(fileIndex);
+
+                var path = Path.GetFileName(fileEntries[fileIndex]);
+                var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_01", path);
+
+                //string fullPath = @"C:\Jie\data\Segment_JCU_01\020313_103min.wav";
+
+                var recording = new AudioRecording(fullPath);
+
+                // Step.1 Generate spectrogarm
+                // A. Generate spectrogram for extracting tracks, entropy and harmonic
+
+                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
+                var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.GetWavReader());
+
+
+                // B. Generate spectrogram for extracting oscillation rate
+
+                //*************************************************************//
+
+                // Calculate windowOverlap
+                //double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
+
+                var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
+                var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.GetWavReader());
+
+
+                // Step.2 Produce features
+
+
+                //***********************Canetoad*************************//
+                var peakHitsCanetoad = CalculateIndexForCanetoad.GetPeakHits(canetoadConfig, spectrogramLong);
+                var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
+                var oscillationCanetaodRotate = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
+                var oscillationCanetoad = MatrixTools.MatrixRotate90Anticlockwise(oscillationCanetaodRotate);
+
+                //***********************Gracillenta*************************//
+
+                var peakHitsGracillenta = CalculateIndexForLitoriaGracillenta.GetPeakHitsGracillenta(gracillentaConfig, spectrogramLong);
+                var trackGracillenta = CalculateIndexForLitoriaGracillenta.GetFrogTracksGracillenta(gracillentaConfig, spectrogramLong, peakHitsGracillenta);
+
+
+                //***********************Nasuta*************************//
+
+                var peakHitsNasuta = CalculateIndexForLitoriaNasuta.GetPeakHitsNasuta(nasutaConfig, spectrogramLong);
+                var trackNasuta = CalculateIndexForLitoriaNasuta.GetFrogTracksFallax(nasutaConfig, spectrogramLong, peakHitsNasuta);
+                var oscillationNasutaRotate = CalculateIndexForLitoriaNasuta.GetOscillationRate(nasutaConfig, spectrogramShort);
+                var oscillationNasuta = MatrixTools.MatrixRotate90Anticlockwise(oscillationNasutaRotate);
+
+
+
+
+                //***********************Caerulea*************************//
+
+                //var peakHitsCaerulea = CalculateIndexForLitoriaCaerulea.GetPeakHits(caeruleaConfig, spectrogramLong);
+                //var trackCaerulea = CalculateIndexForLitoriaCaerulea.GetFrogTracks(caeruleaConfig, spectrogramLong, peakHitsCaerulea);
+                //var oscillationCaerulea = CalculateIndexForLitoriaCaerulea.GetOscillationRate(caeruleaConfig,spectrogramShort);
+
+                //***********************Fallax*************************//
+
+                //var peakHitsFallax = CalculateIndexForLitoriaFallax.GetPeakHitsFallax(fallaxConfig, spectrogramLong);
+                //var trackFallax = CalculateIndexForLitoriaFallax.GetFrogTracksFallax(fallaxConfig, spectrogramLong, peakHitsFallax);
+
+                //********************Latopalmata********************************//
+
+                //var peakHitsLatopalmata = CalculateIndexForLitoriaLatopalmata.GetPeakHits(latopalmataConfig,spectrogramLong);
+                //var trackLatopalmata = CalculateIndexForLitoriaLatopalmata.GetFrogTracks(latopalmataConfig,spectrogramLong,peakHitsLatopalmata);
+
+
+
+                // Create 21 matrix to save the features
+                // Canetoad: Item1-arrayresult, Item4-energy
+                
+                var trackFeatureCanetoad = trackCanetaod.Item1;
+                var energyFeatureCanetoad = trackCanetaod.Item3; // Need to be normalised
+
+                var oscillationFeatureCanetoad = new double[oscillationCanetoad.GetLength(0)];
+                for (int i = 0; i < oscillationCanetoad.GetLength(0); i++)
+                {
+                    double tempOscillation = 0;
+                    for (int j = 0; j < oscillationCanetoad.GetLength(1); j++)
+                    {
+                        tempOscillation = tempOscillation + oscillationCanetoad[i, j];                    
+                    }
+                    oscillationFeatureCanetoad[i] = tempOscillation;
+                }
+
+                for (int i = 0; i < 257; i++)
+                {
+                    canetoadTrack[i, fileIndex] = trackFeatureCanetoad[i];
+                    canetoadEnergy[i, fileIndex] = energyFeatureCanetoad[i];
+                    canetoadOscillation[i, fileIndex] = oscillationFeatureCanetoad[i];
+                }
+                
+
+                // Gracillenta
+                var trackFeatureGracillenta = trackGracillenta.Item1;
+                var energyFeatureGracillenta = trackGracillenta.Item3; // Need to be normalised
+
+                for (int i = 0; i < 257; i++)
+                {
+                    gracillentaTrack[i, fileIndex] = trackFeatureGracillenta[i];
+                    gracillentaEnergy[i, fileIndex] = energyFeatureGracillenta[i];
+                }
+
+                // Nasuta
+                var trackFeatureNasuta = trackNasuta.TrackHitsNasuta.Item1;
+                
+                var harmonicNasuta = trackNasuta.HarmonicHitsNasuta; // Need to be normalised
+
+                var harmonicArrayNasuta = new double[harmonicNasuta.GetLength(0)];
+                for (int i = 0; i < harmonicNasuta.GetLength(0); i++)
+                {
+                    double tempHarmonic = 0;
+                    for (int j = 0; j < harmonicNasuta.GetLength(1); j++)
+                    {
+                        tempHarmonic = tempHarmonic + harmonicNasuta[i, j];
+                    }
+
+                    harmonicArrayNasuta[i] = tempHarmonic;
+                }
+
+                var oscillationFeatureNasuta = new double[oscillationNasuta.GetLength(0)];
+                for (int i = 0; i < oscillationNasuta.GetLength(0); i++)
+                {
+                    double tempOscillation = 0;
+                    for (int j = 0; j < oscillationNasuta.GetLength(1); j++)
+                    {
+                        tempOscillation = tempOscillation + oscillationNasuta[i, j];
+                    }
+                    oscillationFeatureNasuta[i] = tempOscillation;
+                }
+
+                for (int i = 0; i < 257; i++)
+                {
+                    nasutaTrack[i, fileIndex] = trackFeatureNasuta[i];
+                    nasutaHarmonic[i, fileIndex] = harmonicArrayNasuta[i];
+                    nasutaOscillation[i, fileIndex] = oscillationFeatureNasuta[i];
+                }
+
+
+                // Caerulea
+
+                // Fallax
+
+                // Latopalmata
+
             }
+            // Write 7 frog species with 3 features to csv files  
+            // Canetoad
             
-            var recording = new AudioRecording(path);
-
-            // Step.1 Generate spectrogarm
-            // A. Generate spectrogram for extracting tracks, entropy and harmonic
-             
-            var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
-            var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.GetWavReader());
+            FileTools.WriteMatrix2File(canetoadTrack, @"C:\Jie\output\indexCanetoad\canetoadTrack.csv");
+            FileTools.WriteMatrix2File(canetoadEnergy, @"C:\Jie\output\indexCanetoad\canetoadEnergy.csv");
+            FileTools.WriteMatrix2File(canetoadOscillation, @"C:\Jie\output\indexCanetoad\canetoadOscillation.csv");
             
-            
-            // B. Generate spectrogram for extracting oscillation rate
+            // Gracillenta
+            FileTools.WriteMatrix2File(gracillentaTrack, @"C:\Jie\output\indexGracillenta\gracillentaTrack.csv");
+            FileTools.WriteMatrix2File(gracillentaEnergy, @"C:\Jie\output\indexGracillenta\gracillentaEnergy.csv");
 
-            //*************************************************************//
-                                
-            // Calculate windowOverlap
-            //double windowOverlap = XieFunction.CalculateRequiredWindowOverlap(recording.SampleRate, windowSize, canetoadConfig.MaximumOscillationNumberCanetoad);
-
-            var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
-            var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.GetWavReader());
-            
-            
-            // Step.2 Produce features
+            // Nasuta
+            FileTools.WriteMatrix2File(nasutaTrack, @"C:\Jie\output\indexNasuta\nasutaTrack.csv");
+            FileTools.WriteMatrix2File(nasutaHarmonic, @"C:\Jie\output\indexNasuta\nasutaHarmonic.csv");
+            FileTools.WriteMatrix2File(nasutaOscillation, @"C:\Jie\output\indexNasuta\nasutaOscillation.csv");
 
 
-            //***********************Canetoad*************************//
-            var peakHitsCanetoad = CalculateIndexForCanetoad.GetPeakHits(canetoadConfig, spectrogramLong);
-            var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
-            var oscillationCanetaod = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
+            // Caerulea
 
-            //***********************Gracillenta*************************//
+            // Fallax
 
-            var peakHitsGracillenta = CalculateIndexForLitoriaGracillenta.GetPeakHitsGracillenta(gracillentaConfig, spectrogramLong);
-            var trackGracillenta = CalculateIndexForLitoriaGracillenta.GetFrogTracksGracillenta(gracillentaConfig,spectrogramLong,peakHitsGracillenta);
+            // Latopalmata
 
- 
-            //***********************Nasuta*************************//
-            var peakHitsNasuta = CalculateIndexForLitoriaNasuta.GetPeakHitsNasuta(nasutaConfig,spectrogramLong);
-            var trackNasuta = CalculateIndexForLitoriaNasuta.GetFrogTracksFallax(nasutaConfig, spectrogramLong, peakHitsNasuta);
-
-            //***********************Caerulea*************************//
-
-            var peakHitsCaerulea = CalculateIndexForLitoriaCaerulea.GetPeakHits(caeruleaConfig, spectrogramLong);
-            var trackCaerulea = CalculateIndexForLitoriaCaerulea.GetFrogTracks(caeruleaConfig, spectrogramLong, peakHitsCaerulea);
-            var oscillationCaerulea = CalculateIndexForLitoriaCaerulea.GetOscillationRate(caeruleaConfig,spectrogramShort);
-
-            //***********************Fallax*************************//
-
-            var peakHitsFallax = CalculateIndexForLitoriaFallax.GetPeakHitsFallax(fallaxConfig, spectrogramLong);
-            var trackFallax = CalculateIndexForLitoriaFallax.GetFrogTracksFallax(fallaxConfig, spectrogramLong, peakHitsFallax);
-
-            //********************Latopalmata********************************//
-
-            var peakHitsLatopalmata = CalculateIndexForLitoriaLatopalmata.GetPeakHits(latopalmataConfig,spectrogramLong);
-            var trackLatopalmata = CalculateIndexForLitoriaLatopalmata.GetFrogTracks(latopalmataConfig,spectrogramLong,peakHitsLatopalmata);
+            Log.Info("OK");
 
 
-
-
-
-            // Step.3 Draw spectrogram
+            //// Step.3 Draw spectrogram
 
             //double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
-            ////var result = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
-            ////var spectrogramMatrix = MatrixTools.MatrixRotate90Clockwise(result);
 
             //int rows = spectrogramMatrix.GetLength(0);
             //int cols = spectrogramMatrix.GetLength(1);
@@ -507,7 +662,7 @@ namespace QutBioacosutics.Xie
             //{
             //    for (int j = 0; j < cols; j++)
             //    {
-            //        if (harmonicHitsLatopalmata[j, i] != 0)
+            //        if (trackNasuta.HarmonicHitsNasuta[j, i] != 0)
             //        {
             //            bmp.SetPixel((cols - j), i, Color.Blue);
             //        }
@@ -518,210 +673,9 @@ namespace QutBioacosutics.Xie
             //bmp.Save(saveImagePath);
 
 
-            // Step.4 Draw false-color spectrogram
-
-
-
-            Log.Info("OK");
-            
-
-            
-            //string ipDirStr = @"C:\Jie\output\index1";
-            //string opDirStr = @"C:\Jie\output\index1";
-
-            ////..........................................................//
-            ////Draw False color spectrogram
-            //LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir);
-            ////spgConfig.ColourMap = "TRC-OSC-HAR";
-            //spgConfig.ColourMap = "OSC-HAR-TRC";
-            //spgConfig.MinuteOffset = startMinute;
-            //spgConfig.FrameWidth = 256;
-            ////spgConfig.SampleRate = 17640;
-            //spgConfig.SampleRate = 22050;
-            //FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
-            //spgConfig.WritConfigToYAML(path);
-            //DrawLDSpectrogram.DrawFalseColourSpectrograms(spgConfig);
-
-            ////..........................................................//
-            ////Read csc files and save them to make three indexes
-
-            //var trackResult = new double[726, 257];
-            //var longtrackResult = new double[726, 257];
-            //var oscillationResult = new double[726, 257];
-            //var harmonicResult = new double[726, 257];
-
-            //var csvFiles = Directory.GetFiles("C:\\Jie\\output\\csv");
-
-            //var csvCount = csvFiles.Count();
-
-            //for (int csvIndex = 0; csvIndex < csvCount; csvIndex++)
-            //{
-            //    var csvfile = CsvTools.ReadCSVFile2Matrix(csvFiles[csvIndex]);
-
-
-            //    string fullName = Path.GetFileNameWithoutExtension(csvFiles[csvIndex]);
-
-            //    string num = Path.GetFileNameWithoutExtension(fullName);
-            //    int numVal = 0;
-            //    if (num.Length == 11)
-            //    {
-            //        string subnum = num.Substring(7, 1);
-            //        numVal = Int32.Parse(subnum);
-            //    }
-
-            //    if (num.Length == 12)
-            //    {
-            //        string subnum = num.Substring(7, 2);
-            //        numVal = Int32.Parse(subnum);
-            //    }
-
-            //    if (num.Length == 13)
-            //    {
-            //        string subnum = num.Substring(7, 3);
-            //        numVal = Int32.Parse(subnum);
-            //    }
-
-
-            //    for (int i = 0; i < csvfile.GetLength(0); i++)
-            //    {
-            //        trackResult[numVal, i] = csvfile[i, 0];
-            //        longtrackResult[numVal, i] = csvfile[i, 1];
-            //        oscillationResult[numVal, i] = csvfile[i, 2];
-            //        harmonicResult[numVal, i] = csvfile[i, 3];
-            //    }
-            //}
-
-            //FileTools.WriteMatrix2File(trackResult, @"C:\Jie\output\index2\track.csv");
-            //FileTools.WriteMatrix2File(oscillationResult, @"C:\Jie\output\index2\oscillation.csv");
-            //FileTools.WriteMatrix2File(harmonicResult, @"C:\Jie\output\index2\harmonic.csv");
-
-            
-            ////Write 3 index matirxes to csv file
-            //int csvRow = trackResult.GetLength(0);
-            //int csvCol = trackResult.GetLength(1);
-
-            //for (int c = 0; c < csvCol; c++)
-            //{
-            //    var lines = new string[csvRow + 1];
-            //    for (int r = 0; r < csvRow; r++)
-            //    {
-            //        lines[r] = trackResult[r, c].ToString();
-            //    }
-
-            //    FileTools.WriteTextFile(@"C:\\Jie\\output\\index\\track.csv", lines);
-            //}
-
-            //FileTools.WriteTextFile(@"C:\\Jie\\output\\index\\track.csv", trackResult);
-          
-
-            //var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
-
-            //var fileCount = fileEntries.Count();
-
-
-
-            //for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
-            //{
-            //    //string path = fileEntries[319];
-            //    string path = @"C:\Jie\data\canetoad2.wav";
-
-            //    string num = Path.GetFileNameWithoutExtension(path);
-
-            //    string outpath = Path.GetFileNameWithoutExtension(num);
-
-            //    string outPath = Path.Combine("c:\\jie\\output\\csv", outpath);
-            //    string outPath2 = Path.ChangeExtension(outPath, ".csv");
-
-
-
-            //    var FrogIndexList = new List<FrogIndex>();
-            //    for (int i = (norHArray.Length - 1); i > 0; i--)
-            //    {
-            //        var FrogIndex = new FrogIndex();
-            //        FrogIndex.Track = norTArray[i];
-            //        //FrogIndex.LongTrack = norLongTArray[i];
-            //        FrogIndex.Oscillation = oscillationArray[i];
-            //        FrogIndex.Harmonic = norHArray[i];
-
-            //        FrogIndexList.Add(FrogIndex);
-            //    }
-
-            //    //var FrogIndex = new List<List<string>>();
-
-            //    //FrogIndex.Add(new List<string> { norTArray.ToString(), norOscArray.ToString(), norHArray.ToString() });
-
-            //    FileInfo fileInfo = new FileInfo(outPath2);
-
-            //    CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
-
-
-            //    // Write the index to three matrix
-
-            //    //for (int r = 0; r < norHArray.Length; r++)
-            //    //{
-            //    //    trackResult[r, numVal] = norTArray[r];
-            //    //}
-
-            //    //for (int r = 0; r < norHArray.Length; r++)
-            //    //{
-            //    //    oscillationResult[r, numVal] = oscillationArray[r];
-            //    //}
-
-            //    //for (int r = 0; r < norHArray.Length; r++)
-            //    //{
-            //    //    harmonicResult[r, numVal] = norHArray[r];
-            //    //}
-
-            //    //Log.Info(numVal);
-            //}
-
-            //// Write 3 index into csv file
-            ////var FrogIndexList = new List<FrogIndex>();
-            ////var FrogIndex = new FrogIndex();
-
-            ////FrogIndex.Track = trackResult;
-            ////FrogIndex.Oscillation = oscillationResult;
-            ////FrogIndex.Harmonic = harmonicResult;
-
-            ////FrogIndexList.Add(FrogIndex);
-
-            ////FileInfo fileInfo = new FileInfo(imagePath);
-            ////CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
-
-            //Log.Info("Analysis complete");
-
-
-            //var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramLongTrack.Data);
-
-
-            // save the arrays (1-trackArray,2-oscillationArray,3-harmonicArray) to CSV file.
-            //var NormaliseHarmonicArray = norHArray.Reverse();
-            //var NormaliseOscillationArray = norOscArray.Reverse();
-            //var NormaliseTrackArray = norTArray.Reverse();
-
-            //var FrogIndexList = new List<FrogIndex>();
-            //for (int i = (norHArray.Length - 1); i > 0; i--)
-            //{
-            //    var FrogIndex = new FrogIndex();
-            //    FrogIndex.Track = norTArray[i];
-            //    //FrogIndex.LongTrack = norLongTArray[i];
-            //    FrogIndex.Oscillation = norOscArray[i];
-            //    FrogIndex.Harmonic = norHArray[i];
-
-            //    FrogIndexList.Add(FrogIndex);
-            //}
-
-            ////var FrogIndex = new List<List<string>>();
-
-            ////FrogIndex.Add(new List<string> { norTArray.ToString(), norOscArray.ToString(), norHArray.ToString() });
-
-            //FileInfo fileInfo = new FileInfo(imagePath);
-
-            //CsvTools.WriteResultsToCsv(fileInfo, FrogIndexList);
 
 
         }
-
         
     }
 }

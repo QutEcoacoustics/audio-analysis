@@ -469,16 +469,16 @@ namespace QutBioacosutics.Xie
 
 
             // Remove too long tracks
-            //for (int i = 0; i < closedTrackList.Count; i++)
-            //{
-            //    if (closedTrackList[i].Duration > maximumDuration)
-            //    {
-            //        closedTrackList.RemoveAt(i);
-            //        closedTrackXList.RemoveAt(i);
-            //        closedTrackYList.RemoveAt(i);
-            //        i--;
-            //    }
-            //}
+            for (int i = 0; i < closedTrackList.Count; i++)
+            {
+                if (closedTrackList[i].Duration > maximumDuration)
+                {
+                    closedTrackList.RemoveAt(i);
+                    closedTrackXList.RemoveAt(i);
+                    closedTrackYList.RemoveAt(i);
+                    i--;
+                }
+            }
 
 
             // Remove too short tracks
@@ -626,15 +626,14 @@ namespace QutBioacosutics.Xie
 
             for(int i = 0; i < row; i++)
             {
-                List<double> rowValue = new List<double>();
+                double energy = 0;
                 for (int j = 0; j < column; j++)
                 {
-                    rowValue.Add(matrix[i,j]);               
-                }            
-                var rowArray = rowValue.ToArray();
-                double entropyRow = DataTools.Entropy_normalised(rowArray);
-                if(entropyRow > 0)
-                    entropy[i] = entropyRow;
+                    var tempEnergy = Math.Pow(tempMatrix[i, j], 2);
+                    energy = energy + tempEnergy;
+                }
+
+                entropy[i] = energy;
             }
 
             // Band hits
@@ -643,8 +642,8 @@ namespace QutBioacosutics.Xie
             {
                 for (int col = closedTrackList[i].StartFrame; col < closedTrackList[i].EndFrame; col++)
                 {
-                    //for (int r = minBin; r < maxBin; r++)
-                    for (int r = closedTrackList[i].LowBin; r < (closedTrackList[i].HighBin + 1); r++)
+                    for (int r = minBin; r < maxBin; r++)
+                    //for (int r = closedTrackList[i].LowBin; r < (closedTrackList[i].HighBin + 1); r++)
                     {
                         result[r, col] = 1;
                     }
@@ -667,17 +666,18 @@ namespace QutBioacosutics.Xie
                 }
             }
 
-            // Count the number of tracks in each frequency band
+            // Count the number of track hits in each frequency band
             var arrayResult = new double[row];
             for (int i = 0; i < result.GetLength(0); i++)
             {
                 for (int j = 0; j < result.GetLength(1); j++)
                 {
-                    if (result[i,j] > 0)
+                    if (result[i,j] == 1)
                     {
                         arrayResult[i]++;
                     }                                  
                 }
+
             }    
             return Tuple.Create(arrayResult, result, entropy, trackHits);
         }
