@@ -101,8 +101,5 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
-
-
-
     }
 }

@@ -20,8 +20,8 @@ namespace QutBioacosutics.Xie.FrogIndices
         }
 
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracks(LatopalmataConfiguration latopalmataConfig, SpectrogramStandard spectrogramLong,
-             double[,] peakHitsLatopalmata)
+        public static CombinedIndex GetFrogTracks(LatopalmataConfiguration latopalmataConfig, SpectrogramStandard spectrogramLong,
+                                                    double[,] peakHitsLatopalmata)
         {
             var peakHitsLatopalmataRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
 
@@ -32,16 +32,24 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                                latopalmataConfig.MinimumTrackDurationLatopalmata, latopalmataConfig.BinDifferencLatopalmata,
                                                                latopalmataConfig.DoSlopeLatopalmata);
 
-
-            // Contain harmonic structure & 
+            // Contain harmonic structure 
             var harmonicHitsLatopalmata = FindHarmonics.GetHarmonic(trackHitsLatopalmata.Item4, latopalmataConfig.HarmonicComponentLatopalmata,
                                                                     latopalmataConfig.HarmonicSensityLatopalmata, latopalmataConfig.HarmonicDiffrangeLatopalmata);
 
+            var combinedIndex = new CombinedIndex();
+            combinedIndex.HarmonicHitsLatopalmata = harmonicHitsLatopalmata;
+            combinedIndex.TrackHitsLatopalmata = trackHitsLatopalmata;
 
-            return trackHitsLatopalmata;
+            return combinedIndex;
         }
 
-
+        public class CombinedIndex
+        {
+            public double[,] HarmonicHitsLatopalmata{ get; set; }
+            public Tuple<double[], double[,], double[], double[,]> TrackHitsLatopalmata { get; set; }
+            
+        }
+            
 
     }
 }

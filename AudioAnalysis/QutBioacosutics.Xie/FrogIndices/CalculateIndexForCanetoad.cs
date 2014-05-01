@@ -35,7 +35,7 @@ namespace QutBioacosutics.Xie.FrogIndices
             var canetoadOscillationHits = FindOscillation.CalculateOscillationRate( spectrogramShort, canetoadConfig.MinimumFrequencyCanetoad, 
                                                                                     canetoadConfig.MaximumFrequencyCanetoad,canetoadConfig.Dct_DurationCanetoad, 
                                                                                     canetoadConfig.Dct_ThresholdCanetoad,canetoadConfig.MinimumOscillationNumberCanetoad, 
-                                                                                 canetoadConfig.MaximumOscillationNumberCanetoad);
+                                                                                    canetoadConfig.MaximumOscillationNumberCanetoad);
 
             var canetoadOscillationResults = RemoveSparseHits.PruneHits(canetoadOscillationHits);
 

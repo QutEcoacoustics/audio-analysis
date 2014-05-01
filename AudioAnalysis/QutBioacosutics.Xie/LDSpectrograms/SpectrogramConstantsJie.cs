@@ -42,56 +42,6 @@ namespace AudioAnalysisTools
 
 
 
-
-
-        //############################################################################################################################################################
-        // THE METHODS BELOW SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
-        // NOW IN INITIALISE INDEX PROPERTIES class.
-        //############################################################################################################################################################
-
-        // CONST string for referring to different types of spectrogram - these should really be an enum                
-        public const string KEY_AcousticComplexityIndex = "ACI";
-        public const string KEY_Average = "AVG";
-        public const string KEY_BackgroundNoise = "BGN";
-        public const string KEY_Combined = "CMB";
-        public const string KEY_Cluster  = "CLS";
-        public const string KEY_Colour = "COL";
-        public const string KEY_BinCover = "CVR";
-        public const string KEY_SpPeakTracks = "SPT";
-        public const string KEY_TemporalEntropy = "TEN";
-        public const string KEY_Variance = "VAR";
-
-        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
-        // NOW IN INITIALISE INDEX PROPERTIES class.
-        // FOR FROG SPECTROGRAMS
-        public const string KEY_Tracks = "TRC";
-        public const string KEY_Oscillations = "OSC";
-        public const string KEY_Harmonics = "HAR";
-
-
-
-        // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
-        // NOW IN INITIALISE INDEX PROPERTIES class.
-        // NORMALISING CONSTANTS FOR INDICES
-        //public const double ACI_MIN = 0.0;
-        //public const double ACI_MAX = 1.0;
-        public const double ACI_MIN = 0.4;
-        public const double ACI_MAX = 0.8;
-        public const double AVG_MIN = 0.0;
-        public const double AVG_MAX = 50.0;
-        public const double BGN_MIN = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20; //-20 adds more contrast into bgn image
-        public const double BGN_MAX = -20.0;
-        public const double CLS_MIN = 0.0;
-        public const double CLS_MAX = 30.0;
-        public const double CVR_MIN = 0.0;
-        public const double CVR_MAX = 0.3;
-        public const double TEN_MIN = 0.4;
-        public const double TEN_MAX = 0.95;
-        public const double SDV_MIN = 0.0; // for the variance bounds
-        public const double SDV_MAX = 100.0;
-        public const double VAR_MIN = SDV_MIN * SDV_MIN;
-        public const double VAR_MAX = SDV_MAX * SDV_MAX; // previously 30000.0
-
         // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
         // NOW IN INITIALISE INDEX PROPERTIES class.
         // FOR FROG SPECTROGRAMS
