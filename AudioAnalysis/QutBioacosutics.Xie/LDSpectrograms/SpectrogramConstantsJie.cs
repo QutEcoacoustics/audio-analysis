@@ -45,17 +45,17 @@ namespace AudioAnalysisTools
         // THESE SHOULD BE REMOVED IN CONJUNCTION WITH CHANGING JEI's CODE
         // NOW IN INITIALISE INDEX PROPERTIES class.
         // FOR FROG SPECTROGRAMS
-        public const double TRC_MIN = 0.0;
-        public const double TRC_MAX = 0.065;
+        public const double TRK_MIN = 0.0;
+        public const double TRK_MAX = 0.065;
         public const double OSC_MIN = 0.0;
         public const double OSC_MAX = 0.5;
-        public const double HAR_MIN = 0.0;
-        public const double HAR_MAX = 0.025;
+        public const double ENG_MIN = 0.0;
+        public const double ENG_MAX = 0.025;
 
         //public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
-        public const string RGBMap_TRC_OSC_HAR = "TRC-OSC-HAR";
+        public const string RGBMap_TRK_OSC_ENG = "TRK-OSC-ENG";
 
-        public const string ALL_KNOWN_KEYS = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRC-OSC-HAR";
+        public const string ALL_KNOWN_KEYS = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRK-OSC-ENG";
 
     } // SpectrogramConstants
 }

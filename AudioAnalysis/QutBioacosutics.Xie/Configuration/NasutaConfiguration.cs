@@ -11,13 +11,13 @@ namespace QutBioacosutics.Xie.Configuration
         public int RangeNasuta { get; set; }
         public int DistanceNasuta { get; set; }
 
-        public double BinToreanceNasuta { get; set; }
+        public double BinToleranceNasuta { get; set; }
         public int FrameThresholdNasuta { get; set; }
         public int TrackDurationThresholdNasuta { get; set; }
         public double TrackThresholdNasuta { get; set; }
         public int MaximumTrackDurationNasuta { get; set; }
         public int MinimumTrackDurationNasuta { get; set; }
-        public double BinDifferencNasuta { get; set; }
+        public double BinDifferenceNasuta { get; set; }
 
         public int FrequencyLowNasuta { get; set; }
         public int FrequencyHighNasuta { get; set; }
@@ -34,5 +34,40 @@ namespace QutBioacosutics.Xie.Configuration
         public int HarmonicComponentNasuta { get; set; }
         public int HarmonicSensityNasuta { get; set; }
         public int HarmonicDiffrangeNasuta { get; set; }
-    }
+    
+
+        public NasutaConfiguration(dynamic configuration)
+        {                            
+            // Peak parameters
+            AmplitudeThresholdNasuta = configuration.AmplitudeThresholdNasuta;   // Decibel---the minimum amplitude value
+            RangeNasuta = configuration.RangeNasuta;                                // Frame---the distance in either side for selecting peaks
+            DistanceNasuta = configuration.DistanceNasuta;                          // Frame---remove near peaks
+            // Track parameters
+            BinToleranceNasuta = configuration.BinToleranceNasuta;                 // Bin---the fluctuation of the dominant frequency bin 
+            FrameThresholdNasuta = configuration.FrameThresholdNasuta;              // Frame---frame numbers of the silence    
+            TrackDurationThresholdNasuta = configuration.TrackDurationThresholdNasuta;
+            TrackThresholdNasuta = configuration.TrackThresholdNasuta;           // Used for calculating the percent of peaks in one track    
+            MaximumTrackDurationNasuta = configuration.MaximumTrackDurationNasuta;  // Minimum duration of tracks
+            MinimumTrackDurationNasuta = configuration.MinimumTrackDurationNasuta;  // Maximum duration of tracks   
+            BinDifferenceNasuta = configuration.BinDifferenceNasuta;             // Difference between the highest and lowest bins   
+            // Band tracks parameters
+            FrequencyLowNasuta = configuration.FrequencyLowNasuta;
+            FrequencyHighNasuta = configuration.FrequencyHighNasuta;
+            // DCT
+            MinimumOscillationNumberNasuta = configuration.minimumOscillationNumberNasuta;
+            MaximumOscillationNumberNasuta = configuration.maximumOscillationNumberNasuta;
+            MinimumFrequencyNasuta = configuration.MinimumFrequencyNasuta;
+            MaximumFrequencyNasuta = configuration.MaximumFrequencyNasuta;
+            Dct_DurationNasuta = configuration.Dct_DurationNasuta;
+            Dct_ThresholdNasuta = configuration.Dct_ThresholdNasuta;
+
+            DoSlopeNasuta = configuration.DoSlopeNasuta;
+
+            HarmonicComponentNasuta = configuration.HarmonicComponentNasuta;
+            HarmonicSensityNasuta = configuration.HarmonicSensityNasuta;
+            HarmonicDiffrangeNasuta = configuration.HarmonicDiffrangeNasuta;
+        } // consturctor
+            
+    } // class
+
 }

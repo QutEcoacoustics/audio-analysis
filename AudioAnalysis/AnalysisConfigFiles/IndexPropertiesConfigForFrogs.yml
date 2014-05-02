@@ -1,0 +1,137 @@
+--- 
+  # ====================================================================================================================================
+  # ====================================================================================================================================
+  # ADD THE SPECTRAL INDICES BELOW HERE: IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
+-
+  Key: ACI
+  Name: spectralACI
+  Comment: "Spectrum of ACI values, one value for each frequency bin."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.4
+  NormMax: 0.7
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: AVG
+  Name: spectralAVG
+  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 70.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: BGN
+  Name: spectralBGN
+  Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
+  DataType: double[]
+  DefaultValue: -100.0
+  DoDisplay: true
+  # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, //-20 adds more contrast into BGN spectrogram
+  NormMin: -100.0
+  NormMax: -20.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: CVR
+  Name: spectralCVR
+  Comment: "Freq bin COVER: Spectrum of the % of active elements in each freq bin - i.e. amplitude > threshold = 3 dB."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.2
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: EVN
+  Name: spectralEVN
+  Comment: "Spectrum of acoustic events per second (as defined above) in each frequency band."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 2.0
+  ProjectID: Acoustic Indices
+  Units: "events/s"
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: ENT
+  Name: spectralENT
+  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.6
+  ProjectID: Acoustic Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-
+  Key: TRK
+  Name: spectralTRK
+  Comment: " The hits of the tracks of the specific frequency band "
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Frog Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+
+-  
+  Key: OSC
+  Name: spectralOSC
+  Comment: " The oscillation structure of the specific frequency band "
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Frog Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+-  
+  Key: HAR
+  Name: spectralHAR
+  Comment: " The Harmonic structure of the specific frequency band "
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Frog Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
+  
+-
+  Key: ENG
+  Name: spectralENG
+  Comment: " The energy based on the tracks of the specific frequency band "
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Frog Indices
+  Units: ""
+  includeInComboIndex: false
+  comboWeight: 0.0
