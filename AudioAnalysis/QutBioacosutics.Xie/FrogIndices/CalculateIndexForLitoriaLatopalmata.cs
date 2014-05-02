@@ -26,10 +26,10 @@ namespace QutBioacosutics.Xie.FrogIndices
             var peakHitsLatopalmataRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsLatopalmata);
 
             var trackHitsLatopalmata = ExtractTracks.GetTracks(spectrogramLong, peakHitsLatopalmataRotated, latopalmataConfig.FrequencyLowLatopalmata,
-                                                               latopalmataConfig.FrequencyHighLatopalmata, latopalmataConfig.BinToreanceLatopalmata,
+                                                               latopalmataConfig.FrequencyHighLatopalmata, latopalmataConfig.BinToleranceLatopalmata,
                                                                latopalmataConfig.FrameThresholdLatopalmata, latopalmataConfig.TrackDurationThresholdLatopalmata,
                                                                latopalmataConfig.TrackThresholdLatopalmata, latopalmataConfig.MaximumTrackDurationLatopalmata,
-                                                               latopalmataConfig.MinimumTrackDurationLatopalmata, latopalmataConfig.BinDifferencLatopalmata,
+                                                               latopalmataConfig.MinimumTrackDurationLatopalmata, latopalmataConfig.BinDifferenceLatopalmata,
                                                                latopalmataConfig.DoSlopeLatopalmata);
 
             // Contain harmonic structure 

@@ -40,13 +40,11 @@ namespace QutBioacosutics.Xie
                            
                             if ((Math.Abs(tempA) < sensity) & (Math.Abs(tempB) < sensity) )
                             {
-
                                 for (int n = index[j]; n < index[j + 1]; n++)
                                 {
                                     result[n, c] = 1;
                                                                 
                                 }
-
                             }                       
                         }
                     }

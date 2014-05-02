@@ -223,7 +223,7 @@ namespace QutBioacosutics.Xie
             List<string> lines = cs1.WriteStatisticsForAllIndices();
             FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
 
-            colorMap = SpectrogramConstantsJie.RGBMap_TRC_OSC_HAR;
+            colorMap = SpectrogramConstantsJie.RGBMap_TRK_OSC_ENG;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
@@ -243,7 +243,7 @@ namespace QutBioacosutics.Xie
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
-
+        // used for calculating windowoverlap for different maxOscillation
         public static double CalculateRequiredWindowOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients

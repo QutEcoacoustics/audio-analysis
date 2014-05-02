@@ -22,9 +22,9 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                                                             double[,] peakHitsCanetoad)
         {
             var trackHitsCanetoad = ExtractTracks.GetTracks(spectrogramLong, peakHitsCanetoad, canetoadConfig.FrequencyLowCanetoad, canetoadConfig.FrequencyHighCanetoad,
-                                                            canetoadConfig.BinToreanceCanetoad, canetoadConfig.FrameThresholdCanetoad, canetoadConfig.TrackDurationThresholdCanetoad,
+                                                            canetoadConfig.BinToleranceCanetoad, canetoadConfig.FrameThresholdCanetoad, canetoadConfig.TrackDurationThresholdCanetoad,
                                                             canetoadConfig.TrackThresholdCanetoad, canetoadConfig.MaximumTrackDurationCanetoad, canetoadConfig.MinimumTrackDurationCanetoad,
-                                                            canetoadConfig.BinDifferencCanetoad, canetoadConfig.DoSlopeCanetoad);
+                                                            canetoadConfig.BinDifferenceCanetoad, canetoadConfig.DoSlopeCanetoad);
             return trackHitsCanetoad;
         
         }
@@ -47,4 +47,6 @@ namespace QutBioacosutics.Xie.FrogIndices
 
     //====================
     // below here put config class for canetoad.
+
+
 }

@@ -26,9 +26,9 @@ namespace QutBioacosutics.Xie.FrogIndices
             var peakHitsNasutaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsNasuta);
 
             var trackHitsNasuta = ExtractTracks.GetTracks(spectrogramLong, peakHitsNasutaRotated, nasutaConfig.FrequencyLowNasuta, nasutaConfig.FrequencyHighNasuta,
-                                        nasutaConfig.BinToreanceNasuta, nasutaConfig.FrameThresholdNasuta, nasutaConfig.TrackDurationThresholdNasuta,
+                                        nasutaConfig.BinToleranceNasuta, nasutaConfig.FrameThresholdNasuta, nasutaConfig.TrackDurationThresholdNasuta,
                                         nasutaConfig.TrackThresholdNasuta, nasutaConfig.MaximumTrackDurationNasuta, nasutaConfig.MinimumTrackDurationNasuta,
-                                        nasutaConfig.BinDifferencNasuta, nasutaConfig.DoSlopeNasuta);
+                                        nasutaConfig.BinDifferenceNasuta, nasutaConfig.DoSlopeNasuta);
 
             
             var harmonicHitsNasuta = FindHarmonics.GetHarmonic(trackHitsNasuta.Item4, nasutaConfig.HarmonicComponentNasuta,
@@ -64,7 +64,6 @@ namespace QutBioacosutics.Xie.FrogIndices
             return nasutaOscillationHits;
 
         }
-
 
     }
 }
