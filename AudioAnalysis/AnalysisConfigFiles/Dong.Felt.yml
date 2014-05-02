@@ -8,15 +8,15 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\Training recordings2   
+InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2
 
-#C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2
+#C:\Training recordings2   
 
-OutputDirectory: C:\Output
-#C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
+OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
+#C:\Output
 
 # action
-Actions: [processOne]  # processOne batch makeImages another
+Actions: [batch]  # processOne batch makeImages another
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -32,7 +32,7 @@ FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 5
+NeighbourhoodLength: 11
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000
