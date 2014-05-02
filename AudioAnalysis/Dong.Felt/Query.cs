@@ -56,6 +56,10 @@
         /// </summary>
         public int nhCountInColumn { get; set; }
 
+        public int maxNhRowIndex { get; set; }
+
+        public int maxNhColIndex { get; set; }
+
         /// <summary>
         /// Gets or sets the neighbourhood start row index, it lies in the bottom left corner of the region.
         /// </summary>
@@ -89,7 +93,9 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength, int maxFrequencyIndex, SpectrogramConfiguration spectrogramConfig)
+        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength,
+            int maxFrequencyIndex, int maxFrameIndex,
+            SpectrogramConfiguration spectrogramConfig)
         {
             // the unit is confusing
             var secondToMillisecond = 1000;
@@ -99,11 +105,13 @@
             this.endTime = endTime * secondToMillisecond; // millisecond
             this.duration = this.endTime - this.startTime;
             this.frequencyRange = this.maxFrequency - this.minFrequency;
-            GetNhProperties(neighbourhoodLength, maxFrequencyIndex, spectrogramConfig);
+            this.maxNhColIndex = maxFrameIndex;
+            this.maxNhRowIndex = maxFrequencyIndex;
+            GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
         // to get the nhCountInRow, nhCountInColumn, nhStartRowIndex, nhStartColIndex.
-        public void GetNhProperties(int neighbourhoodLength, int maxFrequencyIndex, SpectrogramConfiguration spectrogramConfig)
+        public void GetNhProperties(int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
         {
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
@@ -117,16 +125,15 @@
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
             /// Try to enlarge the original region, the startColIndex and startRowIndex should plus or minus one. 
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength) - enlargedOffset;
-            this.nhStartRowIndex = maxFrequencyIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength) - enlargedOffset;
+            this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength) - enlargedOffset;
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
-            if (this.endTime - nhendTime > nhFrameLength)
+            if (this.nhStartRowIndex + nhCountInRow > this.maxNhRowIndex)
             {
-                nhCountInCol++;
+                nhStartRowIndex--;
             }
-            var nhlowFrequency = spectrogramConfig.NyquistFrequency - (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
-            if (this.minFrequency - nhlowFrequency > nhFrequencyLength)
+            if (this.nhStartColIndex + nhCountInCol > this.maxNhColIndex)
             {
-                nhCountInRow++;
+                nhStartColIndex--;
             }
             this.nhCountInRow = nhCountInRow;
             this.nhCountInColumn = nhCountInCol;
@@ -147,7 +154,9 @@
             {
                 nhCountInColumn--;
             }
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd, neighbourhoodLength, nhCountInRow, spectrogramConfig);
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, 
+                queryInfo.TimeEnd, neighbourhoodLength,
+                nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
         }
         #endregion
