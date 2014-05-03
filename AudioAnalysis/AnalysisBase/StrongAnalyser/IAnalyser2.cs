@@ -37,8 +37,6 @@ namespace AnalysisBase.StrongAnalyser
         /// </returns>
         AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
 
-        new IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
-
         /// <summary>
         /// Ensures abstract types are downcast by the analyser and written to file.
         /// </summary>
@@ -58,7 +56,7 @@ namespace AnalysisBase.StrongAnalyser
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="results"></param>  
-        void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
+        void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results);
 
         /// <summary>
         /// Allows Events to be rendered as Summary Indices
@@ -73,9 +71,12 @@ namespace AnalysisBase.StrongAnalyser
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="inputFileSegment"></param>
         /// <param name="events"></param>
-        /// <param name="index"></param>
-        /// <param name="spectras"></param>
-        void SummariseResults(EventBase[] events, IndexBase[] index, SpectrumBase[] spectras);
+        /// <param name="indices"></param>
+        /// <param name="spectra"></param>
+        /// <param name="results"></param>
+        void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
     }
 }

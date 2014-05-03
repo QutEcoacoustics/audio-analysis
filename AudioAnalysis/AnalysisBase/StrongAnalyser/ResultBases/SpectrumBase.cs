@@ -7,6 +7,16 @@ namespace AnalysisBase.StrongAnalyser.ResultBases
 {
     public class SpectrumBase : ResultBase
     {
+
+        public double[] DummySpectrum { get; set; }
+
+        public string[] Keys
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 
 

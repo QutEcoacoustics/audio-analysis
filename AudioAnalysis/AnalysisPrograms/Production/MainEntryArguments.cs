@@ -146,7 +146,7 @@ namespace AnalysisPrograms.Production
             analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
             analysisSettings.AudioFile = this.Output.CombineFile(this.Source.Name);
             analysisSettings.EventsFile = null;
-            analysisSettings.IndicesFile = null;
+            analysisSettings.SummaryIndicesFile = null;
             analysisSettings.ImageFile = null;
 
             var configuration = new ConfigDictionary(this.Config);
@@ -164,7 +164,7 @@ namespace AnalysisPrograms.Production
 
             if (this.Indices.NotEmpty())
             {
-                analysisSettings.IndicesFile = this.Output.CombineFile(this.Indices);
+                analysisSettings.SummaryIndicesFile = this.Output.CombineFile(this.Indices);
             }
 
             if (this.Sgram.NotEmpty())

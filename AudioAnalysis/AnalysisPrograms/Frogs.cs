@@ -271,14 +271,14 @@ namespace AnalysisPrograms
             else
                 result.EventsFile = null;
 
-            if ((analysisSettings.IndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.01;
                 if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.INTENSITY_THRESHOLD))
                     scoreThreshold = ConfigDictionary.GetDouble(AnalysisKeys.INTENSITY_THRESHOLD, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
             else
                 result.IndicesFile = null;

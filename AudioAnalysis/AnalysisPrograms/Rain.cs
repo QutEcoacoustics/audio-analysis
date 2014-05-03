@@ -226,7 +226,7 @@ namespace AnalysisPrograms
                     row[InitialiseIndexProperties.keySEGMENT_DURATION] = result.AudioDuration.TotalSeconds;
                 }
 
-                CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(dt, analysisSettings.SummaryIndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
 
@@ -267,9 +267,9 @@ namespace AnalysisPrograms
             //    analysisResults.ImageFile = new FileInfo(imagePath);
             //}
 
-            if ((analysisSettings.IndicesFile != null) && (analysisResults.Data != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SummaryIndicesFile.FullName);
             }
             return analysisResults;
         }

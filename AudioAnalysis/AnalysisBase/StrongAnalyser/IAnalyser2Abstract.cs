@@ -25,10 +25,10 @@ namespace AnalysisBase.StrongAnalyser
 
 
         public abstract AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
-        public abstract IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile);
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
         public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
-        public abstract void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
+
+        public abstract void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results);
 
         public virtual IndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime,
             TimeSpan duration,
@@ -91,6 +91,6 @@ namespace AnalysisBase.StrongAnalyser
 
         }
 
-        public abstract void SummariseResults(EventBase[] events, IndexBase[] index, SpectrumBase[] spectras);
+        public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
     }
 }

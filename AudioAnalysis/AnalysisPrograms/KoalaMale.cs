@@ -273,11 +273,11 @@ namespace AnalysisPrograms
             scoreThreshold *= 3; // double the threshold - used to filter high scoring events
             //if (scoreThreshold > 1.0) scoreThreshold = 1.0;
 
-            if ((analysisSettings.IndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
             {
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //one index for each time span of one minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
             else
                 analysisResults.IndicesFile = null;

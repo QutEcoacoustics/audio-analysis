@@ -305,21 +305,20 @@ namespace Dong.Felt
         public int FrameMaximum { get; set; }
     }
 
-    public class RidgeAnalysis : IAnalyser2
+    public class RidgeAnalysis : IAnalyser2Abstract
     {
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
-            var result = new AnalysisResult2
-                         {
-                             AnalysisIdentifier = Identifier,
-                             SettingsUsed = analysisSettings,
-                             SegmentStartOffset = startOffset
-                         };
 
             var recording = new AudioRecording(audioFile.FullName);
-            result.SegmentAudioDuration = recording.Duration();
+
+            var result = new AnalysisResult2(analysisSettings, recording.Duration())
+                         {
+                             AnalysisIdentifier = Identifier
+                         };
+
             if (recording.SampleRate != 22050)
             {
                 throw new NotSupportedException();
@@ -343,23 +342,23 @@ namespace Dong.Felt
                 return result;
             }
 
-            result.Data = new RidgeEvent[ridges.Count];                      
+            result.Events = new RidgeEvent[ridges.Count];                      
             for (int index = 0; index < ridges.Count; index++)
             {
-                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
+                ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
             }
 
             if (analysisSettings.EventsFile != null)
             {
-                WriteEventsFile(analysisSettings.EventsFile, result.Data);
+                WriteEventsFile(analysisSettings.EventsFile, result.Events);
             }
 
-            if (analysisSettings.IndicesFile != null)
+            if (analysisSettings.SummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
-                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.SegmentAudioDuration, 0);
+                result.SummaryIndices = this.ConvertEventsToSummaryIndices(result.Events, unitTime, result.SegmentAudioDuration, 0);
 
-                WriteIndicesFile(analysisSettings.IndicesFile, result.Indices);
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, result.SummaryIndices);
             }
 
             if (analysisSettings.ImageFile != null)
@@ -367,7 +366,6 @@ namespace Dong.Felt
                 throw new NotImplementedException();
             }
 
-            result.SegmentAudioDuration = recording.Duration();
             return result;
         }
 
@@ -376,22 +374,35 @@ namespace Dong.Felt
             throw new NotImplementedException();
         }
 
-        public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
             Csv.WriteToCsv(destination, results.Cast<RidgeEvent>());
         }
 
-        public void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
         {
             Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
 
-        public IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
+        public override void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results)
         {
-            return AnalyserHelpers.StandardEventToIndexConverter(events, unitTime, duration, scoreThreshold);
+            throw new NotImplementedException();
         }
 
-        public string DisplayName
+
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            IndexBase[] indices,
+            SpectrumBase[] spectra,
+            AnalysisResult2[] results)
+        {
+            // no-op
+        }
+
+
+        public override string DisplayName
         {
             get
             {
@@ -399,7 +410,7 @@ namespace Dong.Felt
             }
         }
 
-        public string Identifier
+        public override string Identifier
         {
             get
             {
@@ -407,7 +418,7 @@ namespace Dong.Felt
             }
         }
 
-        public AnalysisSettings DefaultSettings
+        public override AnalysisSettings DefaultSettings
         {
             get
             {
@@ -421,25 +432,6 @@ namespace Dong.Felt
                 };
             }
         }
-
-        #region ignored
-        AnalysisResult IAnalyser.Analyse(AnalysisSettings analysisSettings)
-        {
-            throw new NotImplementedException();
-        }
-
-        Tuple<DataTable, DataTable> IAnalyser.ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            throw new NotImplementedException();
-        }
-
-        DataTable IAnalyser.ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-
-
 
     }
 }

@@ -121,7 +121,7 @@ namespace AudioAnalysisTools
 
 
         // TODO: ensure all functionality here is taken care of in correct index offsets
-        [Obsolete]
+        /*[Obsolete]
         public static IndexBase[] MergeIndexResults(IEnumerable<AnalysisResult> results)
         {
             if ((results == null)||(!results.Any())) return null;
@@ -131,7 +131,7 @@ namespace AudioAnalysisTools
             int count = 0;
             foreach (AnalysisResult result in results)
             {
-                IndexBase ib = result.indexBase;
+                IndexBase ib = result.;
                 ib.SegmentStartOffset = result.SegmentStartOffset;
                 ib.SegmentDuration = result.AudioDuration;
                 //also need to add the above info into the Dictionaries. This is a temporary fix to facilitate writing of the csv file
@@ -150,7 +150,7 @@ namespace AudioAnalysisTools
             }
 
             return mergedIndices;
-        }
+        }*/
 
         /*
         public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
@@ -306,7 +306,7 @@ namespace AudioAnalysisTools
         {
             if (events == null && indices == null)
             {
-                throw new InvalidOperationException("If no results were produced, events cannot be made into indices");
+                Log.Warn("No events or summary indices were produced, events cannot be made into indices");
             }
             else if (events == null && indices != null)
             {
@@ -317,13 +317,13 @@ namespace AudioAnalysisTools
             {
                 Log.InfoFormat("Converting Events to {0} minute Indices", IndexUnitTime.TotalMinutes);
 
-                indices = analyser.ConvertEventsToIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
-                    scoreThreshold).ToArray();
+                indices = analyser.ConvertEventsToSummaryIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
+                    scoreThreshold);
             }
             else if (events != null && indices != null)
             {
-                // no-op both values already present, just ensure they match
-                Log.Debug("Both events and indices already given");
+                // no-op both values already present
+                Log.Info("Both events and indices already given, no event conversion done");
             }
         } 
 
@@ -383,7 +383,7 @@ namespace AudioAnalysisTools
         }
 
 
-        public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir)
+       /* public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir)
         {
             if (indices == null) return null;
             FileInfo fiIndices = null;
@@ -447,7 +447,7 @@ namespace AudioAnalysisTools
             {
                 if (sr != null) { sr.Close(); }
             }
-        } // DataTable2CSV()
+        } // DataTable2CSV()*/
 
 
 
@@ -457,10 +457,15 @@ namespace AudioAnalysisTools
             return SaveResults(outputDirectory, fileName + ".Events", analyser2.WriteEventsFile, events);
         }
 
-        public static FileInfo SaveIndices(IAnalyser2 analyser2, string fileName,
+        public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<IndexBase> indices) 
         {
-            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteIndicesFile, indices);
+            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
+        }
+
+        public static FileInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
+        {
+            return SaveResults(outputDirectory, fileName + ".Spectra", analyser2.WriteSpectrumIndicesFile, spectra);
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)

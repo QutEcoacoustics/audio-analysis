@@ -19,56 +19,6 @@ namespace AnalysisBase
     /// </remarks>
     public class AnalysisSettings : ICloneable
     {
-        /// <summary>
-        /// Gets RunDirectoryString.
-        /// </summary>
-        public const string AnalysisBaseDirectoryString = "AnalysisSettings.analysisBaseDirectory";
-
-        /// <summary>
-        /// Gets BaseRunDirectoryString.
-        /// </summary>
-        public const string AnalysisRunDirectoryString = "AnalysisSettings.analysisRunDirectory";
-
-        /// <summary>
-        /// Gets AudioFileString.
-        /// </summary>
-        public const string AudioFileString = "AnalysisSettings.audioFile";
-
-        /// <summary>
-        /// Gets SegmentOverlapDurationString.
-        /// </summary>
-        public const string SegmentOverlapDurationString = "AnalysisSettings.SegmentOverlapDuration";
-
-
-        /// <summary>
-        /// Gets SegmentMinDurationString.
-        /// </summary>
-        public const string SegmentMinDurationString = "AnalysisSettings.SegmentMinDuration";
-
-        /// <summary>
-        /// Gets SegmentMaxDurationString.
-        /// </summary>
-        public const string SegmentMaxDurationString = "AnalysisSettings.SegmentMaxDuration";
-
-        /// <summary>
-        /// Gets SegmentTargetSampleRateString.
-        /// </summary>
-        public const string SegmentTargetSampleRateString = "AnalysisSettings.SegmentTargetSampleRate";
-
-        /// <summary>
-        /// Gets SegmentMediaTypeString.
-        /// </summary>
-        public const string SegmentMediaTypeString = "AnalysisSettings.SegmentMediaType";
-
-        /// <summary>
-        /// Gets ConfigStringInputString.
-        /// </summary>
-        public const string ConfigStringInputString = "AnalysisSettings.configStringInput";
-
-        /// <summary>
-        /// Gets ConfigFileString.
-        /// </summary>
-        public const string ConfigFileString = "AnalysisSettings.configFile";
 
         private static int instanceCounter = 0;
 

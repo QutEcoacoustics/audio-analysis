@@ -254,12 +254,12 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(dataTableOfEvents, analysisSettings.EventsFile.FullName);
             }
 
-            if ((analysisSettings.IndicesFile != null) && (dataTableOfEvents != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (dataTableOfEvents != null))
             {
                 double eventThreshold = ConfigDictionary.GetDouble(AnalysisKeys.EVENT_THRESHOLD, analysisSettings.ConfigDict);
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of one minute
                 var indicesDT = ConvertEvents2Indices(dataTableOfEvents, unitTime, recordingTimeSpan, eventThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
 
             //save image of sonograms

@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph DataVirtualized="True" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="(@1 Namespace=AnalysisPrograms.Production Type=MainEntryArguments Member=Audio2Csv)" Category="CodeSchema_Method" Bounds="572.463333333333,0,92.2733333333333,25.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Audio2Csv" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="Audio2Csv" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/Production/Actions.cs StartLineNumber=59 StartCharacterOffset=8 EndLineNumber=59 EndCharacterOffset=8)" />
+    <Node Id="(@3 @4 @10 Member=(Name=ValidateResult OverloadingParameters=[@9,(@3 @8 Type=AnalysisResult2),@39,@39]))" Category="CodeSchema_Method" Bounds="0,391.72,111.2,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsStatic="True" DelayedCrossGroupLinksState="Fetched" Label="ValidateResult" />
+    <Node Id="(@3 @4 Type=ISourcePreparer Member=(Name=PrepareFile OverloadingParameters=[(@6 @12 Type=DirectoryInfo),(@6 @12 Type=FileInfo),@13,@39,@39,(@6 @7 Type=Int32),(@6 @12 Type=DirectoryInfo)]))" Category="CodeSchema_Method" Bounds="729.235,391.72,94.73,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="PrepareFile" />
+    <Node Id="(@3 @8 Type=IAnalyser2 Member=(Name=Analyse OverloadingParameters=[@9]))" Category="CodeSchema_Method" Bounds="577.927201314791,398.99030425103,76.72,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="Analyse" UseManualLocation="True">
+      <Category Ref="Category1" />
+    </Node>
+    <Node Id="@11" Category="CodeSchema_Method" Bounds="305.578333333333,391.72,202.043333333333,25.96" CodeSchemaProperty_IsPrivate="True" DelayedCrossGroupLinksState="Fetched" Label="GetInstanceDirTempElseOutput" />
+    <Node Id="@2" Category="CodeSchema_Method" Bounds="580.335,55.96,76.53,25.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Execute" FunctionTypeFlags="Method" Label="Execute" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/AnalyseLongRecordings/AnalyseLongRecording.cs StartLineNumber=25 StartCharacterOffset=8 EndLineNumber=25 EndCharacterOffset=8)" />
+    <Node Id="@20" Category="CodeSchema_Method" Bounds="141.78,391.72,133.64,25.96" CodeSchemaProperty_IsPrivate="True" DelayedCrossGroupLinksState="Fetched" Label="PrepareDirectories" />
+    <Node Id="@21" Category="CodeSchema_Method" Bounds="854.296666666667,391.72,118.606666666667,25.96" CodeSchemaProperty_IsPrivate="True" DelayedCrossGroupLinksState="Fetched" Label="DeleteDirectory" />
+    <Node Id="@30" Category="CodeSchema_Method" Bounds="590.221666666666,167.88,56.7566666666667,25.96" CodeSchemaProperty_IsPublic="True" CommonLabel="Run" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="Run" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=143 StartCharacterOffset=8 EndLineNumber=143 EndCharacterOffset=8)" />
+    <Node Id="@31" Category="CodeSchema_Method" Bounds="437.17,223.84,94.86,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="RunParallel" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="RunParallel" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=214 StartCharacterOffset=8 EndLineNumber=214 EndCharacterOffset=8)" />
+    <Node Id="@32" Category="CodeSchema_Method" Bounds="562.441666666667,223.84,112.316666666667,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="RunSequential" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="RunSequential" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=268 StartCharacterOffset=8 EndLineNumber=268 EndCharacterOffset=8)" />
+    <Node Id="@33" Category="CodeSchema_Method" Bounds="528.836666666666,335.76,179.526666666667,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="PrepareFileAndRunAnalysis" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="PrepareFileAndRunAnalysis" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=314 StartCharacterOffset=8 EndLineNumber=314 EndCharacterOffset=8)" />
+    <Node Id="@34" Category="CodeSchema_Method" Bounds="568.698333333333,279.8,99.8033333333334,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="ProcessItem" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="ProcessItem" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=563 StartCharacterOffset=8 EndLineNumber=563 EndCharacterOffset=8)" />
+    <Node Id="@35" Category="CodeSchema_Method" Bounds="590.221666666666,111.92,56.7566666666667,25.96" CodeSchemaProperty_IsPublic="True" CommonLabel="Run" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="Run" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=123 StartCharacterOffset=8 EndLineNumber=123 EndCharacterOffset=8)" />
+  </Nodes>
+  <Links>
+    <Link Source="(@1 Namespace=AnalysisPrograms.Production Type=MainEntryArguments Member=Audio2Csv)" Target="@2" Bounds="618.599975585938,25.9599990844727,0,21" />
+    <Link Source="@2" Target="@35" Bounds="618.599975585938,81.9199981689453,0,21" />
+    <Link Source="@30" Target="@31" Category="CodeSchema_Calls" Bounds="523.986389160156,192.501449584961,66.7373657226563,27.8703308105469" Weight="1" />
+    <Link Source="@30" Target="@32" Category="CodeSchema_Calls" Bounds="618.599975585938,193.839996337891,0,21" Weight="1" />
+    <Link Source="@31" Target="@34" Category="CodeSchema_Calls" Bounds="515.681457519531,249.800003051758,63.5321655273438,26.5317840576172" Weight="1" />
+    <Link Source="@32" Target="@34" Category="CodeSchema_Calls" Bounds="618.599975585938,249.800003051758,0,20.9999847412109" Weight="1" />
+    <Link Source="@33" Target="(@3 @4 @10 Member=(Name=ValidateResult OverloadingParameters=[@9,(@3 @8 Type=AnalysisResult2),@39,@39]))" Category="CodeSchema_Calls" Bounds="119.311790466309,355.612274169922,409.524879455566,35.7167358398438" Weight="1" />
+    <Link Source="@33" Target="(@3 @4 Type=ISourcePreparer Member=(Name=PrepareFile OverloadingParameters=[(@6 @12 Type=DirectoryInfo),(@6 @12 Type=FileInfo),@13,@39,@39,(@6 @7 Type=Int32),(@6 @12 Type=DirectoryInfo)]))" Category="CodeSchema_Calls" Bounds="655.248253763578,361.720208364529,76.2198591704027,26.9953909176937" Weight="1" />
+    <Link Source="@33" Target="(@3 @8 Type=IAnalyser2 Member=(Name=Analyse OverloadingParameters=[@9]))" Category="CodeSchema_Calls" Bounds="617.090954258102,361.720005493164,1.03427619596391,28.2763133264717" Weight="1" />
+    <Link Source="@33" Target="@11" Category="CodeSchema_Calls" Bounds="464.475646972656,361.720001220703,104.95068359375,27.7030029296875" Weight="1" />
+    <Link Source="@33" Target="@20" Category="CodeSchema_Calls" Bounds="284.324554443359,360.460327148438,245.068511962891,32.8231506347656" Weight="1" />
+    <Link Source="@33" Target="@21" Category="CodeSchema_Calls" Bounds="687.025634765625,361.720001220703,158.688110351563,30.1023254394531" Weight="1" />
+    <Link Source="@34" Target="@33" Category="CodeSchema_Calls" Bounds="618.599975585938,305.760009765625,0,21" Weight="1" />
+    <Link Source="@35" Target="@30" Category="CodeSchema_Calls" Bounds="618.599975585938,137.880004882813,0,21" Weight="1" />
+  </Links>
+  <Categories>
+    <Category Id="Category1" Label="Analyse" Background="#FFE51400" IsTag="True" />
+    <Category Id="CodeSchema_Calls" Label="Calls" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Called By" OutgoingActionLabel="Calls" />
+    <Category Id="CodeSchema_Member" Label="Member" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="CodeSchema_Field" NavigationActionLabel="Members" />
+    <Category Id="CodeSchema_Method" Label="Method" BasedOn="CodeSchema_Member" CanBeDataDriven="True" DefaultAction="Link:Forward:CodeSchema_Calls" Icon="CodeSchema_Method" NavigationActionLabel="Methods" />
+  </Categories>
+  <Properties>
+    <Property Id="Background" Label="Background" Description="The background color" DataType="System.Windows.Media.Brush" />
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CodeSchemaProperty_IsAbstract" Label="Is Abstract" Description="Flag to indicate member is 'Abstract' does not provide a full implementation" DataType="System.Boolean" />
+    <Property Id="CodeSchemaProperty_IsPrivate" Label="Is Private" Description="Flag to indicate the scope is Private" DataType="System.Boolean" />
+    <Property Id="CodeSchemaProperty_IsPublic" Label="Is Public" Description="Flag to indicate the scope is Public" DataType="System.Boolean" />
+    <Property Id="CodeSchemaProperty_IsStatic" Label="Is Static" Description="Flag to indicate the member is a static member" DataType="System.Boolean" />
+    <Property Id="CodeSchemaProperty_IsVirtual" Label="Is Virtual" Description="Flag to indicate the method can be overridden" DataType="System.Boolean" />
+    <Property Id="CommonLabel" DataType="System.String" />
+    <Property Id="DataVirtualized" Label="Data Virtualized" Description="If true, the graph can contain nodes and links that represent data for virtualized nodes/links (i.e. not actually created in the graph)." DataType="System.Boolean" />
+    <Property Id="DefaultAction" Label="DefaultAction" Description="DefaultAction" DataType="System.String" />
+    <Property Id="DelayedCrossGroupLinksState" Label="Delayed Cross-Group Links State" Description="Unspecified if the delayed cross-group links state is not specified. NotFetched if delayed cross-group links on this node are not fetched into the graph yet. Fetched if all delayed cross-group links have already fetched." DataType="Microsoft.VisualStudio.GraphModel.DelayedDataState" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="FunctionTypeFlags" Label="FunctionTypeFlags" Description="FunctionTypeFlags" DataType="System.String" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="Icon" Label="Icon" Description="Icon" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="Language" Label="Language" Description="Language" DataType="System.String" />
+    <Property Id="Layout" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="SourceLocation" Label="Start Line Number" DataType="Microsoft.VisualStudio.GraphModel.CodeSchema.SourceLocation" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+    <Property Id="Visibility" Label="Visibility" Description="Defines whether a node in the graph is visible or not" DataType="System.Windows.Visibility" />
+    <Property Id="Weight" Label="Weight" Description="Weight" DataType="System.Double" />
+  </Properties>
+  <QualifiedNames>
+    <Name Id="Assembly" Label="Assembly" ValueType="Uri" />
+    <Name Id="GenericArguments" Label="Generic Arguments" ValueType="Microsoft.VisualStudio.GraphModel.GraphNodeIdCollection" />
+    <Name Id="GenericParameterCount" Label="Generic Parameter Count" ValueType="System.String" />
+    <Name Id="Member" Label="Member" ValueType="System.Object" />
+    <Name Id="Name" Label="Name" ValueType="System.String" />
+    <Name Id="Namespace" Label="Namespace" ValueType="System.String" />
+    <Name Id="OverloadingParameters" Label="Parameter" ValueType="Microsoft.VisualStudio.GraphModel.GraphNodeIdCollection" Formatter="NameValueNoEscape" />
+    <Name Id="ParentType" Label="Parent Type" ValueType="System.Object" />
+    <Name Id="Type" Label="Type" ValueType="System.Object" />
+  </QualifiedNames>
+  <IdentifierAliases>
+    <Alias n="1" Uri="Assembly=$(ec323929-0160-46bc-a04b-b4a66d02e757.OutputPathUri)" />
+    <Alias n="2" Id="(@1 Namespace=AnalysisPrograms.AnalyseLongRecordings Type=AnalyseLongRecording Member=(Name=Execute OverloadingParameters=[(@1 Namespace=AnalysisPrograms.AnalyseLongRecordings Type=(Name=Arguments ParentType=AnalyseLongRecording))]))" />
+    <Alias n="3" Uri="Assembly=$(80bc795a-a987-45ab-b29b-76cf190384ba.OutputPathUri)" />
+    <Alias n="4" Id="Namespace=AnalysisBase" />
+    <Alias n="5" Id="Type=AnalysisSettings" />
+    <Alias n="6" Uri="Assembly=$(FxReferenceAssembliesUri)/.NETFramework/v4.0/mscorlib.dll" />
+    <Alias n="7" Id="Namespace=System" />
+    <Alias n="8" Id="Namespace=AnalysisBase.StrongAnalyser" />
+    <Alias n="9" Id="(@3 @4 @5)" />
+    <Alias n="10" Id="Type=AnalysisCoordinator" />
+    <Alias n="11" Id="(@3 @4 @10 Member=(Name=GetInstanceDirTempElseOutput OverloadingParameters=[@9]))" />
+    <Alias n="12" Id="Namespace=System.IO" />
+    <Alias n="13" Id="(@6 @7 Type=String)" />
+    <Alias n="20" Id="(@3 @4 @10 Member=(Name=PrepareDirectories OverloadingParameters=[(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="21" Id="(@3 @4 @10 Member=(Name=DeleteDirectory OverloadingParameters=[(@6 @7 Type=Int32),(@6 @12 Type=DirectoryInfo)]))" />
+    <Alias n="30" Id="(@3 @4 @10 Member=(Name=Run OverloadingParameters=[(@6 Namespace=System.Collections.Generic Type=(Name=IEnumerable GenericParameterCount=1 GenericArguments=[(@3 @4 Type=FileSegment)])),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="31" Id="(@3 @4 @10 Member=(Name=RunParallel OverloadingParameters=[(@6 Namespace=System.Collections.Generic Type=(Name=IEnumerable GenericParameterCount=1 GenericArguments=[(@3 @4 Type=FileSegment)])),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="32" Id="(@3 @4 @10 Member=(Name=RunSequential OverloadingParameters=[(@6 Namespace=System.Collections.Generic Type=(Name=IEnumerable GenericParameterCount=1 GenericArguments=[(@3 @4 Type=FileSegment)])),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="33" Id="(@3 @4 @10 Member=(Name=PrepareFileAndRunAnalysis OverloadingParameters=[(@3 @4 Type=FileSegment),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="34" Id="(@3 @4 @10 Member=(Name=ProcessItem OverloadingParameters=[(@3 @4 Type=FileSegment),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="35" Id="(@3 @4 @10 Member=(Name=Run OverloadingParameters=[(@3 @4 Type=FileSegment),(@3 @8 Type=IAnalyser2),@9]))" />
+    <Alias n="39" Id="(@6 @7 Type=TimeSpan)" />
+  </IdentifierAliases>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Category 1" ValueLabel="Has category">
+      <Condition Expression="HasCategory('Category1')" />
+      <Setter Property="Background" Value="#FFE51400" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">
+      <Condition Expression="HasCategory('QueryResult')" />
+      <Setter Property="Background" Value="#FFBCFFBE" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Assembly" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Assembly')" />
+      <Setter Property="Background" Value="#FF094167" />
+      <Setter Property="Stroke" Value="#FF094167" />
+      <Setter Property="Icon" Value="CodeSchema_Assembly" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Namespace" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Namespace')" />
+      <Setter Property="Background" Value="#FF0E619A" />
+      <Setter Property="Stroke" Value="#FF0E619A" />
+      <Setter Property="Icon" Value="CodeSchema_Namespace" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Interface" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Interface')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Interface" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Struct" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Struct')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Struct" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enumeration" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Enum')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Enum" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Delegate" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Delegate')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Delegate" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Class" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Type')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Class" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Property" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Property')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Property" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Method" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Method') Or HasCategory('CodeSchema_CallStackUnresolvedMethod')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Method" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Event" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Event')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Event" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Field')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Field" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Out Parameter" ValueLabel="True">
+      <Condition Expression="CodeSchemaProperty_IsOut = 'True'" />
+      <Setter Property="Icon" Value="CodeSchema_OutParameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Parameter" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_Parameter')" />
+      <Setter Property="Icon" Value="CodeSchema_Parameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Local Variable" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_LocalExpression')" />
+      <Setter Property="Icon" Value="CodeSchema_LocalExpression" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Externals" ValueLabel="Has category">
+      <Condition Expression="HasCategory('Externals')" />
+      <Setter Property="Background" Value="#FF424242" />
+      <Setter Property="Stroke" Value="#FF424242" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Inherits From" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('InheritsFrom') And Target.HasCategory('CodeSchema_Class')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Implements" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('Implements') And Target.HasCategory('CodeSchema_Interface')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Field Read" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Target.HasCategory('CodeSchema_Field') And HasCategory('CodeSchema_FieldRead')" />
+      <Setter Property="StrokeDashArray" Value="2 2" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Comment Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Source.HasCategory('Comment')" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Cursor Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCursorLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Disabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="DisabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="EnabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Instruction Pointer Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsInstructionPointerLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Current Callstack Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCurrentCallstackFrame" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+  </Styles>
+  <Paths>
+    <Path Id="80bc795a-a987-45ab-b29b-76cf190384ba.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/bin/Debug/AnalysisBase.dll" />
+    <Path Id="ec323929-0160-46bc-a04b-b4a66d02e757.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/bin/Debug/AnalysisPrograms.exe" />
+    <Path Id="FxReferenceAssembliesUri" Value="file:///C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework" />
+  </Paths>
+</DirectedGraph>
