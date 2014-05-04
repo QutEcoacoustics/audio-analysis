@@ -57,17 +57,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-        private int minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at zero minute of day i.e. midnight
-        public int MinuteOffset
+        private TimeSpan minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at zero minute of day i.e. midnight
+        public TimeSpan MinuteOffset
         {
             get { return minOffset; }
             set { minOffset = value; }
-        }
-        private int x_interval = SpectrogramConstants.X_AXIS_SCALE;    // assume one minute spectra and hourly time lines
-        public int X_interval
-        {
-            get { return x_interval; }
-            set { x_interval = value; }
         }
         private int frameWidth = SpectrogramConstants.FRAME_WIDTH; // default value for frame width from which spectrogram was derived. Assume no frame overlap.
         public int FrameWidth           // used only to calculate scale of Y-axis to draw grid lines
@@ -81,14 +75,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             get { return sampleRate; }
             set { sampleRate = value; }
         }
-        private int hz_grid_interval = 1000;
-        public int Y_interval // mark 1 kHz intervals
+
+        private TimeSpan x_axis_TicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;    // assume one minute spectra and hourly time lines
+        public TimeSpan X_Axis_TicInterval
         {
-            get
+            get { return x_axis_TicInterval; }
+            set { x_axis_TicInterval = value; }
+        }
+        private int y_axis_TicInterval = 1000;  // mark 1 kHz intervals
+        public int Y_Axis_TicInterval
+        {
+            get   // convert 1000 Hz to a freq bin interval.
             {
                 double freqBinWidth = sampleRate / (double)frameWidth;
-                return (int)Math.Round(hz_grid_interval / freqBinWidth);
+                return (int)Math.Round(y_axis_TicInterval / freqBinWidth);
             }
+            set { y_axis_TicInterval = value; }
         }
 
         /// <summary>
@@ -133,8 +135,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
             config.SampleRate = (int)configuration.SampleRate;
             config.FrameWidth = (int)configuration.FrameWidth;       // frame width from which spectrogram was derived. Assume no frame overlap.
-            config.MinuteOffset = (int)configuration.MinuteOffset;   // default is recording starts at zero minute of day i.e. midnight
-            config.X_interval = (int)configuration.X_interval;       // default is one minute spectra and hourly time lines
+            config.MinuteOffset = TimeSpan.FromMinutes((double)configuration.MinuteOffset);   // default is recording starts at the zero-eth minute of the day i.e. midnight
+            config.X_Axis_TicInterval = TimeSpan.FromMinutes((double)configuration.XaxisTicInterval);     // default is one minute spectra and hourly time lines
+            config.Y_Axis_TicInterval = (int)configuration.YaxisTicInterval;              // default is 1000 Herz
 
             return config;
         } // ReadYAMLToConfig()
@@ -157,8 +160,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
                 SampleRate = this.SampleRate,
                 FrameWidth = this.FrameWidth,       // frame width from which spectrogram was derived. Assume no frame overlap.
-                MinuteOffset = this.MinuteOffset,   // default is recording starts at zero minute of day i.e. midnight
-                X_interval = this.X_interval        // default is one minute spectra and hourly time lines
+                MinuteOffset = this.MinuteOffset.TotalMinutes,   // default is recording starts at zero minute of day i.e. midnight
+                XaxisTicInterval = this.X_Axis_TicInterval.TotalMinutes,  // default is one minute spectra and hourly time lines
+                YaxisTicInterval = this.Y_Axis_TicInterval                // default is 1000 Herz
             });
         } // WritConfigToYAML()
 

@@ -40,27 +40,27 @@ namespace AnalysisPrograms
             //2010 Oct 13th
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct13_SpectralIndices";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct13_SpectralIndices";
 
             //2010 Oct 14th
             //string ipFileName = "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct14_SpectralIndices";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct14_SpectralIndices";
 
             //2010 Oct 15th
             //string ipFileName = "d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\d9eb5507-3a52-4069-a6b3-d8ce0a084f17_101015-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct15_SpectralIndices";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct15_SpectralIndices";
 
             //2010 Oct 16th
             //string ipFileName = "418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\418b1c47-d001-4e6e-9dbe-5fe8c728a35d_101016-0000.mp3\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct16_SpectralIndices";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct16_SpectralIndices";
 
             //2010 Oct 17th
             string ipFileName = "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000";
             string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct17_SpectralIndices";
+            string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
 
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);

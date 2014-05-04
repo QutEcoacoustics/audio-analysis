@@ -46,15 +46,15 @@ namespace AudioAnalysisTools
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private int minOffset = 0;    // default recording starts at midnight
-        public int MinuteOffset
+        private TimeSpan minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at midnight
+        public TimeSpan MinuteOffset
         {
             get { return minOffset; }
             set { minOffset = value; }
         }
 
-        private int x_interval = 60;    // assume one minute spectra and hourly time lines
-        public int X_interval
+        private TimeSpan x_interval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;  // default = one minute spectra and hourly time lines
+        public TimeSpan X_interval
         {
             get { return x_interval; }
             set { x_interval = value; }
@@ -113,7 +113,7 @@ namespace AudioAnalysisTools
         /// <param name="Xscale"></param>
         /// <param name="sampleRate"></param>
         /// <param name="colourMap"></param>
-        public LDSpectrogramRGB(int Xscale, int sampleRate, string colourMap)
+        public LDSpectrogramRGB(TimeSpan Xscale, int sampleRate, string colourMap)
         {
             // set the X and Y axis scales for the spectrograms 
             this.X_interval = Xscale; 
@@ -129,7 +129,7 @@ namespace AudioAnalysisTools
         /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
         /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public LDSpectrogramRGB(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap): this(Xscale, sampleRate, colourMap)
+        public LDSpectrogramRGB(TimeSpan minuteOffset, TimeSpan Xscale, int sampleRate, int frameWidth, string colourMap) : this(Xscale, sampleRate, colourMap)
         {
             this.minOffset = minuteOffset;
             this.FrameWidth = frameWidth;
@@ -614,7 +614,7 @@ namespace AudioAnalysisTools
             int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
             string title = String.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", this.ColorMap);
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            int timeScale = 60;
+            TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -672,7 +672,7 @@ namespace AudioAnalysisTools
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameSpectrogram(Image bmp1, Image titleBar, int minOffset, int X_interval, int Y_interval)
+        public static Image FrameSpectrogram(Image bmp1, Image titleBar, TimeSpan minOffset, TimeSpan X_interval, int Y_interval)
         {
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, Y_interval);
 
@@ -680,8 +680,8 @@ namespace AudioAnalysisTools
             int trackHeight = 20;
 
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            int timeScale = 60; // assume 60 pixels per hour
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, minOffset, timeScale, imageWidth, trackHeight, "hours");
+            TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, minOffset, xAxisTicInterval, imageWidth, trackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -944,8 +944,8 @@ namespace AudioAnalysisTools
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            TimeSpan xScale = (TimeSpan?)configuration.X_Axis_TicInterval ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
 

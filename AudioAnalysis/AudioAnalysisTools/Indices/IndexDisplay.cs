@@ -15,7 +15,8 @@ namespace AudioAnalysisTools
     {
         public const int DEFAULT_TRACK_HEIGHT = 20;
         public const int TRACK_END_PANEL_WIDTH = 250; // pixels. This is where name of index goes in track image
-        public const int TIME_SCALE = 60;   //One minute segments or 60 segments per hour. This constant places grid lines every 60 pixels = 1 hour
+        // This constant must be same as for spectrograms. It places grid lines every 60 pixels = 1 hour
+        public static TimeSpan TIME_SCALE = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // Default = one minute segments or 60 segments per hour.
 
 
 
