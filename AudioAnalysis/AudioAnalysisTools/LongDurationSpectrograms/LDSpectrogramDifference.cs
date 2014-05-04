@@ -14,8 +14,8 @@ namespace AudioAnalysisTools
     {
         //PARAMETERS
         // set DEFAULT values for parameters
-        private static int minuteOffset = SpectrogramConstants.MINUTE_OFFSET;  // assume recording starts at zero minute of day i.e. midnight
-        private static int xScale = SpectrogramConstants.X_AXIS_SCALE;         // assume one minute spectra and hourly time lines
+        private static TimeSpan minuteOffset = SpectrogramConstants.MINUTE_OFFSET;  // assume recording starts at zero minute of day i.e. midnight
+        private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;  // assume one minute spectra and hourly time lines
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
         private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
 
@@ -51,8 +51,8 @@ namespace AudioAnalysisTools
             colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            xScale = (int?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            xScale =   (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE; 
             frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH; 
 

@@ -34,8 +34,8 @@ namespace AudioAnalysisTools
         public const double COLOUR_GAIN = 2.0;
 
         // These parameters describe the time and frequency scales for drawing X and Y axes on LONG DURATION spectrograms
-        public const int X_AXIS_SCALE = 60;    // assume one minute spectra and 60 spectra per hour
-        public const int MINUTE_OFFSET = 0;    // assume recording starts at zero minute of day i.e. midnight
+        public static TimeSpan X_AXIS_SCALE = TimeSpan.FromMinutes(60);    // assume one minute spectra and 60 spectra per hour
+        public static TimeSpan MINUTE_OFFSET = TimeSpan.Zero;    // assume recording starts at zero minute of day i.e. midnight
         public const int SAMPLE_RATE = 17640;  // default value - after resampling
         public const int FRAME_WIDTH = 512;    // default value - from which spectrogram was derived
         public const int HEIGHT_OF_TITLE_BAR = 20;

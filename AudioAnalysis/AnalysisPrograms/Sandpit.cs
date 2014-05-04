@@ -158,8 +158,8 @@ namespace AnalysisPrograms
 
                 } //end of all file extentions
 
-                int minuteOffset = 0;
-                int xScale = 60;
+                TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+                TimeSpan xScale = TimeSpan.FromMinutes(60);
                 int sampleRate = 17640;
                 int frameWidth = 256;
                 double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;

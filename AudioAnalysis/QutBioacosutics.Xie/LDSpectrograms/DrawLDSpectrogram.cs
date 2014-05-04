@@ -64,7 +64,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //config.ColourMap = "TRK-OSC-HAR";
             config.ColourMap1 = "ACI-ENT-CVR";
             config.ColourMap2 = "OSC-ENG-TRK";
-            config.MinuteOffset = 19 * 60;
+            config.MinuteOffset = TimeSpan.FromMinutes(19 * 60);
             config.FrameWidth = 256;
             //config.SampleRate = 17640;
             config.SampleRate = 22050;
@@ -134,8 +134,8 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            TimeSpan xScale = (TimeSpan?)configuration.X_Axis_TicInterval ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
 
@@ -185,12 +185,11 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
         public static void GetJiesLDSpectrogramConfig(string fileName, DirectoryInfo ipDir, DirectoryInfo opDir)
         {
-            int startMinute = 19 * 60; // 7pm frogs only call at night!!
             LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir);
             //spgConfig.ColourMap = "TRK-OSC-HAR";
             spgConfig.ColourMap1 = "OSC-HAR-TRK";
             //spgConfig.ColourMap2 = "OSC-HAR-TRK";
-            spgConfig.MinuteOffset = startMinute;
+            spgConfig.MinuteOffset = TimeSpan.FromMinutes(19 * 60); // Recordings start at 7pm. Frogs only call at night!!;
             spgConfig.FrameWidth = 256;
             //spgConfig.SampleRate = 17640;
             spgConfig.SampleRate = 22050;
