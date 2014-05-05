@@ -81,410 +81,410 @@ namespace AudioAnalysisTools.Indices
         /// Creates and returns all info about the currently calculated indices.
         /// </summary>
         /// <returns>A DICTIONARY OF INDICES</returns>
-        public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
-        {
-            var properties = new Dictionary<string, IndexProperties>();
-            // use one of following lines as template to create a new index.
-            properties.Add(KEYRankOrder,
-                new IndexProperties
-                {
-                    Key = KEYRankOrder,
-                    Name = AudioAnalysisTools.AnalysisKeys.KEY_RankOrder,
-                    DataType = typeof(int),
-                    DoDisplay = false,
-                    Comment = "Order ID of minute segment in temporal order from start of recording."
-                });
+        //public static Dictionary<string, IndexProperties> InitialisePropertiesOfIndices()
+        //{
+        //    var properties = new Dictionary<string, IndexProperties>();
+        //    // use one of following lines as template to create a new index.
+        //    properties.Add(KEYRankOrder,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYRankOrder,
+        //            Name = AudioAnalysisTools.AnalysisKeys.KEY_RankOrder,
+        //            DataType = typeof(int),
+        //            DoDisplay = false,
+        //            Comment = "Order ID of minute segment in temporal order from start of recording."
+        //        });
 
-            properties.Add(KEYStartMinute,
-                new IndexProperties
-                {
-                    Key = KEYStartMinute,
-                    Name = AudioAnalysisTools.AnalysisKeys.KEY_StartMinute,
-                    DoDisplay = false,
-                    Comment = "Exact time span (total minutes) from start of recording to start of this segment."
-                });
+        //    properties.Add(KEYStartMinute,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYStartMinute,
+        //            Name = AudioAnalysisTools.AnalysisKeys.KEY_StartMinute,
+        //            DoDisplay = false,
+        //            Comment = "Exact time span (total minutes) from start of recording to start of this segment."
+        //        });
 
-            properties.Add(KEYSegmentDuration,
-                new IndexProperties
-                {
-                    Key = KEYSegmentDuration,
-                    Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION,
-                    DataType = typeof(TimeSpan),
-                    DoDisplay = false,
-                    Comment = "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
-                });
+        //    properties.Add(KEYSegmentDuration,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYSegmentDuration,
+        //            Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION,
+        //            DataType = typeof(TimeSpan),
+        //            DoDisplay = false,
+        //            Comment = "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
+        //        });
 
-            properties.Add(KEYHighAmplitudeIndex,
-                new IndexProperties
-                {
-                    Key = KEYHighAmplitudeIndex,
-                    Name = "High Signal Ampl",
-                    NormMax = 10.0,
-                    Units = "av/s",
-                    Comment = "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
-                });
+        //    properties.Add(KEYHighAmplitudeIndex,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHighAmplitudeIndex,
+        //            Name = "High Signal Ampl",
+        //            NormMax = 10.0,
+        //            Units = "av/s",
+        //            Comment = "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
+        //        });
 
-            properties.Add(KEYClippingIndex,
-                new IndexProperties
-                {
-                    Key = KEYClippingIndex,
-                    Name = "Clipping",
-                    NormMax = 1.0,
-                    Units = "avClips/s",
-                    Comment = "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
-                });
+        //    properties.Add(KEYClippingIndex,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYClippingIndex,
+        //            Name = "Clipping",
+        //            NormMax = 1.0,
+        //            Units = "avClips/s",
+        //            Comment = "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
+        //        });
 
-            properties.Add(KEYAvSignalAmplitude,
-                new IndexProperties
-                {
-                    Key = KEYAvSignalAmplitude,
-                    Name = "av Signal Ampl",
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10, //-70 dB is typical level for enironmental BGN
-                    NormMax = -10.0,
-                    Units = "dB",
-                    DefaultValue = DEFAULT_SIGNAL_MIN,
-                    Comment = "Av amplitude of the signal envelope in dB."
-                });
+        //    properties.Add(KEYAvSignalAmplitude,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYAvSignalAmplitude,
+        //            Name = "av Signal Ampl",
+        //            NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10, //-70 dB is typical level for enironmental BGN
+        //            NormMax = -10.0,
+        //            Units = "dB",
+        //            DefaultValue = DEFAULT_SIGNAL_MIN,
+        //            Comment = "Av amplitude of the signal envelope in dB."
+        //        });
 
-            properties.Add(KEYBackgroundNoise,
-                new IndexProperties
-                {
-                    Key = KEYBackgroundNoise,
-                    Name = "Background",
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10,
-                    NormMax = -10.0,
-                    Units = "dB",
-                    DefaultValue = DEFAULT_SIGNAL_MIN,
-                    Comment = "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
-                });
+        //    properties.Add(KEYBackgroundNoise,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYBackgroundNoise,
+        //            Name = "Background",
+        //            NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10,
+        //            NormMax = -10.0,
+        //            Units = "dB",
+        //            DefaultValue = DEFAULT_SIGNAL_MIN,
+        //            Comment = "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
+        //        });
 
-            properties.Add(KEYSNR,
-                new IndexProperties
-                {
-                    Key = KEYSNR,
-                    Name = "SNR",
-                    NormMin = 0.0,
-                    NormMax = 50.0,
-                    Units = "dB",
-                    Comment = "Max amplitude of signal envelope after noise removal."
-                });
+        //    properties.Add(KEYSNR,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYSNR,
+        //            Name = "SNR",
+        //            NormMin = 0.0,
+        //            NormMax = 50.0,
+        //            Units = "dB",
+        //            Comment = "Max amplitude of signal envelope after noise removal."
+        //        });
 
-            properties.Add(KEYAvSNROfActiveFrames,
-                new IndexProperties
-                {
-                    Key = KEYAvSNROfActiveFrames,
-                    Name = "avSNRActive",
-                    NormMin = 0.0,
-                    NormMax = 30.0,
-                    Units = "dB",
-                    Comment = "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
-                });
+        //    properties.Add(KEYAvSNROfActiveFrames,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYAvSNROfActiveFrames,
+        //            Name = "avSNRActive",
+        //            NormMin = 0.0,
+        //            NormMax = 30.0,
+        //            Units = "dB",
+        //            Comment = "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
+        //        });
 
-            properties.Add(KEYActivity,
-                new IndexProperties
-                {
-                    Key = KEYActivity,
-                    Name = "%Activity",
-                    DataType = typeof(int),
-                    NormMax = 100.0,
-                    Units = "%",
-                    Comment = "% of active frames i.e. where SNR exceeds threshold = 3 dB."
-                });
+        //    properties.Add(KEYActivity,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYActivity,
+        //            Name = "%Activity",
+        //            DataType = typeof(int),
+        //            NormMax = 100.0,
+        //            Units = "%",
+        //            Comment = "% of active frames i.e. where SNR exceeds threshold = 3 dB."
+        //        });
 
-            properties.Add(KEYEventsPerSec,
-                new IndexProperties
-                {
-                    Key = KEYEventsPerSec,
-                    Name = "Events/s",
-                    NormMax = 1.0,
-                    Units = "",
-                    Comment = "Av number of events persecond. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
-                });
+        //    properties.Add(KEYEventsPerSec,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYEventsPerSec,
+        //            Name = "Events/s",
+        //            NormMax = 1.0,
+        //            Units = "",
+        //            Comment = "Av number of events persecond. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
+        //        });
 
-            properties.Add(KEYAvEventDuration,
-                new IndexProperties
-                {
-                    Key = KEYAvEventDuration,
-                    Name = "av Event Duration",
-                    DataType = typeof(TimeSpan),
-                    NormMax = 1000,
-                    Units = "ms",
-                    Comment = "Av duration in ms of the events in an audio segment."
-                });
+        //    properties.Add(KEYAvEventDuration,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYAvEventDuration,
+        //            Name = "av Event Duration",
+        //            DataType = typeof(TimeSpan),
+        //            NormMax = 1000,
+        //            Units = "ms",
+        //            Comment = "Av duration in ms of the events in an audio segment."
+        //        });
 
-            properties.Add(KEYHF_CVR,
-                new IndexProperties
-                {
-                    Key = KEYHF_CVR,
-                    Name = "hf Cover",
-                    NormMax = 50,
-                    DataType = typeof(int),
-                    Units = "%"
-                });
+        //    properties.Add(KEYHF_CVR,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHF_CVR,
+        //            Name = "hf Cover",
+        //            NormMax = 50,
+        //            DataType = typeof(int),
+        //            Units = "%"
+        //        });
 
-            properties.Add(KEYMF_CVR,
-                new IndexProperties
-                {
-                    Key = KEYMF_CVR,
-                    Name = "mf Cover",
-                    NormMax = 50,
-                    DataType = typeof(int),
-                    Units = "%"
-                });
+        //    properties.Add(KEYMF_CVR,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYMF_CVR,
+        //            Name = "mf Cover",
+        //            NormMax = 50,
+        //            DataType = typeof(int),
+        //            Units = "%"
+        //        });
 
-            properties.Add(KEYLF_CVR,
-                new IndexProperties
-                {
-                    Key = KEYLF_CVR,
-                    Name = "lf Cover",
-                    NormMax = 50,
-                    DataType = typeof(int),
-                    Units = "%"
-                });
+        //    properties.Add(KEYLF_CVR,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYLF_CVR,
+        //            Name = "lf Cover",
+        //            NormMax = 50,
+        //            DataType = typeof(int),
+        //            Units = "%"
+        //        });
 
-            properties.Add(KEYHtemporal,
-                new IndexProperties
-                {
-                    Key = KEYHtemporal,
-                    Name = "1-H[t]",
-                    Comment = "1-Ht is a meassure of concentration of acoustic energy instead of energy dispersal.",
-                    NormMin = 0.0,
-                    NormMax = 0.5,
-                    DefaultValue = 0.0,
-                    includeInComboIndex = true,
-                    comboWeight = 0.3
-                });
+        //    properties.Add(KEYHtemporal,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHtemporal,
+        //            Name = "1-H[t]",
+        //            Comment = "1-Ht is a meassure of concentration of acoustic energy instead of energy dispersal.",
+        //            NormMin = 0.0,
+        //            NormMax = 0.5,
+        //            DefaultValue = 0.0,
+        //            includeInComboIndex = true,
+        //            comboWeight = 0.3
+        //        });
 
-            properties.Add(KEYHpeak,
-                new IndexProperties
-                {
-                    Key = KEYHpeak,
-                    Name = "1-H[peak freq]",
-                    NormMin = 0.0,
-                    NormMax = 1.0,
-                    DefaultValue = 0.0
-                });
+        //    properties.Add(KEYHpeak,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHpeak,
+        //            Name = "1-H[peak freq]",
+        //            NormMin = 0.0,
+        //            NormMax = 1.0,
+        //            DefaultValue = 0.0
+        //        });
 
-            properties.Add(KEYHAvSpectrum,
-                new IndexProperties
-                {
-                    Key = KEYHAvSpectrum,
-                    Name = "1-H[spectral avg]",
-                    NormMin = 0.0,
-                    NormMax = 1.0,
-                    DefaultValue = 0.0
-                });
+        //    properties.Add(KEYHAvSpectrum,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHAvSpectrum,
+        //            Name = "1-H[spectral avg]",
+        //            NormMin = 0.0,
+        //            NormMax = 1.0,
+        //            DefaultValue = 0.0
+        //        });
 
-            properties.Add(KEYHVarSpectrum,
-                new IndexProperties
-                {
-                    Key = KEYHVarSpectrum,
-                    Name = "1-H[spectral var]",
-                    NormMin = 0.0,
-                    NormMax = 1.0,
-                    DefaultValue = 0.0
-                });
+        //    properties.Add(KEYHVarSpectrum,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYHVarSpectrum,
+        //            Name = "1-H[spectral var]",
+        //            NormMin = 0.0,
+        //            NormMax = 1.0,
+        //            DefaultValue = 0.0
+        //        });
 
-            properties.Add(KEYAcousticComplexity,
-                new IndexProperties
-                {
-                    Key = KEYAcousticComplexity,
-                    Name = "ACI",
-                    NormMin = 0.4,
-                    NormMax = 0.7,
-                    includeInComboIndex = true,
-                    comboWeight = 0.2
-                });
+        //    properties.Add(KEYAcousticComplexity,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYAcousticComplexity,
+        //            Name = "ACI",
+        //            NormMin = 0.4,
+        //            NormMax = 0.7,
+        //            includeInComboIndex = true,
+        //            comboWeight = 0.2
+        //        });
 
-            properties.Add(keyCLUSTER_COUNT,
-                new IndexProperties
-                {
-                    Key = keyCLUSTER_COUNT,
-                    Name = "Cluster Count",
-                    DataType = typeof(int),
-                    NormMax = 20,
-                    includeInComboIndex = true,
-                    comboWeight = 0.3,
-                    Comment = "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
-               });
+        //    properties.Add(keyCLUSTER_COUNT,
+        //        new IndexProperties
+        //        {
+        //            Key = keyCLUSTER_COUNT,
+        //            Name = "Cluster Count",
+        //            DataType = typeof(int),
+        //            NormMax = 20,
+        //            includeInComboIndex = true,
+        //            comboWeight = 0.3,
+        //            Comment = "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
+        //       });
 
-            properties.Add(keyCLUSTER_DUR,
-                new IndexProperties
-                {
-                    Key = keyCLUSTER_DUR,
-                    Name = "av Cluster Duration",
-                    DataType = typeof(TimeSpan),
-                    NormMax = 500,
-                    Units = "ms",
-                    Comment = "Average duration in ms of the spectrum cluster sequences."
-                });
+        //    properties.Add(keyCLUSTER_DUR,
+        //        new IndexProperties
+        //        {
+        //            Key = keyCLUSTER_DUR,
+        //            Name = "av Cluster Duration",
+        //            DataType = typeof(TimeSpan),
+        //            NormMax = 500,
+        //            Units = "ms",
+        //            Comment = "Average duration in ms of the spectrum cluster sequences."
+        //        });
 
-            properties.Add(key3GRAM_COUNT,
-                new IndexProperties
-                {
-                    Key = key3GRAM_COUNT,
-                    Name = "3gramCount",
-                    DataType = typeof(int),
-                    NormMax = 50,
-                    Comment = "Number of different tri-gram cluster sequences."
-                });
+        //    properties.Add(key3GRAM_COUNT,
+        //        new IndexProperties
+        //        {
+        //            Key = key3GRAM_COUNT,
+        //            Name = "3gramCount",
+        //            DataType = typeof(int),
+        //            NormMax = 50,
+        //            Comment = "Number of different tri-gram cluster sequences."
+        //        });
 
-            properties.Add(keySPT_PER_SEC,
-                new IndexProperties
-                {
-                    Key = keySPT_PER_SEC,
-                    Name = "av Tracks/Sec",
-                    NormMax = 10,
-                    Comment = "Average number of spectral tracks per second."
-                });
+        //    properties.Add(keySPT_PER_SEC,
+        //        new IndexProperties
+        //        {
+        //            Key = keySPT_PER_SEC,
+        //            Name = "av Tracks/Sec",
+        //            NormMax = 10,
+        //            Comment = "Average number of spectral tracks per second."
+        //        });
 
-            properties.Add(keySPT_DUR,
-                new IndexProperties
-                {
-                    Key = keySPT_DUR,
-                    Name = "av Track Duration",
-                    DataType = typeof(TimeSpan),
-                    NormMax = 1.0,
-                    Units = "s",
-                    Comment = "Average duration of a spectral track."
-                });
+        //    properties.Add(keySPT_DUR,
+        //        new IndexProperties
+        //        {
+        //            Key = keySPT_DUR,
+        //            Name = "av Track Duration",
+        //            DataType = typeof(TimeSpan),
+        //            NormMax = 1.0,
+        //            Units = "s",
+        //            Comment = "Average duration of a spectral track."
+        //        });
 
-            properties.Add(keyRAIN,
-                new IndexProperties
-                {
-                    Key = keyRAIN,
-                    Name = "Rain Index",
-                    NormMax = 1.0,
-                    Units = "",
-                    Comment = "Rain score calculated every 5 sec and averaged over the minute."
-                });
+        //    properties.Add(keyRAIN,
+        //        new IndexProperties
+        //        {
+        //            Key = keyRAIN,
+        //            Name = "Rain Index",
+        //            NormMax = 1.0,
+        //            Units = "",
+        //            Comment = "Rain score calculated every 5 sec and averaged over the minute."
+        //        });
 
-            properties.Add(keyCICADA,
-                new IndexProperties
-                {
-                    Key = keyCICADA,
-                    Name = "Cicada Index",
-                    NormMax = 1.0,
-                    Units = "",
-                    Comment = "Cicada score calculated every 10 sec and 6 values averaged over the minute."
-                });
+        //    properties.Add(keyCICADA,
+        //        new IndexProperties
+        //        {
+        //            Key = keyCICADA,
+        //            Name = "Cicada Index",
+        //            NormMax = 1.0,
+        //            Units = "",
+        //            Comment = "Cicada score calculated every 10 sec and 6 values averaged over the minute."
+        //        });
 
-            // ADD THE SUMMARY INDICES ABOVE HERE
-            //==================================================================================================================================================
-            //==================================================================================================================================================
-            // ADD THE SPECTRAL INDICES BELOW HERE
+        //    // ADD THE SUMMARY INDICES ABOVE HERE
+        //    //==================================================================================================================================================
+        //    //==================================================================================================================================================
+        //    // ADD THE SPECTRAL INDICES BELOW HERE
 
-            //IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
+        //    //IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
 
-            //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
+        //    //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
 
-            properties.Add(KEYspectralACI,
-                new IndexProperties
-                {
-                    Key = KEYspectralACI,
-                    Name = "ACI",
-                    DataType = typeof(double[]),
-                    NormMin = 0.4,
-                    NormMax = 0.7,
-                    Units = "",
-                    Comment = "Spectrum of ACI values, one value for each frequency bin."
-                });
+        //    properties.Add(KEYspectralACI,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralACI,
+        //            Name = "ACI",
+        //            DataType = typeof(double[]),
+        //            NormMin = 0.4,
+        //            NormMax = 0.7,
+        //            Units = "",
+        //            Comment = "Spectrum of ACI values, one value for each frequency bin."
+        //        });
 
-            properties.Add(KEYspectralAVG,
-                new IndexProperties
-                {
-                    Key = KEYspectralAVG,
-                    Name = "AVG",
-                    DataType = typeof(double[]),
-                    NormMin = 0.0,
-                    NormMax = 70.0,
-                    Units = "dB",
-                    Comment = "Average dB amplitude in each frequency bin after noise removal."
-                });
+        //    properties.Add(KEYspectralAVG,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralAVG,
+        //            Name = "AVG",
+        //            DataType = typeof(double[]),
+        //            NormMin = 0.0,
+        //            NormMax = 70.0,
+        //            Units = "dB",
+        //            Comment = "Average dB amplitude in each frequency bin after noise removal."
+        //        });
 
-            properties.Add(KEYspectralBGN,
-                new IndexProperties
-                {
-                    Key = KEYspectralBGN,
-                    Name = "BGN",
-                    DataType = typeof(double[]),
-                    NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20, //-20 adds more contrast into BGN spectrogram
-                    NormMax = -20.0, 
-                    DefaultValue = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
-                    Units = "dB",
-                    Comment = "dB value of the bcakground 'noise' removed each frequency bin."
-                });
+        //    properties.Add(KEYspectralBGN,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralBGN,
+        //            Name = "BGN",
+        //            DataType = typeof(double[]),
+        //            NormMin = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20, //-20 adds more contrast into BGN spectrogram
+        //            NormMax = -20.0, 
+        //            DefaultValue = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20,
+        //            Units = "dB",
+        //            Comment = "dB value of the bcakground 'noise' removed each frequency bin."
+        //        });
 
-            properties.Add(KEYspectralCLS,
-                new IndexProperties
-                {
-                    Key = KEYspectralCLS,
-                    Name = "CLS",
-                    DataType = typeof(double[]),
-                    NormMin = 0.0,
-                    NormMax = 10.0,
-                    Units = "ms",
-                    Comment = "The number of spectral clusters in which each frequency bin is included."
-                });
+        //    properties.Add(KEYspectralCLS,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralCLS,
+        //            Name = "CLS",
+        //            DataType = typeof(double[]),
+        //            NormMin = 0.0,
+        //            NormMax = 10.0,
+        //            Units = "ms",
+        //            Comment = "The number of spectral clusters in which each frequency bin is included."
+        //        });
 
-            properties.Add(KEYspectralCVR,
-                new IndexProperties
-                {
-                    Key = KEYspectralCVR,
-                    Name = "CVR",
-                    DataType = typeof(double[]),
-                    NormMax = 50,
-                    Units = "%",
-                    Comment = "The percent of active elements in each frequency bin - i.e. where amplitude exceeds threshold = 3 dB."
-                });
+        //    properties.Add(KEYspectralCVR,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralCVR,
+        //            Name = "CVR",
+        //            DataType = typeof(double[]),
+        //            NormMax = 50,
+        //            Units = "%",
+        //            Comment = "The percent of active elements in each frequency bin - i.e. where amplitude exceeds threshold = 3 dB."
+        //        });
 
-            properties.Add(KEYspectralEVN,
-                new IndexProperties
-                {
-                    Key = KEYspectralEVN,
-                    Name = "EVN",
-                    DataType = typeof(double[]),
-                    NormMax = 2.0,
-                    Units = "events/s",
-                    Comment = "Acoustic events per second (as defined above) within each frequency band."
-                });
+        //    properties.Add(KEYspectralEVN,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralEVN,
+        //            Name = "EVN",
+        //            DataType = typeof(double[]),
+        //            NormMax = 2.0,
+        //            Units = "events/s",
+        //            Comment = "Acoustic events per second (as defined above) within each frequency band."
+        //        });
 
-            properties.Add(KEYspectralSPT,
-                new IndexProperties
-                {
-                    Key = KEYspectralSPT,
-                    Name = "SPT",
-                    DataType = typeof(double[]),
-                    NormMax = 0.5,
-                    Units = ""
-                });
+        //    properties.Add(KEYspectralSPT,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralSPT,
+        //            Name = "SPT",
+        //            DataType = typeof(double[]),
+        //            NormMax = 0.5,
+        //            Units = ""
+        //        });
 
-            properties.Add(KEYspectralENT,
-                new IndexProperties
-                {
-                    Key = KEYspectralENT,
-                    Name = "ENT",
-                    DataType = typeof(double[]),
-                    NormMin = 0.0,
-                    NormMax = 0.6,
-                    DefaultValue = 0.0,
-                    Comment = "Default value = 0.0 because index = 1-Ht. It is a meassure of concentration of acoustic energy instead of energy dispersal.",
-                    Units = ""
-                });
+        //    properties.Add(KEYspectralENT,
+        //        new IndexProperties
+        //        {
+        //            Key = KEYspectralENT,
+        //            Name = "ENT",
+        //            DataType = typeof(double[]),
+        //            NormMin = 0.0,
+        //            NormMax = 0.6,
+        //            DefaultValue = 0.0,
+        //            Comment = "Default value = 0.0 because index = 1-Ht. It is a meassure of concentration of acoustic energy instead of energy dispersal.",
+        //            Units = ""
+        //        });
 
-            //properties.Add(spKEY_Combined,
-            //    new IndexProperties { Key = spKEY_Combined, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
+        //    //properties.Add(spKEY_Combined,
+        //    //    new IndexProperties { Key = spKEY_Combined, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
 
-            return properties;
-        }
+        //    return properties;
+        //}
 
 
-        public static Dictionary<string, IndexProperties> GetDictionaryOfSpectralIndexProperties()
-        {
-            Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
+        //public static Dictionary<string, IndexProperties> GetDictionaryOfSpectralIndexProperties()
+        //{
+        //    Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
 
-            return GetDictionaryOfSpectralIndexProperties(indexProperties);
-        }
+        //    return GetDictionaryOfSpectralIndexProperties(indexProperties);
+        //}
 
         public static Dictionary<string, IndexProperties> GetDictionaryOfSpectralIndexProperties(Dictionary<string, IndexProperties> indexProperties)
         {
@@ -499,20 +499,20 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
-        public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties()
-        {
-            Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
+        //public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties()
+        //{
+        //    Dictionary<string, IndexProperties> indexProperties = InitialisePropertiesOfIndices();
 
-            var dict = new Dictionary<string, IndexProperties>();
-            foreach (IndexProperties ip in indexProperties.Values)
-            {
-                if (ip.DataType != typeof(double[]))
-                {
-                    dict.Add(ip.Key, ip);
-                }
-            }
-            return dict;
-        }
+        //    var dict = new Dictionary<string, IndexProperties>();
+        //    foreach (IndexProperties ip in indexProperties.Values)
+        //    {
+        //        if (ip.DataType != typeof(double[]))
+        //        {
+        //            dict.Add(ip.Key, ip);
+        //        }
+        //    }
+        //    return dict;
+        //}
 
         public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties(Dictionary<string, IndexProperties> indexProperties)
         {
@@ -593,6 +593,7 @@ namespace AudioAnalysisTools.Indices
             dict.Add("BKGROUND", "BackgroundNoise");
             dict.Add("SNR", "SNR");
             dict.Add("SNR-ACTIVE", "AvSNRActive");
+            dict.Add("AvSNROfActiveFrames", "AvSNRActive");
             dict.Add("ACTIVITY", "Activity");
             dict.Add("EVENTS-RATE", "EventsPerSec");
             dict.Add("avEVENT-DUR", "AvEventDuration");
@@ -600,6 +601,7 @@ namespace AudioAnalysisTools.Indices
             dict.Add("MF-CVR", "MF_CVR");
             dict.Add("LF-CVR", "LF_CVR");
             dict.Add("H-TEMP", "Htemp");
+            dict.Add("Htemporal", "Htemp");
             dict.Add("H-PEAK", "Hpeak");
             dict.Add("H-SPG", "HAvSpectrum");
             dict.Add("H-VAR", "HVarSpectrum");
@@ -616,43 +618,6 @@ namespace AudioAnalysisTools.Indices
 
             return dict;
         }
-
-
-
-        //public static DataTable Indices2DataTable(IndexValues indicesStore)
-        //{
-        //    Dictionary<string, IndexProperties> properties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
-        //    var headers = InitialiseIndexProperties.GetArrayOfIndexNames(properties);
-        //    var types = InitialiseIndexProperties.GetArrayOfIndexTypes(properties);
-        //    string[] keys = properties.Keys.ToArray();
-
-        //    var dt = DataTableTools.CreateTable(headers, types);
-
-        //    DataRow row = dt.NewRow();
-        //    for (int i = 0; i < keys.Length; i++)
-        //    {
-        //        var key = keys[i];
-        //        IndexProperties prop = properties[key];
-
-        //        if (prop.DataType == typeof(double)) 
-        //        {
-        //            row[headers[i]] = indicesStore.GetIndexAsDouble(key);              
-        //        }
-        //        else if(prop.DataType == typeof(TimeSpan)) 
-        //        {
-        //            row[headers[i]] = indicesStore.GetIndexAsTimeSpan(key);
-        //        }
-        //        else if (prop.DataType == typeof(int)) 
-        //        {
-        //            row[headers[i]] = indicesStore.GetIndexAsInteger(key);
-        //        }
-        //    }
-        //    dt.Rows.Add(row);
-        //    //DataTableTools.WriteTable2ConsoleInLongLayout(dt); // DEBUG
-        //    return dt;
-        //}
-
-
 
     }
 }
