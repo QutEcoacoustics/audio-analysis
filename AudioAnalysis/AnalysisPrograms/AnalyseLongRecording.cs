@@ -375,13 +375,15 @@ namespace AnalysisPrograms
                 //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
                 //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
 
-                // TODO: ##################################################################################################################
-                // TODO: LINE 380 NEEDS TO BE CHANGED TO SOMETHING LIKE LINE 93. I THOUGHT analysisSettings ALREADY HAD THIS PROPERTY ######
-                FileInfo indexPropertiesConfig = analysisSettings.ConfigFile;
-                //FileInfo indexPropertiesConfig = analysisSettings.IndexPropertiesFile;
-                //#########################################################################################################################
+                var indexPropertiesConfigPath = configDict["LONG_DURATION_CONFIG"];
+                if (!Path.IsPathRooted(indexPropertiesConfigPath))
+                {
+                    indexPropertiesConfigPath =
+                        Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
+                }
 
-                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory, indexPropertiesConfig);
+
+                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory, indexPropertiesConfigPath.ToFileInfo());
 
 
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
@@ -392,17 +394,7 @@ namespace AnalysisPrograms
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
 
-
-                //THE FOLLOWING PATH HAS TO BE PASSED THROUGH ANALYSIS SETTINGS !!! 
-                //FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-
-                var indexPropertiesConfigPath = configDict["LONG_DURATION_CONFIG"];
-                if (!Path.IsPathRooted(indexPropertiesConfigPath))
-                {
-                    indexPropertiesConfigPath =
-                        Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
-                }
-
+               
                 Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfigPath.ToFileInfo(), title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
