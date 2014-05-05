@@ -87,11 +87,13 @@ namespace AudioAnalysisTools.Indices
         public static IndexValues Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
-            // TODO: ##################################################################################################################
-            // TODO: LINE 92 NEEDS TO BE CHANGED TO SOMETHING LIKE LINE 93. I THOUGHT analysisSettings ALREADY HAD THIS PROPERTY ######
-            FileInfo indexPropertiesConfig = analysisSettings.ConfigFile;
-            //FileInfo indexPropertiesConfig = analysisSettings.IndexPropertiesFile;
-            //#########################################################################################################################
+
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["LONG_DURATION_CONFIG"];
+            if (!Path.IsPathRooted(indexPropertiesConfigPath))
+            {
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(analysisSettings.ConfigFile.Directory.FullName, indexPropertiesConfigPath));
+            }
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DEFAULT_WINDOW_SIZE;
@@ -119,7 +121,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
-            IndexValues indexValues = new IndexValues(freqBinCount, wavDuration, indexPropertiesConfig);  // total duration of recording
+            IndexValues indexValues = new IndexValues(freqBinCount, wavDuration, indexPropertiesConfigPath.ToFileInfo());  // total duration of recording
             indexValues.StoreIndex(InitialiseIndexProperties.KEYSegmentDuration, wavDuration);     // duration of recording in seconds
             double highAmplIndex = dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds;
             indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, highAmplIndex); //average high ampl rate per second
