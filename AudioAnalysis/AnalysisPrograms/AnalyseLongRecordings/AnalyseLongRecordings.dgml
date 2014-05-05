@@ -19,20 +19,20 @@
     <Node Id="@35" Category="CodeSchema_Method" Bounds="590.221666666666,111.92,56.7566666666667,25.96" CodeSchemaProperty_IsPublic="True" CommonLabel="Run" DelayedCrossGroupLinksState="Fetched" FunctionTypeFlags="Method" Label="Run" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/AnalysisCoordinator.cs StartLineNumber=123 StartCharacterOffset=8 EndLineNumber=123 EndCharacterOffset=8)" />
   </Nodes>
   <Links>
-    <Link Source="(@1 Namespace=AnalysisPrograms.Production Type=MainEntryArguments Member=Audio2Csv)" Target="@2" Bounds="618.599975585938,25.9599990844727,0,21" />
-    <Link Source="@2" Target="@35" Bounds="618.599975585938,81.9199981689453,0,21" />
-    <Link Source="@30" Target="@31" Category="CodeSchema_Calls" Bounds="523.986389160156,192.501449584961,66.7373657226563,27.8703308105469" Weight="1" />
-    <Link Source="@30" Target="@32" Category="CodeSchema_Calls" Bounds="618.599975585938,193.839996337891,0,21" Weight="1" />
-    <Link Source="@31" Target="@34" Category="CodeSchema_Calls" Bounds="515.681457519531,249.800003051758,63.5321655273438,26.5317840576172" Weight="1" />
-    <Link Source="@32" Target="@34" Category="CodeSchema_Calls" Bounds="618.599975585938,249.800003051758,0,20.9999847412109" Weight="1" />
-    <Link Source="@33" Target="(@3 @4 @10 Member=(Name=ValidateResult OverloadingParameters=[@9,(@3 @8 Type=AnalysisResult2),@39,@39]))" Category="CodeSchema_Calls" Bounds="119.311790466309,355.612274169922,409.524879455566,35.7167358398438" Weight="1" />
-    <Link Source="@33" Target="(@3 @4 Type=ISourcePreparer Member=(Name=PrepareFile OverloadingParameters=[(@6 @12 Type=DirectoryInfo),(@6 @12 Type=FileInfo),@13,@39,@39,(@6 @7 Type=Int32),(@6 @12 Type=DirectoryInfo)]))" Category="CodeSchema_Calls" Bounds="655.248253763578,361.720208364529,76.2198591704027,26.9953909176937" Weight="1" />
-    <Link Source="@33" Target="(@3 @8 Type=IAnalyser2 Member=(Name=Analyse OverloadingParameters=[@9]))" Category="CodeSchema_Calls" Bounds="617.090954258102,361.720005493164,1.03427619596391,28.2763133264717" Weight="1" />
-    <Link Source="@33" Target="@11" Category="CodeSchema_Calls" Bounds="464.475646972656,361.720001220703,104.95068359375,27.7030029296875" Weight="1" />
-    <Link Source="@33" Target="@20" Category="CodeSchema_Calls" Bounds="284.324554443359,360.460327148438,245.068511962891,32.8231506347656" Weight="1" />
-    <Link Source="@33" Target="@21" Category="CodeSchema_Calls" Bounds="687.025634765625,361.720001220703,158.688110351563,30.1023254394531" Weight="1" />
-    <Link Source="@34" Target="@33" Category="CodeSchema_Calls" Bounds="618.599975585938,305.760009765625,0,21" Weight="1" />
-    <Link Source="@35" Target="@30" Category="CodeSchema_Calls" Bounds="618.599975585938,137.880004882813,0,21" Weight="1" />
+    <Link Source="(@1 Namespace=AnalysisPrograms.Production Type=MainEntryArguments Member=Audio2Csv)" Target="@2" Bounds="618.6,25.959611111111,1.13686837721616E-13,21.0001" />
+    <Link Source="@2" Target="@35" Bounds="618.6,81.9197111111111,3.41060513164848E-13,21.0001" />
+    <Link Source="@30" Target="@31" Category="CodeSchema_Calls" Bounds="523.986337934994,192.501379132185,66.7374248073893,27.870389734605" Weight="1" />
+    <Link Source="@30" Target="@32" Category="CodeSchema_Calls" Bounds="618.6,193.839911111111,3.41060513164848E-13,21.0001" Weight="1" />
+    <Link Source="@31" Target="@34" Category="CodeSchema_Calls" Bounds="515.681425062693,249.8,63.5322498347581,26.5318788051637" Weight="1" />
+    <Link Source="@32" Target="@34" Category="CodeSchema_Calls" Bounds="618.6,249.800011111111,1.13686837721616E-13,21.0001" Weight="1" />
+    <Link Source="@33" Target="(@3 @4 @10 Member=(Name=ValidateResult OverloadingParameters=[@9,(@3 @8 Type=AnalysisResult2),@39,@39]))" Category="CodeSchema_Calls" Bounds="111.374252319336,356.214141845703,417.462417602539,34.7590637207031" Weight="1" />
+    <Link Source="@33" Target="(@3 @4 Type=ISourcePreparer Member=(Name=PrepareFile OverloadingParameters=[(@6 @12 Type=DirectoryInfo),(@6 @12 Type=FileInfo),@13,@39,@39,(@6 @7 Type=Int32),(@6 @12 Type=DirectoryInfo)]))" Category="CodeSchema_Calls" Bounds="655.248254738644,361.720211111111,76.2198753481779,26.9953914333643" Weight="1" />
+    <Link Source="@33" Target="(@3 @8 Type=IAnalyser2 Member=(Name=Analyse OverloadingParameters=[@9]))" Category="CodeSchema_Calls" Bounds="617.090954750438,361.720211111111,1.03426930913122,28.2761077158901" Weight="1" />
+    <Link Source="@33" Target="@11" Category="CodeSchema_Calls" Bounds="464.475552290366,361.720211111111,104.95084008563,27.7031108786597" Weight="1" />
+    <Link Source="@33" Target="@20" Category="CodeSchema_Calls" Bounds="284.33732382902,360.868156444911,245.404985933246,33.4946614758663" Weight="1" />
+    <Link Source="@33" Target="@21" Category="CodeSchema_Calls" Bounds="687.025919325801,361.720211111111,158.687831827018,30.1021612483912" Weight="1" />
+    <Link Source="@34" Target="@33" Category="CodeSchema_Calls" Bounds="618.599999999999,305.760111111111,2.27373675443232E-13,21.0001" Weight="1" />
+    <Link Source="@35" Target="@30" Category="CodeSchema_Calls" Bounds="618.599999999999,137.879811111111,0,21.0001" Weight="1" />
   </Links>
   <Categories>
     <Category Id="Category1" Label="Analyse" Background="#FFE51400" IsTag="True" />
@@ -241,8 +241,11 @@
     </Style>
   </Styles>
   <Paths>
+    <Path Id="80bc795a-a987-45ab-b29b-76cf190384ba.OutputPath" Value="C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisBase\bin\Debug\AnalysisBase.dll" />
     <Path Id="80bc795a-a987-45ab-b29b-76cf190384ba.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/bin/Debug/AnalysisBase.dll" />
+    <Path Id="ec323929-0160-46bc-a04b-b4a66d02e757.OutputPath" Value="C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" />
     <Path Id="ec323929-0160-46bc-a04b-b4a66d02e757.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/bin/Debug/AnalysisPrograms.exe" />
+    <Path Id="FxReferenceAssemblies" Value="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework" />
     <Path Id="FxReferenceAssembliesUri" Value="file:///C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework" />
   </Paths>
 </DirectedGraph>
