@@ -346,14 +346,14 @@ namespace AudioAnalysisTools
         }
 
 
-        public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir)
+        public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir, FileInfo indexPropertiesConfig)
         {
             if (indices == null) return null;
             FileInfo fiIndices = null;
 
             string reportfilePath = Path.Combine(opDir.FullName, fName + ".Indices" + ReportFileExt);
 
-            ResultsTools.WriteIndices2CSV(indices, reportfilePath);
+            ResultsTools.WriteIndices2CSV(indices, reportfilePath, indexPropertiesConfig);
 
             string target = Path.Combine(opDir.FullName, fName + ".Indices_BACKUP" + ReportFileExt);
             File.Delete(target);               // Ensure that the target does not exist.
@@ -364,13 +364,12 @@ namespace AudioAnalysisTools
 
 
         //WRITE A CSV FILE FROM AN ARRAY OF INDEX-BASE
-        public static void WriteIndices2CSV(IndexBase[] indicesResults, string strFilePath)
+        public static void WriteIndices2CSV(IndexBase[] indicesResults, string strFilePath, FileInfo indexPropertiesConfig)
         {
             string seperatorChar = ",";
 
-            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
-            string[] headers = InitialiseIndexProperties.GetArrayOfIndexNames(listOfIndexProperties);
-            string[] keys    = listOfIndexProperties.Keys.ToArray();
+            Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            string[] keys = dictOfIndexProperties.Keys.ToArray();
 
             StreamWriter sr = null;
 
@@ -395,7 +394,7 @@ namespace AudioAnalysisTools
                     builder = new StringBuilder();
                     foreach (string key in keys)
                     {
-                        IndexProperties ip = listOfIndexProperties[key]; 
+                        IndexProperties ip = dictOfIndexProperties[key]; 
                         string str = ib.GetIndexAsString(key, ip.Units, ip.DataType);
 
                         builder.Append(seperator).Append(str);

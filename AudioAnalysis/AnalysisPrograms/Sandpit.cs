@@ -47,43 +47,6 @@ namespace AnalysisPrograms
 
             }
 
-            if (false) // writing/serialising a ocnfig file)
-            {
-                var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-                var sip = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
-
-                FileInfo path = new FileInfo(Path.Combine(opDir.FullName, "IndexProperties.yml"));
-
-                //Yaml.Serialise<Dictionary<string, IndexProperties>>(path, sip);
-
-                Yaml.Serialise(path, new IndexProperties
-                {
-                    Key = "KEY",
-                    Name = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION,
-                    DataType = typeof(TimeSpan),
-                    Comment = "Exact time span (total minutes) of this audio segment - typically 1.0 minutes.",
-                    DefaultValue = 0.0,
-                    ProjectID = "ID",
-
-                    // for display purposes only
-                    DoDisplay = false,
-                    NormMin = 0.0,
-                    NormMax = 1.0,
-                    Units = "dB",
-
-                    // use these when calculated combination index.
-                    includeInComboIndex = false,
-                    comboWeight = 2.0
-                });
-
-
-
-                Log.WriteLine("GOT To HERE");
-
-            }
-
-
-
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             // problem is that Jason cuts them up into 6 hour blocks.
             if (false)

@@ -929,7 +929,6 @@ namespace AudioAnalysisTools
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-            //var dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
 
             string fileStem = configuration.FileName;
             DirectoryInfo opDir = configuration.OutputDirectory;

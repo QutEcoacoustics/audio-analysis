@@ -87,6 +87,11 @@ namespace AudioAnalysisTools.Indices
         public static IndexValues Analysis(FileInfo fiSegmentAudioFile, AnalysisSettings analysisSettings)
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
+            // TODO: ##################################################################################################################
+            // TODO: LINE 92 NEEDS TO BE CHANGED TO SOMETHING LIKE LINE 93. I THOUGHT analysisSettings ALREADY HAD THIS PROPERTY ######
+            FileInfo indexPropertiesConfig = analysisSettings.ConfigFile;
+            //FileInfo indexPropertiesConfig = analysisSettings.IndexPropertiesFile;
+            //#########################################################################################################################
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DEFAULT_WINDOW_SIZE;
@@ -114,7 +119,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
-            IndexValues indexValues = new IndexValues(freqBinCount, wavDuration);  // total duration of recording
+            IndexValues indexValues = new IndexValues(freqBinCount, wavDuration, indexPropertiesConfig);  // total duration of recording
             indexValues.StoreIndex(InitialiseIndexProperties.KEYSegmentDuration, wavDuration);     // duration of recording in seconds
             double highAmplIndex = dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds;
             indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, highAmplIndex); //average high ampl rate per second
@@ -454,13 +459,13 @@ namespace AudioAnalysisTools.Indices
         /// <param name="clipCountsPerSecond"></param>
         public static void MarkClippedSpectra(Dictionary<string, double[]> spectra, double highAmplCountsPerSecond, double clipCountsPerSecond)  
         {
-            if (highAmplCountsPerSecond <= 0.01) return; //Ignore when index values are small
+            if (highAmplCountsPerSecond <= 0.02) return; //Ignore when index values are small
 
             int freqBinCount = spectra[InitialiseIndexProperties.KEYspectralBGN].Length;
             for (int i = (freqBinCount - 20); i < freqBinCount; i++)
             {
                 // this will paint top of each spectrum a red colour.
-                spectra[InitialiseIndexProperties.KEYspectralBGN][i] = 1.0; // red
+                spectra[InitialiseIndexProperties.KEYspectralBGN][i] = 0.0; // red 0.0 = the maximum possible value
                 spectra[InitialiseIndexProperties.KEYspectralAVG][i] = 0.0; // green
                 spectra[InitialiseIndexProperties.KEYspectralCVR][i] = 0.0; // blue
 
@@ -470,16 +475,17 @@ namespace AudioAnalysisTools.Indices
                 spectra[InitialiseIndexProperties.KEYspectralEVN][i] = 0.0;
             }
 
-            if (clipCountsPerSecond <= 0.01) return; //Ignore when index values are very small
+            if (clipCountsPerSecond <= 0.05) return; //Ignore when index values are very small
 
             // Setting these values above the normalisation MAX will turn bin N-5 white
+            spectra[InitialiseIndexProperties.KEYspectralBGN][freqBinCount - 5] = 0.0; // red
             spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 5] = 100.0; // dB
             spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 5] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralENT][freqBinCount - 5] = 2.0;
             spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 5] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 5] = 100.0;
 
-            if (clipCountsPerSecond <= 0.1) return; //Ignore when index values are small
+            if (clipCountsPerSecond <= 0.5) return; //Ignore when index values are small
             // Setting these values above the normalisation MAX will turn bin N-7 white
             spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 7] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 7] = 100.0;

@@ -107,8 +107,8 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
 
             // DEV CONFIG OPTIONS
@@ -374,7 +374,14 @@ namespace AnalysisPrograms
                 // next line commented out by Michael 15-04-2014 to force use of indices only
                 //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
                 //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
-                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+
+                // TODO: ##################################################################################################################
+                // TODO: LINE 380 NEEDS TO BE CHANGED TO SOMETHING LIKE LINE 93. I THOUGHT analysisSettings ALREADY HAD THIS PROPERTY ######
+                FileInfo indexPropertiesConfig = analysisSettings.ConfigFile;
+                //FileInfo indexPropertiesConfig = analysisSettings.IndexPropertiesFile;
+                //#########################################################################################################################
+
+                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory, indexPropertiesConfig);
 
 
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
@@ -518,11 +525,16 @@ namespace AnalysisPrograms
             FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
             spectrogramConfig.WritConfigToYAML(spectrogramConfigPath);
 
-            var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-            FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+            //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
+            //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["LONG_DURATION_CONFIG"];
+            if (!Path.IsPathRooted(indexPropertiesConfigPath))
+            {
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(analysisSettings.ConfigFile.Directory.FullName, indexPropertiesConfigPath));
+            }
 
-
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indicesConfigPath);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indexPropertiesConfigPath.ToFileInfo());
 
         }
 
