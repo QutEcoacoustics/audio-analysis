@@ -387,8 +387,16 @@ namespace AnalysisPrograms
 
 
                 //THE FOLLOWING PATH HAS TO BE PASSED THROUGH ANALYSIS SETTINGS !!! 
-                FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-                Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfig, title);
+                //FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+
+                var indexPropertiesConfigPath = configDict["LONG_DURATION_CONFIG"];
+                if (!Path.IsPathRooted(indexPropertiesConfigPath))
+                {
+                    indexPropertiesConfigPath =
+                        Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
+                }
+
+                Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfigPath.ToFileInfo(), title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
 
