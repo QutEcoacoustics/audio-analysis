@@ -137,3 +137,52 @@ IsWithinTargetTimes <- function (date, min, site) {
     }
 }
 
+AddMinuteIdCol <- function (data) {
+    # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
+    # will look up the minute id for each row and add a column to the data frame
+    #
+    # Args:
+    #   data: data.frame
+    # 
+    # Value:
+    #   data.frame
+    
+    
+    cols <- colnames(data)
+    date.col <- match('date', cols)
+    site.col <- match('site', cols)
+    min.col <- match('min', cols)
+    sec.col <- match('start.sec', cols)
+    ids <- apply(as.matrix(data), 1, function (v) {
+        if (is.na(min.col)) {
+            min <- floor(as.numeric(v[sec.col]) / 60)
+        } else {
+            min <- as.numeric(v[min.col])
+        } 
+        id <- paste0(v[date.col], v[site.col], min)
+        return(id)  
+    })
+    new.data <- cbind(data, ids)
+    colnames(new.data) <- c(cols, 'min.id')
+    return(new.data) 
+}
+
+SetMinute <- function (events, start.sec.col = "start.sec")  {
+    # for a list of events which contains the filename 
+    # (which has the start time for the file encoded)
+    # and the start time of the event, works out the minute 
+    # of the day that the event happened in
+    
+    if (is.character(start.sec.col)) {
+        start.sec.col <- which( colnames(events) ==  start.sec.col)     
+    }
+    min <- apply(events, 1, function (v) {
+        sec <- as.numeric(unlist(v[start.sec.col]))
+        min <- floor(sec / 60)
+        return (min)
+    })
+    new <- cbind(events, min)
+    return (new)
+    
+}
+

@@ -53,7 +53,18 @@ EvaluateSamples2d <- function (ranks, cutoff = NA) {
 }
 
 EvaluateSamples3d <- function (ranks) {
-    
+    # given a list of minutes
+    # simulates a species richness survey several times with different number of cluster groups
+    # then outputs the species count progression graph as a 3d surface. 
+    # x axis is the minute number of the survey
+    # z axis the number of cluster groups used for the ranking algorithms
+    # vertical axis is the number of species found in x minutes
+    #
+    # Args:
+    #   ranks: a 3d array: the minute rankings in order of minute id for each ranking algorithm, 
+    #                      each run several times based on events being assigned to several different cluster groups
+
+
 
     min.ids <- ReadOutput('target.min.ids', level = 0)
     speciesmins <- GetTags();  # get tags within outer target 
@@ -91,23 +102,19 @@ EvaluateSamples3d <- function (ranks) {
 ValidateMins <- function (mins = NA) {
     # mins can either be a vector of minute ids, in which case we expand it to 
     # include [site,date,min], a dataframe of [site,date,min], or nothing in which
-    # case we use all the minutes from the study
-    
+    # case we use all the minutes from the study   
     if (class(mins) %in% c('integer', 'numeric', 'data.frame')) {
         mins <- ExpandMinId(mins)
     } else if (class(mins) != 'data.frame') {
         mins <- GetMinuteList()
-    } 
-    
+    }  
     #validate if mins has correct cols
     must.have <- c('site', 'date', 'min')
     missing <- setdiff(must.have, colnames(mins))
     if (length(missing) > 0) {
         stop(paste('missing columns from supplied min list: ', missing, collapse = ','))
     }
-    
     return(mins)
-    
 }
 
 OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = NA) {
@@ -213,102 +220,18 @@ OptimalSamples <- function (speciesmins = NA, mins = NA, species.in.each.min = N
     
 }
 
-RandomSamples <- function (speciesmins = NA, species.in.each.sample
-                                 = NA, mins = NA, num.repetitions = 10, dawn.first = TRUE, dawn.from = 315, dawn.to = 495) {
-    # repeatedly performs a sample selection from random selection of dawn minutes
-    # 
-    # Value:
-    #   list: mean: the mean species count progression (count only)
-    #   list: sd: the standard deviation minute by minute
-    
-    Report(3, 'performing random sampling at dawn (RSAD)')
-    
-    if (class(speciesmins) != 'data.frame') {
-        speciesmins <- GetTags()
-    }
-    
-    mins <- ValidateMins(mins)
-    which.dawn <- mins$min >= dawn.from & mins$min <= dawn.to
-    mins.dawn <- mins[which.dawn, ]
-    mins.notdawn <- mins[!which.dawn, ]
-    
-    min.ids.dawn <- mins.dawn$min.id
-    min.ids.notdawn <- mins.notdawn$min.id
-    
-    Report(4, length(min.ids.dawn), 'of the target are at dawn')
-    
-    #species.in.each.min is optional. 
-    if (class(species.in.each.sample) != 'list') {
-        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins = mins$min.id) 
-    }
 
-    repetitions <- matrix(rep(NA, num.repetitions * nrow(mins)), ncol = num.repetitions)
-    
-    Report(4, 'performing', num.repetitions, 'repetitions of RSAD')
-    
-    # get the progression for random mins many times
-    for (i in 1:num.repetitions) {
-        
-        if (i %% 10) {
-            Dot()
-        }
-        
-        if (dawn.first) {
-            # create a jumbled version of the list of species in each min
-            # putting the dawn part always at the start
-            sample.order.dawn <- sample(1:length(min.ids.dawn), length(min.ids.dawn), replace = FALSE)
-            sample.order.notdawn <- sample(1:length(min.ids.notdawn), length(min.ids.notdawn), replace = FALSE)
-            jumbled.min.ids <- c(min.ids.dawn[sample.order.dawn], min.ids.notdawn[sample.order.notdawn])
-        } else {
-            sample.order <- sample(1:nrow(mins), nrow(mins), replace = FALSE)
-            jumbled.min.ids <- mins$min.id[sample.order]
-        }
-        found.species.progression <- GetProgression(species.in.each.sample, jumbled.min.ids)
-        repetitions[,i] <- found.species.progression$count  
-    }
-    #get average progression of counts 
-    progression.average <- apply(repetitions, 1, mean)
-    #progression.average <- round(progression.average)
-    progression.sd <- apply(repetitions, 1, sd)
-    
-    Report(5, "RSAD complete")
-    return(list(mean = progression.average, sd = progression.sd))
-    
-    
-    
-}
 
 IndicesProgression <- function (species.in.each.sample, which.mins) {
-    
     ranked.mins <- RankMinutesFromIndices()
     ranked.mins <- ranked.mins[ ranked.mins$min.id %in% which.mins$min.id, ] 
     ordered.min.ids <- ranked.mins$min.id[order(ranked.mins$rank)]
     progression <- GetProgression(species.in.each.sample, ordered.min.ids)
-    
     return(progression)
-    
-    
 }
 
 
-CountSpecies.Delete <- function (selected.samples, speciesmins) {
-    # finds which species were present in the minutes supplied in selected.samples
-    # out of a full species list speciesmins
-    found.species <- DoSpeciesCount(selected.samples, speciesmins)
-    min.list <- ReadOutput('minlist')
-    total.species <- DoSpeciesCount(min.list, speciesmins)
-    Report(1, 'number of species found = ', length(found.species))   
-    if (length(found.species) > 0) {
-        Report(2, 'species list:')
-        Report(2, found.species)
-    }
-    if (length(total.species) == 0) {
-        percent <- 100
-    } else {
-        percent <- length(found.species) * 100 / length(total.species)
-    }
-    Report(1, percent,"% of ", length(total.species)," species present")
-}
+
 
 #todo: check if this function is still used
 DoSpeciesCount <- function (sample.mins, speciesmins) {
@@ -529,12 +452,11 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
 }
 
 GetProgression <- function (species.in.each.sample, ordered.min.list) {
-    # returns the count of new species given a list
-    # of species vectors
+    # returns the count of new species given a list of species vectors
     # 
     # Args: 
     #   species.in.each.sample: list
-    #   order: vector; the minute ids in the order they should appear in the progression
+    #   ordered.min.list: vector; the minute ids in the order they should appear in the progression
     #
     # Value:
     #   list
@@ -586,56 +508,7 @@ GetProgression <- function (species.in.each.sample, ordered.min.list) {
     
 }
 
-SetMinute <- function (events)  {
-    # for a list of events which contains the filename 
-    # (which has the start time for the file encoded)
-    # and the start time of the event, works out the minute 
-    # of the day that the event happened in
-    
-    start.sec.col <- which( colnames(events) == "start.sec" )
-    min <- apply(events, 1, function (v) {
-        sec <- as.numeric(unlist(v[start.sec.col]))
-        min <- floor(sec / 60)
-        return (min)
-    })
-    
-    new <- cbind(events, min)
-    
-    return (new)
-    
-}
 
 
-AddMinuteIdCol <- function (data) {
-    
-    cols <- colnames(data)
-    date.col <- match('date', cols)
-    site.col <- match('site', cols)
-    min.col <- match('min', cols)
-    sec.col <- match('start.sec', cols)
-    
-    ids <- apply(as.matrix(data), 1, function (v) {
-        
-        
-        
-        if (is.na(min.col)) {
-            min <- floor(as.numeric(v[sec.col]) / 60)
-        } else {
-            min <- as.numeric(v[min.col])
-        }
-        
-        id <- paste0(v[date.col], v[site.col], min)
-        return(id)
-        
-        
-    })
-    
-    new.data <- cbind(data, ids)
-    colnames(new.data) <- c(cols, 'min.id')
-    
-    return(new.data)
-    
-    
-    
-}
+
 

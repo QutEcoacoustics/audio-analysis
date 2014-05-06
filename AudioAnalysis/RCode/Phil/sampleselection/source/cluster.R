@@ -46,39 +46,12 @@ ClusterEvents <- function (num.groups = 'auto',
     # use only the chosen features
     event.features <- event.features[, feature.choices]
     
-
-    
-
-    
- 
-    
-    
-    Report(2, 'scaling features (m = ',  nrow(events), ')')
-    ptm <- proc.time()
-    event.features <- as.matrix(scale(event.features))  # standardize variables
-    Timer(ptm, 'scaling features')
-    
-    weights <- rep(NA, length(feature.choices))
-    for (i in 1:length(weights)) {
-        weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.options[feature.choices[i]]))    
-        event.features[,i] <-  event.features[,i] * weights[i]    
-    }
-    
-    Report(2, 'calculating distance matrix (m = ',  nrow(events), 'n = ', ncol(event.features),')')
-    
-    ptm <- proc.time()
-    d <- dist(event.features, method = "euclidean")  # distance matrix
-    Timer(ptm, 'distance matrix')
-    
+    fit <- DoCluster(event.features)
     
     if (save.dendrogram) { 
         labels.for.dendrogram <- EventLabels(events)
     }
-    #get a cluster object
-    Report(2, 'clustering ... (method = ',  method, ')')
-    ptm <- proc.time()
-    fit <- hclust(d, method=method)
-    Timer(ptm, 'clustering')
+    
     
     if (num.groups == 'auto') {
         num.groups <- floor(sqrt(nrow(events)))
@@ -116,15 +89,66 @@ ClusterEvents <- function (num.groups = 'auto',
 }
 
 
+ClusterLines <- function () {
+    
+    events.and.features <- GetLinesForclustering()
+    event.features <- events.and.features$event.features
+    events <-  events.and.features$events
+    feature.choices <- GetMultiUserchoice(colnames(event.features), 'features to use for clustering and internal distance', default = 'all', all = TRUE) 
+    event.features <- event.features[, feature.choices]
+    fit <- DoCluster(event.features)
+    SaveObject(fit, 'clustering', level = 2)
+    
+}
 
 
+DoCluster <- function (df, method = 'complete') {
+    
+    
+    Report(2, 'scaling features (m = ',  nrow(df), ')')
+    ptm <- proc.time()
+    features <- as.matrix(scale(df))  # standardize variables
+    Timer(ptm, 'scaling features')
+    
+    feature.names <- colnames(df)
+    
+    weights <- rep(NA, length(feature.names))
+    for (i in 1:length(weights)) {
+        weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.names[i]))    
+        features[,i] <-  features[,i] * weights[i]    
+    }
+    
+    Report(2, 'calculating distance matrix (m = ',  nrow(features), 'n = ', ncol(features),')')
+    
+    ptm <- proc.time()
+    d <- dist(features, method = "euclidean")  # distance matrix
+    Timer(ptm, 'distance matrix')
+    
+    
 
+    #get a cluster object
+    Report(2, 'clustering ... (method = ',  method, ')')
+    ptm <- proc.time()
+    fit <- hclust(d, method=method)
+    Timer(ptm, 'clustering')
+    
 
+    return(fit)
+    
+}
 
 
 
 InternalMinuteDistances <- function () {
     vals <- GetEventsAndFeatures()
+    mins <- ReadOutput('target.min.ids', level = 0)
+    vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
+    dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
+    mins$distance.score <- dist.scores
+    WriteOutput(mins, 'distance.scores', level = 2)
+}
+InternalMinuteDistances.lines <- function () {
+    vals <- GetLinesForclustering()
     mins <- ReadOutput('target.min.ids', level = 0)
     vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
     dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);

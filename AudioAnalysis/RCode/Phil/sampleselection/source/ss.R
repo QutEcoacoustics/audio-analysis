@@ -44,6 +44,7 @@ source('features.R')
 source('cluster.R')
 source('ranking.R')
 source('evaluation.R')
+source('random.sampling.R')
 source('inspection.R')
 source('tags.R')
 source('util.R')
@@ -55,7 +56,7 @@ source('indices.R')
 source('lines.R')
 
 
-SS <- function (from.step = NA, to.step = NA) {
+SS <- function (from.step = NA, to.step = NA, use.lines = TRUE) {
     # Main entry point whcih runs the specified steps.
     #
     # Args: 
@@ -69,13 +70,29 @@ SS <- function (from.step = NA, to.step = NA) {
     CheckPaths()
     options(warn = 1)  #print warnings as they occur
     
-    all.steps <- c('minute.list',
+    
+    if (use.lines) {
+        all.steps <- c('minute.list', 
+                       '',
+                       'clustering',
+                       'internal.distance',
+                       'ranking',
+                       'evaluation',
+                       'inspect.samples')
+    } else {
+        all.steps <- c('minute.list',
                        'feature.extraction',
                        'clustering',
                        'internal.distance',
                        'ranking',
                        'evaluation',
                        'inspect.samples')
+    }
+    
+
+    
+
+    
     
     if (is.na(from.step)) {
         from.step.num <- 1
@@ -124,7 +141,7 @@ SS <- function (from.step = NA, to.step = NA) {
     # Events are detected. Frequency bounds, start time and duration
     # are written to a csv file for each audio file. 
 
-    steps <- list(
+    steps.aed <- list(
         function () {
             # Step 1: 
             # generate a list of minutes to use in as the target
@@ -152,7 +169,48 @@ SS <- function (from.step = NA, to.step = NA) {
             # Step 5:
             # chooses samples based on cluster groups
             # outputs a list of minute samples to a csv file
-            RankSamples()
+            RankSamples(use.lines = FALSE)
+        },
+        function () {
+            # Step 6:
+            # Evaluates the Richness survey from ranked samples
+            EvaluateSamples() 
+        },
+        function () {
+            # Step 7:
+            # output a series of spectrograms of the samples
+            # with the events colorcoded by cluster
+            InspectSamples()
+        }
+    )
+    steps.lines <- list(
+        function () {
+            # Step 1: 
+            # generate a list of minutes to use in as the target
+            CreateTargetMinutes()
+        },
+        function () {
+            # Step 2: 
+            # with lines, feature extraction is done prior to this entry point
+            # step 2 is empty
+        },
+        function () {
+            # Step 3: 
+            # creates a new output csv file, identical to the events file,
+            # except for the addition of a "group" column.
+            ClusterLines() 
+        },
+        function () {
+            # Step 4:
+            # calculates the sum of distances between all pairs of 
+            # events in each minute
+            InternalMinuteDistances.lines()
+        },
+        function () {
+            # Step 5:
+            # chooses samples based on cluster groups
+            # outputs a list of minute samples to a csv file
+            RankSamples(use.lines = TRUE)
         },
         function () {
             # Step 6:
@@ -167,9 +225,14 @@ SS <- function (from.step = NA, to.step = NA) {
         }
     )
     
-        
-    for (s in from.step.num:to.step.num) {
-        steps[[s]]()
+    if (use.lines)  {
+        for (s in from.step.num:to.step.num) {
+            steps.lines[[s]]()
+        }   
+    } else {
+        for (s in from.step.num:to.step.num) {
+            steps.aed[[s]]()
+        }
     }
     
 

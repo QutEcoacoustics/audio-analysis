@@ -66,7 +66,11 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
 }
 
 Sp.CreateFromFile <- function (path, draw = FALSE) {
-    cache.id <- gsub(.Platform$file.sep, "_", path)
+
+    
+    split <- strsplit(pangram, .Platform$file.sep)
+    cache.id <- paste0(split[length(split)], '.spectro')
+    
     spectro <- ReadCache(cache.id)
     if (class(spectro) != 'spectrogram') {
         spectro <- Sp.Create(path, draw = draw)
@@ -274,17 +278,23 @@ Sp.DrawLines <- function (spectro) {
         color.converter <- palette.size / max.score
         # only show the top scoring half
         # spectro$lines <- spectro$lines[spectro$lines$color > 1 ,]
+        branches <- c('branch.1', 'branch.2')
+        branch.cols <- c('red', 'green')
         for (i in 1:length(spectro$lines)) {           
             center <- spectro$lines[[i]]$center           
-            for (b in c('branch.1', 'branch.2')) {
-                Sp.Drawbranch(spectro, center, spectro$lines[[i]][[b]], color.converter)
+            for (b in 1:2) {
+                
+                b.name <- branches[b]
+                col <- branch.cols[b]
+                
+                Sp.Drawbranch(spectro, center, spectro$lines[[i]][[b.name]], color.converter, col)
             }     
         }
     }   
 }
 
 
-Sp.Drawbranch <- function (spectro, start, branch, color.converter) {
+Sp.Drawbranch <- function (spectro, start, branch, color.converter, color) {
     
     if (nrow(branch) < 1) {
         return()
@@ -295,7 +305,7 @@ Sp.Drawbranch <- function (spectro, start, branch, color.converter) {
     
     for (i in 1:nrow(branch)) {
         
-        color <- round(branch$score[i] * color.converter)
+        #color <- round(branch$score[i] * color.converter)
         Sp.AddLine(spectro, 
                    from.row = from.row, 
                    from.col = from.col, 

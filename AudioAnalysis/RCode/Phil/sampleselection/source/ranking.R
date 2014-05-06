@@ -1,6 +1,11 @@
-RankSamples <- function () {
+RankSamples <- function (use.lines = TRUE) {
  
-    events <- ReadOutput('events')
+    if (use.lines) {
+        events <- ReadOutput('line.events') 
+    } else {
+        events <- ReadOutput('events')
+    }
+
     mins <- ReadOutput('target.min.ids', level = 0)
     #ranking.methods <- c('RankSamples1', 'RankSamples2', 'RankSamples3')
     ranking.methods <- c('RankSamples1', 'RankSamples3')

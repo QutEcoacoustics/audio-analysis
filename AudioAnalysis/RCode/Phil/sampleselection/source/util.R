@@ -473,3 +473,10 @@ ShiftMatrix <- function (m, rr, cc) {
     return(m)
 }
 
+EmptyDataFrame <- function (col.names, num.rows = 0) {
+    
+    df <- as.data.frame(matrix(NA, nrow = num.rows, ncol = length(col.names)))
+    colnames(df) <- col.names
+    return(df)
+    
+}
