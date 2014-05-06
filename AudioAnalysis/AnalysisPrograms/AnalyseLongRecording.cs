@@ -126,7 +126,7 @@ namespace AnalysisPrograms
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\Test\Test_25April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_05May2014\audio2csv".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_06May2014\audio2csv".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -375,7 +375,7 @@ namespace AnalysisPrograms
                 //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
                 //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
 
-                var indexPropertiesConfigPath = configDict["LONG_DURATION_CONFIG"];
+                var indexPropertiesConfigPath = configDict["INDEX_PROPERTIES_CONFIG"];
                 if (!Path.IsPathRooted(indexPropertiesConfigPath))
                 {
                     indexPropertiesConfigPath =
@@ -519,7 +519,7 @@ namespace AnalysisPrograms
 
             //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
             //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
-            var indexPropertiesConfigPath = analysisSettings.ConfigDict["LONG_DURATION_CONFIG"];
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["INDEX_PROPERTIES_CONFIG"];
             if (!Path.IsPathRooted(indexPropertiesConfigPath))
             {
                 indexPropertiesConfigPath =

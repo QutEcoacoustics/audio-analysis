@@ -26,6 +26,7 @@ namespace AudioAnalysisTools.Indices
     {
 
         //KEYS FOR SUMMARY INDICES
+        // WARNING!!! DO NOT change the below keys without ALSO changing in the IndexPropertiesConfig.yml file.
         public const string KEYRankOrder = "RankOrder";
         public const string KEYStartMinute = "StartMinute";
         public const string KEYSegmentDuration = "SegmentDuration";
@@ -42,7 +43,7 @@ namespace AudioAnalysisTools.Indices
         public const string KEYMF_CVR = "MF_CVR";
         public const string KEYLF_CVR = "LF_CVR";
         public const string KEYHtemporal = "Htemporal";
-        public const string KEYHpeak = "Hpeak";
+        public const string KEYHpeak = "Hpeaks";
         public const string KEYHAvSpectrum = "HAvSpectrum";
         public const string KEYHVarSpectrum = "HVarSpectrum";
         public const string KEYAcousticComplexity = "AcousticComplexity";

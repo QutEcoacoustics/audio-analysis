@@ -93,7 +93,9 @@ namespace AudioAnalysisTools
             {
                 IndexProperties index = dictOfIndexProperties[key];
 
-                if(index.DataType == typeof(TimeSpan))
+                if (index.DataType == typeof(double[])) continue; // ignore the spectral indices
+
+                if (index.DataType == typeof(TimeSpan))
                 {
                     this.SummaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
                 }

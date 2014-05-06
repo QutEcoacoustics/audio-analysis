@@ -353,7 +353,7 @@ namespace AudioAnalysisTools
 
             string reportfilePath = Path.Combine(opDir.FullName, fName + ".Indices" + ReportFileExt);
 
-            ResultsTools.WriteIndices2CSV(indices, reportfilePath, indexPropertiesConfig);
+            ResultsTools.WriteSummaryIndices2CSV(indices, reportfilePath, indexPropertiesConfig);
 
             string target = Path.Combine(opDir.FullName, fName + ".Indices_BACKUP" + ReportFileExt);
             File.Delete(target);               // Ensure that the target does not exist.
@@ -363,15 +363,21 @@ namespace AudioAnalysisTools
         }
 
 
-        //WRITE A CSV FILE FROM AN ARRAY OF INDEX-BASE
-        public static void WriteIndices2CSV(IndexBase[] indicesResults, string strFilePath, FileInfo indexPropertiesConfig)
+        //WRITE A CSV FILE of SUMMARY INDICES from an ARRAY OF INDEX-BASE
+        public static void WriteSummaryIndices2CSV(IndexBase[] indicesResults, string strFilePath, FileInfo indexPropertiesConfig)
         {
             string seperatorChar = ",";
 
             Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictOfIndexProperties);
             string[] keys = dictOfIndexProperties.Keys.ToArray();
 
             StreamWriter sr = null;
+
+            // The KEYS for writing the CSV file could be extracted from the first result i.e. indicesResults[0]
+            // However we want to write the columns of the CSV file in order as they appear in the Index Properties file.
+            // Therefore need to access the index properties dictionary deep down in the bowels of the earth.
+            // IndexBase ibTEMP = indicesResults[0];
 
             try
             {
@@ -379,8 +385,6 @@ namespace AudioAnalysisTools
                 string seperator = "";
                 StringBuilder builder = new StringBuilder();
 
-
-                //foreach (string name in headers)
                 foreach (string name in keys)
                 {
                     builder.Append(seperator).Append(name);
