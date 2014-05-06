@@ -1,4 +1,5 @@
 --- 
+# WARNING!!! The keys used below MUST BE EXACTLY the SAME as those declared in the class InitialiseIndexProperties (starting at line 30).
 - 
   Key: RankOrder
   Name: Rank order of audio segment
@@ -98,7 +99,7 @@
   Name: Maximum SNR
   Comment: "Max amplitude of signal envelope after noise removal."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 50.0
@@ -107,11 +108,11 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: AvSNRActive
+  Key: AvSNROfActiveFrames
   Name: av SNR (Active frames)
   Comment: "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 30.0
@@ -124,7 +125,7 @@
   Name: Activity
   Comment: "% of active frames i.e. where SNR exceeds threshold = 3 dB."
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 100
@@ -150,7 +151,7 @@
   Name: Av Event Duration
   Comment: "Av duration in ms of the events in an audio segment."
   DataType: TimeSpan
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 1000
@@ -163,7 +164,7 @@
   Name: hf Cover
   Comment: "% hf Cover 4000 Hz to 8800 Hz"
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 50
@@ -176,7 +177,7 @@
   Name: mf Cover
   Comment: "% mf Cover. 500 Hz to 4000 Hz"
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 50
@@ -189,7 +190,7 @@
   Name: lf Cover
   Comment: "% lf Cover. 0 - 500 Hz"
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 50
@@ -198,24 +199,24 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: Htemp
+  Key: Htemporal
   Name: 1-H[t]
   Comment: "1-Ht is a measure of concentration of acoustic energy instead of energy dispersal."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.5
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   includeInComboIndex: true
   comboWeight: 0.3
 - 
-  Key: Hpeak
+  Key: Hpeaks
   Name: 1-H[peak freq]
   Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 1.0
@@ -228,7 +229,7 @@
   Name: 1-H[spectral avg]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 1.0
@@ -241,7 +242,7 @@
   Name: 1-H[spectral var]
   Comment: "1-H[spectral var] is a measure of concentration of acoustic energy in the variance spectrum over one minute."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 1.0
@@ -254,7 +255,7 @@
   Name: ACI
   Comment: "ACI"
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
   NormMax: 0.7
@@ -267,7 +268,7 @@
   Name: Cluster Count
   Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 50
@@ -280,7 +281,7 @@
   Name: av Cluster Duration
   Comment: "Average duration in ms of the spectrum cluster sequences."
   DataType: TimeSpan
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 250
@@ -293,7 +294,7 @@
   Name: 3-gram Count
   Comment: "Number of different tri-gram cluster sequences."
   DataType: int
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 1000
@@ -306,7 +307,7 @@
   Name: av Tracks/Sec
   Comment: "Average number of spectral tracks per second."
   DataType: double
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 50
@@ -319,7 +320,7 @@
   Name: av Track Duration
   Comment: "Average duration of a spectral track."
   DataType: TimeSpan
-  DefaultValue: 0
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.25
   NormMax: 2.0
@@ -331,8 +332,8 @@
   Key: RainIndex
   Name: Rain Index
   Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: TimeSpan
-  DefaultValue: 0
+  DataType: double
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 1.0
@@ -344,8 +345,8 @@
   Key: CicadaIndex
   Name: Cicada Index
   Comment: "Cicada score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: TimeSpan
-  DefaultValue: 0
+  DataType: double
+  DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
   NormMax: 1.0
@@ -392,7 +393,8 @@
   DataType: double[]
   DefaultValue: -100.0
   DoDisplay: true
-  # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, //-20 adds more contrast into BGN spectrogram
+  # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
+  # -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
   NormMax: -20.0
   ProjectID: Acoustic Indices

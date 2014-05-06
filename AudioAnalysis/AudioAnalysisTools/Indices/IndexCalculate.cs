@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.Indices
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
-            var indexPropertiesConfigPath = analysisSettings.ConfigDict["LONG_DURATION_CONFIG"];
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["INDEX_PROPERTIES_CONFIG"];
             if (!Path.IsPathRooted(indexPropertiesConfigPath))
             {
                 indexPropertiesConfigPath =
