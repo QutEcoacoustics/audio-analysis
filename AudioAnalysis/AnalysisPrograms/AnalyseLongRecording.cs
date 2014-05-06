@@ -24,18 +24,15 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
 
     using AnalysisBase;
-
     using AnalysisPrograms.Production;
-
     using AnalysisRunner;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using TowseyLibrary;
 
     using Dong.Felt;
-
     using PowerArgs;
-
-    using TowseyLibrary;
 
     public class AnalyseLongRecording
     {
@@ -110,8 +107,8 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
 
             // DEV CONFIG OPTIONS
@@ -128,7 +125,8 @@ namespace AnalysisPrograms
                 Config = configPath.ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                 //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\Test\Test_25April2014".ToDirectoryInfo()
+                //Output = @"C:\SensorNetworks\Output\Test\Test_25April2014".ToDirectoryInfo()
+                Output = @"C:\SensorNetworks\Output\Test\Test_06May2014\audio2csv".ToDirectoryInfo()
             };
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
@@ -376,7 +374,16 @@ namespace AnalysisPrograms
                 // next line commented out by Michael 15-04-2014 to force use of indices only
                 //eventsFile = ResultsTools.SaveEvents((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedEventResults);
                 //indicesFile = ResultsTools.SaveIndices((IAnalyser2) analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
-                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory);
+
+                var indexPropertiesConfigPath = configDict["INDEX_PROPERTIES_CONFIG"];
+                if (!Path.IsPathRooted(indexPropertiesConfigPath))
+                {
+                    indexPropertiesConfigPath =
+                        Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
+                }
+
+
+                indicesFile = ResultsTools.SaveSummaryIndices2File(mergedIndicesResults, fileNameBase, resultsDirectory, indexPropertiesConfigPath.ToFileInfo());
 
 
                 LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
@@ -387,10 +394,8 @@ namespace AnalysisPrograms
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
 
-
-                //THE FOLLOWING PATH HAS TO BE PASSED THROUGH ANALYSIS SETTINGS !!! 
-                FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-                Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfig, title);
+               
+                Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(indicesFile, indexPropertiesConfigPath.ToFileInfo(), title);
                 var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
                 tracksImage.Save(imagePath);
 
@@ -512,11 +517,16 @@ namespace AnalysisPrograms
             FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
             spectrogramConfig.WritConfigToYAML(spectrogramConfigPath);
 
-            var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-            FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+            //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
+            //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["INDEX_PROPERTIES_CONFIG"];
+            if (!Path.IsPathRooted(indexPropertiesConfigPath))
+            {
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(analysisSettings.ConfigFile.Directory.FullName, indexPropertiesConfigPath));
+            }
 
-
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indicesConfigPath);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indexPropertiesConfigPath.ToFileInfo());
 
         }
 

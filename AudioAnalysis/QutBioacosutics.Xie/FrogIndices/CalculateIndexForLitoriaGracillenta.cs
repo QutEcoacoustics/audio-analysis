@@ -22,9 +22,9 @@ namespace QutBioacosutics.Xie.FrogIndices
                                                                                                         double[,] peakHitsGracillenta)
         {
             var trackHitsGracillenta = ExtractTracks.GetTracks(spectrogramLong, peakHitsGracillenta, gracillentaConfig.FrequencyLowGracillenta, gracillentaConfig.FrequencyHighGracillenta,
-                                        gracillentaConfig.BinToreanceGracillenta, gracillentaConfig.FrameThresholdGracillenta, gracillentaConfig.TrackDurationThresholdGracillenta,
+                                        gracillentaConfig.BinToleranceGracillenta, gracillentaConfig.FrameThresholdGracillenta, gracillentaConfig.TrackDurationThresholdGracillenta,
                                         gracillentaConfig.TrackThresholdGracillenta, gracillentaConfig.MaximumTrackDurationGracillenta, gracillentaConfig.MinimumTrackDurationGracillenta,
-                                        gracillentaConfig.BinDifferencGracillenta, gracillentaConfig.DoSlopeGracillenta);
+                                        gracillentaConfig.BinDifferenceGracillenta, gracillentaConfig.DoSlopeGracillenta);
 
 
             return trackHitsGracillenta;

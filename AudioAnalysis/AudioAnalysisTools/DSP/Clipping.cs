@@ -10,11 +10,12 @@ namespace AudioAnalysisTools
 
         public static void GetClippingCount(double[] signal, double[] envelope, int frameStepSize, double epsilon, out int maxAmplitudeCount, out int clipCount)
         {
-            double bigEpsilon    = epsilon * 10;
-            double littleEpsilon = epsilon * 4;
+            //double bigEpsilon    = epsilon * 10;
+            //double littleEpsilon = epsilon * 4;
+            double epsilonThreshold = epsilon * 10;
 
             double maximumAmplitude = envelope.Max();
-            if (maximumAmplitude < 0.6) // assume no clipping
+            if (maximumAmplitude < 0.6) // assume no clipping if max absolute amplitude in entire audio segment is < 0.6
             {
                 maxAmplitudeCount = 0;
                 clipCount = 0;
@@ -27,7 +28,7 @@ namespace AudioAnalysisTools
             clipCount = 0;
             for (int i = 0; i < frameCount; i++) // step through all frames
             {
-                if ((maximumAmplitude - envelope[i]) > epsilon) continue; // skip frames where max is not near global max - no clipping there
+                if ((maximumAmplitude - envelope[i]) > epsilonThreshold) continue; // skip frames where max is not near global max - no clipping there
 
                 int idOfFirstSampleInFrame = i * frameStepSize;
                 double previousSample = signal[idOfFirstSampleInFrame];
@@ -39,10 +40,10 @@ namespace AudioAnalysisTools
                     double gap = maximumAmplitude - sample;
 
                     // check if sample reached clipping ceiling (max - threshold) 
-                    if (gap < bigEpsilon)
+                    if (gap < epsilonThreshold)
                     {
                         maxAmplitudeCount++;
-                        if ((gap < littleEpsilon) && (delta < littleEpsilon)) { clipCount++; } // a clip has occurred                       
+                        if ((gap < epsilonThreshold) && (delta < epsilonThreshold)) { clipCount++; } // a clip has occurred                       
                     }
                     previousSample = sample;
                 }

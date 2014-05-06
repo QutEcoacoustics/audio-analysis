@@ -803,28 +803,29 @@
 
 
         // mark of time scale according to scale.
-        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+        public static void DrawTimeTrack(Bitmap bmp, int duration, TimeSpan xAxisTicInterval, int yOffset, int trackHeight, string title)
         {
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, bmp.Width, trackHeight, title);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, xAxisTicInterval, bmp.Width, trackHeight, title);
             Graphics gr = Graphics.FromImage(bmp);
             gr.DrawImage(timeBmp, 0, yOffset);
         }
 
-        public static Bitmap DrawTimeTrack(int duration, int scale, int trackWidth, int trackHeight, string title)
+        public static Bitmap DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
         {
-            int offsetMinute = 0;
+            TimeSpan offsetMinute = TimeSpan.Zero;
             return DrawTimeTrack(duration, offsetMinute, scale, trackWidth, trackHeight, title);
         }
         
         // mark of time scale according to scale.
-        public static Bitmap DrawTimeTrack(int duration, int offsetMinute, int scale, int trackWidth, int trackHeight, string title)
+        public static Bitmap DrawTimeTrack(int duration, TimeSpan offsetMinute, TimeSpan scale, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
             int hour;
-            int min = offsetMinute - 1;
+            int min = (int)offsetMinute.TotalMinutes - 1;
+            int XaxisScale = (int)scale.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
@@ -832,9 +833,9 @@
             for (int x = 0; x < duration; x++) //for pixels in the line
             {
                 min++;
-                if (min % scale != 0) continue;
+                if (min % XaxisScale != 0) continue;
                 g.DrawLine(whitePen, x, 0, x, trackHeight);
-                hour = min / scale;
+                hour = min / XaxisScale;
                 if (hour >= 24)
                 {
                     min = 0;

@@ -28,9 +28,9 @@ namespace QutBioacosutics.Xie.FrogIndices
             var peakHitsCaeruleaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsCaerulea);
 
             var trackHitsCaerulea = ExtractTracks.GetTracks(spectrogramLong, peakHitsCaeruleaRotated, caeruleaConfig.FrequencyLowCaerulea, caeruleaConfig.FrequencyHighCaerulea,
-                                                            caeruleaConfig.BinToreanceCaerulea, caeruleaConfig.FrameThresholdCaerulea, caeruleaConfig.TrackDurationThresholdCaerulea,
+                                                            caeruleaConfig.BinToleranceCaerulea, caeruleaConfig.FrameThresholdCaerulea, caeruleaConfig.TrackDurationThresholdCaerulea,
                                                             caeruleaConfig.TrackThresholdCaerulea, caeruleaConfig.MaximumTrackDurationCaerulea, caeruleaConfig.MinimumTrackDurationCaerulea,
-                                                            caeruleaConfig.BinDifferencCaerulea, caeruleaConfig.DoSlopeCaerulea);
+                                                            caeruleaConfig.BinDifferenceCaerulea, caeruleaConfig.DoSlopeCaerulea);
 
             return trackHitsCaerulea;
         

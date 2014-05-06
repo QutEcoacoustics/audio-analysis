@@ -198,6 +198,7 @@
     <Compile Include="Indices\IndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
+    <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramTStatistic.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramRGB.cs" />
     <Compile Include="ConfigurationClasses.cs" />

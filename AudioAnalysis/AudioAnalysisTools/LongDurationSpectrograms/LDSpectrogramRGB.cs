@@ -6,12 +6,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-//using AnalysisBase;
-//using log4net;
-//using AnalysisPrograms.Production;
 using Acoustics.Shared;
 using TowseyLibrary;
 using AudioAnalysisTools.Indices;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
 
 
@@ -48,15 +46,15 @@ namespace AudioAnalysisTools
         //private static readonly ILog Logger =
         //    LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private int minOffset = 0;    // default recording starts at midnight
-        public int MinuteOffset
+        private TimeSpan minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at midnight
+        public TimeSpan MinuteOffset
         {
             get { return minOffset; }
             set { minOffset = value; }
         }
 
-        private int x_interval = 60;    // assume one minute spectra and hourly time lines
-        public int X_interval
+        private TimeSpan x_interval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;  // default = one minute spectra and hourly time lines
+        public TimeSpan X_interval
         {
             get { return x_interval; }
             set { x_interval = value; }
@@ -115,7 +113,7 @@ namespace AudioAnalysisTools
         /// <param name="Xscale"></param>
         /// <param name="sampleRate"></param>
         /// <param name="colourMap"></param>
-        public LDSpectrogramRGB(int Xscale, int sampleRate, string colourMap)
+        public LDSpectrogramRGB(TimeSpan Xscale, int sampleRate, string colourMap)
         {
             // set the X and Y axis scales for the spectrograms 
             this.X_interval = Xscale; 
@@ -131,7 +129,7 @@ namespace AudioAnalysisTools
         /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
         /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public LDSpectrogramRGB(int minuteOffset, int Xscale, int sampleRate, int frameWidth, string colourMap): this(Xscale, sampleRate, colourMap)
+        public LDSpectrogramRGB(TimeSpan minuteOffset, TimeSpan Xscale, int sampleRate, int frameWidth, string colourMap) : this(Xscale, sampleRate, colourMap)
         {
             this.minOffset = minuteOffset;
             this.FrameWidth = frameWidth;
@@ -616,7 +614,7 @@ namespace AudioAnalysisTools
             int imageHt = bmp2.Height + bmp1.Height + trackHeight + trackHeight + trackHeight;
             string title = String.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", this.ColorMap);
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            int timeScale = 60;
+            TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, timeScale, imageWidth, trackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -674,7 +672,7 @@ namespace AudioAnalysisTools
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameSpectrogram(Image bmp1, Image titleBar, int minOffset, int X_interval, int Y_interval)
+        public static Image FrameSpectrogram(Image bmp1, Image titleBar, TimeSpan minOffset, TimeSpan X_interval, int Y_interval)
         {
             ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, Y_interval);
 
@@ -682,8 +680,8 @@ namespace AudioAnalysisTools
             int trackHeight = 20;
 
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            int timeScale = 60; // assume 60 pixels per hour
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, minOffset, timeScale, imageWidth, trackHeight, "hours");
+            TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(imageWidth, minOffset, xAxisTicInterval, imageWidth, trackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -931,7 +929,6 @@ namespace AudioAnalysisTools
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-            //var dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
 
             string fileStem = configuration.FileName;
             DirectoryInfo opDir = configuration.OutputDirectory;
@@ -946,8 +943,8 @@ namespace AudioAnalysisTools
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            int xScale = (int?)configuration.X_interval ?? SpectrogramConstants.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            TimeSpan xScale = (TimeSpan?)configuration.X_Axis_TicInterval ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
 
@@ -992,239 +989,6 @@ namespace AudioAnalysisTools
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
-
-
-
-        //========================================================================================================================================================
-        //========= DEV AND EXECUTE STATIC METHODS BELOW HERE ====================================================================================================================
-        //========================================================================================================================================================
-
-        public class Arguments
-        {
-            public FileInfo  SpectrogramConfigPath { get; set; }
-            public FileInfo  IndicesConfigPath { get; set; }
-        }
-
-        /// <summary>
-        /// To get tot his DEV method the first command line argument must be "colourspectrogram"
-        /// </summary>
-        /// <param name="arguments"></param>
-        public static void Dev(Arguments arguments)
-        {
-            bool executeDev = (arguments == null);
-            if (executeDev)
-            {
-
-                // INPUT CSV FILES
-                //string ipdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST 13th October 2011 DM420036.MP3
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013Sept15th_MergedCSVs"; // SERF
-                //string ipdir = @"C:\SensorNetworks\Output\SERF\2013August30th_MergedCSVs"; // SERF
-                //string ipdir = @"C:\SensorNetworks\Output\Test\TestYaml";
-                string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\2014Apr24-020709 - Indices, OCT 2010, SERF\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-
-                //string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-                string ipFileName = @"7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-                //string ipFileName = "DM420233_20120302_000000";
-                //string ipFileName = "SERF_20130915_Merged";
-                //string ipFileName = "SERF_20130730_Merged";
-
-                // OUTPUT CSV FILES
-                string opdir = @"C:\SensorNetworks\Output\Test\Test_26April2014";
-                //string opdir = @"Z:\Results\2013Dec22-220529 - SERF VEG 2011\SERF\VEG\DM420233_20120302_000000.MP3\Towsey.Acoustic"; // SERF
-                //string opdir = @"C:\SensorNetworks\Output\SERF\2014Jan30";
-                //string opdir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\2013DEC.DM20036.Towsey.Acoustic"; // SUNSHINE COAST
-                //string opdir = @"C:\SensorNetworks\Output\temp";
-
-                DirectoryInfo ipDir = new DirectoryInfo(ipdir);
-                DirectoryInfo opDir = new DirectoryInfo(opdir);
-
-                //Write the default Yaml Config file
-                var config = new LDSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
-                FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(ipDir.FullName, "LDSpectrogramConfig.yml"));
-                config.WritConfigToYAML(fiSpectrogramConfig);
-
-                var indexPropertiesDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-                FileInfo fiIndexConfig = new FileInfo(Path.Combine(indexPropertiesDir.FullName, "IndexPropertiesConfig.yml"));
-
-                arguments = new Arguments();
-                arguments.SpectrogramConfigPath = fiSpectrogramConfig;
-                arguments.IndicesConfigPath = fiIndexConfig;
-            }
-
-            Execute(arguments);
-
-            if (executeDev)
-            {
-
-            }
-        }
-
-        public static void Execute(Arguments arguments)
-        {
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndicesConfigPath);
-        }
-
     } //LDSpectrogramRGB
-
-
-
-    //========================================================================================================================================================
-    //========= CONFIG CLASS FOR LD SPECTROGRAMS ====================================================================================================================
-    //========================================================================================================================================================
-
-    /// <summary>
-    /// CONFIG CLASS FOR the class LDSpectrogramConfig
-    /// </summary>
-    public class LDSpectrogramConfig
-    {
-        private string fileName;  // File name from which spectrogram was derived.
-        public string FileName
-        {
-            get { return fileName; }
-            set { fileName = value; }
-        }
-        private DirectoryInfo ipDir;
-        public DirectoryInfo InputDirectory
-        {
-            get { return ipDir; }
-            set { ipDir = value; }
-        }
-        private DirectoryInfo opDir;
-        public DirectoryInfo OutputDirectory
-        {
-            get { return opDir; }
-            set { opDir = value; }
-        }
-
-        //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        private string colourmap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;  // CHANGE default RGB mapping here.
-        public string ColourMap1
-        {
-            get { return colourmap1; }
-            set { colourmap1 = value; }
-        }
-        //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        // pass two colour maps because interesting to draw a double image.
-        private string colourmap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;  // CHANGE default RGB mapping here.
-        public string ColourMap2
-        {
-            get { return colourmap2; }
-            set { colourmap2 = value; }
-        }
-        private double backgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF; // must be value <=1.0
-        public double BackgroundFilterCoeff 
-        {
-            get { return backgroundFilter; }
-            set { backgroundFilter = value; }
-        }
-
-        // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-        private int minOffset = SpectrogramConstants.MINUTE_OFFSET;    // default recording starts at zero minute of day i.e. midnight
-        public int MinuteOffset
-        {
-            get { return minOffset; }
-            set { minOffset = value; }
-        }
-        private int x_interval = SpectrogramConstants.X_AXIS_SCALE;    // assume one minute spectra and hourly time lines
-        public int X_interval
-        {
-            get { return x_interval; }
-            set { x_interval = value; }
-        }
-        private int frameWidth = SpectrogramConstants.FRAME_WIDTH; // default value for frame width from which spectrogram was derived. Assume no frame overlap.
-        public int FrameWidth           // used only to calculate scale of Y-axis to draw grid lines
-        {
-            get { return frameWidth; }
-            set { frameWidth = value; }
-        }
-        private int sampleRate = SpectrogramConstants.SAMPLE_RATE; // default value - after resampling
-        public int SampleRate
-        {
-            get { return sampleRate; }
-            set { sampleRate = value; }
-        }
-        private int hz_grid_interval = 1000;
-        public int Y_interval // mark 1 kHz intervals
-        {
-            get
-            {
-                double freqBinWidth = sampleRate / (double)frameWidth;
-                return (int)Math.Round(hz_grid_interval / freqBinWidth);
-            }
-        }
-
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <param name="_fileName"></param>
-        /// <param name="_ipDir"></param>
-        /// <param name="_opDir"></param>
-        public LDSpectrogramConfig(string _fileName, DirectoryInfo _ipDir, DirectoryInfo _opDir)
-        {
-            fileName = _fileName;
-            ipDir = _ipDir;
-            opDir = _opDir;
-            // DEFAULT VALUES are set for the remaining parameters            
-        }
-
-        /// <summary>
-        /// READS A YAML CONFIG FILE into a dynamic variable and then transfers all values into the appropriate config class
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static LDSpectrogramConfig ReadYAMLToConfig(FileInfo path)
-        {
-            // load YAML configuration
-            dynamic configuration = Yaml.Deserialise(path);
-            /*
-             * Warning! The `configuration` variable is dynamic.
-             * Do not use it outside this method. 
-             * Extract all params below.
-             */
-
-            DirectoryInfo ipDir = new DirectoryInfo((string)configuration.InputDirectory);
-            DirectoryInfo opDir = new DirectoryInfo((string)configuration.OutputDirectory);
-
-            LDSpectrogramConfig config = new LDSpectrogramConfig((string)configuration.FileName, ipDir, opDir);
-
-            //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-            config.ColourMap1 = (string)configuration.ColourMap1;
-            config.ColourMap2 = (string)configuration.ColourMap2;
-            config.BackgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff; // must be value <=1.0
-
-            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-            config.SampleRate = (int)configuration.SampleRate;
-            config.FrameWidth = (int)configuration.FrameWidth;       // frame width from which spectrogram was derived. Assume no frame overlap.
-            config.MinuteOffset = (int)configuration.MinuteOffset;   // default is recording starts at zero minute of day i.e. midnight
-            config.X_interval = (int)configuration.X_interval;       // default is one minute spectra and hourly time lines
-
-            return config;            
-        } // ReadYAMLToConfig()
-
-        public void WritConfigToYAML(FileInfo path)
-        {
-            // WRITE THE YAML CONFIG FILE
-            Yaml.Serialise(path, new
-            {
-                //paths to required directories and files
-                FileName = this.FileName,
-                InputDirectory = this.InputDirectory.FullName,
-                OutputDirectory = this.OutputDirectory.FullName,
-
-                //these parameters manipulate the colour map and appearance of the false-colour spectrogram
-                ColourMap1 = this.ColourMap1,
-                ColourMap2 = this.ColourMap2,
-                BackgroundFilterCoeff = this.BackgroundFilterCoeff, // must be value <=1.0
-
-                // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-                SampleRate = this.SampleRate,    
-                FrameWidth = this.FrameWidth,       // frame width from which spectrogram was derived. Assume no frame overlap.
-                MinuteOffset = this.MinuteOffset,   // default is recording starts at zero minute of day i.e. midnight
-                X_interval = this.X_interval        // default is one minute spectra and hourly time lines
-            });
-        } // WritConfigToYAML()
-
-
-    } // class LDSpectrogramConfig
 
 }

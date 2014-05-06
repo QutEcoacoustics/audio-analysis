@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using AForge.Math;
 using Accord.Math;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
 
 
@@ -201,8 +202,8 @@ namespace QutBioacosutics.Xie
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            int minuteOffset = (int?)configuration.MinuteOffset ?? SpectrogramConstantsJie.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            int xScale = (int?)configuration.X_interval ?? SpectrogramConstantsJie.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstantsJie.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
+            TimeSpan xScale = (TimeSpan?)configuration.X_Axis_TicInterval ?? SpectrogramConstantsJie.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstantsJie.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstantsJie.FRAME_WIDTH;
 
@@ -222,7 +223,7 @@ namespace QutBioacosutics.Xie
             List<string> lines = cs1.WriteStatisticsForAllIndices();
             FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
 
-            colorMap = SpectrogramConstantsJie.RGBMap_TRC_OSC_HAR;
+            colorMap = SpectrogramConstantsJie.RGBMap_TRK_OSC_ENG;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
@@ -242,7 +243,7 @@ namespace QutBioacosutics.Xie
             image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
         }
 
-
+        // used for calculating windowoverlap for different maxOscillation
         public static double CalculateRequiredWindowOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients

@@ -1,7 +1,7 @@
 --- # Configuration file for Jie Xie
 
 # Path of the loaded recording
-LoadedFilePath:  C:\Jie\data\Individual recording from JCU\Litoria gracillenta1.wav
+LoadedFilePath:  C:\Jie\data\Segment_JCU_01\020313_463min.wav
 #LoadedFilePath:  C:\Jie\data\New folder\Litoria caerulea.wav
 
 # Path for saving image
@@ -16,12 +16,12 @@ WindowSize: 512
 # PEAKS---Frame Unit
 AmplitudeThresholdCanetoad: 4
 # TRACKS---Frame
-BinToreanceCanetoad: 3
-FrameThresholdCanetoad: 8
+BinToleranceCanetoad: 3
+FrameThresholdCanetoad: 10
 TrackDurationThresholdCanetoad: 20
 TrackThresholdCanetoad: 0.6
-MaximumTrackDurationCanetoad: 40
-MinimumTrackDurationCanetoad: 15
+MaximumTrackDurationCanetoad: 400000
+MinimumTrackDurationCanetoad: 35
 BinDifferenceCanetoad: 8
 # Band
 FrequencyLowCanetoad: 400
@@ -46,7 +46,7 @@ AmplitudeThresholdCaerulea: 4
 RangeCaerulea: 2
 DistanceCaerulea: 5
 # TRACKS
-BinToreanceCaerulea: 4
+BinToleranceCaerulea: 4
 FrameThresholdCaerulea: 10
 TrackDurationThresholdCaerulea: 50
 TrackThresholdCaerulea: 0.5
@@ -74,7 +74,7 @@ DoSlopeCaerulea: false
 # PEAKS
 AmplitudeThresholdFallax: 4
 # TRACKS
-BinToreanceFallax: 12
+BinToleranceFallax: 12
 FrameThresholdFallax: 5
 TrackThresholdFallax: 0.75
 TrackDurationThresholdFallax: 180
@@ -102,11 +102,11 @@ DoSlopeFallax: true
 # PEAKS---Frame Unit
 AmplitudeThresholdGracillenta: 4
 # TRACKS---Frame
-BinToreanceGracillenta: 8
+BinToleranceGracillenta: 8
 FrameThresholdGracillenta: 10
 TrackDurationThresholdGracillenta: 500
 TrackThresholdGracillenta: 0.6
-MaximumTrackDurationGracillenta: 8000
+MaximumTrackDurationGracillenta: 8000000
 MinimumTrackDurationGracillenta: 550
 BinDifferenceGracillenta: 40
 # Band
@@ -134,7 +134,7 @@ AmplitudeThresholdLatopalmata: 4
 RangeLatopalmata: 2
 DistanceLatopalmata: 2
 # TRACKS---Frame
-BinToreanceLatopalmata: 2
+BinToleranceLatopalmata: 2
 FrameThresholdLatopalmata: 6
 TrackDurationThresholdLatopalmata: 15
 TrackThresholdLatopalmata: 0.6
@@ -165,15 +165,15 @@ HarmonicDiffrangeLatopalmata: 20
 # # NASUTA  HARMONIC:YES OSCILLATION:YES
 # #################################################################
 # PEAKS---Frame Unit
-AmplitudeThresholdNasuta: 3
+AmplitudeThresholdNasuta: 4
 RangeNasuta: 2
 DistanceNasuta: 2
 # TRACKS---Frame
-BinToreanceNasuta: 2
+BinToleranceNasuta: 2
 FrameThresholdNasuta: 5
 TrackDurationThresholdNasuta: 15
 TrackThresholdNasuta: 0.6
-MaximumTrackDurationNasuta: 50
+MaximumTrackDurationNasuta: 40
 MinimumTrackDurationNasuta: 15
 BinDifferenceNasuta: 10
 # Band
@@ -192,7 +192,7 @@ Dct_ThresholdNasuta: 0.5
 
 DoSlopeNasuta: false
 
-HarmonicComponentNasuta: 3
+HarmonicComponentNasuta: 5
 HarmonicSensityNasuta: 3
 HarmonicDiffrangeNasuta: 10
 

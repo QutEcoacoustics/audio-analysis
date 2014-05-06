@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -79,20 +80,22 @@ namespace AudioAnalysisTools
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        public IndexValues(int freqBinCount, TimeSpan wavDuration)
+        public IndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
         {
             SummaryIndicesOfTypeDouble   = new Dictionary<string, double>();
             SummaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
 
 
-            // initialise the stored values in the index dictionaries.
-            Dictionary<string, IndexProperties> dictOfIndexProperties = InitialiseIndexProperties.InitialisePropertiesOfIndices();
+            // initialise with default values stored values in the dictionary of index properties.
+            Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
             foreach (string key in dictOfIndexProperties.Keys)
             {
                 IndexProperties index = dictOfIndexProperties[key];
 
-                if(index.DataType == typeof(TimeSpan))
+                if (index.DataType == typeof(double[])) continue; // ignore the spectral indices
+
+                if (index.DataType == typeof(TimeSpan))
                 {
                     this.SummaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
                 }

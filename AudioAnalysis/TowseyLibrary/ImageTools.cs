@@ -2094,7 +2094,7 @@ namespace TowseyLibrary
         }
 
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, int minOffset, int xInterval, int yInterval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, int yInterval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
@@ -2112,7 +2112,9 @@ namespace TowseyLibrary
                 }
             }
             // for columns, draw in X-axis hour lines
-            int min = minOffset+1; //skip first column
+            int xInterval = (int)xAxisTicInterval.TotalMinutes;
+            int min = (int)minOffset.TotalMinutes;
+            min += 1; //skip first column
             for (int column = 1; column < cols; column++)
             {
                 //if ((column > 0) && (column % xInterval == 0))

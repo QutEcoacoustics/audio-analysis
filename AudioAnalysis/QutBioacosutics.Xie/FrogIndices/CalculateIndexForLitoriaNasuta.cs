@@ -20,22 +20,50 @@ namespace QutBioacosutics.Xie.FrogIndices
         }
 
 
-        public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracksFallax(NasutaConfiguration nasutaConfig, SpectrogramStandard spectrogramLong,
-                                                                                                    double[,] peakHitsNasuta)
+        public static CombinedIndex GetFrogTracksFallax(NasutaConfiguration nasutaConfig, SpectrogramStandard spectrogramLong,
+                                                         double[,] peakHitsNasuta)
         {
             var peakHitsNasutaRotated = MatrixTools.MatrixRotate90Anticlockwise(peakHitsNasuta);
 
             var trackHitsNasuta = ExtractTracks.GetTracks(spectrogramLong, peakHitsNasutaRotated, nasutaConfig.FrequencyLowNasuta, nasutaConfig.FrequencyHighNasuta,
-                                        nasutaConfig.BinToreanceNasuta, nasutaConfig.FrameThresholdNasuta, nasutaConfig.TrackDurationThresholdNasuta,
+                                        nasutaConfig.BinToleranceNasuta, nasutaConfig.FrameThresholdNasuta, nasutaConfig.TrackDurationThresholdNasuta,
                                         nasutaConfig.TrackThresholdNasuta, nasutaConfig.MaximumTrackDurationNasuta, nasutaConfig.MinimumTrackDurationNasuta,
-                                        nasutaConfig.BinDifferencNasuta, nasutaConfig.DoSlopeNasuta);
+                                        nasutaConfig.BinDifferenceNasuta, nasutaConfig.DoSlopeNasuta);
 
-            return trackHitsNasuta;
+            
+            var harmonicHitsNasuta = FindHarmonics.GetHarmonic(trackHitsNasuta.Item4, nasutaConfig.HarmonicComponentNasuta,
+                                                                    nasutaConfig.HarmonicSensityNasuta, nasutaConfig.HarmonicDiffrangeNasuta);
+
+            var combinedIndex = new CombinedIndex();
+            combinedIndex.HarmonicHitsNasuta = harmonicHitsNasuta;
+            combinedIndex.TrackHitsNasuta = trackHitsNasuta;
+
+            return combinedIndex;
         
+        }
+
+        public class CombinedIndex
+        {
+            public double[,] HarmonicHitsNasuta { get; set; }
+            public Tuple<double[], double[,], double[], double[,]> TrackHitsNasuta { get; set; }
+
         }
 
 
 
+        public static double[,] GetOscillationRate(NasutaConfiguration nasutaConfig, SpectrogramStandard spectrogramShort)
+        {
+
+            var nasutaOscillationHits = FindOscillation.CalculateOscillationRate(spectrogramShort, nasutaConfig.MinimumFrequencyNasuta,
+                                                                                    nasutaConfig.MaximumFrequencyNasuta, nasutaConfig.Dct_DurationNasuta,
+                                                                                    nasutaConfig.Dct_ThresholdNasuta, nasutaConfig.MinimumOscillationNumberNasuta,
+                                                                                    nasutaConfig.MaximumOscillationNumberNasuta);
+
+            var nasutaOscillationResults = RemoveSparseHits.PruneHits(nasutaOscillationHits);
+
+            return nasutaOscillationHits;
+
+        }
 
     }
 }
