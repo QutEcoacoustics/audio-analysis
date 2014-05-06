@@ -19,7 +19,7 @@ namespace QutBioacosutics.Xie.FrogIndices
         public static System.Tuple<double[], double[,], double[], double[,]> GetFrogTracksFallax(FallaxConfiguration fallaxConfig, SpectrogramStandard spectrogramLong, double[,] peakHitsFallax)
         {
             var trackHitsFallax = ExtractTracks.GetTracks(spectrogramLong, peakHitsFallax, fallaxConfig.FrequencyLowFallax, fallaxConfig.FrequencyHighFallax,
-                                                          fallaxConfig.BinToreanceFallax, fallaxConfig.FrameThresholdFallax, fallaxConfig.TrackDurationThresholdFallax,
+                                                          fallaxConfig.BinToleranceFallax, fallaxConfig.FrameThresholdFallax, fallaxConfig.TrackDurationThresholdFallax,
                                                           fallaxConfig.TrackThresholdFallax, fallaxConfig.MaximumTrackDurationFallax, fallaxConfig.MinimumTrackDurationFallax,
                                                           fallaxConfig.BinDifferencFallax, fallaxConfig.DoSlopeFallax);
             return trackHitsFallax;

@@ -23,16 +23,8 @@ namespace Dong.Felt
         public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,string audioFileName, SpectrogramStandard spectrogram)
         {
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                nhCountInRow--;
-            }
-            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
-            if (spectrogram.FrameCount % neighbourhoodLength == 0)
-            {
-                nhCountInColumn--;
-            }
+            var nhCountInRow = query.maxNhRowIndex;
+            var nhCountInColumn = query.maxNhColIndex;
             var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
             var results = new List<RegionRerepresentation>();
             var nhRowsCount = query.nhCountInRow;
@@ -40,9 +32,11 @@ namespace Dong.Felt
             var nhStartRowIndex = query.nhStartRowIndex;
             var nhStartColIndex = query.nhStartColIndex;
             var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            for (int rowIndex = nhStartRowIndex; rowIndex < nhStartRowIndex + nhRowsCount; rowIndex++)
+            var maxiRowIndex = nhStartRowIndex + nhRowsCount;
+            var maxiColIndex = nhStartColIndex + nhColsCount;            
+            for (int rowIndex = nhStartRowIndex; rowIndex < maxiRowIndex; rowIndex++)
             {
-                for (int colIndex = nhStartColIndex; colIndex < nhStartColIndex + nhColsCount; colIndex++)
+                for (int colIndex = nhStartColIndex; colIndex < maxiColIndex; colIndex++)
                 {
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);                    
                 }
@@ -254,7 +248,7 @@ namespace Dong.Felt
         /// <summary>
         /// Function to scan a list of representation in an audio file  within the same frequency band with the query.
         /// This name should be changed, because it is not doing indexing. It atually extracts the a list of region representation. 
-        /// And the region size is same as the query. 
+        /// And the region size is the same as the query. 
         /// </summary>
         /// <param name="query"></param>
         /// <param name="queryRepresentation"></param>

@@ -346,14 +346,14 @@ namespace AudioAnalysisTools
         }
 
 
-        public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir)
+        public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir, FileInfo indexPropertiesConfig)
         {
             if (indices == null) return null;
             FileInfo fiIndices = null;
 
             string reportfilePath = Path.Combine(opDir.FullName, fName + ".Indices" + ReportFileExt);
 
-            ResultsTools.WriteIndices2CSV(indices, reportfilePath);
+            ResultsTools.WriteSummaryIndices2CSV(indices, reportfilePath, indexPropertiesConfig);
 
             string target = Path.Combine(opDir.FullName, fName + ".Indices_BACKUP" + ReportFileExt);
             File.Delete(target);               // Ensure that the target does not exist.
@@ -363,16 +363,21 @@ namespace AudioAnalysisTools
         }
 
 
-        //WRITE A CSV FILE FROM AN ARRAY OF INDEX-BASE
-        public static void WriteIndices2CSV(IndexBase[] indicesResults, string strFilePath)
+        //WRITE A CSV FILE of SUMMARY INDICES from an ARRAY OF INDEX-BASE
+        public static void WriteSummaryIndices2CSV(IndexBase[] indicesResults, string strFilePath, FileInfo indexPropertiesConfig)
         {
             string seperatorChar = ",";
 
-            Dictionary<string, IndexProperties> listOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties();
-            string[] headers = InitialiseIndexProperties.GetArrayOfIndexNames(listOfIndexProperties);
-            string[] keys    = listOfIndexProperties.Keys.ToArray();
+            Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictOfIndexProperties = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictOfIndexProperties);
+            string[] keys = dictOfIndexProperties.Keys.ToArray();
 
             StreamWriter sr = null;
+
+            // The KEYS for writing the CSV file could be extracted from the first result i.e. indicesResults[0]
+            // However we want to write the columns of the CSV file in order as they appear in the Index Properties file.
+            // Therefore need to access the index properties dictionary deep down in the bowels of the earth.
+            // IndexBase ibTEMP = indicesResults[0];
 
             try
             {
@@ -380,8 +385,6 @@ namespace AudioAnalysisTools
                 string seperator = "";
                 StringBuilder builder = new StringBuilder();
 
-
-                //foreach (string name in headers)
                 foreach (string name in keys)
                 {
                     builder.Append(seperator).Append(name);
@@ -395,7 +398,7 @@ namespace AudioAnalysisTools
                     builder = new StringBuilder();
                     foreach (string key in keys)
                     {
-                        IndexProperties ip = listOfIndexProperties[key]; 
+                        IndexProperties ip = dictOfIndexProperties[key]; 
                         string str = ib.GetIndexAsString(key, ip.Units, ip.DataType);
 
                         builder.Append(seperator).Append(str);

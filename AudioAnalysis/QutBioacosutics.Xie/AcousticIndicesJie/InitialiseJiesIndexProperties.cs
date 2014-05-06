@@ -75,9 +75,9 @@ namespace AcousticIndicesJie
         public const string spKEY_TemporalEntropy = "ENT";
         public const string spKEY_Harmonic = "HAR";
 
-
-
-
+        public const string spKEY_Oscillation = "OSC";
+        public const string spKEY_Track = "TRK";
+        public const string spKEY_Energy = "ENG";
         /// <summary>
         /// Creates and returns all info about the currently calculated indices.
         /// </summary>

@@ -12,12 +12,13 @@
     using Dong.Felt.Configuration;
     using TowseyLibrary;
     using AnalysisBase;
+    using Dong.Felt.ResultsOutput;
 
     public class CSVResults
     {
 
         #region  Public Methods
-
+       
         public static Query CsvToQuery(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
@@ -163,6 +164,11 @@
             }
             // No space in csv file.
             File.WriteAllLines(outputFilePath, results.Select((IEnumerable<string> i) => { return string.Join(",", i); }));
+        }
+
+        public static void MatchingStatResultsToCSV(FileInfo file, List<MathingResultsAnalysis> matchedResults)
+        {         
+            CsvTools.WriteResultsToCsv(file, matchedResults);
         }
 
         /// <summary>

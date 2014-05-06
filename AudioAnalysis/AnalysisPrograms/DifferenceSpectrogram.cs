@@ -118,7 +118,7 @@ namespace AnalysisPrograms
                 SampleRate = SpectrogramConstants.SAMPLE_RATE,       // default value - after resampling
                 FrameWidth = SpectrogramConstants.FRAME_WIDTH,       // frame width from which spectrogram was derived. Assume no frame overlap.
                 MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,   // default is recording starts at zero minute of day i.e. midnight
-                X_Scale = SpectrogramConstants.X_AXIS_SCALE,         // default is one minute spectra and hourly time lines
+                X_Scale = SpectrogramConstants.X_AXIS_TIC_INTERVAL,         // default is one minute spectra and hourly time lines
             });
 
 
