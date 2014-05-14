@@ -54,8 +54,9 @@ namespace AudioAnalysisTools
 
         //public const string RGBMap_BGN_AVG_CVR = "BGN-AVG-CVR"; //R-G-B
         public const string RGBMap_TRK_OSC_ENG = "TRK-OSC-ENG";
+        public const string RGBMap_TRK_OSC_HAR = "TRK-OSC-HAR";
 
-        public const string ALL_KNOWN_KEYS = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRK-OSC-ENG";
+        public const string ALL_KNOWN_KEYS = "ACI-AVG-BGN-CLS-CVR-SPT-TEN-VAR-TRK-OSC-ENG-HAR";
 
     } // SpectrogramConstants
 }

@@ -51,8 +51,8 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
             //2010 Oct 17th
             string ipFileName = "020313";
-            string ipdir = @"C:\JCU\Campus\MyResults_Campus_020313"; // this is where ALL you indices csv files are located
-            string opdir = @"C:\JCU\Campus\MyResults_Campus_020313";
+            string ipdir = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta"; // this is where ALL you indices csv files are located
+            string opdir = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta";
 
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
@@ -150,6 +150,22 @@ namespace QutBioacosutics.Xie.LDSpectrograms
                 Console.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return;
             }
+
+            //#############################################################################################################################################
+            double[,] entropyMatrix = cs1.GetSpectrogramMatrix("ENT");
+            double[,] cover__Matrix = cs1.GetSpectrogramMatrix("CVR");
+            int rows = entropyMatrix.GetLength(0);
+            int cols = entropyMatrix.GetLength(1);
+            //double[,] entropyMatrix = new double[,];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    entropyMatrix[r, c] = 1 - entropyMatrix[r, c];
+                    cover__Matrix[r, c] = cover__Matrix[r, c] * 100;
+                }
+            }
+            //#############################################################################################################################################
 
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem);
 

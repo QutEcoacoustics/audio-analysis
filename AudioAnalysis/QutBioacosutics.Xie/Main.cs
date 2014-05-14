@@ -47,9 +47,9 @@ namespace QutBioacosutics.Xie
              * Do not use it outside of this method. Extract all params below.
              */
 
-            //DrawLDSpectrogram.Execute(null);
-            //Console.WriteLine("FINISHED!!");
-            //Console.ReadLine();
+            DrawLDSpectrogram.Execute(null);
+            Console.WriteLine("FINISHED!!");
+            Console.ReadLine();
 
             //Parameters setting
 
@@ -89,7 +89,7 @@ namespace QutBioacosutics.Xie
 
             //string path = configuration.LoadedFilePath;
                       
-            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
+            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_02");
             var fileCount = fileEntries.Count();
 
             // Canetoad
@@ -111,16 +111,21 @@ namespace QutBioacosutics.Xie
             {
                 Log.Info(fileIndex);
 
-                var path = Path.GetFileName(fileEntries[fileIndex]);
-                var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_01", path);
+                string path = Path.GetFileName(fileEntries[fileIndex]);
 
-                //string fullPath = @"C:\Jie\data\Segment_JCU_01\020313_103min.wav";
+                var indexOfRecording = Path.GetFileNameWithoutExtension(path);
+
+                int indexNumber = Convert.ToInt32(indexOfRecording.Split('_', 'm')[1]);
+
+                //var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_02", path);
+
+                string fullPath = @"C:\Jie\data\data used for analysis.wav";
                 var recording = new AudioRecording(fullPath);
 
                 // Step.1 Generate spectrogarm
                 // A. Generate spectrogram for extracting tracks, entropy and harmonic
 
-                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
+                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.9, WindowSize = windowSize };
                 var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.GetWavReader());
 
                 // B. Generate spectrogram for extracting oscillation rate
@@ -132,6 +137,44 @@ namespace QutBioacosutics.Xie
 
                 var spectrogramShortConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.5, WindowSize = windowSize };
                 var spectrogramShort = new SpectrogramStandard(spectrogramShortConfig, recording.GetWavReader());
+
+
+
+
+                //// Step.3 Draw spectrogram
+                double[,] spectrogramMatrix = DataTools.normalise(spectrogramShort.Data);
+                int rows = spectrogramMatrix.GetLength(0);
+                int cols = spectrogramMatrix.GetLength(1);
+                Color[] grayScale = ImageTools.GrayScale();
+                Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+                for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < cols; c++)
+                    {
+                        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
+                        if (greyId < 0) greyId = 0;
+                        else
+                            if (greyId > 255) greyId = 255;
+                        greyId = 255 - greyId;
+                        bmp.SetPixel(c, r, grayScale[greyId]);
+                    }
+                }
+                bmp.Save(saveImagePath);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                 // Step.2 Produce features
 
@@ -190,9 +233,9 @@ namespace QutBioacosutics.Xie
 
                 for (int i = 0; i < 257; i++)
                 {
-                    canetoadTrack[i, fileIndex] = trackFeatureCanetoad[i];
-                    canetoadEnergy[i, fileIndex] = energyFeatureCanetoad[i];
-                    canetoadOscillation[i, fileIndex] = oscillationFeatureCanetoad[i];
+                    canetoadTrack[i, indexNumber] = trackFeatureCanetoad[i];
+                    canetoadEnergy[i, indexNumber] = energyFeatureCanetoad[i];
+                    canetoadOscillation[i, indexNumber] = oscillationFeatureCanetoad[i];
                 }
                 
                 // Gracillenta
@@ -201,8 +244,8 @@ namespace QutBioacosutics.Xie
 
                 for (int i = 0; i < 257; i++)
                 {
-                    gracillentaTrack[i, fileIndex] = trackFeatureGracillenta[i];
-                    gracillentaEnergy[i, fileIndex] = energyFeatureGracillenta[i];
+                    gracillentaTrack[i, indexNumber] = trackFeatureGracillenta[i];
+                    gracillentaEnergy[i, indexNumber] = energyFeatureGracillenta[i];
                 }
 
                 // Nasuta
@@ -235,9 +278,9 @@ namespace QutBioacosutics.Xie
 
                 for (int i = 0; i < 257; i++)
                 {
-                    nasutaTrack[i, fileIndex] = trackFeatureNasuta[i];
-                    nasutaHarmonic[i, fileIndex] = harmonicArrayNasuta[i];
-                    nasutaOscillation[i, fileIndex] = oscillationFeatureNasuta[i];
+                    nasutaTrack[i, indexNumber] = trackFeatureNasuta[i];
+                    nasutaHarmonic[i, indexNumber] = harmonicArrayNasuta[i];
+                    nasutaOscillation[i, indexNumber] = oscillationFeatureNasuta[i];
                 }
 
                 // Caerulea
@@ -251,18 +294,18 @@ namespace QutBioacosutics.Xie
             // Canetoad
 
 
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(canetoadTrack), @"C:\Jie\output\indexCanetoad\canetoadTrack.csv");
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(canetoadEnergy), @"C:\Jie\output\indexCanetoad\canetoadEnergy.csv");
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(canetoadOscillation), @"C:\Jie\output\indexCanetoad\canetoadOscillation.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadTrack), @"C:\Jie\output\indexCanetoad\canetoadTrack.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadEnergy), @"C:\Jie\output\indexCanetoad\canetoadEnergy.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(canetoadOscillation), @"C:\Jie\output\indexCanetoad\canetoadOscillation.csv");
             
             // Gracillenta
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(gracillentaTrack), @"C:\Jie\output\indexGracillenta\gracillentaTrack.csv");
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(gracillentaEnergy), @"C:\Jie\output\indexGracillenta\gracillentaEnergy.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(gracillentaTrack), @"C:\Jie\output\indexGracillenta\gracillentaTrack.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(gracillentaEnergy), @"C:\Jie\output\indexGracillenta\gracillentaEnergy.csv");
 
             // Nasuta
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(nasutaTrack), @"C:\Jie\output\indexNasuta\nasutaTrack.csv");
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(nasutaHarmonic), @"C:\Jie\output\indexNasuta\nasutaHarmonic.csv");
-            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Anticlockwise(nasutaOscillation), @"C:\Jie\output\indexNasuta\nasutaOscillation.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaTrack), @"C:\Jie\output\indexNasuta\nasutaTrack.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaHarmonic), @"C:\Jie\output\indexNasuta\nasutaHarmonic.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaOscillation), @"C:\Jie\output\indexNasuta\nasutaOscillation.csv");
 
             // Caerulea
 
@@ -270,35 +313,7 @@ namespace QutBioacosutics.Xie
 
             // Latopalmata
 
-            //// Step.3 Draw spectrogram
-            //double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
-            //int rows = spectrogramMatrix.GetLength(0);
-            //int cols = spectrogramMatrix.GetLength(1);
-            //Color[] grayScale = ImageTools.GrayScale();
-            //Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-            //for (int r = 0; r < rows; r++)
-            //{
-            //    for (int c = 0; c < cols; c++)
-            //    {
-            //        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
-            //        if (greyId < 0) greyId = 0;
-            //        else
-            //            if (greyId > 255) greyId = 255;
-            //        greyId = 255 - greyId;
-            //        bmp.SetPixel(c, r, grayScale[greyId]);
-            //    }
-            //}
-            //for (int i = 0; i < rows; i++)
-            //{
-            //    for (int j = 0; j < cols; j++)
-            //    {
-            //        if (trackNasuta.HarmonicHitsNasuta[j, i] != 0)
-            //        {
-            //            bmp.SetPixel((cols - j), i, Color.Blue);
-            //        }
-            //    }
-            //}
-            //bmp.Save(saveImagePath);
+
 
             //DrawLDSpectrogram.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
 

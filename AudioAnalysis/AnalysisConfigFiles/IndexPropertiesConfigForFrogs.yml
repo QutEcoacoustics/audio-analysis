@@ -50,9 +50,9 @@
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.2
+  NormMax: 50.0
   ProjectID: Acoustic Indices
-  Units: ""
+  Units: "%"
   includeInComboIndex: false
   comboWeight: 0.0
 -
@@ -89,7 +89,7 @@
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 15505.0
   ProjectID: Frog Indices
   Units: ""
   includeInComboIndex: false
@@ -103,7 +103,7 @@
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 18000.0
   ProjectID: Frog Indices
   Units: ""
   includeInComboIndex: false
@@ -130,7 +130,7 @@
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 430000.0
   ProjectID: Frog Indices
   Units: ""
   includeInComboIndex: false
