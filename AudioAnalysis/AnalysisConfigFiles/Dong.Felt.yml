@@ -9,11 +9,12 @@ detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
 InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2
+#
 
 #C:\Training recordings2   
 
 OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
-#C:\Output
+# C:\Output
 
 # action
 Actions: [batch]  # processOne batch makeImages another
@@ -32,12 +33,12 @@ FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 11
+NeighbourhoodLength: 7
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000
 
-Rank: 5
+Rank: 100
 
 # For neighbourhood representation 
 #FeaturePropertySet: [FeaturePropSet1, FeaturePropSet2, FeaturePropSet3]

@@ -154,7 +154,7 @@
             {
                 nhCountInColumn--;
             }
-            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, 
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;

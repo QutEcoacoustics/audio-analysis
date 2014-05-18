@@ -82,7 +82,15 @@
                 else if (action == "processOne")
                 {
                     /// Single file experiment
-                    MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
+                    var outputFileName = string.Format("Run_{0}_{1}_{2}_{3}_{4}",
+                    ridgeDetectionmMagnitudeThreshold,
+                    ridgeMatrixLength,
+                    filterRidgeMatrixLength,
+                    minimumNumberInRidgeInMatrix,
+                    neighbourhoodLength);
+                    string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";
+                    OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
+                    //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                 }
                 else
                 {
@@ -735,6 +743,7 @@
                 }
                 finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
                 var candidateList = new List<Candidates>();
+                rank = audioFilesCount;
                 if (finalOutputCandidates != null)
                 {
                     for (int k = 0; k < rank; k++)
@@ -749,6 +758,10 @@
                 CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
                 Log.Info("# draw combined spectrogram for returned hits");
                 /// Drawing the combined image
+                if (rank > 5)
+                {
+                    rank = 5;
+                }
                 if (matchedCandidateFile != null)
                 {
                     DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
@@ -771,11 +784,11 @@
             var candidates = CSVResults.CsvToCandidatesList(file);
             var queryCsvFile = new FileInfo(queryCsvFilePath);
             var query = new Candidates();
-            var queryInfo = CSVResults.CsvToQuery(queryCsvFile);
-            query.StartTime = queryInfo.startTime * 1000;
-            query.EndTime = query.StartTime + queryInfo.duration * 1000;
-            query.MaxFrequency = queryInfo.maxFrequency;
-            query.MinFrequency = queryInfo.minFrequency;
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            query.StartTime = queryInfo.TimeStart * 1000;
+            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
+            query.MaxFrequency = queryInfo.MaxFreq;
+            query.MinFrequency = queryInfo.MinFreq;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);
