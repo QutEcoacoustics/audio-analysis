@@ -480,3 +480,12 @@ EmptyDataFrame <- function (col.names, num.rows = 0) {
     return(df)
     
 }
+
+RgbCol <- function (rgb.vals) {
+    if (is.numeric(rgb.vals)) {
+        return(rgb(rgb.vals[1], rgb.vals[2], rgb.vals[3], 1))
+    } else {
+        return(NA)
+    }
+
+}

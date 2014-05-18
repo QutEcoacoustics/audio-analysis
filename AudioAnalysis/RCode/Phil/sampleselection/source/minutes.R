@@ -69,11 +69,42 @@ TargetSubset <- function (df) {
     # Value
     #   data.frame
     
-    rows <- df$site %in% g.sites & 
-        as.character(df$date) >= g.start.date & 
-        as.character(df$date) <= g.end.date & 
-        as.numeric(df$min) >= g.start.min & 
-        as.numeric(df$min) <= g.end.min
+    
+    if (is.numeric(g.multi.parts.of.day)) {
+
+        rows.site.date <- df$site %in% g.sites & 
+            as.character(df$date) >= g.start.date & 
+            as.character(df$date) <= g.end.date
+        
+        
+        
+        if (length(g.multi.parts.of.day) %% 2 > 0) {
+            stop('g.multi.parts.of.day must have an even number of minutes')
+        }
+        
+        #start.mins <- g.multi.parts.of.day[1:how.many.parts * 2 - 1]
+        #end.mins <- g.multi.parts.of.day[1:how.many.parts * 2]
+        
+        start.mins <- g.multi.parts.of.day[seq(1, length(g.multi.parts.of.day) - 1, 2)]
+        end.mins <- g.multi.parts.of.day[seq(2, length(g.multi.parts.of.day), 2)]
+        
+        rows.min <- rep(FALSE, nrow(df))
+        
+        for (i in 1:length(start.mins)) {
+            rows.min <- rows.min | (df$min >= start.mins[i] & df$min <= end.mins[i])     
+        }
+        
+        rows <- rows.site.date & rows.min
+        
+    } else {
+        rows <- df$site %in% g.sites & 
+            as.character(df$date) >= g.start.date & 
+            as.character(df$date) <= g.end.date & 
+            as.numeric(df$min) >= g.start.min & 
+            as.numeric(df$min) <= g.end.min
+    }
+    
+
     
     return(df[rows, ])
     

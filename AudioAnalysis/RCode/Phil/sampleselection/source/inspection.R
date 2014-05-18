@@ -242,7 +242,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     
     if(class(samples) == 'logical') {
         ranking.method.choices <- d.names$ranking.method
-        ranking.methods <- GetMultiUserchoice(ranking.method.choices, default = 1)
+        ranking.methods <- GetMultiUserchoice(ranking.method.choices, 'ranking method', default = 1)
         
         ordered.samples <- matrix(NA, ncol = length(ranking.methods), nrow = g.num.samples)
         for (i in 1:length(ranking.methods)) {
@@ -265,14 +265,6 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     
 }
 
-StitchImages <- function (image.paths, output.fn, vertical = TRUE) {      
-        fns <- paste(image.paths, collapse = " ")
-        command <- paste("/opt/local/bin/convert", 
-                         fns, "-append", output.fn)
-        Report(5, 'doing image magic command', command)
-        err <- try(system(command))  # ImageMagick's 'convert'
-        Report(5, err)
-}
 
 
 

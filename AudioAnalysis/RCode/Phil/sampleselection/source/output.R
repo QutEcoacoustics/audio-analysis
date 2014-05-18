@@ -203,8 +203,11 @@ OutputPathL0 <- function () {
     
     # first create the output directory 
     sites <- paste(g.sites, collapse = ".")
-    dir.name <- paste(g.all.events.version, g.start.date, g.start.min, g.end.date,
-                      g.end.min, sites, g.percent.of.target, sep='.')
+    
+    mins <- paste(g.multi.parts.of.day, collapse = ".")
+    
+    
+    dir.name <- paste(g.all.events.version, g.start.date, g.end.date, sites, mins,  g.percent.of.target, sep='.')
     dir.name <- gsub(" ","", dir.name)
     output.dir <- file.path(g.output.parent.dir,dir.name)
 

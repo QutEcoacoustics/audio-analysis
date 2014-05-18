@@ -1,7 +1,28 @@
+g.dawn.from = 315
+g.dawn.to = 495
+
+IsDawn <- function (mins, all.dawn = FALSE) {
+    # given a list of mins, returns weather any of the dawn are within the mins
+    # or if all.dawn is TRUE, whether all of dawn is within mins
+    
+    dawn <- g.dawn.from:g.dawn.to
+    
+    intersection <- intersect(mins, dawn)
+    
+    if (all.dawn && length(intersection) == length(dawn)) {
+        return(TRUE)
+    } else if (all.dawn == FALSE & length(intersection) > 0) {
+        return(TRUE)
+    } else {
+        return(FALSE)
+    }
+    
+    
+}
 
 RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA, 
                            mins = NA, 
-                           num.repetitions = 50, 
+                           num.repetitions = 100, 
                            dawn.first = TRUE, 
                            dawn.from = 315, dawn.to = 495, 
                            block.size = 1) {
@@ -138,5 +159,20 @@ Jumble <- function (len, block.size, fit = TRUE) {
     return(v) 
 }
 
+GetRandomDawnMins <- function (how.many, dates = "2010-10-13",  sites = "NW") {
+    mins <- GetDawnMins(dates, sites)
+    if (how.many > nrow(mins)) {
+        stop('trying to get more random at dawn than exist')
+    }
+    mins <- mins[sample(nrow(mins), how.many, replace = FALSE), ]
+    return(mins)
+}
 
+GetDawnMins <- function (dates = "2010-10-13",  sites = "NW") {
+    mins <- GetMinuteList()
+    in.dawn <- mins$min >= g.dawn.from & mins$min <= g.dawn.to & mins$date %in% dates & mins$site %in% sites
+    mins <- mins[in.dawn, ]
+    return(mins)
+    
+}
 

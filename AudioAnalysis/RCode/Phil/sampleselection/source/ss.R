@@ -56,7 +56,7 @@ source('indices.R')
 source('lines.R')
 
 
-SS <- function (from.step = NA, to.step = NA, use.lines = TRUE) {
+SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
     # Main entry point whcih runs the specified steps.
     #
     # Args: 

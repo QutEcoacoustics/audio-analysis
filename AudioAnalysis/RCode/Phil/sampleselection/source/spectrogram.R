@@ -515,8 +515,70 @@ Sp.Rect <- function (spectro, rect) {
     
 }
 
+DrawLongSpectrogram <- function (site, date, 
+                                 start.sec, duration, 
+                                 output.path,  
+                                 segment.size = 600, 
+                                 vertical = FALSE, 
+                                 jpeg.quality = 80,
+                                 scale = 0.5) {
+    # creates a long spectrogram by creating several small ones then
+    # stitching together the images with image magik
+    
+    # make sure duration is a multiple of segment size
+    extra <- duration %% segment.size
+    duration <- duration - extra
+    
+    start.secs <- seq(start.sec, start.sec + duration, segment.size)
+    
+    fn.root <- paste0('tmp', as.character(as.integer(Sys.time())))
+    
+    temp.dir <- TempDirectory()
+    
+    fns <- paste0(fn.root, 1:length(start.secs), '.png')
+    
+    paths <- file.path(temp.dir, fns)
+    
+    for (ss in 1:length(start.secs)) {       
+        spectro <- Sp.CreateTargeted(site, date, start.secs[ss], segment.size)
+        Sp.Draw(spectro, img.path = paths[ss])   
+    }
+    
+    StitchImages(image.paths = paths, 
+                 output.fn = output.path, 
+                 vertical = vertical, 
+                 jpeg.quality = jpeg.quality,
+                 resize = (scale * 100))
+    
+}
 
 
+StitchImages <- function (image.paths, output.fn, vertical = TRUE, jpeg.quality = NA, resize = 100) {      
+    fns <- paste(image.paths, collapse = " ")
+    if (vertical) {
+        append <- "-append"
+    } else {
+        append <- "+append"
+    }
+    
 
+    
+    command <- paste("/opt/local/bin/convert", 
+                     fns, append)
+    
+    if (!is.na(jpeg.quality)) {
+        command <- paste(command, '-quality', jpeg.quality)
+    }
+    
+    if (!is.na(resize) && is.numeric(resize) && resize > 0 && resize != 100) {
+        command <- paste0(command, ' -resize ', resize, "%")
+    }
+    
+    command <- paste(command, output.fn)
+    
+    Report(5, 'doing image magic command', command)
+    err <- try(system(command))  # ImageMagick's 'convert'
+    Report(5, err)
+}
 
 

@@ -1,10 +1,14 @@
 l.test <- function () {  
     duration <- 10
-    spectro <- Sp.CreateTargeted("NW", "2010-10-13", 21606, 2)
+    spectro <- Sp.CreateTargeted("NW", "2010-10-13", 21606, 4)
     #spectro <- Sp.CreateTargeted("NW", "2010-10-13", 1600, duration)
-    lines <- Lines(spectro$vals)
+    
+    m <- Simplify(spectro$vals)
+    
+    lines <- Lines(m)
     #Sp.Draw(spectro)
     spectro$lines <- lines
+    spectro$vals <- m
     Sp.Draw(spectro) 
 }
 
@@ -185,8 +189,9 @@ FindLines <- function (overwrite = FALSE) {
             if (!file.exists(lines.path) || overwrite) {
                 
                 audio.path <- file.path(g.audio.dir, f)  
-                spectro <- Sp.CreateFromFile(audio.path)              
-                lines <- Lines(spectro$vals)             
+                spectro <- Sp.CreateFromFile(audio.path) 
+                m <- Simplify(spectro$vals)
+                lines <- Lines(m)             
                 
                 file.meta$frames.per.sec <- spectro$frames.per.sec
                 file.meta$hz.per.bin <- spectro$hz.per.bin
@@ -212,15 +217,19 @@ FindLines <- function (overwrite = FALSE) {
         
     }
 
-
-g.centroid.spacing <- 3
+g.centroid.spacing <- 5
 g.sweep.radius <- 4
 g.walkstep.dist <- 4  # probably best equal or less than g.swwp.radius
 
-
 Lines <- function (m) {
-    m <- Simplify(m)
-    centroids <- GetPeaks.2(m, g.centroid.spacing)
+
+    
+    #centroids <- GetPeaks.2(m, g.centroid.spacing)
+    centroids <- GetPeaks.3(m)
+    
+    # sort from highest to lowest peak
+    centroids <- centroids[order(centroids$val, decreasing = TRUE),]
+    
     # we now have a list of 'centroids' which are the maximum values in the neighbourhood
     # might be a more efficient way to do this with masks
 
@@ -233,25 +242,54 @@ Lines <- function (m) {
     empty.line.cols <- rep(NA, nrow(centroids))
     #lines <- data.frame(angle = empty.line.cols, score = empty.line.cols, mean = empty.line.cols, sd = empty.line.cols)
     lines <- list()
-    print(nrow(centroids))
+    
+    centroids <- CentroidBestAngles(m, centroids, g.sweep.radius)
+    
+    # score.2 is how much better than average the best angle was compared to the other angles
+    relative.score <- centroids$score - centroids$mean
+    combined.score <- Normalize(centroids$score) + Normalize(relative.score)
+    
+    # sort by combined score
+    # because we are removing centroids near lines already found
+    # it matters what order we do them
+    centroids <- centroids[order(combined.score, decreasing = TRUE), ]
+    
+    
+    
+    
+    centroids$ignore <- FALSE
     for (cc in (1:nrow(centroids))) {
         # sub matrix centered on the centroid
         
-        if (cc %in% c(18,24,25)) {
-            #inspect = TRUE
+        if (centroids$ignore[cc]) {
+            next()
+        }
+        
+        if (cc %in% c(8, 14)) {
+            inspect = TRUE
         } else {
             inspect = FALSE     
         }
         
-        line <- LineWalk(m, as.numeric(centroids[cc,]), g.sweep.radius, inspect)
-        if (class(line) == 'list') {
-            lines[[length(lines) + 1]] <- line
-            Dot()
-
-            if (length(lines) %in% c()) {
-                print(paste('inspect', cc))
+        if (inspect) {
+            line <- LineWalk(m, 
+                             as.numeric(centroids[cc,c('row', 'col')]), 
+                             g.sweep.radius, 
+                             start.angle =  centroids$angle[cc],
+                             inspect = inspect)
+            if (class(line) == 'list') {
+                lines[[length(lines) + 1]] <- line
+                Dot()
+                
+                if (length(lines) %in% c()) {
+                    #print(paste('inspect', cc))
+                }
+                
+                centroids$ignore <- IgnoreCentroidsNearLine(centroids, line)
             }
         }
+        
+
     }
     
     # remove null values where the line wasn't over the threshold
@@ -262,6 +300,78 @@ Lines <- function (m) {
     # todo
     
     return(lines)    
+}
+
+
+CentroidBestAngles <- function (m, centroids, r) {
+    
+    
+    centroids$angle <- NA
+    centroids$length <- NA
+    centroids$score <- NA
+    centroids$mean <- NA
+    centroids$sd <- NA
+    
+    for(cc in 1:nrow(centroids)) {
+        
+        row <- centroids$row[cc]
+        col <- centroids$col[cc]
+        
+        sub <- m[(row-r):(row+r), (col-r):(col+r)] 
+        best.line <-  FindBestLine(sub, recurse.depth = 2, momentum.bias = 0)   
+        centroids[cc, c('angle', 'length', 'score', 'mean', 'sd')] <- as.vector(unlist(best.line))
+        
+    }
+    
+
+    return(centroids)
+    
+    
+}
+
+IgnoreCentroidsNearLine <- function (centroids, line, threshold = 4) {
+    points <- rbind(line$branch.1[, c('row', 'col')], line$branch.2[, c('row', 'col')])   
+    squared.threshold <- threshold^2
+    
+    # don't check if the col or row is further than this much
+    # from the col or row of the center of the line
+    ignore.dist <- 30
+    
+    check.rows <- centroids$ignore == FALSE & 
+        centroids$row < line$center[1] + ignore.dist &
+        centroids$row > line$center[1] - ignore.dist &
+        centroids$col < line$center[2] + ignore.dist &
+        centroids$col > line$center[2] - ignore.dist
+        
+    check.rows <- which(check.rows)
+        
+    for (i in check.rows) {  
+        squared.dist.to.points <- (points$row - centroids$row[i])^2 + (points$col - centroids$col[i])^2
+        centroids$ignore[i] <- min(squared.dist.to.points) < squared.threshold 
+    }
+    return(centroids$ignore)
+}
+
+
+
+GetPeaks.3 <- function (m) {
+    # combination of GetPeaks.1 and GetPeaks.2
+    
+    p1 <- GetPeaks.1(m, cell.w = 20, cell.h = 20, overlap = 2)
+    p2 <- GetPeaks.2(m, r = g.centroid.spacing)
+    
+    p <- rbind(p2, p1)
+    
+    # remove peaks that are very close together
+    
+    near <- data.frame(row = round(p$row / 15), col = round(p$col / 15))
+
+    unique.index <- rownames(unique(near))
+    
+    return(p[unique.index, ])
+    
+    
+    
 }
 
 GetPeaks.1 <- function (m, cell.w = 10, cell.h = 10, overlap = 2) {
@@ -285,19 +395,21 @@ GetPeaks.1 <- function (m, cell.w = 10, cell.h = 10, overlap = 2) {
     #                         error = line.cols)
     
     blank <- rep(NA, length(x.offsets) * length(y.offsets))
-    peaks <- data.frame(row = empty.line.cols, col = empty.line.cols)
+    peaks <- data.frame(row = empty.line.cols, col = empty.line.cols, val = empty.line.cols)
     cnum <- 1
     for (x.offset in x.offsets) {
         for (y.offset in y.offsets) {
             sub <- m[y.offset:(y.offset + cell.h - 1), x.offset:(x.offset + cell.w - 1)]
             if (length(sub[sub > 0]) > 10) {
-                peaks[cnum, ] <- GetMaxCell(sub) + c(y.offset - 1, x.offset - 1)
+                peaks[cnum, 1:2] <- GetMaxCell(sub) + c(y.offset - 1, x.offset - 1)
+                peaks[cnum, 3] <- max(sub)
                 cnum <- cnum + 1
             }
         }
     }
     
     peaks <- peaks[!is.na(peaks[,1]),]
+    
     
     return(peaks)
     
@@ -319,8 +431,6 @@ GetPeaks.2 <- function (m, r = 4) {
         cols <- 1:(floor(ncol(m)/reduce.by)) * reduce.by
         m <- m[rows,cols]      
     }
-
-    
     
     line.offsets <- -r:r   
     x.offsets <- rep(line.offsets, times = length(line.offsets), each = 1)
@@ -357,11 +467,14 @@ GetPeaks.2 <- function (m, r = 4) {
     row <- w %% nrow(m)
     row[row == 0] <-  nrow(m)
     col <- ceiling(w / nrow(m))
-    peaks <- data.frame(row = row, col = col)
+    val <- as.vector(peaks.matrix[peaks.matrix > 0])
+    peaks <- data.frame(row = row, col = col, val = val)
     
     if (reduce.by > 1) {
         peaks <- peaks * reduce.by 
     }
+    
+
     
     
     return(peaks)
@@ -414,7 +527,7 @@ Simplify <- function (m) {
     
 }
 
-LineWalk <- function (m, center, r, inspect = FALSE) {
+LineWalk <- function (m, center, r, start.angle = NA, inspect = FALSE) {
     # given a center point on matrix m,
     # creates a "line", which consists of 2 branches. 
     # branch 1 is created by finding the angle from 'center' with the highest score
@@ -425,17 +538,20 @@ LineWalk <- function (m, center, r, inspect = FALSE) {
     # branch 2 is created in the same way, but by starting the walk 180 degrees from the angle
     # of the first node of branch 1. 
     
-    if (inspect) {
-        
-        print('inspect')
-        
+    if (inspect) {      
+        inspect = TRUE   
     }
     
     sub <- m[(center[1]-r):(center[1]+r), (center[2]-r):(center[2]+r)] 
-    best.angle <- FindBestLine(sub, recurse.depth = 2, momentum.bias = 0, inspect = inspect)
     
-    branch.1 <- LineWalkBranch(m, center, r, best.angle$angle, range = pi/2, resolution = 3, refinements = 2, inspect = inspect)
-    branch.2 <- LineWalkBranch(m, center, r, OppositeAngle(best.angle$angle), range = pi/4, resolution = 3, refinements = 2, inspect = inspect)
+    if (is.na(start.angle)) {
+        best.angle <- FindBestLine(sub, recurse.depth = 2, momentum.bias = 0, inspect = inspect)
+        start.angle <- best.angle$angle
+    }
+
+    
+    branch.1 <- LineWalkBranch(m, center, r, start.angle, range = pi/2, resolution = 3, refinements = 2, inspect = inspect)
+    branch.2 <- LineWalkBranch(m, center, r, OppositeAngle(start.angle), range = pi/4, resolution = 3, refinements = 2, inspect = inspect)
     
     #branch.1$branch <- rep(1, nrow(branch.1))
     #branch.1$joint <- 1:nrow(branch.1)
@@ -473,6 +589,8 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
     
     for(line.num in 1:max.per.branch) {
         
+       
+        
         sub <- m[(cur.center[1]-r):(cur.center[1]+r), (cur.center[2]-r):(cur.center[2]+r)] 
         line <- FindBestLine(sub, angle, range, recurse.depth = refinements, inspect = inspect)
         if (line$score < score.threshold) {
@@ -497,12 +615,16 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
         branch$mean[line.num] <- line$mean
         branch$sd[line.num] <- line$sd
         
+        branch$angle.delta[line.num] <- line$angle.delta
+        
         if (cur.center[1] > nrow(m) - r || cur.center[1] <= r || cur.center[2] > ncol(m) - r || cur.center[2] <= r ) {
             # the line has walked to the edge of the matrix
             break()
         }
         
         angle <- line$angle
+        
+        
         
     }
     
@@ -513,8 +635,6 @@ LineWalkBranch <- function (m, start.center, r,  angle, range, resolution, refin
     
     
 }
-
-
 
 FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse.depth = 2, momentum.bias = 0.7, inspect = FALSE) {
     # finds angle of the line starting at the center of the matrix m
@@ -531,7 +651,7 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
     #                                the score will be multiplied by. zero is no bias, 1 is maximum bias
   
     if (inspect) {
-        print('inspect')
+        inspect = TRUE
     }
     
     # radius is 1 less than half the width of the square matrix
@@ -555,16 +675,16 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
     # if there was no clear best, then this point might not lie on a line
     
     # angle diff is 1 at the opposite angle and zero at the angle
-    angle.diff <- abs(angles - angle) / pi
+    # maximum angle diff should be pi
+    angle.diff <- abs(angles - angle) %% pi
+    angle.diff <- angle.diff / pi
     angle.bias <- 1 - (momentum.bias * angle.diff)
     scores <- scores * angle.bias
     
     
     best <- which.max(scores)
     best.angle <- angles[best]
-    mean <- mean(scores)
-    sd <- sd(scores)
-    score <- max(scores)
+
     
     # TODO: variable length
     length <- g.walkstep.dist
@@ -578,12 +698,18 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
                              momentum.bias = 0,  # possibly better to pass the angle as a separate 'momentum angle' arg
                              inspect = inspect)
     } else {
+        
+        mean <- mean(scores)
+        sd <- sd(scores)
+        score <- max(scores)
+        
         line <- list(
-            angle = best.angle,
+            angle = round(best.angle, 3),
             length = length,
             score = score,
             mean = mean,
-            sd = sd
+            sd = sd,
+            angle.delta = round(best.angle - angle, 3)
         )
     }
     
@@ -591,8 +717,6 @@ FindBestLine <- function (m = NA, angle = 0, range = pi, resolution = 4, recurse
     
     
 }
-
-
 
 DistanceToLine <- function (theta, r, one.way = FALSE) {
     # returns a width*width matrix. Each cell holds the distance of
@@ -638,7 +762,6 @@ DistanceToLine <- function (theta, r, one.way = FALSE) {
     return(md)
     
 }
-
 
 FindBestLine.twoDirections <- function (m = NA, r = 4, inspect = FALSE) {
     # finds angle of the line passing through the centre of m
@@ -828,6 +951,8 @@ GetLinesForclustering <- function (reextract = TRUE) {
 
 
 
-
+RadToDeg <- function (rad) {
+    return(rad * 180 / pi)
+}
 
 

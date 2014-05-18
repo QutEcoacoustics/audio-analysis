@@ -26,7 +26,7 @@ ClusterEvents <- function (num.groups = 'auto',
 
     
 
-    vals <- GetEventsAndFeatures()
+    vals <- GetEventsAndFeatures(reextract = TRUE)
     event.features <- vals$event.features
     events <- vals$events
     
@@ -112,11 +112,14 @@ DoCluster <- function (df, method = 'complete') {
     
     feature.names <- colnames(df)
     
-    weights <- rep(NA, length(feature.names))
-    for (i in 1:length(weights)) {
-        weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.names[i]))    
-        features[,i] <-  features[,i] * weights[i]    
+    if (length(feature.names) > 1) {
+        weights <- rep(NA, length(feature.names))
+        for (i in 1:length(weights)) {
+            weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.names[i]))    
+            features[,i] <-  features[,i] * weights[i]    
+        }
     }
+
     
     Report(2, 'calculating distance matrix (m = ',  nrow(features), 'n = ', ncol(features),')')
     
