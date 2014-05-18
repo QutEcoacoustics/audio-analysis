@@ -8,10 +8,15 @@ namespace Dong.Felt
     public class Candidates
     {
         /// <summary>
+        /// to get or set the speceis name to a candidate.
+        /// </summary>
+        public string SpeciesName { get; set; }
+        
+        /// <summary>
         /// It could be distance or similarity score.
         /// </summary>
         public double Score {get; set;}
-        
+       
         /// <summary>
         /// It indicates the max frequency of a candidate.
         /// </summary>

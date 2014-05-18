@@ -14,6 +14,42 @@ namespace Dong.Felt.ResultsOutput
 {
     public class OutputResults
     {
+        
+        // Matching step: 1. species name check 2. file date, time match 3. location match
+        public static void AutomatedMatchingAnalysis(FileInfo matchResultsFile, FileInfo AnnotationFile)
+        {
+
+        }
+
+        /// <summary>
+        /// To summarize the matching results by taking into inputDirectory, output the results to the output file.
+        /// Especially, the input directory include all seperated matching results for all queries. 
+        /// </summary>
+        /// <param name="inputDirectory"></param>
+        /// <param name="outputFileName"></param>       
+        public static void MatchingResultsSummary(DirectoryInfo inputDirectory, FileInfo outputFileName)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+            var candidatesList = new List<Candidates>();
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                foreach (var sc in subCandicatesList)
+                {
+                    candidatesList.Add(sc);
+                }
+            }
+            CSVResults.CandidateListToCSV(outputFileName, candidatesList);
+        }
+
+        /// <summary>
+        /// It takes in all the seperated matching results, and get the statistical results.
+        /// The results will be dependent on the content of matching results. If the results have top 5 matched hits, then the statistical results will be done
+        /// based on these results. 
+        /// </summary>
+        /// <param name="resultsDirectory"></param>
+        /// <returns></returns>
         public static List<MathingResultsAnalysis> MatchingStatAnalysis(DirectoryInfo resultsDirectory)
         {
             var results = new List<MathingResultsAnalysis>();

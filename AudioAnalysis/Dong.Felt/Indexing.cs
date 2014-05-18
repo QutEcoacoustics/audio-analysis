@@ -48,7 +48,8 @@ namespace Dong.Felt
                 var frameIndex = tempResult[0].FrameIndex;
                 var rowIndexInRegion = i / nhColsCount;
                 var colIndexInRegion = i % nhColsCount;
-                var regionItem = new RegionRerepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount, rowIndexInRegion, colIndexInRegion, audioFileName);
+                var regionItem = new RegionRerepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount, 
+                    rowIndexInRegion, colIndexInRegion, audioFileName);
                 results.Add(regionItem);
             }                     
            return results;
@@ -254,7 +255,8 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <returns></returns>
-        public static List<RegionRerepresentation> RegionRepresentationFromAudioNhRepresentations(List<RegionRerepresentation> queryRepresentation, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
+        public static List<RegionRerepresentation> RegionRepresentationFromAudioNhRepresentations(List<RegionRerepresentation> queryRepresentation,
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
             int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig, SpectrogramStandard spectrogram)
         {
             var result = new List<RegionRerepresentation>();
@@ -300,7 +302,8 @@ namespace Dong.Felt
                             var frameIndex = nhList[0].FrameIndex;
                             var rowIndexInRegion = (int)(i / nhCountInColForQuery);
                             var colIndexInRegion = i % nhCountInColForQuery;
-                            var regionItem = new RegionRerepresentation(nhList[i], frequencyIndex, frameIndex, nhCountInRowForQuery, nhCountInColForQuery, rowIndexInRegion, colIndexInRegion, audioFileName);
+                            var regionItem = new RegionRerepresentation(nhList[i], frequencyIndex, frameIndex, nhCountInRowForQuery, 
+                                nhCountInColForQuery, rowIndexInRegion, colIndexInRegion, audioFileName);
                             result.Add(regionItem);
                         }      
                     }
