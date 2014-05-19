@@ -6,12 +6,7 @@ using System.Text;
 namespace Dong.Felt
 {
     public class Candidates
-    {
-        /// <summary>
-        /// to get or set the speceis name to a candidate.
-        /// </summary>
-        public string SpeciesName { get; set; }
-        
+    {      
         /// <summary>
         /// It could be distance or similarity score.
         /// </summary>
