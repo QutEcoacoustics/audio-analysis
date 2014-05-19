@@ -37,7 +37,10 @@ namespace Dong.Felt.ResultsOutput
                 var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
                 foreach (var sc in subCandicatesList)
                 {
-                    candidatesList.Add(sc);
+                    if (sc.Score >= 1)
+                    {                        
+                        candidatesList.Add(sc);
+                    }
                 }
             }
             CSVResults.CandidateListToCSV(outputFileName, candidatesList);
