@@ -7,12 +7,35 @@ using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using TowseyLibrary;
+using System.Drawing;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace Dong.Felt.Preprocessing
 {
     class AudioPreprosessing
     {
-              
+        public static void BatchSpectrogramGenerationFromAudio(DirectoryInfo audioFileDirectory, 
+            SonogramConfig config, List<double> scores,
+            List<AcousticEvent> acousticEvent, double eventThreshold)
+        {
+            var result = new List<Image>();
+            if (!Directory.Exists(audioFileDirectory.FullName))
+            {
+                throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", audioFileDirectory));
+            }
+
+            // because the result is obtained like this order, 0, 1, 2, 10, 3, 4, 5, 6, ...9
+            var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, @"*.wav", SearchOption.TopDirectoryOnly);
+            var audioFilesCount = audioFiles.Count();          
+            for (int j = 0; j < audioFilesCount; j++)
+            {               
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[j]);
+                Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEvent, eventThreshold, null);
+                image.Save(audioFiles[j], ImageFormat.Png); 
+            }
+        }
+      
         /// <summary>
         /// Generate a spectrogram from an audio file.
         /// </summary>

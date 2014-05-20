@@ -73,8 +73,15 @@
                         MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                     };
 
-                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                   ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    double eventThreshold = 0.5; // dummy variable - not used   
+                    AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
+                        scores, acousticEventlist, eventThreshold);
+
+                    // MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                   //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
 
                     /// RidgeDetectionBatchProcess                    
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
@@ -914,6 +921,7 @@
 
             return result;
         }
+
 
         public static void MatchingStatisticalAnalysis(DirectoryInfo matchResultsDirectory, FileInfo outputPath, string featurePropertySet)
         {
