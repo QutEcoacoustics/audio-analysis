@@ -8,10 +8,10 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\Query examples\Audio segment
+InputDirectory: C:\Training recordings2 
 #C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2
 
-#C:\Training recordings2 
+#
 
 OutputDirectory: C:\Output
 # C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
