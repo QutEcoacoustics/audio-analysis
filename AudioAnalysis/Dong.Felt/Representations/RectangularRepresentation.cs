@@ -400,7 +400,7 @@ namespace Dong.Felt
                     // check boundary of index 
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
-                        if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex] != null) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
+                        if ((matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].RidgeMagnitude != 0.0) && matrix[anchorPoint.X + rowNeighbourhoodIndex, anchorPoint.Y + colNeighbourhoodIndex].OrientationCategory == (int)Direction.East)
                         {
                             horizontalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
                         }
@@ -415,7 +415,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
-                        if ((matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex] != null) && matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
+                        if ((matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].RidgeMagnitude != 0.0) && matrix[anchorPoint.X + colNeighbourhoodIndex, anchorPoint.Y + rowNeighbourhoodIndex].OrientationCategory == (int)Direction.North)
                         {
                             verticalDirection[rowNeighbourhoodIndex + radiusOfNeighbourhood]++;
                         }
@@ -430,7 +430,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
+                        if ((matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].RidgeMagnitude != 0.0) && (matrix[anchorPoint.X + offsetIndex + offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
                             negativeDiagonalDirection[neighbourhoodWidth - offset - 1]++;
                         }
@@ -443,7 +443,7 @@ namespace Dong.Felt
                 {
                     if (StatisticalAnalysis.checkBoundary(anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
-                        if ((matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex] != null) && (matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
+                        if ((matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].RidgeMagnitude != 0.0) && (matrix[anchorPoint.X + offsetIndex - offset, anchorPoint.Y + offsetIndex].OrientationCategory == (int)Direction.NorthWest))
                         {
                             negativeDiagonalDirection[neighbourhoodWidth + offset - 1]++;
                         }
@@ -463,7 +463,7 @@ namespace Dong.Felt
                     if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, maxRowIndex, maxColIndex))
                     {
                         // 
-                        if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
+                        if ((matrix[startPointRowIndex, startPointColIndex].RidgeMagnitude != 0.0) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
                             var index = neighbourhoodWidth - offset - 1;
                             positiveDiagonalDirection[index]++;
@@ -481,7 +481,7 @@ namespace Dong.Felt
                     var maxColIndex = neighbourhoodWidth;
                     if (StatisticalAnalysis.checkBoundary(startPointRowIndex, startPointColIndex, neighbourhoodWidth, neighbourhoodWidth))
                     {
-                        if ((matrix[startPointRowIndex, startPointColIndex] != null) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
+                        if ((matrix[startPointRowIndex, startPointColIndex].RidgeMagnitude != 0.0) && (matrix[startPointRowIndex, startPointColIndex].OrientationCategory == (int)Direction.NorthEast))
                         {
                             // here I minus one because I want to keep the index of array is in the range of array length.
                             positiveDiagonalDirection[neighbourhoodWidth + offset - 1]++;

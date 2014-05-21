@@ -168,7 +168,7 @@
  
             foreach (var nh in nhList)
             {
-                if (nh.magnitude != -1)
+                if (nh.magnitude != 100)
                 {
                     filteredReselt.Add(nh);
                 }

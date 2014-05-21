@@ -26,7 +26,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 && 
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 && 
                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                     {
                         int tempColIndex = colIndex - matrixRadius;
@@ -43,7 +43,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                     {
                         int tempRowIndex = matrixRadius - rowIndex;
@@ -76,7 +76,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                     {
                         int tempColIndex = colIndex - matrixRadius;
@@ -93,7 +93,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0 &&
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
                          poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                     {
                         int tempRowIndex = matrixRadius - rowIndex;
@@ -133,7 +133,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
                     {
                         int tempColIndex = colIndex - matrixRadius;
                         int tempRowIndex = matrixRadius - rowIndex;
@@ -149,7 +149,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0.0)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
                     {                      
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance1 = tempRowIndex - nullLineYIntersect;
@@ -216,6 +216,8 @@
             {
                 // Typically, magnitude should be greater than 0 and less than 20.
                 // otherwise, it is assigned to a default value, 100
+                // should copy or new a RidgeDescriptionNeighbourhoodRepresentation object, otherwise the next steps will change the original, so I couldn't get 
+                // the original value after this function
                 if (nh.magnitude != 100)
                 {
                     magnitudeList.Add(nh.magnitude);
@@ -237,6 +239,7 @@
             {
                 if (nh.magnitude != 100)
                 {
+                    
                     nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
                     //nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
                     //nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);   

@@ -29,10 +29,11 @@ namespace Dong.Felt.Preprocessing
             var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, @"*.wav", SearchOption.TopDirectoryOnly);
             var audioFilesCount = audioFiles.Count();          
             for (int j = 0; j < audioFilesCount; j++)
-            {               
+            {      
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[j]);
                 Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEvent, eventThreshold, null);
-                image.Save(audioFiles[j], ImageFormat.Png); 
+                var spectrogramFileName = audioFiles[j] + ".png";
+                image.Save(spectrogramFileName, ImageFormat.Png); 
             }
         }
       
