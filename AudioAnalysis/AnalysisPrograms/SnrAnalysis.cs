@@ -143,9 +143,37 @@ namespace AnalysisPrograms
             //int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
             //if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
 
-            //##########################################################################################################################
-            //FUNCTIONAL CODE
-            //##########################################################################################################################
+            // (A) ##########################################################################################################################
+            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
+            int signalLength = recording.GetWavReader().Samples.Length;
+            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
+            double frameDurationInSeconds = sonoConfig.WindowSize / (double)recording.SampleRate;
+            TimeSpan frameDuration = TimeSpan.FromTicks((long)(frameDurationInSeconds * TimeSpan.TicksPerSecond));
+            int stepSize = (int)Math.Floor(sonoConfig.WindowSize * (1 - sonoConfig.WindowOverlap));
+            double stepDurationInSeconds = sonoConfig.WindowSize * (1 - sonoConfig.WindowOverlap) / (double)recording.SampleRate;
+            TimeSpan stepDuration = TimeSpan.FromTicks((long)(stepDurationInSeconds * TimeSpan.TicksPerSecond));
+            double framesPerSecond = 1 / stepDuration.TotalSeconds;
+            int frameCount = signalLength / stepSize; 
+
+
+            // (B) ################################## EXTRACT ENVELOPE and SPECTROGRAM ##################################
+            var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
+            //double[] avAbsolute = dspOutput.Average; //average absolute value over the minute recording
+
+            // (C) ################################## GET SIGNAL WAVEFORM ##################################
+            double[] signalEnvelope = dspOutput.Envelope;
+            double avSignalEnvelope = signalEnvelope.Average();
+
+            // (D) ################################## GET Amplitude Spectrogram ##################################
+            double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+
+            // (E) ################################## Generate deciBel spectrogram from amplitude spectrogram
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+
+
+
+            //# OLD CODE #########################################################################################################################
             var results1 = Execute_Sonogram(sonoConfig, minHz, maxHz, segK1, segK2, latency, vocalGap);
             var sonogram          = results1.Item1;
             //var SNR_fullbandEvent = results1.Item2;
@@ -155,23 +183,29 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine("# Finished calculating SNR and detecting acoustic events.");
 
-            StringBuilder sb = new StringBuilder("\nSIGNAL PARAMETERS");
-            sb.AppendLine("Signal Duration =" + sonogram.Duration);
-            sb.AppendLine("Sample Rate     =" + sonogram.SampleRate);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("\nSIGNAL PARAMETERS");
+            sb.AppendLine("Signal Duration =" + wavDuration);
+            sb.AppendLine("Sample Rate     =" + recording.SampleRate);
 
             sb.AppendLine("\nFRAME PARAMETERS");
-            sb.AppendLine("Window Size     =" + sonogram.Configuration.WindowSize);
-            sb.AppendLine("Frame Count     =" + sonogram.FrameCount);
-            sb.AppendLine("Frame Duration  =" + (sonogram.FrameDuration * 1000).ToString("F1") + " ms");
-            sb.AppendLine("Frame Offset    =" + (sonogram.FrameOffset * 1000).ToString("F1") + " ms");
-            sb.AppendLine("Frames Per Sec  =" + sonogram.FramesPerSecond.ToString("F1"));
+            sb.AppendLine("Window Size    =" + sonoConfig.WindowSize);
+            sb.AppendLine("Frame Count    =" + frameCount);
+            sb.AppendLine("Envelope length=" + signalEnvelope.Length);
+            sb.AppendLine("Frame Duration =" + (frameDuration.TotalMilliseconds).ToString("F3") + " ms");
+            sb.AppendLine("Frame overlap  =" + sonoConfig.WindowOverlap);
+            sb.AppendLine("Step Size      =" + stepSize);
+            sb.AppendLine("Step duration  =" + (stepDuration.TotalMilliseconds).ToString("F3") + " ms");
+            sb.AppendLine("Frames Per Sec =" + framesPerSecond.ToString("F1"));
 
             sb.AppendLine("\nFREQUENCY PARAMETERS");
-            sb.AppendLine("Nyquist Freq    =" + sonogram.NyquistFrequency + " Hz");
-            sb.AppendLine("Freq Bin Width  =" + sonogram.FBinWidth.ToString("F2") + " Hz");
+            sb.AppendLine("Nyquist Freq    =" + dspOutput.NyquistFreq + " Hz");
+            sb.AppendLine("Freq Bin Width  =" + dspOutput.FreqBinWidth.ToString("F2") + " Hz");
+            sb.AppendLine("Nyquist Bin     =" + dspOutput.NyquistBin);
+            sb.AppendLine("Epsilon (1 bit) =" + epsilon);
 
             sb.AppendLine("\nENERGY PARAMETERS");
-            sb.AppendLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
+            sb.AppendLine("Signal Max abs Amplitude =" + signalEnvelope.Max().ToString("F3") + "  (See Note 1)");
             sb.AppendLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
             sb.AppendLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
             sb.AppendLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2") + "  (See Notes 2, 3)");
@@ -324,8 +358,9 @@ namespace AnalysisPrograms
 
         public static StringBuilder GetSNRNotes(double noiseRange)
         {
-            StringBuilder sb = new StringBuilder("\nSIGNAL PARAMETERS");
-            sb.AppendLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("\nSIGNAL PARAMETERS");
+            sb.AppendLine("\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
             sb.AppendLine("\n\tNote 2:      The acoustic power per frame is calculated in decibels: dB = 10 * log(Frame energy)");
             sb.AppendLine("\t             where frame energy = average of the amplitude squared of all 512 values in a frame.");
             sb.AppendLine("\n\tNote 3:      At this stage all dB values are <= 0.0. A dB value = 0.0 could only occur if the average frame amplitude = 1.0");
