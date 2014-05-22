@@ -17,7 +17,7 @@ namespace AudioAnalysisTools.DSP
     {
         RealFourierTransformation rft; //only used if calling the .NET numerical math library
 
-        public const string Key_HammingWindow = "HAMMING";
+        public const string Key_HammingWindow = "Hamming";
 
         public delegate double WindowFunc(int n, int N);
 

@@ -20,7 +20,10 @@ namespace AudioAnalysisTools.DSP
 
         public class EnvelopeAndFFT
         {
+            public double MinSignalValue { get; set; }
+            public double MaxSignalValue { get; set; }
             public double[] Envelope { get; set; }
+            public double[] FrameEnergy { get; set; }
             public double[,] amplitudeSpectrogram { get; set; }
             public double WindowPower { get; set; }
             public double[] Average { get; set; }
@@ -29,21 +32,6 @@ namespace AudioAnalysisTools.DSP
             public int NyquistBin { get; set; }
             public int MaxAmplitudeCount { get; set; }
             public int ClipCount { get; set; }
-
-
-            public EnvelopeAndFFT(double[] average, double[] envelope, int maxAmpCount, int clipping, double[,] amplSpectrogram, double windowPower, int nyquistFreq, double binWidth, 
-                                  int nyquistBin)
-            {
-                this.Average = average;
-                this.Envelope = envelope;
-                this.MaxAmplitudeCount = maxAmpCount;
-                this.ClipCount = clipping;
-                this.amplitudeSpectrogram = amplSpectrogram;
-                this.WindowPower = windowPower;
-                this.NyquistFreq = nyquistFreq; 
-                this.FreqBinWidth = binWidth;
-                this.NyquistBin = nyquistBin;
-            }
         }
 
         public static int FrameStep(int windowSize, double windowOverlap)
@@ -134,7 +122,7 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
-        /// returns a Tuple containing four items:
+        /// returns
         /// 1) the average of absolute amplitudes for each frame
         /// 2) the maximum of absolute amplitudes for each frame i.e. the signal envelope.
         /// 3) the signal amplitude spectrogram
@@ -154,12 +142,15 @@ namespace AudioAnalysisTools.DSP
 
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
+            double[] frameEnergy = new double[frameCount];
 
             // set up the FFT parameters
             FFT.WindowFunc w = FFT.GetWindowFunction(FFT.Key_HammingWindow);
             var fft = new FFT(windowSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
             double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
             double[] f1; // the fft
+            double minSignalValue = double.MaxValue;
+            double maxSignalValue = double.MinValue;
 
             // cycle through the frames
             for (int i = 0; i < frameCount; i++)
@@ -172,16 +163,21 @@ namespace AudioAnalysisTools.DSP
                 double frameDC = signal[start];
                 double total = Math.Abs(signal[start]);
                 double maxValue = total;
+                double energy = 0;
                 for (int x = start + 1; x < end; x++)
                 {
+                    if (signal[x] > maxSignalValue) maxSignalValue = signal[x];
+                    if (signal[x] < minSignalValue) minSignalValue = signal[x];
                     frameDC += signal[x];
                     double absValue = Math.Abs(signal[x]);
                     total += absValue; // go through current frame to get signal (absolute) average
                     if (absValue > maxValue) maxValue = absValue;
+                    energy += (signal[x] * signal[x]);
                 }
                 frameDC /= windowSize;
                 average[i] = total / windowSize;
                 envelope[i] = maxValue;
+                frameEnergy[i] = energy / windowSize; 
 
                 // remove DC value from signal values
                 double[] signalMinusAv = new double[windowSize];
@@ -211,7 +207,21 @@ namespace AudioAnalysisTools.DSP
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 
-            return new EnvelopeAndFFT(average, envelope, maxAmplitudeCount, clipCount, amplSpectrogram, fft.WindowPower, nyquistFreq, binWidth, nyquistBin);
+            return new EnvelopeAndFFT
+            {
+                MinSignalValue = minSignalValue,
+                MaxSignalValue = maxSignalValue,
+                Average = average,
+                Envelope = envelope,
+                FrameEnergy = frameEnergy,
+                MaxAmplitudeCount = maxAmplitudeCount,
+                ClipCount = clipCount,
+                amplitudeSpectrogram = amplSpectrogram,
+                WindowPower = fft.WindowPower,
+                NyquistFreq = nyquistFreq,
+                FreqBinWidth = binWidth,
+                NyquistBin = nyquistBin
+            };
         }
 
 

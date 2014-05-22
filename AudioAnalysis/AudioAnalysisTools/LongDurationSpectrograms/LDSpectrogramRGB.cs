@@ -478,7 +478,8 @@ namespace AudioAnalysisTools
             double[,] matrix = this.GetNormalisedSpectrogramMatrix(key);
             if(matrix == null) return null;
             Image bmp = ImageTools.DrawMatrixWithoutNormalisation(matrix);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, this.Y_interval);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, xAxisPixelDuration, this.Y_interval);
             return bmp;
         }
 
@@ -574,7 +575,8 @@ namespace AudioAnalysisTools
             if (colorMODE.StartsWith("POS")) doReverseColour = true;
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, Y_interval);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp, minOffset, X_interval, xAxisPixelDuration, Y_interval);
             return bmp;
         }
 
@@ -674,7 +676,8 @@ namespace AudioAnalysisTools
 
         public static Image FrameSpectrogram(Image bmp1, Image titleBar, TimeSpan minOffset, TimeSpan X_interval, int Y_interval)
         {
-            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, Y_interval);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            ImageTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, Y_interval);
 
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
