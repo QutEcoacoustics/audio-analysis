@@ -127,6 +127,7 @@
     <Compile Include="CSVResults.cs" />
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
+    <Compile Include="Features\Features.cs" />
     <Compile Include="Indexing.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />

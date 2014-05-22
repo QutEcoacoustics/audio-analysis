@@ -8,6 +8,7 @@ namespace Dong.Felt
     using Representations;
     using System.IO;
     using Dong.Felt.Configuration;
+    using Dong.Felt.Features;
     using AudioAnalysisTools.StandardSpectrograms;
     public class Indexing
     {
@@ -20,7 +21,8 @@ namespace Dong.Felt
         /// <returns>
         /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
-        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength, List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,string audioFileName, SpectrogramStandard spectrogram)
+        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength, 
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,string audioFileName, SpectrogramStandard spectrogram)
         {
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
             var nhCountInRow = query.maxNhRowIndex;
@@ -58,7 +60,6 @@ namespace Dong.Felt
         public static List<RegionRerepresentation> ExtractCandidatesRegionRepresentationFromRegionRepresntations(List<RegionRerepresentation> query, List<RegionRerepresentation> regionList)
         {
             var result = new List<RegionRerepresentation>();
-
             for (int i = 0; i < regionList.Count; i++)
             {
                 var freDifferenceThreshold = 1;
@@ -66,6 +67,28 @@ namespace Dong.Felt
                 {
                     result.Add(regionList[i]);
                 }
+            }
+            return result;
+        }
+
+        public static List<Candidates> WeightedEuclideanDistance(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, double weight1, double weight2)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            var queryFeatures = query[0].Features;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var candidateFeatures = new Feature(tempRegionList);
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                var distance = SimilarityMatching.WeightedDistanceScoreRegionFeature(query[0].Features, candidateFeatures, weight1, weight2);
+                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                        tempRegionList[0].SourceAudioFile);
+                result.Add(item);
             }
             return result;
         }

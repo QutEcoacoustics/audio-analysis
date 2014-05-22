@@ -14,6 +14,7 @@
     using log4net;
     using AnalysisBase;
     using Representations;
+    using Dong.Felt.Features;
     using Dong.Felt.Configuration;
     using Dong.Felt.Preprocessing;
     using Dong.Felt.ResultsOutput;
@@ -78,9 +79,9 @@
                     double eventThreshold = 0.5; // dummy variable - not used   
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
-                    AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                  //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
+                    //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
+                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                  ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
 
                     /// RidgeDetectionBatchProcess                    
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
@@ -693,6 +694,8 @@
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
                 normalizedNhRepresentationList, queryAduioFiles[i], spectrogram);
+                queryRepresentation[0].Features = new Feature(queryRepresentation);
+
                 //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
 
@@ -721,12 +724,15 @@
                         neighbourhoodLength, featurePropSet, spectrogramConfig);
                     var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                 (candidateRidgeNhRepresentationList, featurePropSet);
+                    // this region representation depends on the query. 
                     var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
                     candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
+                    // extract the candidates from the specific frequency
                     var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                    //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
                     foreach (var c in candidatesRegionList)
-                    {
-                        candidatesList.Add(c);
+                    {                                              
+                         candidatesList.Add(c);
                     }
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
@@ -738,10 +744,10 @@
                 var weight6 = 1;
                 var candidateDistanceList = new List<Candidates>();
                 Log.Info("# calculate the distance between a query and a candidate");
-                /// To calculate the distance
+                /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
                 {
-                    candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesList,
+                    candidateDistanceList = Indexing.WeightedEuclideanDistance(queryRepresentation, candidatesList,
                     weight1, weight2);
                 }
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
