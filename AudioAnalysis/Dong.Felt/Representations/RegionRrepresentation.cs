@@ -5,6 +5,7 @@ namespace Dong.Felt.Representations
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using Dong.Felt.Features;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -16,7 +17,7 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
-        public double MaxFrequencyIndex { get; set; }
+        public double MaxFrequencyIndex { get; set; }       
 
         /// <summary>
         /// Index (0-based) for the start time where this region starts located in the source audio file, its unit is ms.
@@ -43,12 +44,14 @@ namespace Dong.Felt.Representations
         /// </summary>
         public int NhCountInCol { get; set; }
 
+        public Feature Features { get; set; }
+
         /// <summary>
         /// Gets or sets the sourceAudioFile which contains the region.  
         /// </summary>
         public string SourceAudioFile { get; set; }
 
-        //public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods {get; set;}
+        public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods { get; set; }
 
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
@@ -79,7 +82,8 @@ namespace Dong.Felt.Representations
         /// <param name="nhCountInCol"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colIndex"></param>
-        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
+        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
+            int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
         {
             this.MaxFrequencyIndex = frequencyIndex;
             this.TimeIndex = frameIndex;
@@ -110,24 +114,51 @@ namespace Dong.Felt.Representations
             this.HLineOfBestfitMeasure = nh.HLineOfBestfitMeasure;
             this.VLineOfBestfitMeasure = nh.VLineOfBestfitMeasure;
             this.SourceAudioFile = file;
+            
         }
 
-        //public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
-        //    int nhCountInRow, int nhCountInCol, FileInfo audioFile)
-        //{
-        //    this.ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-        //    foreach (var nh in ridgeNeighbourhoods)
-        //    {
-        //        this.ridgeNeighbourhoods.Add(nh);
-        //    }
-        //    // top left corner - this is the anchor point
-        //    this.FrequencyIndex = ridgeNeighbourhoods[0].FrequencyIndex;
-        //    this.TimeIndex = ridgeNeighbourhoods[0].FrameIndex;
-        //    this.NhCountInRow = nhCountInRow;
-        //    this.NhCountInCol = nhCountInCol;
-
-        //    this.SourceAudioFile = audioFile;
-        //}
+        public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
+            int nhCountInRow, int nhCountInCol, double frequencyIndex, double frameIndex,
+            int rowIndex, int colIndex, string audioFile)
+        {
+            this.ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            foreach (var nh in ridgeNeighbourhoods)
+            {               
+                this.ridgeNeighbourhoods.Add(nh);
+            }
+            // top left corner - this is the anchor point          
+            this.NhCountInRow = nhCountInRow;
+            this.NhCountInCol = nhCountInCol;
+            this.MaxFrequencyIndex = frequencyIndex;
+            this.TimeIndex = frameIndex;
+            this.NhCountInRow = nhCountInRow;
+            this.NhCountInCol = nhCountInCol;
+            this.NhRowIndex = rowIndex;
+            this.NhColIndex = colIndex;
+            this.magnitude = ridgeNeighbourhoods[0].magnitude;
+            this.orientation = ridgeNeighbourhoods[0].orientation;
+            this.POICount = ridgeNeighbourhoods[0].POICount;
+            this.FrameIndex = ridgeNeighbourhoods[0].FrameIndex;
+            this.FrequencyIndex = ridgeNeighbourhoods[0].FrequencyIndex;
+            this.FrequencyRange = nhCountInRow * ridgeNeighbourhoods[0].FrequencyRange;
+            this.Duration = TimeSpan.FromMilliseconds(ridgeNeighbourhoods[0].Duration.TotalMilliseconds * nhCountInCol);
+            this.neighbourhoodSize = ridgeNeighbourhoods[0].neighbourhoodSize;
+            this.HOrientationPOICount = ridgeNeighbourhoods[0].HOrientationPOICount;
+            this.HOrientationPOIMagnitudeSum = ridgeNeighbourhoods[0].HOrientationPOIMagnitudeSum;
+            this.VOrientationPOICount = ridgeNeighbourhoods[0].VOrientationPOICount;
+            this.VOrientationPOIMagnitudeSum = ridgeNeighbourhoods[0].VOrientationPOIMagnitudeSum;
+            this.PDOrientationPOICount = ridgeNeighbourhoods[0].PDOrientationPOICount;
+            this.PDOrientationPOIMagnitudeSum = ridgeNeighbourhoods[0].PDOrientationPOIMagnitudeSum;
+            this.NDOrientationPOICount = ridgeNeighbourhoods[0].NDOrientationPOICount;
+            this.NDOrientationPOIMagnitudeSum = ridgeNeighbourhoods[0].NDOrientationPOIMagnitudeSum;
+            this.LinearHOrientation = ridgeNeighbourhoods[0].LinearHOrientation;
+            this.LinearVOrientation = ridgeNeighbourhoods[0].LinearVOrientation;
+            this.HOrientationPOIMagnitude = ridgeNeighbourhoods[0].HOrientationPOIMagnitude;
+            this.VOrientationPOIMagnitude = ridgeNeighbourhoods[0].VOrientationPOIMagnitude;
+            this.HLineOfBestfitMeasure = ridgeNeighbourhoods[0].HLineOfBestfitMeasure;
+            this.VLineOfBestfitMeasure = ridgeNeighbourhoods[0].VLineOfBestfitMeasure;
+            this.SourceAudioFile = audioFile;
+        }
 
         
         #endregion

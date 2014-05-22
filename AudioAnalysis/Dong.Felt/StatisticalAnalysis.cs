@@ -13,6 +13,23 @@
 
     class StatisticalAnalysis
     {
+        public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
+        {
+            var result = new List<List<RegionRerepresentation>>();
+            var regionCountInBlock = 0;
+            var blockCount = 0;
+            if (regionRepresentationList != null)
+            {
+                regionCountInBlock = regionRepresentationList[0].NhCountInCol * regionRepresentationList[0].NhCountInRow;
+                blockCount = regionRepresentationList.Count / regionCountInBlock;
+            }
+            for (int i = 0; i < regionRepresentationList.Count; i++)
+            {
+                result[i / blockCount].Add(regionRepresentationList[i]);
+            }
+            return result;
+        }
+
         public static double MeasureHLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
         {
             var r = 0.0;
@@ -26,7 +43,7 @@
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 && 
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                     {
                         int tempColIndex = colIndex - matrixRadius;
@@ -116,7 +133,7 @@
                 {
                     r = 1;
                 }
-            }           
+            }
             return r;
         }
 
@@ -137,9 +154,9 @@
                     {
                         int tempColIndex = colIndex - matrixRadius;
                         int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex; 
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
                         improvedRowIndex += tempRowIndex;
-                        Sreg += Math.Pow(verticalDistance, 2.0);   
+                        Sreg += Math.Pow(verticalDistance, 2.0);
                         poiCount++;
                     }
                 }
@@ -150,21 +167,21 @@
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
                     if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
-                    {                      
+                    {
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance1 = tempRowIndex - nullLineYIntersect;
-                        Stot += Math.Pow(verticalDistance1, 2.0);                     
+                        Stot += Math.Pow(verticalDistance1, 2.0);
                     }
                 }
             }
-           
+
             if (Stot != 0)
             {
                 r = 1 - Sreg / Stot;
             }
             else
-            {               
-                r = 1;              
+            {
+                r = 1;
             }
             return r;
         }
@@ -186,7 +203,7 @@
         }
 
         public static List<Candidates> NormalizeCandidateDistance(List<Candidates> candidates)
-        {           
+        {
             var distanceList = new List<double>();
             foreach (var c in candidates)
             {
@@ -239,13 +256,13 @@
             {
                 if (nh.magnitude != 100)
                 {
-                    
+
                     nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
                     //nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
                     //nh.orientation = (nh.orientation - miniOrientation) / (maxOrientation - miniOrientation);   
                     nh.orientation = (nh.orientation - averageOrientation) / standDevOrientation;
                 }
-                result.Add(nh);               
+                result.Add(nh);
             }
             return result;
         }
@@ -293,12 +310,12 @@
             var standDevOrientation = Math.Sqrt(squareDiffOrientation / nhList.Count);
             var standDevDominant = Math.Sqrt(squareDiffDominantOrien / nhList.Count);
             var standDevDominantPoiCount = Math.Sqrt(squareDiffDominantPoiCount / nhList.Count);
-            
+
             foreach (var nh in nhList)
             {
                 if (nh.magnitude != 100)
                 {
-                    nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;                   
+                    nh.magnitude = (nh.magnitude - averageMagnitude) / standDevMagnitude;
                     nh.orientation = (nh.orientation - averageOrientation) / standDevOrientation;
                     nh.dominantOrientationType = (nh.dominantOrientationType - averageDominantOrientation) / standDevDominant;
                     nh.dominantPOICount = (nh.dominantPOICount - averageDominantPoiCount) / standDevDominantPoiCount;
@@ -329,7 +346,7 @@
                 if (nh.HOrientationPOIMagnitude != 100)
                 {
                     hMagnitudeList.Add(nh.HOrientationPOIMagnitude);
-                    hOrientationList.Add(nh.LinearHOrientation);                                
+                    hOrientationList.Add(nh.LinearHOrientation);
                 }
                 if (nh.HLineOfBestfitMeasure != 100)
                 {
@@ -339,7 +356,7 @@
                 {
                     vMagnitudeList.Add(nh.VOrientationPOIMagnitude);
                     vOrientationList.Add(nh.LinearVOrientation);
-                    
+
                 }
                 if (nh.VLineOfBestfitMeasure != 100)
                 {
@@ -365,7 +382,7 @@
                 if (nh.HOrientationPOIMagnitude != 100)
                 {
                     squareDiffHMagnitude += Math.Pow(nh.HOrientationPOIMagnitude - averageHMagnitude, 2);
-                    squareDiffHOrientation += Math.Pow(nh.LinearHOrientation - averageHOrientation, 2);                    
+                    squareDiffHOrientation += Math.Pow(nh.LinearHOrientation - averageHOrientation, 2);
                 }
                 if (nh.HLineOfBestfitMeasure != 100)
                 {
@@ -374,7 +391,7 @@
                 if (nh.VOrientationPOIMagnitude != 100)
                 {
                     squareDiffVMagnitude += Math.Pow(nh.VOrientationPOIMagnitude - averageVMagnitude, 2);
-                    squareDiffVOrientation += Math.Pow(nh.LinearVOrientation - averageVOrientation, 2);                   
+                    squareDiffVOrientation += Math.Pow(nh.LinearVOrientation - averageVOrientation, 2);
                 }
                 if (nh.VLineOfBestfitMeasure != 100)
                 {
@@ -390,7 +407,7 @@
 
             foreach (var nh in nhList)
             {
-                
+
                 if (nh.POICount == 0)
                 {
                     result.Add(nh);
@@ -410,7 +427,7 @@
                         nh.VLineOfBestfitMeasure = (nh.VLineOfBestfitMeasure - averageVRmeasure) / standDevVRmeasure;
                     }
                     result.Add(nh);
-                }               
+                }
             }
             return result;
         }
@@ -426,16 +443,16 @@
                 // otherwise, it is assigned to a default value, 100
                 if (nh.magnitude != 100)
                 {
-                    magnitudeList.Add(nh.magnitude);                    
+                    magnitudeList.Add(nh.magnitude);
                 }
             }
             var minimagnitude = magnitudeList.Min();
-            var maxmagnitude = magnitudeList.Max();           
+            var maxmagnitude = magnitudeList.Max();
             foreach (var nh in nhList)
             {
                 if (nh.magnitude != 100)
                 {
-                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);                   
+                    nh.magnitude = (nh.magnitude - minimagnitude) / (maxmagnitude - minimagnitude);
                 }
                 result.Add(nh);
             }
@@ -1090,14 +1107,14 @@
                     radians[i].orientation = incresementCount;
                     result.Add(radians[i]);
                 }
-            }          
-            return result; 
+            }
+            return result;
         }
 
         // todo : to finish the cursive part
         void GrayCode(int numBits)
         {
-            
+
             var initialBits = new char[2];
             if (numBits == 1)
             {
@@ -1113,8 +1130,8 @@
                 char[] mirroredBits = Reverse(initialBits);
                 initialBits.Concat(mirroredBits);
                 // for the first n bits, append 0
-                char[] prefix1 = new char[1] { '0'};
-                char[] prefix2 = new char[1] { '1' }; 
+                char[] prefix1 = new char[1] { '0' };
+                char[] prefix2 = new char[1] { '1' };
                 for (int i = 0; i < numBits; i++)
                 {
                     char[] tempBit = new char[] { initialBits[i] };

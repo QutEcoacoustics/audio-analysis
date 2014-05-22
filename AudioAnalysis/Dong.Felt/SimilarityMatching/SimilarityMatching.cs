@@ -6,6 +6,7 @@
     using System.Text;
     using System.ComponentModel;
     using Representations;
+    using Dong.Felt.Features;
 
     
     enum MatchIndex//public enum MatchIndex
@@ -36,6 +37,17 @@
         #endregion
 
         #region Public Methods
+
+        public static double DistanceForOrientationHistogram(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
+        {
+            var distance = 0;
+            var numberOfBitCount = instance.VerticalBitVector.Count();            
+            for (int i = 0; i < numberOfBitCount; i++)
+            {              
+                //sumV = sumV + Math.Abs(instance. - template);
+            }            
+            return distance;
+        }
 
         /// <summary>
         /// Calculate the average distance between two featureVectors. 
@@ -358,6 +370,21 @@
         //    }
         //    return result;
         //}
+
+        public static double WeightedDistanceScoreRegionFeature(Feature query, Feature candidate, double weight1, double weight2)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {                                            
+                for (int index = 0; index < query.orientationHistogram.Count; index++)
+                {                   
+                    var orientationHisDifference = Math.Abs(query.orientationHistogram[index] -
+                        candidate.orientationHistogram[index]);
+                    result += orientationHisDifference;
+                }               
+            }
+            return result;
+        }
 
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 

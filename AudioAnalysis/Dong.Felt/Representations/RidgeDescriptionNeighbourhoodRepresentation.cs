@@ -76,6 +76,9 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double magnitude { get; set; }
 
+        /// <summary>
+        /// gets or sets the orientation for a neighbourhood.  
+        /// </summary>
         public double orientation { get; set; }
 
         //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.FrameIndex * this.Duration.TotalMilliseconds); } }
