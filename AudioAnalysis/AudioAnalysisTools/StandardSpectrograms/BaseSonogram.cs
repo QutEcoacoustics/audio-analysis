@@ -653,6 +653,149 @@
         }
 
 
+        public static Image GetSonogramImage(double[,] data)
+        {
+            int width = data.GetLength(0); // Number of spectra in sonogram
+            int binCount = data.GetLength(1);
+            int binHeight = 1;
+
+            int imageHeight = binCount * binHeight; // image ht = sonogram ht
+
+            //set up min, max, range for normalising of dB values
+            double min; double max;
+            DataTools.MinMax(data, out min, out max);
+            double range = max - min;
+
+            //int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
+            //int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
+            //if (DoMelScale)
+            //{
+            //    double maxMel = MFCCStuff.Mel(this.NyquistFrequency);
+            //    int melRange = (int)(maxMel - 0 + 1);
+            //    double pixelPerMel = imageHeight / (double)melRange;
+            //    double minBandMel = MFCCStuff.Mel(this.subBand_MinHz);
+            //    double maxBandMel = MFCCStuff.Mel(this.subBand_MaxHz);
+            //    minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
+            //    maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
+            //}
+            Color[] grayScale = ImageTools.GrayScale();
+
+            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = imageHeight;
+            for (int y = 0; y < binCount; y++) //over all freq bins
+            {
+                for (int r = 0; r < binHeight; r++) //repeat this bin if pixel rows per bin>1
+                {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double value = (data[x, y] - min) / (double)range;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0) c = 0;
+                        else 
+                        if (c >= 256) c = 255;
+
+                        //int g = c + 40; // green tinge used in the template scan band 
+                        //if (g >= 256) g = 255;
+                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
+                    }//for all pixels in line
+                    yOffset--;
+                } //end repeats over one track
+            }//end over all freq bins
+
+            return (Image)bmp;
+        }
+
+        public static Image FrameSpectrogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int Y_interval)
+        {
+            ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
+
+            int imageWidth = image.Width;
+            int trackHeight = 20;
+
+            int imageHt = image.Height + trackHeight + trackHeight + trackHeight;
+            //TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
+            //Bitmap timeBmp = Image_Track.DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
+
+            Bitmap timeBmp = BaseSonogram.DrawTimeTrack(minOffset, xAxisPixelDuration, xAxisTicInterval, imageWidth, trackHeight, "Time");
+
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            int offset = 0;
+            gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
+            offset += timeBmp.Height;
+            gr.DrawImage(timeBmp, 0, offset); //draw
+            offset += titleBar.Height;
+            gr.DrawImage(image, 0, offset); //draw
+            offset += image.Height;
+            gr.DrawImage(timeBmp, 0, offset); //draw
+            return compositeBmp;
+        }
+
+        public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
+        {
+            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            //string text = title;
+            int X = 4;
+            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(title, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+            string text = String.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+            return bmp;
+        }
+
+        // mark of time scale according to scale.
+        public static Bitmap DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int trackWidth, int trackHeight, string title)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            double elapsedTime = offsetMinute.TotalSeconds;
+            double ticInterval = xAxisTicInterval.TotalSeconds;
+            double pixelDuration = xAxisPixelDuration.TotalSeconds;
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 9);
+
+            for (int x = 0; x < trackWidth; x++) //for pixels in the line
+            {
+                elapsedTime += (x * pixelDuration);
+                //int pixelID = elapsedTime / ticInterval;
+                //if() continue
+                g.DrawLine(whitePen, x, 0, x, trackHeight);
+                //hour = min / XaxisScale;
+                //if (hour >= 24)
+                //{
+                //    min = 0;
+                //    hour = 0;
+                //}
+                //g.DrawString(hour.ToString(), stringFont, Brushes.White, new PointF(x + 2, 1)); //draw time
+            }//end over all pixels
+            g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
+            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
+
+            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
+            return bmp;
+        }
+
+
 
     } //end abstract class BaseSonogram
 
