@@ -71,23 +71,20 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Candidates> WeightedEuclideanDistance(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, double weight1, double weight2)
+        public static List<Candidates> WeightedEuclideanDistance(List<RegionRerepresentation> query, 
+            List<RegionRerepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             var queryFeatures = query[0].Features;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            for (int i = 0; i < candidatesCount; i++)
             {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var candidateFeatures = new Feature(tempRegionList);
-                var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                var distance = SimilarityMatching.WeightedDistanceScoreRegionFeature(query[0].Features, candidateFeatures, weight1, weight2);
-                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                        tempRegionList[0].SourceAudioFile);
+                var duration = candidates[i].Duration.TotalMilliseconds;
+                var distance = SimilarityMatching.WeightedDistanceScoreRegionFeature(query[0].Features, candidates[i].Features);
+                var item = new Candidates(distance, candidates[i].FrameIndex,
+                        duration, candidates[i].FrequencyIndex, candidates[i].FrequencyIndex - candidates[i].FrequencyRange,
+                        candidates[i].SourceAudioFile);
                 result.Add(item);
             }
             return result;

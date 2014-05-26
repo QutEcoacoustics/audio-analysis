@@ -351,27 +351,7 @@
             return result;
         }
 
-        //public static double DistanceScoreRegionRepresentation(RegionRerepresentation query, RegionRerepresentation candidate)
-        //{
-        //    var result = 0.0;
-        //    var nhCount = query.NhCountInCol * query.NhCountInRow;
-        //    for (int index = 0; index < nhCount; index++)
-        //    {
-        //        var ridgeNeighbourhoods = new List<RidgeDescriptionNeighbourhoodRepresentation>(query.ridgeNeighbourhoods);
-        //        // change score into orientation.
-        //        var queryScore = Math.Abs(ridgeNeighbourhoods[index].orientation);
-        //        var queryOrientationType = ridgeNeighbourhoods[index].orientationType;
-        //        var candidateScore = Math.Abs(candidate.ridgeNeighbourhoods[index].orientation);
-        //        var candidateOrientationType = candidate.ridgeNeighbourhoods[index].orientationType;
-        //        var orientationDifference = Math.Abs(queryOrientationType - candidateOrientationType);
-        //        //var magnitudeDifference = Math.Sqrt(Math.Pow((queryScore - candidateScore), 2.0));
-        //        //result += (orientationDifference + 1) * magnitudeDifference;
-        //        result += Math.Abs(queryScore - candidateScore);
-        //    }
-        //    return result;
-        //}
-
-        public static double WeightedDistanceScoreRegionFeature(Feature query, Feature candidate, double weight1, double weight2)
+        public static double WeightedDistanceScoreRegionFeature(Feature query, Feature candidate)
         {
             var result = 0.0;
             if (query != null && candidate != null)

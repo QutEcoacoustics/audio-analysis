@@ -34,6 +34,8 @@ namespace Dong.Felt.Features
             var histogram = new int[8];
             foreach (var r in region)
             {
+                if(r.magnitude != 100)
+                {
                 if (r.orientation >= -4 * Math.PI / 8 && r.orientation < -3 * Math.PI / 8)
                 {
                     histogram[0]++;
@@ -68,6 +70,7 @@ namespace Dong.Felt.Features
                 }              
                 //this.magnitudes.Add(r.magnitude);
                 //this.orientations.Add(r.orientation);
+                }
             }
             var histogramList = new List<int>();
             for (int i = 0; i < histogram.Count(); i++)
@@ -88,7 +91,11 @@ namespace Dong.Felt.Features
                     var poiCountThreshold = (int)(0.15 * Math.Pow(region[0].neighbourhoodSize, 2));
                     if (region[i].magnitude != 100 && region[i].POICount > poiCountThreshold)
                     {
-                        regionFeatureBlockIndicator[i] = 1;
+                        regionFeatureBlockIndicator.Add(1);
+                    }
+                    else
+                    {
+                        regionFeatureBlockIndicator.Add(0);
                     }
                 }
             }
@@ -100,7 +107,11 @@ namespace Dong.Felt.Features
                     var poiCountThreshold = (int)(0.15 * Math.Pow(secondRegion[0].neighbourhoodSize, 2));
                     if (secondRegion[i].magnitude != 100 && secondRegion[i].POICount > poiCountThreshold)
                     {
-                        secondRegionFeatureBlockIndicator[i] = 1;
+                        secondRegionFeatureBlockIndicator.Add(1);
+                    }
+                    else
+                    {
+                        secondRegionFeatureBlockIndicator.Add(0);
                     }
                 }
             }
@@ -110,12 +121,12 @@ namespace Dong.Felt.Features
             var blockMatchCount = 0;
             for (int k = 0; k < listLength; k++)
             {
-                if (regionFeatureBlockIndicator == secondRegionFeatureBlockIndicator)
+                if (regionFeatureBlockIndicator[k] == secondRegionFeatureBlockIndicator[k])
                 {
                     blockMatchCount++;
                 }
             }
-            this.featureBlockMatch = blockMatchCount / listLength;
+            this.featureBlockMatch = (double)blockMatchCount / listLength;
         }
 
     }

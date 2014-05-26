@@ -686,14 +686,14 @@
 
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
                 neighbourhoodLength, featurePropSet, spectrogramConfig);
-                var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
-                (ridgeNhRepresentationList, featurePropSet);
+                //var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
+                //(ridgeNhRepresentationList, featurePropSet);
 
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                normalizedNhRepresentationList, queryAduioFiles[i], spectrogram);
+                ridgeNhRepresentationList, queryAduioFiles[i], spectrogram);
                 queryRepresentation[0].Features = new Feature(queryRepresentation);
 
                 //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
@@ -722,22 +722,25 @@
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
                     var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1,
                         neighbourhoodLength, featurePropSet, spectrogramConfig);
-                    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
-                (candidateRidgeNhRepresentationList, featurePropSet);
+                //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
+                //(candidateRidgeNhRepresentationList, featurePropSet);
                     // this region representation depends on the query. 
-                    var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, CanNormalizedNhRepresentationList,
+                    var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
                     candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
                     // extract the candidates from the specific frequency
                     var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-                    //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
-                    foreach (var c in candidatesRegionList)
-                    {                                              
-                         candidatesList.Add(c);
+                    var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
+                    foreach (var c in splitRegionRepresentationListToBlock)
+                    {
+                        c[0].Features = new Feature(c);
+                        var matchScore = new Feature(queryRepresentation, c);
+                        c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
+                        candidatesList.Add(c[0]);
                     }
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                var weight1 = 1;
-                var weight2 = 1;
+                var weight1 = 0.75;
+                var weight2 = 0.25;
                 var weight3 = 1;
                 var weight4 = 1;
                 var weight5 = 1;
@@ -760,7 +763,8 @@
                     candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
                     weight1, weight2, weight3, weight4, weight5, weight6);
                 }
-                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+                var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
+                    candidatesList, weight1, weight2);
 
                 /// To save all matched acoustic events                        
                 if (simiScoreCandidatesList.Count != 0)
@@ -853,7 +857,7 @@
                     int tempValue = i + 1;
                     listString.Add(tempValue.ToString());
                 }
-                var imageArray = DrawingSpectrogramsFromAudios(outPutFileDirectory, config, listString, candidates, ridgeConfig).ToArray();
+                var imageArray = DrawingSpectrogramsFromAudios(outPutFileDirectory, config, listString, rank, candidates, ridgeConfig).ToArray();
                 var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
                 var temp = new FileInfo(candidates[0].SourceFilePath);
                 var imageOutputName = featurePropSet + temp.Name + "Combined image.png";
@@ -862,7 +866,7 @@
             }
         }
 
-        public static List<Image> DrawingSpectrogramsFromAudios(DirectoryInfo audioFileDirectory, SonogramConfig config, List<string> s,
+        public static List<Image> DrawingSpectrogramsFromAudios(DirectoryInfo audioFileDirectory, SonogramConfig config, List<string> s, int rank,
             List<Candidates> candidates, RidgeDetectionConfiguration ridgeConfig)
         {
             var result = new List<Image>();
@@ -888,7 +892,7 @@
                 }
             }
 
-            for (int i = 0; i < audioFilesCount; i++)
+            for (int i = 0; i < rank + 1; i++)
             {
 
                 /// because the query always come from first place.                   
