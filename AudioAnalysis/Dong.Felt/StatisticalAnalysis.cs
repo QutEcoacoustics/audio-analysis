@@ -23,9 +23,15 @@
                 regionCountInBlock = regionRepresentationList[0].NhCountInCol * regionRepresentationList[0].NhCountInRow;
                 blockCount = regionRepresentationList.Count / regionCountInBlock;
             }
-            for (int i = 0; i < regionRepresentationList.Count; i++)
+            for (int i = 0; i < regionRepresentationList.Count; i += regionCountInBlock)
             {
-                result[i / blockCount].Add(regionRepresentationList[i]);
+                var tempResult = StatisticalAnalysis.SubRegionFromRegionList(regionRepresentationList, i, regionCountInBlock);
+                var temp = new List<RegionRerepresentation>();
+                foreach (var t in tempResult)
+                {
+                    temp.Add(t);
+                }
+                result.Add(temp);
             }
             return result;
         }
@@ -1061,6 +1067,28 @@
             {
                 var similarityScore = 1 - d / max;
                 result.Add(similarityScore);
+            }
+            return result;
+        }
+
+        public static List<Candidates> ConvertCombinedDistanceToSimilarityScore(List<Candidates> candidates, List<RegionRerepresentation> candidatesList,
+            double weight1, double weight2)
+        {
+            var result = new List<Candidates>();
+            var distanceList = new List<double>();
+            foreach (var c in candidates)
+            {
+                distanceList.Add(c.Score);
+            }
+            var max = distanceList.Max();
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                var similarityScore = 1 - candidates[i].Score / max;
+                var score = weight1 * similarityScore + weight2 * candidatesList[i].Features.featureBlockMatch;
+                score = Convert.ToDouble(similarityScore.ToString("F03", CultureInfo.InvariantCulture));
+                var item = new Candidates(score, candidates[i].StartTime, candidates[i].EndTime - candidates[i].StartTime,
+                    candidates[i].MaxFrequency, candidates[i].MinFrequency, candidates[i].SourceFilePath);
+                result.Add(item);
             }
             return result;
         }
