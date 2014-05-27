@@ -51,6 +51,8 @@ namespace Dong.Felt.Representations
         /// </summary>
         public string SourceAudioFile { get; set; }
 
+        public List<double> HistogramOfOrientatedGradient { get; set;}
+
         public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods { get; set; }
 
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
@@ -99,6 +101,7 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = nhCountInRow * nh.FrequencyRange;
             this.Duration = TimeSpan.FromMilliseconds(nh.Duration.TotalMilliseconds * nhCountInCol);
             this.neighbourhoodSize = nh.neighbourhoodSize;
+            this.HistogramOfOrientatedGradient = nh.histogramOfGradient;
             this.HOrientationPOICount = nh.HOrientationPOICount;
             this.HOrientationPOIMagnitudeSum = nh.HOrientationPOIMagnitudeSum;
             this.VOrientationPOICount = nh.VOrientationPOICount;

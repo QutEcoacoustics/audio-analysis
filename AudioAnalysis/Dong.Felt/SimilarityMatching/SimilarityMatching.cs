@@ -464,6 +464,30 @@
             return result;
         }
 
+        public static double DistanceHoGRepresentation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;               
+                for (int index = 0; index < nhCount; index++)
+                {
+                    var sum = 0.0;
+                    if (query[index].HistogramOfOrientatedGradient != null && candidate[index].HistogramOfOrientatedGradient != null)
+                    {
+                        List<double> queryHOG = query[index].HistogramOfOrientatedGradient;
+                        List<double> candidateHOG = candidate[index].HistogramOfOrientatedGradient;                        
+                        for (int i = 0; i < queryHOG.Count; i++)
+                        {
+                            sum += Math.Abs(queryHOG[i] - candidateHOG[i]);
+                        }
+                    }
+                    result += sum;
+                }                
+            }
+            return result;
+        }
+
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
         /// based on the sum of sub-region in the process of calculation. There are four properties as feature vector. 

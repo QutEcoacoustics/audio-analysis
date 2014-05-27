@@ -694,7 +694,7 @@
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
                 ridgeNhRepresentationList, queryAduioFiles[i], spectrogram);
-                queryRepresentation[0].Features = new Feature(queryRepresentation);
+                //queryRepresentation[0].Features = new Feature(queryRepresentation);
 
                 //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
@@ -729,13 +729,17 @@
                     candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
                     // extract the candidates from the specific frequency
                     var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-                    var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
-                    foreach (var c in splitRegionRepresentationListToBlock)
-                    {
-                        c[0].Features = new Feature(c);
-                        var matchScore = new Feature(queryRepresentation, c);
-                        c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
-                        candidatesList.Add(c[0]);
+                    //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
+                    //foreach (var c in splitRegionRepresentationListToBlock)
+                    //{
+                    //    c[0].Features = new Feature(c);
+                    //    var matchScore = new Feature(queryRepresentation, c);
+                    //    c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
+                    //    candidatesList.Add(c[0]);
+                    //}
+                    foreach (var c in candidatesRegionList)
+                    {                     
+                        candidatesList.Add(c);
                     }
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
@@ -763,8 +767,17 @@
                     candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
                     weight1, weight2, weight3, weight4, weight5, weight6);
                 }
-                var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
-                    candidatesList, weight1, weight2);
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+                {
+                    candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                {
+                    //candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
+                }
+                //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
+                //    candidatesList, weight1, weight2);
+                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
                 /// To save all matched acoustic events                        
                 if (simiScoreCandidatesList.Count != 0)
