@@ -15,12 +15,28 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet2 = "FeaturePropSet2";
         public const string FeaturePropSet3 = "FeaturePropSet3";
         public const string FeaturePropSet4 = "FeaturePropSet4";
+        public const string FeaturePropSet5 = "FeaturePropSet5";
 
         #region Properties
 
         // all neighbourhoods for one representation must be the same dimensions
         // the row starts from start of file (left, 0ms)
         // the column starts from bottom of spectrogram (0 hz)
+
+        /// <summary>
+        /// To get or set the the percentage of pointsOfinterest in a neighbourhood.  
+        /// </summary>
+        public double POICountPercentage { get; set; }
+
+        /// <summary>
+        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// </summary>
+        public double ColumnEnergyEntropy { get; set; }
+
+        /// <summary>
+        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// </summary>
+        public double RowEnergyEntropy { get; set; }
 
         /// <summary>
         /// To get or set the the pointsOfinterest count in a neighbourhood. 
@@ -81,6 +97,8 @@ namespace Dong.Felt.Representations
         /// gets or sets the orientation for a neighbourhood.  
         /// </summary>
         public double orientation { get; set; }
+
+        public List<double> histogramOfGradient { get; set; }
 
         //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.FrameIndex * this.Duration.TotalMilliseconds); } }
 
@@ -323,25 +341,27 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
-        public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
-            var histogramOfGradient = new List<int>();
-            var EastDirectionBin = 0;
-            var NorthEastBin = 0;
-            var NorthBin = 0;
-            var NorthWestBin = 0;
+            var histogramOfGradient = new List<double>();
+            var EastBin = 0.0;
+            var NorthEastBin = 0.0;
+            var NorthBin = 0.0;
+            var NorthWestBin = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
             {
                 for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
                 {
-                    if (pointsOfInterest[rowIndex, colIndex] != null)
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                        {
-                            EastDirectionBin++;
+                        {                           
+                            EastBin++;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
-                        {
+                        {                           
                             NorthEastBin++;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
@@ -349,8 +369,72 @@ namespace Dong.Felt.Representations
                             NorthBin++;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
-                        {
+                        {                            
                             NorthWestBin++;
+                        }
+                    }
+                }
+            }
+            var sumPOICount = EastBin + NorthEastBin + NorthBin + NorthWestBin;
+            if (sumPOICount != 0)
+            {
+                histogramOfGradient.Add(EastBin / sumPOICount);
+                histogramOfGradient.Add(NorthEastBin / sumPOICount);
+                histogramOfGradient.Add(NorthBin / sumPOICount);
+                histogramOfGradient.Add(NorthWestBin / sumPOICount);
+            }
+            else
+            {
+                histogramOfGradient.Add(0.0);
+                histogramOfGradient.Add(0.0);
+                histogramOfGradient.Add(0.0);
+                histogramOfGradient.Add(0.0);
+            }
+            this.histogramOfGradient = histogramOfGradient;
+            this.histogramOfGradient = histogramOfGradient;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrameIndex = col * timeScale;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+        }
+
+        public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            var histogramOfGradient = new List<double>();
+            var EastDirectionBin = 0.0;
+            var NorthEastBin = 0.0;
+            var NorthBin = 0.0;
+            var NorthWestBin = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        {
+                            var eastBinValue = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude * (pointsOfInterest[rowIndex, colIndex].OrientationCategory + 8);
+                            EastDirectionBin += eastBinValue;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
+                        {
+                            var northEastBinValue = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude * pointsOfInterest[rowIndex, colIndex].OrientationCategory;
+                            NorthEastBin += northEastBinValue;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                        {
+                            var northBinValue = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude * pointsOfInterest[rowIndex, colIndex].OrientationCategory;
+                            NorthBin += northBinValue;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
+                        {
+                            var northWestBinValue = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude * pointsOfInterest[rowIndex, colIndex].OrientationCategory;
+                            NorthWestBin += northWestBinValue;
                         }
                     }
                 }
@@ -359,6 +443,13 @@ namespace Dong.Felt.Representations
             histogramOfGradient.Add(NorthEastBin);
             histogramOfGradient.Add(NorthBin);
             histogramOfGradient.Add(NorthWestBin);
+            this.histogramOfGradient = histogramOfGradient;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrameIndex = col * timeScale;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
         public void SplittedBestLineFitNhRepresentation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
@@ -670,6 +761,7 @@ namespace Dong.Felt.Representations
                 }
             }
             this.POICount = this.HOrientationPOICount + this.VOrientationPOICount + this.PDOrientationPOICount + this.NDOrientationPOICount;
+            this.POICountPercentage = this.POICount / Math.Pow(this.neighbourhoodSize, 2);
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList,
@@ -699,6 +791,10 @@ namespace Dong.Felt.Representations
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
                         {
                             ridgeNeighbourhoodRepresentation.HistogramOfOrientatedGradient(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
