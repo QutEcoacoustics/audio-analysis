@@ -2,7 +2,7 @@ g.output.parent.dir <- "/Users/n8933464/Documents/sample_selection_output"
 g.output.master.dir <- file.path(g.output.parent.dir, 'master')
 g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
-require('rjson')
+
 
 # the way the output works is that each output file will have parameters and dependent output
 # eg clustering will have feature weights as parameters and a particular features file as dependency
@@ -41,7 +41,7 @@ CheckPaths <- function () {
 
 
 GetType <- function (name) { 
-    if (name %in% c('clustering', 'ranked.samples')) {
+    if (name %in% c('clustering')) {
         return('object')
     } else {
         return('csv')
@@ -49,20 +49,20 @@ GetType <- function (name) {
 }
 
 
-ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, false.if.missing = FALSE) {
-    meta.row <- ChooseOutputVersion(name, params, false.if.missing = false.if.missing)
-    if (!is.data.frame(meta.row)) {
+ReadOutput <- function (name, purpose = NA, include.meta = FALSE, params = NA) {
+    v <- ChooseOutputVersion(name, params)
+    if (!is.data.frame(v)) {
         return(FALSE)
     }
     type <- GetType(name)
     if (type == 'object') {   
-        val <- (ReadObject(name, meta.row$version))
+        val <- (ReadObject(name, v$version))
     } else {
-        val <- (ReadCsv(name, meta.row$version))
+        val <- (ReadCsv(name, v$version))
     }
     if (include.meta) {
-        meta <- ExpandMeta(meta.row)
-        meta$data <- val
+        meta <- ExpandMeta(v)
+        meta$val <- val
         return(meta)
     } else {
         return(val)
@@ -71,40 +71,35 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
 
 
 WriteOutput <- function (x, name, params, dependencies = list()) {
-
-    meta <- ReadMeta()
+    require('rjson')
+    versions <- ReadVersions(name)
     params <- toJSON(params)
     dependencies <- toJSON(dependencies)
     
-    matching.name <- meta$name == name
-    matching.p.and.d<- matching.name & meta$params == params & meta$dependencies == dependencies
-    
     # search for a previous version with the same params and same dependencies
-    # if found, confirm overwrite and update meta with new date
-    # if not found, create a new meta row
+    if (is.data.frame(versions)) {
+        matching <- versions$params == params & versions$dependencies == dependencies       
+        if (any(matching)) {
+            # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
+            msg <- paste("Overwrite output for version ", versions$version[matching], " (", versions$date[matching], ")?")
+            overwrite <- Confirm(msg)
+            if (!overwrite) {
+                return(FALSE)
+            } else {
+                versions$date[matching] <- date()
+                new.v.num <- versions$version[matching]
+            }
+        } else {       
+            new.v.num <- max(versions$version) + 1
+            new.version.meta <- VersionRow(new.v.num, params, dependencies) 
+            versions <- rbind(versions, new.version.meta)
 
-    if (any(matching.p.and.d)) {
-        # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
-        msg <- paste("Overwrite output for version ", meta$version[matching.p.and.d], " (", meta$date[matching.p.and.d], ")?")
-        overwrite <- Confirm(msg)
-        if (!overwrite) {
-            return(FALSE)
-        } else {
-            meta$date[matching.p.and.d] <- DateTime()
-            new.v.num <- meta$version[matching.p.and.d]
         }
-    } else {       
-        if (any(matching.name)) {
-            new.v.num <- max(meta$version[matching.name]) + 1  
-        } else {
-            new.v.num <- 1
-        }
-        
-        new.meta.row <- MakeMetaRow(name, new.v.num, params, dependencies) 
-        meta <- rbind(meta, new.meta.row)
-        
-    }    
-    WriteMeta(meta)
+    } else {
+        new.v.num <- 1
+        versions <- VersionRow(new.v.num, params, dependencies)
+    }
+    WriteVersions(name, versions)
     WriteOutputFile(x, name, new.v.num)
     
     
@@ -145,30 +140,28 @@ WriteCsv <- function (x, name, v.num) {
 }
 
 
-OutputPath <- function (name, version, ext = NA) {
-    if (!is.character(ext)) {
-        ext <- GetType(name)    
-    }
-    fn <- paste(as.character(name), sprintf("%03d", as.integer(version)), ext, sep = '.')
+OutputPath <- function (name, version, ext) {  
+    fn <- paste(name, sprintf("%03d", version), ext, sep = '.')
     return(file.path(g.output.master.dir, fn))
 }
 
 
-ReadMeta <- function () {
-    path <- file.path(g.output.meta.dir, 'meta.csv')
+ReadVersions <- function (name) {
+    path <- file.path(g.output.meta.dir, paste0(name, '.csv'))
     if (file.exists(path)) {
-        meta <- read.csv(path, stringsAsFactors=FALSE)  
+        versions <- read.csv(path)  
     } else {   
-        return(EmptyMeta())
+        return(FALSE)
     }
-    return(meta)
+    return(versions)
 }
 
-EmptyMeta <- function () {
-    return(data.frame(name = character(), version = integer(), params = character(), dependencies = character(), date = character()))
+WriteVersions <- function (name, x) {
+    path <- file.path(g.output.meta.dir, paste0(name, '.csv'))
+    write.csv(x, path, row.names = FALSE)  
 }
 
-MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), date = NA) {
+VersionRow <- function (v.num, params, dependencies, date = NA) {
     if (is.list(params)) {
         params <- toJSON(params)
     }
@@ -176,78 +169,51 @@ MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), da
         dependencies <- toJSON(dependencies)
     }
     if (is.na(date)) {
-        date <- DateTime()
+        date <- date()
     }
-    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA)
+    row <- data.frame(version = v.num, params = params, dependencies = dependencies, date = date)
     return(row)
 }
 
-DateTime <- function () {
-    return(format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
-}
 
-WriteMeta <- function (meta) {
-    path <- file.path(g.output.meta.dir, 'meta.csv')
-    meta <- meta[order(meta$date), ]
-    write.csv(meta, path, row.names = FALSE)  
-}
-
-
-
-
-ChooseOutputVersion <- function (name, params, false.if.missing = FALSE) {
-    VerifyMeta()
-    meta <- ReadMeta()
-    name.meta <- meta[meta$name == name & meta$file.exists == 1, ]
-    if (nrow(name.meta) == 0) {
-        if (false.if.missing) {
-            return(FALSE)
-        }
-        stop(paste("Missing output file:", name))
+ChooseOutputVersion <- function (name, params) {
+    versions <- ReadVersions(name)
+    if (!is.data.frame(versions)) {
+        return(FALSE)
     }
     if (is.list(params)) {
         params <- toJSON(params)
     }
     if (is.character(params)) {
-        name.meta <- name.meta[name.meta$params == params, ] 
+        versions <- versions[versions$params == params] 
     }
-    if (nrow(name.meta) == 0) {
-        if (false.if.missing) {
-            return(FALSE)
-        }
-        stop(paste("Missing output file with specified params:", name, params))
+    if (nrow(versions) == 0) {
+        return(false)
     }
-    choices <- sapply(name.meta$version, function (v.num) {
-        params <- GetParams.recursive(name, v.num, meta)
+    choices <- sapply(versions$version, function (v.num) {
+        params <- GetParams.recursive(name, v.num)
         return(MultiParamsToString(params))
     })
     which.version <- GetUserChoice(choices)
-    return(name.meta[which.version, ])  
+    return(versions[which.version, ])  
 }
 
-
-
-GetParams.recursive <- function (name, v.num, meta = NA) {
+GetParams.recursive <- function (name, v.num) {
     # get metadata for all versions of the output name (eg 'features')
-    if (!is.data.frame(meta)) {
-        meta <- ReadMeta()    
-    }
-
+    v <- ReadVersions(name)
     # find the metadata for this version of the output
-    row <- meta[meta$name == name & meta$version == v.num, ]
+    v <- v[v$version == v.num, ]
     # get its params from the param col, as a readable string
     params.line <- list()
-    params.line[[name]] <- list(version = v.num, date = row$date, params = row$params)
+    params.line[[name]] <- list(version = v.num, date = v$date, params = v$params)
     # get the names and versions of its dependencies
-    dependencies <- DependenciesToDf(as.character(row$dependencies))
+    dependencies <- DependenciesToDf(as.character(v$dependencies))
     # for each dependency, get the params, and params of its dependencies,
     # then append them to the params list ()
     if (nrow(dependencies) > 0) {
-        for (i in 1:nrow(dependencies)) {
-            dependency.name <- as.character(dependencies$name[i])
-            dependency.version <- as.integer(dependencies$version[i])
-            dependency.params <- GetParams.recursive(dependency.name, dependency.version, meta)
-            params.line <- c(params.line, dependency.params) 
+        for (i in nrow(dependencies)) {
+            d.params <- GetParams.recursive(as.character(dependencies$name[i]), as.integer(dependencies$version[i]))
+            params.line[[as.character(dependencies$name[i])]] <- d.params[[as.character(dependencies$name[i])]]
         }  
     }
     return(params.line)  
@@ -265,14 +231,24 @@ MultiParamsToString <- function (list) {
     return(params)
 }
 
-VerifyMeta <- function () {  
-    meta <- ReadMeta()
-    files.exist <- apply(meta, 1, function (row) {
-        path <- OutputPath(row['name'], row['version'])
-        return(file.exists(path))
-    })
-    meta$file.exists <- as.integer(files.exist)
-    WriteMeta(meta)
+VerifyMeta <- function () {
+    
+    meta.files <- list.files(g.output.meta.dir)
+    if (length(meta.files) > 1) {
+        for (i in 1:length(meta.files)) {
+            name <- RemoveFileExtension(meta.files[i])
+            meta <- ReadVersions(name)
+            ext <- GetType(name)
+            file.exists <- sapply(meta$version, 2, function (v.num) {
+                output.file <- OutputPath(name, v.num, ext)
+                return(file.exists(output.file))       
+            })
+            # delete rows where the output is missing
+        }
+    }
+    
+    
+    
 }
 
 DependenciesToDf <- function (str) {

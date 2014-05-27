@@ -74,6 +74,7 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
     if (use.lines) {
         all.steps <- c('minute.list', 
                        '',
+                       'subset',
                        'clustering',
                        'internal.distance',
                        'ranking',
@@ -82,6 +83,7 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
     } else {
         all.steps <- c('minute.list',
                        'feature.extraction',
+                       'subset',
                        'clustering',
                        'internal.distance',
                        'ranking',
@@ -154,6 +156,10 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
             DoFeatureExtraction() 
         },
         function () {
+            # 
+            CreateEventAndFeaturesSubset()
+        },
+        function () {
             # Step 3: 
             # creates a new output csv file, identical to the events file,
             # except for the addition of a "group" column.
@@ -193,6 +199,12 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
             # Step 2: 
             # with lines, feature extraction is done prior to this entry point
             # step 2 is empty
+            
+        },
+        function () {
+            # Step 2: 
+            # subset
+            CreateLinesSubset()
         },
         function () {
             # Step 3: 

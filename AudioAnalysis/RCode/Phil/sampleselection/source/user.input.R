@@ -129,3 +129,48 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) 
     val <- GetValidatedInt(min = min, max = max, default = default, msg = msg)
     return(val)    
 }
+
+
+
+
+
+Report <- function (level, ..., nl.before = FALSE, nl.after = TRUE) {
+    # prints output to the screen if the level is above the 
+    # global output level. 
+    #
+    # Args:
+    #   level: int; how important is this? 1 = most important
+    #   ... : strings;  concatenated to form the message
+    #   nl: boolean; whether to start at a new line
+    if (level <= g.report.level) {
+        if (nl.before) {
+            cat("\n")
+        }
+        cat(paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = ""))
+        if (nl.after) {
+            cat("\n")
+        }
+    }
+}
+
+Dot <- function(level = 5) {
+    #outputs a dot, used for feedback during long loops
+    if (level <= g.report.level) {
+        cat(".")
+    }
+}
+
+Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
+    # used for reporting on the execution time of parts of the code
+    if(is.null(prev)) {
+        return(proc.time())
+    } else {
+        t <- (proc.time() - prev)[3]
+        Report(3, 'finished', what, 'in', round(t, 2), ' sec')
+        if (is.numeric(num) && num > 0) {
+            time.per.each <- round(t / num, 3)
+            Report(3, time.per.each, "per", per)
+        } 
+    }
+}
+

@@ -1,34 +1,33 @@
 EvaluateSamples <- function () {
     
-    SetOutputPath(level = 2, allow.new = FALSE) # for reading
-    SetOutputPath(level = 3) # for writing
-    
-    ranks <- ReadObject('ranked_samples', level = 2)
-    d.names <- dimnames(ranks)
+    ranks <- ReadOutput('ranked.samples')
+    d.names <- dimnames(ranks$data)
     num.clusters.options <- d.names$num.clusters
     default <- length(num.clusters.options) / 2
     num.clusters.choices <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
     
-    ranks <- ranks[,num.clusters.choices,]
+    ranks$data <- ranks$data[,num.clusters.choices,]
     
     if (length(num.clusters.choices) > 1) {
         # more than 2 dimensions to graph, so make 3d plot
-        EvaluateSamples3d(ranks)
+        EvaluateSamples3d(ranks$data)
     } else {
-        EvaluateSamples2d.2(ranks)  
+        EvaluateSamples2d.2(ranks$data)  
     }
 
 }
 
-EvaluateSamples2d <- function (ranks, add.dawn = TRUE, cutoff = NA) {
+EvaluateSamples2d <- function (ranks, cutoff = NA) {
     # given a list of minutes
     # simulates a species richness survey, noting the 
     # total species found after each minute, and the total
     # number of species found after each minute
     
+    # todo: this is broken, use EvaluateSamples2d.2
+    
     #!! target only = false because of this hack
     speciesmins <- GetTags(target.only = FALSE);  # get tags within outer target 
-    ranked.min.ids <- ReadOutput('target.min.ids', level = 0)
+    ranked.min.ids <- ReadOutput('target.min.ids')
     
     # hacked in for escience paper
     mins.for.comparison <- GetMinuteList()
@@ -42,7 +41,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = TRUE, cutoff = NA) {
     i <- 1
     while (i <= length(methods)) {
         method <- methods[i]
-        ordered.min.ids <- ranked.min.ids$min.id[order(ranks[i,])]
+        ordered.min.ids <- ranked.min.ids$data$min.id[order(ranks[i,])]
         
         if (add.dawn) {
             dawn.mins <- GetRandomDawnMins(40)
@@ -73,19 +72,22 @@ EvaluateSamples2d <- function (ranks, add.dawn = TRUE, cutoff = NA) {
     
 }
 
-EvaluateSamples2d.2 <- function (ranks, add.dawn = TRUE, cutoff = NA) {
+EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
     # given a list of minutes
     # simulates a species richness survey, noting the 
     # total species found after each minute, and the total
     # number of species found after each minute
-    
+
+    add.dawn = Confirm("Add Dawn?")
 
     # if 'add dawn' equals true, we are prepending some dawn minutes to ranked minutes which appear outside of dawn
     # we therefore comparing our method with the whole day
     speciesmins <- GetTags(target.only = !add.dawn);  # get tags within outer target 
     
     # these min ids have been ranked
-    ranked.min.ids <- ReadOutput('target.min.ids', level = 0)
+    ranked.min.ids <- ReadOutput('target.min.ids')
+    
+
     
     # hacked in for escience paper
     if (add.dawn) {
@@ -93,7 +95,7 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = TRUE, cutoff = NA) {
         mins.for.comparison <- GetMinuteList()
         mins.for.comparison <- mins.for.comparison[mins.for.comparison$site == "NW" & mins.for.comparison$date == "2010-10-13",]
     } else {
-        mins.for.comparison <- ranked.min.ids
+        mins.for.comparison <- ranked.min.ids$data
     }
 
     
@@ -101,7 +103,7 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = TRUE, cutoff = NA) {
     # temp for escience paper
     if (add.dawn) {
         dawn <- GetDawnMins()
-        if (length(intersect(dawn$min.id, ranked.min.ids$min.id)) > 0) {
+        if (length(intersect(dawn$min.id, ranked.min.ids$data$min.id)) > 0) {
             stop('cant add dawn if dawn is already in the target')
         }
     }
@@ -115,7 +117,7 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = TRUE, cutoff = NA) {
     i <- 1
     while (i <= length(methods)) {
         method <- methods[i]
-        ordered.min.ids <- ranked.min.ids$min.id[order(ranks[i,])]
+        ordered.min.ids <- ranked.min.ids$data$min.id[order(ranks[i,])]
         
         if (add.dawn) {
             iterations <- 100
@@ -133,7 +135,7 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = TRUE, cutoff = NA) {
         } else {
  
             ranked.progressions[[method]] <- GetProgression(species.in.each.sample, ordered.min.ids)
-            WriteRichnessResults(ordered.min.ids, ranked.progressions[[method]], method, species.in.each.sample)
+            #WriteRichnessResults(ordered.min.ids, ranked.progressions[[method]], method, species.in.each.sample)
             ranked.count.progressions[[method]] <- ranked.progressions[[method]]$count
         }
         
@@ -442,10 +444,10 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
     # plot random at dawn, with standard deviations
     # colours : http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
     if (is.list(random.at.dawn) && length(random.at.dawn$mean) > 0) {
-        col <- c(0,1,0)
+        col <- c(0.0,0.8,0.0)
         line.colours <- rbind(line.colours, col)
         PlotLine(line = random.at.dawn$mean, col.rgb = col, sd = random.at.dawn$sd, lty = 'dashed')
-        legend.names <- c(legend.names, "Random at dawn")
+        legend.names <- c(legend.names, "Random sampling at dawn")
 
     }
     
@@ -453,12 +455,12 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
     if (is.list(random.all) && length(random.all$mean) > 0) {
         col <- c(0.9,0.6,0.2)
         PlotLine(line = random.all$mean, col.rgb = col, sd = random.all$sd, lty = 'dashed')
-        legend.names <- c(legend.names, "Random throughout")
+        legend.names <- c(legend.names, "Random sampling")
         line.colours <- rbind(line.colours, col)
     }
     
     # plot optimal
-    col <- c(0.9,0.6,0.2)
+    col <- c(0.1,0.1,0.1)
     legend.names <- c(legend.names, "Optimal sampling")
     line.colours <- rbind(line.colours, col)
     PlotLine(optimal, col.rgb = col, lty = 'dashed')
@@ -473,16 +475,16 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
     }
     
     ranking.method.names <- c(
-        "Event count only",
-        "Number of cluster groups A",
-        "Number of cluster groups B"
+        "Samples ranked by event count only",
+        "Samples ranked by number of clusters (A)",
+        "Samples ranked by number of clusters (B)"
         )
     
     
     
     ranking.method.colours <- matrix(c(1,0.3,0,
-                                       0,0.3,1,
-                                       0.7,0,0.7), ncol = 3, byrow = TRUE)
+                                       0,0.6,0.9,
+                                       0.7,0.1,0.9), ncol = 3, byrow = TRUE)
     
     line.colours <- rbind(line.colours, ranking.method.colours)
     
@@ -508,7 +510,7 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
     
     legend("bottomright",  legend = legend.names, 
            col = legend.cols, 
-           lty = lty, text.col = "black")
+           lty = lty, text.col = "black", lwd = 2)
     
 }
 
@@ -525,7 +527,7 @@ PlotLine <- function (line, col.rgb, sd = NA, sd.col = NA, lty = 'solid') {
     }
     line.col <- rgb(col.rgb[1], col.rgb[2], col.rgb[3], 1)
     par(col = line.col)
-    points(line, type='l', lty = lty)
+    points(line, type='l', lty = lty, lwd = 3)
 }
 
 
@@ -606,6 +608,8 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
     # samples and species.in.each.sample are in order of minute id
     # found.species.progression is already in the order of the ranking
     
+    #!! TODO: broken. Must update this to work with new output system
+    
     # sort the samples by rank
     
     mins <- ExpandMinId(min.ids)
@@ -626,7 +630,7 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
     
     output <- cbind(mins, output)
     
-    WriteOutput(output, output.fn, level = 3)
+    WriteOutput(output, output.fn)
     
     
 }

@@ -1,8 +1,7 @@
 ClusterEvents <- function (num.groups = 'auto', 
                            num.events = NA, 
                            save.dendrogram = FALSE, 
-                           method = 'complete', 
-                           save = TRUE) {
+                           method = 'complete') {
     # clusters events found in g.events.path
     # based on the features found in g.features.path
     # g.features.path must have the same number of rows as g.events.path
@@ -26,67 +25,29 @@ ClusterEvents <- function (num.groups = 'auto',
 
     
 
-    vals <- GetEventsAndFeatures(reextract = TRUE)
+    vals <- GetEventsAndFeatures()
     event.features <- vals$event.features
     events <- vals$events
-    
-
-    SetOutputPath(level = 2)
-    
-
+    params <- list()
     
     # get user input for which features to use in clustering. 
     # replace the 'event.id' column (which is not a feature), with 'all'
     # to use all features
-    feature.options <- colnames(event.features)
-    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE)
-    
-
-
+    feature.options <- colnames(event.features$data)
+    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE)  
+    params$features <- feature.options[feature.choices]
     # use only the chosen features
-    event.features <- event.features[, feature.choices]
+    event.features$data <- event.features$data[, feature.choices]
+    weights <- GetFeatureWeights(event.features$data)
+    params$weights <- weights
+    params$method <- method
+    fit <- DoCluster(event.features$data, weights = weights, method = method)
+    dependencies = list(events = events$version, features = event.features$version)
+    WriteOutput(fit, 'clustering', params = params, dependencies = dependencies)
     
-    fit <- DoCluster(event.features)
-    
-    if (save.dendrogram) { 
-        labels.for.dendrogram <- EventLabels(events)
-    }
-    
-    
-    if (num.groups == 'auto') {
-        num.groups <- floor(sqrt(nrow(events)))
-    }
-    
-    SaveObject(fit, 'clustering', level = 2)
-    groups <- cutree(fit, num.groups)
-    print(length(groups))
-    print(nrow(events))
-    
-    #groups <- as.matrix(cluster.result)
-    #Report(2, 'num cluster groups = ',  num.groups)
-    
-    events$group <- groups
-
-    
-    if (save) {
-        WriteOutput(events, 'clusters', level = 2)
-    }
-    
-    
-    if (save.dendrogram) {
-        library('pvclust')
-        # display dendogram
-        img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
-        Report(5, 'saving dendrogram')
-        png(img.path, width = 30000, height = 20000)
-        Dot()
-        plot(fit, labels = labels.for.dendrogram)
-        # draw dendogram with red borders around the k clusters
-        rect.hclust(fit, k=num.groups, border="red")
-        #pvrect(fit, alpha=.95)
-        dev.off()
-    }
 }
+
+
 
 
 ClusterLines <- function () {
@@ -101,41 +62,36 @@ ClusterLines <- function () {
     
 }
 
-
-DoCluster <- function (df, method = 'complete') {
-    
-    
-    Report(2, 'scaling features (m = ',  nrow(df), ')')
-    ptm <- proc.time()
-    features <- as.matrix(scale(df))  # standardize variables
-    Timer(ptm, 'scaling features')
+GetFeatureWeights <- function (df) {
     
     feature.names <- colnames(df)
-    
     if (length(feature.names) > 1) {
         weights <- rep(NA, length(feature.names))
         for (i in 1:length(weights)) {
             weights[i] <- GetValidatedFloat(msg = paste('enter weight for', feature.names[i]))    
-            features[,i] <-  features[,i] * weights[i]    
+   
         }
     }
+    
+    return(weights)
+    
+}
 
-    
+DoCluster <- function (df, weights = 1, method = 'complete') {
+    Report(2, 'scaling features (m = ',  nrow(df), ')')
+    ptm <- proc.time()
+    features <- as.matrix(scale(df))  # standardize variables
+    Timer(ptm, 'scaling features')  
+    features <- t(weights * t(features))
     Report(2, 'calculating distance matrix (m = ',  nrow(features), 'n = ', ncol(features),')')
-    
     ptm <- proc.time()
     d <- dist(features, method = "euclidean")  # distance matrix
     Timer(ptm, 'distance matrix')
-    
-    
-
     #get a cluster object
     Report(2, 'clustering ... (method = ',  method, ')')
     ptm <- proc.time()
     fit <- hclust(d, method=method)
     Timer(ptm, 'clustering')
-    
-
     return(fit)
     
 }
@@ -144,11 +100,11 @@ DoCluster <- function (df, method = 'complete') {
 
 InternalMinuteDistances <- function () {
     vals <- GetEventsAndFeatures()
-    mins <- ReadOutput('target.min.ids', level = 0)
-    vals$event.features <- as.matrix(scale(vals$event.features))  # standardize variables
-    dist.scores <- sapply(mins$min.id, InternalMinuteDistance, vals$event.features, vals$events);
-    mins$distance.score <- dist.scores
-    WriteOutput(mins, 'distance.scores', level = 2)
+    mins <- ReadOutput('target.min.ids')
+    vals$event.features$data <- as.matrix(scale(vals$event.features$data))  # standardize variables
+    dist.scores <- sapply(mins$data$min.id, InternalMinuteDistance, vals$event.features$data, vals$events$data);
+    dependencies <- list(events = vals$events$version, features = vals$event.features$version, target.min.ids = mins$version)
+    WriteOutput(dist.scores, 'distance.scores', params = list(), dependencies = dependencies)
 }
 InternalMinuteDistances.lines <- function () {
     vals <- GetLinesForclustering()
@@ -173,6 +129,31 @@ InternalMinuteDistance <- function (min.id, features, events) {
 
 
 
+ClusterDendrogram <- function () {
+    # this function is not working at all
+    # was moved out of "cluster events" function
+    # but has not been completed to work in its own function 
+    if (save.dendrogram) { 
+        labels.for.dendrogram <- EventLabels(events$data)
+    }
+    
+    if (num.groups == 'auto') {
+        num.groups <- floor(sqrt(nrow(events$data)))
+    }
+    library('pvclust')
+    # display dendogram
+    #todo: OutputFilePath function
+    fit <- ReadOutput('clustering')
+    img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
+    Report(5, 'saving dendrogram')
+    png(img.path, width = 30000, height = 20000)
+    Dot()
+    plot(fit$data, labels = labels.for.dendrogram)
+    # draw dendogram with red borders around the k clusters
+    rect.hclust(fit, k=num.groups, border="red")
+    #pvrect(fit, alpha=.95)
+    dev.off()
+}
 
 
 

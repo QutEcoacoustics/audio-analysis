@@ -68,7 +68,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
 Sp.CreateFromFile <- function (path, draw = FALSE) {
 
     
-    split <- strsplit(pangram, .Platform$file.sep)
+    split <- strsplit(path, .Platform$file.sep)
     cache.id <- paste0(split[length(split)], '.spectro')
     
     spectro <- ReadCache(cache.id)

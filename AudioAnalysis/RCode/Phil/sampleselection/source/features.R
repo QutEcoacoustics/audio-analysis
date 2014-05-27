@@ -18,29 +18,35 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     # set this to how many files to process, 
     # false to do them all
     
+    
+    
+    
     library('tuneR')
+    all.events <- ReadOutput('all.events')
     if (min.id == FALSE) {
-        events <- GetOuterTargetEvents()  
+        events <- TargetSubset(all.events$data)        
     } else {
-        all.events <- ReadMasterOutput('events', false.if.missing = FALSE)
-        events <- all.events[all.events$min.id == min.id, ]
+        events <- all.events$data[all.events$data$min.id == min.id, ]
     }
 
     # make sure it is sorted by filename 
     events <- events[with(events, order(filename)) ,]
     
-    already.extracted.features <- GetExistingFeatures()
-    already.rated.events <- GetExistingEventRatings()
+    params <- list()
+    #params$features.hash <- HashFileContents('features.R')
+    
+    dependencies <- list( all.events = all.events$version)
+    
+    
+    already.extracted.features <- ReadOutput('all.features', params, false.if.missing = TRUE)
+    already.rated.events <- ReadOutput('all.rating.features', params, false.if.missing = TRUE)
     
     # features will be calculated and added to the already extracted features
     # therefore, don't calculate for events which are already calculated
-    if (class(already.extracted.features) == 'data.frame') {
+    if (is.data.frame(already.extracted.features)) {
         event.ids.to.process <- setdiff(events$event.id, already.extracted.features$event.id)
         events <- events[events$event.id %in% event.ids.to.process, ]   
     }
-    
-     
-
  
     cur.wav.path <- FALSE
     cur.spectro <- FALSE
@@ -124,8 +130,8 @@ DoFeatureExtraction <- function (min.id = FALSE) {
         
         features.all <- OrderBy(features.all, 'event.id')
         rating.features.all <- OrderBy(rating.features.all, 'event.id')
-        WriteMasterOutput(features.all, 'features')
-        WriteMasterOutput(rating.features.all, 'rating.features')
+        WriteOutput(features.all, 'all.features', params)
+        WriteOutput(rating.features.all, 'all.rating.features', params)
         
     } else {
         
@@ -144,8 +150,7 @@ GetExistingFeatures <- function () {
     # it returns the features already extracted
     
     # check if any of these files have changed
-    to.check <- c(MasterOutputPath('events'),
-                  'features.R')
+    to.check <- c(MasterOutputPath('events'), 'features.R')
     return(GetExistingMasterOutput('features', to.check))
 }
 

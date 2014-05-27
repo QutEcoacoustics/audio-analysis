@@ -33,17 +33,14 @@ g.study.sites <- c('NW', 'NE')  # todo: include the others, eventually
 
 # the date and minute to start sample selection from
 g.start.date <- "2010-10-13"
-g.start.min <- 0
-#g.start.min <- 0
 
 # the date and minute to end sample selection at
 g.end.date <- "2010-10-13"
-g.end.min <- 1439
-#g.end.min <- 430
 
 # alternative to g.start.min. and g.end.min,
 # allowing more control ofer which parts of the day are to be used
-g.multi.parts.of.day <- c(0, 314, 496, 1440)
+# g.minute.ranges <- c(0, 1439)
+g.minute.ranges <- c(0, 1439)
 
 # which sites to include in sample selection
 g.sites <- c('NW')
@@ -55,7 +52,7 @@ g.sites <- c('NW')
 g.percent.of.target <- 100
 
 # how many minute samples to use when inspecting
-g.num.samples <- 5
+g.num.samples <- 15
 
 
 # evaluation is done against mysql database of tags

@@ -469,7 +469,6 @@ ShiftMatrix <- function (m, rr, cc) {
         m <- rbind(m, matrix(rep(m[nrow(m),], rr), nrow = rr, byrow = TRUE))
         m <- m[-(1:rr), ]
     }
-    
     return(m)
 }
 
@@ -487,5 +486,17 @@ RgbCol <- function (rgb.vals) {
     } else {
         return(NA)
     }
-
 }
+
+OddVals <- function(v) {
+    return(v[seq(1, length(v), 2)])  
+}
+EvenVals <- function(v) {
+    return(v[seq(2, length(v), 2)])  
+}
+
+RemoveFileExtension <- function (fn) {
+    tmp <- unlist(strsplit(fn,"\\."))
+    return(paste0(tmp[1:(length(tmp)-1)], collapse='.'))
+}
+

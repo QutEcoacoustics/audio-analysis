@@ -6,7 +6,7 @@ RankSamples <- function (use.lines = TRUE) {
         events <- ReadOutput('events')
     }
 
-    mins <- ReadOutput('target.min.ids', level = 0)
+    mins <- ReadOutput('target.min.ids')
     ranking.methods <- list()
     ranking.methods[[1]] <- RankSamples1
     ranking.methods[[2]] <- RankSamples2
@@ -24,19 +24,19 @@ RankSamples <- function (use.lines = TRUE) {
     num.clusters <- round(num.clusters.start * num.clusters.multiplier^(0:(num.num.clusters-1)))
     
     # make sure we are not trying to use more clusters than events
-    num.clusters <- num.clusters[num.clusters < nrow(events)]
+    num.clusters <- num.clusters[num.clusters < nrow(events$data)]
     
-    output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins)), dimnames = list(ranking.method = 1:length(use.ranking.methods), num.clusters = num.clusters, min.id = mins$min.id))
+    output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins$data)), dimnames = list(ranking.method = 1:length(use.ranking.methods), num.clusters = num.clusters, min.id = mins$data$min.id))
 
-    groups <- as.data.frame(matrix(rep(NA, length(num.clusters) * nrow(events)), nrow = nrow(events)))
+    groups <- as.data.frame(matrix(NA, ncol = length(num.clusters), nrow = nrow(events$data)))
     groups.col.names <- paste0('group.', num.clusters)
     colnames(groups) <- groups.col.names
-    groups <- cbind(events, groups)
+    groups <- cbind(events$data, groups)
     
-    fit <- ReadObject('clustering', level = 2)
+    fit <- ReadOutput('clustering')
     for (n in 1:length(num.clusters)) {
-        group <- cutree(fit, num.clusters[n])
-        events$group <- group #temporarily add the group to the events for ranking
+        group <- cutree(fit$data, num.clusters[n])
+        events$data$group <- group #temporarily add the group to the events for ranking
         groups[, groups.col.names[n]] <- group  # also add it here so it gets saved
         for (m in 1:length(use.ranking.methods)) {
             
@@ -44,13 +44,18 @@ RankSamples <- function (use.lines = TRUE) {
             
             
             
-            r <- ranking.methods[[use.ranking.methods[m]]](events = events, min.ids = mins$min.id)   
+            r <- ranking.methods[[use.ranking.methods[m]]](events = events$data, min.ids = mins$data$min.id)   
             r <- r[order(r$min.id), ]
             output[m, n, ] <- r$rank
         }
     }
-    SaveObject(output, 'ranked_samples', level = 2)
-    WriteOutput(groups, 'clusters', level = 2)
+    
+    params <- list(num.clusters = num.clusters, ranking.methods = use.ranking.methods)
+    dependencies <- list(target.min.ids = mins$version, clustering = fit$version)
+    
+    
+    WriteOutput(output, 'ranked.samples', params = params, dependencies = dependencies)
+    WriteOutput(groups, 'clusters', params = params, dependencies = dependencies)
     
 }
 
@@ -108,8 +113,12 @@ RankSamples4 <- function (events, min.ids) {
     colnames(event.count) <- c('min.id', 'count')  
     event.count$min.id <- as.integer(as.character(event.count$min.id))
     missing.mins <- setdiff(min.ids, event.count$min.id)  
-    missing.mins <- data.frame(min.id = missing.mins, count = 0)
-    event.count <- rbind(event.count, missing.mins)
+    if (length(missing.mins) > 0) {
+        # add mins which don't appear in the events df to the end with event-counts of zero
+        missing.mins <- data.frame(min.id = missing.mins, count = 0)
+        event.count <- rbind(event.count, missing.mins)    
+    }
+
     event.count <- event.count[order(event.count$count, decreasing = TRUE),]
     o <- order(event.count$min.id)
     rank <- (1:nrow(event.count))[o]
@@ -289,7 +298,7 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
     #mins.sorted <- rankings[order(rankings$rank, decreasing = FALSE),]
     
     #append empty minutes
-    mins <- ReadOutput('target.min.ids', level = 0)
+    mins <- ReadOutput('target.min.ids')
     unranked.ids <- setdiff(mins$min.id, rankings$min.id)
     
     if (length(unranked.ids > 0)) {

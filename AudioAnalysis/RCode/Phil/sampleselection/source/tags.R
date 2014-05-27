@@ -51,20 +51,19 @@ ReadTagsFromDb <- function (fields = c('start_date',
     if (class(target) == 'list') {
     
     } else if (target == TRUE) {
-        start.min <- g.start.min
-        end.min <- g.end.min
+        # TODO: multi part of day minute selection
+        # currently selects from the start of the first part 
+        # until the end of the last partQ
+        start.min <- g.minute.ranges[1]
+        end.min <- g.minute.ranges[length(g.minute.ranges)]
         start.date <- g.start.date
         end.date <- g.end.date
-        start.min <- g.start.min
-        end.min <- g.end.min
         sites <- g.sites
     } else if (study.only) {
         start.min <- g.study.start.min
         end.min <- g.study.end.min
         start.date <- g.study.start.date
         end.date <- g.study.end.date
-        start.min <- g.study.start.min
-        end.min <- g.study.end.min
         sites <- g.study.sites 
     }
     
@@ -141,7 +140,7 @@ ConnectToDb <- function () {
 
 InspectTags <- function () {
     tags <- GetTags(FALSE, FALSE,  TRUE)
-    plot(tags$min)
+    plot(tags$min, col = rgb(0,0,0,0.2))
 }
 
 

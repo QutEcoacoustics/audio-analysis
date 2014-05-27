@@ -230,14 +230,14 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
     # draws the ranked n samples as spectrograms
     # with events marked and colour coded by cluster group
     
-    rankings <- ReadObject('ranked_samples', level = 2)
-    min.ids <- ReadOutput('target.min.ids', level = 0)
-    d.names <- dimnames(rankings)
+    rankings <- ReadObject('ranked.samples')
+    min.ids <- ReadOutput('target.min.ids')
+    d.names <- dimnames(rankings$data)
     num.clusters.choices <- d.names$num.clusters
     num.clusters.choice <- GetUserChoice(num.clusters.choices, 'number of clusters', default = floor(length(num.clusters.choices)/2))
     num.clusters <- num.clusters.choices[num.clusters.choice]
     
-    rankings <- rankings[,num.clusters.choice,]
+    rankings <- rankings$data[,num.clusters.choice,]
     
     
     if(class(samples) == 'logical') {
@@ -246,7 +246,7 @@ InspectSamples <- function (samples = NA, output.fns = NA) {
         
         ordered.samples <- matrix(NA, ncol = length(ranking.methods), nrow = g.num.samples)
         for (i in 1:length(ranking.methods)) {
-            ordered.samples[,i] <- min.ids$min.id[order(rankings[ranking.methods[i], ])[1:g.num.samples]]
+            ordered.samples[,i] <- min.ids$data$min.id[order(rankings$data[ranking.methods[i], ])[1:g.num.samples]]
         } 
     } else {
         ordered.samples <- as.matrix(samples)

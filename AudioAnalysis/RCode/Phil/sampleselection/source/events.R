@@ -45,7 +45,7 @@ MergeEvents <- function () {
     all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
     
 
-    WriteMasterOutput(all.events.with.min.id, 'events');
+    WriteOutput(all.events.with.min.id, 'all.events', list(events.source = g.all.events.version));
 }
 
 
@@ -109,7 +109,7 @@ MergeEventsF2 <- function () {
     
     all.events.with.min.id <- AddFileInfo(all.events.with.min.id)
     
-    WriteMasterOutput(all.events.with.min.id, 'events');
+    WriteOutput(all.events.with.min.id, 'all.events', list(events.source = g.all.events.version));
 }
 
 AddFileInfo <- function (events) {
@@ -190,13 +190,7 @@ MergeAnnotationsAsEvents <- function () {
     
 }
 
-GetOuterTargetEvents <- function () {
-    # gets a subset of the target events according to the 
-    # config targets, but ignoring the percent of target param
-    all.events <- ReadMasterOutput('events', false.if.missing = FALSE)
-    selected.events <- TargetSubset(all.events)
-    return(selected.events)   
-}
+
 
 GetInnerTargetEvents <- function () {
     min.list <- ReadOutput('minlist')
@@ -239,9 +233,9 @@ EventLabels <- function (events) {
 EventFile <- function (site, date, min, ext = 'wav.txt') {
     # original event files are for 10 mins of audio
     min <- floor(min/10) * 10
-    min.char <- sprintf('%03d',min)
+    min.char <- sprintf('%04d',min)
     #convert to underscorem separated date
-    date <- format(as.Date(date), '%Y_%m_%d')
+    date <- format(as.Date(date), '%Y-%m-%d')
     fn <- paste(site, date, min.char, 10, sep = '.')
     if (!is.na(ext)) {
         fn <- paste(fn, ext, sep='.')
@@ -329,62 +323,69 @@ FilterEvents1 <- function (min.ids = FALSE, events = NA, rating.features = NA) {
 
 }
 
+CreateEventAndFeaturesSubset <- function () {
+    
+    # given the target minute ids, the events and features, and a limit for the 
+    # maximum number of events, saves a new dataframe for events, features and rating features
+    
+    
+    limit <- ReadInt('limit the number of events', default = 20000) 
+    dependencies <- list()
+    
+    Report(4, 'Retrieving target events and features. Copying from master')   
+    target.min.ids <- ReadOutput('target.min.ids', include.meta = TRUE)
+    dependencies$target.min.ids = target.min.ids$meta$version
+    all.events <- ReadOutput('all.events', include.meta = TRUE)
+    all.features <- ReadOutput('all.features', include.meta = TRUE)
+    all.rating.features <- ReadOutput('all.rating.features', include.meta = TRUE)
+    dependencies$all.events = all.events$meta$version
+    dependencies$all.features = all.features$meta$version
+    dependencies$all.rating.features = all.rating.features$meta$version
+    
+    
+    events <- all.events$data[all.events$data$min.id %in% target.min.ids$data$min.id, ]
+    event.features <- all.features$data[all.features$data$event.id %in% events$event.id, ]
+    rating.features <- all.rating.features$data[all.rating.features$data$event.id %in% events$event.id, ]
+    #ensure that all are sorted by event id
+    events <- events[with(events, order(event.id)) ,]
+    event.features <- event.features[with(event.features, order(event.id)) ,]
+    rating.features <- rating.features[with(rating.features, order(event.id)) ,]
+    
+    event.filter <- FilterEvents1(events = events, rating.features = rating.features)
+    events <- events[event.filter, ]
+    event.features <- event.features[event.filter, ]
+    rating.features <- rating.features[event.filter, ]
+    
+    
+    # limit the number
+    if (limit < nrow(events)) {
+        Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")           
+        include <- GetIncluded(nrow(events), limit)
+        events <- events[include, ]
+        event.features <- event.features[include, ]
+        rating.features <- rating.features[include, ]
+    }      
+    
+    WriteOutput(events, 'events', params = list(limit = limit), dependencies = dependencies)
+    WriteOutput(event.features, 'features', params = list(limit = limit), dependencies = dependencies)
+    WriteOutput(rating.features, 'rating.features', params = list(limit = limit), dependencies = dependencies)
+    
+    
+    
+}
+
 
 
 # bug: sometimes returns events and features with different number of rows!
-GetEventsAndFeatures <- function (reextract = FALSE) {
-    
-    SetOutputPath(level = 1) # for reading
-    
-    if (reextract || !OutputExists('events', level = 1) || !OutputExists('features', level = 1) || !OutputExists('rating.features', level = 1)) {
-        
-        limit <- ReadInt('limit the number of events') 
-        
-        Report(4, 'Retrieving target events and features. Copying from master')   
-        target.min.ids <- ReadOutput('target.min.ids', level = 0)
-        all.events <- ReadMasterOutput('events')
-        all.feature.rows <- ReadOutputCsv(MasterOutputPath('features'))
-        all.rating.feature.rows <- ReadOutputCsv(MasterOutputPath('rating.features'))
-        events <- all.events[all.events$min.id %in% target.min.ids$min.id, ]
-        event.features <- all.feature.rows[all.feature.rows$event.id %in% events$event.id, ]
-        rating.features <- all.rating.feature.rows[all.rating.feature.rows$event.id %in% events$event.id, ]
-        #ensure that both are sorted by event id
-        events <- events[with(events, order(event.id)) ,]
-        event.features <- event.features[with(event.features, order(event.id)) ,]
-        rating.features <- rating.features[with(rating.features, order(event.id)) ,]
-        
-        event.filter <- FilterEvents1(events = events, rating.features = rating.features)
-        events <- events[event.filter, ]
-        event.features <- event.features[event.filter, ]
-        rating.features <- rating.features[event.filter, ]
-        
-        
-        # limit the number
-        if (limit < nrow(events)) {
-            Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")           
-            include <- GetIncluded(nrow(events), limit)
-            events <- events[include, ]
-            event.features <- event.features[include, ]
-            rating.features <- rating.features[include, ]
-        }      
-        
-        WriteOutput(events, 'events', level = 1)
-        WriteOutput(event.features, 'features', level = 1)
-        WriteOutput(rating.features, 'rating.features', level = 1)
-        
-        
-    } else {
-        Report(4, 'Retrieving target events and features')
-        events <- ReadOutput('events', level = 1)
-        event.features <- ReadOutput('features', level = 1)
-        rating.features <- ReadOutput('rating.features', level = 1)  
-    }
-    
+GetEventsAndFeatures <- function () {
+    events <- ReadOutput('events')
+    event.features <- ReadOutput('features')
+    rating.features <- ReadOutput('rating.features')  
     # remove event.id.column from features table
-    drop.cols <- names(event.features) %in% c('event.id')
-    event.features <- event.features[!drop.cols]
-    drop.cols <- names(rating.features) %in% c('event.id')
-    rating.features <- rating.features[!drop.cols]
+    drop.cols <- names(event.features$data) %in% c('event.id')
+    event.features$data <- event.features$data[!drop.cols]
+    drop.cols <- names(rating.features$data) %in% c('event.id')
+    rating.features$data <- rating.features$data[!drop.cols]
     return (list(events = events, event.features = event.features, rating.features = rating.features))
 }
 
