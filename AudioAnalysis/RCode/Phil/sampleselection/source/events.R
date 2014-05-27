@@ -334,18 +334,24 @@ CreateEventAndFeaturesSubset <- function () {
     
     Report(4, 'Retrieving target events and features. Copying from master')   
     target.min.ids <- ReadOutput('target.min.ids', include.meta = TRUE)
-    dependencies$target.min.ids = target.min.ids$meta$version
+    dependencies$target.min.ids <- target.min.ids$version
     all.events <- ReadOutput('all.events', include.meta = TRUE)
     all.features <- ReadOutput('all.features', include.meta = TRUE)
     all.rating.features <- ReadOutput('all.rating.features', include.meta = TRUE)
-    dependencies$all.events = all.events$meta$version
-    dependencies$all.features = all.features$meta$version
-    dependencies$all.rating.features = all.rating.features$meta$version
+    dependencies$all.events = all.events$version
+    dependencies$all.features = all.features$version
+    dependencies$all.rating.features = all.rating.features$version
     
     
     events <- all.events$data[all.events$data$min.id %in% target.min.ids$data$min.id, ]
     event.features <- all.features$data[all.features$data$event.id %in% events$event.id, ]
     rating.features <- all.rating.features$data[all.rating.features$data$event.id %in% events$event.id, ]
+    
+    if (nrow(events) != nrow(event.features) || nrow(events) != nrow(rating.features)) {
+        stop(paste('only', nrow(event.features), 'out of', nrow(events), 'events have had features extracted'))
+    }
+    
+    
     #ensure that all are sorted by event id
     events <- events[with(events, order(event.id)) ,]
     event.features <- event.features[with(event.features, order(event.id)) ,]

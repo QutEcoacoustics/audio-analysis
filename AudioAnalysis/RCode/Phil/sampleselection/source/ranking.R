@@ -14,12 +14,14 @@ RankSamples <- function (use.lines = TRUE) {
     ranking.methods[[4]] <- RankSamples4
     ranking.methods[[5]] <- RankSamples5
     ranking.methods[[6]] <- RankSamples6
+    ranking.methods[[7]] <- RankSamples7
+    ranking.methods[[8]] <- RankSamples8
     
-    use.ranking.methods <- c(4,5,6)
+    use.ranking.methods <- c(4,8)
     
     # the different number of clusters to perform ranking for
-    num.num.clusters <- 5  # this many different numbers of clusters
-    num.clusters.start <- 30 # lowest number of clusters
+    num.num.clusters <- 2  # this many different numbers of clusters
+    num.clusters.start <- 120 # lowest number of clusters
     num.clusters.multiplier <- 2 # each number of clusters is this many times the last
     num.clusters <- round(num.clusters.start * num.clusters.multiplier^(0:(num.num.clusters-1)))
     
@@ -42,9 +44,9 @@ RankSamples <- function (use.lines = TRUE) {
             
             Report(1, 'Ranking samples:', use.ranking.methods[m], ' num.clusters:', num.clusters[n])
             
+            r.m <- use.ranking.methods[m]
             
-            
-            r <- ranking.methods[[use.ranking.methods[m]]](events = events$data, min.ids = mins$data$min.id)   
+            r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)   
             r <- r[order(r$min.id), ]
             output[m, n, ] <- r$rank
         }
@@ -191,6 +193,81 @@ RankSamples7 <- function (events, min.ids) {
     
 }
 
+RankSamples8 <- function (events, min.ids) {
+
+    # rank samples using only the number of events and time of day
+    # ignores clustering completely
+    # minutes are scored by both the number of events and the distance in time
+    # from the closest higher ranked minute
+    
+    event.count <- as.data.frame(table(events$min.id))
+    colnames(event.count) <- c('min.id', 'count')  
+    event.count$min.id <- as.integer(as.character(event.count$min.id))
+    missing.mins <- setdiff(min.ids, event.count$min.id)  
+    if (length(missing.mins) > 0) {
+        # add mins which don't appear in the events df to the end with event-counts of zero
+        missing.mins <- data.frame(min.id = missing.mins, count = 0)
+        event.count <- rbind(event.count, missing.mins)    
+    }
+    
+    event.count <- event.count[order(event.count$count, decreasing = TRUE),]
+    o <- order(event.count$min.id)
+    rank <- (1:nrow(event.count))[o]
+    
+    empty <- rep(NA, nrow(event.count))
+
+    
+    result <- data.frame(min.id = empty, rank = empty, score = empty)
+    result[1, ] <- c(event.count$min.id[1], 1, event.count$count[1])
+    
+    
+    # while there are still NAs in rank2
+    for (i in 2:nrow(result)) {
+        
+        unranked <- event.count[event.count$min.id %in% setdiff(event.count$min.id, result$min.id), ]
+        
+        dist.scores <- DistScores(unranked$min.id, result$min.id)
+        
+        # transform dist scores so that far away and very far away are equally good. 
+        threshold <- 60
+        dist.scores[dist.scores > threshold] <- threshold
+        dist.scores <- log(dist.scores)
+        
+        combined.scores <- dist.scores * unranked$count
+        
+        result$min.id[i] <- unranked$min.id[which.max(combined.scores)]
+        result$rank[i] <- i
+        result$score[i] <- max(combined.scores)
+        
+        
+        
+    }
+        
+       
+        
+    
+        
+  
+    
+    
+    result <- result[order(result$min.id), ]
+    
+    return(result)
+    
+    
+}
+
+DistScores <- function (from.min.ids, to.closest.in.min.ids) {
+    #for each of from.min.ids, finds the distance in time to the closest out of the mins in to.closest.min.ids
+    # currently, distance is measured by min.id which only works if min.ids are consecutive.  eg, 1-day recording of 1440 mins 
+    dist.scores <- sapply(from.min.ids, function (min.id) { 
+        return(min(abs(to.closest.in.min.ids - min.id), na.rm = TRUE)) 
+    }) 
+    return(dist.scores) 
+}
+
+
+
 EventCountByMin <- function (min.ids, events.per.group.per.min) {
     
     return(events.per.group.per.min$event.counts[events.per.group.per.min$min.ids %in% min.ids, ])
@@ -299,10 +376,10 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
     
     #append empty minutes
     mins <- ReadOutput('target.min.ids')
-    unranked.ids <- setdiff(mins$min.id, rankings$min.id)
+    unranked.ids <- setdiff(mins$data$min.id, rankings$min.id)
     
     if (length(unranked.ids > 0)) {
-        unranked.mins <- data.frame(min.id = unranked.ids, rank = (max(rankings$rank)+1):nrow(mins), score = rep(0, length(unranked.ids)))
+        unranked.mins <- data.frame(min.id = unranked.ids, rank = (max(rankings$rank)+1):nrow(mins$data), score = rep(0, length(unranked.ids)))
         rankings <- rbind(rankings, unranked.mins)  
     }
     
