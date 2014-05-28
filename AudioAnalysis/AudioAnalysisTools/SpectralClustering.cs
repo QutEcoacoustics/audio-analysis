@@ -426,7 +426,7 @@ namespace AudioAnalysisTools
             // vi: remove background noise from the full spectrogram
             double SD_COUNT = 0.1;
             double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
+            SNR.NoiseProfile profile = SNR.CalculateModalNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
             double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThresholds, 7);      // smooth the noise profile
             spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
 

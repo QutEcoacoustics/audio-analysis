@@ -76,6 +76,7 @@ namespace AnalysisPrograms
             // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
             return new Arguments
             {
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
                 Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
@@ -165,7 +166,7 @@ namespace AnalysisPrograms
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
 
-            LoggedConsole.WriteLine("# Finished calculating SNR.");
+            LoggedConsole.WriteLine("# Finished calculating decibel spectrogram.");
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("\nSIGNAL PARAMETERS");
@@ -213,17 +214,38 @@ namespace AnalysisPrograms
             FileTools.Append2TextFile(outputTxtPath.FullName, GetSNRNotes(noiseRange).ToString());
 
             // (F) ################################## DRAW IMAGE 1: original spectorgram
-            Log.WriteLine("# Start drawing sonograms.");
+            Log.WriteLine("# Start drawing noise reduced sonograms.");
             TimeSpan X_AxisInterval = TimeSpan.FromSeconds(1);
             int Y_AxisInterval = (int)Math.Round(1000 / dspOutput.FreqBinWidth);
             Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
 
             // (F) ################################## Calculate modal background noise spectrum in decibels
-            double SD_COUNT = -1.0; // number of SDs above the mean for noise removal
-            SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
-            double[] noiseProfile = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);        // smooth modal profile
-            double[,] noiseReducedSpectrogram1 = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
+            //double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
+            //NoiseReductionType nrt = NoiseReductionType.MODAL;
+            //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, SD_COUNT);
+
+            //double upperPercentileBound = 0.2;    // lowest percentile for noise removal
+            //NoiseReductionType nrt = NoiseReductionType.LOWEST_PERCENTILE;
+            //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
+
+            double upperPercentileBound = 0.2;    // lowest percentile for noise removal
+            NoiseReductionType nrt = NoiseReductionType.BRIGGS_PERCENTILE;
+            System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(amplitudeSpectrogram, nrt, upperPercentileBound);
+
+            //double upperPercentileBound = 0.8;    // lowest percentile for noise removal
+            //NoiseReductionType nrt = NoiseReductionType.MEDIAN;
+            //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
+
+
+
+
+            double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
+            double[] noiseProfile              = tuple.Item2;  // smoothed modal profile
+
+            //SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
+            //double[] noiseProfile = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);        // smooth modal profile
+            //double[,] noiseReducedSpectrogram1 = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             Image image2 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
             double dBThreshold = 0.0; // SPECTRAL dB THRESHOLD for smoothing background

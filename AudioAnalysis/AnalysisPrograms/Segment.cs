@@ -162,6 +162,7 @@ namespace AnalysisPrograms
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath.FullName);
+            // WARNING!!!!!!! THE FOLLOWING METHOD CALL IS UNSAFE AND SHOULD NOT BE USED.
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
             //ii: MAKE SONOGRAM

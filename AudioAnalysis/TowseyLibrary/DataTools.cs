@@ -518,7 +518,7 @@ namespace TowseyLibrary
 
        
         /// <summary>
-        /// sorts an array of doubles.
+        /// sorts an array of doubles in DESCENDING order i.e. max first.
         /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
         /// </summary>
         /// <param name="array"></param>
@@ -538,6 +538,29 @@ namespace TowseyLibrary
             }
             return Tuple.Create(rankOrder, sort);
         }
+
+        /// <summary>
+        /// sorts an array of doubles in ASCENDING order i.e. max first.
+        /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static System.Tuple<int[], double[]> SortArrayInAscendingOrder(double[] array)
+        {
+            int[] rankOrder = new int[array.Length];
+            double[] sort   = new double[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                int minIndex = DataTools.GetMinIndex(array);
+                rankOrder[i] = minIndex;
+                sort[i] = array[minIndex];
+                //if(i % 100==0)
+                //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
+                array[minIndex] = Double.MaxValue;
+            }
+            return Tuple.Create(rankOrder, sort);
+        }
+
 
         /// <summary>
         /// sorts a list of integers.
