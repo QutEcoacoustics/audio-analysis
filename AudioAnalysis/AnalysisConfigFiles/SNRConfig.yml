@@ -2,7 +2,7 @@ FrameSize: 512
 FrameOverlap: 0.5
 WindowFunction: Hamming
 NpointSmoothFFT: 256
-NoiseReductionType: modal
+NoiseReductionType: LowestPercentile
 SEGMENTATION_THRESHOLD_K1: 2
 SEGMENTATION_THRESHOLD_K2: 3
 K1_K2_LATENCY: 50

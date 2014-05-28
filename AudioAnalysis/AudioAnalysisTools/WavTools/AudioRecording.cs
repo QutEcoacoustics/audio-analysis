@@ -88,6 +88,10 @@
 		}
 
         /// <summary>
+        /// NOTE: from Michael Towsey May 2014
+        /// WARNING!!!! THIS METHOD IS UNSAFE AND SHOULD BE DEPRACATED
+        /// It subsamples without first removing high frequency content.
+        /// 
         /// Reduces the signal sample rate to 22050Hz. 
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
