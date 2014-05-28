@@ -14,8 +14,8 @@ InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six specie
 #C:\Training recordings2 
 
 OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Output
+# 
 # C:\Output
-
 # action
 Actions: [batch]  # processOne batch makeImages another
 
@@ -33,7 +33,7 @@ FilterRidgeMatrixLength : 7
 MinimumNumberInRidgeInMatrix : 3
 
 # For ridge neighbourhood representation
-NeighbourhoodLength: 5
+NeighbourhoodLength: 11
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000

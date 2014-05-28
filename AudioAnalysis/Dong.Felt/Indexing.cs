@@ -203,6 +203,32 @@ namespace Dong.Felt
             }
             return result;
         }
+
+        /// <summary>
+        /// Euclidean Distance calculation for feature5. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Candidates> Feature5EuclideanDist(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList);
+                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                        tempRegionList[0].SourceAudioFile);
+                result.Add(item);
+            }
+            return result;
+        }
         
         /// <summary>
         /// This similarity tuple records the distance, timePosition, frequencyband. 

@@ -644,8 +644,8 @@
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
                 neighbourhoodLength, featurePropSet, spectrogramConfig);
-                var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
-                (ridgeNhRepresentationList, featurePropSet);
+                //var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
+                //(ridgeNhRepresentationList, featurePropSet);
                 var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
                 var ridgeNhListFileAfterNormal = new FileInfo(audioFiles[i] + "NhRepresentationListAfterNormal.csv");
                 CSVResults.NhRepresentationListToCSV(ridgeNhListFileBeforeNormal, ridgeNhRepresentationList);
@@ -738,13 +738,13 @@
                     //    candidatesList.Add(c[0]);
                     //}
                     foreach (var c in candidatesRegionList)
-                    {                     
+                    {
                         candidatesList.Add(c);
                     }
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                var weight1 = 0.75;
-                var weight2 = 0.25;
+                var weight1 = 1;
+                var weight2 = 1;
                 var weight3 = 1;
                 var weight4 = 1;
                 var weight5 = 1;
@@ -773,7 +773,7 @@
                 }
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
                 {
-                    //candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
+                    candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
                 }
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
@@ -829,7 +829,7 @@
                         rank, ridgeConfig, config,
                         featurePropSet, tempDirectory);
                 }
-                Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount );
+                Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
