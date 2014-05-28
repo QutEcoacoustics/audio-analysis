@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using AudioAnalysisTools.StandardSpectrograms;
 using Dong.Felt.Configuration;
+using TowseyLibrary;
 
 namespace Dong.Felt.Representations
 {
@@ -23,6 +24,25 @@ namespace Dong.Felt.Representations
         // the row starts from start of file (left, 0ms)
         // the column starts from bottom of spectrogram (0 hz)
 
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
+        /// </summary>
+        public double HOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with positive diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double PDOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with vertical orientation in the neighbourhood.
+        /// </summary>
+        public double VOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double NDOrientationPOIHistogram { get; set; }
         /// <summary>
         /// To get or set the the percentage of pointsOfinterest in a neighbourhood.  
         /// </summary>
@@ -98,7 +118,7 @@ namespace Dong.Felt.Representations
         /// </summary>
         public double orientation { get; set; }
 
-        public List<double> histogramOfGradient { get; set; }
+        internal List<double> histogramOfGradient { get; set; }
 
         //public TimeSpan TimeOffsetFromStart { get { return TimeSpan.FromMilliseconds(this.FrameIndex * this.Duration.TotalMilliseconds); } }
 
@@ -343,7 +363,7 @@ namespace Dong.Felt.Representations
 
         public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
-            var histogramOfGradient = new List<double>();
+            //var histogramOfGradient = new List<double>();
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
             var NorthBin = 0.0;
@@ -358,40 +378,46 @@ namespace Dong.Felt.Representations
                     {
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                         {                           
-                            EastBin++;
+                            EastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
                         {                           
-                            NorthEastBin++;
+                            NorthEastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                         {
-                            NorthBin++;
+                            NorthBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
                         {                            
-                            NorthWestBin++;
+                            NorthWestBin += 1.0;
                         }
                     }
                 }
             }
             var sumPOICount = EastBin + NorthEastBin + NorthBin + NorthWestBin;
+            //if (sumPOICount != 0)
+            //{
+            //    histogramOfGradient.Add(EastBin / sumPOICount);
+            //    histogramOfGradient.Add(NorthEastBin / sumPOICount);
+            //    histogramOfGradient.Add(NorthBin / sumPOICount);
+            //    histogramOfGradient.Add(NorthWestBin / sumPOICount);
+            //}
+            //else
+            //{
+            //    histogramOfGradient.Add(0.0);
+            //    histogramOfGradient.Add(0.0);
+            //    histogramOfGradient.Add(0.0);
+            //    histogramOfGradient.Add(0.0);
+            //}
+            //this.histogramOfGradient = histogramOfGradient;
             if (sumPOICount != 0)
             {
-                histogramOfGradient.Add(EastBin / sumPOICount);
-                histogramOfGradient.Add(NorthEastBin / sumPOICount);
-                histogramOfGradient.Add(NorthBin / sumPOICount);
-                histogramOfGradient.Add(NorthWestBin / sumPOICount);
+                this.HOrientationPOIHistogram = EastBin / (double) sumPOICount;
+                this.VOrientationPOIHistogram = NorthBin / (double)sumPOICount;
+                this.PDOrientationPOIHistogram = NorthEastBin / (double)sumPOICount;
+                this.NDOrientationPOIHistogram = NorthWestBin / (double)sumPOICount;
             }
-            else
-            {
-                histogramOfGradient.Add(0.0);
-                histogramOfGradient.Add(0.0);
-                histogramOfGradient.Add(0.0);
-                histogramOfGradient.Add(0.0);
-            }
-            this.histogramOfGradient = histogramOfGradient;
-            this.histogramOfGradient = histogramOfGradient;
             var maxFrequency = spectrogramConfig.NyquistFrequency;
             this.FrameIndex = col * timeScale;
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
@@ -399,6 +425,52 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
+            var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                {
+                    if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                    {
+                        // added if will consider the orientation, comment it will not consider the orientation. 
+                        //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
+                        //{
+                            columnEnergy[rowIndex] += 1.0;
+                        //}
+                    }
+                }
+            }
+            var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        //{
+                            rowEnergy[rowIndex] += 1.0;
+                        //}
+                    }
+                }
+            }
+            var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+            var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+            if (double.IsNaN(columnEnergyEntropy))
+            {
+                this.ColumnEnergyEntropy = 1;
+            }
+            else{
+                this.ColumnEnergyEntropy = columnEnergyEntropy;
+            }
+            if (double.IsNaN(columnEnergyEntropy))
+            {
+                this.RowEnergyEntropy = 1;
+            }
+            else{
+                this.RowEnergyEntropy = rowEnergyEntropy;
+            }
+            
         }
 
         public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
@@ -761,7 +833,16 @@ namespace Dong.Felt.Representations
                 }
             }
             this.POICount = this.HOrientationPOICount + this.VOrientationPOICount + this.PDOrientationPOICount + this.NDOrientationPOICount;
-            this.POICountPercentage = this.POICount / Math.Pow(this.neighbourhoodSize, 2);
+            //To normalize the number of POI
+            var POICountMaximum = maximumRowIndex + maximumColIndex;
+            if (this.POICount >= POICountMaximum)
+            {
+                this.POICountPercentage = 1.0;
+            }
+            else
+            {
+                this.POICountPercentage = this.POICount / (double)POICountMaximum;
+            }           
         }
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList,

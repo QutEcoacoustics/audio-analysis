@@ -14,6 +14,7 @@ namespace Dong.Felt.Representations
     {
         #region public properties.
         
+
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
@@ -40,6 +41,16 @@ namespace Dong.Felt.Representations
         public int NhCountInRow { get; set; }
 
         /// <summary>
+        /// To get or set the the ColumnEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// </summary>
+        public double ColumnEnergyEntropy { get; set; }
+
+        /// <summary>
+        /// To get or set the the RowEnergyEntropy of pointsOfinterest in a neighbourhood.  
+        /// </summary>
+        public double RowEnergyEntropy { get; set; }
+
+        /// <summary>
         /// A region matrix contains NhCountInCol cols. 
         /// </summary>
         public int NhCountInCol { get; set; }
@@ -52,6 +63,26 @@ namespace Dong.Felt.Representations
         public string SourceAudioFile { get; set; }
 
         public List<double> HistogramOfOrientatedGradient { get; set;}
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
+        /// </summary>
+        public double HOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with positive diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double PDOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with vertical orientation in the neighbourhood.
+        /// </summary>
+        public double VOrientationPOIHistogram { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double NDOrientationPOIHistogram { get; set; }
+
 
         public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods { get; set; }
 
@@ -116,6 +147,12 @@ namespace Dong.Felt.Representations
             this.VOrientationPOIMagnitude = nh.VOrientationPOIMagnitude;
             this.HLineOfBestfitMeasure = nh.HLineOfBestfitMeasure;
             this.VLineOfBestfitMeasure = nh.VLineOfBestfitMeasure;
+            this.ColumnEnergyEntropy = nh.ColumnEnergyEntropy;
+            this.RowEnergyEntropy = nh.RowEnergyEntropy;
+            this.HOrientationPOIHistogram = nh.HOrientationPOIHistogram;
+            this.VOrientationPOIHistogram = nh.VOrientationPOIHistogram;
+            this.PDOrientationPOIHistogram = nh.PDOrientationPOIHistogram;
+            this.NDOrientationPOIHistogram = nh.PDOrientationPOIHistogram;
             this.SourceAudioFile = file;
             
         }
