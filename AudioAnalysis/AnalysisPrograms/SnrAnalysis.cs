@@ -20,6 +20,7 @@ namespace AnalysisPrograms
     using PowerArgs;
     using System.Text;
     using System.Drawing;
+    using Acoustics.Tools;
 
     public class SnrAnalysis
 	{
@@ -76,8 +77,8 @@ namespace AnalysisPrograms
             // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
             return new Arguments
             {
-                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
             };
@@ -138,8 +139,24 @@ namespace AnalysisPrograms
             //int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
             //if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
 
+            // COnvert input recording into wav
+            var convertParameters = new AudioUtilityRequest { 
+                TargetSampleRate = 17640
+            };
+            var fileToAnalyse = new FileInfo(Path.Combine(outputDir.FullName, "temp.wav"));
+
+            if(File.Exists(fileToAnalyse.FullName)){
+                File.Delete(fileToAnalyse.FullName);
+            }
+
+            var convertedFileInfo = AudioFilePreparer.PrepareFile(
+                arguments.Source,
+                fileToAnalyse, 
+                convertParameters, 
+                outputDir);
+
             // (A) ##########################################################################################################################
-            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
+            AudioRecording recording = new AudioRecording(fileToAnalyse.FullName);
             int signalLength = recording.GetWavReader().Samples.Length;
             TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
             double frameDurationInSeconds = sonoConfig.WindowSize / (double)recording.SampleRate;
@@ -229,9 +246,12 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = NoiseReductionType.LOWEST_PERCENTILE;
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
 
-            double upperPercentileBound = 0.2;    // lowest percentile for noise removal
-            NoiseReductionType nrt = NoiseReductionType.BRIGGS_PERCENTILE;
-            System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(amplitudeSpectrogram, nrt, upperPercentileBound);
+            double upperPercentileBound = 0.20;    // lowest percentile for noise removal
+            //NoiseReductionType nrt = NoiseReductionType.BRIGGS_PERCENTILE;
+            //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(amplitudeSpectrogram, nrt, upperPercentileBound);
+            Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterTwiceAndGetSonograms(amplitudeSpectrogram, upperPercentileBound,
+                                                                                      wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
+
 
             //double upperPercentileBound = 0.8;    // lowest percentile for noise removal
             //NoiseReductionType nrt = NoiseReductionType.MEDIAN;
@@ -240,38 +260,19 @@ namespace AnalysisPrograms
 
 
 
-            double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
-            double[] noiseProfile              = tuple.Item2;  // smoothed modal profile
+            //double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
+            //double[] noiseProfile              = tuple.Item2;  // smoothed modal profile
 
             //SNR.NoiseProfile dBProfile = SNR.CalculateNoiseProfile(deciBelSpectrogram, SD_COUNT);       // calculate noise value for each freq bin.
             //double[] noiseProfile = DataTools.filterMovingAverage(dBProfile.noiseThresholds, 7);        // smooth modal profile
             //double[,] noiseReducedSpectrogram1 = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
-            Image image2 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
-
-            double dBThreshold = 0.0; // SPECTRAL dB THRESHOLD for smoothing background
-            double[,] noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
-            Image image3 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
-
-            dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
-            noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
-            Image image4 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
-
-            dBThreshold = 10.0; // SPECTRAL dB THRESHOLD for smoothing background
-            noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
-            Image image5 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
-
-            dBThreshold = 20.0; // SPECTRAL dB THRESHOLD for smoothing background
-            noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
-            Image image6 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
+            //Image image2 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
 
-            Image[] array = new Image[6];
+
+            Image[] array = new Image[2];
             array[0] = image1;
             array[1] = image2;
-            array[2] = image3;
-            array[3] = image4;
-            array[4] = image5;
-            array[5] = image6;
             Image combinedImage = ImageTools.CombineImagesVertically(array);
 
             string imagePath = Path.Combine(outputDir.FullName, fileNameWithoutExtension + ".png");
@@ -285,7 +286,7 @@ namespace AnalysisPrograms
 
         static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int Y_interval)
         {
-            double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
+            //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
             Image image = BaseSonogram.GetSonogramImage(data);
 
             string title = String.Format("TITLE");

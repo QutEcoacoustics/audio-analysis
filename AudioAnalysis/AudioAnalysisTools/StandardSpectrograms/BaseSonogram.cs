@@ -652,7 +652,13 @@
             return amplitudeSonogram;
         }
 
-
+        /// <summary>
+        /// Returns an image of the data matrix.
+        /// Normalises the values from min->max to 0->1.
+        /// Thus the grey-scale image pixels will range from 0 to 255. 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static Image GetSonogramImage(double[,] data)
         {
             int width = data.GetLength(0); // Number of spectra in sonogram

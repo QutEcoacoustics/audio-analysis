@@ -485,7 +485,7 @@ namespace AudioAnalysisTools.DSP
             double max_dB;
 
             // Implements the algorithm in Lamel et al, 1981.
-            SNR.CalculateNoise_LamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
+            NoiseRemoval_Modal.CalculateNoise_LamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
 
             // subtract noise.
             double threshold = noise_mode + (noise_SD * SD_COUNT);
@@ -535,85 +535,6 @@ namespace AudioAnalysisTools.DSP
             double threshold = Q + (noise_SD * SD_COUNT);
             double snr = max - threshold;
             return new BackgroundNoise(null, Q, min, max, snr, noise_SD, threshold);
-        }
-
-
-        /// <summary>
-        /// Implements the "Adaptive Level Equalisatsion" algorithm of Lamel et al, 1981 - with modifications for our signals.
-        /// Units are assumed to be decibels.
-        /// Returns the min and max frame dB AND the estimate MODAL or BACKGROUND noise for the signal array
-        /// IF This modal noise is subtracted from each frame dB, the effect is to set set average background noise level = 0 dB.
-        /// The algorithm is described in Lamel et al, 1981.
-        /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
-        /// NOTE: noiseThreshold is passed as decibels. Original algorithm ONLY SEARCHES in range min to 10dB above min.
-        /// </summary>
-        /// <param name="dBarray">signal in decibel values</param>
-        /// <param name="minDecibels">ignore signal values less than minDecibels when calculating background noise. Likely to be spurious
-        ///                            This is a safety device because some mobile phone signals had min values.</param>
-        /// <param name="noiseThreshold_dB">Sets dB range in which to find value for background noise.</param>
-        /// <param name="min_dB"></param>
-        /// <param name="max_dB"></param>
-        /// <param name="mode_noise">modal or background noise in decibels</param>
-        /// <param name="sd_noise">estimated sd of the noies - assuming noise to be guassian</param>
-        /// <returns></returns>
-        public static void CalculateNoise_LamelsAlgorithm(
-            double[] dBarray,
-            out double min_dB,
-            out double max_dB,
-            out double mode_noise,
-            out double sd_noise)
-        {
-            // set constants
-            double NOISE_THRESHOLD_dB = 10.0; // dB
-            double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10; // = -60dB
-            int BIN_COUNT = 100; // number of bins for histogram is FIXED
-            int indexOfUpperBound = (int)(BIN_COUNT * SNR.FRACTIONAL_BOUND_FOR_MODE); // mode cannot be higher than this
-            double histogramBinWidth = NOISE_THRESHOLD_dB / BIN_COUNT;
-
-            //ignore first N and last N frames when calculating background noise level because 
-            // sometimes these frames have atypically low signal values
-            int buffer = 20; //ignore first N and last N frames when calculating background noise level
-            //HOWEVER do not ignore them for short recordings!
-            int L = dBarray.Length;
-            if (L < 1000) buffer = 0; //ie recording is < approx 11 seconds long
-
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
-            for (int i = buffer; i < L - buffer; i++)
-            {
-                if (dBarray[i] <= minDecibels) continue; //ignore lowest values when establishing noise level
-                if (dBarray[i] < min) min = dBarray[i];
-                else if (dBarray[i] > max)
-                {
-                    max = dBarray[i];
-                    //LoggedConsole.WriteLine("max="+max+"    at index "+i);
-                }
-            }
-            min_dB = min; // return out
-            max_dB = max;
-
-            int[] histo = new int[BIN_COUNT];
-            double absThreshold = min_dB + NOISE_THRESHOLD_dB;
-
-            for (int i = 0; i < L; i++)
-            {
-                if (dBarray[i] <= absThreshold)
-                {
-                    int id = (int)((dBarray[i] - min_dB) / histogramBinWidth);
-                    if (id >= BIN_COUNT) id = BIN_COUNT - 1;
-                    else if (id < 0) id = 0;
-                    histo[id]++;
-                }
-            }
-            double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
-            //DataTools.writeBarGraph(histo);
-
-            // find peak of lowBins histogram
-            int indexOfMode, indexOfOneSD;
-            SNR.GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneSD);
-
-            mode_noise = min + ((indexOfMode + 1) * histogramBinWidth);    // modal noise level
-            sd_noise = (indexOfMode - indexOfOneSD) * histogramBinWidth; // SD of the noise
         }
 
         /// <summary>
@@ -750,16 +671,13 @@ namespace AudioAnalysisTools.DSP
             }
             else if (nrt == NoiseReductionType.LOWEST_PERCENTILE) //
             {
-                double[] profile = SNR.GetNoiseProfile_LowestPercentile(m, parameter);
+                double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
                 smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
                 m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
             }
             else if (nrt == NoiseReductionType.BRIGGS_PERCENTILE) //
             {
-                double[] profile = SNR.GetNoiseProfile_LowestPercentile(m, parameter);
-                m = SNR.BriggsNoiseRemoval(m, profile);
-                //smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
-                //m = SNR.BriggsNoiseRemoval(m, smoothedNoiseProfile);
+                m = NoiseRemoval_Briggs.BriggsNoiseFilterTwice(m, parameter); 
             }
             else if (nrt == NoiseReductionType.BINARY)
             {
@@ -824,39 +742,6 @@ namespace AudioAnalysisTools.DSP
             return mnr;
         }
 
-        public static double[] GetNoiseProfile_LowestPercentile(double[,] matrix, double lowPercentile)
-        {
-            double[] energyLevels = MatrixTools.GetRowAverages(matrix);
-            var sorted = DataTools.SortArrayInAscendingOrder(energyLevels);
-            int[] order = sorted.Item1;
-            //double[] values = sorted.Item2;
-            //for (int i = 0; i < 20; i++) Console.WriteLine(values[i]);
-
-            int colCount = matrix.GetLength(1);
-            int cutoff = (int)(lowPercentile * matrix.GetLength(0));
-            double[] noiseProfile = new double[colCount];
-
-            // sum the lowest percentile frames 
-            for(int i = 0; i < cutoff; i++) 
-            {
-                double[] row = DataTools.GetRow(matrix, order[i]);
-                for (int c = 0; c < colCount; c++)
-                {
-                    noiseProfile[c] += row[c];
-                }
-                //Console.WriteLine(values[i]);
-            }
-            // get average of the lowest percentile frames 
-            for (int c = 0; c < colCount; c++)
-            {
-                noiseProfile[c] /= cutoff;
-                //noiseProfile[c] += 0.0000000001; //to avoid zero values - which is very unlikely given we are in dB.
-            }
-            //for (int i = 0; i < colCount; i++) Console.WriteLine(noiseProfile[i]);
-
-            return noiseProfile;
-        }
-
         /// <summary>
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
         /// </summary>
@@ -883,7 +768,7 @@ namespace AudioAnalysisTools.DSP
             int smoothingWindow = 7;
             double neighbourhoodBackgroundThreshold = 4.0; //SETS MIN DECIBEL BOUND
 
-            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            double[] modalNoise = NoiseRemoval_Modal.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
@@ -903,7 +788,7 @@ namespace AudioAnalysisTools.DSP
             int NH = 11;
             mnr = ImageTools.WienerFilter(mnr, NH);
 
-            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            double[] modalNoise = NoiseRemoval_Modal.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
@@ -956,7 +841,7 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] TruncateModalNoise(double[,] matrix, double[] noiseProfile, double backgroundThreshold)
+        public static double[,] SubtractAndTruncateNoiseProfile(double[,] matrix, double[] noiseProfile, double backgroundThreshold)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -981,7 +866,7 @@ namespace AudioAnalysisTools.DSP
         public static double[,] TruncateBgNoiseFromSpectrogram(double[,] matrix, double[] noiseProfile)
         {
             double backgroundThreshold = 0.0;
-            return TruncateModalNoise(matrix, noiseProfile, backgroundThreshold);
+            return SubtractAndTruncateNoiseProfile(matrix, noiseProfile, backgroundThreshold);
         } // end of TruncateModalNoise()
 
 
@@ -1026,54 +911,6 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public static double[,] BriggsNoiseRemoval(double[,] matrix, double[] noiseProfile)
-        {
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount,colCount]; //to contain noise reduced matrix
-
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-            {
-                for (int y = 0; y < rowCount; y++) //for all rows
-                {
-                    outM[y, col] = matrix[y, col] / noiseProfile[col];
-                } //end for all rows
-            } //end for all cols
-            return outM;
-        } // end of TruncateModalNoise()
-
-
-
-        /// <summary>
-        /// IMPORTANT: this method assumes that the first N frames (N=frameCount) DO NOT contain signal.
-        /// </summary>
-        /// <param name="matrix">the spectrogram rotated with origin is top-left.</param>
-        /// <param name="frameCount">the first N rows of the spectrogram</param>
-        /// <returns></returns>
-        public static double[] CalculateModalNoiseUsingStartFrames(double[,] matrix, int frameCount)
-        {
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[] modalNoise = new double[colCount];
-
-            for (int row = 0; row < frameCount; row++) //for first N rows
-            {
-                for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-                {
-                    modalNoise[col] += matrix[row, col];
-                }
-            } //end for all cols
-            for (int col = 0; col < colCount; col++) modalNoise[col] /= frameCount;
-
-            return modalNoise;
-        }
 
         /// <summary>
         /// sets the dynamic range in dB for a sonogram. 

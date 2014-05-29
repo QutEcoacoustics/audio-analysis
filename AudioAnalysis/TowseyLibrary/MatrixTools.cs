@@ -232,6 +232,69 @@ namespace TowseyLibrary
             return op;
         }
 
+
+        /*
+         * converts a matrix of doubles to binary using passed threshold
+         */
+        public static double[,] ThresholdMatrix2RealBinary(double[,] M, double threshold)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            var op = new double[rowCount, colCount];
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    if (M[r, c] > threshold) op[r, c] = 1.0;
+                }
+            }
+            return op;
+        }
+
+
+        public static double[,] SubtractAndTruncate2Zero(double[,] matrix, double threshold)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c] - threshold;
+                    if (outM[r, c] < 0.0) outM[r, c] = 0.0;
+                }
+            }
+            return outM;
+        }
+
+        /// <summary>
+        /// truncate values below threshold to zero.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        public static double[,] Truncate2Zero(double[,] matrix, double threshold)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (matrix[r, c] > threshold) 
+                        outM[r, c] = matrix[r, c];
+                }
+            }
+            return outM;
+        }
+
+
+
         public static double[,] Matrix2LogValues(double[,] M)
         {
             int rowCount = M.GetLength(0);
