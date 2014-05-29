@@ -189,6 +189,8 @@
     <Compile Include="DSP\DSP_Frames.cs" />
     <Compile Include="DSP\DSP_IIRFilter.cs" />
     <Compile Include="DSP\FFT.cs" />
+    <Compile Include="DSP\NoiseRemoval_Briggs.cs" />
+    <Compile Include="DSP\NoiseRemoval_Modal.cs" />
     <Compile Include="DSP\SNR.cs" />
     <Compile Include="DSP\MFCCStuff.cs" />
     <Compile Include="DSP\WavInfo.cs" />

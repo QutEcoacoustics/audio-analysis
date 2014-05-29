@@ -2484,6 +2484,13 @@ namespace TowseyLibrary
       for (int i = 0; i < data.Length; i++) squaredArray[i] = data[i] * data[i];
       return squaredArray;
   }
+  public static double[] SquareRootOfValues(double[] data)
+  {
+      if (data == null) return null;
+      var sqrtArray = new double[data.Length];
+      for (int i = 0; i < data.Length; i++) sqrtArray[i] = Math.Sqrt(data[i]);
+      return sqrtArray;
+  }
   public static double[] LogValues(double[] data)
   {
       if (data == null) return null;
