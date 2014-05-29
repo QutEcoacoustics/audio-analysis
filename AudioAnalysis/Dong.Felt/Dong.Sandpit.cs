@@ -722,13 +722,15 @@
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
                     var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1,
                         neighbourhoodLength, featurePropSet, spectrogramConfig);
+                    var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
+                candidateRidgeNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
                 //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                 //(candidateRidgeNhRepresentationList, featurePropSet);
                     // this region representation depends on the query. 
-                    var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
-                    candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
+                    //var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
+                    //candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
                     // extract the candidates from the specific frequency
-                    var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                    //var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
                     //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
                     //foreach (var c in splitRegionRepresentationListToBlock)
                     //{

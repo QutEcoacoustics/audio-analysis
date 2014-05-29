@@ -472,6 +472,7 @@
                 var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
                 for (int index = 0; index < nhCount; index++)
                 {
+
                     var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
                     var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
                     var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
@@ -484,7 +485,7 @@
                     var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
                     var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
                     var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
-                    var candidatePOICountPercentage = candidate[index].POICountPercentage;
+                    //var candidatePOICountPercentage = candidate[index].POICountPercentage;
                     var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
                     var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
 
@@ -492,14 +493,15 @@
                     var pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
                     var vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
                     var nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
-                    var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                    //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
                     var columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
                     var rowEnergyEntropy = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
 
                     result += Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
                         + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                        + Math.Pow(pOICountPercentageDiff, 2) + Math.Pow(columnEnergyEntropyDiff, 2));                     
-                }
+                         + Math.Pow(columnEnergyEntropyDiff, 2));    // + Math.Pow(pOICountPercentageDiff, 2) 
+
+                }              
             }
             return result;
         }
