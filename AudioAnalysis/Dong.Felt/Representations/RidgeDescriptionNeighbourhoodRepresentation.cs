@@ -367,7 +367,7 @@ namespace Dong.Felt.Representations
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
             var NorthBin = 0.0;
-            var NorthWestBin = 0.0;
+            var NorthWestBin = 0.0;          
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -377,7 +377,7 @@ namespace Dong.Felt.Representations
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                        {                           
+                        {                                                       
                             EastBin += 1.0;
                         }
                         if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
@@ -435,7 +435,9 @@ namespace Dong.Felt.Representations
                         // added if will consider the orientation, comment it will not consider the orientation. 
                         //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
                         //{
-                            columnEnergy[rowIndex] += 1.0;
+                            //columnEnergy[rowIndex] += 1.0;   // Count of POI
+                       var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                       columnEnergy[rowIndex] += magnitude;                       
                         //}
                     }
                 }
@@ -449,7 +451,9 @@ namespace Dong.Felt.Representations
                     {
                         //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                         //{
-                            rowEnergy[rowIndex] += 1.0;
+                            //rowEnergy[rowIndex] += 1.0;
+                        var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                        rowEnergy[rowIndex] += magnitude;    
                         //}
                     }
                 }
