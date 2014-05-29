@@ -800,12 +800,15 @@
                 for (int index = 0; index < audioFilesCount; index++)
                 {
                     seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
-                    var top1 = seperateCandidatesList[index][0];
-                    finalOutputCandidates.Add(top1);
+                    if (seperateCandidatesList[index].Count != 0)
+                    {
+                        var top1 = seperateCandidatesList[index][0];
+                        finalOutputCandidates.Add(top1);
+                    }                   
                 }
                 finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
                 var candidateList = new List<Candidates>();
-                rank = audioFilesCount;
+                rank = finalOutputCandidates.Count;
                 if (finalOutputCandidates != null)
                 {
                     for (int k = 0; k < rank; k++)
