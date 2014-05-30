@@ -68,6 +68,7 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
     
     
     CheckPaths()
+    ClearAccessLog()
     options(warn = 1)  #print warnings as they occur
     
     

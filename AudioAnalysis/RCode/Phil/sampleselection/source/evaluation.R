@@ -3,7 +3,7 @@ EvaluateSamples <- function () {
     ranks <- ReadOutput('ranked.samples')
     d.names <- dimnames(ranks$data)
     num.clusters.options <- d.names$num.clusters
-    default <- length(num.clusters.options) / 2
+    default <- ceiling(length(num.clusters.options) / 2)  # default is the middle num clust
     num.clusters.choices <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
     
     ranks$data <- ranks$data[,num.clusters.choices,]
@@ -17,7 +17,7 @@ EvaluateSamples <- function () {
 
 }
 
-EvaluateSamples2d <- function (ranks, cutoff = NA) {
+EvaluateSamples2d.1 <- function (ranks, cutoff = NA) {
     # given a list of minutes
     # simulates a species richness survey, noting the 
     # total species found after each minute, and the total
@@ -161,9 +161,6 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
                       random.all = random.all)
     
 }
-
-
-
 
 EvaluateSamples3d <- function (ranks) {
     # given a list of minutes
@@ -474,11 +471,11 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
         line.colours <- rbind(line.colours, col)
     }
     
-    ranking.method.names <- c(
-        "Samples ranked by event count only",
-        "Samples ranked by number of clusters (A)",
-        "Samples ranked by number of clusters (B)"
-        )
+    #ranking.method.names <- c(
+    #    "Samples ranked by event count only",
+    #    "Samples ranked by number of clusters (A)",
+    #    "Samples ranked by number of clusters (B)"
+    #    )
     
     
     
@@ -486,7 +483,7 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
                                        0,0.6,0.9,
                                        0.7,0.1,0.9), ncol = 3, byrow = TRUE)
     
-    line.colours <- rbind(line.colours, ranking.method.colours)
+
     
     for (i in 1:length(rank.names)) {
         
@@ -500,7 +497,8 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
         
         PlotLine(line, ranking.method.colours[i, ])
 
-        legend.names = c(legend.names, ranking.method.names[i])
+        legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
+        line.colours <- rbind(line.colours,  ranking.method.colours[i, ])
     }
     
     legend.cols <- apply(as.matrix(line.colours), 1, RgbCol)
@@ -513,9 +511,6 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
            lty = lty, text.col = "black", lwd = 2)
     
 }
-
-
-
 
 PlotLine <- function (line, col.rgb, sd = NA, sd.col = NA, lty = 'solid') {
 

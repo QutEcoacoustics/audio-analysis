@@ -144,7 +144,7 @@ IsWithinTargetTimes <- function (date, min, site) {
     }
 }
 
-AddMinuteIdCol <- function (data) {
+AddMinuteIdCol.old <- function (data) {
     # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
     # will look up the minute id for each row and add a column to the data frame
     #
@@ -173,6 +173,39 @@ AddMinuteIdCol <- function (data) {
     colnames(new.data) <- c(cols, 'min.id')
     return(new.data) 
 }
+
+AddMinuteIdCol <- function (data) {
+    # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
+    # will look up the minute id for each row and add a column to the data frame
+    #
+    # Args:
+    #   data: data.frame
+    # 
+    # Value:
+    #   data.frame
+    
+    
+    min.ids <- GetMinuteList()
+    ids <- apply(as.matrix(data), 1, function (v) {
+        is.null(v['min'])
+        
+        if (is.null(v['min'])) {
+            min <- floor(as.numeric(v[sec.col]) / 60)
+        } else {
+            min <- as.numeric(v['min'])
+        } 
+        
+        id <- min.ids$min.id[min.ids$site == v['site'] & min.ids$date == v['date'] & min.ids$min == min]
+        
+        
+        return(id)  
+    })
+    data$min.id <- ids
+    return(data) 
+}
+
+
+
 
 SetMinute <- function (events, start.sec.col = "start.sec")  {
     # for a list of events which contains the filename 

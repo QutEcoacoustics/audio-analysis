@@ -10,6 +10,48 @@ require('rjson')
 # they will do this by selecting the parameters of the output and the parameters of the dependencies
 
 
+g.access.log <- list()
+
+ClearAccessLog <- function () {
+    g.access.log <<- list()  
+}
+SetLastAccessed <- function (name, meta.row) {
+    g.access.log[[name]] <<- meta.row  
+}
+GetLastAccessed <- function (name) {
+    if (!is.null(g.access.log[[name]])) {
+        return(g.access.log[[name]])
+    } else {
+        return(FALSE)
+    }
+}
+
+SetLastAccessed.recursive <- function (name, version, meta = NA) {
+    # given a row of meta data. Looks at the name and version of each dependency
+    # and sets the last accessed for those. 
+    
+    if (!is.data.frame(meta)) {
+        meta <- ReadMeta()
+    }
+    
+    meta.row <- meta[meta$name == name & meta$version == version, ]
+    if (nrow(meta.row) != 1) {
+        return(FALSE)
+    }
+    
+    SetLastAccessed(meta.row$name, meta.row)
+    
+    dependencies <- DependenciesToDf(meta.row$dependencies)
+    if (nrow(dependencies) > 0) {
+        for (i in 1:nrow(dependencies)) {
+            SetLastAccessed.recursive(dependencies$name[i], dependencies$version[i])
+        }
+    }
+    
+    
+}
+
+
 CheckPaths <- function () {
     # checks all global paths to make sure they exist
     # missing output paths are created
@@ -40,6 +82,9 @@ CheckPaths <- function () {
 
 
 
+
+
+
 GetType <- function (name) { 
     if (name %in% c('clustering', 'ranked.samples')) {
         return('object')
@@ -50,10 +95,18 @@ GetType <- function (name) {
 
 
 ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, false.if.missing = FALSE) {
-    meta.row <- ChooseOutputVersion(name, params, false.if.missing = false.if.missing)
+    
+    meta.row <- GetLastAccessed(name)
     if (!is.data.frame(meta.row)) {
-        return(FALSE)
+        meta.row <- ChooseOutputVersion(name, params, false.if.missing = false.if.missing)
+        if (!is.data.frame(meta.row)) {
+            return(FALSE)
+        }
     }
+    
+    SetLastAccessed.recursive(meta.row$name, meta.row$version)
+    
+
     type <- GetType(name)
     if (type == 'object') {   
         val <- (ReadObject(name, meta.row$version))

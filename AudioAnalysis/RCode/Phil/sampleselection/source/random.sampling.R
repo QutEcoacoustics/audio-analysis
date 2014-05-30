@@ -22,7 +22,7 @@ IsDawn <- function (mins, all.dawn = FALSE) {
 
 RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA, 
                            mins = NA, 
-                           num.repetitions = 100, 
+                           num.repetitions = 40, 
                            dawn.first = TRUE, 
                            dawn.from = 315, dawn.to = 495, 
                            block.size = 1) {

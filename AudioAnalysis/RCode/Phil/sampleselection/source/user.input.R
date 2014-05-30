@@ -27,6 +27,13 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
     # allows the user to select 1 or more of the choices, returning a vector 
     # of the choice numbers
     
+    if (length(options) == 1 && (default == 1 || default == 'all')) {
+        # if there was only 1 option and the default is 1 or 'all',
+        # then just return that option without getting user input
+        return(c(1))
+    }
+    
+    
     if (default == 'all') {
         all <- TRUE
     }

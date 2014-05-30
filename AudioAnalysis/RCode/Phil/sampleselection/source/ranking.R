@@ -20,15 +20,15 @@ RankSamples <- function (use.lines = TRUE) {
     use.ranking.methods <- c(4,8)
     
     # the different number of clusters to perform ranking for
-    num.num.clusters <- 2  # this many different numbers of clusters
-    num.clusters.start <- 120 # lowest number of clusters
+    num.num.clusters <- 1  # this many different numbers of clusters
+    num.clusters.start <- 240 # lowest number of clusters
     num.clusters.multiplier <- 2 # each number of clusters is this many times the last
     num.clusters <- round(num.clusters.start * num.clusters.multiplier^(0:(num.num.clusters-1)))
     
     # make sure we are not trying to use more clusters than events
     num.clusters <- num.clusters[num.clusters < nrow(events$data)]
     
-    output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins$data)), dimnames = list(ranking.method = 1:length(use.ranking.methods), num.clusters = num.clusters, min.id = mins$data$min.id))
+    output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins$data)), dimnames = list(ranking.method = as.character(use.ranking.methods), num.clusters = num.clusters, min.id = mins$data$min.id))
 
     groups <- as.data.frame(matrix(NA, ncol = length(num.clusters), nrow = nrow(events$data)))
     groups.col.names <- paste0('group.', num.clusters)
@@ -48,7 +48,7 @@ RankSamples <- function (use.lines = TRUE) {
             
             r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)   
             r <- r[order(r$min.id), ]
-            output[m, n, ] <- r$rank
+            output[as.character(r.m), n, ] <- r$rank
         }
     }
     
@@ -105,8 +105,6 @@ RankSamples3 <- function (events, min.ids) {
     return(data.frame(min.id = as.vector(mins.ranked$min.id), rank = (mins.ranked$rank), score = as.vector(mins.ranked$distance.score)))
 }
 
-
-
 RankSamples4 <- function (events, min.ids) {
     # rank samples using only the number of events
     # ignores clustering completely
@@ -147,8 +145,6 @@ RankSamples6 <- function (events, min.ids) {
     return(IterateOnSparseMatrix(events, decay.rate = 1))
     
 }
-
-
 
 RankSamples7 <- function (events, min.ids) {
     
@@ -223,32 +219,16 @@ RankSamples8 <- function (events, min.ids) {
     
     # while there are still NAs in rank2
     for (i in 2:nrow(result)) {
-        
+        Dot()
         unranked <- event.count[event.count$min.id %in% setdiff(event.count$min.id, result$min.id), ]
-        
         dist.scores <- DistScores(unranked$min.id, result$min.id)
-        
         # transform dist scores so that far away and very far away are equally good. 
-        threshold <- 60
-        dist.scores[dist.scores > threshold] <- threshold
-        dist.scores <- log(dist.scores)
-        
+        dist.scores <- TransformDistScores(dist.scores)
         combined.scores <- dist.scores * unranked$count
-        
         result$min.id[i] <- unranked$min.id[which.max(combined.scores)]
         result$rank[i] <- i
-        result$score[i] <- max(combined.scores)
-        
-        
-        
+        result$score[i] <- max(combined.scores) 
     }
-        
-       
-        
-    
-        
-  
-    
     
     result <- result[order(result$min.id), ]
     
@@ -266,6 +246,25 @@ DistScores <- function (from.min.ids, to.closest.in.min.ids) {
     return(dist.scores) 
 }
 
+
+TransformDistScores <- function (dist.scores, threshold = 30, amount = 1) {
+    # given a list of distances scores, transforms to a value that 
+    # can be used as a weight for score based on something else
+    # 
+    # Args: 
+    #   threshold: int; up to this point, the distance makes a difference. Over this point, 
+    #                   the weight will be equal to the weight of 
+    #                   a distance score of 60
+    #   amount: float [0,1] how much the distance score should affect the weight 
+    
+    
+    dist.scores[dist.scores > threshold] <- threshold
+    dist.scores <- ((threshold^2-((dist.scores-threshold)^2))^0.5)
+    dist.scores <- dist.scores / threshold # convert to [0:1]  (maybe use max instead of threshold? but don't think so)
+    dist.scores <- dist.scores * amount + (1-amount)
+    return(dist.scores)
+    
+}
 
 
 EventCountByMin <- function (min.ids, events.per.group.per.min) {
