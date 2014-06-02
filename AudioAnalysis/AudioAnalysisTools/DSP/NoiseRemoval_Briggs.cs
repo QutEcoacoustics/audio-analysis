@@ -127,17 +127,20 @@ namespace AudioAnalysisTools.DSP
             //profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
             //m = NoiseRemoval_Briggs.BriggsNoiseRemoval(m, profile);
             //m = NoiseRemoval_Briggs.BriggsNoiseRemovalUsingSquareroot(m, profile);
+            m = ImageTools.WienerFilter(m, 17); //Briggs uses 17
+            m = MatrixTools.SubtractAndTruncate2Zero(m, 1.0);
             title = "TITLE TWO";
             Image image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
 
-            double[,] m1 = MatrixTools.SubtractAndTruncate2Zero(m, 0.9);
-            title = "TITLE THREE";
-            Image image3 = DrawSonogram(m1, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
-            m = ImageTools.WienerFilter(m, 17); //Briggs uses 17
-            m = SNR.RemoveNeighbourhoodBackgroundNoise(m, 0.4);
 
-            m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.4); //use this for single filter
-            //m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.2); //use this for double filter
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.2);   //use this for single filter
+            //m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.4); //use this for double filter
+            title = "TITLE THREE";
+            Image image3 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+
+            m = ImageTools.GaussianBlur_5cell(m);
+            m = ImageTools.GaussianBlur_5cell(m);
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.05); 
             title = "TITLE FOUR";
             Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
 
