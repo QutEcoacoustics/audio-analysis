@@ -470,9 +470,18 @@
             if (query != null && candidate != null)
             {
                 var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var hOrientationPOIHistDiff = 0.0;
+                var pDOrientationPOIHistDiff = 0.0;
+                var vOrientationPOIHistDiff = 0.0;
+                var nDOrientationPOIHistDiff = 0.0;
+                //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                var columnEnergyEntropyDiff = 0.0;
+                var rowEnergyEntropy = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
-
+                    //if ((query[index].POICount != 0 && candidate[index].POICount != 0) 
+                    //    || (query[index].POICount == 0 && candidate[index].POICount == 0))
+                    //{
                     var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
                     var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
                     var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
@@ -489,18 +498,25 @@
                     var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
                     var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
 
-                    var hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
-                    var pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
-                    var vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
-                    var nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
+                    hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
+                    pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
+                    vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
+                    nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
                     //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
-                    var columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
-                    var rowEnergyEntropy = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
+                   columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
+                    rowEnergyEntropy = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
 
                     result += Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
                         + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
                          + Math.Pow(columnEnergyEntropyDiff, 2));    // + Math.Pow(pOICountPercentageDiff, 2) 
-
+                    //}
+                    //if ((query[index].POICount != 0 && candidate[index].POICount == 0)
+                    //    || (query[index].POICount == 0 && candidate[index].POICount != 0))
+                    //{
+                    //    result += 2 * Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
+                    //        + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
+                    //         + Math.Pow(columnEnergyEntropyDiff, 2));    // + Math.Pow(pOICountPercentageDiff, 2) 
+                    //}
                 }              
             }
             return result;
