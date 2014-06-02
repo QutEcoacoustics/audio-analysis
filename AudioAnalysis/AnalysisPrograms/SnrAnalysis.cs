@@ -77,8 +77,11 @@ namespace AnalysisPrograms
             // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
             return new Arguments
             {
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC1_20071008-081607.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-045040_birds.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-143516_speech.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
             };
