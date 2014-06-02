@@ -395,86 +395,84 @@ namespace Dong.Felt.Representations
                     }
                 }
             }
-            var sumPOICount = EastBin + NorthEastBin + NorthBin + NorthWestBin;
-            //if (sumPOICount != 0)
-            //{
-            //    histogramOfGradient.Add(EastBin / sumPOICount);
-            //    histogramOfGradient.Add(NorthEastBin / sumPOICount);
-            //    histogramOfGradient.Add(NorthBin / sumPOICount);
-            //    histogramOfGradient.Add(NorthWestBin / sumPOICount);
-            //}
-            //else
-            //{
-            //    histogramOfGradient.Add(0.0);
-            //    histogramOfGradient.Add(0.0);
-            //    histogramOfGradient.Add(0.0);
-            //    histogramOfGradient.Add(0.0);
-            //}
-            //this.histogramOfGradient = histogramOfGradient;
-            if (sumPOICount != 0)
-            {
-                this.HOrientationPOIHistogram = EastBin / (double) sumPOICount;
-                this.VOrientationPOIHistogram = NorthBin / (double)sumPOICount;
-                this.PDOrientationPOIHistogram = NorthEastBin / (double)sumPOICount;
-                this.NDOrientationPOIHistogram = NorthWestBin / (double)sumPOICount;
-            }
-            var maxFrequency = spectrogramConfig.NyquistFrequency;
             this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            var columnEnergy = new double[pointsOfInterest.GetLength(1)];
-            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            var sumPOICount = EastBin + NorthEastBin + NorthBin + NorthWestBin;
+            var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
+
+            if (sumPOICount == 0)
             {
-                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                this.HOrientationPOIHistogram = -1.0;
+                this.VOrientationPOIHistogram = -1.0;
+                this.PDOrientationPOIHistogram = -1.0;
+                this.NDOrientationPOIHistogram = -1.0;
+                this.ColumnEnergyEntropy = 2;
+                this.RowEnergyEntropy = 2;
+            }
+            else
+            {
+                this.HOrientationPOIHistogram = EastBin / maxPOICount;
+                this.VOrientationPOIHistogram = NorthBin / maxPOICount;
+                this.PDOrientationPOIHistogram = NorthEastBin / maxPOICount;
+                this.NDOrientationPOIHistogram = NorthWestBin / maxPOICount;
+
+                var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
                 {
-                    if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
-                        // added if will consider the orientation, comment it will not consider the orientation. 
-                        //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
-                        //{
+                        if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                        {
+                            // added if will consider the orientation, comment it will not consider the orientation. 
+                            //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
+                            //{
                             //columnEnergy[rowIndex] += 1.0;   // Count of POI
-                       var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
-                       columnEnergy[rowIndex] += magnitude;                       
-                        //}
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            columnEnergy[rowIndex] += magnitude;
+                            //}
+                        }
                     }
                 }
-            }
-            var rowEnergy = new double[pointsOfInterest.GetLength(0)];
-            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
                 {
-                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
-                        //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                        //{
+                        if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                        {
+                            //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                            //{
                             //rowEnergy[rowIndex] += 1.0;
-                        var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
-                        rowEnergy[rowIndex] += magnitude;    
-                        //}
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            rowEnergy[rowIndex] += magnitude;
+                            //}
+                        }
                     }
                 }
+                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.ColumnEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.ColumnEnergyEntropy = columnEnergyEntropy;
+                }
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.RowEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.RowEnergyEntropy = rowEnergyEntropy;
+                }
             }
-            var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
-            var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
-            if (double.IsNaN(columnEnergyEntropy))
-            {
-                this.ColumnEnergyEntropy = 1;
-            }
-            else{
-                this.ColumnEnergyEntropy = columnEnergyEntropy;
-            }
-            if (double.IsNaN(columnEnergyEntropy))
-            {
-                this.RowEnergyEntropy = 1;
-            }
-            else{
-                this.RowEnergyEntropy = rowEnergyEntropy;
-            }
-            
         }
 
         public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)

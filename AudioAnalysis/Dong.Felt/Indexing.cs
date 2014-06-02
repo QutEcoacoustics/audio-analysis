@@ -12,6 +12,39 @@ namespace Dong.Felt
     using AudioAnalysisTools.StandardSpectrograms;
     public class Indexing
     {
+
+        // Todo: extract query region representaiton by providing the boundary information of the query. 
+        public static List<RegionRerepresentation> ExtractQueryRegionRepresentation(Query query, int neighbourhoodLength,
+           string audioFileName, SpectrogramStandard spectrogram)
+        {
+            var results = new List<RegionRerepresentation>();
+            
+            var frequencyRange = query.frequencyRange;
+            var duration = query.duration;
+            var maxFreq = query.maxFrequency;
+            var minFreq = query.minFrequency;
+            var startTime = query.startTime;
+            var endTime = query.endTime;
+            var frequencyIndex = query.nhStartRowIndex;
+            var frameIndex = query.nhStartColIndex;
+
+            var nhfrequencyUnit = neighbourhoodLength * spectrogram.FBinWidth;
+            var nhframeUnit = neighbourhoodLength * spectrogram.FrameDuration;
+
+            var nhCountInRow = (int)(frequencyRange / nhfrequencyUnit);
+            var nhCountInColumn = (int)(duration / nhframeUnit); 
+
+            if (nhCountInRow * nhfrequencyUnit > frequencyRange)
+            {
+                nhCountInRow++;
+            }
+            if (nhCountInColumn  * nhframeUnit > duration)
+            {
+                nhCountInColumn++; 
+            }
+            return results;
+        }
+        
         /// <summary>
         /// To extract query region representation from an audio file which contains the query. 
         /// </summary>
