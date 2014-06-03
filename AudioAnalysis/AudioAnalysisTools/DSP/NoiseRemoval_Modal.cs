@@ -170,7 +170,8 @@ namespace AudioAnalysisTools.DSP
 
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
-            image = BaseSonogram.FrameSpectrogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, Y_interval);
+            TimeSpan labelInterval = TimeSpan.FromSeconds(5);
+            image = BaseSonogram.FrameSpectrogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, Y_interval);
 
             return image;
         }

@@ -108,11 +108,33 @@ namespace AudioAnalysisTools.DSP
         } // end of TruncateModalNoise()
 
 
+        public static double[,] BriggsNoiseFilterAndGetMasks(double[,] matrix, double parameter,
+                                                          TimeSpan recordingDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int Y_AxisInterval)
+        {
+            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, parameter);
+            profile = DataTools.filterMovingAverage(profile, 5);
+            double[,] m = NoiseRemoval_Briggs.BriggsNoiseRemovalUsingSquareroot(matrix, profile);
+            // smooth and truncate
+            m = ImageTools.WienerFilter(m, 17); //Briggs uses 17
+            m = MatrixTools.SubtractAndTruncate2Zero(m, 1.0);
+            // make binary
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.4);   //works for low SNR recordings
+            //m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.2);   //works for high SNR recordings
+
+            m = ImageTools.GaussianBlur_5cell(m);
+            m = ImageTools.GaussianBlur_5cell(m);
+            //m = ImageTools.Blur(m, 10); // use a simple neighbourhood blurring function.
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.05); 
+
+            return m;
+        }
 
         public static Image BriggsNoiseFilterTwiceAndGetSonograms(double[,] matrix, double parameter,
                                                                   TimeSpan recordingDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int Y_AxisInterval)
         {
             double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, parameter);
+            profile = DataTools.filterMovingAverage(profile, 5);
+
             //double[,] m = NoiseRemoval_Briggs.BriggsNoiseRemoval(matrix, profile);
             double[,] m = NoiseRemoval_Briggs.BriggsNoiseRemovalUsingSquareroot(matrix, profile);
             //TimeSpan recordingDuration, 
@@ -120,9 +142,11 @@ namespace AudioAnalysisTools.DSP
             //TimeSpan xAxisPixelDuration, ie stepDuration
             //int Y_AxisInterval
 
+            List<Image> images = new List<Image>();
+
             string title = "TITLE ONE";
             Image image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
-
+            images.Add(image1);
 
             //profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
             //m = NoiseRemoval_Briggs.BriggsNoiseRemoval(m, profile);
@@ -131,25 +155,25 @@ namespace AudioAnalysisTools.DSP
             m = MatrixTools.SubtractAndTruncate2Zero(m, 1.0);
             title = "TITLE TWO";
             Image image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            images.Add(image2);
 
 
-            m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.2);   //use this for single filter
+            m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.4);   //works for low SNR recordings
+            //m = MatrixTools.ThresholdMatrix2RealBinary(m, 1.2);   //use this for single filter - works for high SNR recordings
             //m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.4); //use this for double filter
-            title = "TITLE THREE";
-            Image image3 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            //title = "TITLE THREE";
+            //Image image3 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            //images.Add(image3);
 
             m = ImageTools.GaussianBlur_5cell(m);
             m = ImageTools.GaussianBlur_5cell(m);
+            //m = ImageTools.Blur(m, 10); // use a simple neighbourhood blurring function.
             m = MatrixTools.ThresholdMatrix2RealBinary(m, 0.05); 
             title = "TITLE FOUR";
             Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            images.Add(image4);
 
-            Image[] array = new Image[4];
-            array[0] = image1;
-            array[1] = image2;
-            array[2] = image3;
-            array[3] = image4;
-            Image combinedImage = ImageTools.CombineImagesVertically(array);
+            Image combinedImage = ImageTools.CombineImagesVertically(images);
 
             return combinedImage;
         }
@@ -157,12 +181,18 @@ namespace AudioAnalysisTools.DSP
 
         static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int Y_interval, string title)
         {
-            //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
-            Image image = BaseSonogram.GetSonogramImage(data);
+            // the next two variables determine how the greyscale sonogram image is normalised.
+            // The low  normalisation bound is min value of the average spectrogram derived from the lowest  percent of frames
+            // The high normalisation bound is max value of the average spectrogram derived from the highest percent of frames
+            int minPercentile = 5;  
+            int maxPercentile = 10;
+
+            Image image = BaseSonogram.GetSonogramImage(data, minPercentile, maxPercentile);
 
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
-            image = BaseSonogram.FrameSpectrogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, Y_interval);
+            TimeSpan labelInterval = TimeSpan.FromSeconds(5);
+            image = BaseSonogram.FrameSpectrogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, Y_interval);
 
             return image;
         }

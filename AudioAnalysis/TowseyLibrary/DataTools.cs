@@ -2889,12 +2889,12 @@ namespace TowseyLibrary
 
 
   /**
-   * returns an array of ranked indices where the indices point to 
+   * returns an array of indices where the indices point to 
    * the data array with values ranked in descending order
    * @param data
    * @return 
    */
-  static public int[] getRankedIndices(double[] data)
+  static public int[] GetRankedIndicesInDecendingOrder(double[] data)
   { 
   	if((data == null)||(data.Length==0)) return null;
   	double[] dataCopy = (double[])data.Clone();  	
@@ -2909,6 +2909,58 @@ namespace TowseyLibrary
     return order;
   }
   /**
+   * returns an array of indices where the indices point to 
+   * the data array with values ranked in ascending order
+   * @param data
+   * @return 
+   */
+  static public int[] GetRankedIndicesInAscendingOrder(double[] data)
+  {
+      if ((data == null) || (data.Length == 0)) return null;
+      double[] dataCopy = (double[])data.Clone();
+      int[] order = new int[data.Length];
+      int minIndex;
+
+      for (int i = 0; i < data.Length; i++)
+      {
+          minIndex = DataTools.GetMinIndex(dataCopy);
+          order[i] = minIndex;
+          dataCopy[minIndex] = Double.MaxValue;
+      }
+      return order;
+  }
+
+  static public double GetNthSmallestValue(double[] data, int N)
+  {
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      double[] dataCopy = (double[])data.Clone();
+      int minIndex = 0;
+
+      for (int i = 0; i < N; i++)
+      {
+          minIndex = DataTools.GetMinIndex(dataCopy);
+          dataCopy[minIndex] = Double.MaxValue;
+      }
+      return data[minIndex];
+  }
+  static public double GetNthLargestValue(double[] data, int N)
+  {
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      double[] dataCopy = (double[])data.Clone();
+      int maxValue = 0;
+
+      for (int i = 0; i < N; i++)
+      {
+          maxValue = DataTools.GetMaxIndex(dataCopy);
+          dataCopy[maxValue] = -Double.MaxValue;
+      }
+      return data[maxValue];
+  }
+
+
+       
+        
+   /**
    *
    * @param data
    * @param min
