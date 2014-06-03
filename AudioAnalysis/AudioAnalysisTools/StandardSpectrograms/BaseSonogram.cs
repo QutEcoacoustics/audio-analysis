@@ -4,6 +4,7 @@
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
     using System.Text;
 
     using Acoustics.Tools.Wav;
@@ -667,9 +668,16 @@
 
             int imageHeight = binCount * binHeight; // image ht = sonogram ht
 
-            //set up min, max, range for normalising of dB values
-            double min; double max;
-            DataTools.MinMax(data, out min, out max);
+            //set up min, max for normalising of sonogram values
+            int minRank = 50;
+            int maxRank = 1000;
+            //double min = BaseSonogram.GetMinForSonogramImage(data, N);
+            //double max = BaseSonogram.GetMaxForSonogramImage(data, N);
+
+            double[] minmax = BaseSonogram.GetMinMaxForSonogramImage(data, minRank, maxRank);
+            double min = minmax[0];
+            double max = minmax[1];            
+
             double range = max - min;
 
             //int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
@@ -712,18 +720,162 @@
             return (Image)bmp;
         }
 
-        public static Image FrameSpectrogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int Y_interval)
+        /// <summary>
+        /// Returns an image of the data matrix.
+        /// Normalises the values from min->max according to passed rank values.
+        /// Therefore pixels in the normalised grey-scale image will range from 0 to 255. 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static Image GetSonogramImage(double[,] data, int minPercentile, int maxPercentile)
+        {
+            int width = data.GetLength(0); // Number of spectra in sonogram
+            int binCount = data.GetLength(1);
+            int binHeight = 1;
+            int imageHeight = binCount * binHeight; // image ht = sonogram ht
+
+            double[] lowAverage = BaseSonogram.GetAvSpectrum_LowestPercentile(data, minPercentile);
+            double[] hihAverage = BaseSonogram.GetAvSpectrum_HighestPercentile(data, maxPercentile);
+            double min = lowAverage.Min();
+            double max = hihAverage.Max();
+
+
+            double range = max - min;
+            Color[] grayScale = ImageTools.GrayScale();
+
+            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = imageHeight;
+            for (int y = 0; y < binCount; y++) //over all freq bins
+            {
+                for (int r = 0; r < binHeight; r++) //repeat this bin if pixel rows per bin>1
+                {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double value = (data[x, y] - min) / (double)range;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0) c = 0;
+                        else
+                        if (c >= 256) c = 255;
+                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
+                    }//for all pixels in line
+                    yOffset--;
+                } //end repeats over one track
+            }//end over all freq bins
+
+            return (Image)bmp;
+        }
+
+
+        static public double GetMinForSonogramImage(double[,] data, int N)
+        {
+            double[] rowAvgs = MatrixTools.GetColumnsAverages(data);
+            int[] rankOrder = DataTools.GetRankedIndicesInAscendingOrder(rowAvgs);
+            double[] minFrame = MatrixTools.GetRow(data, rankOrder[N]);
+            return minFrame.Min();
+        }
+        static public double GetMaxForSonogramImage(double[,] data, int N)
+        {
+            double[] rowAvgs = MatrixTools.GetColumnsAverages(data);
+            int[] rankOrder = DataTools.GetRankedIndicesInDecendingOrder(rowAvgs);
+            double[] maxFrame = MatrixTools.GetRow(data, rankOrder[N]);
+            return maxFrame.Max();
+        }
+        /// <summary>
+        /// calculates the minimum and max bound values for display of sonogram.
+        /// Do not necessarily want to display sonogram normalised between min and max values.
+        /// therefore normalise according the Nth smallest and nth largest values in data matrix.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="minRank"></param>
+        /// <param name="maxRank"></param>
+        /// <returns></returns>
+        static public double[] GetMinMaxForSonogramImage(double[,] data, int minRank, int maxRank)
+        {
+            double[] array = MatrixTools.Matrix2Array(data);
+            double minValue = DataTools.GetNthSmallestValue(array, minRank);
+            double maxValue = DataTools.GetNthLargestValue(array, maxRank);
+            double[] returnArray = { minValue, maxValue };
+            return returnArray;
+        }
+
+        public static double[] GetAvSpectrum_LowestPercentile(double[,] matrix, int lowPercentile)
+        {
+            double[] energyLevels = MatrixTools.GetRowAverages(matrix);
+            var sorted = DataTools.SortArrayInAscendingOrder(energyLevels);
+            int[] order = sorted.Item1;
+            //double[] values = sorted.Item2;
+            //for (int i = 0; i < 20; i++) Console.WriteLine(values[i]);
+
+            int colCount = matrix.GetLength(1);
+            int cutoff = (int)(lowPercentile * matrix.GetLength(0) / (double)100);
+            double[] avSpectrum = new double[colCount];
+
+            // sum the lowest percentile frames 
+            for (int i = 0; i < cutoff; i++)
+            {
+                double[] row = DataTools.GetRow(matrix, order[i]);
+                for (int c = 0; c < colCount; c++)
+                {
+                    avSpectrum[c] += row[c];
+                }
+                //Console.WriteLine(values[i]);
+            }
+            // get average of the lowest percentile frames 
+            for (int c = 0; c < colCount; c++)
+            {
+                avSpectrum[c] /= cutoff;
+                //noiseProfile[c] += 0.0000000001; //to avoid zero values - which is very unlikely given we are in dB.
+            }
+            //for (int i = 0; i < colCount; i++) Console.WriteLine(noiseProfile[i]);
+
+            return avSpectrum;
+        }
+        public static double[] GetAvSpectrum_HighestPercentile(double[,] matrix, int highPercentile)
+        {
+            double[] energyLevels = MatrixTools.GetRowAverages(matrix);
+            var sorted = DataTools.SortArray(energyLevels); // sorts array in descending order
+            int[] order = sorted.Item1;
+            //double[] values = sorted.Item2;
+            //for (int i = 0; i < 20; i++) Console.WriteLine(values[i]);
+
+            int colCount = matrix.GetLength(1);
+            int cutoff = (int)(highPercentile * matrix.GetLength(0) / (double)100);
+            double[] avSpectrum = new double[colCount];
+
+            // sum the lowest percentile frames 
+            for (int i = 0; i < cutoff; i++)
+            {
+                double[] row = DataTools.GetRow(matrix, order[i]);
+                for (int c = 0; c < colCount; c++)
+                {
+                    avSpectrum[c] += row[c];
+                }
+                //Console.WriteLine(values[i]);
+            }
+            // get average of the lowest percentile frames 
+            for (int c = 0; c < colCount; c++)
+            {
+                avSpectrum[c] /= cutoff;
+            }
+            //for (int i = 0; i < colCount; i++) Console.WriteLine(noiseProfile[i]);
+
+            return avSpectrum;
+        }
+
+
+
+
+        public static Image FrameSpectrogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, 
+                                             TimeSpan xAxisPixelDuration, TimeSpan labelInterval, int Y_interval)
         {
             ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
 
             int imageWidth = image.Width;
             int trackHeight = 20;
-
             int imageHt = image.Height + trackHeight + trackHeight + trackHeight;
-            //TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            //Bitmap timeBmp = Image_Track.DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
 
-            Bitmap timeBmp = BaseSonogram.DrawTimeTrack(minOffset, xAxisPixelDuration, xAxisTicInterval, imageWidth, trackHeight, "Time");
+            Bitmap timeBmp = BaseSonogram.DrawTimeTrack(minOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -766,38 +918,46 @@
         }
 
         // mark of time scale according to scale.
-        public static Bitmap DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int trackWidth, int trackHeight, string title)
+        public static Bitmap DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
             double elapsedTime = offsetMinute.TotalSeconds;
-            double ticInterval = xAxisTicInterval.TotalSeconds;
             double pixelDuration = xAxisPixelDuration.TotalSeconds;
+            int labelSecondsInterval = (int)labelInterval.TotalSeconds;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
-            Font stringFont = new Font("Arial", 9);
+            Font stringFont = new Font("Arial", 8);
 
-            for (int x = 0; x < trackWidth; x++) //for pixels in the line
+            // for columns, draw in second lines
+            double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
+            for (int x = 1; x < trackWidth; x++) //for pixels in the line
             {
-                elapsedTime += (x * pixelDuration);
-                //int pixelID = elapsedTime / ticInterval;
-                //if() continue
-                g.DrawLine(whitePen, x, 0, x, trackHeight);
-                //hour = min / XaxisScale;
-                //if (hour >= 24)
-                //{
-                //    min = 0;
-                //    hour = 0;
-                //}
-                //g.DrawString(hour.ToString(), stringFont, Brushes.White, new PointF(x + 2, 1)); //draw time
-            }//end over all pixels
+                elapsedTime += pixelDuration;
+                if (x % xInterval <= pixelDuration)
+                {
+                    g.DrawLine(whitePen, x, 0, x, trackHeight);
+                    int totalSeconds = (int)Math.Round(elapsedTime);
+                    if (totalSeconds % labelSecondsInterval == 0)
+                    {
+                        int minutes = totalSeconds / 60;
+                        int seconds = totalSeconds % 60;
+                        string time = string.Format("{0}m{1}s", minutes, seconds);
+                        g.DrawString(time, stringFont, Brushes.White, new PointF(x + 1, 2)); //draw time
+                    }
+                }
+            }
+
+
+
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
 
-            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
+            g.DrawString(title, stringFont, Brushes.White, new PointF(4, 3));
+            //bmp.Save(@"C:\SensorNetworks\Output\SNR\timebmp.png");
             return bmp;
         }
 

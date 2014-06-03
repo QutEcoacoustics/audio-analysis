@@ -2295,8 +2295,21 @@ namespace TowseyLibrary
             bmp.Save(pathName);
         }
 
+
         /// <summary>
-        /// stacks the passed images one on top of the other. Assum that all images have the same width.
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static Image CombineImagesVertically(List<Image> list)
+        {
+            return CombineImagesVertically(list.ToArray());
+        }
+
+        /// <summary>
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
