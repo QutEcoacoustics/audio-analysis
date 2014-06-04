@@ -1,4 +1,4 @@
-drawAC <- function(calls, samples){
+drawAC <- function(calls, samples, total){
   
   currentSpecies <- calls[1, ]
   previousLen <- length(which(currentSpecies > 0))
@@ -14,6 +14,6 @@ drawAC <- function(calls, samples){
     accumulation <- c(accumulation, currentLen)
   }
   
-  result<-accumulation / 62 * 100
+  result<-accumulation / total * 100
   return(result)
 }
