@@ -79,9 +79,12 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-045040_birds.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\AdelotusBrevis_extract.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-143516_speech.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_0min.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_1min.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav".ToFileInfo(),
+                
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
             };
@@ -240,7 +243,7 @@ namespace AnalysisPrograms
             Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
 
-            // (F) ################################## Calculate modal background noise spectrum in decibels
+            // (G) ################################## Calculate modal background noise spectrum in decibels
             //double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
             //NoiseReductionType nrt = NoiseReductionType.MODAL;
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, SD_COUNT);
@@ -249,12 +252,19 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = NoiseReductionType.LOWEST_PERCENTILE;
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
 
-            double upperPercentileBound = 0.20;    // lowest percentile for noise removal
-            //NoiseReductionType nrt = NoiseReductionType.BRIGGS_PERCENTILE;
-            //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(amplitudeSpectrogram, nrt, upperPercentileBound);
-            Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterTwiceAndGetSonograms(amplitudeSpectrogram, upperPercentileBound,
-                                                                                      wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
+            // (H) ################################## Calculate BRIGGS noise removal from amplitude spectrum 
+            double upperPercentileBound = 0.20;    // lowest percentile for noise removal            
+            //double binaryThreshold   = 0.6;   //works for higher SNR recordings
+            double binaryThreshold = 0.4;   //works for lower SNR recordings
+            //double binaryThreshold = 0.3;   //works for lower SNR recordings
+            double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetMask(amplitudeSpectrogram, upperPercentileBound, binaryThreshold);
 
+            string title = "TITLE";
+            Image image2 = NoiseRemoval_Briggs.DrawSonogram(m, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            //Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetSonograms(amplitudeSpectrogram, upperPercentileBound, binaryThreshold,
+            //                                                                          wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
+
+            // (I) ################################## Calculate MEDIAN noise removal from amplitude spectrum 
 
             //double upperPercentileBound = 0.8;    // lowest percentile for noise removal
             //NoiseReductionType nrt = NoiseReductionType.MEDIAN;
