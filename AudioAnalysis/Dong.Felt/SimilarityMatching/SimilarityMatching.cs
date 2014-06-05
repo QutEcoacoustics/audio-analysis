@@ -7,6 +7,7 @@
     using System.ComponentModel;
     using Representations;
     using Dong.Felt.Features;
+    using System.Globalization;
 
     
     enum MatchIndex//public enum MatchIndex
@@ -464,7 +465,7 @@
             return result;
         }
 
-        public static double DistanceFeature5Representation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate)
+        public static double DistanceFeature5Representation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, int poiCountThreshold)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -476,49 +477,57 @@
                 var nDOrientationPOIHistDiff = 0.0;
                 //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
                 var columnEnergyEntropyDiff = 0.0;
-                var rowEnergyEntropy = 0.0;
+                var rowEnergyEntropyDiff = 0.0;
+                var matchedNhCount = 0;
                 for (int index = 0; index < nhCount; index++)
                 {
-                    //if ((query[index].POICount != 0 && candidate[index].POICount != 0) 
-                    //    || (query[index].POICount == 0 && candidate[index].POICount == 0))
-                    //{
-                    var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
-                    var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
-                    var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
-                    var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
-                    var queryPOICountPercentage = query[index].POICountPercentage;
-                    var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
-                    var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
+                    // to check whether they match
+                    if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
+                    {
+                        result += 0.5;
+                        matchedNhCount++;
+                    }
+                    else
+                    {
+                        if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
+                        {
+                            matchedNhCount++;
+                            var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
+                            var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
+                            var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
+                            var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
+                            var queryPOICountPercentage = query[index].POICountPercentage;
+                            var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
+                            var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
 
-                    var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
-                    var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
-                    var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
-                    var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
-                    //var candidatePOICountPercentage = candidate[index].POICountPercentage;
-                    var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
-                    var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
+                            var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
+                            var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
+                            var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
+                            var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
+                            //var candidatePOICountPercentage = candidate[index].POICountPercentage;
+                            var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
+                            var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
+                            hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
+                            pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
+                            vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
+                            nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
+                            //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                            columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
+                            rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
 
-                    hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
-                    pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
-                    vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
-                    nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
-                    //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
-                   columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
-                    rowEnergyEntropy = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
-
-                    result += Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
-                        + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                         + Math.Pow(columnEnergyEntropyDiff, 2));    // + Math.Pow(pOICountPercentageDiff, 2) 
-                    //}
-                    //if ((query[index].POICount != 0 && candidate[index].POICount == 0)
-                    //    || (query[index].POICount == 0 && candidate[index].POICount != 0))
-                    //{
-                    //    result += 2 * Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
-                    //        + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                    //         + Math.Pow(columnEnergyEntropyDiff, 2));    // + Math.Pow(pOICountPercentageDiff, 2) 
-                    //}
-                }              
-            }
+                            var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
+                                              + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
+                                              + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
+                            var maxDistance = Math.Sqrt(6.0);
+                            result += 1 - euclideanDistance / maxDistance;                         
+                        }
+                    }                        
+                }
+                var matchedPercentage = matchedNhCount / (double)nhCount;
+                var averageSimilarityScore = result / matchedNhCount;
+                result = matchedPercentage * averageSimilarityScore;
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
+            }          
             return result;
         }
 
@@ -537,7 +546,10 @@
                         List<double> candidateHOG = candidate[index].HistogramOfOrientatedGradient;                        
                         for (int i = 0; i < queryHOG.Count; i++)
                         {
-                            sum += Math.Abs(queryHOG[i] - candidateHOG[i]);
+                            if (query[index].POICount != 0)
+                            {
+                                sum += Math.Abs(queryHOG[i] - candidateHOG[i]);
+                            }
                         }
                     }
                     result += sum;

@@ -122,18 +122,17 @@
             // ceiling is try to increase the value.
             var nhCountInRow = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
             var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
-            /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.
-            /// Try to enlarge the original region, the startColIndex and startRowIndex should plus or minus one. 
-            this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength) - enlargedOffset;
-            this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength) - enlargedOffset;
+            /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.          
+            this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);
+            this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength);
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
-            if (this.nhStartRowIndex + nhCountInRow > this.maxNhRowIndex)
+            if (this.nhStartRowIndex + nhCountInRow >= this.maxNhRowIndex)
             {
-                nhStartRowIndex--;
+                this.nhStartColIndex--;
             }
-            if (this.nhStartColIndex + nhCountInCol > this.maxNhColIndex)
+            if (this.nhStartColIndex + nhCountInCol >= this.maxNhColIndex)
             {
-                nhStartColIndex--;
+                this.nhStartRowIndex--;
             }
             this.nhCountInRow = nhCountInRow;
             this.nhCountInColumn = nhCountInCol;
