@@ -319,7 +319,7 @@ namespace Dong.Felt
                 if (notNullNhCount >= 0.1 * nhCountInRegion)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList);
+                    var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList,2);
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                             duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
                             tempRegionList[0].SourceAudioFile);

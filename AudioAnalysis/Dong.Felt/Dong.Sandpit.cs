@@ -782,12 +782,12 @@
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
                 /// To save all matched acoustic events                        
-                if (simiScoreCandidatesList.Count != 0)
+                if (candidateDistanceList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
                     {
                         var temp = new List<Candidates>();
-                        foreach (var s in simiScoreCandidatesList)
+                        foreach (var s in candidateDistanceList)
                         {
                             if (s.SourceFilePath == candidatesAudioFiles[l])
                             {

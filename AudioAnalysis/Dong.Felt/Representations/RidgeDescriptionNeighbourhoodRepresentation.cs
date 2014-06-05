@@ -402,24 +402,24 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            var sumPOICount = EastBin + NorthEastBin + NorthBin + NorthWestBin;
+            var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
 
             if (sumPOICount == 0)
             {
-                this.HOrientationPOIHistogram = -1.0;
-                this.VOrientationPOIHistogram = -1.0;
-                this.PDOrientationPOIHistogram = -1.0;
-                this.NDOrientationPOIHistogram = -1.0;
-                this.ColumnEnergyEntropy = 2;
-                this.RowEnergyEntropy = 2;
+                this.HOrientationPOIHistogram = 0.0;
+                this.VOrientationPOIHistogram = 0.0;
+                this.PDOrientationPOIHistogram = 0.0;
+                this.NDOrientationPOIHistogram = 0.0;
+                this.ColumnEnergyEntropy = 0;
+                this.RowEnergyEntropy = 0;
             }
             else
             {
-                this.HOrientationPOIHistogram = EastBin / maxPOICount;
-                this.VOrientationPOIHistogram = NorthBin / maxPOICount;
-                this.PDOrientationPOIHistogram = NorthEastBin / maxPOICount;
-                this.NDOrientationPOIHistogram = NorthWestBin / maxPOICount;
+                this.HOrientationPOIHistogram = EastBin / sumPOICount;
+                this.VOrientationPOIHistogram = NorthBin / sumPOICount;
+                this.PDOrientationPOIHistogram = NorthEastBin / sumPOICount;
+                this.NDOrientationPOIHistogram = NorthWestBin / sumPOICount;
 
                 var columnEnergy = new double[pointsOfInterest.GetLength(1)];
                 for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -464,7 +464,7 @@ namespace Dong.Felt.Representations
                 {
                     this.ColumnEnergyEntropy = columnEnergyEntropy;
                 }
-                if (double.IsNaN(columnEnergyEntropy))
+                if (double.IsNaN(rowEnergyEntropy))
                 {
                     this.RowEnergyEntropy = 1;
                 }
@@ -865,7 +865,6 @@ namespace Dong.Felt.Representations
                             || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
                         {
                             ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
-
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
                         {
