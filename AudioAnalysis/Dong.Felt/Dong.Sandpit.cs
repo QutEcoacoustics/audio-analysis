@@ -52,8 +52,7 @@
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
-            int neighbourhoodLength = configuration.NeighbourhoodLength;
-
+            int neighbourhoodLength = configuration.NeighbourhoodLength;          
             int rank = configuration.Rank;
 
             //string[] featurePropSet = configuration.FeaturePropertySet;
@@ -394,7 +393,7 @@
                     MinimumNumberInRidgeInMatrix = entry.MinimumNumberInRidgeInMatrix,
                     NeighbourhoodLength = entry.NeighbourhoodLength,
 
-                    SecondToMillionSecondUnit = configuration.SecondToMillionSecondUnit,
+                    SecondToMillionSecondUnit = configuration.SecondToMillionSecondUnit,                  
                     Rank = configuration.Rank,
                     //FeaturePropertySet = configuration.FeaturePropertySet,                    
                 };
@@ -694,7 +693,6 @@
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
                 ridgeNhRepresentationList, queryAduioFiles[i], spectrogram);
-                //queryRepresentation[0].Features = new Feature(queryRepresentation);
 
                 //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
@@ -854,6 +852,10 @@
             query.EndTime = query.StartTime + queryInfo.Duration * 1000;
             query.MaxFrequency = queryInfo.MaxFreq;
             query.MinFrequency = queryInfo.MinFreq;
+            //query.StartTime = queryRepresentation[0].FrameIndex;
+            //query.EndTime = queryRepresentation[0].FrameIndex + queryRepresentation[0].Duration.TotalMilliseconds;
+            //query.MaxFrequency = candidates[0].MaxFrequency;
+            //query.MinFrequency = candidates[0].MinFrequency;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);

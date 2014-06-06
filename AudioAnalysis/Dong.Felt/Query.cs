@@ -124,8 +124,9 @@
             var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.          
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);
-            this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Floor(this.maxFrequency / nhFrequencyLength);
+            this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Ceiling(this.maxFrequency / nhFrequencyLength);
             var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
+            //var nhLowerFreq = (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
             if (this.nhStartRowIndex + nhCountInRow >= this.maxNhRowIndex)
             {
                 this.nhStartColIndex--;
