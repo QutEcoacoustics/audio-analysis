@@ -411,8 +411,9 @@ namespace Dong.Felt.Representations
                 this.VOrientationPOIHistogram = 0.0;
                 this.PDOrientationPOIHistogram = 0.0;
                 this.NDOrientationPOIHistogram = 0.0;
-                this.ColumnEnergyEntropy = 0;
-                this.RowEnergyEntropy = 0;
+                // changed
+                this.ColumnEnergyEntropy = 0.0;
+                this.RowEnergyEntropy = 0.0;
             }
             else
             {
@@ -448,7 +449,7 @@ namespace Dong.Felt.Representations
                             //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                             //{
                             //rowEnergy[rowIndex] += 1.0;
-                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                             rowEnergy[rowIndex] += magnitude;
                             //}
                         }
