@@ -47,9 +47,9 @@ namespace QutBioacosutics.Xie
              * Do not use it outside of this method. Extract all params below.
              */
 
-            DrawLDSpectrogram.Execute(null);
-            Console.WriteLine("FINISHED!!");
-            Console.ReadLine();
+            //DrawLDSpectrogram.Execute(null);
+            //Console.WriteLine("FINISHED!!");
+            //Console.ReadLine();
 
             //Parameters setting
 
@@ -119,13 +119,13 @@ namespace QutBioacosutics.Xie
 
                 //var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_02", path);
 
-                string fullPath = @"C:\Jie\data\data used for analysis.wav";
+                string fullPath = @"C:\Jie\data\160113_min140 (2).wav";
                 var recording = new AudioRecording(fullPath);
 
                 // Step.1 Generate spectrogarm
                 // A. Generate spectrogram for extracting tracks, entropy and harmonic
 
-                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.9, WindowSize = windowSize };
+                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
                 var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.GetWavReader());
 
                 // B. Generate spectrogram for extracting oscillation rate
@@ -140,23 +140,45 @@ namespace QutBioacosutics.Xie
 
 
 
+                // Step.2 Produce features
 
-                //// Step.3 Draw spectrogram
-                double[,] spectrogramMatrix = DataTools.normalise(spectrogramShort.Data);
+                //***********************Canetoad*************************//
+                //var peakHitsCanetoad = CalculateIndexForCanetoad.GetPeakHits(canetoadConfig, spectrogramLong);
+                //var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
+                //var oscillationCanetaodRotate = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
+                //var oscillationCanetoad = MatrixTools.MatrixRotate90Anticlockwise(oscillationCanetaodRotate);
+                
+
+
+
+                //***********************Gracillenta*************************//
+
+                //var peakHitsGracillenta = CalculateIndexForLitoriaGracillenta.GetPeakHitsGracillenta(gracillentaConfig, spectrogramLong);
+                //var trackGracillenta = CalculateIndexForLitoriaGracillenta.GetFrogTracksGracillenta(gracillentaConfig, spectrogramLong, peakHitsGracillenta);
+
+
+                //***********************Nasuta*************************//
+
+                var peakHitsNasuta = CalculateIndexForLitoriaNasuta.GetPeakHitsNasuta(nasutaConfig, spectrogramLong);
+                var trackNasuta = CalculateIndexForLitoriaNasuta.GetFrogTracksFallax(nasutaConfig, spectrogramLong, peakHitsNasuta);
+                var oscillationNasutaRotate = CalculateIndexForLitoriaNasuta.GetOscillationRate(nasutaConfig, spectrogramShort);
+                var oscillationNasuta = MatrixTools.MatrixRotate90Anticlockwise(oscillationNasutaRotate);
+
+
+
+                // Step.3 Draw spectrogram
+                Image image = XieFunction.DrawSonogram(spectrogramLong);
+                Bitmap bmp = (Bitmap)image;
+                double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
                 int rows = spectrogramMatrix.GetLength(0);
                 int cols = spectrogramMatrix.GetLength(1);
                 Color[] grayScale = ImageTools.GrayScale();
-                Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
                 for (int r = 0; r < rows; r++)
                 {
                     for (int c = 0; c < cols; c++)
                     {
-                        int greyId = (int)Math.Floor(spectrogramMatrix[r, c] * 255);
-                        if (greyId < 0) greyId = 0;
-                        else
-                            if (greyId > 255) greyId = 255;
-                        greyId = 255 - greyId;
-                        bmp.SetPixel(c, r, grayScale[greyId]);
+                        if (trackNasuta.HarmonicHitsNasuta[c, r] != 0)
+                            bmp.SetPixel(r, c, Color.Blue);
                     }
                 }
                 bmp.Save(saveImagePath);
@@ -169,33 +191,6 @@ namespace QutBioacosutics.Xie
 
 
 
-
-
-
-
-
-
-
-                // Step.2 Produce features
-
-                //***********************Canetoad*************************//
-                var peakHitsCanetoad = CalculateIndexForCanetoad.GetPeakHits(canetoadConfig, spectrogramLong);
-                var trackCanetaod = CalculateIndexForCanetoad.GetFrogTracks(canetoadConfig, spectrogramLong, peakHitsCanetoad);
-                var oscillationCanetaodRotate = CalculateIndexForCanetoad.GetOscillationRate(canetoadConfig, spectrogramShort);
-                var oscillationCanetoad = MatrixTools.MatrixRotate90Anticlockwise(oscillationCanetaodRotate);
-
-                //***********************Gracillenta*************************//
-
-                var peakHitsGracillenta = CalculateIndexForLitoriaGracillenta.GetPeakHitsGracillenta(gracillentaConfig, spectrogramLong);
-                var trackGracillenta = CalculateIndexForLitoriaGracillenta.GetFrogTracksGracillenta(gracillentaConfig, spectrogramLong, peakHitsGracillenta);
-
-
-                //***********************Nasuta*************************//
-
-                var peakHitsNasuta = CalculateIndexForLitoriaNasuta.GetPeakHitsNasuta(nasutaConfig, spectrogramLong);
-                var trackNasuta = CalculateIndexForLitoriaNasuta.GetFrogTracksFallax(nasutaConfig, spectrogramLong, peakHitsNasuta);
-                var oscillationNasutaRotate = CalculateIndexForLitoriaNasuta.GetOscillationRate(nasutaConfig, spectrogramShort);
-                var oscillationNasuta = MatrixTools.MatrixRotate90Anticlockwise(oscillationNasutaRotate);
 
                 //***********************Caerulea*************************//
 
@@ -217,71 +212,71 @@ namespace QutBioacosutics.Xie
                 // Create 21 matrix to save the features
                 // Canetoad: Item1-arrayresult, Item4-energy
                 
-                var trackFeatureCanetoad = trackCanetaod.Item1;
-                var energyFeatureCanetoad = trackCanetaod.Item3; // Need to be normalised
+                //var trackFeatureCanetoad = trackCanetaod.Item1;
+                //var energyFeatureCanetoad = trackCanetaod.Item3; // Need to be normalised
 
-                var oscillationFeatureCanetoad = new double[oscillationCanetoad.GetLength(0)];
-                for (int i = 0; i < oscillationCanetoad.GetLength(0); i++)
-                {
-                    double tempOscillation = 0;
-                    for (int j = 0; j < oscillationCanetoad.GetLength(1); j++)
-                    {
-                        tempOscillation = tempOscillation + oscillationCanetoad[i, j];                    
-                    }
-                    oscillationFeatureCanetoad[i] = tempOscillation;
-                }
+                //var oscillationFeatureCanetoad = new double[oscillationCanetoad.GetLength(0)];
+                //for (int i = 0; i < oscillationCanetoad.GetLength(0); i++)
+                //{
+                //    double tempOscillation = 0;
+                //    for (int j = 0; j < oscillationCanetoad.GetLength(1); j++)
+                //    {
+                //        tempOscillation = tempOscillation + oscillationCanetoad[i, j];                    
+                //    }
+                //    oscillationFeatureCanetoad[i] = tempOscillation;
+                //}
 
-                for (int i = 0; i < 257; i++)
-                {
-                    canetoadTrack[i, indexNumber] = trackFeatureCanetoad[i];
-                    canetoadEnergy[i, indexNumber] = energyFeatureCanetoad[i];
-                    canetoadOscillation[i, indexNumber] = oscillationFeatureCanetoad[i];
-                }
+                //for (int i = 0; i < 257; i++)
+                //{
+                //    canetoadTrack[i, indexNumber] = trackFeatureCanetoad[i];
+                //    canetoadEnergy[i, indexNumber] = energyFeatureCanetoad[i];
+                //    canetoadOscillation[i, indexNumber] = oscillationFeatureCanetoad[i];
+                //}
                 
-                // Gracillenta
-                var trackFeatureGracillenta = trackGracillenta.Item1;
-                var energyFeatureGracillenta = trackGracillenta.Item3; // Need to be normalised
+                //// Gracillenta
+                //var trackFeatureGracillenta = trackGracillenta.Item1;
+                //var energyFeatureGracillenta = trackGracillenta.Item3; // Need to be normalised
 
-                for (int i = 0; i < 257; i++)
-                {
-                    gracillentaTrack[i, indexNumber] = trackFeatureGracillenta[i];
-                    gracillentaEnergy[i, indexNumber] = energyFeatureGracillenta[i];
-                }
+                //for (int i = 0; i < 257; i++)
+                //{
+                //    gracillentaTrack[i, indexNumber] = trackFeatureGracillenta[i];
+                //    gracillentaEnergy[i, indexNumber] = energyFeatureGracillenta[i];
+                //}
 
-                // Nasuta
-                var trackFeatureNasuta = trackNasuta.TrackHitsNasuta.Item1;
+                //// Nasuta
+                //var trackFeatureNasuta = trackNasuta.TrackHitsNasuta.Item1;
                 
-                var harmonicNasuta = trackNasuta.HarmonicHitsNasuta; // Need to be normalised
+                //var harmonicNasuta = trackNasuta.HarmonicHitsNasuta; // Need to be normalised
 
-                var harmonicArrayNasuta = new double[harmonicNasuta.GetLength(0)];
-                for (int i = 0; i < harmonicNasuta.GetLength(0); i++)
-                {
-                    double tempHarmonic = 0;
-                    for (int j = 0; j < harmonicNasuta.GetLength(1); j++)
-                    {
-                        tempHarmonic = tempHarmonic + harmonicNasuta[i, j];
-                    }
+                //var harmonicArrayNasuta = new double[harmonicNasuta.GetLength(0)];
+                //for (int i = 0; i < harmonicNasuta.GetLength(0); i++)
+                //{
+                //    double tempHarmonic = 0;
+                //    for (int j = 0; j < harmonicNasuta.GetLength(1); j++)
+                //    {
+                //        tempHarmonic = tempHarmonic + harmonicNasuta[i, j];
+                //    }
 
-                    harmonicArrayNasuta[i] = tempHarmonic;
-                }
+                //    harmonicArrayNasuta[i] = tempHarmonic;
+                //}
 
-                var oscillationFeatureNasuta = new double[oscillationNasuta.GetLength(0)];
-                for (int i = 0; i < oscillationNasuta.GetLength(0); i++)
-                {
-                    double tempOscillation = 0;
-                    for (int j = 0; j < oscillationNasuta.GetLength(1); j++)
-                    {
-                        tempOscillation = tempOscillation + oscillationNasuta[i, j];
-                    }
-                    oscillationFeatureNasuta[i] = tempOscillation;
-                }
+                //var oscillationFeatureNasuta = new double[oscillationNasuta.GetLength(0)];
+                //for (int i = 0; i < oscillationNasuta.GetLength(0); i++)
+                //{
+                //    double tempOscillation = 0;
+                //    for (int j = 0; j < oscillationNasuta.GetLength(1); j++)
+                //    {
+                //        tempOscillation = tempOscillation + oscillationNasuta[i, j];
+                //    }
+                //    oscillationFeatureNasuta[i] = tempOscillation;
+                //}
 
-                for (int i = 0; i < 257; i++)
-                {
-                    nasutaTrack[i, indexNumber] = trackFeatureNasuta[i];
-                    nasutaHarmonic[i, indexNumber] = harmonicArrayNasuta[i];
-                    nasutaOscillation[i, indexNumber] = oscillationFeatureNasuta[i];
-                }
+                //for (int i = 0; i < 257; i++)
+                //{
+                //    nasutaTrack[i, indexNumber] = trackFeatureNasuta[i];
+                //    nasutaHarmonic[i, indexNumber] = harmonicArrayNasuta[i];
+                //    nasutaOscillation[i, indexNumber] = oscillationFeatureNasuta[i];
+                //}
 
                 // Caerulea
 
@@ -312,7 +307,6 @@ namespace QutBioacosutics.Xie
             // Fallax
 
             // Latopalmata
-
 
 
             //DrawLDSpectrogram.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
