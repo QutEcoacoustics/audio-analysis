@@ -204,3 +204,6 @@ FakesAssemblies/
 #ncrunch
 *ncrunch*
 *crunch*.local.xml
+
+# matlab
+*.asv
