@@ -254,5 +254,15 @@ namespace QutBioacosutics.Xie
             return overlap;
         }
 
+        public static Image DrawSonogram(BaseSonogram sonogram)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            return image.GetImage();
+        } //DrawSonogram()
+
+
+
     }
 }
