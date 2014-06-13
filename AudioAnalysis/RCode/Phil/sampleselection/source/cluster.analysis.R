@@ -1,6 +1,6 @@
 
 
-ClusterQuality <- function (version = 3, use.ideal = FALSE) {
+ClusterQuality <- function (version = 1, use.ideal = TRUE) {
     events <- ApplyGroupToEvents() 
 
 
@@ -36,8 +36,66 @@ ClusterQuality <- function (version = 3, use.ideal = FALSE) {
             }
         }
     }
+    DrawCQMatrix.3(m, species, groups)
     
-    return(m)
+}
+
+DrawCQMatrix.4 <- function (m, species, groups) {
+    require(lattice)
+    m <- m
+    levelplot(m, 
+              col.regions=gray.colors(256,start=1,end=0), 
+              xlab = "Cluster Groups",
+              ylab = "Species id",
+              row.values = species,
+              column.values = groups)
+    
+    
+}
+
+DrawCQMatrix.3 <- function (m, species, groups) {
+    
+    image(t(m), col=gray.colors(256,start=1,end=0), axes = FALSE)
+    
+    at.x <- 1:ncol(m) / ncol(m)
+    at.y <- 1:nrow(m) / nrow(m)
+    
+    #axis(3, at = at.x, labels=as.character(groups), srt=45,tick=FALSE)
+    #axis(2, at = at.y, labels=as.character(species), srt=45,tick=FALSE)
+    
+    mtext("species", 2, line=0)
+    mtext("clusters", 1, line=0)
+    
+}
+
+
+DrawCQMatrix.2 <- function (m, species, groups) { 
+    library(pheatmap)
+    m <- m
+    pheatmap(m, cluster_row = FALSE, cluster_col = FALSE, color=gray.colors(256,start=1,end=0), scale = 'none')
+}
+
+DrawCQMatrix.1 <- function (m, species, groups) { 
+    library(gplots)
+    #Format the data for the plot
+    xval <- formatC(m, format="f", digits=2)
+    pal <- colorRampPalette(c(rgb(0.96,0.96,1), rgb(0,0,0)), space = "rgb")
+    #Plot the matrix
+    x_hm <- heatmap.2(m, 
+                      Rowv=FALSE, 
+                      Colv=FALSE, 
+                      dendrogram="none", 
+                      main="8 X 8 Matrix Using Heatmap.2", 
+                      xlab="Cluster", 
+                      ylab="Species", 
+                      col=pal, 
+                      tracecol="#303030", 
+                      trace="none", 
+                      cellnote=xval, 
+                      notecol="black", 
+                      notecex=0.8, 
+                      keysize = 1.5, 
+                      margins=c(5, 5))
     
 }
 
@@ -48,22 +106,62 @@ SimulatePerfectClustering <- function (species.mins = NULL) {
         species.mins <- GetTags();
         species.mins <- AddMinuteIdCol(species.mins)
     }
-    species.ids <- unique(species.mins$species.id)
-    species.ids <- species.ids[order(species.ids)]
+    
+    
+    
+    #species.ids <- unique(species.mins$species.id)
+    species.ids <- as.data.frame(table(species.mins$species.id))
+    colnames(species.ids) <- c('species.id', 'count')
+    species.ids <- species.ids[order(species.ids$species.id), ]
     species.mins <- species.mins[, c('species.id', 'min.id')]
     
     
+    
     # create a list of "calls" call belongs to species, species has many calls
-    call.ids <- 1:(length(species.ids)*2)
-    calls <- data.frame(call.id <- call.ids, species.id = sample(species.ids, length(call.ids), replace = TRUE))
-    calls$species.id[1:length(species.ids)] <- species.ids  # ensure all species have at least 1 call
+    call.ids <- 1:(nrow(species.ids)*2)
+    
+    # assign a species id to each call. 
+    # species appearing in fewer than x mins will only be assigned to 1 call, to reduce the chance of a species having more calls than mins it appears in
+    x <- 8
+    frequent.species <- species.ids[species.ids$count >= x, ]
+    rare.species <- species.ids[species.ids$count < x, ]
+    call.ids.for.rare.species <- call.ids[1:nrow(rare.species)]
+    call.ids.for.frequent.species <- call.ids[(length(call.ids.for.rare.species) + 1):length(call.ids)]
+
+    ok <- FALSE
+    num <- 0
+    while (!ok && num < 50) {
+        calls.of.frequent.species <- data.frame(call.id = call.ids.for.frequent.species, 
+                                                species.id = sample(frequent.species$species.id, length(call.ids.for.frequent.species), replace = TRUE))
+        # ensure all species have at least 1 call
+        # select random indices of the list of calls of frequent species 
+        indices <- sample(1:length(call.ids.for.frequent.species), nrow(frequent.species), replace = FALSE)
+        # assign each species to those random indices
+        calls.of.frequent.species$species.id[indices] <- sample(frequent.species$species.id, nrow(frequent.species), replace = FALSE)
+        # check that no species has more calls than mins it appears in
+        # freaky random sampling may have done this, but unlikely
+        call.count <- as.data.frame(table(as.integer(calls.of.frequent.species$species.id)))
+        colnames(call.count) <- c('species.id', 'count')
+        call.count <- call.count[order(call.count$species.id), ]
+        if (all(call.count$count <= frequent.species$count)) {
+            ok <- TRUE
+        }
+        num <- num + 1
+    }
+    
+    calls.of.rare.species <- data.frame(call.id = call.ids.for.rare.species, 
+                                        species.id = as.integer(as.character(rare.species$species.id)))
+    
+    calls <- rbind(calls.of.rare.species, calls.of.frequent.species)
     
     
     # each call has 1 or more events. Each event belongs to 1 cluster. So, each call has 1 or more clusters. each cluster belongs to 1 call
     
     cluster.ids <- 1:(length(call.ids) * 2)
-    clusters <- data.frame(cluster.id = cluster.ids, call.id = sample(call.ids, length(call.ids), replace = TRUE))
-    clusters$call.id[1:length(call.ids)] = call.ids  # ensure all calls have at least 1 cluster
+    clusters <- data.frame(cluster.id = cluster.ids, call.id = SampleAtLeastOne(call.ids, length(call.ids)))
+    #calls$species.id[sample(1:nrow(calls), length(species.ids), replace = FALSE)] <- sample(species.ids, length(species.ids), replace = FALSE)  # ensure all species have at least 1 call
+    
+    clusters$call.id[sample(1:nrow(clusters), length(call.ids), replace = FALSE)] = sample(call.ids, length(call.ids), replace = FALSE)  # ensure all calls have at least 1 cluster
     
     # so, now we have each species with a number 1 or more calls (average of 2)
     # and each call has 1 or more cluster groups (average of 2)
@@ -72,16 +170,20 @@ SimulatePerfectClustering <- function (species.mins = NULL) {
 
     
     # for each species-minute pair, assign a call.id
-    # then add the relevant events to the cluster.minues df
+    # then add the relevant events to the cluster.minutes df
     species.mins$call.id <- rep(NA, nrow(species.mins))
-    for (s.id in species.ids) {   
+    for (s.id in as.numeric(as.character(species.ids$species.id))) {   
         species.mins.rows <- which(species.mins$species.id == s.id) 
         species.call.ids <- calls$call.id[calls$species.id == s.id]
         
         if (length(species.call.ids) == 1) {
             species.mins$call.id[species.mins.rows] <- species.call.ids
         } else {
-            species.mins$call.id[species.mins.rows] <- sample(species.call.ids, length(species.mins.rows), replace = TRUE)
+            #if the species has more than one call, randomly assign the calls to the minutes of that species
+            # but make sure to include each call id at least once
+            
+            
+            species.mins$call.id[species.mins.rows] <- SampleAtLeastOne(species.call.ids, length(species.mins.rows))
         }                                  
     }
     

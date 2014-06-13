@@ -500,3 +500,18 @@ RemoveFileExtension <- function (fn) {
     return(paste0(tmp[1:(length(tmp)-1)], collapse='.'))
 }
 
+SampleAtLeastOne <- function (pool, num) {
+    # given a pool of elements and a num greater than the number of elements
+    # randomly picks num of them, including all of the elements at least once
+    if (length(pool) > num) {
+        stop('num items to return must be greater than the number of items in the pool')
+    }
+    result <- sample(pool, num, replace = TRUE)
+    result[sample(1:num, length(pool), replace = FALSE)] <- sample(pool, length(pool), replace = FALSE) 
+    return(result)
+}
+
+
+
+
+

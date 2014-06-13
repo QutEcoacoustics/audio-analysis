@@ -388,8 +388,10 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     return(species.in.each.min)
 }
 
-GraphProgressions <- function (ranked.count.progressions, optimal, random.at.dawn = NA, random.all = NA, from.indices = NA, cutoff = 180) {
+GraphProgressions <- function (ranked.count.progressions, optimal, random.at.dawn = NA, random.all = NA, from.indices = NA, cutoff = 300) {
    
+    ranked.count.progressions <- NA
+    
     rank.names <- names(ranked.count.progressions);
     
     # truncate all output at cuttoff
@@ -408,17 +410,20 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
             random.all$sd  <- Truncate(random.all$sd, cutoff)         
         } 
         
-        
-        for (i in 1:length(rank.names)) {
-            if (is.list(ranked.count.progressions[[rank.names[i]]])) {
-                ranked.count.progressions[[rank.names[i]]]$mean <- Truncate(ranked.count.progressions[[rank.names[i]]]$mean, cutoff)
-                ranked.count.progressions[[rank.names[i]]]$sd <- Truncate(ranked.count.progressions[[rank.names[i]]]$sd, cutoff)
-                plot.width <- length(ranked.count.progressions[[rank.names[i]]]$sd)
-            } else {
-                ranked.count.progressions[[rank.names[i]]] <- Truncate(ranked.count.progressions[[rank.names[i]]], cutoff)
-                plot.width <- length(ranked.count.progressions[[rank.names[i]]])
+        if (length(rank.names) > 0) {
+            for (i in 1:length(rank.names)) {
+                if (is.list(ranked.count.progressions[[rank.names[i]]])) {
+                    ranked.count.progressions[[rank.names[i]]]$mean <- Truncate(ranked.count.progressions[[rank.names[i]]]$mean, cutoff)
+                    ranked.count.progressions[[rank.names[i]]]$sd <- Truncate(ranked.count.progressions[[rank.names[i]]]$sd, cutoff)
+                    plot.width <- length(ranked.count.progressions[[rank.names[i]]]$sd)
+                } else {
+                    ranked.count.progressions[[rank.names[i]]] <- Truncate(ranked.count.progressions[[rank.names[i]]], cutoff)
+                    plot.width <- length(ranked.count.progressions[[rank.names[i]]])
+                }
+                
             }
-            
+        } else {
+            plot.width <- cutoff
         }
     }
     
@@ -484,21 +489,22 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
                                        0.7,0.1,0.9), ncol = 3, byrow = TRUE)
     
 
-    
-    for (i in 1:length(rank.names)) {
-        
-        if (is.list(ranked.count.progressions[[i]])) {
-            line <- ranked.count.progressions[[i]]$mean
-            sd <-  ranked.count.progressions[[i]]$sd
-        } else {
-            line <- ranked.count.progressions[[i]]
-            sd <- NA
+    if (length(rank.names) > 0) {
+        for (i in 1:length(rank.names)) {
+            
+            if (is.list(ranked.count.progressions[[i]])) {
+                line <- ranked.count.progressions[[i]]$mean
+                sd <-  ranked.count.progressions[[i]]$sd
+            } else {
+                line <- ranked.count.progressions[[i]]
+                sd <- NA
+            }
+            
+            PlotLine(line, ranking.method.colours[i, ])
+            
+            legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
+            line.colours <- rbind(line.colours,  ranking.method.colours[i, ])
         }
-        
-        PlotLine(line, ranking.method.colours[i, ])
-
-        legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
-        line.colours <- rbind(line.colours,  ranking.method.colours[i, ])
     }
     
     legend.cols <- apply(as.matrix(line.colours), 1, RgbCol)
