@@ -73,7 +73,6 @@ namespace Acoustics.Shared
         internal static void Encode2DMatrix<T>(this CsvWriter writer, T[,] matrix, TwoDimensionalArray dimensionality,
             bool includeRowIndex)
         {
-
             var transformedMatrix = new MatrixMapper<T>(matrix, dimensionality);
 
             EncodeMatrixInner(writer, transformedMatrix, includeRowIndex);
@@ -81,7 +80,6 @@ namespace Acoustics.Shared
 
         internal static void EncodeMatrix<T>(this CsvWriter writer, IEnumerable<T[]> matrix, bool includeRowIndex)
         {
-
             var transformedMatrix = new MatrixMapper<T>(matrix);
 
             EncodeMatrixInner(writer, transformedMatrix, includeRowIndex);
@@ -113,7 +111,8 @@ namespace Acoustics.Shared
             }
         }
 
-        private static List<T[]> DecodeMatrix<T>(this CsvReader reader, bool includeRowIndex, out int rowCount, out int columnCount)
+        private static List<T[]> DecodeMatrix<T>(this CsvReader reader, bool includeRowIndex, out int rowCount,
+            out int columnCount)
         {
             // read header
             var headers = reader.FieldHeaders;
@@ -145,7 +144,8 @@ namespace Acoustics.Shared
             return csvRows;
         }
 
-        private static T[,] DecodeMatrix<T>(this CsvReader reader, TwoDimensionalArray dimensionality, bool includeRowIndex)
+        private static T[,] DecodeMatrix<T>(this CsvReader reader, TwoDimensionalArray dimensionality,
+            bool includeRowIndex)
         {
             int rowCount;
             int columnCount;
@@ -174,7 +174,8 @@ namespace Acoustics.Shared
         }
 
 
-        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix, TwoDimensionalArray dimnesionality = TwoDimensionalArray.RowMajor)
+        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix,
+            TwoDimensionalArray dimnesionality = TwoDimensionalArray.RowMajor)
         {
             // not tested!
             using (var stream = destination.CreateText())
@@ -185,7 +186,8 @@ namespace Acoustics.Shared
             }
         }
 
-        public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+        public static T[,] ReadMatrixFromCsv<T>(FileInfo source,
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
             // not tested!
             using (var stream = source.OpenText())

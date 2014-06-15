@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Acoustics.Shared.Extensions;
 
 namespace Acoustics.Shared
@@ -15,29 +14,29 @@ namespace Acoustics.Shared
 
     internal class MatrixMapper<T> : IEnumerable<int>
     {
-        private readonly T[,] _matrix;
-        private readonly TwoDimensionalArray _dimensionality;
-        private readonly IEnumerable<T[]> _enumerableMatrix;
-        private readonly bool _isMatrix;
-        private T[] _current;
+        private readonly TwoDimensionalArray dimensionality;
+        private readonly IEnumerable<T[]> enumerableMatrix;
+        private readonly bool isMatrix;
+        private readonly T[,] matrix;
+        private T[] current;
 
         public MatrixMapper(T[,] matrix, TwoDimensionalArray dimensionality)
         {
-            _matrix = matrix;
-            _dimensionality = dimensionality;
+            this.matrix = matrix;
+            this.dimensionality = dimensionality;
             Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
             Columns = TwoDimensionalArray.ColumnMajor == dimensionality ? matrix.ColumnLength() : matrix.RowLength();
 
-            _isMatrix = true;
+            isMatrix = true;
         }
 
         public MatrixMapper(IEnumerable<T[]> matrix)
         {
-            _enumerableMatrix = matrix;
-            Columns = _enumerableMatrix.First().Length;
+            enumerableMatrix = matrix;
+            Columns = enumerableMatrix.First().Length;
             Rows = null;
 
-            _isMatrix = false;
+            isMatrix = false;
         }
 
         public int Columns { get; private set; }
@@ -48,19 +47,19 @@ namespace Acoustics.Shared
         {
             get
             {
-                if (_isMatrix)
+                if (isMatrix)
                 {
-                    return _current[j];
+                    return current[j];
                 }
 
-                if (_dimensionality == TwoDimensionalArray.RowMajor)
+                if (dimensionality == TwoDimensionalArray.RowMajor)
                 {
-                    return _matrix[i, j];
+                    return matrix[i, j];
                 }
 
-                if (_dimensionality == TwoDimensionalArray.ColumnMajor)
+                if (dimensionality == TwoDimensionalArray.ColumnMajor)
                 {
-                    return _matrix[j, i];
+                    return matrix[j, i];
                 }
 
                 throw new Exception();
@@ -70,7 +69,7 @@ namespace Acoustics.Shared
 
         public IEnumerator<int> GetEnumerator()
         {
-            if (_isMatrix)
+            if (isMatrix)
             {
                 for (int i = 0; i < Rows; i++)
                 {
@@ -80,10 +79,10 @@ namespace Acoustics.Shared
             else
             {
                 int rowCounter = -1;
-                foreach (var current in _enumerableMatrix)
+                foreach (var currentItem in enumerableMatrix)
                 {
                     rowCounter++;
-                    _current = current;
+                    this.current = currentItem;
                     yield return rowCounter;
                 }
             }
