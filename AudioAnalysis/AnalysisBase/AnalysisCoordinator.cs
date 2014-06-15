@@ -6,13 +6,9 @@
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Security.Cryptography;
-    using System.Text;
     using System.Threading.Tasks;
-
     using log4net;
     using System.Diagnostics;
-    using System.Threading;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
@@ -34,12 +30,12 @@
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private string keySaveSonogramFiles = "SAVE_SONOGRAM_FILES";
-        private string keySaveIntermediateCsvFiles = "SAVE_INTERMEDIATE_CSV_FILES";
-        private string keySaveIntermediateWavFiles = "SAVE_INTERMEDIATE_WAV_FILES";
+        private readonly bool saveIntermediateWavFiles;
+        private readonly bool saveImageFiles;
+        private readonly bool saveIntermediateCsvFiles;
 
-        private static string startingItem = "Starting item {0}: {1}.";
-        private static string cancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
+        private const string StartingItem = "Starting item {0}: {1}.";
+        private const string CancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class.
@@ -47,7 +43,7 @@
         /// <param name="sourcePreparer">
         /// The source Preparer. The prepared files can be stored anywhere, they just need to be readable.
         /// </param>
-        public AnalysisCoordinator(ISourcePreparer sourcePreparer)
+        public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles)
         {
             Contract.Requires(sourcePreparer != null);
 
@@ -536,7 +532,7 @@
 
         private AnalysisResult ProcessItem(FileSegment item, IAnalyser analysis, AnalysisSettings settings)
         {
-            Log.DebugFormat(startingItem, settings.InstanceId, item);
+            Log.DebugFormat(StartingItem, settings.InstanceId, item);
 
             AnalysisResult result = null;
 
