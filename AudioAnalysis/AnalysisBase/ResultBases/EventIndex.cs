@@ -1,11 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using AnalysisBase.ResultBases;
 
 namespace AnalysisBase.ResultBases
 {
-    class EventIndex
+    /// <summary>
+    /// 
+    /// </summary>
+    public class EventIndex : IndexBase
     {
+        public int EventsTotal { get; set; }
+
+        // TODO: possibility for dynamic column name
+        public int EventsTotalThresholded { get; set; }
+
+
     }
 }

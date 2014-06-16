@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AnalysisBase.ResultBases
 {
-    class IndexBase
+    public class IndexBase : ResultBase
     {
+
+
+
+        public IndexBase IndexCount { get; set; }
+
+
     }
 }

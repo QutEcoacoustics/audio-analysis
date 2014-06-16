@@ -808,8 +808,53 @@
             var config = new ConfigDictionary(this.AnalyserConfigFile.FullName);
             var analysisParams = config.GetDictionary();
 
-            settings.SetUserConfiguration(this.helper.DefaultTempFilesDir, this.AnalyserConfigFile, config.GetTable(), this.AnalyserOutputDir,
-                                            AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION, AudioAnalysisTools.AnalysisKeys.SEGMENT_OVERLAP);
+
+            DirectoryInfo tempFileDir = this.helper.DefaultTempFilesDir;
+            FileInfo fiConfig = this.AnalyserConfigFile;
+            Dictionary<string, string> dict = config.GetTable();
+            DirectoryInfo diOutputDir = this.AnalyserOutputDir;
+            string keySegmentDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
+            string keySegmentOverlap = AudioAnalysisTools.AnalysisKeys.SEGMENT_OVERLAP;
+            settings.ConfigFile = fiConfig;
+            settings.ConfigDict = dict;
+            settings.AnalysisBaseOutputDirectory = diOutputDir;
+
+            // if temp dir is not given, use output dir as temp dir
+            if (tempFileDir != null)
+            {
+                settings.AnalysisBaseTempDirectory = tempFileDir;
+            }
+
+            //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
+
+            //set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
+            if (settings.ConfigDict.ContainsKey(keySegmentDuration))
+            {
+                string value = dict.TryGetValue(keySegmentDuration, out value) ? value : null;
+                int segmentOffsetMinutes;
+                if (int.TryParse(value, out segmentOffsetMinutes))
+                {
+                    settings.SegmentMaxDuration = TimeSpan.FromMinutes(segmentOffsetMinutes);
+                }
+                else
+                {
+                    settings.SegmentMaxDuration = null;
+                    LoggedConsole.WriteLine("############### WARNING #############");
+                    LoggedConsole.WriteLine("ERROR READING USER CONFIGURATION FILE");
+                    LoggedConsole.WriteLine("\tINVALID KVP: key={0}, value={1}", keySegmentDuration, value);
+                }
+            }
+
+            // set overlap
+            if (settings.ConfigDict.ContainsKey(keySegmentOverlap))
+            {
+                string value = dict.TryGetValue(keySegmentOverlap, out value) ? value : null;
+                int segmentOverlapSeconds;
+                settings.SegmentOverlapDuration = int.TryParse(value, out segmentOverlapSeconds) ? TimeSpan.FromSeconds(segmentOverlapSeconds) : TimeSpan.Zero;
+            }
+
+
+
 
             // record run information
             Log.Debug("Parameters for selected analysis: " + analyserId);

@@ -1,11 +1,111 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
+using AnalysisBase.ResultBases;
+using AnalysisBase.ResultBases;
 
 namespace AnalysisBase
 {
-    class AnalysisResult2
+
+    /// <summary>
+    /// The strong typed analysis results.
+    /// 
+    /// DO NOT CHANGE THIS CLASS UNLESS YOU ARE TOLD TO.
+    /// </summary>
+    public class AnalysisResult2 : IComparable<AnalysisResult2>
     {
+        private readonly AnalysisSettings settingsUsed;
+
+        public AnalysisResult2(AnalysisSettings settingsUsed, TimeSpan durationAnalysed)
+        {
+            this.settingsUsed = (AnalysisSettings)settingsUsed.Clone();
+            this.OutputFiles = new Dictionary<string, FileInfo>();
+            this.SegmentAudioDuration = durationAnalysed;
+        }
+
+        /// <summary>
+        /// Gets or sets Analysis Identifier.
+        /// </summary>
+        public string AnalysisIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets event results.
+        /// Should typically contain many results
+        /// </summary>
+        public EventBase[] Events { get; set; }
+
+        /// <summary>
+        /// Gets or sets summary indices results.
+        /// Should typically contain just 1 result.
+        /// </summary>
+        public IndexBase[] SummaryIndices { get; set; }
+
+        /// <summary>
+        /// Get or sets spectral indices results.
+        /// Should typically contrain just 1 result
+        /// </summary>
+        public SpectrumBase[] SpectralIndices { get; set; }
+
+        /// <summary>
+        /// A loosely typed dictinary that can store arbitary result data.
+        /// Added as a cheap form of extensibility.
+        /// </summary>
+        public Dictionary<string, object> MiscellaneousResults { get; set; }
+
+        /// <summary>
+        /// A copy of the settings used to run the analysis
+        /// </summary>
+        public AnalysisSettings SettingsUsed
+        {
+            get { return settingsUsed; }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the location of the events file for this analysis.
+        /// Should be null if not written or used.
+        /// </summary>
+        public FileInfo EventsFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location of the indices file for this analysis.
+        /// Should be null if not written or used.
+        /// </summary>
+        public FileInfo SummaryIndicesFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location of the indices file for this analysis.
+        /// Should be null if not written or used.
+        /// </summary>
+        public IEnumerable<FileInfo> SpectraIndicesFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the debug image file for this analysis.
+        /// Should be null if not written or used.
+        /// </summary>
+        public FileInfo ImageFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets OutputFiles. A list of other files that were written (optional).
+        /// </summary>
+        public Dictionary<string, FileInfo> OutputFiles { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the analysed segment.
+        /// </summary>
+        public TimeSpan SegmentAudioDuration { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the offset of the segment from the original entire audio file.
+        /// </summary>
+        public TimeSpan SegmentStartOffset
+        {
+            get { return this.settingsUsed.SegmentStartOffset ?? TimeSpan.Zero; }
+        }
+
+        public int CompareTo(AnalysisResult2 other)
+        {
+            return this.SegmentStartOffset.CompareTo(other.SegmentStartOffset);
+        }
     }
 }

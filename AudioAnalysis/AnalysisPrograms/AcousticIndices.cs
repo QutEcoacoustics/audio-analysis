@@ -7,6 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using AnalysisBase.ResultBases;
+
 namespace AnalysisPrograms
 {
     using System;
@@ -36,7 +38,7 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
-    public class Acoustic : IAnalyser
+    public class Acoustic : IAnalyser2
     {
         [CustomDetailedDescription]
         public class Arguments : IArgClassValidator
@@ -276,7 +278,7 @@ namespace AnalysisPrograms
         //{
         //    // Check arguments and that paths are valid
         //    AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
-        //    analysisSettings.StartOfSegment = new TimeSpan(0, 0, args.Start ?? 0);
+        //    analysisSettings.SegmentStartOffset = new TimeSpan(0, 0, args.Start ?? 0);
         //    analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
 
         //    // EXTRACT THE REQUIRED RECORDING SEGMENT
@@ -299,8 +301,8 @@ namespace AnalysisPrograms
         //            new AudioUtilityRequest
         //            {
         //                TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
-        //                OffsetStart = analysisSettings.StartOfSegment,
-        //                OffsetEnd = analysisSettings.StartOfSegment.Value.Add(analysisSettings.SegmentMaxDuration.Value)
+        //                OffsetStart = analysisSettings.SegmentStartOffset,
+        //                OffsetEnd = analysisSettings.SegmentStartOffset.Value.Add(analysisSettings.SegmentMaxDuration.Value)
         //            }, analysisSettings.AnalysisBaseTempDirectoryChecked);
         //    }
 
@@ -339,7 +341,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.StartOfSegment.HasValue ? analysisSettings.StartOfSegment.Value : TimeSpan.Zero;
+            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
             analysisResults.Data = null;
 
             // ######################################################################
@@ -353,9 +355,12 @@ namespace AnalysisPrograms
 
             // analysisResults.Data = IndexStore.Indices2DataTable(indicesStore);
             analysisResults.Data = null; // indicates that the analysis is of acoustic indices and not events.
-            analysisResults.indexBase = indicesStore;
+            
+            throw new NotImplementedException("I don't even know what is meant to happen here");
+            //analysisResults.indexBase = indicesStore; // TODO: fix above
+            
             analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(InitialiseIndexProperties.KEYSegmentDuration);
-            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.StartOfSegment;
+            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.SegmentStartOffset;
 
             
 
@@ -367,13 +372,83 @@ namespace AnalysisPrograms
                 analysisResults.ImageFile = new FileInfo(imagePath);
             }
 
-            if ((analysisSettings.IndicesFile != null) && (analysisResults.Data != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SummaryIndicesFile.FullName);
             }
 
             return analysisResults;
-        } // Analyse()
+        }
+
+        public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IndexBase[] ConvertEventsToSummaryIndices(
+            IEnumerable<EventBase> events,
+            TimeSpan unitTime,
+            TimeSpan duration,
+            double scoreThreshold)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results)
+        {
+            var sourceAudio = inputFileSegment.OriginalFile;
+            var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
+
+            // ensure results are sorted in order
+            string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+
+
+            int frameWidth = 512;
+            frameWidth = settings.Configuration[AnalysisKeys.FRAME_LENGTH] ?? frameWidth;
+            int sampleRate = 17640;
+            sampleRate = settings.Configuration[AnalysisKeys.RESAMPLE_RATE];
+
+            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+            // this is the most effcient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
+
+            var startMinute = (int)(inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+
+
+
+            ////var spectrogramDictionary = new Dictionary<string, double[,]>();
+            foreach (var spectrumKey in new string[] {"????????"})
+            {
+                throw new NotImplementedException();
+                // write spectrogram to disk as CSV file
+
+                var saveCsvPath = resultsDirectory.CombineFile(fileName + "." + spectrumKey + ".csv");
+
+                Csv.WriteMatrixToCsv(saveCsvPath, spectra.Select(x => x.DummySpectrum));
+
+                //following lines used to store spectrogram matrices in Dictionary
+                ////double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                ////matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                ////spectrogramDictionary.Add(spectrumKey, matrix);
+            }
+
+            // TODO: make more efficient, pass data directly in
+            var config = new LDSpectrogramConfig(fileName, resultsDirectory, resultsDirectory);
+            FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
+            config.WritConfigToYAML(path);
+            LDSpectrogramRGB.DrawFalseColourSpectrograms(config);
+        }
 
 
         /// <summary>
@@ -408,9 +483,12 @@ namespace AnalysisPrograms
             if (tracks != null) image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
             if (hits != null) image.OverlayRedMatrix(hits, 1.0);
             return image.GetImage();
-        } //DrawSonogram()
+        }
 
-
+        AnalysisResult2 IAnalyser2.Analyse(AnalysisSettings analysisSettings)
+        {
+            throw new NotImplementedException();
+        }
 
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
@@ -489,7 +567,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(20),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
                 };
             }
         }
@@ -510,7 +588,7 @@ namespace AnalysisPrograms
             analysisSettings.AnalysisInstanceOutputDirectory = args.Output;
             analysisSettings.AudioFile = null;
             analysisSettings.EventsFile = null;
-            analysisSettings.IndicesFile = null;
+            analysisSettings.SummaryIndicesFile = null;
             analysisSettings.ImageFile = null;
 
             TimeSpan tsStart = new TimeSpan(0, 0, 0);
@@ -521,14 +599,14 @@ namespace AnalysisPrograms
             if (!string.IsNullOrWhiteSpace(args.TmpWav))
             {
                 string indicesPath = Path.Combine(args.Output.FullName, args.TmpWav);
-                analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
             }
 
 
             if (!string.IsNullOrWhiteSpace(args.Indices))
             {
                 string indicesPath = Path.Combine(args.Output.FullName, args.Indices);
-                analysisSettings.IndicesFile = new FileInfo(indicesPath);
+                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
             }
 
             return analysisSettings;

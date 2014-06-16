@@ -60,25 +60,24 @@ namespace AnalysisPrograms
         //public const string header_negative = "none";
 
 
-        private const bool verbose = true;
-        private const bool writeOutputFile = true;
+        private const bool Verbose = true;
+        private const bool WriteOutputFile = true;
 
 
 
 
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Rain";
+        public const string AnalysisName = "Rain";
 
         public string DisplayName
         {
             get { return "Rain Indices (DEV)"; }
         }
 
-        private static string identifier = "Towsey." + ANALYSIS_NAME + ".DEV";
         public string Identifier
         {
-            get { return identifier; }
+            get { return "Towsey." + AnalysisName + ".DEV"; }
         }
 
         public class Arguments : AnalyserArguments
@@ -138,7 +137,7 @@ namespace AnalysisPrograms
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
                 var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName + ".DEV");
 
                 arguments = new Arguments
                             {
@@ -226,7 +225,7 @@ namespace AnalysisPrograms
                     row[InitialiseIndexProperties.KEYSegmentDuration] = result.AudioDuration.TotalSeconds;
                 }
 
-                CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(dt, analysisSettings.SummaryIndicesFile.FullName);
                 //DataTableTools.WriteTable2Console(dt);
             }
 
@@ -267,9 +266,9 @@ namespace AnalysisPrograms
             //    analysisResults.ImageFile = new FileInfo(imagePath);
             //}
 
-            if ((analysisSettings.IndicesFile != null) && (analysisResults.Data != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (analysisResults.Data != null))
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SummaryIndicesFile.FullName);
             }
             return analysisResults;
         }
@@ -356,10 +355,10 @@ namespace AnalysisPrograms
             //spectrogramData = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogramData, SpectralBgThreshold);
 
             //set up the output
-            if (verbose)
+            if (Verbose)
                 LoggedConsole.WriteLine("{0:d2}, {1},  {2},    {3},    {4},    {5},   {6},     {7},     {8},    {9},   {10},   {11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
             StringBuilder sb =  null;
-            if (writeOutputFile)
+            if (WriteOutputFile)
             {
                 string header = string.Format("{0:d2},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", "start", "end", "avDB", "BG", "SNR", "act", "spik", "lf", "mf", "hf", "H[t]", "H[s]", "index1", "index2");
                 sb = new StringBuilder(header+"\n");
@@ -703,7 +702,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
                 };
             }
         }
