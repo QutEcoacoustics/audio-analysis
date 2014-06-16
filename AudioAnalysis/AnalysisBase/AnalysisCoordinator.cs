@@ -12,6 +12,8 @@
 
     /// <summary>
     /// Prepares, runs and completes analyses.
+    /// 
+    /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
     /// </summary>
     /// <remarks>
     /// <para>
@@ -46,6 +48,14 @@
         public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles)
         {
             Contract.Requires(sourcePreparer != null);
+
+            this.saveIntermediateWavFiles = saveIntermediateWavFiles;
+            this.saveImageFiles = saveImageFiles;
+            this.saveIntermediateCsvFiles = saveIntermediateCsvFiles;
+            if (sourcePreparer == null)
+            {
+                throw new NullReferenceException("sourcePreparer must not be null");
+            }
 
             this.SourcePreparer = sourcePreparer;
 
@@ -91,9 +101,9 @@
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult> Run(FileInfo file, IAnalyser analysis, AnalysisSettings settings)
+        public AnalysisResult2[] Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return Run(new List<FileSegment>() { new FileSegment() { OriginalFile = file } }, analysis, settings);
+            return Run(new List<FileSegment>() { new FileSegment() {OriginalFile = file} }, analysis, settings);
         }
 
         /// <summary>
@@ -111,9 +121,9 @@
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult> Run(FileSegment fileSegment, IAnalyser analysis, AnalysisSettings settings)
+        public AnalysisResult2[] Run(FileSegment fileSegment, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return Run(new List<FileSegment>() { fileSegment }, analysis, settings);
+            return Run(new List<FileSegment>() {fileSegment}, analysis, settings);
         }
 
         /// <summary>
@@ -131,7 +141,7 @@
         /// <returns>
         /// The analysis results.
         /// </returns>
-        public IEnumerable<AnalysisResult> Run(IEnumerable<FileSegment> fileSegments, IAnalyser analysis, AnalysisSettings settings)
+       public AnalysisResult2[] Run(IEnumerable<FileSegment> fileSegments, IAnalyser2 analysis, AnalysisSettings settings)
         {
             Contract.Requires(settings != null, "Settings must not be null.");
             Contract.Requires(analysis != null, "Analysis must not be null.");
@@ -144,9 +154,17 @@
             // check last segment and remove if too short
             var finalSegment = analysisSegments[analysisSegments.Count() - 1];
             var duration = finalSegment.SegmentEndOffset - finalSegment.SegmentStartOffset;
-            if (duration < settings.SegmentMinDuration) analysisSegments.Remove(finalSegment);
+            if (duration < settings.SegmentMinDuration)
+            {
+                analysisSegments.Remove(finalSegment);
+            }
 
-            IEnumerable<AnalysisResult> results;
+            AnalysisResult2[] results;
+
+            // clone analysis settings for parallelism conerns:
+            //  - as each iteration modifies settings. This causes hard to track down bugs
+            // clones are made for sequential runs to to ensure consistency
+            var settingsForThisItem = (AnalysisSettings)settings.Clone();
 
             Log.DebugFormat("Analysis started in {0}.", this.IsParallel ? "parallel" : "sequence");
 
@@ -157,11 +175,15 @@
             // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
             {
-                results = RunParallel(analysisSegments, analysis, settings);
+                results = RunParallel(analysisSegments, analysis, settingsForThisItem);
+
+                // TODO: determine of this is bad because we do not do it for sequential as well!
+                Array.Sort(results);
             }
-            else // sequential
+            else
             {
-                results = RunSequential(analysisSegments, analysis, settings);
+                // sequential
+                results = RunSequential(analysisSegments, analysis, settingsForThisItem);
             }
 
             stopwatch.Stop();
@@ -189,37 +211,34 @@
         /// <param name="analysis">
         /// The analysis.
         /// </param>
-        /// <param name="settings">
+       /// <param name="clonedSettings">
         /// The settings.
         /// </param>
         /// <returns>
         /// The analysis results.
         /// </returns>
-        private IEnumerable<AnalysisResult> RunParallel(IEnumerable<FileSegment> analysisSegments, IAnalyser analysis, AnalysisSettings settings)
-        {
+       private AnalysisResult2[] RunParallel(IEnumerable<FileSegment> analysisSegments, IAnalyser2 analysis,
+           AnalysisSettings clonedSettings)
+       {
             var analysisSegmentsCount = analysisSegments.Count();
-            var results = new AnalysisResult[analysisSegmentsCount];
+            var results = new AnalysisResult2[analysisSegmentsCount];
 
             Parallel.ForEach(
                 analysisSegments,
-                new ParallelOptions() { MaxDegreeOfParallelism = 64 },
+                new ParallelOptions() {MaxDegreeOfParallelism = 64},
                 (item, state, index) =>
                 {
-                    var item1 = item;
-                    var index1 = index;
-
-                    // can't use settings as each iteration modifies settings. This causes hard to track down bugs
-                    // instead create a copy of the settings, and use that
-                    var settingsForThisItem = settings.ShallowClone();
+                    var itemClosed = item;
+                    var indexClosed = index;
 
                     // finished items
                     var finishedItems = results.Count(i => i != null);
 
                     // process item
-                    var result = ProcessItem(item1, analysis, settingsForThisItem);
+                    var result = ProcessItem(itemClosed, analysis, clonedSettings);
                     if (result != null)
                     {
-                        results[index1] = result;
+                        results[indexClosed] = result;
                     }
 
                     // check for cancellation
@@ -244,18 +263,17 @@
         /// <param name="analysis">
         /// The analysis.
         /// </param>
-        /// <param name="settings">
+       /// <param name="clonedSettings">
         /// The settings.
         /// </param>
         /// <returns>
         /// The analysis results.
         /// </returns>
-        private IEnumerable<AnalysisResult> RunSequential(IEnumerable<FileSegment> analysisSegments, IAnalyser analysis, AnalysisSettings settings)
+       private AnalysisResult2[] RunSequential(IEnumerable<FileSegment> analysisSegments, IAnalyser2 analysis, AnalysisSettings clonedSettings)
         {
-
-            var results = new List<AnalysisResult>();
             var analysisSegmentsList = analysisSegments.ToList();
             var totalItems = analysisSegmentsList.Count;
+            var results = new AnalysisResult2[totalItems];
 
             for (var index = 0; index < analysisSegmentsList.Count; index++)
             {
@@ -263,10 +281,10 @@
 
                 // process item
                 // this can use settings, as it is modified each iteration, but this is run synchronously.
-                var result = ProcessItem(item, analysis, settings);
+                var result = ProcessItem(item, analysis, clonedSettings);
                 if (result != null)
                 {
-                    results.Add(result);
+                    results[index] = result;
                 }
 
                 // check for cancellation
@@ -289,45 +307,39 @@
         /// <param name="analyser">
         /// The analysis.
         /// </param>
-        /// <param name="settings">
+       /// <param name="localCopyOfSettings">
         /// The settings.
         /// </param>
         /// <returns>
         /// The results from the analysis.
         /// </returns>
-        private AnalysisResult PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser analyser, AnalysisSettings settings)
-        {
-            Contract.Requires(settings != null, "Settings must not be null.");
+       private AnalysisResult2 PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser2 analyser,
+           AnalysisSettings localCopyOfSettings)
+       {
+           Contract.Requires(localCopyOfSettings != null, "Settings must not be null.");
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
 
             var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset.HasValue ? fileSegment.SegmentEndOffset.Value : fileSegment.OriginalFileDuration;
+            var end = fileSegment.SegmentEndOffset.HasValue
+                ? fileSegment.SegmentEndOffset.Value
+                : fileSegment.OriginalFileDuration;
+           
+           // set directories
+            this.PrepareDirectories(analyser, localCopyOfSettings);
 
-            // set directories
-            this.PrepareDirectories(analyser, settings);
-
-            var tempDir = settings.AnalysisInstanceTempDirectoryChecked;
-
-            // if user requests, save the audio files
-            // WARNING: the following has no affect, disabled
-            //bool saveIntermediateWavFiles = false;
-            //if (settings.ConfigDict.ContainsKey(keySaveIntermediateWavFiles))
-            //{
-            //    string value = settings.ConfigDict[this.keySaveIntermediateWavFiles];
-            //    saveIntermediateWavFiles = Boolean.Parse(value);
-            //}
+            var tempDir = localCopyOfSettings.AnalysisInstanceTempDirectoryChecked;
 
             // create the file for the analysis
             // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
             var preparedFile = this.SourcePreparer.PrepareFile(
-                GetInstanceDirTempElseOutput(settings),
+                GetInstanceDirTempElseOutput(localCopyOfSettings),
                 fileSegment.OriginalFile,
-                settings.SegmentMediaType,
+                localCopyOfSettings.SegmentMediaType,
                 start,
                 end,
-                settings.SegmentTargetSampleRate,
+                localCopyOfSettings.SegmentTargetSampleRate,
                 tempDir);
 
             var preparedFilePath = preparedFile.OriginalFile;
@@ -335,16 +347,15 @@
 
             // Store sample rate of original audio file in the Settings object.
             // May need original SR during the analysis, esp if have upsampled from the original SR.
-            settings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
-            settings.AudioFile = preparedFilePath;
+            localCopyOfSettings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
 
-            // Anthony: added so we knew the time of the segment we are working on (09 May 13)
-            settings.StartOfSegment = start;
+            localCopyOfSettings.AudioFile = preparedFilePath;
+            localCopyOfSettings.SegmentStartOffset = start;
 
             string fileName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
 
             //if user requests, save the sonogram files 
-            if (settings.ConfigDict.ContainsKey(keySaveSonogramFiles))
+            if (saveImageFiles)
             {
                 string value = settings.ConfigDict[keySaveSonogramFiles].ToString();
                 bool saveSonograms = false;
@@ -352,77 +363,100 @@
                 if (saveSonograms)
                 {
                     // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
-                    settings.ImageFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
+                    localCopyOfSettings.ImageFile =
+                        new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
                 }
             }
 
             //if user requests, save the intermediate csv files 
-            if (settings.ConfigDict.ContainsKey(keySaveIntermediateCsvFiles))
+            if (saveIntermediateCsvFiles)
             {
-                string value = settings.ConfigDict[this.keySaveIntermediateCsvFiles];
-                bool saveIntermediateCsvFiles = false;
-                saveIntermediateCsvFiles = Boolean.Parse(value);
-                if (saveIntermediateCsvFiles)
-                {
-                    // always save csv to output dir
-                    settings.EventsFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".Events.csv"));
-                    settings.IndicesFile = new FileInfo(Path.Combine(settings.AnalysisInstanceOutputDirectory.FullName, fileName + ".Indices.csv"));
-                }
+                // always save csv to output dir
+                localCopyOfSettings.EventsFile =
+                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
+                        fileName + ".Events.csv"));
+                localCopyOfSettings.SummaryIndicesFile =
+                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
+                        fileName + ".Indices.csv"));
+                localCopyOfSettings.SpectrumIndicesDirectory = new DirectoryInfo(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName);
             }
 
-            Log.DebugFormat("Item {0} started analysing file {1}.", settings.InstanceId, settings.AudioFile.Name);
+            Log.DebugFormat("Item {0} started analysing file {1}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             //##### RUN the ANALYSIS ################################################################
-            AnalysisResult result;
-            var strongAnalyser = analyser as IAnalyser2;
-            if (strongAnalyser != null)
-            {
-                result = strongAnalyser.Analyse(settings);
-            }
-            else
-            {
-                result = analyser.Analyse(settings);
-            }
+            AnalysisResult2 result = analyser.Analyse(localCopyOfSettings);
             //#######################################################################################
 
             stopwatch.Stop();
-            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", settings.InstanceId, settings.AudioFile.Name, stopwatch.Elapsed);
+            Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name, stopwatch.Elapsed);
 
             // add information to the results
             result.AnalysisIdentifier = analyser.Identifier;
-            result.SettingsUsed = settings;
-            result.SegmentStartOffset = start;
-            result.AudioDuration = preparedFileDuration;
+
+            // validate results (debug only)
+            ValidateResult(localCopyOfSettings, result, start, preparedFileDuration);
 
             // clean up
             if (this.DeleteFinished && this.SubFoldersUnique)
             {
                 // delete the directory created for this run
-                DeleteDirectory(settings.InstanceId, settings.AnalysisInstanceOutputDirectory);
+                DeleteDirectory(localCopyOfSettings.InstanceId, localCopyOfSettings.AnalysisInstanceOutputDirectory);
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
             {
                 // delete the prepared audio file segment. Don't delete the directory - all instances use the same directory!
-                try
+                if (saveIntermediateWavFiles)
                 {
-                    File.Delete(settings.AudioFile.FullName);
-                    Log.DebugFormat("Item {0} deleted file {1}.", settings.InstanceId, settings.AudioFile.FullName);
-                }
-                catch (Exception ex)
+                    Log.DebugFormat("File {0} not deleted because saveIntermediateWavFiles was set to true", localCopyOfSettings.AudioFile.FullName);
+                }       
+                else
                 {
-                    // this error is not fatal, but it does mean we'll be leaving an audio file behind.
-
-                    Log.Warn(string.Format("Item {0} could not delete audio file {1}.",
-                        settings.InstanceId, settings.AudioFile.FullName), ex);
+                    try
+                    {
+                        File.Delete(localCopyOfSettings.AudioFile.FullName);
+                        Log.DebugFormat("Item {0} deleted file {1}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.FullName);
+                    }
+                    catch (Exception ex)
+                    {
+                        // this error is not fatal, but it does mean we'll be leaving an audio file behind.
+                        Log.Warn(string.Format("Item {0} could not delete audio file {1}.",
+                            localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.FullName), ex);
+                    }
                 }
             }
 
             return result;
         }
 
-        private void PrepareDirectories(IAnalyser analysis, AnalysisSettings settings)
+       [Conditional("DEBUG")]
+       private static void ValidateResult(AnalysisSettings settings, AnalysisResult2 result, TimeSpan start,
+           TimeSpan preparedFileDuration)
+       {
+           Debug.Assert(result.SettingsUsed != null);
+           Debug.Assert(result.SegmentStartOffset == start);
+           Debug.Assert(result.SegmentAudioDuration == preparedFileDuration);
+           Debug.Assert(settings.ImageFile != null && settings.ImageFile.Exists);
+           if (result.Events != null)
+           {
+               Debug.Assert(settings.EventsFile != null && result.EventsFile.Exists);
+           }
+           if (result.SummaryIndices != null)
+           {
+               Debug.Assert(settings.SummaryIndicesFile != null && result.SummaryIndicesFile.Exists);
+           }
+           if (result.SpectralIndices != null)
+           {
+               foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
+               {
+                   Debug.Assert(spectraIndicesFile.Exists);
+               }
+           }
+       }
+
+
+        private void PrepareDirectories(IAnalyser2 analysis, AnalysisSettings settings)
         {
             Contract.Requires(analysis != null, "analysis must not be null.");
             Contract.Requires(settings != null, "settings must not be null.");
@@ -479,7 +513,6 @@
             var dir = new DirectoryInfo(runDirectory);
             Directory.CreateDirectory(runDirectory);
             return dir;
-
         }
 
         /// <summary>
@@ -515,46 +548,46 @@
         /// The assembly.
         /// </param>
         /// <returns>
-        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyser].
+        /// The System.Collections.Generic.IEnumerable`1[T -&gt; AnalysisBase.IAnalyser2].
         /// </returns>
-        public static IEnumerable<IAnalyser> GetAnalysers(Assembly assembly)
+        public static IEnumerable<IAnalyser2> GetAnalysers(Assembly assembly)
         {
             // to find the assembly, get the type of a class in that assembly
             // eg. typeof(MainEntry).Assembly
-            var analyserType = typeof(IAnalyser);
+            var analyserType = typeof(IAnalyser2);
 
             var analysers = assembly.GetTypes()
                 .Where(analyserType.IsAssignableFrom)
-                .Select(t => Activator.CreateInstance(t) as IAnalyser);
+                .Select(t => Activator.CreateInstance(t) as IAnalyser2);
 
             return analysers;
         }
 
-        private AnalysisResult ProcessItem(FileSegment item, IAnalyser analysis, AnalysisSettings settings)
+        private AnalysisResult2 ProcessItem(FileSegment item, IAnalyser2 analysis, AnalysisSettings clonedSettings)
         {
-            Log.DebugFormat(StartingItem, settings.InstanceId, item);
+            Log.DebugFormat(StartingItem, clonedSettings.InstanceId, item);
 
-            AnalysisResult result = null;
+            AnalysisResult2 result = null;
 
             //try
             //{
-                result = this.PrepareFileAndRunAnalysis(item, analysis, settings);
+            result = this.PrepareFileAndRunAnalysis(item, analysis, clonedSettings);
 
-                var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
+            var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
             //}
             //catch (Exception ex)
             //{
-                //// try to get all the results up to the exception
-                //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
-                //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
-                //var eventsDatatable = op1.Item1;
-                //var indicesDatatable = op1.Item2;
-                //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-                //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
-                //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
+            //// try to get all the results up to the exception
+            //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
+            //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
+            //var eventsDatatable = op1.Item1;
+            //var indicesDatatable = op1.Item2;
+            //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
+            //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
+            //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
 
-                //Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
-                //throw;
+            //Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
+            //throw;
             //}
 
             return result;

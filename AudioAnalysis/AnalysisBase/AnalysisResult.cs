@@ -153,9 +153,6 @@
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
 
-        public IndexBase indexBase { get; set; }
-
-
 
         ///// <summary>
         ///// Different summary indices, typically calculated from one minute of recording
@@ -178,15 +175,5 @@
         //        return this.dictionaryOfSpectralIndices;
         //    }
         //}
-    }
-
-    public class AnalysisResult2 : AnalysisResult
-    {
-        /// <summary>
-        /// Gets or sets results.
-        /// </summary>
-        public new IEnumerable<EventBase> Data { get; set; }
-
-        public new IEnumerable<IndexBase> Indices { get; set; }
     }
 }

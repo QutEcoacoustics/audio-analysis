@@ -64,9 +64,9 @@ namespace AnalysisPrograms
         /// </summary>
         public const string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
 
-        public const int RESAMPLE_RATE = 22050;//wtf even is this shit: 17640;
+        public const int ResampleRate = 22050;//wtf even is this shit: 17640;
 
-        private static readonly Color aedEventColor = Color.Red;
+        private static readonly Color AedEventColor = Color.Red;
 
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace AnalysisPrograms
                         SegmentMinDuration = TimeSpan.FromSeconds(20),
                         SegmentMediaType = MediaTypes.MediaTypeWav,
                         SegmentOverlapDuration = TimeSpan.Zero,
-                        SegmentTargetSampleRate = RESAMPLE_RATE
+                        SegmentTargetSampleRate = ResampleRate
                     };
             }
         }
@@ -175,9 +175,7 @@ namespace AnalysisPrograms
                 destPath = destPathBase + "_{0:000}".FormatWith(inc);
             }
 
-            var csvEvents = ServiceStack.Text.CsvSerializer.SerializeToCsv(events);
-
-            File.WriteAllText(destPath + ".csv", csvEvents);
+            Csv.WriteToCsv((destPath + ".csv").ToFileInfo() , events);
 
             TowseyLibrary.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
             ////foreach (AcousticEvent ae in events)
@@ -207,7 +205,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult();
             analysisResults.AnalysisIdentifier = this.Identifier;
             analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.StartOfSegment.HasValue ? analysisSettings.StartOfSegment.Value : TimeSpan.Zero;
+            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset.HasValue ? analysisSettings.SegmentStartOffset.Value : TimeSpan.Zero;
             analysisResults.Data = null;
 
             // READ PARAMETER VALUES FROM INI FILE
@@ -268,12 +266,12 @@ namespace AnalysisPrograms
                 analysisResults.EventsFile = null;
             }
 
-            if ((analysisSettings.IndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
             else
             {
@@ -512,7 +510,7 @@ namespace AnalysisPrograms
             List<AcousticEvent> events =
                 oblongs.Select(o => {
                     var ae = new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth);
-                    ae.BorderColour = aedEventColor;
+                    ae.BorderColour = AedEventColor;
                     return ae;
                 }).ToList();
             TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Count);

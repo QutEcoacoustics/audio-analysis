@@ -7,6 +7,7 @@ using System.Text;
 using Acoustics.Shared.Extensions;
 using AnalysisBase;
 //using AudioAnalysisTools;
+using AnalysisBase.ResultBases;
 using log4net;
 using TowseyLibrary;
 using AudioAnalysisTools.Indices;
@@ -43,7 +44,7 @@ namespace AudioAnalysisTools
             }
             return mergedDatatable;
         }
-
+        /*
         public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
         {
             var eventCount = 0;
@@ -69,10 +70,54 @@ namespace AudioAnalysisTools
 
             return Tuple.Create(mergedEvents, mergedIndices);
         }
+         * */
 
+        public static T[] MergeResults<T>(IEnumerable<AnalysisResult2> results, Func<AnalysisResult2, T[]> selector,
+            Action<AnalysisResult2, T, int, int> correctionFunc) where T : ResultBase
+        {
+            var count = results.Sum(result => selector(result).Length);
+
+
+            if (count <= 0)
+            {
+                return null;
+            }
+
+
+            var merged = new T[count];
+
+            int index = 0;
+            foreach (var result in results)
+            {
+                T[] items = selector(result);
+
+                // relies on SegmentStartOffset to be set (enforced by analysisCoordinator)
+                Array.Sort(items);
+
+                for (int resultIndex = 0; resultIndex < items.Length; resultIndex++)
+                {
+                    var item = items[resultIndex];
+                    item.StartOffsetMinute = (int)result.SegmentStartOffset.TotalMinutes;
+                    item.SegmentDuration = result.SegmentAudioDuration;
+
+                    // correct specific details
+                    correctionFunc(result, item, index, resultIndex);
+
+                    merged[index] = item;
+                    index++;
+                }
+            }
+
+            // assumption of non-overlapping results - otherwise another sort of the final list will be needed.
+
+            return merged;
+        }
+
+        // TODO: ensure all functionality here is taken care of in correct index offsets
+        /*[Obsolete]
         public static IndexBase[] MergeIndexResults(IEnumerable<AnalysisResult> results)
         {
-            if ((results == null)||(results.Count() == 0)) return null;
+            if ((results == null)||(results.Any())) return null;
             int indexCount = results.Count();
             var mergedIndices = new IndexBase[indexCount];
 
@@ -98,9 +143,9 @@ namespace AudioAnalysisTools
             }
 
             return mergedIndices;
-        }
+        }*/
 
-        
+        /*
         public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
         {
             TimeSpan segmentStartOffset = result.SegmentStartOffset;
@@ -148,46 +193,30 @@ namespace AudioAnalysisTools
 
             return dt;
         } //GetSegmentDatatableWithContext()
+         * */
 
-        public static int CorrectEventOffsets(EventBase[] destination, int destinationIndex, AnalysisResult2 result)
+        public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
-            var resultStartSeconds = result.SegmentStartOffset.TotalSeconds;
-            var count = 0;
-            foreach (var eventBase in result.Data)
-            {
-                eventBase.EventCount = count;
-                count++;
+            // TODO: check with michael what this should be (totalEventsSoFa or totalEventsInResultSoFar)
+            eventToBeFixed.EventCount = totalEventsSoFar;
 
-                eventBase.SegmentDuration = result.AudioDuration;
-                var absoluteOffset = resultStartSeconds + eventBase.EventStartSeconds;
-                eventBase.EventStartAbsolute = absoluteOffset;
-                
-                // just in case the event was in a segment longer than 60 seconds, rebase values
-                eventBase.MinuteOffset = (int) (absoluteOffset / 60);
-                eventBase.EventStartSeconds = resultStartSeconds % 60;
+            var resultStartSeconds = eventToBeFixed.SegmentStartOffset.TotalSeconds;
+            var absoluteOffset = resultStartSeconds + eventToBeFixed.EventStartSeconds;
+            eventToBeFixed.EventStartAbsolute = absoluteOffset;
 
-                destination[destinationIndex] = eventBase;
-                destinationIndex++;
-            }
-
-            return destinationIndex;
+            // just in case the event was in a segment longer than 60 seconds, rebase values
+            eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
+            eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 
-        public static int CorrectIndexOffsets(IndexBase[] destination, int destinationIndex, AnalysisResult2 result)
+        public static void CorrectSummaryIndex(AnalysisResult2 result, IndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInResultSoFar)
         {
-            foreach (var indexBase in result.Indices)
-            {
-                // (double)result.SegmentStartOffset.Minutes
-                indexBase.MinuteOffset = (int)result.SegmentStartOffset.TotalMinutes;
-                indexBase.SegmentDuration = result.AudioDuration;
-                //indexBase.indexStore = result.
-                // TODO: what is the purpose of Indices_Count
+            indexToBeFixed.IndexCount = indexToBeFixed;
+        }
 
-                destination[destinationIndex] = indexBase;
-                destinationIndex++;
-            }
+        public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectrumBase spectrumToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
+        {
 
-            return destinationIndex;
         }
 
         
@@ -269,7 +298,7 @@ namespace AudioAnalysisTools
         {
             if (events == null && indices == null)
             {
-                throw new InvalidOperationException("If no results were produced, events cannot be made into indices");
+                Log.Warn("No events or summary indices were produced, events cannot be made into indices");
             }
             else if (events == null && indices != null)
             {
@@ -280,17 +309,17 @@ namespace AudioAnalysisTools
             {
                 Log.InfoFormat("Converting Events to {0} minute Indices", IndexUnitTime.TotalMinutes);
 
-                indices = analyser.ConvertEventsToIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
-                    scoreThreshold).ToArray();
+                indices = analyser.ConvertEventsToSummaryIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
+                    scoreThreshold);
             }
             else if (events != null && indices != null)
             {
                 // no-op both values already present, just ensure they match
-                Log.Debug("Both events and indices already given");
+                Log.Info("Both events and indices already given, no event conversion done");
             }
         } 
 
-
+        /*
         /// <summary>
         /// Save an events and indices data tables if they exist.
         /// File names are constructed form the analysis ID etc.
@@ -415,7 +444,7 @@ namespace AudioAnalysisTools
             }
         } // DataTable2CSV()
 
-
+        */
 
         public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
@@ -423,10 +452,15 @@ namespace AudioAnalysisTools
             return SaveResults(outputDirectory, fileName + ".Events", analyser2.WriteEventsFile, events);
         }
 
-        public static FileInfo SaveIndices(IAnalyser2 analyser2, string fileName,
+        public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<IndexBase> indices) 
         {
-            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteIndicesFile, indices);
+            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
+        }
+
+        public static FileInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
+        {
+            return SaveResults(outputDirectory, fileName + ".Spectra", analyser2.WriteSpectrumIndicesFile, spectra);
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)

@@ -41,13 +41,13 @@ namespace AnalysisPrograms
         }
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "MultiAnalyser";
-        public const int RESAMPLE_RATE = 17640;
+        public const string AnalysisName = "MultiAnalyser";
+        public const int ResampleRate = 17640;
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
-        public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
+        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static string[] analysisTitles = { Human1.ANALYSIS_NAME, Crow.ANALYSIS_NAME, PlanesTrainsAndAutomobiles.AnalysisName, Canetoad.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME };
+        public static string[] AnalysisTitles = { Human1.AnalysisName, Crow.AnalysisName, PlanesTrainsAndAutomobiles.AnalysisName, Canetoad.AnalysisName, KoalaMale.AnalysisName };
 
 
         public string DisplayName
@@ -55,11 +55,9 @@ namespace AnalysisPrograms
             get { return "Multiple analyses"; }
         }
 
-        private const string identifier = "Towsey." + ANALYSIS_NAME;
-
         public string Identifier
         {
-            get { return identifier; }
+            get { return "Towsey." + AnalysisName; }
         }
 
         public static void Dev(Arguments arguments)
@@ -104,7 +102,7 @@ namespace AnalysisPrograms
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
                 string outputDir = @"C:\SensorNetworks\Output\MultiAnalyser\";
 
-                LoggedConsole.WriteLine(MultiAnalyser.identifier);
+                LoggedConsole.WriteLine("Towsey." + AnalysisName);
                 LoggedConsole.WriteLine("# DATE AND TIME: " + DateTime.Now);
                 LoggedConsole.WriteLine("# Output folder:  " + outputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
@@ -118,8 +116,8 @@ namespace AnalysisPrograms
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
                 var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
 
                 arguments = new Arguments
                 {
@@ -201,12 +199,12 @@ namespace AnalysisPrograms
             FileInfo tempF = analysisSettings.AudioFile;
             if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -264,7 +262,7 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(6);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Human1.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Human1.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
@@ -278,7 +276,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results1.Item4)
                     {
-                        ae.Name = Human1.ANALYSIS_NAME;
+                        ae.Name = Human1.AnalysisName;
                         events.Add(ae);
                     }
                 }
@@ -296,7 +294,7 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(5);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Crow.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Crow.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
@@ -310,7 +308,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results2.Item4)
                     {
-                        ae.Name = Crow.ANALYSIS_NAME;
+                        ae.Name = Crow.AnalysisName;
                         events.Add(ae);
                     }
                 }
@@ -360,7 +358,7 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(9);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Canetoad.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, Canetoad.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
@@ -374,7 +372,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results4.Item4)
                     {
-                        ae.Name = Canetoad.ANALYSIS_NAME;
+                        ae.Name = Canetoad.AnalysisName;
                         events.Add(ae);
                     }
                 }
@@ -391,7 +389,7 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(10);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.ANALYSIS_NAME, KoalaMale.ANALYSIS_NAME);
+            newDict.Add(AnalysisKeys.ANALYSIS_NAME, KoalaMale.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FRAME_LENGTH, frameLength);
 
@@ -405,7 +403,7 @@ namespace AnalysisPrograms
                 {
                     foreach (AcousticEvent ae in results5.Item4)
                     {
-                        ae.Name = KoalaMale.ANALYSIS_NAME;
+                        ae.Name = KoalaMale.AnalysisName;
                         ae.ScoreNormalised = ae.Score;
                         events.Add(ae);
                     }
@@ -437,12 +435,12 @@ namespace AnalysisPrograms
                 CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
             }
 
-            if ((analysisSettings.IndicesFile != null) && (dataTable != null))
+            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
             {
                 double scoreThreshold = 0.1;
                 TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
                 var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.IndicesFile.FullName);
+                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
             }
 
             //save image of sonograms
@@ -564,11 +562,11 @@ namespace AnalysisPrograms
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
                 string eventName = (string)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NAME];
-                if (eventName == Human1.ANALYSIS_NAME)
+                if (eventName == Human1.AnalysisName)
                 {
                     if (eventScore != 0.0) human_EventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == Crow.ANALYSIS_NAME)
+                else if (eventName == Crow.AnalysisName)
                 {
                     if (eventScore != 0.0) crow__EventsPerUnitTime[timeUnit]++;
                 }
@@ -576,11 +574,11 @@ namespace AnalysisPrograms
                 {
                     if (eventScore != 0.0) machinEventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == KoalaMale.ANALYSIS_NAME)
+                else if (eventName == KoalaMale.AnalysisName)
                 {
                     if (eventScore != 0.0) koala_EventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == Canetoad.ANALYSIS_NAME)
+                else if (eventName == Canetoad.AnalysisName)
                 {
                     if (eventScore != 0.0) canetdEventsPerUnitTime[timeUnit]++;
                 }
@@ -643,7 +641,7 @@ namespace AnalysisPrograms
                     SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.RESAMPLE_RATE
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
                 };
             }
         }

@@ -188,6 +188,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Dev.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
