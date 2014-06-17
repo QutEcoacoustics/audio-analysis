@@ -9,12 +9,10 @@ using System.Reflection;
 using Acoustics.Shared;
 using Acoustics.Tools.Audio;
 using AnalysisBase;
-using AnalysisBase.StrongAnalyser;
-using AnalysisBase.StrongAnalyser.ResultBases;
+using AnalysisBase.ResultBases;
 using AnalysisRunner;
 using AudioAnalysisTools;
 using log4net;
-using TowseyLibrary;
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
@@ -226,9 +224,16 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, resultsDirectory, mergedSpectrumResults);
 
             // 12. Convert summary indices to image
+            var indexPropertiesConfigPath = configuration["INDEX_PROPERTIES_CONFIG"];
+            if (!Path.IsPathRooted(indexPropertiesConfigPath))
+            {
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
+            }
+
             string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
             string imageTitle = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(indicesFile, imageTitle);
+            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indexPropertiesConfigPath), indicesFile, imageTitle);
             var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
             tracksImage.Save(imagePath);
 

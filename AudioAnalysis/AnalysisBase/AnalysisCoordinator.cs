@@ -45,6 +45,9 @@
         /// <param name="sourcePreparer">
         /// The source Preparer. The prepared files can be stored anywhere, they just need to be readable.
         /// </param>
+        /// <param name="saveIntermediateWavFiles"></param>
+        /// <param name="saveImageFiles"></param>
+        /// <param name="saveIntermediateCsvFiles"></param>
         public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles)
         {
             Contract.Requires(sourcePreparer != null);
@@ -357,15 +360,9 @@
             //if user requests, save the sonogram files 
             if (saveImageFiles)
             {
-                string value = settings.ConfigDict[keySaveSonogramFiles].ToString();
-                bool saveSonograms = false;
-                saveSonograms = Boolean.Parse(value);
-                if (saveSonograms)
-                {
-                    // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
-                    localCopyOfSettings.ImageFile =
-                        new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
-                }
+                // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
+                localCopyOfSettings.ImageFile =
+                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
             }
 
             //if user requests, save the intermediate csv files 

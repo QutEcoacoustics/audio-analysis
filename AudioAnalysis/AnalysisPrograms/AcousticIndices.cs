@@ -8,6 +8,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using AnalysisBase.ResultBases;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
 namespace AnalysisPrograms
 {
@@ -416,7 +417,7 @@ namespace AnalysisPrograms
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FRAME_LENGTH] ?? frameWidth;
             int sampleRate = 17640;
-            sampleRate = settings.Configuration[AnalysisKeys.RESAMPLE_RATE];
+            sampleRate = settings.Configuration[AnalysisKeys.RESAMPLE_RATE] ?? sampleRate;
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyser results
             // this is the most effcient way to do this
@@ -448,6 +449,73 @@ namespace AnalysisPrograms
             FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
             config.WritConfigToYAML(path);
             LDSpectrogramRGB.DrawFalseColourSpectrograms(config);
+
+            // alternate implmentation
+            /*        private static void ProcessSpectralIndices(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
+            AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
+        {
+            // ensure results are sorted in order
+            var results = analyserResults.ToArray();
+            string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+
+
+            int frameWidth = 512; // default value
+            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.FRAME_LENGTH))
+                frameWidth = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.FRAME_LENGTH]);
+
+            int sampleRate = 17640; // default value
+            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.RESAMPLE_RATE))
+                sampleRate = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.RESAMPLE_RATE]);
+
+            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+            // this is the most effcient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
+
+            int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+            var spectrogramDictionary = new Dictionary<string, double[,]>();
+            foreach (var spectrumKey in results[0].indexBase.SpectralIndices.Keys)
+            {
+                // +1 for header
+                var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
+                var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
+                foreach (var analysisResult in results)
+                {
+                    var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
+
+                    numbers[index] = analysisResult.indexBase.SpectralIndices[spectrumKey];
+
+                    // add one to offset header
+                    lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
+                }
+
+                // write spectrogram to disk as CSV file
+                var saveCsvPath = Path.Combine(resultsDirectory.FullName, fName + "." + spectrumKey + ".csv");
+                lines[0] = Spectrum.GetHeader(numbers[0].Length); // add in header
+                FileTools.WriteTextFile(saveCsvPath, lines);
+
+                //following lines used to store spectrogram matrices in Dictionary
+                double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                spectrogramDictionary.Add(spectrumKey, matrix);
+            } // foreach spectrumKey
+
+            var spectrogramConfig = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
+            FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
+            spectrogramConfig.WritConfigToYAML(spectrogramConfigPath);
+
+            //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
+            //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
+            var indexPropertiesConfigPath = analysisSettings.ConfigDict["INDEX_PROPERTIES_CONFIG"];
+            if (!Path.IsPathRooted(indexPropertiesConfigPath))
+            {
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(analysisSettings.ConfigFile.Directory.FullName, indexPropertiesConfigPath));
+            }
+
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indexPropertiesConfigPath.ToFileInfo());
+
+        }*/
         }
 
 
