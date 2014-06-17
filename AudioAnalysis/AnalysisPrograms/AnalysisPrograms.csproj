@@ -225,7 +225,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="AnalyseLongRecording.cs" />
     <Compile Include="Production\Runner.cs" />
     <Compile Include="Rain.cs" />
     <Compile Include="RheobatrachusSilus.cs" />

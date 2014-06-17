@@ -1,10 +1,14 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DoubleSquareArrayExtensions.cs" company="MQUTeR">
-//   -
+// <copyright file="DoubleSquareArrayExtensions.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
+// <summary>
+//   
+// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Acoustics.Shared.Extensions
+// ReSharper disable once CheckNamespace
+namespace System
 {
     using System;
     using System.Diagnostics.Contracts;

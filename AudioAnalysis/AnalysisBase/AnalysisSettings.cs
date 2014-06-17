@@ -1,9 +1,20 @@
-﻿namespace AnalysisBase
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalysisSettings.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   The analysis settings for processing one audio file.
+//   DO NOT CHANGE THIS CLASS UNLESS YOU ARE TOLD TO.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisBase
 {
-    using Acoustics.Shared;
     using System;
     using System.Collections.Generic;
     using System.IO;
+
+    using Acoustics.Shared;
 
     using GeorgeCloney;
 
@@ -20,32 +31,32 @@
     public class AnalysisSettings : ICloneable
     {
 
-        static int instanceCounter = 0;
+        private static int instanceCounter = 0;
 
         /// <summary>
-        /// Used to track instances of this class through parallalism - must be readonly
+        /// Used to track instances of this class through parallelism - must be readonly.
         /// </summary>
         private readonly int instanceId;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
+        /// </summary>
         public AnalysisSettings()
         {
             instanceCounter++;
-            instanceId = instanceCounter;
+            this.instanceId = instanceCounter;
             this.ConfigDict = new Dictionary<string, string>();
         }
 
+        /// <summary>
+        /// Gets the instance tracking integer.
+        /// </summary>
         public int InstanceId
         {
             get
             {
-                return instanceId;
+                return this.instanceId;
             }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("Settings for {0} with instance id {1} and config file {2}.",
-                this.AudioFile.Name, this.InstanceId, this.ConfigFile.Name);
         }
 
         /// <summary>
@@ -56,7 +67,7 @@
         public DirectoryInfo AnalysisBaseTempDirectory { get; set; }
 
         /// <summary>
-        /// Gets a base temp directory. The dir will exist.
+        /// Gets a base temp directory. The directory will exist.
         /// </summary>
         public DirectoryInfo AnalysisBaseTempDirectoryChecked
         {
@@ -96,7 +107,7 @@
         public DirectoryInfo AnalysisInstanceTempDirectory { get; set; }
 
         /// <summary>
-        /// Gets a temp directory for a single run. The dir will exist.
+        /// Gets a temp directory for a single run. The directory will exist.
         /// </summary>
         public DirectoryInfo AnalysisInstanceTempDirectoryChecked
         {
@@ -110,7 +121,7 @@
                 }
                 else
                 {
-                    tempDir = new DirectoryInfo(Path.Combine(AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
+                    tempDir = new DirectoryInfo(Path.Combine(this.AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
                 }
 
                 if (!Directory.Exists(tempDir.FullName))
@@ -170,7 +181,7 @@
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
-        /// TODO: a chunk of audio without the overlap is a 'segmentstep'.
+        /// TODO: a chunk of audio without the overlap is a 'segment step'.
         /// </summary>
         public TimeSpan? SegmentMinDuration { get; set; }
 
@@ -183,7 +194,7 @@
 
         /// <summary>
         /// Gets or sets the start offset of the current analysis segment.
-        /// For a large file, analysed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
+        /// For a large file, analyzed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
         /// </summary>
         public TimeSpan? SegmentStartOffset { get; set; }
 
@@ -217,7 +228,7 @@
         public Dictionary<string, string> ConfigDict { get; set; }
 
         /// <summary>
-        /// Other configuration properties. Should be mutually exclusive with ConfigFile
+        /// Gets other configuration properties. Should be mutually exclusive with ConfigFile.
         /// </summary>
         public dynamic Configuration { get; set; }
 
@@ -269,6 +280,15 @@
         public object Clone()
         {
             return this.DeepClone();
+        }
+
+        public override string ToString()
+        {
+            return string.Format(
+                "Settings for {0} with instance id {1} and config file {2}.",
+                this.AudioFile.Name,
+                this.InstanceId,
+                this.ConfigFile.Name);
         }
     }
 }

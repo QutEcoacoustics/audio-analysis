@@ -1,7 +1,17 @@
-﻿using System;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="EventBase.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the EventBase type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisBase.ResultBases
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class EventBase : ResultBase 
     {
         //AudioAnalysisTools.Keys.EVENT_START_ABS,    //4

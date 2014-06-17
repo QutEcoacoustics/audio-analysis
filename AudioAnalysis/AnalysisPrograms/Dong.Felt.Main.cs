@@ -317,7 +317,7 @@ namespace Dong.Felt
         public int FrameMaximum { get; set; }
     }
 
-    public class RidgeAnalysis : IAnalyser2Abstract
+    public class RidgeAnalysis : AbstractStrongAnalyser
     {
         public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {

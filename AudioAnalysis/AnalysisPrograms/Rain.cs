@@ -197,12 +197,12 @@ namespace AnalysisPrograms
             if (tempF.Exists) tempF.Delete();
             if (tsDuration == TimeSpan.Zero)   //Process entire file
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -278,10 +278,10 @@ namespace AnalysisPrograms
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
             //get parameters for the analysis
-            int frameSize = IndexCalculate.DEFAULT_WINDOW_SIZE;
+            int frameSize = IndexCalculate.DefaultWindowSize;
             double windowOverlap = 0.0;
-            int lowFreqBound = IndexCalculate.lowFreqBound;
-            int midFreqBound = IndexCalculate.midFreqBound;
+            int lowFreqBound = IndexCalculate.LowFreqBound;
+            int midFreqBound = IndexCalculate.MidFreqBound;
 
             if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH)) 
                 frameSize = ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config);
