@@ -27,5 +27,11 @@ namespace Systems
             return Tuple.Create(count, sum);
         }
 
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
+        {
+            return items == null || !items.Any();
+        }
+
+
     }
 }

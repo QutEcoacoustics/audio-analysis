@@ -8,6 +8,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using System.Linq;
+using Systems;
 using AnalysisBase.ResultBases;
 
 namespace Dong.Felt
@@ -318,7 +319,7 @@ namespace Dong.Felt
 
     public class RidgeAnalysis : IAnalyser2Abstract
     {
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
