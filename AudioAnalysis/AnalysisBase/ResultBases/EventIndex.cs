@@ -1,4 +1,11 @@
-﻿using AnalysisBase.ResultBases;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="EventIndex.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the EventIndex type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisBase.ResultBases
 {

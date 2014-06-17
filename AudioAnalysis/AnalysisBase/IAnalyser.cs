@@ -1,13 +1,19 @@
-﻿using System;
-using System.Data;
-using System.IO;
-using System.Text;
-
-//using AudioAnalysisTools;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IAnalyser.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisBase
 {
+    using System;
     using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Text;
 
     /// <summary>
     /// Interface a compatible analysis must implement.

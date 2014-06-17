@@ -74,7 +74,7 @@
         public double SonogramBackgroundThreshold { get; private set; }
 
         // other global properties
-        public IAnalyser DefaultAnalyser { get { return this.pluginHelper.GetAcousticAnalyser(this.DefaultAnalysisIdentifier); } }
+        public IAnalyser2 DefaultAnalyser { get { return this.pluginHelper.GetAcousticAnalyser(this.DefaultAnalysisIdentifier); } }
 
         public IEnumerable<KeyValuePair<string, string>> AnalysersAvailable
         {
@@ -113,7 +113,7 @@
             this.pluginHelper.FindIAnalysisPlugins();
         }
 
-        public IAnalyser GetAnalyser(string analyserIdentifier)
+        public IAnalyser2 GetAnalyser(string analyserIdentifier)
         {
             return this.pluginHelper.GetAcousticAnalyser(analyserIdentifier);
         }
@@ -125,7 +125,7 @@
         /// <param name="analyser"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser analyser, AnalysisSettings settings)
+        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser2 analyser, AnalysisSettings settings)
         {
             //var analyserResults = analysisCoordinator.Run(fileSegments, analyser, settings).OrderBy(a => a.SegmentStartOffset);
             Contract.Requires(settings != null, "Settings must not be null.");
@@ -140,8 +140,16 @@
             if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING))
                 doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING, settings.ConfigDict);
 
+            bool saveSonograms = false;
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SAVE_SONOGRAMS))
+                saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_SONOGRAMS, (settings.ConfigDict));
+
+            bool displayCsvImage = false;
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.DISPLAY_CSV_IMAGE))
+                displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DISPLAY_CSV_IMAGE, (settings.ConfigDict));
+
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, displayCsvImage)
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
@@ -160,7 +168,9 @@
                 return null;
             }
 
-            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
+            // TODO: don't be lazy
+            throw new NotImplementedException("Replacing the datatable method below is on my TODO");
+            DataTable datatable; //// = ResultsTools.MergeResultsIntoSingleDataTable(results);
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility();

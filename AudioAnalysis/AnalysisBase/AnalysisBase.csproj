@@ -144,7 +144,7 @@
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalyser.cs" />
     <Compile Include="IAnalyser2.cs" />
-    <Compile Include="IAnalyser2Abstract.cs" />
+    <Compile Include="AbstractStrongAnalyser.cs" />
     <Compile Include="ISourcePreparer.cs" />
     <Compile Include="PluginHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

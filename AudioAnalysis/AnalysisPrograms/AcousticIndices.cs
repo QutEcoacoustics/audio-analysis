@@ -363,8 +363,6 @@ namespace AnalysisPrograms
             analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(InitialiseIndexProperties.KEYSegmentDuration);
             analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.SegmentStartOffset;
 
-            
-
             if ((indicesStore.Sg != null) && (analysisSettings.ImageFile != null))
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
@@ -534,7 +532,7 @@ namespace AnalysisPrograms
 
 
 
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
+        private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
             int maxFreq = sonogram.NyquistFrequency;
@@ -650,17 +648,19 @@ namespace AnalysisPrograms
         public static AnalysisSettings GetAndCheckAllArguments(Arguments args)
         {
             // INIT ANALYSIS SETTINGS
-            AnalysisSettings analysisSettings = new AnalysisSettings();
-            analysisSettings.SourceFile = args.Source;
-            analysisSettings.ConfigFile = args.Config;
-            analysisSettings.AnalysisInstanceOutputDirectory = args.Output;
-            analysisSettings.AudioFile = null;
-            analysisSettings.EventsFile = null;
-            analysisSettings.SummaryIndicesFile = null;
-            analysisSettings.ImageFile = null;
+            var analysisSettings = new AnalysisSettings
+                                       {
+                                           SourceFile = args.Source,
+                                           ConfigFile = args.Config,
+                                           AnalysisInstanceOutputDirectory = args.Output,
+                                           AudioFile = null,
+                                           EventsFile = null,
+                                           SummaryIndicesFile = null,
+                                           ImageFile = null
+                                       };
 
-            TimeSpan tsStart = new TimeSpan(0, 0, 0);
-            TimeSpan tsDuration = new TimeSpan(0, 0, 0);
+            var start = TimeSpan.Zero;
+            var duration = TimeSpan.Zero;
             var configuration = new ConfigDictionary(args.Config);
             analysisSettings.ConfigDict = configuration.GetTable();
 
@@ -678,9 +678,9 @@ namespace AnalysisPrograms
             }
 
             return analysisSettings;
-        } // CheckAllArguments()
+        }
 
 
 
-    } //end class Acoustic
+    }
 }

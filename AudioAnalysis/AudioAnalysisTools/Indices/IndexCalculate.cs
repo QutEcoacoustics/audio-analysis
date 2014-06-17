@@ -29,12 +29,18 @@ namespace AudioAnalysisTools.Indices
     public class IndexCalculate
     {
         // public const string ANALYSIS_NAME = "Indices"; 
-        public const int DEFAULT_WINDOW_SIZE = 256;
-        public static int lowFreqBound = 500; // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        public static int midFreqBound = 3500;
-        public const int RESAMPLE_RATE = 17640; //chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
-        // public const int RESAMPLE_RATE = 22050;
+        public const int DefaultWindowSize = 256;
 
+        // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
+        private static int LowFreqBound = 500;
+
+        private static int MidFreqBound = 3500;
+
+        // chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
+        // public const int RESAMPLE_RATE = 22050;
+        private const int ResampleRate = 17640; 
+
+        private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// a set of parameters derived from ini file.
@@ -53,25 +59,27 @@ namespace AudioAnalysisTools.Indices
 
             public double FrameOverlap;
 
-
-            public Parameters(double _segmentDuration, int _segmentOverlap, int _resampleRate,
-                              int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
+            public Parameters(
+                double segmentDuration,
+                int segmentOverlap,
+                int resampleRate,
+                int frameLength,
+                int frameOverlap,
+                int lowFreqBound,
+                int drawSonograms,
+                string fileFormat)
             {
-                this.SegmentDuration = _segmentDuration;
-                this.SegmentOverlap = _segmentOverlap;
-                this.ResampleRate = _resampleRate;
-                this.FrameLength = _frameLength;
-                this.FrameOverlap = _frameOverlap;
-                this.LowFreqBound = _lowFreqBound;
+                this.SegmentDuration = segmentDuration;
+                this.SegmentOverlap = segmentOverlap;
+                this.ResampleRate = resampleRate;
+                this.FrameLength = frameLength;
+                this.FrameOverlap = frameOverlap;
+                this.LowFreqBound = lowFreqBound;
+
                 // DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; // av length of clusters > 1 frame.
                 // reportFormat    = _fileFormat;
-            } // Parameters
-        } // struct Parameters
-
-
-
-
-        // #########################################################################################################################################################
+            }
+        }
 
         /// <summary>
         /// Extracts indices from a single  segment of recording
@@ -96,11 +104,11 @@ namespace AudioAnalysisTools.Indices
             }
 
             // get parameters for the analysis
-            int frameSize = IndexCalculate.DEFAULT_WINDOW_SIZE;
+            int frameSize = IndexCalculate.DefaultWindowSize;
             frameSize = config.ContainsKey(AnalysisKeys.FRAME_LENGTH) ? ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config) : frameSize;
             int freqBinCount = frameSize / 2;
-            lowFreqBound = config.ContainsKey(AnalysisKeys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.LOW_FREQ_BOUND, config) : lowFreqBound;
-            midFreqBound = config.ContainsKey(AnalysisKeys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.MID_FREQ_BOUND, config) : midFreqBound;
+            LowFreqBound = config.ContainsKey(AnalysisKeys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.LOW_FREQ_BOUND, config) : LowFreqBound;
+            MidFreqBound = config.ContainsKey(AnalysisKeys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.MID_FREQ_BOUND, config) : MidFreqBound;
             double windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
 
             // get recording segment
@@ -113,7 +121,8 @@ namespace AudioAnalysisTools.Indices
 
             // EXTRACT ENVELOPE and SPECTROGRAM
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, windowOverlap);
-            //double[] avAbsolute = dspOutput.Average; //average absolute value over the minute recording
+            // average absolute value over the minute recording
+            //double[] avAbsolute = dspOutput.Average; 
 
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
             double[] signalEnvelope = dspOutput.Envelope;
@@ -124,30 +133,32 @@ namespace AudioAnalysisTools.Indices
             IndexValues indexValues = new IndexValues(freqBinCount, wavDuration, indexPropertiesConfigPath.ToFileInfo());  // total duration of recording
             indexValues.StoreIndex(InitialiseIndexProperties.KEYSegmentDuration, wavDuration);     // duration of recording in seconds
             double highAmplIndex = dspOutput.MaxAmplitudeCount / wavDuration.TotalSeconds;
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, highAmplIndex); //average high ampl rate per second
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYHighAmplitudeIndex, highAmplIndex); // average high ampl rate per second
             double clippingIndex = dspOutput.ClipCount / wavDuration.TotalSeconds;
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYClippingIndex, clippingIndex); //average clip rate per second
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYClippingIndex, clippingIndex); // average clip rate per second
 
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
-            if (avSignalEnvelope < 0.001) // although signal appears zero, this condition is required
+            // although signal appears zero, this condition is required
+            if (avSignalEnvelope < 0.001)
             {
                 return indexValues;
             }
             
             // i: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
-            double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
-            var bgNoise = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope), StandardDeviationCount);
-            var dBarray = SNR.TruncateNegativeValues2Zero(bgNoise.noiseReducedSignal);
+            // number of noise SDs to calculate noise threshold - determines severity of noise reduction
+            const double StandardDeviationCount = 0.1; 
+            var backgroundNoise = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope), StandardDeviationCount);
+            var dBArray = SNR.TruncateNegativeValues2Zero(backgroundNoise.noiseReducedSignal);
 
 
             // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
-            var activity = ActivityAndCover.CalculateActivity(dBarray, frameDuration);
+            var activity = ActivityAndCover.CalculateActivity(dBArray, frameDuration);
 
             indexValues.StoreIndex(InitialiseIndexProperties.KEYActivity, activity.percentActiveFrames); // fraction of frames having acoustic activity 
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYBackgroundNoise, bgNoise.NoiseMode);              // bg noise in dB
-            indexValues.StoreIndex(InitialiseIndexProperties.KEYSNR, bgNoise.Snr);                    // SNR
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYBackgroundNoise, backgroundNoise.NoiseMode);              // bg noise in dB
+            indexValues.StoreIndex(InitialiseIndexProperties.KEYSNR, backgroundNoise.Snr);                    // SNR
             indexValues.StoreIndex(InitialiseIndexProperties.KEYAvSNROfActiveFrames, activity.activeAvDB);     // snr calculated from active frames only
             indexValues.StoreIndex(InitialiseIndexProperties.KEYAvSignalAmplitude, 20 * Math.Log10(signalEnvelope.Average()));  // 10 times log of amplitude squared 
 
@@ -165,7 +176,7 @@ namespace AudioAnalysisTools.Indices
             int nyquistBin = dspOutput.NyquistBin;
 
             // calculate the bin id of boundary between low & mid frequency bins. This is to avoid low freq bins that contain anthrophony.
-            int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput.FreqBinWidth);
+            int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput.FreqBinWidth);
             // calculate reduced spectral width.
             int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
 
@@ -213,7 +224,7 @@ namespace AudioAnalysisTools.Indices
             // vi: calculate RAIN and CICADA indices.
             indexValues.StoreIndex(InitialiseIndexProperties.keyRAIN, 0.0);
             indexValues.StoreIndex(InitialiseIndexProperties.keyCICADA, 0.0);
-            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, wavDuration, frameDuration, amplitudeSpectrogram, LowFreqBound, MidFreqBound, dspOutput.FreqBinWidth);
             foreach (string key in dict.Keys)
             {
                 indexValues.StoreIndex(key, dict[key]);
@@ -243,7 +254,7 @@ namespace AudioAnalysisTools.Indices
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
-            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameDuration, lowFreqBound, midFreqBound, dspOutput.FreqBinWidth);
+            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameDuration, LowFreqBound, MidFreqBound, dspOutput.FreqBinWidth);
 
             //TO DO TODO TODO TODO TODO TODO  etc
             indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralCVR, spActivity.coverSpectrum);
@@ -298,7 +309,7 @@ namespace AudioAnalysisTools.Indices
                 sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-                scores.Add(new Plot("Decibels", DataTools.normalise(dBarray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
+                scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 //convert spectral peaks to frequency
@@ -312,7 +323,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // ######################################################################################################################################################
-            // return if activeFrameCount too small or segmentCount = 0  because no point doing clustering
+            // return if activeFrameCount too small or segmentCount == 0  because no point doing clustering
             if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
             {
                 indexValues.StoreIndex(InitialiseIndexProperties.keyCLUSTER_COUNT, 0);
@@ -329,8 +340,11 @@ namespace AudioAnalysisTools.Indices
             //#V#####################################################################################################################################################
 
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
-            double binaryThreshold = 0.06; // for deriving binary spectrogram
-            double rowSumThreshold = 2.0;  // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
+
+            // for deriving binary spectrogram
+            const double binaryThreshold = 0.06;
+            // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
+            const double rowSumThreshold = 2.0;
             var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), binaryThreshold, rowSumThreshold);
 
@@ -369,7 +383,7 @@ namespace AudioAnalysisTools.Indices
                 //List<double[]> clusterWts = tuple_Clustering.Item4;
                 int[] clusterHits = clusterInfo.clusterHits2;
                 string label = String.Format(clusterInfo.clusterCount + " Clusters");
-                if (clusterHits == null) clusterHits = new int[dBarray.Length];      // array of zeroes
+                if (clusterHits == null) clusterHits = new int[dBArray.Length];      // array of zeroes
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0));  // location of cluster hits
             }
 
@@ -445,12 +459,9 @@ namespace AudioAnalysisTools.Indices
         //}
 
 
-        private static readonly ILog Logger =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
- 
 
-        //############################################################################################################################################################
+
         /// <summary>
         /// This methods adds a colour code at the top of spectra where the high amplitude and clipping indices exceed an arbitrary threshold value.
         /// IMPORTANT: IT ASSUMES THE ultimate COLOUR MAPS for the LDSPectrograms are BGN-AVG-CVR and ACI-ENT-EVN.
@@ -459,12 +470,16 @@ namespace AudioAnalysisTools.Indices
         /// <param name="spectra"></param>
         /// <param name="highAmplCountsPerSecond"></param>
         /// <param name="clipCountsPerSecond"></param>
-        public static void MarkClippedSpectra(Dictionary<string, double[]> spectra, double highAmplCountsPerSecond, double clipCountsPerSecond)  
+        public static void MarkClippedSpectra(Dictionary<string, double[]> spectra, double highAmplCountsPerSecond, double clipCountsPerSecond)
         {
-            if (highAmplCountsPerSecond <= 0.02) return; //Ignore when index values are small
+            // Ignore when index values are small
+            if (highAmplCountsPerSecond <= 0.02)
+            {
+                return; 
+            }
 
             int freqBinCount = spectra[InitialiseIndexProperties.KEYspectralBGN].Length;
-            for (int i = (freqBinCount - 20); i < freqBinCount; i++)
+            for (int i = freqBinCount - 20; i < freqBinCount; i++)
             {
                 // this will paint top of each spectrum a red colour.
                 spectra[InitialiseIndexProperties.KEYspectralBGN][i] = 0.0; // red 0.0 = the maximum possible value
@@ -477,7 +492,11 @@ namespace AudioAnalysisTools.Indices
                 spectra[InitialiseIndexProperties.KEYspectralEVN][i] = 0.0;
             }
 
-            if (clipCountsPerSecond <= 0.05) return; //Ignore when index values are very small
+            // Ignore when index values are very small
+            if (clipCountsPerSecond <= 0.05)
+            {
+                return;
+            }
 
             // Setting these values above the normalisation MAX will turn bin N-5 white
             spectra[InitialiseIndexProperties.KEYspectralBGN][freqBinCount - 5] = 0.0; // red
@@ -487,7 +506,12 @@ namespace AudioAnalysisTools.Indices
             spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 5] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 5] = 100.0;
 
-            if (clipCountsPerSecond <= 0.5) return; //Ignore when index values are small
+            // Ignore when index values are small
+            if (clipCountsPerSecond <= 0.5)
+            {
+                return;
+            }
+
             // Setting these values above the normalisation MAX will turn bin N-7 white
             spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 7] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 7] = 100.0;
@@ -495,7 +519,12 @@ namespace AudioAnalysisTools.Indices
             spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 7] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 7] = 100.0;
 
-            if (clipCountsPerSecond <= 1.0) return; //Ignore when index values are small
+            // Ignore when index values are small
+            if (clipCountsPerSecond <= 1.0)
+            {
+                return;
+            }
+
             // Setting these values above the normalisation MAX will turn bin N-9 white
             spectra[InitialiseIndexProperties.KEYspectralAVG][freqBinCount - 9] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralCVR][freqBinCount - 9] = 100.0;
@@ -503,8 +532,6 @@ namespace AudioAnalysisTools.Indices
             spectra[InitialiseIndexProperties.KEYspectralSPT][freqBinCount - 9] = 100.0;
             spectra[InitialiseIndexProperties.KEYspectralEVN][freqBinCount - 9] = 100.0;
 
-        } // MarkClippedSpectra()
-
-     
-    } // class AcousticIndicesCalculate
+        }
+    }
 }

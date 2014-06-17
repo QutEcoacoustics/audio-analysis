@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
         public const string ReportFileExt = ".csv";
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
-        /// <summary>
+         /*/// <summary>
         /// 
         /// </summary>
         /// <param name="analyserResults"></param>  
@@ -44,7 +44,7 @@ namespace AudioAnalysisTools
             }
             return mergedDatatable;
         }
-        /*
+       
         public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
         {
             var eventCount = 0;
@@ -264,6 +264,7 @@ namespace AudioAnalysisTools
         //    return masterDataTable;
         //}
 
+        /*
         /// <summary>
         /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
         /// Different things happen depending on the content of the analysis data table
@@ -289,7 +290,7 @@ namespace AudioAnalysisTools
             var unitTime = new TimeSpan(0, 0, 60);
             indicesDatatable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, durationOfTheOriginalAudioFile, scoreThreshold); //convert to datatable of indices
             return System.Tuple.Create(masterDataTable, indicesDatatable);
-        }
+        }*/
 
         private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 

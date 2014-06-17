@@ -1,18 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using AnalysisBase.ResultBases;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AbstractStrongAnalyser.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Provides sensible defaults for some of the functionality required by IAnalyser2.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisBase
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    using AnalysisBase.ResultBases;
+
     /// <summary>
-    /// Provides sensible defaults for some of the functionality required by IAnalyser2
+    /// Provides sensible defaults for some of the functionality required by <c>IAnalyser2</c>.
     /// </summary>
-    public abstract class IAnalyser2Abstract : IAnalyser2
+    public abstract class AbstractStrongAnalyser : IAnalyser2
     {
         public abstract string DisplayName { get; }
+
         public abstract string Identifier { get; }
 
         public virtual AnalysisSettings DefaultSettings
@@ -25,12 +34,16 @@ namespace AnalysisBase
 
 
         public abstract AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
+
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
+
         public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
 
         public abstract void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results);
 
-        public virtual IndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime,
+        public virtual IndexBase[] ConvertEventsToSummaryIndices(
+            IEnumerable<EventBase> events,
+            TimeSpan unitTime,
             TimeSpan duration,
             double scoreThreshold)
         {
@@ -51,21 +64,25 @@ namespace AnalysisBase
                 unitCount += 1;
             }
 
-            var eventsPerUnitTime = new int[unitCount]; //to store event counts
-            var bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
+            // to store event counts
+            var eventsPerUnitTime = new int[unitCount];
 
-            foreach (EventBase anEvent in events)
+            // to store counts of high scoring events
+            var bigEvsPerUnitTime = new int[unitCount];
+
+            foreach (var anEvent in events)
             {
                 double eventStart = anEvent.EventStartAbsolute ?? anEvent.EventStartSeconds;
-                // (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                //// (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
                 double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
-                int timeUnit = (int) (eventStart / unitTime.TotalSeconds);
+                var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
-                // TODO: why not -gt, ask michael
-                if (eventScore != 0.0)
+                // NOTE: eventScore filter replaced with greater then as opposed to not equal to
+                if (eventScore >= 0.0)
                 {
                     eventsPerUnitTime[timeUnit]++;
                 }
+
                 if (eventScore > scoreThreshold)
                 {
                     bigEvsPerUnitTime[timeUnit]++;
