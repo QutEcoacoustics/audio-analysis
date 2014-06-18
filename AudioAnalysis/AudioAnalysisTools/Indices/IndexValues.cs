@@ -1,29 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-using AnalysisBase.ResultBases;
-using TowseyLibrary;
-using AnalysisBase;
-using AudioAnalysisTools.Indices;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IndexValues.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This class is used to store the values of all indices regardless of type.
+//   They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
+//   SOme of the functionality is in the parent class IndexBase.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-
-
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    using AnalysisBase.ResultBases;
+
+    using TowseyLibrary;
+
     /// <summary>
     /// This class is used to store the values of all indices regardless of type.
     /// They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
     /// SOme of the functionality is in the parent class IndexBase.
     /// </summary>
-    public class IndexValues : IndexBase
+    public class IndexValues : SummaryIndexBase
     {
 
         // store indices in relevant dictionaries
         // dictionary to store summary indices of type double and int
-        public void StoreIndex(string key, double val)
+       /* public void StoreIndex(string key, double val)
         {
             SummaryIndicesOfTypeDouble[key] = val;
         }
@@ -48,7 +54,7 @@ namespace AudioAnalysisTools
             }
             else
                 this.SpectralIndices.Add(key, spectrum);
-        }
+        }*/
 
 
 
@@ -58,22 +64,22 @@ namespace AudioAnalysisTools
         private double[,] hits = null;
         public double[,] Hits
         {
-            get { return hits; }
-            set { hits = value; }
+            get { return this.hits; }
+            set { this.hits = value; }
         }
 
         private List<Plot> trackScores = new List<Plot>();
         public List<Plot> TrackScores
         {
-            get { return trackScores; }
-            set { trackScores = value; }
+            get { return this.trackScores; }
+            set { this.trackScores = value; }
         }
 
         private List<SpectralTrack> tracks = null;
         public List<SpectralTrack> Tracks
         {
-            get { return tracks; }
-            set { tracks = value; }
+            get { return this.tracks; }
+            set { this.tracks = value; }
         }
 
 
@@ -106,7 +112,7 @@ namespace AudioAnalysisTools
 
             }
 
-            this.SpectralIndices = InitialiseSpectra(freqBinCount, dictOfIndexProperties);
+            this.SpectralIndices = this.InitialiseSpectra(freqBinCount, dictOfIndexProperties);
         }
 
 

@@ -384,7 +384,7 @@ namespace AnalysisPrograms
             return result;
         }
 
-        public IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        public IEnumerable<SummaryIndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
         {
             throw new NotImplementedException();
         }
@@ -394,7 +394,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results.Cast<RidgeEvent>());
         }
 
-        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
             Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
@@ -408,7 +408,7 @@ namespace AnalysisPrograms
             AnalysisSettings settings,
             FileSegment inputFileSegment,
             EventBase[] events,
-            IndexBase[] indices,
+            SummaryIndexBase[] indices,
             SpectrumBase[] spectra,
             AnalysisResult2[] results)
         {

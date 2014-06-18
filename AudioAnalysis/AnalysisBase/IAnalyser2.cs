@@ -62,7 +62,7 @@ namespace AnalysisBase
         /// </summary>
         /// <param name="destination">The file to write to.</param>
         /// <param name="results">The results to write.</param>
-        void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
+        void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results);
 
         /// <summary>
         /// Ensures abstract types are downcast by the analyzer and written to file.
@@ -79,7 +79,7 @@ namespace AnalysisBase
         /// <param name="duration">The duration of audio for the period analyzed that produced <c>events</c>.</param>
         /// <param name="scoreThreshold">A threshold to filter out low-scoring events.</param>
         /// <returns>A set of summary indices that describe the input events.</returns>
-        IndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
+        SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold);
 
         /// <summary>
         /// Post-processing for an entire analysis.
@@ -90,6 +90,6 @@ namespace AnalysisBase
         /// <param name="indices">The summary indices produced so far.</param>
         /// <param name="spectra">The spectra produced so far.</param>
         /// <param name="results">The raw result objects produced so far.</param>
-        void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
+        void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
     }
 }

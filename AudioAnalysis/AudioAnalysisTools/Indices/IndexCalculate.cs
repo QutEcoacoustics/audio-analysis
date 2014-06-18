@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticFeatures.cs" company="MQUTeR">
-//   -
+// <copyright file="IndexCalculate.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
 //   Defines the AcousticFeatures type.
@@ -19,12 +19,14 @@ namespace AudioAnalysisTools.Indices
     using System.Text;
 
     using AnalysisBase;
-    using AudioAnalysisTools.StandardSpectrograms;
+
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using TowseyLibrary;
 
     using log4net;
+
+    using TowseyLibrary;
 
     public class IndexCalculate
     {
@@ -45,19 +47,19 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
-        public struct Parameters
+        public class Parameters
         {
-            public int FrameLength;
+            public int FrameLength { get; set;}
 
-            public int ResampleRate;
+            public int ResampleRate { get; set; }
 
-            public int LowFreqBound;
+            public int LowFreqBound { get; set; }
 
-            public int SegmentOverlap;
+            public int SegmentOverlap { get; set; }
 
-            public double SegmentDuration;
+            public double SegmentDuration { get; set; }
 
-            public double FrameOverlap;
+            public double FrameOverlap { get; set; }
 
             public Parameters(
                 double segmentDuration,

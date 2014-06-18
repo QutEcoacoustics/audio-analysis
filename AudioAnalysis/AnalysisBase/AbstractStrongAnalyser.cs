@@ -37,11 +37,11 @@ namespace AnalysisBase
 
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
 
-        public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results);
+        public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results);
 
         public abstract void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results);
 
-        public virtual IndexBase[] ConvertEventsToSummaryIndices(
+        public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(
             IEnumerable<EventBase> events,
             TimeSpan unitTime,
             TimeSpan duration,
@@ -89,7 +89,7 @@ namespace AnalysisBase
                 }
             }
 
-            var indices = new IndexBase[eventsPerUnitTime.Length];
+            var indices = new SummaryIndexBase[eventsPerUnitTime.Length];
 
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
@@ -106,6 +106,6 @@ namespace AnalysisBase
 
         }
 
-        public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
+        public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
     }
 }

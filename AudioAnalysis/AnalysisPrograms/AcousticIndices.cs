@@ -384,7 +384,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
             throw new NotImplementedException();
         }
@@ -394,7 +394,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public IndexBase[] ConvertEventsToSummaryIndices(
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(
             IEnumerable<EventBase> events,
             TimeSpan unitTime,
             TimeSpan duration,
@@ -403,7 +403,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, IndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results)
+        public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results)
         {
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;

@@ -209,7 +209,7 @@ namespace AudioAnalysisTools
             eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 
-        public static void CorrectSummaryIndex(AnalysisResult2 result, IndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInResultSoFar)
+        public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInResultSoFar)
         {
             indexToBeFixed.IndexCount = indexToBeFixed;
         }
@@ -295,7 +295,7 @@ namespace AudioAnalysisTools
         private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 
         public static void ConvertEventsToIndices(IAnalyser2 analyser, 
-            EventBase[] events, ref IndexBase[] indices, TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
+            EventBase[] events, ref SummaryIndexBase[] indices, TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
         {
             if (events == null && indices == null)
             {
@@ -454,7 +454,7 @@ namespace AudioAnalysisTools
         }
 
         public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
-            DirectoryInfo outputDirectory, IEnumerable<IndexBase> indices) 
+            DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices) 
         {
             return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }

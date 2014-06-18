@@ -12,7 +12,7 @@ namespace AnalysisBase.ResultBases
     /// <summary>
     /// 
     /// </summary>
-    public class EventIndex : IndexBase
+    public class EventIndex : SummaryIndexBase
     {
         public int EventsTotal { get; set; }
 
