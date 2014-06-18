@@ -95,9 +95,7 @@ namespace AnalysisBase
             {
                 var newIndex = new EventIndex();
 
-                int unitId = (int) (i * unitTime.TotalMinutes);
-
-                newIndex.StartOffsetMinute = unitId;
+                newIndex.SegmentStartOffset = unitTime.Multiply(i);
                 newIndex.EventsTotal = eventsPerUnitTime[i];
                 newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
 

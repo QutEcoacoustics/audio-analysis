@@ -205,7 +205,7 @@ namespace AudioAnalysisTools
             eventToBeFixed.EventStartAbsolute = absoluteOffset;
 
             // just in case the event was in a segment longer than 60 seconds, rebase values
-            eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
+            ////eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
             eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 

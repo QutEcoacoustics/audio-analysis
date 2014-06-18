@@ -65,7 +65,7 @@ namespace AudioBrowser
 
         public FileInfo SonogramImageFile { get; private set; }
 
-        public IAnalyser Analyser { get; private set; }
+        public IAnalyser2 Analyser { get; private set; }
 
         public Dictionary<string, string> AnalysisParams { get; private set; }
 

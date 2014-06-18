@@ -42,7 +42,7 @@ namespace AnalysisBase.ResultBases
             }
             set
             {
-                this.StartOffsetMinute = (int)(value).TotalMinutes;
+                this.StartOffsetMinute = (int)value.TotalMinutes;
                 this.segmentStartOffset = value;
             }
         }

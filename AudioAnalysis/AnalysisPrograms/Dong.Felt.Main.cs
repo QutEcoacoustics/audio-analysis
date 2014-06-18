@@ -1,37 +1,40 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Dong.Felt.Main.cs" company="MQUTeR">
-//   -
+// <copyright file="Dong.Felt.Main.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
 //   The felt analysis.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Linq;
-using Systems;
-using AnalysisBase.ResultBases;
-
-namespace Dong.Felt
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+
     using Acoustics.Shared;
-    using PowerArgs;
-    using log4net;
-    using AnalysisPrograms.Production;
 
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
+
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools;
-    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using TowseyLibrary;
+
+    using Dong.Felt;
     using Dong.Felt.Representations;
 
-    
+    using log4net;
+
+    using PowerArgs;
+
     /// <summary>
     /// The felt analysis.
     /// </summary>
@@ -293,7 +296,7 @@ namespace Dong.Felt
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
-            this.Orientation = (Direction) pointOfInterest.OrientationCategory;
+            this.Orientation = (Direction)pointOfInterest.OrientationCategory;
             this.FrameMaximum = sonogram.FrameCount;
             this.BinMaximum = sonogram.Configuration.FreqBinCount;
 
@@ -328,7 +331,7 @@ namespace Dong.Felt
             
             var result = new AnalysisResult2(analysisSettings, recording.Duration())
                          {
-                             AnalysisIdentifier = Identifier
+                             AnalysisIdentifier = this.Identifier
                          };
 
             if (recording.SampleRate != 22050)
@@ -362,7 +365,7 @@ namespace Dong.Felt
 
             if (analysisSettings.EventsFile != null)
             {
-                WriteEventsFile(analysisSettings.EventsFile, result.Events);
+                this.WriteEventsFile(analysisSettings.EventsFile, result.Events);
             }
 
             if (analysisSettings.SummaryIndicesFile != null)
