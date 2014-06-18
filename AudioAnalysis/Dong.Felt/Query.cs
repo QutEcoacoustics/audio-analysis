@@ -118,7 +118,7 @@
             var nhFrequencyLength = neighbourhoodLength * frequencyScale;
             var nhFrameLength = neighbourhoodLength * timeScale;
             // get a greater value than the parameter for enlarging the later used NH boundary- enlarge.
-            var enlargedOffset = 0;
+            var enlargedOffset = 1;
             // ceiling is try to increase the value.
             var nhCountInRow = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
             var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
@@ -129,11 +129,11 @@
             //var nhLowerFreq = (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
             if (this.nhStartRowIndex + nhCountInRow >= this.maxNhRowIndex)
             {
-                this.nhStartColIndex--;
+                this.nhStartRowIndex--;
             }
             if (this.nhStartColIndex + nhCountInCol >= this.maxNhColIndex)
             {
-                this.nhStartRowIndex--;
+                this.nhStartColIndex--;
             }
             this.nhCountInRow = nhCountInRow;
             this.nhCountInColumn = nhCountInCol;
