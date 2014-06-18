@@ -55,7 +55,7 @@ namespace AnalysisBase
         /// Gets or sets summary indices results.
         /// Should typically contain just 1 result.
         /// </summary>
-        public IndexBase[] SummaryIndices { get; set; }
+        public SummaryIndexBase[] SummaryIndices { get; set; }
 
         /// <summary>
         /// Gets or sets spectral indices results.

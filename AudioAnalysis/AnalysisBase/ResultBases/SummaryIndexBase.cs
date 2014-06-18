@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexBase.cs" company="QutBioacoustics">
+// <copyright file="SummaryIndexBase.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
@@ -12,12 +12,12 @@ namespace AnalysisBase.ResultBases
     /// <summary>
     /// 
     /// </summary>
-    public class IndexBase : ResultBase
+    public class SummaryIndexBase : ResultBase
     {
 
 
 
-        public IndexBase IndexCount { get; set; }
+        public SummaryIndexBase IndexCount { get; set; }
 
 
     }
