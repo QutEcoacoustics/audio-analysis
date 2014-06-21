@@ -394,7 +394,7 @@ namespace AnalysisPrograms
                 {
                     double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
                     SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(amplitudeArray, StandardDeviationCount);
-                    amplitudeArray = bgn.noiseReducedSignal;
+                    amplitudeArray = bgn.NoiseReducedSignal;
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);

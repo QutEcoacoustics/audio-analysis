@@ -16,6 +16,8 @@ using log4net;
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
+    using AudioAnalysisTools.Indices;
+
     public partial class AnalyseLongRecording
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

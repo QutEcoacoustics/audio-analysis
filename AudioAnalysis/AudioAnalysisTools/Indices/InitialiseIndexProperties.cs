@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.Indices
     public static class InitialiseIndexProperties
     {
 
-        //KEYS FOR SUMMARY INDICES
+        // KEYS FOR SUMMARY INDICES
         // WARNING!!! DO NOT change the below keys without ALSO changing in the IndexPropertiesConfig.yml file.
         public const string KEYRankOrder = "RankOrder";
         public const string KEYStartMinute = "StartMinute";

@@ -37,7 +37,7 @@ namespace AnalysisBase.ResultBases
 
         public T GetSpectrum<T>(string key)
         {
-            
+            return default(T);
         }
 
         public void SetSpectrm<T>(string key, T[] spectrum)

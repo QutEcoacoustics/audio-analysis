@@ -127,7 +127,7 @@ namespace AudioAnalysisTools.Indices
             // i: FRAME ENERGIES - 
             double StandardDeviationCount = 0.1;
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signal), StandardDeviationCount); //use Lamel et al.
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB) activeFrames[i] = true;
