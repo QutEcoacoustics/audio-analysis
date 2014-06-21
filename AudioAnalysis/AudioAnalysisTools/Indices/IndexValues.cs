@@ -76,18 +76,40 @@ namespace AudioAnalysisTools.Indices
         }
 
         private List<SpectralTrack> tracks = null;
+
+        public double TemporalEntropy { get; set; };
+
         public List<SpectralTrack> Tracks
         {
             get { return this.tracks; }
             set { this.tracks = value; }
         }
 
+        public double HighAmplitudeIndex { get; set; }
+
+        public double ClippingIndex { get; set; }
+
+        public double Activity { get; set; }
+
+        public double BackgroundNoise { get; set; }
+
+        public double Snr { get; set; }
+
+        public double AvgSnrOfActiveFrames { get; set; }
+
+        public double AvgSignalAmplitude { get; set; }
+
+        public double EventsPerSecond { get; set; }
+
+        public TimeSpan AvgEventDuration { get; set; }
 
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
         public IndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
         {
+            this.SegmentDuration = wavDuration;
+
             SummaryIndicesOfTypeDouble   = new Dictionary<string, double>();
             SummaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
 
@@ -99,7 +121,11 @@ namespace AudioAnalysisTools.Indices
             {
                 IndexProperties index = dictOfIndexProperties[key];
 
-                if (index.DataType == typeof(double[])) continue; // ignore the spectral indices
+                // ignore the spectral indices
+                if (index.DataType == typeof(double[]))
+                {
+                    continue;
+                }
 
                 if (index.DataType == typeof(TimeSpan))
                 {
@@ -141,5 +167,10 @@ namespace AudioAnalysisTools.Indices
             return spectra;
         }
 
-    } // class IndexValues : IndexBase
+    }
+
+    public class SpectraValues : SpectrumBase
+    {
+        
+    }
 }

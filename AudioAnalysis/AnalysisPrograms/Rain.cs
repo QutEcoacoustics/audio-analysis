@@ -343,7 +343,7 @@ namespace AnalysisPrograms
             // convert signal to decibels and subtract background noise.
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalextract.Envelope), StandardDeviationCount);
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
 
             //// vii: remove background noise from the full spectrogram i.e. BIN 1 to Nyquist

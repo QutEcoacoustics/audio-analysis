@@ -207,7 +207,7 @@ namespace AnalysisPrograms
             //iv: FRAME ENERGIES
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(envelope), StandardDeviationCount);
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
             int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, windowSize, sr);

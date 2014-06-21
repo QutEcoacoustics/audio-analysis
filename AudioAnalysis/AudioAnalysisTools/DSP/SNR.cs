@@ -106,7 +106,7 @@ namespace AudioAnalysisTools.DSP
         {
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var results = SubtractBackgroundNoiseFromWaveform_dB(this.Decibels, StandardDeviationCount);
-            this.Decibels = results.noiseReducedSignal;
+            this.Decibels = results.NoiseReducedSignal;
             this.NoiseSubtracted = results.NoiseSd; //Q
             this.Min_dB = results.MinDb; //min decibels of all frames 
             this.Max_dB = results.MaxDb; //max decibels of all frames 
@@ -427,7 +427,7 @@ namespace AudioAnalysisTools.DSP
             //C: REMOVE NOISE FROM INTENSITY ARRAY
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(intensity, StandardDeviationCount);
-            var tuple = System.Tuple.Create(bgn.noiseReducedSignal, bgn.NoiseMode, bgn.NoiseSd);
+            var tuple = System.Tuple.Create(bgn.NoiseReducedSignal, bgn.NoiseMode, bgn.NoiseSd);
             return tuple;
         }
 
@@ -448,9 +448,13 @@ namespace AudioAnalysisTools.DSP
             int maxBin = (int)Math.Round(maxHz / binWidth);
             int bandCount = maxBin - minBin + 1;
             double[] intensity = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
+            for (int i = 0; i < frameCount; i++)
             {
-                for (int j = minBin; j < maxBin; j++) intensity[i] += sonogram[i, j];
+                for (int j = minBin; j < maxBin; j++)
+                {
+                    intensity[i] += sonogram[i, j];
+                }
+
                 intensity[i] /= bandCount;
             }
             return intensity;
@@ -459,9 +463,9 @@ namespace AudioAnalysisTools.DSP
 
 
 
-        //########################################################################################################################################################
-        //# START STATIC METHODS TO DO WITH NOISE REDUCTION FROM WAVEFORMS E.g. not spectrograms. See further below for spectrograms #############################
-        //########################################################################################################################################################
+        // ########################################################################################################################################################
+        // # START STATIC METHODS TO DO WITH NOISE REDUCTION FROM WAVEFORMS E.g. not spectrograms. See further below for spectrograms #############################
+        // ########################################################################################################################################################
 
 
         /// <summary>
@@ -491,7 +495,16 @@ namespace AudioAnalysisTools.DSP
             double threshold = noise_mode + (noise_SD * SD_COUNT);
             double snr = max_dB - threshold;
             double[] dBFrames = SubtractAndTruncate2Zero(dBarray, threshold);
-            return new BackgroundNoise(dBFrames, noise_mode, min_dB, max_dB, snr, noise_SD, threshold);
+            return new BackgroundNoise()
+            {
+                NoiseReducedSignal = dBFrames,
+                NoiseMode = noise_mode,
+                MinDb = min_dB,
+                MaxDb = max_dB,
+                Snr = snr,
+                NoiseSd = noise_SD,
+                NoiseThreshold = threshold
+            };
         }
 
 
@@ -510,31 +523,43 @@ namespace AudioAnalysisTools.DSP
         public static BackgroundNoise SubtractBackgroundNoiseFromSignal(double[] array, double SD_COUNT)
         {
             BackgroundNoise bgn = CalculateModalBackgroundNoiseFromSignal(array, SD_COUNT);         
-            bgn.noiseReducedSignal = SubtractAndTruncate2Zero(array, bgn.NoiseThreshold);
+            bgn.NoiseReducedSignal = SubtractAndTruncate2Zero(array, bgn.NoiseThreshold);
             return bgn;
         }
 
         public static BackgroundNoise CalculateModalBackgroundNoiseFromSignal(double[] array, double SD_COUNT)
         {
             int binCount = (int)(array.Length / 4); // histogram width is adjusted to length of signal
-            if (binCount > 500) binCount = 500;
+            if (binCount > 500)
+            {
+                binCount = 500;
+            }
             double min, max, binWidth;
             int[] histo = Histogram.Histo(array, binCount, out binWidth, out min, out max);
-            //Console.WriteLine("BindWidth = "+ binWidth);
+            ////Log.WriteLine("BindWidth = "+ binWidth);
 
             int smoothingwindow = 3;
             if (binCount > 250) smoothingwindow = 5;
             double[] smoothHisto = DataTools.filterMovingAverage(histo, smoothingwindow);
-            //DataTools.writeBarGraph(histo);
+            ////DataTools.writeBarGraph(histo);
 
             int indexOfMode, indexOfOneSD;
             SNR.GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneSD);
 
-            double Q = min + ((indexOfMode + 1) * binWidth); //modal noise level
+            double Q = min + ((indexOfMode + 1) * binWidth); // modal noise level
             double noise_SD = (indexOfMode - indexOfOneSD) * binWidth; // SD of the noise
             double threshold = Q + (noise_SD * SD_COUNT);
             double snr = max - threshold;
-            return new BackgroundNoise(null, Q, min, max, snr, noise_SD, threshold);
+            return new BackgroundNoise()
+                       {
+                           NoiseReducedSignal = null,
+                           NoiseMode = Q,
+                           MinDb = min,
+                           MaxDb = max,
+                           Snr = snr,
+                           NoiseSd = noise_SD,
+                           NoiseThreshold = threshold
+                       };
         }
 
         /// <summary>
@@ -659,14 +684,14 @@ namespace AudioAnalysisTools.DSP
             if (nrt == NoiseReductionType.STANDARD)
             {
                 NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
+                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
                 m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
             }
             else if (nrt == NoiseReductionType.MODAL)
             {
                 SD_COUNT = parameter;
                 NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the modal profile
+                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the modal profile
                 m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
             }
             else if (nrt == NoiseReductionType.LOWEST_PERCENTILE) //
@@ -682,7 +707,7 @@ namespace AudioAnalysisTools.DSP
             else if (nrt == NoiseReductionType.BINARY)
             {
                 NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
+                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
                 m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
                 m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
             }
@@ -724,7 +749,7 @@ namespace AudioAnalysisTools.DSP
             double SD_COUNT = 0.1; // number of noise standard deviations used to calculate noise threshold - determines severity of noise reduction
             double backgroundThreshold = 2.0; //SETS MIN DECIBEL BOUND
             NoiseProfile profile = SNR.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile            
-            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
+            double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
             return NoiseReduce_Standard(matrix, smoothedProfile, backgroundThreshold);
         }
 
@@ -750,7 +775,7 @@ namespace AudioAnalysisTools.DSP
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange, double SD_COUNT)
         {
             NoiseProfile profile = SNR.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile
-            double[] smoothedProfile = DataTools.filterMovingAverage(profile.noiseThresholds, 7); //smooth the noise profile
+            double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
             double[,] mnr = SNR.SubtractBgNoiseFromSpectrogram(matrix, smoothedProfile);
             mnr = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);
             return mnr;
@@ -831,7 +856,15 @@ namespace AudioAnalysisTools.DSP
                 minsOfBins[col] = binNoise.MinDb;
                 maxsOfBins[col] = binNoise.MaxDb;
             }
-            var profile = new NoiseProfile(noiseMode, noiseSD, noiseThreshold, minsOfBins, maxsOfBins);
+
+            var profile = new NoiseProfile()
+                              {
+                                  NoiseMode = noiseMode,
+                                  NoiseSd = noiseSD,
+                                  NoiseThresholds = noiseThreshold,
+                                  MinDb = minsOfBins,
+                                  MaxDb = maxsOfBins
+                              };
             return profile;
         }
 
@@ -1105,46 +1138,35 @@ namespace AudioAnalysisTools.DSP
 
         public class BackgroundNoise
         {
-            public double[] noiseReducedSignal { get; set; }
+            public double[] NoiseReducedSignal { get; set; }
 
             public double NoiseMode { get; set; }
+
             public double NoiseSd { get; set; }
+
             public double NoiseThreshold { get; set; }
+
             public double MinDb { get; set; }
+
             public double MaxDb { get; set; }
+
             public double Snr { get; set; }
+        }
 
-
-            public BackgroundNoise(double[] reducedSignal, double noiseMode, double min_DB, double max_DB, double snr, double stdDev, double threshold)
-            {
-                this.noiseReducedSignal = reducedSignal;
-                this.NoiseMode = noiseMode;
-                this.NoiseSd = stdDev;
-                this.NoiseThreshold = threshold;
-                this.MinDb = min_DB;
-                this.MaxDb = max_DB;
-                this.Snr = snr;
-            }
-        } //class BackgroundNoise
-
-        public class NoiseProfile // contains info re noise profile of an entire spectrogram
+        /// <summary>
+        /// contains info re noise profile of an entire spectrogram
+        /// </summary>
+        public class NoiseProfile 
         {
-            public double[] noiseMode { get; set; }
-            public double[] noiseSd   { get; set; }
-            public double[] noiseThresholds { get; set; }
-            public double[] minDb { get; set; }
-            public double[] maxDb { get; set; }
+            public double[] NoiseMode { get; set; }
 
-            public NoiseProfile(double[] _noiseMode, double[] _noiseSD, double[] _noiseThreshold, double[] _min_DB, double[] _max_DB)
-            {
-                this.noiseMode = _noiseMode;
-                this.noiseSd   = _noiseSD;
-                this.noiseThresholds = _noiseThreshold;
-                this.minDb     = _min_DB;
-                this.maxDb     = _max_DB;
-            }
-        } //class NoiseProfile
+            public double[] NoiseSd { get; set; }
 
-        //************************************************************
-    } // end class
+            public double[] NoiseThresholds { get; set; }
+
+            public double[] MinDb { get; set; }
+
+            public double[] MaxDb { get; set; }
+        }
+    }
 }

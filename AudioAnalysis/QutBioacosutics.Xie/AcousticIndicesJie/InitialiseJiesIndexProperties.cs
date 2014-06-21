@@ -8,6 +8,8 @@ using AudioAnalysisTools;
 
 namespace AcousticIndicesJie
 {
+    using AudioAnalysisTools.Indices;
+
     ///
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC SUMMARY INDEX, DO THE FOLLOWING:
     /// 1) Create a KEY or IDENTIFIER for the index in the list below.

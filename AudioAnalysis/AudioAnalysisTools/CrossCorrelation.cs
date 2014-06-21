@@ -184,7 +184,7 @@ out double[] r)
                  {
                      double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
                      SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(amplitudeArray, StandardDeviationCount);
-                     amplitudeArray = bgn.noiseReducedSignal;
+                     amplitudeArray = bgn.NoiseReducedSignal;
                  }
                  //double noiseThreshold = 0.005;
                  //for (int i = 1; i < amplitudeArray.Length - 1; i++)
@@ -403,7 +403,7 @@ out double[] r)
              {
                  double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
                  SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(dBArray, StandardDeviationCount);
-                 dBArray = bgn.noiseReducedSignal;
+                 dBArray = bgn.NoiseReducedSignal;
              }
 
              bool[] peaks = DataTools.GetPeaks(dBArray);
