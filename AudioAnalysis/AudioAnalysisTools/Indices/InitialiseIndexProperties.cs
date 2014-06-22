@@ -575,7 +575,7 @@ namespace AudioAnalysisTools.Indices
             foreach (string key in properties.Keys)
             {
                 IndexProperties ic = properties[key];
-                weightArray[count] = ic.comboWeight;
+                weightArray[count] = ic.ComboWeight;
                 count++;
             }
             return weightArray;

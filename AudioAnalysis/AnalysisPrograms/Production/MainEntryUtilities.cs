@@ -259,7 +259,7 @@ namespace AnalysisPrograms
                 {
                     action = (ex as ArgException).Action;
                 }
-                else if (PowerArgs.ArgException.LastAction.NotWhitespace())
+                else if (PowerArgs.ArgException.LastAction.IsNotWhitespace())
                 {
                     action = PowerArgs.ArgException.LastAction;
                 }

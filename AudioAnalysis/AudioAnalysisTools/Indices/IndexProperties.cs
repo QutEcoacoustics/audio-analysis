@@ -14,12 +14,56 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
     using System.IO;
 
     using Acoustics.Shared;
 
     using TowseyLibrary;
+
+    using YamlDotNet.Dynamic;
+
+    public class FindIndicesConfig
+    {
+        public const string KeyIndexPropertiesConfig = "INDEX_PROPERTIES_CONFIG";
+
+        public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
+        {
+            if (configuration == null)
+            {
+                return null;
+            }
+
+            var indexPropertiesConfigPath = (string)configuration[KeyIndexPropertiesConfig];
+
+            if (indexPropertiesConfigPath.IsNullOrEmpty())
+            {
+                return null;
+            }
+
+            if (!Path.IsPathRooted(indexPropertiesConfigPath) && originalConfigFile != null)
+            {
+                Debug.Assert(originalConfigFile.Directory != null, "originalConfigFile.Directory != null");
+
+                indexPropertiesConfigPath =
+                    Path.GetFullPath(Path.Combine(originalConfigFile.Directory.FullName, indexPropertiesConfigPath));
+            }
+            else
+            {
+                return null;
+            }
+
+            var fileInfo = new FileInfo(indexPropertiesConfigPath);
+
+            if (fileInfo.Exists)
+            {
+                return fileInfo;
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// This class stores the properties of a particular index.
@@ -52,19 +96,20 @@ namespace AudioAnalysisTools.Indices
         public string Units { get; set; }
 
         // use these when calculated combination index.
-        public bool includeInComboIndex { get; set; }
+        public bool IncludeInComboIndex { get; set; }
 
-        public double comboWeight { get; set; }
+        public double ComboWeight { get; set; }
 
         /// <summary>
         /// constructor sets default values
         /// </summary>
         public IndexProperties()
         {
+            // TODO: why not initialise these to null, the proper empty value?
             this.Key = "NOT SET";
-            this.Name = String.Empty;
+            this.Name = string.Empty;
             this.DataType = typeof(double);
-            this.DefaultValue = 0.0;
+            this.DefaultValue = default(double);
             this.ProjectID = "NOT SET";
             this.Comment = "Relax - everything is OK";
 
@@ -73,8 +118,8 @@ namespace AudioAnalysisTools.Indices
             this.NormMax = 1.0;
             this.Units = String.Empty;
 
-            this.includeInComboIndex = false;
-            this.comboWeight = 0.0;
+            this.IncludeInComboIndex = false;
+            this.ComboWeight = 0.0;
         }
 
         public double NormaliseValue(double val)
@@ -283,9 +328,9 @@ namespace AudioAnalysisTools.Indices
                 ip.Units = config.Units;
 
                 // use these when calculated combination index.
-                ip.includeInComboIndex = (bool?)config.includeInComboIndex ?? false;
+                ip.IncludeInComboIndex = (bool?)config.includeInComboIndex ?? false;
 
-                ip.comboWeight = (double)config.comboWeight;
+                ip.ComboWeight = (double)config.comboWeight;
 
                 dict.Add(ip.Key, ip);
             }

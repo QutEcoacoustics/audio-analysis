@@ -1,27 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using Acoustics.Shared;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-using AnalysisBase.ResultBases;
-using AnalysisRunner;
-using AudioAnalysisTools;
-using log4net;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalyseLongRecording.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the AnalyseLongRecording type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
+
+    using AnalysisBase;
+    using AnalysisBase.ResultBases;
+
+    using AnalysisRunner;
+
+    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+
+    using log4net;
 
     public partial class AnalyseLongRecording
     {
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private const string ImagefileExt = ".png";
+
+        private const string FinishedMessage = @"
+
+###################################################
+Finished processing audio file: {0}.
+Output  to  directory: {1}
+
+
+##### FINISHED FILE ###################################################
+";
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Execute(Arguments arguments)
         {
@@ -153,7 +179,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //    ###########################################################################################
             // 8. PROCESS THE RESULTS
 
-            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine(string.Empty);
             if (analyserResults == null)
             {
                 LoggedConsole.WriteErrorLine("###################################################\n");
@@ -226,16 +252,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, resultsDirectory, mergedSpectrumResults);
 
             // 12. Convert summary indices to image
-            var indexPropertiesConfigPath = configuration["INDEX_PROPERTIES_CONFIG"];
-            if (!Path.IsPathRooted(indexPropertiesConfigPath))
-            {
-                indexPropertiesConfigPath =
-                    Path.GetFullPath(Path.Combine(arguments.Config.Directory.FullName, indexPropertiesConfigPath));
-            }
+            var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
 
             string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-            string imageTitle = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indexPropertiesConfigPath), indicesFile, imageTitle);
+            string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indicesPropertiesConfig), indicesFile, imageTitle);
             var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
             tracksImage.Save(imagePath);
 
@@ -243,7 +264,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
-            LoggedConsole.WriteLine("");
+            LoggedConsole.WriteLine(string.Empty);
 
             if (eventsFile == null)
             {
@@ -254,14 +275,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                 LoggedConsole.WriteLine("EVENTS CSV file(s) = " + eventsFile.Name);
                 LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
-            LoggedConsole.WriteLine("\n");
 
-            LoggedConsole.WriteLine("\n###################################################");
-            LoggedConsole.WriteLine("Finished processing audio file: " + sourceAudio.Name + ".");
-            LoggedConsole.WriteLine("Output  to  directory: " + resultsDirectory.FullName);
-            LoggedConsole.WriteLine("\n");
 
-            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, resultsDirectory.FullName);
         }
 
         private static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)

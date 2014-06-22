@@ -152,22 +152,22 @@ namespace AnalysisPrograms.Production
             var configuration = new ConfigDictionary(this.Config);
             analysisSettings.ConfigDict = configuration.GetTable();
 
-            if (this.TmpWav.NotEmpty())
+            if (this.TmpWav.IsNotEmpty())
             {
                 analysisSettings.AudioFile = this.Output.CombineFile(this.TmpWav);
             }
 
-            if (this.Events.NotEmpty())
+            if (this.Events.IsNotEmpty())
             {
                 analysisSettings.EventsFile = this.Output.CombineFile(this.Events);
             }
 
-            if (this.Indices.NotEmpty())
+            if (this.Indices.IsNotEmpty())
             {
                 analysisSettings.SummaryIndicesFile = this.Output.CombineFile(this.Indices);
             }
 
-            if (this.Sgram.NotEmpty())
+            if (this.Sgram.IsNotEmpty())
             {
                 analysisSettings.ImageFile = this.Output.CombineFile(this.Sgram);
             }

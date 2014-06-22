@@ -1,24 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using System.IO;
-using AudioAnalysisTools.DSP;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ConfigurationClasses.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defined string constants for keys in config tables
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using AudioAnalysisTools.DSP;
+
+    using TowseyLibrary;
 
     /// <summary>
     /// Defined string constants for keys in config tables
     /// </summary>
     public static class ConfigKeys
     {
-        public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
-        public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
+        public enum SonogramTypes
+        {
+            Amplitude,
+            Spectral,
+            Cepsral,
+            AcousticVectors,
+            SobelEdge
+        }
 
+        // ReSharper disable InconsistentNaming
+        public enum FeatureType
+        {
+            Undefined,
+            MFCC,
+            CC_AUTO,
+            DCT_2D
+        }
 
+        // ReSharper restore InconsistentNaming
         public struct Recording 
         {
             public const string Key_RecordingCallName = "CALL_NAME";
@@ -28,7 +52,7 @@ namespace AudioAnalysisTools
             public const string Key_TestingDirName    = "TEST_DIR_NAME";
         }
 
-        public struct Windowing //or Framing
+        public struct Windowing // or Framing
         {
             public const string Key_SampleRate    = "SAMPLE_RATE";
             public const string Key_SubSample     = "SUBSAMPLE";
@@ -75,12 +99,12 @@ namespace AudioAnalysisTools
             public const string Key_ExtractInterval = "EXTRACTION_INTERVAL"; //determines complexity of language model
             public const string Key_TemplateType    = "TEMPLATE_TYPE";
             public const string Key_TemplateDir     = "TEMPLATE_DIR";
-            public const string Key_FVCount         = "FV_COUNT";         //number of feature vectors in acoustic model
-            public const string Key_FVType          = "FEATURE_TYPE";     //type of feature vector to be extracted
-            public const string Key_FVDefaultNoiseFile= "FV_DEFAULT_NOISE_FILE"; //location of the deafult noise FV
-            public const string Key_ModelType       = "MODEL_TYPE";       //language model
-            public const string Key_WordCount       = "NUMBER_OF_WORDS";  //in the language model
-            public const string Key_WordNames       = "WORD_NAMES";       //in the language model
+            public const string Key_FVCount         = "FV_COUNT";         // number of feature vectors in acoustic model
+            public const string Key_FVType          = "FEATURE_TYPE";     // type of feature vector to be extracted
+            public const string Key_FVDefaultNoiseFile= "FV_DEFAULT_NOISE_FILE"; // location of the deafult noise FV
+            public const string Key_ModelType       = "MODEL_TYPE";       // language model
+            public const string Key_WordCount       = "NUMBER_OF_WORDS";  // in the language model
+            public const string Key_WordNames       = "WORD_NAMES";       // in the language model
         }
 
         public struct ImageSave
@@ -88,44 +112,44 @@ namespace AudioAnalysisTools
             public const string Key_AddGrid = "ADDGRID";
         }
 
-    } //end class ConfigKeys
+    }
+
+    /*
+    [Serializable]
+    public static class FftConfiguration
+    {
 
 
-    //[Serializable]
-    //public static class FftConfiguration
-    //{
+        public static void SetConfig(Configuration config)
+        {
+            int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
+            SetSampleRate(sr);
+            WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
+        }
 
+        public static void SetSampleRate(int sr)
+        {
+            SampleRate = sr;
+            NyquistFreq = sr / 2;
+        }
 
-    //    public static void SetConfig(Configuration config)
-    //    {
-    //        int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
-    //        SetSampleRate(sr);
-    //        WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-    //        NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
-    //    }
+        public static void Save(TextWriter writer)
+        {
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
+            writer.Flush();
+        }
 
-    //    public static void SetSampleRate(int sr)
-    //    {
-    //        SampleRate = sr;
-    //        NyquistFreq = sr / 2;
-    //    }
-
-    //    public static void Save(TextWriter writer)
-    //    {
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
-    //        writer.Flush();
-    //    }
-
-    //    #region Properties
-    //    public static int SampleRate { get; set; }
-    //    public static int NyquistFreq { get; set; }
-    //    private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
-    //    public static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
-    //    public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
-    //    #endregion
-    //}
+        #region Properties
+        public static int SampleRate { get; set; }
+        public static int NyquistFreq { get; set; }
+        private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
+        public static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+        public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
+        #endregion
+    }*/
 
 
 

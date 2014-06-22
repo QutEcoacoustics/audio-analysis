@@ -7,9 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using AnalysisBase.ResultBases;
-using AudioAnalysisTools.LongDurationSpectrograms;
-
 namespace AnalysisPrograms
 {
     using System;
@@ -29,11 +26,14 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.WavTools;
 
     using PowerArgs;
 
@@ -197,8 +197,9 @@ namespace AnalysisPrograms
                 var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
                 var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
 
-                if (true) // task_ANALYSE
+                if (true)
                 {
+                    // task_ANALYSE
                     arguments.Task = TaskAnalyse;
                     arguments.Source = recordingPath.ToFileInfo();
                     arguments.Config = configPath.ToFileInfo();
@@ -208,16 +209,18 @@ namespace AnalysisPrograms
                     arguments.Start = (int?)tsStart.TotalSeconds;
                     arguments.Duration = (int?)tsDuration.TotalSeconds;
                 }
-                if (false) // task_LOAD_CSV
+
+                if (false)
                 {
-                    //string indicesImagePath = "some path or another";
+                    // task_LOAD_CSV
+                    ////string indicesImagePath = "some path or another";
                     arguments.Task = TaskLoadCsv;
                     arguments.InputCsv = csvPath.ToFileInfo();
                     arguments.Config = configPath.ToFileInfo();
                 }
             }
 
-            //Execute(arguments);
+            ////Execute(arguments);
 
             if (executeDev)
             {
@@ -242,7 +245,7 @@ namespace AnalysisPrograms
 
             }
             return;
-        } // Dev()
+        }
 
         /// <summary>
         /// Directs task to the appropriate method based on the first argument in the command line string.
@@ -334,46 +337,45 @@ namespace AnalysisPrograms
 
 
 
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
+            var audioFile = analysisSettings.AudioFile;
+            var recording = new AudioRecording(audioFile.FullName);
+            var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
 
-            var analysisResults = new AnalysisResult();
+            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
-            analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
-            analysisResults.Data = null;
+
 
             // ######################################################################
-            var indicesStore = IndexCalculate.Analysis(fiAudioF, analysisSettings);
+            var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
 
             // ######################################################################
-            if (indicesStore == null)
+            if (indexCalculateResult == null)
             {
                 return analysisResults; // nothing to process 
             }
 
-            // analysisResults.Data = IndexStore.Indices2DataTable(indicesStore);
-            analysisResults.Data = null; // indicates that the analysis is of acoustic indices and not events.
-            
-            throw new NotImplementedException("I don't even know what is meant to happen here");
-            //analysisResults.indexBase = indicesStore; // TODO: fix above
-            
-            analysisResults.AudioDuration = indicesStore.GetIndexAsTimeSpan(InitialiseIndexProperties.KEYSegmentDuration);
-            analysisResults.SegmentStartOffset = (TimeSpan)analysisSettings.SegmentStartOffset;
+            analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.IndexValues };
+            analysisResults.SpectralIndices = new SpectrumBase[] { indexCalculateResult.SpectralValues };
 
-            if ((indicesStore.Sg != null) && (analysisSettings.ImageFile != null))
+
+            if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
             {
-                string imagePath = Path.Combine(diOutputDir.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(indicesStore.Sg, indicesStore.Hits, indicesStore.TrackScores, indicesStore.Tracks);
+                string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+                var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = new FileInfo(imagePath);
             }
 
-            if ((analysisSettings.SummaryIndicesFile != null) && (analysisResults.Data != null))
+            if (analysisSettings.SummaryIndicesFile != null)
             {
-                CsvTools.DataTable2CSV(analysisResults.Data, analysisSettings.SummaryIndicesFile.FullName);
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+            }
+
+            if (analysisSettings.SpectrumIndicesDirectory != null)
+            {
+                SpectrumBase.WriteResults<SpectralValues>(analysisSettings.SpectrumIndicesDirectory)
             }
 
             return analysisResults;
@@ -386,12 +388,12 @@ namespace AnalysisPrograms
 
         public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            throw new NotImplementedException();
+            Csv.WriteToCsv(destination, results);
         }
 
         public void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results)
         {
-            throw new NotImplementedException();
+            Csv.WriteMatrixToCsv<SpectrumBase>(destination, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(
@@ -504,12 +506,7 @@ namespace AnalysisPrograms
 
             //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
             //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
-            var indexPropertiesConfigPath = analysisSettings.ConfigDict["INDEX_PROPERTIES_CONFIG"];
-            if (!Path.IsPathRooted(indexPropertiesConfigPath))
-            {
-                indexPropertiesConfigPath =
-                    Path.GetFullPath(Path.Combine(analysisSettings.ConfigFile.Directory.FullName, indexPropertiesConfigPath));
-            }
+            var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
 
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indexPropertiesConfigPath.ToFileInfo());
 
@@ -551,10 +548,7 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-        AnalysisResult2 IAnalyser2.Analyse(AnalysisSettings analysisSettings)
-        {
-            throw new NotImplementedException();
-        }
+
 
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
