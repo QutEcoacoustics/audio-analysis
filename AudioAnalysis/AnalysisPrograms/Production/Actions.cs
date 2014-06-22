@@ -34,7 +34,7 @@ namespace AnalysisPrograms.Production
         public HelpArguments HelpArgs { get; set; }
         public static void Help(HelpArguments args)
         {
-            if (args != null && args.ActionName.NotWhitespace())
+            if (args != null && args.ActionName.IsNotWhitespace())
             {
                 MainEntry.PrintUsage(null, MainEntry.Usages.Single, args.ActionName);
             }

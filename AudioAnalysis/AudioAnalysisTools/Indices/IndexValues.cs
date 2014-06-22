@@ -19,6 +19,28 @@ namespace AudioAnalysisTools.Indices
 
     using TowseyLibrary;
 
+    public class IndexCalculateResult
+    {
+        // other possible results to store
+        public BaseSonogram Sg { get; set; }
+
+        public double[,] Hits { get; set; }
+
+        public List<Plot> TrackScores { get; set; }
+
+        public IndexCalculateResult()
+        {
+            Hits = null;
+            Tracks = null;
+            TrackScores = new List<Plot>();
+        }
+
+        public List<SpectralTrack> Tracks { get; set; }
+
+        public IndexValues IndexValues { get; set; }
+        public SpectralValues SpectralValues { get; set; }
+    }
+
     /// <summary>
     /// This class is used to store the values of all indices regardless of type.
     /// They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
@@ -58,33 +80,8 @@ namespace AudioAnalysisTools.Indices
 
 
 
-        // other possible results to store
-        public BaseSonogram Sg { get; set; }
 
-        private double[,] hits = null;
-        public double[,] Hits
-        {
-            get { return this.hits; }
-            set { this.hits = value; }
-        }
-
-        private List<Plot> trackScores = new List<Plot>();
-        public List<Plot> TrackScores
-        {
-            get { return this.trackScores; }
-            set { this.trackScores = value; }
-        }
-
-        private List<SpectralTrack> tracks = null;
-
-        public double TemporalEntropy { get; set; };
-
-        public List<SpectralTrack> Tracks
-        {
-            get { return this.tracks; }
-            set { this.tracks = value; }
-        }
-
+        public double TemporalEntropy { get; set; }
         public double HighAmplitudeIndex { get; set; }
 
         public double ClippingIndex { get; set; }
@@ -103,6 +100,34 @@ namespace AudioAnalysisTools.Indices
 
         public TimeSpan AvgEventDuration { get; set; }
 
+        public double AcousticComplexity { get; set; }
+
+        public double AvgEntropySpectrum { get; set; }
+
+        public double VarianceEntropySpectrum { get; set; }
+
+        public double EntropyPeaks { get; set; }
+
+        public double RainIndex { get; set; }
+
+        public double CicadaIndex { get; set; }
+
+        public double HighFreqCover { get; set; }
+
+        public double MidFreqCover { get; set; }
+
+        public double LowFreqCover { get; set; }
+
+        public TimeSpan AvgSPTDuration { get; set; }
+
+        public double SPTPerSecond { get; set; }
+
+        public int ClusterCount { get; set; }
+
+        public TimeSpan AvgClusterDuration { get; set; }
+
+        public int ThreeGramCount { get; set; }
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -110,39 +135,18 @@ namespace AudioAnalysisTools.Indices
         {
             this.SegmentDuration = wavDuration;
 
-            SummaryIndicesOfTypeDouble   = new Dictionary<string, double>();
-            SummaryIndicesOfTypeTimeSpan = new Dictionary<string, TimeSpan>();
-
-
             // initialise with default values stored values in the dictionary of index properties.
             Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
             foreach (string key in dictOfIndexProperties.Keys)
             {
-                IndexProperties index = dictOfIndexProperties[key];
-
-                // ignore the spectral indices
-                if (index.DataType == typeof(double[]))
-                {
-                    continue;
-                }
-
-                if (index.DataType == typeof(TimeSpan))
-                {
-                    this.SummaryIndicesOfTypeTimeSpan.Add(key, TimeSpan.Zero);
-                }
-                else 
-                {
-                    this.SummaryIndicesOfTypeDouble.Add(key, dictOfIndexProperties[key].DefaultValue);
-                } 
-
+                // no-op, nothing useful left to do;
             }
 
-            this.SpectralIndices = this.InitialiseSpectra(freqBinCount, dictOfIndexProperties);
         }
 
 
-
+        /*
         /// <summary>
         /// Initialise all vectors of spectral indices  
         /// </summary>
@@ -153,24 +157,46 @@ namespace AudioAnalysisTools.Indices
             Dictionary<string, double[]> spectra = new Dictionary<string, double[]>();
             foreach (string key in dictOfIndexProperties.Keys)
             {
-                if (dictOfIndexProperties[key].DataType != typeof(double[])) continue; // only want spectral indices
+                if (dictOfIndexProperties[key].DataType != typeof(double[]))
+                {
+                    continue; // only want spectral indices
+                }
+
                 double defaultValue = dictOfIndexProperties[key].DefaultValue;
 
                 var spectrum = new double[size];
                 if (defaultValue != 0.0)
                 {
-                    for (int i = 0; i < size; i++) spectrum[i] = defaultValue; 
+                    for (int i = 0; i < size; i++)
+                    {
+                        spectrum[i] = defaultValue;
+                    }
                 }
 
                 spectra.Add(key, spectrum);
             }
+
             return spectra;
-        }
+        }*/
 
     }
 
-    public class SpectraValues : SpectrumBase
+    public class SpectralValues : SpectrumBase
     {
-        
+        public double[] ACI { get; set; }
+
+        public double[] ENT { get; set; }
+
+        public double[] BGN { get; set; }
+
+        public double[] AVG { get; set; }
+
+        public double[] CVR { get; set; }
+
+        public double[] EVN { get; set; }
+
+        public double[] SPT { get; set; }
+
+        public double[] CLS { get; set; }
     }
 }

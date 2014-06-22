@@ -189,35 +189,40 @@ namespace AnalysisPrograms
             Contract.Requires(arguments != null);
             
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
-            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
-            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
+            TimeSpan offsetStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
-            //EXTRACT THE REQUIRED RECORDING SEGMENT
+            // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tempF.Exists) tempF.Delete();
-            if (tsDuration == TimeSpan.Zero)   //Process entire file
+            if (tempF.Exists)
             {
+                tempF.Delete();
+            }
+
+            if (duration == TimeSpan.Zero)
+            {
+                // Process entire file
                 AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-                //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
+                ////var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-                //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate, OffsetStart = offsetStart, OffsetEnd = offsetStart.Add(duration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                ////var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
             //DO THE ANALYSIS
-            //#############################################################################################################################################
+            // #############################################################################################################################################
             IAnalyser analyser = new Rain();  
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             //#############################################################################################################################################
 
-            //ADD IN ADDITIONAL INFO TO RESULTS TABLE
+            // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             if (dt != null)
             {
-                int iter = 0; //dummy - iteration number would ordinarily be available at this point.
-                int startMinute = (int)tsStart.TotalMinutes;
+                int iter = 0; // dummy - iteration number would ordinarily be available at this point.
+                int startMinute = (int)offsetStart.TotalMinutes;
                 foreach (DataRow row in dt.Rows)
                 {
                     row[InitialiseIndexProperties.KEYRankOrder] = iter;

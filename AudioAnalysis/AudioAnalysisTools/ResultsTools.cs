@@ -97,7 +97,6 @@ namespace AudioAnalysisTools
                 for (int resultIndex = 0; resultIndex < items.Length; resultIndex++)
                 {
                     var item = items[resultIndex];
-                    item.StartOffsetMinute = (int)result.SegmentStartOffset.TotalMinutes;
                     item.SegmentDuration = result.SegmentAudioDuration;
 
                     // correct specific details
@@ -109,7 +108,6 @@ namespace AudioAnalysisTools
             }
 
             // assumption of non-overlapping results - otherwise another sort of the final list will be needed.
-
             return merged;
         }
 

@@ -38,6 +38,9 @@ namespace AnalysisBase
             this.OutputFiles = new Dictionary<string, FileInfo>();
             this.SegmentAudioDuration = durationAnalysed;
             this.MiscellaneousResults = new Dictionary<string, object>();
+            this.SummaryIndices = new SummaryIndexBase[0];
+            this.SpectralIndices = new SpectrumBase[0];
+            this.Events = new EventBase[0];
         }
 
         /// <summary>

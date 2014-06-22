@@ -94,10 +94,12 @@ namespace Acoustics.Shared
             {
                 writer.WriteField("Index");
             }
+
             for (int i = 0; i < columns; i++)
             {
                 writer.WriteField("c" + i.ToString("000000"));
             }
+
             writer.NextRecord();
 
             // write rows
@@ -107,6 +109,7 @@ namespace Acoustics.Shared
                 {
                     writer.WriteField(matrix[i, j]);
                 }
+
                 writer.NextRecord();
             }
         }

@@ -301,8 +301,6 @@ namespace AnalysisPrograms
             this.BinMaximum = sonogram.Configuration.FreqBinCount;
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
-
-            this.StartOffsetMinute = (int)(analysisSettings.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
             
         }
